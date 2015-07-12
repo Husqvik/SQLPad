@@ -9,7 +9,7 @@
              xmlns:configuration="clr-namespace:System.Configuration;assembly=System.Configuration"
              Loaded="PageLoadedHandler"
              mc:Ignorable="d"
-             d:DesignHeight="320" d:DesignWidth="480" d:DataContext="{d:DesignInstance sqlPad:PageModel}">
+             d:DesignHeight="320" d:DesignWidth="480" DataContext="{Binding RelativeSource={RelativeSource Self}}">
 	<UserControl.Resources>
 		<sqlPad:ColorCodeToColorConverter x:Key="ColorCodeToColorConverter" />
 
@@ -27,7 +27,7 @@
 			<MenuItem.Header>
 				<StackPanel Orientation="Horizontal">
 					<TextBlock Text="Tab Color " VerticalAlignment="Center" Margin="0,0,4,0" />
-					<xctk:ColorPicker SelectedColor="{Binding HeaderBackgroundColorCode, Converter={StaticResource ColorCodeToColorConverter}}" AvailableColorsSortingMode="HueSaturationBrightness" ShowAvailableColors="False" ShowRecentColors="True" Width="100" />
+					<xctk:ColorPicker SelectedColor="{Binding DocumentHeaderBackgroundColorCode, Converter={StaticResource ColorCodeToColorConverter}}" AvailableColorsSortingMode="HueSaturationBrightness" ShowAvailableColors="False" ShowRecentColors="False" Width="100" />
 				</StackPanel>
 			</MenuItem.Header>
 		</MenuItem>
@@ -82,7 +82,7 @@
 			<RowDefinition Height="24" />
 		</Grid.RowDefinitions>
 
-		<Grid Background="GhostWhite" DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType=sqlPad:DocumentPage}}">
+		<Grid Background="GhostWhite">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="Auto" />
 				<ColumnDefinition Width="*" />
@@ -164,7 +164,16 @@
 		</Grid>
 
 		<DockPanel Grid.Row="1" LastChildFill="True">
-			<TextBlock Text="PRODUCTION" TextAlignment="Center" Foreground="White" Background="DarkRed" FontWeight="Bold" FontSize="14" Visibility="{Binding Path=ProductionLabelVisibility}" Height="21" DockPanel.Dock="Left">
+			<TextBlock Text="PRODUCTION" TextAlignment="Center" Foreground="White" Background="DarkRed" FontWeight="Bold" FontSize="14" Height="21" DockPanel.Dock="Left">
+				<TextBlock.Style>
+					<Style>
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding IsProductionConnection}" Value="False">
+								<Setter Property="TextBlock.Visibility" Value="Collapsed" />
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</TextBlock.Style>
 				<TextBlock.LayoutTransform>
 					<RotateTransform Angle="-90" />
 				</TextBlock.LayoutTransform>
@@ -235,7 +244,17 @@
 					</sqlPad:SqlTextEditor.Style>
 				</sqlPad:SqlTextEditor>
 				<GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Center" ShowsPreview="True" VerticalAlignment="Stretch" Background="DimGray" Visibility="{Binding ElementName=BindVariableList, Path=Visibility}" />
-				<ScrollViewer Grid.Column="2" x:Name="BindVariableList" Visibility="{Binding Path=BindVariableListVisibility}" VerticalScrollBarVisibility="Auto" DataContext="{Binding}">
+				<ScrollViewer Grid.Column="2" x:Name="BindVariableList" VerticalScrollBarVisibility="Auto" DataContext="{Binding}">
+					<ScrollViewer.Style>
+						<Style>
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding Path=BindVariables.Count}" Value="0">
+									<Setter Property="ScrollViewer.Visibility" Value="Collapsed" />
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</ScrollViewer.Style>
+					
 					<StackPanel>
 						<TextBlock Text="Bind Variables: " Padding="4,2,0,4" Margin="0,0,2,0" Background="Gray" />
 						<ItemsControl MinWidth="160" ItemsSource="{Binding Path=BindVariables}">

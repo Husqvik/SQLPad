@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -48,7 +49,7 @@ namespace SqlPad
 			_findReplaceManager.OwnerWindow = this;
 			_findReplaceManager.Editors = _editorAdapters;
 
-			_timerWorkingDocumentSave.Elapsed += (sender, args) => Dispatcher.Invoke(SaveWorkingDocuments);
+			_timerWorkingDocumentSave.Elapsed += delegate { Dispatcher.Invoke(SaveWorkingDocuments); };
 
 			Loaded += WindowLoadedHandler;
 			Closing += WindowClosingHandler;
@@ -288,6 +289,8 @@ namespace SqlPad
 
 			WorkDocumentCollection.SetApplicationWindowProperties(this);
 			WorkDocumentCollection.Save();
+
+			Trace.WriteLine("Working document collection saved. ");
 		}
 
 		private void WindowClosedHandler(object sender, EventArgs e)

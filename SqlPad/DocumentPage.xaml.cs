@@ -33,10 +33,14 @@ namespace SqlPad
 		#region dependency properties registration
 		public static readonly DependencyProperty ConnectionStatusProperty = DependencyProperty.Register("ConnectionStatus", typeof(ConnectionStatus), typeof(DocumentPage), new FrameworkPropertyMetadata(ConnectionStatus.Connecting));
 		public static readonly DependencyProperty EnableDebugModeProperty = DependencyProperty.Register("EnableDebugMode", typeof(bool), typeof(DocumentPage), new FrameworkPropertyMetadata(true));
+		public static readonly DependencyProperty IsProductionConnectionProperty = DependencyProperty.Register("IsProductionConnection", typeof(bool), typeof(DocumentPage), new FrameworkPropertyMetadata(false));
 		public static readonly DependencyProperty ConnectionErrorMessageProperty = DependencyProperty.Register("ConnectionErrorMessage", typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(String.Empty));
+		public static readonly DependencyProperty DocumentHeaderBackgroundColorCodeProperty = DependencyProperty.Register("DocumentHeaderBackgroundColorCode", typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(DocumentHeaderBackgroundColorCodePropertyChangedCallbackHandler));
+		public static readonly DependencyProperty DocumentHeaderProperty = DependencyProperty.Register("DocumentHeader", typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(DocumentHeaderPropertyChangedCallbackHandler));
 		public static readonly DependencyProperty SchemaLabelProperty = DependencyProperty.Register("SchemaLabel", typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(String.Empty));
 		public static readonly DependencyProperty CurrentSchemaProperty = DependencyProperty.Register("CurrentSchema", typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(CurrentSchemaPropertyChangedCallbackHandler));
 		public static readonly DependencyProperty CurrentConnectionProperty = DependencyProperty.Register("CurrentConnection", typeof(ConnectionStringSettings), typeof(DocumentPage), new FrameworkPropertyMetadata(CurrentConnectionPropertyChangedCallbackHandler));
+		public static readonly DependencyProperty BindVariablesProperty = DependencyProperty.Register("BindVariables", typeof(IReadOnlyList<BindVariableModel>), typeof(DocumentPage), new FrameworkPropertyMetadata(new BindVariableModel[0]));
 		#endregion
 
 		#region dependency property accessors
@@ -55,10 +59,57 @@ namespace SqlPad
 		}
 
 		[Bindable(true)]
+		public bool IsProductionConnection
+		{
+			get { return (bool)GetValue(IsProductionConnectionProperty); }
+			set { SetValue(IsProductionConnectionProperty, value); }
+		}
+
+		[Bindable(true)]
 		public string ConnectionErrorMessage
 		{
 			get { return (string)GetValue(ConnectionErrorMessageProperty); }
 			private set { SetValue(ConnectionErrorMessageProperty, value); }
+		}
+
+		[Bindable(true)]
+		public string DocumentHeaderBackgroundColorCode
+		{
+			get { return (string)GetValue(DocumentHeaderBackgroundColorCodeProperty); }
+			set { SetValue(DocumentHeaderBackgroundColorCodeProperty, value); }
+		}
+
+		private static void DocumentHeaderBackgroundColorCodePropertyChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
+		{
+			var newColorCode = (string)args.NewValue;
+			var documentPage = (DocumentPage)dependencyObject;
+			documentPage.WorkDocument.HeaderBackgroundColorCode = newColorCode;
+			documentPage.SetDocumentModifiedIfSqlx();
+		}
+
+		[Bindable(true)]
+		public string DocumentHeader
+		{
+			get { return (string)GetValue(DocumentHeaderProperty); }
+			set { SetValue(DocumentHeaderProperty, value); }
+		}
+
+		private static void DocumentHeaderPropertyChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
+		{
+			var newHeader = (string)args.NewValue;
+			var documentPage = (DocumentPage)dependencyObject;
+			documentPage.WorkDocument.DocumentTitle = newHeader;
+			documentPage.SetDocumentModifiedIfSqlx();
+		}
+
+		private void SetDocumentModifiedIfSqlx()
+		{
+			if (_isInitializing || !WorkDocument.IsSqlx || WorkDocument.IsModified)
+			{
+				return;
+			}
+
+			WorkDocument.IsModified = ViewModel.IsModified = true;
 		}
 
 		[Bindable(true)]
@@ -97,10 +148,17 @@ namespace SqlPad
 
 		private static void CurrentConnectionPropertyChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
 		{
+			var newConnectionString = (ConnectionStringSettings)args.NewValue;
 			var documentPage = (DocumentPage)dependencyObject;
 			documentPage.ConnectionStatus = ConnectionStatus.Connecting;
-			var newConnectionString = (ConnectionStringSettings)args.NewValue;
 			documentPage.InitializeInfrastructureComponents(newConnectionString);
+		}
+
+		[Bindable(true)]
+		public IReadOnlyList<BindVariableModel> BindVariables
+		{
+			get { return (IReadOnlyList<BindVariableModel>)GetValue(BindVariablesProperty); }
+			set { SetValue(BindVariablesProperty, value); }
 		}
 		#endregion
 
@@ -144,13 +202,13 @@ namespace SqlPad
 		private readonly ObservableCollection<string> _schemas = new ObservableCollection<string>();
 		private readonly SqlDocumentColorizingTransformer _colorizingTransformer = new SqlDocumentColorizingTransformer();
 		private readonly ContextMenu _contextActionMenu = new ContextMenu { Placement = PlacementMode.Relative };
+		private Dictionary<string, BindVariableConfiguration> _currentBindVariables = new Dictionary<string, BindVariableConfiguration>();
 
 		private readonly SqlFoldingStrategy _foldingStrategy;
 		private readonly IconMargin _iconMargin;
 
 		private CompletionWindow _completionWindow;
 		private ConnectionStringSettings _connectionString;
-		private Dictionary<string, BindVariableConfiguration> _currentBindVariables = new Dictionary<string, BindVariableConfiguration>();
 
 		internal PageModel ViewModel { get; private set; }
 		
@@ -205,7 +263,6 @@ namespace SqlPad
 			
 			ComboBoxConnection.IsEnabled = ConfigurationProvider.ConnectionStrings.Count > 1;
 			ComboBoxConnection.ItemsSource = ConfigurationProvider.ConnectionStrings;
-			ComboBoxConnection.SelectedIndex = 0;
 
 			InitializeGenericCommandBindings();
 
@@ -236,6 +293,7 @@ namespace SqlPad
 				CurrentConnection = usedConnection;
 
 				WorkDocument.SchemaName = CurrentSchema;
+				ComboBoxConnection.SelectedIndex = 0;
 			}
 			else
 			{
@@ -265,7 +323,7 @@ namespace SqlPad
 
 				CurrentConnection = usedConnection;
 				CurrentSchema = WorkDocument.SchemaName;
-				ViewModel.HeaderBackgroundColorCode = WorkDocument.HeaderBackgroundColorCode;
+				DocumentHeaderBackgroundColorCode = WorkDocument.HeaderBackgroundColorCode;
 
 				Editor.Text = WorkDocument.Text;
 
@@ -292,12 +350,14 @@ namespace SqlPad
 
 			if (String.IsNullOrEmpty(WorkDocument.DocumentTitle))
 			{
-				ViewModel.DocumentHeader = WorkDocument.File == null ? InitialDocumentHeader : WorkDocument.File.Name;
+				DocumentHeader = WorkDocument.File == null ? InitialDocumentHeader : WorkDocument.File.Name;
+			}
+			else
+			{
+				DocumentHeader = WorkDocument.DocumentTitle;
 			}
 
 			ViewModel.IsModified = WorkDocument.IsModified;
-
-			DataContext = ViewModel;
 
 			InitializeTabItem();
 		}
@@ -389,7 +449,7 @@ namespace SqlPad
 					Template = (ControlTemplate)Resources["EditableTabHeaderControlTemplate"]
 				};
 
-			var contentBinding = new Binding("DocumentHeader") { Source = ViewModel, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged, Mode = BindingMode.TwoWay };
+			var contentBinding = new Binding("DocumentHeader") { Source = this, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged, Mode = BindingMode.TwoWay };
 			header.SetBinding(ContentProperty, contentBinding);
 			var isModifiedBinding = new Binding("IsModified") { Source = ViewModel, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged };
 			header.SetBinding(EditableTabHeaderControl.IsModifiedProperty, isModifiedBinding);
@@ -406,7 +466,7 @@ namespace SqlPad
 					Template = (ControlTemplate)Application.Current.Resources["TabItemControlTemplate"]
 				};
 
-			var backgroundBinding = new Binding("HeaderBackgroundColorCode") { Source = ViewModel, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged, Converter = TabHeaderBackgroundBrushConverter };
+			var backgroundBinding = new Binding("DocumentHeaderBackgroundColorCode") { Source = this, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged, Converter = TabHeaderBackgroundBrushConverter };
 			TabItem.SetBinding(BackgroundProperty, backgroundBinding);
 		}
 
@@ -461,7 +521,7 @@ namespace SqlPad
 			
 			contextMenu.Items.Add(new Separator());
 			var colorPickerMenuItem = (MenuItem)Resources["ColorPickerMenuItem"];
-			colorPickerMenuItem.DataContext = ViewModel;
+			colorPickerMenuItem.DataContext = this;
 			contextMenu.Items.Add(colorPickerMenuItem);
 			
 			return contextMenu;
@@ -524,8 +584,8 @@ namespace SqlPad
 
 			var connectionConfiguration = ConfigurationProvider.GetConnectionCofiguration(_connectionString.Name);
 			_providerConfiguration = WorkDocumentCollection.GetProviderConfiguration(_connectionString.ProviderName);
-			
-			ViewModel.ProductionLabelVisibility = connectionConfiguration.IsProduction ? Visibility.Visible : Visibility.Collapsed;
+
+			IsProductionConnection = connectionConfiguration.IsProduction;
 			InfrastructureFactory = connectionConfiguration.InfrastructureFactory;
 			_codeCompletionProvider = InfrastructureFactory.CreateCodeCompletionProvider();
 			_codeSnippetProvider = InfrastructureFactory.CreateSnippetProvider();
@@ -539,7 +599,7 @@ namespace SqlPad
 
 			InitializeSpecificCommandBindings();
 
-			DatabaseModel = InfrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings[_connectionString.Name], ViewModel.DocumentHeader);
+			DatabaseModel = InfrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings[_connectionString.Name], DocumentHeader);
 			SchemaLabel = InfrastructureFactory.SchemaLabel;
 			_sqlDocumentRepository = new SqlDocumentRepository(InfrastructureFactory.CreateParser(), InfrastructureFactory.CreateStatementValidator(), DatabaseModel);
 			_iconMargin.DocumentRepository = _sqlDocumentRepository;
@@ -661,7 +721,7 @@ namespace SqlPad
 				WorkDocument.EditorGridRowHeight = RowDefinitionEditor.ActualHeight;
 			}
 
-			if (ViewModel.BindVariableListVisibility == Visibility.Visible)
+			if (BindVariables != null && BindVariables.Count > 0)
 			{
 				WorkDocument.EditorGridColumnWidth = ColumnDefinitionEditor.ActualWidth;
 			}
@@ -698,7 +758,7 @@ namespace SqlPad
 		{
 			if (WorkDocument.DocumentTitle == InitialDocumentHeader)
 			{
-				ViewModel.DocumentHeader = WorkDocument.File.Name;
+				DocumentHeader = WorkDocument.File.Name;
 			}
 
 			WithDisabledFileWatcher(SaveDocumentInternal);
@@ -927,12 +987,12 @@ namespace SqlPad
 			if (Editor.SelectionLength > 0)
 			{
 				executionModel.StatementText = Editor.SelectedText;
-				executionModel.BindVariables = ViewModel.BindVariables.Where(c => c.BindVariable.Nodes.Any(n => n.SourcePosition.IndexStart >= Editor.SelectionStart && n.SourcePosition.IndexEnd + 1 <= Editor.SelectionStart + Editor.SelectionLength)).ToArray();
+				executionModel.BindVariables = BindVariables.Where(c => c.BindVariable.Nodes.Any(n => n.SourcePosition.IndexStart >= Editor.SelectionStart && n.SourcePosition.IndexEnd + 1 <= Editor.SelectionStart + Editor.SelectionLength)).ToArray();
 			}
 			else
 			{
 				executionModel.StatementText = statement.RootNode.GetText(Editor.Text);
-				executionModel.BindVariables = ViewModel.BindVariables;
+				executionModel.BindVariables = BindVariables;
 			}
 
 			return executionModel;
@@ -1218,7 +1278,7 @@ namespace SqlPad
 			var statement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
 			if (statement == null || statement.BindVariables.Count == 0)
 			{
-				ViewModel.BindVariables = new BindVariableModel[0];
+				BindVariables = new BindVariableModel[0];
 				_currentBindVariables.Clear();
 				return;
 			}
@@ -1229,7 +1289,7 @@ namespace SqlPad
 			}
 
 			_currentBindVariables = statement.BindVariables.ToDictionary(v => v.Name, v => v);
-			ViewModel.BindVariables = BuildBindVariableModels(statement.BindVariables);
+			BindVariables = BuildBindVariableModels(statement.BindVariables);
 		}
 
 		private bool ApplyBindVariables(StatementBase statement)
