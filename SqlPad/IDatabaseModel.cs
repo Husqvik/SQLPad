@@ -89,19 +89,4 @@ namespace SqlPad
 			Exception = exception;
 		}
 	}
-
-	public interface IDebuggerSession
-	{
-		void Start();
-
-		Task Continue();
-
-		void StepNextLine();
-
-		void StepInto();
-
-		void StepOut();
-
-		void Detach();
-	}
 }

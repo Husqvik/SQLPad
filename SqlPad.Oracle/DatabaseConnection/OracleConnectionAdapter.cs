@@ -627,16 +627,16 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			using (var debuggerSession = new OracleDebuggerSession(_userConnection, debuggedAction))
 			{
-				debuggerSession.Start();
+				debuggerSession.Start(cancellationToken).Wait(cancellationToken);
 
 				do
 				{
-					debuggerSession.Continue().Wait(cancellationToken);
+					debuggerSession.StepInto(cancellationToken).Wait(cancellationToken);
 				} while (debuggerSession.RuntimeInfo.IsTerminated != true);
 
 				//Trace.WriteLine("Is running:" + debuggerSession.IsRunning()); // lock
 
-				debuggerSession.Detach();
+				debuggerSession.Detach(cancellationToken).Wait(cancellationToken);
 			}
 		}
 

@@ -40,17 +40,17 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_debuggedAction = debuggedAction;
 		}
 
-		public bool IsRunning()
+		public async Task<bool> IsRunning(CancellationToken cancellationToken)
 		{
 			_debuggerSessionCommand.CommandText = "BEGIN IF dbms_debug.target_program_running THEN :isRunning := 1 ELSE :isRunning = 0; END;";
 			_debuggerSessionCommand.Parameters.Clear();
 			_debuggedSessionCommand.AddSimpleParameter("ISRUNNING", null, TerminalValues.Number);
-			_debuggedSessionCommand.ExecuteNonQuery();
+			await _debuggedSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
 			var isRunning = ((OracleDecimal)_debuggedSessionCommand.Parameters[0].Value).Value;
 			return Convert.ToBoolean(isRunning);
 		}
 
-		public void Start()
+		public async Task Start(CancellationToken cancellationToken)
 		{
 			_debuggedSessionCommand.CommandText = OracleDatabaseCommands.StartDebuggee;
 			_debuggedSessionCommand.AddSimpleParameter("DEBUG_SESSION_ID", null, TerminalValues.Varchar2, 12);
@@ -61,19 +61,22 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			Trace.WriteLine(String.Format("Target debug session initialized. Debug session ID = {0}", _debuggerSessionId));
 
-			using (var startDebuggerTask = StartDebugger(CancellationToken.None))
+			await Attach(cancellationToken);
+			Trace.WriteLine("Debugger attached. ");
+
+			using (var startDebuggerTask = Synchronize(cancellationToken))
 			{
 				_debuggedAction.Start();
 				Trace.WriteLine("Debugged action started. ");
 
-				startDebuggerTask.Wait();
-				Trace.WriteLine("Debugger attached. ");
+				startDebuggerTask.Wait(cancellationToken);
+				Trace.WriteLine("Debugger synchronized. ");
 				_runtimeInfo = startDebuggerTask.Result;
 				_runtimeInfo.Trace();
 			}
 		}
 
-		private void AddDebugParameters(OracleCommand command)
+		private static void AddDebugParameters(OracleCommand command)
 		{
 			command.AddSimpleParameter("DEBUG_ACTION_STATUS", null, TerminalValues.Number);
 			command.AddSimpleParameter("BREAKPOINT", null, TerminalValues.Number);
@@ -116,16 +119,26 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return GetRuntimeInfo(_debuggerSessionCommand);
 		}
 
-		private async Task<OracleRuntimeInfo> StartDebugger(CancellationToken cancellationToken)
+		private async Task Attach(CancellationToken cancellationToken)
 		{
-			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.StartDebugger;
+			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.AttachDebugger;
 			_debuggerSessionCommand.Parameters.Clear();
 			_debuggerSessionCommand.AddSimpleParameter("DEBUG_SESSION_ID", _debuggerSessionId);
-			AddDebugParameters(_debuggerSessionCommand);
 
 			_debuggerSession.Open();
 			_debuggerSession.ModuleName = "SQLPad PL/SQL Debugger";
 			_debuggerSession.ActionName = "Attach";
+
+			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
+		}
+
+		private async Task<OracleRuntimeInfo> Synchronize(CancellationToken cancellationToken)
+		{
+			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.SynchronizeDebugger;
+			_debuggerSessionCommand.Parameters.Clear();
+			AddDebugParameters(_debuggerSessionCommand);
+
+			_debuggerSession.ActionName = "Synchronize";
 
 			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
 
@@ -184,45 +197,55 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return value.IsNull ? (int?)null : Convert.ToInt32(value.Value);
 		}
 
-		public async Task Continue()
+		public Task Continue(CancellationToken cancellationToken)
 		{
 			_debuggerSession.ActionName = "Continue";
-			_runtimeInfo = await ContinueDebugger(OracleDebugBreakFlags.AnyCall, CancellationToken.None);
+			return ContinueDebugger(OracleDebugBreakFlags.Exception, cancellationToken);
+		}
+
+		public Task StepNextLine(CancellationToken cancellationToken)
+		{
+			_debuggerSession.ActionName = "Step next line";
+			return ContinueDebugger(OracleDebugBreakFlags.NextLine, cancellationToken);
+		}
+
+		public async Task StepInto(CancellationToken cancellationToken)
+		{
+			_debuggerSession.ActionName = "Step into";
+			_runtimeInfo = await ContinueDebugger(OracleDebugBreakFlags.AnyCall, cancellationToken);
 			_runtimeInfo.Trace();
 
 			// remove
-			if (_runtimeInfo.Reason != OracleDebugReason.KnlExit)
+			if (_runtimeInfo.IsTerminated != true)
 			{
 				var aValue = GetValue("A");
 				Trace.WriteLine("A = " + aValue);
 			}
 		}
 
-		public void StepNextLine()
-		{
-			_debuggerSession.ActionName = "Step next line";
-		}
-
-		public void StepInto()
-		{
-			_debuggerSession.ActionName = "Step into";
-		}
-
-		public void StepOut()
+		public Task StepOut(CancellationToken cancellationToken)
 		{
 			_debuggerSession.ActionName = "Step out";
+			return ContinueDebugger(OracleDebugBreakFlags.AnyReturn, cancellationToken);
 		}
 
-		private void TargetDebugOff()
+		private void TerminateTargetSessionDebugMode()
 		{
 			_debuggedSessionCommand.CommandText = OracleDatabaseCommands.FinalizeDebuggee;
 			_debuggedSessionCommand.Parameters.Clear();
-			_debuggedSessionCommand.ExecuteNonQuery(); // lock
+			_debuggedSessionCommand.ExecuteNonQuery();
+			
+			Trace.WriteLine("Target session debug mode terminated. ");
 		}
 
-		public void Detach()
+		public async Task Detach(CancellationToken cancellationToken)
 		{
-			_debuggedAction.Wait();
+			var taskDebugOff = _debuggedAction.ContinueWith(t => TerminateTargetSessionDebugMode(), cancellationToken);
+
+			await Synchronize(cancellationToken);
+			await ContinueDebugger(OracleDebugBreakFlags.None, cancellationToken);
+
+			taskDebugOff.Wait(cancellationToken);
 
 			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.DetachDebugger;
 			_debuggerSessionCommand.Parameters.Clear();
