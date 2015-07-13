@@ -109,7 +109,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_dataDictionary = refreshedModel._dataDictionary;
 			_allFunctionMetadata = refreshedModel._allFunctionMetadata;
 
-			Trace.WriteLine(String.Format("{0} - Metadata for '{1}' has been retrieved from the cache. ", DateTime.Now, _connectionStringName));
+			Trace.WriteLine(String.Format("{0} - Metadata for '{1}/{2}' has been retrieved from the cache. ", DateTime.Now, _connectionStringName, ConnectionIdentifier));
 
 			lock (ActiveDataModelRefresh)
 			{

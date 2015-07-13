@@ -88,7 +88,7 @@
 						</TextBox.Style>
 					</sqlPad:SearchTextBox>-->
 
-					<Popup x:Name="DataGridTabHeaderPopup" PlacementTarget="{Binding ElementName=DataGridTabHeader}" Placement="Top">
+					<Popup x:Name="DataGridTabHeaderPopup" PlacementTarget="{Binding ElementName=DataGridTabHeader}" Placement="Top" MouseLeave="DataGridTabHeaderPopupMouseLeaveHandler">
 						<ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
 							<TextBox x:Name="DataGridTabHeaderPopupTextBox" Text="{Binding LastStatementText, Mode=OneWay}" IsReadOnly="True" IsReadOnlyCaretVisible="True" Background="{StaticResource PopupBackgroundBrush}" BorderBrush="{StaticResource PopupBorderBrush}" BorderThickness="1" />
 						</ScrollViewer>

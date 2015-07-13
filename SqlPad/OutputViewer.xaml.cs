@@ -915,6 +915,11 @@ public class Query
 			DataGridTabHeaderPopup.IsOpen = false;
 		}
 
+		private void DataGridTabHeaderPopupMouseLeaveHandler(object sender, MouseEventArgs e)
+		{
+			DataGridTabHeaderPopup.IsOpen = false;
+		}
+
 		private void ButtonDebuggerContinueClickHandler(object sender, RoutedEventArgs e)
 		{
 		}
