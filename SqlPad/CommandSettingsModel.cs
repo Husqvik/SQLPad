@@ -48,7 +48,7 @@ namespace SqlPad
 		}
 	}
 
-	[DebuggerDisplay("BooleanOption(OptionIdentifier={OptionIdentifier}; Description={Description}; Value={Value})")]
+	[DebuggerDisplay("BooleanOption(OptionIdentifier={OptionIdentifier}; Value={Value})")]
 	public class BooleanOption : ModelBase
 	{
 		private bool _value;

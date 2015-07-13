@@ -373,6 +373,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 			await UpdateModelAsync(cancellationToken, true, columnDetailDataProvider, columnCommentDataProvider, columnConstraintDataProvider, columnIndexesDataProvider, indexColumnDataProvider, detailHistogramDataProvider, columnInMemoryDetailsDataProvider);
 		}
 
+		public async override Task UpdateUserDetailsAsync(OracleSchemaModel dataModel, CancellationToken cancellationToken)
+		{
+			var userDetailDataProvider = new UserDataProvider(dataModel);
+			await UpdateModelAsync(cancellationToken, true, userDetailDataProvider);
+		}
+
 		public async override Task<IReadOnlyList<string>> GetRemoteTableColumnsAsync(string databaseLink, OracleObjectIdentifier schemaObject, CancellationToken cancellationToken)
 		{
 			var remoteTableColumnDataProvider = new RemoteTableColumnDataProvider(databaseLink, schemaObject);

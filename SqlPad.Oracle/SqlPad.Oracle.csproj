@@ -123,6 +123,7 @@
     <Compile Include="ModelDataProviders\ExplainPlanDataProvider.cs" />
     <Compile Include="ModelDataProviders\IModelDataProvider.cs" />
     <Compile Include="ModelDataProviders\PartitionDataProvider.cs" />
+    <Compile Include="ModelDataProviders\UserDataProvider.cs" />
     <Compile Include="OracleBindVariable.cs" />
     <Compile Include="OracleConfiguration.cs">
       <DependentUpon>OracleConfiguration.xsd</DependentUpon>

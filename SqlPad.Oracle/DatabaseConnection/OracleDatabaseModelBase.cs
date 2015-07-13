@@ -131,6 +131,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 		
 		public abstract Task UpdateColumnDetailsAsync(OracleObjectIdentifier schemaObject, string columnName, ColumnDetailsModel dataModel, CancellationToken cancellationToken);
 
+		public abstract Task UpdateUserDetailsAsync(OracleSchemaModel dataModel, CancellationToken cancellationToken);
+
 		public abstract ILookup<string, string> ContextData { get; }
 
 		public abstract ILookup<OracleProgramIdentifier, OracleProgramMetadata> AllFunctionMetadata { get; }

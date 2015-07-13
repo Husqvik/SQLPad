@@ -1190,6 +1190,21 @@ TABLESPACE ""TBS_HQ_PDB""";
 			return Task.FromResult<object>(null);
 		}
 
+		public override Task UpdateUserDetailsAsync(OracleSchemaModel dataModel, CancellationToken cancellationToken)
+		{
+			dataModel.AccountStatus = "Open";
+			dataModel.AuthenticationType = "Password";
+			dataModel.DefaultTablespace = "TEST_TABLESPACE";
+			dataModel.TemporaryTablespace = "TEMP";
+			dataModel.Profile = "DEFAULT";
+			dataModel.EditionsEnabled = true;
+			dataModel.LastLogin = new DateTime(2015, 7, 13, 22, 47, 30);
+			dataModel.LockDate = new DateTime(2015, 7, 13, 22, 47, 31);
+			dataModel.ExpiryDate = new DateTime(2015, 7, 13, 22, 47, 32);
+
+			return Task.FromResult((object)null);
+		}
+
 		public override Task<IReadOnlyList<string>> GetRemoteTableColumnsAsync(string databaseLink, OracleObjectIdentifier schemaObject, CancellationToken cancellationToken)
 		{
 			var remoteColumns =

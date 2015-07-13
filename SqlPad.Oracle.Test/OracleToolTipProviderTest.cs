@@ -750,9 +750,18 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 14);
 			toolTip.Control.ShouldBeTypeOf<ToolTipSchema>();
-			var schema = (OracleSchema)toolTip.Control.DataContext;
-			schema.Name.ShouldBe("\"HUSQVIK\"");
-			schema.Created.ShouldBe(new DateTime(2014, 9, 28, 0, 25, 43));
+			var schema = (OracleSchemaModel)toolTip.Control.DataContext;
+			schema.Schema.Name.ShouldBe("\"HUSQVIK\"");
+			schema.Schema.Created.ShouldBe(new DateTime(2014, 9, 28, 0, 25, 43));
+			schema.AuthenticationType.ShouldBe("Password");
+			schema.AccountStatus.ShouldBe("Open");
+			schema.Profile.ShouldBe("DEFAULT");
+			schema.DefaultTablespace.ShouldBe("TEST_TABLESPACE");
+			schema.TemporaryTablespace.ShouldBe("TEMP");
+			schema.EditionsEnabled.ShouldBe(true);
+			schema.LastLogin.ShouldBe(new DateTime(2015, 7, 13, 22, 47, 30));
+			schema.LockDate.ShouldBe(new DateTime(2015, 7, 13, 22, 47, 31));
+			schema.ExpiryDate.ShouldBe(new DateTime(2015, 7, 13, 22, 47, 32));
 		}
 
 		public class ProgramTypeConverterTests

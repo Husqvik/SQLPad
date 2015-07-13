@@ -131,9 +131,14 @@ namespace SqlPad.Oracle
 		private static IToolTip BuildSchemaTooltip(OracleDatabaseModelBase databaseModel, StatementNode terminal)
 		{
 			OracleSchema schema;
-			return databaseModel.AllSchemas.TryGetValue(terminal.Token.Value.ToQuotedIdentifier(), out schema)
-				? new ToolTipSchema(schema)
-				: null;
+			if (!databaseModel.AllSchemas.TryGetValue(terminal.Token.Value.ToQuotedIdentifier(), out schema))
+			{
+				return null;
+			}
+
+			var dataModel = new OracleSchemaModel { Schema = schema };
+			databaseModel.UpdateUserDetailsAsync(dataModel, CancellationToken.None);
+			return new ToolTipSchema(dataModel);
 		}
 
 		private static string GetParameterToolTip(OracleStatementSemanticModel semanticModel, StatementGrammarNode node)
