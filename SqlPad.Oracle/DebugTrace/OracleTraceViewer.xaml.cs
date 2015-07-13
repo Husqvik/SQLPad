@@ -93,14 +93,27 @@ namespace SqlPad.Oracle.DebugTrace
 				Messages.ShowError(e.Message);
 			}
 
-			TraceFileName = _connectionAdapter.TraceFileName;
+			TraceFileName = String.IsNullOrWhiteSpace(OracleConfiguration.Configuration.RemoteTraceDirectory)
+				? _connectionAdapter.TraceFileName
+				: Path.Combine(OracleConfiguration.Configuration.RemoteTraceDirectory, new FileInfo(_connectionAdapter.TraceFileName).Name);
 		}
 
 		private void TraceFileNameHyperlinkClickHandler(object sender, RoutedEventArgs e)
 		{
+			var directoryName = new FileInfo(TraceFileName).DirectoryName;
+			if (!Directory.Exists(directoryName))
+			{
+				var directoryType = String.IsNullOrWhiteSpace(OracleConfiguration.Configuration.RemoteTraceDirectory)
+					? "Local"
+					: "Remote";
+
+				Messages.ShowError(String.Format("{0} trace directory '{1}' does not exist or is not accessible. ", directoryType, directoryName));
+				return;
+			}
+
 			var arguments = File.Exists(TraceFileName)
 				? String.Format("/select,{0}", TraceFileName)
-				: String.Format("/root,{0}", new FileInfo(TraceFileName).DirectoryName);
+				: String.Format("/root,{0}", directoryName);
 
 			Process.Start("explorer.exe", arguments);
 		}

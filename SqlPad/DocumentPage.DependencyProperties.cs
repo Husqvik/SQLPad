@@ -161,6 +161,16 @@ namespace SqlPad
 			var newConnectionString = (ConnectionStringSettings)args.NewValue;
 			var documentPage = (DocumentPage)dependencyObject;
 			documentPage.ConnectionStatus = ConnectionStatus.Connecting;
+
+			if (String.IsNullOrEmpty(documentPage.WorkDocument.DocumentTitle))
+			{
+				documentPage.DocumentHeader = documentPage.WorkDocument.File == null ? InitialDocumentHeader : documentPage.WorkDocument.File.Name;
+			}
+			else
+			{
+				documentPage.DocumentHeader = documentPage.WorkDocument.DocumentTitle;
+			}
+
 			documentPage.InitializeInfrastructureComponents(newConnectionString);
 		}
 

@@ -200,15 +200,6 @@ namespace SqlPad
 
 			UpdateDocumentHeaderToolTip();
 
-			if (String.IsNullOrEmpty(WorkDocument.DocumentTitle))
-			{
-				DocumentHeader = WorkDocument.File == null ? InitialDocumentHeader : WorkDocument.File.Name;
-			}
-			else
-			{
-				DocumentHeader = WorkDocument.DocumentTitle;
-			}
-
 			IsModified = WorkDocument.IsModified;
 
 			InitializeTabItem();

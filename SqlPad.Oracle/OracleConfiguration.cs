@@ -28,6 +28,8 @@ namespace SqlPad.Oracle {
         
         private string startupScriptField;
         
+        private string remoteTraceDirectoryField;
+        
         /// <remarks/>
         public OracleConfigurationExecutionPlan ExecutionPlan {
             get {
@@ -45,6 +47,16 @@ namespace SqlPad.Oracle {
             }
             set {
                 this.startupScriptField = value;
+            }
+        }
+        
+        /// <remarks/>
+        public string RemoteTraceDirectory {
+            get {
+                return this.remoteTraceDirectoryField;
+            }
+            set {
+                this.remoteTraceDirectoryField = value;
             }
         }
     }
