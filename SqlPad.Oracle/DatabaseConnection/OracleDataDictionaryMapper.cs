@@ -44,7 +44,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			_databaseModel.ExecuteReader(v => OracleDatabaseCommands.SelectTablesCommandText, MapTable).Count();
 
-			Trace.WriteLine(String.Format("Fetch tables metadata finished in {0}. ", stopwatch.Elapsed));
+			Trace.WriteLine(String.Format("Fetch table metadata finished in {0}. ", stopwatch.Elapsed));
 			stopwatch.Restart();
 
 			_databaseModel.ExecuteReader(v => OracleDatabaseCommands.SelectPartitionsCommandText, MapPartitions).Count();

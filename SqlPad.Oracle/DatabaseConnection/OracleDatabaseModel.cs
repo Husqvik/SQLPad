@@ -108,6 +108,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			_dataDictionary = refreshedModel._dataDictionary;
 			_allFunctionMetadata = refreshedModel._allFunctionMetadata;
+			_allSchemas = refreshedModel._allSchemas;
+			_schemas = refreshedModel._schemas;
 
 			Trace.WriteLine(String.Format("{0} - Metadata for '{1}/{2}' has been retrieved from the cache. ", DateTime.Now, _connectionStringName, ConnectionIdentifier));
 
@@ -674,6 +676,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			try
 			{
+				var stopwatch = Stopwatch.StartNew();
+				UpdateSchemas(_dataDictionaryMapper.GetSchemaNames());
+				Trace.WriteLine(String.Format("Fetch schema metadata finished in {0}. ", stopwatch.Elapsed));
+
 				var allObjects = _dataDictionaryMapper.BuildDataDictionary();
 
 				var userFunctions = _dataDictionaryMapper.GetUserFunctionMetadata().SelectMany(g => g).ToArray();
@@ -681,7 +687,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				_allFunctionMetadata = builtInFunctions.Concat(userFunctions.Where(f => f.Type == ProgramType.Function))
 					.ToLookup(m => m.Identifier);
 
-				var stopwatch = Stopwatch.StartNew();
+				stopwatch.Reset();
 
 				var nonSchemaBuiltInFunctionMetadata = new List<OracleProgramMetadata>();
 
@@ -835,7 +841,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			try
 			{
-				LoadSchemaNames();
+				ResolveSchemas();
 			}
 			catch(Exception e)
 			{
@@ -860,11 +866,16 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_refreshTimer.Start();
 		}
 
-		private void LoadSchemaNames()
+		private void ResolveSchemas()
 		{
 			var schemas = OracleSchemaResolver.ResolveSchemas(this);
-			_schemas = new HashSet<string>(schemas.Select(s => s.Name.Trim('"')));
+			UpdateSchemas(schemas);
+		}
+
+		private void UpdateSchemas(IEnumerable<OracleSchema> schemas)
+		{
 			var allSchemas = schemas.ToDictionary(s => s.Name);
+			_schemas = new HashSet<string>(allSchemas.Values.Select(s => s.Name.Trim('"')));
 			allSchemas.Add(SchemaPublic, OracleSchema.Public);
 			_allSchemas = new ReadOnlyDictionary<string, OracleSchema>(allSchemas);
 		}
@@ -928,6 +939,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					}
 
 					_schemas = _databaseModel._dataDictionaryMapper.GetSchemaNames().ToList().AsReadOnly();
+					Trace.WriteLine("Schema metadata loaded. ");
 				}
 			}
 		}

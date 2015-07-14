@@ -638,7 +638,6 @@ namespace SqlPad
 				{
 					ConnectionStatus = ConnectionStatus.Connected;
 					SetSchemas(DatabaseModel.Schemas);
-					CurrentSchema = DatabaseModel.CurrentSchema;
 				});
 		}
 
@@ -652,6 +651,7 @@ namespace SqlPad
 		{
 			ResetSchemas();
 			_schemas.AddRange(schemas.OrderBy(s => s));
+			CurrentSchema = DatabaseModel.CurrentSchema;
 		}
 
 		private void DatabaseModelInitializationFailedHandler(object sender, DatabaseModelConnectionErrorArgs args)
@@ -683,7 +683,7 @@ namespace SqlPad
 			Dispatcher.Invoke(() =>
 			                  {
 				                  ProgressBar.IsIndeterminate = false;
-								  ReParse();
+								  SetSchemas(DatabaseModel.Schemas);
 			                  });
 		}
 
