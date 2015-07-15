@@ -108,12 +108,19 @@
       <Project>{e90b1839-1a3e-471c-997a-c010f463cd6c}</Project>
       <Name>SqlPad.Oracle</Name>
     </ProjectReference>
+    <ProjectReference Include="..\SqlPad.Test\SqlPad.Test.csproj">
+      <Project>{15b68042-211b-48a7-8395-fd330755b690}</Project>
+      <Name>SqlPad.Test</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SqlPad\SqlPad.csproj">
       <Project>{a899ecdc-34cf-4b97-a25f-774cfcdbfdac}</Project>
       <Name>SqlPad</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="TestFiles\TestSnippet.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="TestFiles\SqlStatements1.sql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

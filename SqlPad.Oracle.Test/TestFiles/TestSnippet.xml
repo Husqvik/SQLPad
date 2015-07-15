@@ -1,0 +1,5 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Snippet Name="Test" Description="" xmlns="http://husqvik.com/SqlPad/2014/02" Rdbms="Oracle" Version="*">
+  <Text><![CDATA[SELECT * FROM DUAL]]></Text>
+  <Description><![CDATA[Test snippet]]></Description>
+</Snippet>

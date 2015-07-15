@@ -51,7 +51,7 @@ namespace SqlPad.Oracle
 			var candidates = _oracleParser.GetTerminalCandidates(currentNode).Select(c => c.Id);
 
 			return Snippets.SnippetCollection.Where(s => s.Name.ToUpperInvariant().Contains(textToReplace.ToUpperInvariant()) &&
-			                                             (s.AllowedTerminals.Length == 0 || s.AllowedTerminals.Select(t => t.Id).Intersect(candidates).Any()))
+														 (s.AllowedTerminals == null || s.AllowedTerminals.Length == 0 || s.AllowedTerminals.Select(t => t.Id).Intersect(candidates).Any()))
 				.Select(s => BuildCodeSnippet(s, new SourcePosition { IndexStart = cursorPosition - textToReplace.Length, IndexEnd = cursorPosition })).ToArray();
 		}
 
@@ -64,7 +64,7 @@ namespace SqlPad.Oracle
 				Description = s.Description,
 				SourceToReplace = sourcePosition,
 				Parameters = new List<ICodeSnippetParameter>(
-					s.Parameters.Select(p => new OracleCodeSnippetParameter
+					(s.Parameters ?? Enumerable.Empty<SnippetParameter>()).Select(p => new OracleCodeSnippetParameter
 					{
 						Index = p.Index,
 						DefaultValue = p.DefaultValue

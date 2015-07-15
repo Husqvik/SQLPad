@@ -61,12 +61,15 @@ namespace SqlPad
 
 		public CompletionData(ICodeSnippet codeSnippet)
 		{
-			var description = String.IsNullOrEmpty(codeSnippet.Description) ? null : String.Format("{0}{1}", Environment.NewLine, codeSnippet.Description);
+			var descriptionText = String.IsNullOrEmpty(codeSnippet.Description) ? null : String.Format("{0}{1}", Environment.NewLine, codeSnippet.Description);
 
 			Snippet = codeSnippet;
 			Text = codeSnippet.Name;
 			Content = Text;
-			Description = "Code Snippet" + description;
+			var description = new TextBlock();
+			description.Inlines.Add(new Bold(new Run("Code Snippet")));
+			description.Inlines.Add(new Run(descriptionText));
+			Description = description;
 			_completionText = FormatSnippetText(codeSnippet);
 		}
 

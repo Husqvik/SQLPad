@@ -779,9 +779,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 				try
 				{
 					RaiseEvent(RefreshStarted);
+					Trace.WriteLine(String.Format("{0} - Attempt to load metadata for '{1}/{2}' from cache. ", DateTime.Now, _connectionStringName, ConnectionIdentifier));
 					var stopwatch = Stopwatch.StartNew();
 					_dataDictionary = CachedDataDictionaries[_connectionStringName] = OracleDataDictionary.Deserialize(stream);
-					Trace.WriteLine(String.Format("{0} - Cache for '{1}' loaded in {2}", DateTime.Now, _connectionStringName, stopwatch.Elapsed));
+					Trace.WriteLine(String.Format("{0} - Metadata for '{1}/{2}' loaded from cache in {3}", DateTime.Now, _connectionStringName, ConnectionIdentifier, stopwatch.Elapsed));
 					BuildAllFunctionMetadata();
 					RemoveActiveRefreshTask();
 				}
