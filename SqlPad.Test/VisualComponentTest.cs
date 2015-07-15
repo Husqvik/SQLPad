@@ -32,20 +32,16 @@ namespace SqlPad.Test
 			VisualTestRunner.RunTest("SqlPad.Test.VisualComponentTest, SqlPad.Test", "TestBasicSqlPadBehavior");
 		}
 
-		private static SqlTextEditor LoadDocument(string fileName)
+		private static SqlTextEditor GetEditor()
 		{
 			var mainWindow = (MainWindow)Application.Current.MainWindow;
-
-			File.WriteAllText(fileName, String.Empty);
-			mainWindow.GetType().GetMethod("OpenExistingFile", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(mainWindow, new object[] { fileName });
-
 			var page = (DocumentPage)((TabItem)mainWindow.DocumentTabControl.SelectedItem).Content;
 			return page.Editor;
 		}
 
 		private static void TestBasicSqlPadBehavior(VisualTestContext context)
 		{
-			_editor = LoadDocument(Path.Combine(context.TestTemporaryDirectory, "tempDocument.sql"));
+			_editor = GetEditor();
 
 			try
 			{
@@ -359,7 +355,8 @@ WHERE
 		private string GetExportContent(DataGrid resultGrid, IDataExporter dataExporter)
 		{
 			var tempFileName = Path.GetTempFileName();
-			dataExporter.ExportToFile(tempFileName, resultGrid, new DocumentPage().InfrastructureFactory.DataExportConverter);
+			var documentPage = new DocumentPage { CurrentConnection = ConfigurationProvider.ConnectionStrings[0] };
+			dataExporter.ExportToFile(tempFileName, resultGrid, documentPage.InfrastructureFactory.DataExportConverter);
 
 			var result = File.ReadAllText(tempFileName);
 			File.Delete(tempFileName);
@@ -376,7 +373,8 @@ WHERE
 					//new ColumnHeader { ColumnIndex = 2, DatabaseDataType = "Varchar2", DataType = typeof (string), Name = "\"'\\\"><?,.;:{}[]%$#@!~^&*()_+-§'''||(1/2*3+4-CASEWHEN1<=2OR2>=1THEN5ELSE6END)" }
 				};
 
-			var outputViewer = new OutputViewer(new DocumentPage());
+			var documentPage = new DocumentPage { CurrentConnection = ConfigurationProvider.ConnectionStrings[0] };
+			var outputViewer = new OutputViewer(documentPage);
 
 			var dataRows =
 				new[]

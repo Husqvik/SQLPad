@@ -32,7 +32,17 @@ namespace SqlPad.Oracle.ExecutionPlan
 
 		public async Task ShowActualAsync(IConnectionAdapter connectionAdapter, CancellationToken cancellationToken)
 		{
-			var itemCollection = await ((OracleConnectionAdapterBase)connectionAdapter).GetCursorExecutionStatisticsAsync(cancellationToken);
+			ExecutionStatisticsPlanItemCollection itemCollection = null;
+			
+			try
+			{
+				itemCollection = await ((OracleConnectionAdapterBase)connectionAdapter).GetCursorExecutionStatisticsAsync(cancellationToken);
+			}
+			catch (Exception e)
+			{
+				Messages.ShowError(String.Format("Execution statistics cannot be retrieved: {0}", e.Message));
+			}
+
 			if (itemCollection == null)
 			{
 				return;
