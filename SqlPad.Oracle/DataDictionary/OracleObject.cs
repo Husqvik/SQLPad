@@ -359,7 +359,7 @@ namespace SqlPad.Oracle.DataDictionary
 	[DebuggerDisplay("OracleSchema (Name={Name}; Created={Created}; IsOracleMaintained={IsOracleMaintained}; IsCommon={IsCommon})")]
 	public struct OracleSchema
 	{
-		public static readonly OracleSchema Public = new OracleSchema { Name = OracleDatabaseModelBase.SchemaPublic };
+		public static readonly OracleSchema Public = new OracleSchema { Name = OracleDatabaseModelBase.SchemaPublic, IsOracleMaintained = true };
 
 		public string Name { get; set; }
 

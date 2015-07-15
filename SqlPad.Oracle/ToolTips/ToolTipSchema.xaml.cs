@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
+using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.DataDictionary;
 
 namespace SqlPad.Oracle.ToolTips
@@ -14,7 +15,11 @@ namespace SqlPad.Oracle.ToolTips
 			InitializeComponent();
 
 			DataContext = dataModel;
-			LabelTitle.Text = String.Format("{0} (User/schema)", dataModel.Schema.Name.ToSimpleIdentifier());
+			var objectType = String.Equals(dataModel.Schema.Name, OracleDatabaseModelBase.SchemaPublic)
+				? "Schema"
+				: "User/schema";
+
+			LabelTitle.Text = String.Format("{0} ({1})", dataModel.Schema.Name.ToSimpleIdentifier(), objectType);
 		}
 
 		public Control Control { get { return this; } }
