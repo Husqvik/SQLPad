@@ -6,59 +6,63 @@
              mc:Ignorable="d"
 			 DataContext="{Binding RelativeSource={RelativeSource Self}}"
              d:DesignHeight="200" d:DesignWidth="300">
-	<DockPanel LastChildFill="True">
-		<StackPanel>
-			<ListView Margin="2" BorderBrush="Transparent" Grid.IsSharedSizeScope="True" ItemsSource="{Binding Path=TraceEvents}" HorizontalAlignment="Left">
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="Auto"/>
+		</Grid.RowDefinitions>
 
-				<ListView.ItemTemplate>
-					<DataTemplate >
-						<CheckBox IsChecked="{Binding Path=IsSelected, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" IsEnabled="{Binding IsEnabled}" VerticalContentAlignment="Center">
-							<CheckBox.Content>
-								<Grid>
-									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="Auto" SharedSizeGroup="EventCode" />
-										<ColumnDefinition Width="*" SharedSizeGroup="Title" />
-										<ColumnDefinition Width="Auto" SharedSizeGroup="EventLevel" />
-									</Grid.ColumnDefinitions>
+		<ListView Margin="2" BorderBrush="Transparent" Grid.IsSharedSizeScope="True" ItemsSource="{Binding Path=TraceEvents}" HorizontalAlignment="Left">
+			<ListView.ItemTemplate>
+				<DataTemplate >
+					<CheckBox IsChecked="{Binding Path=IsSelected, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" IsEnabled="{Binding IsEnabled}" VerticalContentAlignment="Center">
+						<CheckBox.Content>
+							<Grid>
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="Auto" SharedSizeGroup="EventCode" />
+									<ColumnDefinition Width="*" SharedSizeGroup="Title" />
+									<ColumnDefinition Width="Auto" SharedSizeGroup="EventLevel" />
+								</Grid.ColumnDefinitions>
 
-									<TextBlock Grid.Column="0" Text="{Binding TraceEvent.EventCode}" VerticalAlignment="Center" Margin="0,0,6,0" />
-									<TextBlock Grid.Column="1" Text="{Binding TraceEvent.Title}" VerticalAlignment="Center" Margin="0,0,16,0" />
-									<ComboBox Grid.Column="2" ItemsSource="{Binding TraceEvent.SupportedLevels}" SelectedValue="{Binding TraceEvent.Level}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right">
-										<ComboBox.Style>
-											<Style TargetType="ComboBox">
-												<Style.Triggers>
-													<DataTrigger Binding="{Binding TraceEvent.SupportedLevels}" Value="{x:Null}">
-														<Setter Property="Visibility" Value="Collapsed" />
-													</DataTrigger>
-													<DataTrigger Binding="{Binding TraceEvent.SupportedLevels.Count}" Value="1">
-														<Setter Property="IsEnabled" Value="False" />
-													</DataTrigger>
-												</Style.Triggers>
-											</Style>
-										</ComboBox.Style>
+								<TextBlock Grid.Column="0" Text="{Binding TraceEvent.EventCode}" VerticalAlignment="Center" Margin="0,0,6,0" />
+								<TextBlock Grid.Column="1" Text="{Binding TraceEvent.Title}" VerticalAlignment="Center" Margin="0,0,16,0" />
+								<ComboBox Grid.Column="2" ItemsSource="{Binding TraceEvent.SupportedLevels}" SelectedValue="{Binding TraceEvent.Level}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right">
+									<ComboBox.Style>
+										<Style TargetType="ComboBox">
+											<Style.Triggers>
+												<DataTrigger Binding="{Binding TraceEvent.SupportedLevels}" Value="{x:Null}">
+													<Setter Property="Visibility" Value="Collapsed" />
+												</DataTrigger>
+												<DataTrigger Binding="{Binding TraceEvent.SupportedLevels.Count}" Value="1">
+													<Setter Property="IsEnabled" Value="False" />
+												</DataTrigger>
+											</Style.Triggers>
+										</Style>
+									</ComboBox.Style>
 
-										<ComboBox.ItemTemplate>
-											<DataTemplate>
-												<TextBlock Text="{Binding}" />
-											</DataTemplate>
-										</ComboBox.ItemTemplate>
-									</ComboBox>
-								</Grid>
-							</CheckBox.Content>
-						</CheckBox>
-					</DataTemplate>
-				</ListView.ItemTemplate>
-				<ListView.Resources>
-					<RoutedCommand x:Key="SelectItemCommand" />
-				</ListView.Resources>
-				<ListView.CommandBindings>
-					<CommandBinding Command="{StaticResource SelectItemCommand}" Executed="SelectItemCommandExecutedHandler" />
-				</ListView.CommandBindings>
-				<ListView.InputBindings>
-					<KeyBinding Key="Space" Command="{StaticResource SelectItemCommand}" />
-				</ListView.InputBindings>
-			</ListView>
+									<ComboBox.ItemTemplate>
+										<DataTemplate>
+											<TextBlock Text="{Binding}" />
+										</DataTemplate>
+									</ComboBox.ItemTemplate>
+								</ComboBox>
+							</Grid>
+						</CheckBox.Content>
+					</CheckBox>
+				</DataTemplate>
+			</ListView.ItemTemplate>
+			<ListView.Resources>
+				<RoutedCommand x:Key="SelectItemCommand" />
+			</ListView.Resources>
+			<ListView.CommandBindings>
+				<CommandBinding Command="{StaticResource SelectItemCommand}" Executed="SelectItemCommandExecutedHandler" />
+			</ListView.CommandBindings>
+			<ListView.InputBindings>
+				<KeyBinding Key="Space" Command="{StaticResource SelectItemCommand}" />
+			</ListView.InputBindings>
+		</ListView>
 
+		<StackPanel Grid.Row="1">
 			<Button x:Name="ButtonTrace" HorizontalAlignment="Left" Width="60" Click="TraceBottonClickHandler">
 				<Button.Style>
 					<Style>
@@ -88,5 +92,6 @@
 				<Hyperlink Click="TraceFileNameHyperlinkClickHandler"><Run Text="{Binding TraceFileName}"/></Hyperlink>
 			</TextBlock>
 		</StackPanel>
-	</DockPanel>
+
+	</Grid>
 </UserControl>
