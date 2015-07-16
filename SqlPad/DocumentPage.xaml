@@ -114,7 +114,17 @@
 					<TextBlock Text="Connecting..." HorizontalAlignment="Center" VerticalAlignment="Center" />
 				</Grid>
 				<TextBlock Text="Connection: " VerticalAlignment="Center" Margin="0,1,4,3" />
-				<ComboBox x:Name="ComboBoxConnection" SelectedItem="{Binding Path=CurrentConnection}" Margin="0,1,0,3">
+				<ComboBox SelectedItem="{Binding Path=CurrentConnection}" ItemsSource="{Binding Source={x:Static sqlPad:ConfigurationProvider.ConnectionStrings}}" Margin="0,1,0,3">
+					<ComboBox.Style>
+						<Style>
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding Source={x:Static sqlPad:ConfigurationProvider.ConnectionStrings}, Path=Count}" Value="1">
+									<Setter Property="ComboBox.IsEnabled" Value="False" />
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</ComboBox.Style>
+
 					<ComboBox.ItemTemplate>
 						<DataTemplate DataType="configuration:ConnectionStringSettings">
 							<TextBlock Text="{Binding Path=Name}" />
@@ -164,6 +174,9 @@
 		</Grid>
 
 		<DockPanel Grid.Row="1" LastChildFill="True">
+			
+			<Popup x:Name="DynamicPopup" PlacementTarget="{Binding ElementName=Editor, Path=TextArea}" />
+			
 			<TextBlock Text="PRODUCTION" TextAlignment="Center" Foreground="White" Background="DarkRed" FontWeight="Bold" FontSize="14" Height="21" DockPanel.Dock="Left">
 				<TextBlock.Style>
 					<Style>
@@ -178,6 +191,7 @@
 					<RotateTransform Angle="-90" />
 				</TextBlock.LayoutTransform>
 			</TextBlock>
+			
 			<Grid>
 				<Grid.CommandBindings>
 					<CommandBinding Command="commands:GenericCommands.ExecuteDatabaseCommand" Executed="ExecuteDatabaseCommandHandler" CanExecute="CanExecuteDatabaseCommandHandler" />

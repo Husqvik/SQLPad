@@ -14,7 +14,7 @@ namespace SqlPad.Oracle
 
 		public static bool RequiresQuotes(this string identifier)
 		{
-			return !AllCharactersSupportSimpleIdentifier(identifier, 0, false);
+			return !AllCharactersSupportSimpleIdentifier(identifier, 0, false) || identifier.CollidesWithReservedWord();
 		}
 
 		public static string ToSimpleIdentifier(this string identifier)

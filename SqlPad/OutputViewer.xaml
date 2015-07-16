@@ -258,7 +258,7 @@
 				</DataGrid>
 			</TabItem>
 			<TabItem Header="E_xecution plan" x:Name="TabExecutionPlan" />
-			<TabItem Header="_Trace" x:Name="TabTrace" Visibility="Collapsed" />
+			<TabItem Header="_Trace" x:Name="TabTrace" />
 		</TabControl>
 	</DockPanel>
 </UserControl>

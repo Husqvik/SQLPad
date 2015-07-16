@@ -1601,6 +1601,15 @@ SELECT * FROM DUAL";
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestUnquoteCommandWithReservedWordCollision()
+		{
+			const string statementText = @"SELECT ""Level"" FROM DUAL";
+			_editor.Text = statementText;
+
+			CanExecuteCommand(OracleCommands.Unquote).ShouldBe(false);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestUnquoteCommandWithAsteriskAndexistingObjectAlias()
 		{
 			const string statementText = @"SELECT * FROM ""RemoteTable""@HQ_PDB_LOOPBACK REMOTE_TABLE";
