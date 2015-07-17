@@ -14,6 +14,8 @@ namespace SqlPad
 		private readonly string _completionText;
 		private readonly int _insertOffset;
 		private readonly int _caretOffset;
+		private int _selectionStartOffset;
+		private int _selectionLength;
 
 		public ICodeSnippet Snippet { get; set; }
 
@@ -26,6 +28,20 @@ namespace SqlPad
 			_insertOffset = codeCompletion.InsertOffset;
 			_caretOffset = codeCompletion.CaretOffset;
 			Description = codeCompletion.Category;
+		}
+
+		public CompletionData(ICodeSnippet codeSnippet)
+		{
+			var descriptionText = String.IsNullOrEmpty(codeSnippet.Description) ? null : String.Format("{0}{1}", Environment.NewLine, codeSnippet.Description);
+
+			Snippet = codeSnippet;
+			Text = codeSnippet.Name;
+			Content = Text;
+			var description = new TextBlock();
+			description.Inlines.Add(new Bold(new Run("Code Snippet")));
+			description.Inlines.Add(new Run(descriptionText));
+			Description = description;
+			_completionText = FormatSnippetText(codeSnippet, this);
 		}
 
 		public void Highlight(string text)
@@ -59,23 +75,32 @@ namespace SqlPad
 			Content = textBlock;
 		}
 
-		public CompletionData(ICodeSnippet codeSnippet)
-		{
-			var descriptionText = String.IsNullOrEmpty(codeSnippet.Description) ? null : String.Format("{0}{1}", Environment.NewLine, codeSnippet.Description);
-
-			Snippet = codeSnippet;
-			Text = codeSnippet.Name;
-			Content = Text;
-			var description = new TextBlock();
-			description.Inlines.Add(new Bold(new Run("Code Snippet")));
-			description.Inlines.Add(new Run(descriptionText));
-			Description = description;
-			_completionText = FormatSnippetText(codeSnippet);
-		}
-
 		internal static string FormatSnippetText(ICodeSnippet codeSnippet)
 		{
-			return String.Format(codeSnippet.BaseText, codeSnippet.Parameters.OrderBy(p => p.Index).Select(p => p.DefaultValue).Cast<object>().ToArray());
+			return FormatSnippetText(codeSnippet, null);
+		}
+
+		private static string FormatSnippetText(ICodeSnippet codeSnippet, CompletionData completionData)
+		{
+			var parameters = codeSnippet.Parameters.OrderBy(p => p.Index).Select(p => (object)p.DefaultValue).ToArray();
+			if (parameters.Length == 0)
+			{
+				return codeSnippet.BaseText;
+			}
+			
+			var firstParameter = (string)parameters[0];
+			const string substitute = "{0}";
+			parameters[0] = substitute;
+
+			var preformattedText = String.Format(codeSnippet.BaseText, parameters);
+
+			if (completionData != null)
+			{
+				completionData._selectionStartOffset = preformattedText.IndexOf(substitute, StringComparison.InvariantCultureIgnoreCase);
+				completionData._selectionLength = firstParameter.Length;
+			}
+
+			return String.Format(preformattedText, firstParameter);
 		}
 
 		public StatementGrammarNode Node { get; private set; }
@@ -96,6 +121,11 @@ namespace SqlPad
 			if (Snippet != null)
 			{
 				textArea.Document.Replace(completionSegment.Offset, completionSegment.Length, _completionText);
+				var selectionStartOffset = completionSegment.Offset + _selectionStartOffset;
+				var selectionEndOffset = selectionStartOffset + _selectionLength;
+				textArea.Selection = Selection.Create(textArea, selectionStartOffset, selectionEndOffset);
+				textArea.Caret.Offset = selectionEndOffset;
+				
 				return;
 			}
 
