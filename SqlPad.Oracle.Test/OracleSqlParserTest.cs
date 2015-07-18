@@ -381,10 +381,7 @@ namespace SqlPad.Oracle.Test
 			const string query1 = @"--SELECT 1 FROM DUAL WHERE NULL IS NULL AND 1 IS NOT NULL";
 			var result = Parser.Parse(query1);
 
-			result.Count.ShouldBe(1);
-			var statement = result.Single();
-			statement.ParseStatus.ShouldBe(ParseStatus.Success);
-			statement.RootNode.ShouldBe(null);
+			result.Count.ShouldBe(0);
 		}
 
 		[Test(Description = @"Tests parsing of valid statement after invalid statement. ")]
@@ -1139,6 +1136,7 @@ namespace SqlPad.Oracle.Test
 			result.Count.ShouldBe(1);
 			var statement = (OracleStatement)result.Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			statement.IsDataManipulation.ShouldBe(false);
 
 			var bindVariableTerminalCount = statement.BindVariables.SelectMany(c => c.Nodes).Count();
 			bindVariableTerminalCount.ShouldBe(5);
@@ -1149,6 +1147,34 @@ namespace SqlPad.Oracle.Test
 			bindVariables[1].Name.ShouldBe("BV1");
 			bindVariables[2].Name.ShouldBe("\"bv2\"");
 			bindVariables[3].Name.ShouldBe("BV3");
+		}
+
+		[Test(Description = @"Tests data manipulation resolution. ")]
+		public void TestIsDataManipulation()
+		{
+			const string statementText =
+@"UPDATE TEST_TABLE SET TEST_COLUMN = NULL;
+INSERT INTO TEST_TABLE VALUES (NULL);
+DELETE TEST_TABLE;
+MERGE INTO TEST_TABLE;
+CREATE TABLE TEST_TABLE (TEST_COLUMN NUMBER);
+SELECT NULL FROM DUAL";
+
+			var result = Parser.Parse(statementText);
+
+			result.Count.ShouldBe(6);
+			result[0].ParseStatus.ShouldBe(ParseStatus.Success);
+			result[0].IsDataManipulation.ShouldBe(true);
+			result[1].ParseStatus.ShouldBe(ParseStatus.Success);
+			result[1].IsDataManipulation.ShouldBe(true);
+			result[2].ParseStatus.ShouldBe(ParseStatus.Success);
+			result[2].IsDataManipulation.ShouldBe(true);
+			result[3].ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
+			result[3].IsDataManipulation.ShouldBe(true);
+			result[4].ParseStatus.ShouldBe(ParseStatus.Success);
+			result[4].IsDataManipulation.ShouldBe(false);
+			result[5].ParseStatus.ShouldBe(ParseStatus.Success);
+			result[5].IsDataManipulation.ShouldBe(false);
 		}
 
 		[Test(Description = @"Tests KEEP clause. ")]

@@ -26,6 +26,15 @@ namespace SqlPad.Oracle
 			get { return _bindVariables ?? (_bindVariables = BuildBindVariableCollection()); }
 		}
 
+		public override bool IsDataManipulation
+		{
+			get
+			{
+				var statement = RootNode[NonTerminals.Statement];
+				return statement != null && statement.ChildNodes.Count == 1 && statement[0].Id.In(NonTerminals.InsertStatement, NonTerminals.UpdateStatement, NonTerminals.DeleteStatement, NonTerminals.MergeStatement);
+			}
+		}
+
 		private ICollection<BindVariableConfiguration> BuildBindVariableCollection()
 		{
 			return BuildBindVariableIdentifierTerminalLookup()

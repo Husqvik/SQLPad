@@ -35,6 +35,8 @@ namespace SqlPad
 		public SourcePosition SourcePosition { get; set; }
 
 		public abstract ICollection<BindVariableConfiguration> BindVariables { get; }
+		
+		public abstract bool IsDataManipulation { get; }
 
 		public ICollection<StatementGrammarNode> InvalidGrammarNodes
 		{

@@ -68,7 +68,7 @@ namespace SqlPad
 		private readonly ObservableCollection<string> _schemas = new ObservableCollection<string>();
 		private readonly SqlDocumentColorizingTransformer _colorizingTransformer = new SqlDocumentColorizingTransformer();
 		private readonly ContextMenu _contextActionMenu = new ContextMenu { Placement = PlacementMode.Relative };
-		private Dictionary<string, BindVariableConfiguration> _currentBindVariables = new Dictionary<string, BindVariableConfiguration>();
+		private readonly Dictionary<string, BindVariableConfiguration> _currentBindVariables = new Dictionary<string, BindVariableConfiguration>();
 
 		private readonly SqlFoldingStrategy _foldingStrategy;
 		private readonly IconMargin _iconMargin;
@@ -342,6 +342,7 @@ namespace SqlPad
 			Editor.Document.Changing += DocumentChangingHandler;
 
 			Editor.TextArea.Caret.PositionChanged += CaretPositionChangedHandler;
+			Editor.TextArea.SelectionChanged += delegate { ShowHideBindVariableList(); };
 
 			EditorAdapter = new TextEditorAdapter(Editor);
 		}
@@ -741,8 +742,7 @@ namespace SqlPad
 			if (!DatabaseModel.IsInitialized || ActiveOutputViewer.IsBusy || _sqlDocumentRepository.StatementText != Editor.Text)
 				return;
 
-			var statement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
-			args.CanExecute = statement != null && statement.RootNode != null && statement.RootNode.FirstTerminalNode != null;
+			args.CanExecute = BuildStatementExecutionModel(false).Count > 0;
 		}
 
 		private void ExecuteDatabaseCommandWithActualExecutionPlanHandler(object sender, ExecutedRoutedEventArgs args)
@@ -765,38 +765,72 @@ namespace SqlPad
 				}
 				catch (InvalidOperationException e)
 				{
-					MessageBox.Show(App.MainWindow, e.Message, "Information", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK);
+					Messages.ShowInformation(e.Message);
 					return;
 				}
 			}
 
-			var executionModel = BuildStatementExecutionModel(gatherExecutionStatistics);
-			await ActiveOutputViewer.ExecuteDatabaseCommandAsync(executionModel);
+			var executionModels = BuildStatementExecutionModel(gatherExecutionStatistics);
+
+			foreach (var executionModel in executionModels)
+			{
+				await ActiveOutputViewer.ExecuteDatabaseCommandAsync(executionModel);
+			}
 		}
 
-		private StatementExecutionModel BuildStatementExecutionModel(bool gatherExecutionStatistics)
+		private IReadOnlyList<StatementExecutionModel> BuildStatementExecutionModel(bool gatherExecutionStatistics)
 		{
-			var statement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
+			var executionModels = new List<StatementExecutionModel>();
 
-			var executionModel =
-				new StatementExecutionModel
+			var selectionEnd = Editor.SelectionStart + Editor.SelectionLength;
+			var selectionStart = Editor.SelectionStart;
+			var isOnlyStatement = true;
+			foreach (var statement in _sqlDocumentRepository.Statements)
+			{
+				if (Editor.SelectionStart > statement.RootNode.SourcePosition.IndexEnd + 1)
 				{
-					Statement = statement,
-					GatherExecutionStatistics = gatherExecutionStatistics
-				};
-			
-			if (Editor.SelectionLength > 0)
-			{
-				executionModel.StatementText = Editor.SelectedText;
-				executionModel.BindVariables = BindVariables.Where(c => c.BindVariable.Nodes.Any(n => n.SourcePosition.IndexStart >= Editor.SelectionStart && n.SourcePosition.IndexEnd + 1 <= Editor.SelectionStart + Editor.SelectionLength)).ToArray();
-			}
-			else
-			{
-				executionModel.StatementText = statement.RootNode.GetText(Editor.Text);
-				executionModel.BindVariables = BindVariables;
+					continue;
+				}
+
+				if (isOnlyStatement && Editor.SelectionLength == 0)
+				{
+					selectionStart = statement.SourcePosition.IndexStart;
+					selectionEnd = statement.RootNode.SourcePosition.IndexEnd + 1;
+					isOnlyStatement = false;
+				}
+
+				if (selectionEnd < statement.SourcePosition.IndexStart)
+				{
+					break;
+				}
+
+				selectionStart = selectionStart > statement.SourcePosition.IndexStart
+					? selectionStart
+					: statement.SourcePosition.IndexStart;
+				var statementIndexEnd = selectionEnd > statement.RootNode.SourcePosition.IndexEnd + 1
+					? statement.RootNode.SourcePosition.IndexEnd + 1
+					: selectionEnd;
+				var statementText = Editor.Text.Substring(selectionStart, statementIndexEnd - selectionStart);
+
+				var bindVariableModels = BindVariables
+					.Where(c => c.BindVariable.Nodes.Any(n => n.SourcePosition.IndexStart >= selectionStart && n.SourcePosition.IndexEnd + 1 <= statementIndexEnd));
+
+				executionModels.Add(
+					new StatementExecutionModel
+					{
+						Statement = statement,
+						//GatherExecutionStatistics = gatherExecutionStatistics,
+						StatementText = statementText,
+						BindVariables = bindVariableModels.ToArray()
+					});
 			}
 
-			return executionModel;
+			if (executionModels.Count > 0)
+			{
+				executionModels.Last().GatherExecutionStatistics = gatherExecutionStatistics;
+			}
+
+			return executionModels;
 		}
 
 		public void Dispose()
@@ -1098,30 +1132,42 @@ namespace SqlPad
 		private void ShowHideBindVariableList()
 		{
 			if (_sqlDocumentRepository.Statements == null)
+			{
 				return;
+			}
 
-			var statement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
-			if (statement == null || statement.BindVariables.Count == 0)
+			var statements = new List<StatementBase>(BuildStatementExecutionModel(false).Select(m => m.Statement));
+			if (statements.All(s => s.BindVariables.Count == 0))
 			{
 				BindVariables = new BindVariableModel[0];
 				_currentBindVariables.Clear();
 				return;
 			}
 
-			if (ApplyBindVariables(statement))
+			if (ApplyBindVariables(statements))
 			{
 				return;
 			}
 
-			_currentBindVariables = statement.BindVariables.ToDictionary(v => v.Name, v => v);
-			BindVariables = BuildBindVariableModels(statement.BindVariables);
+			_currentBindVariables.Clear();
+
+			var uniqueBindVariables = new HashSet<string>();
+			foreach (var bindVariable in statements.SelectMany(s => s.BindVariables.Where(v => uniqueBindVariables.Add(v.Name))))
+			{
+				_currentBindVariables.Add(bindVariable.Name, bindVariable);
+			}
+			
+			BindVariables = BuildBindVariableModels(_currentBindVariables.Values);
 		}
 
-		private bool ApplyBindVariables(StatementBase statement)
+		private bool ApplyBindVariables(IEnumerable<StatementBase> statements)
 		{
 			var matchedCount = 0;
-			foreach (var statementVariable in statement.BindVariables)
+			var bindVariableCount = 0;
+			foreach (var statementVariable in statements.SelectMany(s => s.BindVariables))
 			{
+				bindVariableCount++;
+				
 				BindVariableConfiguration currentVariable;
 				if (_currentBindVariables.TryGetValue(statementVariable.Name, out currentVariable))
 				{
@@ -1131,7 +1177,7 @@ namespace SqlPad
 				}
 			}
 
-			return matchedCount == _currentBindVariables.Count && matchedCount == statement.BindVariables.Count;
+			return matchedCount == _currentBindVariables.Count && matchedCount == bindVariableCount;
 		}
 
 		private IReadOnlyList<BindVariableModel> BuildBindVariableModels(IEnumerable<BindVariableConfiguration> bindVariables)
@@ -1811,7 +1857,15 @@ namespace SqlPad
 
 		private async void ExecuteExplainPlanCommandHandler(object sender, ExecutedRoutedEventArgs args)
 		{
-			await ActiveOutputViewer.ExecuteExplainPlanAsync(BuildStatementExecutionModel(false));
+			var executionModels = BuildStatementExecutionModel(false);
+			if (executionModels.Count > 1)
+			{
+				Messages.ShowInformation("Multiple statements are not supported. ");
+			}
+			else
+			{
+				await ActiveOutputViewer.ExecuteExplainPlanAsync(executionModels[0]);
+			}
 		}
 
 		private void AddNewPage(object sender, ExecutedRoutedEventArgs e)
