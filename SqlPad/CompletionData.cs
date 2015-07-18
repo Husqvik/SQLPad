@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
@@ -16,13 +18,13 @@ namespace SqlPad
 		private readonly int _caretOffset;
 		private int _selectionStartOffset;
 		private int _selectionLength;
+		private readonly List<Run> _inlines = new List<Run>();
 
 		public ICodeSnippet Snippet { get; set; }
 
 		public CompletionData(ICodeCompletionItem codeCompletion)
 		{
 			Text = codeCompletion.Name;
-			Content = Text;
 			_completionText = codeCompletion.Text;
 			Node = codeCompletion.StatementNode;
 			_insertOffset = codeCompletion.InsertOffset;
@@ -32,47 +34,81 @@ namespace SqlPad
 
 		public CompletionData(ICodeSnippet codeSnippet)
 		{
-			var descriptionText = String.IsNullOrEmpty(codeSnippet.Description) ? null : String.Format("{0}{1}", Environment.NewLine, codeSnippet.Description);
-
 			Snippet = codeSnippet;
 			Text = codeSnippet.Name;
-			Content = Text;
+			Application.Current.Dispatcher.Invoke(BuildDecription);
+			_completionText = FormatSnippetText(codeSnippet, this);
+		}
+
+		private void BuildDecription()
+		{
+			var descriptionText = String.IsNullOrEmpty(Snippet.Description) ? null : String.Format("{0}{1}", Environment.NewLine, Snippet.Description);
 			var description = new TextBlock();
 			description.Inlines.Add(new Bold(new Run("Code Snippet")));
 			description.Inlines.Add(new Run(descriptionText));
 			Description = description;
-			_completionText = FormatSnippetText(codeSnippet, this);
 		}
 
 		public void Highlight(string text)
 		{
+			var startIndex = 0;
+			var textBlock = (TextBlock)Content;
+			if (textBlock == null)
+			{
+				Content = textBlock = new TextBlock();
+			}
+
+			var inlineCount = _inlines.Count;
+			var inlineIndex = 0;
 			if (String.IsNullOrEmpty(text))
 			{
-				Content = Text;
-				return;
+				SetInline(textBlock, Text, ref inlineIndex, ref inlineCount, false);
 			}
-			
-			var startIndex = 0;
-			var textBlock = new TextBlock();
-
-			int index;
-			while ((index = Text.IndexOf(text, startIndex, StringComparison.OrdinalIgnoreCase)) != -1)
+			else
 			{
-				if (index > startIndex)
+				int index;
+				while ((index = Text.IndexOf(text, startIndex, StringComparison.OrdinalIgnoreCase)) != -1)
 				{
-					textBlock.Inlines.Add(Text.Substring(startIndex, index - startIndex));
+					if (index > startIndex)
+					{
+						var normalText = Text.Substring(startIndex, index - startIndex);
+						SetInline(textBlock, normalText, ref inlineIndex, ref inlineCount, false);
+					}
+
+					SetInline(textBlock, Text.Substring(index, text.Length), ref inlineIndex, ref inlineCount, true);
+					startIndex = index + text.Length;
 				}
 
-				textBlock.Inlines.Add(new Run { Foreground = Brushes.Red, Text = Text.Substring(index, text.Length) });
-				startIndex = index + text.Length;
+				if (Text.Length > startIndex)
+				{
+					SetInline(textBlock, Text.Substring(startIndex), ref inlineIndex, ref inlineCount, false);
+				}
 			}
-
-			if (Text.Length > startIndex)
+			
+			for (var i = inlineIndex; i < inlineCount; i++)
 			{
-				textBlock.Inlines.Add(Text.Substring(startIndex));
+				_inlines[i].Text = String.Empty;
+			}
+		}
+
+		private void SetInline(TextBlock textBlock, string text, ref int inlineIndex, ref int inlineCount, bool isHighlight)
+		{
+			Run run;
+			if (inlineIndex + 1 > inlineCount)
+			{
+				run = new Run();
+				_inlines.Add(run);
+				textBlock.Inlines.Add(run);
+				inlineCount++;
+			}
+			else
+			{
+				run = _inlines[inlineIndex];
 			}
 
-			Content = textBlock;
+			run.Text = text;
+			run.Foreground = isHighlight ? Brushes.Red : Brushes.Black;
+			inlineIndex++;
 		}
 
 		internal static string FormatSnippetText(ICodeSnippet codeSnippet)

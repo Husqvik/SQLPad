@@ -1170,15 +1170,6 @@ namespace SqlPad
 				Editor.Document.EndUpdate();
 			}
 
-			var snippets = _codeSnippetProvider.GetSnippets(_sqlDocumentRepository, Editor.Text, Editor.CaretOffset).Select(i => new CompletionData(i)).ToArray();
-			if (_completionWindow == null && snippets.Length > 0)
-			{
-				var startOffset = snippets[0].Snippet.SourceToReplace.IndexStart;
-				CreateCompletionWindow(snippets, startOffset);
-
-				return;
-			}
-
 			if (e.Text != "." && e.Text != " " && e.Text != "\n" && e.Text != "\r")
 			{
 				if (_completionWindow != null && _completionWindow.CompletionList.ListBox.Items.Count == 0)
@@ -1278,19 +1269,33 @@ namespace SqlPad
 
 		private async void CreateCodeCompletionWindow(bool forcedInvokation, int caretOffset)
 		{
-			var items = await Task.Factory.StartNew(() => _codeCompletionProvider.ResolveItems(_sqlDocumentRepository, DatabaseModel, caretOffset, forcedInvokation)
-				.Select(i => new CompletionData(i))
-				.ToArray());
+			IReadOnlyCollection<CompletionData> items;
+			try
+			{
+				items = await Task.Factory.StartNew(
+					() =>
+						_codeSnippetProvider.GetSnippets(_sqlDocumentRepository, _sqlDocumentRepository.StatementText, caretOffset)
+							.Select(s => new CompletionData(s))
+							.Concat(_codeCompletionProvider.ResolveItems(_sqlDocumentRepository, DatabaseModel, caretOffset, forcedInvokation)
+								.Select(i => new CompletionData(i)))
+							.ToArray());
+			}
+			catch (Exception e)
+			{
+				Trace.WriteLine(String.Format("Code completion window item generation failed: {0}", e));
+				App.CreateErrorLog(e);
+				return;
+			}
 
-			if (_sqlDocumentRepository.StatementText != Editor.Text)
+			if (!String.Equals(_sqlDocumentRepository.StatementText, Editor.Text))
 			{
 				return;
 			}
 
-			CreateCompletionWindow(items, null);
+			CreateCompletionWindow(items);
 		}
 
-		private void CreateCompletionWindow(ICollection<CompletionData> items, int? startOffset)
+		private void CreateCompletionWindow(IReadOnlyCollection<CompletionData> items)
 		{
 			if (items.Count == 0)
 			{
@@ -1309,18 +1314,8 @@ namespace SqlPad
 			listItems.AddRange(items);
 			
 			_completionWindow = completionWindow;
-			_completionWindow.Closed += delegate { _completionWindow = null; };
-			_completionWindow.SizeChanged += delegate { if (_completionWindow.MinWidth < _completionWindow.Width) _completionWindow.MinWidth = _completionWindow.Width; };
-
-			var firstItem = (CompletionData)listItems[0];
-			if (firstItem.Node != null)
-			{
-				_completionWindow.StartOffset = firstItem.Node.SourcePosition.IndexStart;
-			}
-			else if (startOffset != null)
-			{
-				_completionWindow.StartOffset = startOffset.Value;
-			}
+			_completionWindow.Closed += CompletionWindowClosedHadler;
+			_completionWindow.SizeChanged += CompletionWindowSizeChangedHandler;
 
 			UpdateCompletionItemHighlight();
 
@@ -1332,6 +1327,17 @@ namespace SqlPad
 			DisableCodeCompletion();
 
 			_completionWindow.Show();
+		}
+
+		private void CompletionWindowClosedHadler(object sender, EventArgs e)
+		{
+			_completionWindow.SizeChanged -= CompletionWindowSizeChangedHandler;
+			_completionWindow = null;
+		}
+
+		private void CompletionWindowSizeChangedHandler(object sender, SizeChangedEventArgs e)
+		{
+			if (_completionWindow.MinWidth < _completionWindow.Width) _completionWindow.MinWidth = _completionWindow.Width;
 		}
 
 		public void ReParse()
@@ -1361,7 +1367,15 @@ namespace SqlPad
 			{
 				return;
 			}
-			
+
+			var firstItem = (CompletionData)_completionWindow.CompletionList.CompletionData[0];
+			if (firstItem.Snippet != null || firstItem.Node != null)
+			{
+				_completionWindow.StartOffset = firstItem.Snippet == null
+					? firstItem.Node.SourcePosition.IndexStart
+					: firstItem.Snippet.SourceToReplace.IndexStart;
+			}
+
 			var length = _completionWindow.EndOffset - _completionWindow.StartOffset;
 			if (_completionWindow.StartOffset + length > Editor.Document.TextLength)
 			{
