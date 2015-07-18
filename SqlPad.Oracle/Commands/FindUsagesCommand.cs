@@ -122,8 +122,9 @@ namespace SqlPad.Oracle.Commands
 
 		public static BindVariableConfiguration GetBindVariable(OracleStatementSemanticModel semanticModel, string bindVariableIdentifier)
 		{
+			var normalizedIdentifier = bindVariableIdentifier.ToQuotedIdentifier();
 			return semanticModel.Statement.BindVariables
-				.SingleOrDefault(v => v.Nodes.Any(n => n.Token.Value.ToQuotedIdentifier() == bindVariableIdentifier.ToQuotedIdentifier()));
+				.SingleOrDefault(v => v.Nodes.Any(n => String.Equals(n.Token.Value.ToQuotedIdentifier(), normalizedIdentifier)));
 		}
 
 		private IEnumerable<StatementGrammarNode> GetLiteralUsage()

@@ -54,6 +54,29 @@ namespace SqlPad.Oracle
 			FindUsagesCommand.FindUsages.ExecutionHandler(executionContext);
 		}
 
+		public void DisplayBindVariableUsages(CommandExecutionContext executionContext)
+		{
+			var terminal = executionContext.DocumentRepository.Statements.GetTerminalAtPosition(executionContext.CaretOffset);
+			if (terminal == null || !String.Equals(terminal.Id, Terminals.BindVariableIdentifier))
+			{
+				return;
+			}
+			
+			var nodes = executionContext.DocumentRepository.ValidationModels.Values
+				.Select(v => FindUsagesCommand.GetBindVariable((OracleStatementSemanticModel)v.SemanticModel, terminal.Token.Value))
+				.Where(v => v != null)
+				.SelectMany(v => v.Nodes);
+
+			executionContext.SegmentsToReplace.AddRange(
+				nodes.Select(n =>
+					new TextSegment
+					{
+						IndextStart = n.SourcePosition.IndexStart,
+						Length = n.SourcePosition.Length,
+						DisplayOptions = DisplayOptions.Usage
+					}));
+		}
+
 		private static int? NavigateToObjectDefinition(OracleQueryBlock queryBlock, StatementGrammarNode terminal)
 		{
 			var column = queryBlock.AllColumnReferences.SingleOrDefault(c => c.ObjectNode == terminal);

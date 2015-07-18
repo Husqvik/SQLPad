@@ -1883,7 +1883,7 @@ namespace SqlPad
 			var bindVariable = (BindVariableModel)((FrameworkElement)sender).Tag;
 			var executionContext = CommandExecutionContext.Create(Editor, _sqlDocumentRepository);
 			executionContext.CaretOffset = bindVariable.BindVariable.Nodes[0].SourcePosition.IndexStart;
-			_navigationService.FindUsages(executionContext);
+			_navigationService.DisplayBindVariableUsages(executionContext);
 			AddHighlightSegments(executionContext.SegmentsToReplace);
 		}
 

@@ -17,7 +17,7 @@ namespace SqlPad.Oracle.Commands
 		{
 			CheckParametersNotNull(semanticModel, currentTerminal);
 
-			if (currentTerminal.Id != Terminals.BindVariableIdentifier)
+			if (!String.Equals(currentTerminal.Id, Terminals.BindVariableIdentifier))
 				return EmptyHandlerCollection;
 
 			var bindVariable = FindUsagesCommand.GetBindVariable(semanticModel, currentTerminal.Token.Value);

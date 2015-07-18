@@ -61,6 +61,8 @@ namespace SqlPad
 		int? NavigateToDefinition(CommandExecutionContext executionContext);
 
 		void FindUsages(CommandExecutionContext executionContext);
+
+		void DisplayBindVariableUsages(CommandExecutionContext executionContext);
 	}
 
 	public interface IMultiNodeEditorDataProvider
