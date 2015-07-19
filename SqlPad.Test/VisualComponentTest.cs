@@ -355,8 +355,8 @@ WHERE
 		private string GetExportContent(DataGrid resultGrid, IDataExporter dataExporter)
 		{
 			var tempFileName = Path.GetTempFileName();
-			var documentPage = new DocumentPage { CurrentConnection = ConfigurationProvider.ConnectionStrings[0] };
-			dataExporter.ExportToFile(tempFileName, resultGrid, documentPage.InfrastructureFactory.DataExportConverter);
+			var connectionConfiguration = ConfigurationProvider.GetConnectionCofiguration(ConfigurationProvider.ConnectionStrings[0].Name);
+			dataExporter.ExportToFile(tempFileName, resultGrid, connectionConfiguration.InfrastructureFactory.DataExportConverter);
 
 			var result = File.ReadAllText(tempFileName);
 			File.Delete(tempFileName);
@@ -374,6 +374,8 @@ WHERE
 				};
 
 			var documentPage = new DocumentPage { CurrentConnection = ConfigurationProvider.ConnectionStrings[0] };
+			documentPage.DatabaseModel.Dispose();
+			
 			var outputViewer = new OutputViewer(documentPage);
 
 			var dataRows =

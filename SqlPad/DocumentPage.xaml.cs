@@ -794,6 +794,11 @@ namespace SqlPad
 
 				if (isOnlyStatement && Editor.SelectionLength == 0)
 				{
+					if (Editor.SelectionStart < statement.SourcePosition.IndexStart)
+					{
+						break;
+					}
+
 					selectionStart = statement.SourcePosition.IndexStart;
 					selectionEnd = statement.RootNode.SourcePosition.IndexEnd + 1;
 					isOnlyStatement = false;
@@ -811,6 +816,11 @@ namespace SqlPad
 					? statement.RootNode.SourcePosition.IndexEnd + 1
 					: selectionEnd;
 				var statementText = Editor.Text.Substring(selectionStart, statementIndexEnd - selectionStart);
+
+				if (statementText.Trim().Length == 0)
+				{
+					continue;
+				}
 
 				var bindVariableModels = BindVariables
 					.Where(c => c.BindVariable.Nodes.Any(n => n.SourcePosition.IndexStart >= selectionStart && n.SourcePosition.IndexEnd + 1 <= statementIndexEnd));
@@ -929,7 +939,9 @@ namespace SqlPad
 		private void NavigateToUsage(IEnumerable<TextSegment> nextSegments)
 		{
 			if (!_colorizingTransformer.HighlightSegments.Any())
+			{
 				return;
+			}
 
 			var nextSegment = nextSegments.FirstOrDefault();
 			if (!nextSegment.Equals(TextSegment.Empty))

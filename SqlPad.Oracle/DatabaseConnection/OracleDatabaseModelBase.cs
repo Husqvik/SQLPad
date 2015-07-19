@@ -96,8 +96,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 		public abstract Task Initialize();
 
 		public abstract bool IsFresh { get; }
-		
-		public abstract void RefreshIfNeeded();
+
+		public virtual void RefreshIfNeeded() { }
 
 		public abstract Task Refresh(bool force = false);
 

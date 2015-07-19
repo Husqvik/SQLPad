@@ -1008,23 +1008,26 @@ TABLESPACE ""TBS_HQ_PDB""";
 			get { return ContextDataInternal; }
 		}
 
-		public override void RefreshIfNeeded()
-		{
-			Refresh();
-		}
-
 		public override Task Refresh(bool force = false)
 		{
 			RefreshStarted(this, EventArgs.Empty);
 			RefreshCompleted(this, EventArgs.Empty);
-			var taskCompletionSource = new TaskCompletionSource<object>();
-			taskCompletionSource.SetResult(null);
-			return taskCompletionSource.Task;
+			return Task.FromResult<object>(null);
 		}
 
 		public override Task Initialize()
 		{
+			Initialized(this, EventArgs.Empty);
 			return Task.FromResult<object>(null);
+		}
+
+		public override void Dispose()
+		{
+			Initialized = null;
+			Disconnected = null;
+			InitializationFailed = null;
+			RefreshStarted = null;
+			RefreshCompleted = null;
 		}
 
 		public override bool IsFresh { get { return true; } }
