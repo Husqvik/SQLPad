@@ -82,8 +82,8 @@ namespace SqlPad.Oracle.DataDictionary
 		#region Overrides of ValueType
 		public override string ToString()
 		{
-			var ownerPrefix = !HasOwner ? null : Owner.ToSimpleIdentifier() + ".";
-			return ownerPrefix + Name.ToSimpleIdentifier();
+			var ownerPrefix = !HasOwner ? null : String.Format("{0}.", Owner.ToSimpleIdentifier());
+			return String.Format("{0}{1}", ownerPrefix, Name.ToSimpleIdentifier());
 		}
 		#endregion
 

@@ -73,6 +73,13 @@ namespace SqlPad
 		public string DatabaseDataType { get; set; }
 
 		public Type DataType { get; set; }
+		
+		public StatementExecutionModel FetchReferenceDataExecutionModel { get; set; }
+
+		public override string ToString()
+		{
+			return Name;
+		}
 	}
 
 	public class DatabaseModelConnectionErrorArgs : EventArgs

@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SqlPad
 {
@@ -9,6 +11,8 @@ namespace SqlPad
 		IStatementSemanticModel BuildSemanticModel(string statementText, StatementBase statementBase, IDatabaseModel databaseModel);
 
 		IValidationModel BuildValidationModel(IStatementSemanticModel semanticModel);
+
+		Task ApplyReferenceConstraintsAsync(StatementExecutionResult executionResult, IDatabaseModel databaseModel, CancellationToken cancellationToken);
 	}
 
 	public interface IStatementSemanticModel

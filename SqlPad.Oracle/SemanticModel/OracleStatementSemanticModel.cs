@@ -2744,6 +2744,86 @@ namespace SqlPad.Oracle.SemanticModel
 			return columnReference;
 		}
 
+		public void ApplyReferenceConstraints(IReadOnlyList<ColumnHeader> columnHeaders)
+		{
+			if (MainQueryBlock == null)
+			{
+				return;
+			}
+
+			foreach (var columnHeader in columnHeaders)
+			{
+				var columns = MainQueryBlock.NamedColumns[String.Format("\"{0}\"", columnHeader.Name)]
+					.Where(c => c.ColumnDescription.DataType.IsPrimitive);
+				
+				foreach (var column in columns)
+				{
+					string physicalColumnName;
+					var sourceObject = GetSourceObject(column, out physicalColumnName);
+					if (sourceObject == null)
+					{
+						continue;
+					}
+
+					var referenceConstraint = sourceObject.ForeignKeys.FirstOrDefault(r => r.Columns.Count == 1 && String.Equals(r.Columns[0], physicalColumnName));
+					if (referenceConstraint == null)
+					{
+						continue;
+					}
+
+					columnHeader.FetchReferenceDataExecutionModel =
+						new StatementExecutionModel
+						{
+							StatementText = String.Format("SELECT * FROM {0} WHERE {1} = :KEY", sourceObject.FullyQualifiedName, physicalColumnName),
+							BindVariables =
+								new[]
+								{
+									new BindVariableModel(
+										new BindVariableConfiguration
+										{
+											Name = "KEY",
+											DataType = column.ColumnDescription.DataType.FullyQualifiedName.Name.Trim('"')
+										})
+								}
+						};
+				}
+			}
+		}
+
+		private static OracleDataObject GetSourceObject(OracleSelectListColumn column, out string physicalColumnName)
+		{
+			physicalColumnName = null;
+			
+			do
+			{
+				if (!column.IsDirectReference || column.ColumnReferences.Count != 1)
+				{
+					return null;
+				}
+
+				var columnReference = column.ColumnReferences[0];
+				var objectReference = columnReference.ValidObjectReference;
+				if (objectReference == null)
+				{
+					return null;
+				}
+
+				var dataObject = objectReference.SchemaObject.GetTargetSchemaObject() as OracleDataObject;
+				if (dataObject != null)
+				{
+					physicalColumnName = columnReference.NormalizedName;
+					return dataObject;
+				}
+
+				if (objectReference.QueryBlocks.Count != 1)
+				{
+					return null;
+				}
+
+				column = objectReference.QueryBlocks.First().NamedColumns[columnReference.NormalizedName].First();
+			} while (true);
+		}
+
 		private static void AddPrefixNodes(OracleReference reference, StatementGrammarNode prefixNonTerminal)
 		{
 			if (prefixNonTerminal == null)

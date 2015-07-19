@@ -13,6 +13,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Microsoft.Win32;
@@ -36,6 +37,7 @@ namespace SqlPad
 		private readonly DatabaseProviderConfiguration _providerConfiguration;
 		private readonly DocumentPage _documentPage;
 		private readonly IConnectionAdapter _connectionAdapter;
+		private readonly IStatementValidator _validator;
 
 		private bool _isRunning;
 		private bool _isSelectingCells;
@@ -100,6 +102,8 @@ namespace SqlPad
 
 			_connectionAdapter = _documentPage.DatabaseModel.CreateConnectionAdapter();
 
+			_validator = _documentPage.InfrastructureFactory.CreateStatementValidator();
+
 			ExecutionPlanViewer = _documentPage.InfrastructureFactory.CreateExecutionPlanViewer(_documentPage.DatabaseModel);
 			TabExecutionPlan.Content = ExecutionPlanViewer.Control;
 
@@ -135,7 +139,7 @@ namespace SqlPad
 
 			foreach (var columnHeader in _executionResult.ColumnHeaders)
 			{
-				var columnTemplate = CreateDataGridTextColumnTemplate(columnHeader);
+				var columnTemplate = CreateResultGridTextColumnTemplate(columnHeader);
 				ResultGrid.Columns.Add(columnTemplate);
 			}
 
@@ -147,15 +151,41 @@ namespace SqlPad
 			AppendRows(executionResult.InitialResultSet);
 		}
 
-		internal static DataGridTextColumn CreateDataGridTextColumnTemplate(ColumnHeader columnHeader)
+		private async void CellHyperlinkClickHandler(object sender, RoutedEventArgs e)
 		{
-			var columnTemplate =
-				new DataGridTextColumn
-				{
-					Header = columnHeader.Name.Replace("_", "__"),
-					Binding = new Binding(String.Format("[{0}]", columnHeader.ColumnIndex)) { Converter = CellValueConverter.Instance },
-					EditingElementStyle = (Style)Application.Current.Resources["CellTextBoxStyleReadOnly"]
-				};
+			var cell = (DataGridCell)sender;
+			var currentRow = (object[])((Hyperlink)e.OriginalSource).DataContext;
+			var referenceConstraintExecutionModel = ((ColumnHeader)cell.Column.Header).FetchReferenceDataExecutionModel;
+			var columnIndex = ResultGrid.Columns.IndexOf(cell.Column);
+			referenceConstraintExecutionModel.BindVariables[0].Value = currentRow[columnIndex];
+
+			await _connectionAdapter.ExecuteStatementAsync(referenceConstraintExecutionModel, CancellationToken.None);
+		}
+
+		private DataGridBoundColumn CreateResultGridTextColumnTemplate(ColumnHeader columnHeader)
+		{
+			var hyperlinkColumnTemplate = columnHeader.FetchReferenceDataExecutionModel == null
+				? null
+				: new DataGridHyperlinkColumn();
+
+			var columnTemplate = CreateDataGridTextColumnTemplate(columnHeader, hyperlinkColumnTemplate);
+			if (hyperlinkColumnTemplate != null)
+			{
+				columnTemplate.CellStyle = columnTemplate.CellStyle == null
+					? (Style)Resources["CellStyleHyperLink"]
+					: (Style)Resources["CellStyleHyperLinkRightAlign"];
+			}
+
+			return columnTemplate;
+		}
+
+		internal static DataGridBoundColumn CreateDataGridTextColumnTemplate(ColumnHeader columnHeader, DataGridBoundColumn columnTemplate = null)
+		{
+			columnTemplate = columnTemplate ?? new DataGridTextColumn();
+			columnTemplate.Header = columnHeader;
+			
+			columnTemplate.Binding = new Binding(String.Format("[{0}]", columnHeader.ColumnIndex)) { Converter = CellValueConverter.Instance };
+			columnTemplate.EditingElementStyle = (Style)Application.Current.Resources["CellTextBoxStyleReadOnly"];
 
 			if (columnHeader.DataType.In(typeof(Decimal), typeof(Int16), typeof(Int32), typeof(Int64), typeof(Byte)))
 			{
@@ -172,11 +202,12 @@ namespace SqlPad
 			if (currentRow == null || dataGrid.CurrentColumn == null)
 				return;
 
-			var cellValue = currentRow[dataGrid.CurrentColumn.DisplayIndex];
+			var columnIndex = dataGrid.Columns.IndexOf(dataGrid.CurrentColumn);
+			var cellValue = currentRow[columnIndex];
 			var largeValue = cellValue as ILargeValue;
 			if (largeValue != null)
 			{
-				new LargeValueEditor(dataGrid.CurrentColumn.Header.ToString(), largeValue) { Owner = Window.GetWindow(dataGrid) }.ShowDialog();
+				new LargeValueEditor(((ColumnHeader)dataGrid.CurrentColumn.Header).Name, largeValue) { Owner = Window.GetWindow(dataGrid) }.ShowDialog();
 			}
 		}
 
@@ -366,6 +397,8 @@ namespace SqlPad
 
 				return;
 			}
+
+			//await _validator.ApplyReferenceConstraintsAsync(executionResult, _documentPage.DatabaseModel, _statementExecutionCancellationTokenSource.Token);
 
 			DisplayResult(executionResult);
 		}

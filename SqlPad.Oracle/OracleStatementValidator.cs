@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.DataDictionary;
 using SqlPad.Oracle.SemanticModel;
@@ -179,6 +181,14 @@ namespace SqlPad.Oracle
 			ValidateLiterals(validationModel);
 			
 			return validationModel;
+		}
+
+		public async Task ApplyReferenceConstraintsAsync(StatementExecutionResult executionResult, IDatabaseModel databaseModel, CancellationToken cancellationToken)
+		{
+			// TODO: Optimize - check if executed text differs from statement text to skip parsing
+			var statements = await OracleSqlParser.Instance.ParseAsync(executionResult.Statement.StatementText, cancellationToken);
+			var semanticModel = (OracleStatementSemanticModel)BuildSemanticModel(executionResult.Statement.StatementText, statements[0], databaseModel);
+			semanticModel.ApplyReferenceConstraints(executionResult.ColumnHeaders);
 		}
 
 		private void ValidateLiterals(OracleValidationModel validationModel)

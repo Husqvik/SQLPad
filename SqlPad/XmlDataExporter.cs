@@ -47,7 +47,7 @@ namespace SqlPad
 		{
 			var columnHeaders = dataGrid.Columns
 					.OrderBy(c => c.DisplayIndex)
-					.Select(c => FormatColumnHeaderAsXmlElementName(c.Header.ToString()))
+					.Select(c => FormatColumnHeaderAsXmlElementName(((ColumnHeader)c.Header).Name))
 					.ToArray();
 
 			var rows = (IEnumerable)dataGrid.Items;
@@ -99,7 +99,6 @@ namespace SqlPad
 
 		private static string FormatColumnHeaderAsXmlElementName(string header)
 		{
-			header = header.Replace("__", Underscore);
 			header = XmlElementNameFormatExpression.Replace(header, Underscore);
 			if (Char.IsDigit(header[0]))
 			{

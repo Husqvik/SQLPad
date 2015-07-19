@@ -38,7 +38,7 @@ namespace SqlPad
 					.ToArray();
 
 			var columnHeaders = orderedColumns
-				.Select((c, i) => dataExportConverter.ToColumnName(c.Header.ToString().Replace("__", "_")).Replace("{", "{{").Replace("}", "}}"));
+				.Select((c, i) => dataExportConverter.ToColumnName(((ColumnHeader)c.Header).Name).Replace("{", "{{").Replace("}", "}}"));
 
 			var sqlTemplate = BuildSqlCommandTemplate(columnHeaders);
 

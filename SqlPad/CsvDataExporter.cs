@@ -48,7 +48,7 @@ namespace SqlPad
 					.ToArray();
 
 			var columnHeaders = orderedColumns
-				.Select(c => String.Format(MaskWrapByQuote, c.Header.ToString().Replace("__", "_").Replace(QuoteCharacter, DoubleQuotes)));
+				.Select(c => String.Format(MaskWrapByQuote, ((ColumnHeader)c.Header).Name.Replace(QuoteCharacter, DoubleQuotes)));
 
 			var headerLine = String.Join(Separator, columnHeaders);
 

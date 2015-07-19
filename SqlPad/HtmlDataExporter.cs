@@ -42,7 +42,7 @@ namespace SqlPad
 					.ToArray();
 
 			var columnHeaders = orderedColumns
-				.Select(c => c.Header.ToString().Replace("__", "_").Replace(QuoteCharacter, EscapedQuote));
+				.Select(c => ((ColumnHeader)c.Header).Name.Replace(QuoteCharacter, EscapedQuote));
 
 			var headerLine = BuildlTableRowTemplate(columnHeaders.Select(h => String.Format("<th>{0}</th>", h)));
 			var htmlTableRowTemplate = BuildlTableRowTemplate(Enumerable.Range(0, orderedColumns.Length).Select(i => String.Format("<td>{{{0}}}</td>", i)));

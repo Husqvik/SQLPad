@@ -88,12 +88,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 				}
 			}
 
-			var executionModel = BuildTraceEventActionStatement(_activeTraceEvents, e => e.CommandTextEnable);
+			var commandText = BuildTraceEventActionStatement(_activeTraceEvents, e => e.CommandTextEnable);
 
 			try
 			{
-				await ExecuteUserStatement(executionModel, cancellationToken);
-				Trace.WriteLine(String.Format("Enable trace event statement executed successfully: \n{0}", executionModel.StatementText));
+				await ExecuteSimpleCommandUsingUserConnection(commandText, cancellationToken);
+				Trace.WriteLine(String.Format("Enable trace event statement executed successfully: \n{0}", commandText));
 			}
 			catch
 			{
@@ -106,7 +106,18 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 		}
 
-		private static StatementExecutionModel BuildTraceEventActionStatement(IEnumerable<OracleTraceEvent> traceEvents, Func<OracleTraceEvent, string> getCommandTextFunc)
+		private async Task ExecuteSimpleCommandUsingUserConnection(string commandText, CancellationToken cancellationToken)
+		{
+			await EnsureUserConnectionOpen(cancellationToken);
+
+			using (var command = _userConnection.CreateCommand())
+			{
+				command.CommandText = commandText;
+				await command.ExecuteNonQueryAsynchronous(cancellationToken);
+			}
+		}
+
+		private static string BuildTraceEventActionStatement(IEnumerable<OracleTraceEvent> traceEvents, Func<OracleTraceEvent, string> getCommandTextFunc)
 		{
 			var builder = new StringBuilder("BEGIN\n");
 
@@ -117,12 +128,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			builder.Append("END;");
 
-			return new StatementExecutionModel { StatementText = builder.ToString(), BindVariables = new BindVariableModel[0] };
+			return builder.ToString();
 		}
 
 		public override async Task StopTraceEvents(CancellationToken cancellationToken)
 		{
-			StatementExecutionModel executionModel;
+			string commandText;
 			lock (_activeTraceEvents)
 			{
 				if (_activeTraceEvents.Count == 0)
@@ -130,12 +141,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 					return;
 				}
 
-				executionModel = BuildTraceEventActionStatement(_activeTraceEvents, e => e.CommandTextDisable);
+				commandText = BuildTraceEventActionStatement(_activeTraceEvents, e => e.CommandTextDisable);
 				_activeTraceEvents.Clear();
 			}
 
-			await ExecuteUserStatement(executionModel, cancellationToken);
-			Trace.WriteLine(String.Format("Disable trace event statement executed successfully: \n{0}", executionModel.StatementText));
+			await ExecuteSimpleCommandUsingUserConnection(commandText, cancellationToken);
+			Trace.WriteLine(String.Format("Disable trace event statement executed successfully: \n{0}", commandText));
 		}
 
 		internal void SwitchCurrentSchema()
@@ -524,16 +535,16 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 		}
 
-		private async Task<bool> EnsureUserConnectionOpen(CancellationToken cancellationToken)
+		private async Task EnsureUserConnectionOpen(CancellationToken cancellationToken)
 		{
 			var isConnectionStateChanged = await _userConnection.EnsureConnectionOpen(cancellationToken);
 			if (isConnectionStateChanged)
 			{
 				_userConnection.ModuleName = _moduleName;
 				_userConnection.ActionName = "User query";
-			}
 
-			return isConnectionStateChanged;
+				await InitializeSession(cancellationToken);
+			}
 		}
 
 		private async Task EnsureDatabaseOutput(CancellationToken cancellationToken)
@@ -565,10 +576,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			SetOracleGlobalization();
 
-			if (await EnsureUserConnectionOpen(cancellationToken))
-			{
-				await InitializeSession(cancellationToken);
-			}
+			await EnsureUserConnectionOpen(cancellationToken);
 
 			_userCommand = _userConnection.CreateCommand();
 

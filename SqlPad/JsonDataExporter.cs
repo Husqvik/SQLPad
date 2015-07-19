@@ -42,7 +42,7 @@ namespace SqlPad
 					.ToArray();
 
 			var columnHeaders = orderedColumns
-				.Select((c, i) => String.Format(MaskJsonValue, c.Header.ToString().Replace("__", "_").Replace("{", "{{").Replace("}", "}}").Replace(QuoteCharacter, EscapedQuote), i));
+				.Select((c, i) => String.Format(MaskJsonValue, ((ColumnHeader)c.Header).Name.Replace("{", "{{").Replace("}", "}}").Replace(QuoteCharacter, EscapedQuote), i));
 
 			var jsonTemplateBuilder = new StringBuilder();
 			jsonTemplateBuilder.AppendLine("  {{");
