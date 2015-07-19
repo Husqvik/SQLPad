@@ -376,7 +376,7 @@ WHERE
 					refreshFinishedResetEvent.WaitOne(TimeSpan.FromSeconds(30));
 				}
 
-				var statement = new OracleSqlParser().Parse(testQuery).Single();
+				var statement = OracleSqlParser.Instance.Parse(testQuery).Single();
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 				var validator = new OracleStatementValidator();

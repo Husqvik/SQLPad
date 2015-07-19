@@ -11,8 +11,6 @@ namespace SqlPad.Oracle
 {
 	internal class OracleCodeCompletionType
 	{
-		private static readonly OracleSqlParser Parser = new OracleSqlParser();
-
 		private static readonly HashSet<string> AvailableKeywordsToSuggest =
 			new HashSet<string>
 			{
@@ -160,7 +158,7 @@ namespace SqlPad.Oracle
 				
 				if (extraUnparsedTokens.Length > 0)
 				{
-					TerminalCandidates = Parser.GetTerminalCandidates(nearestTerminal);
+					TerminalCandidates = OracleSqlParser.Instance.GetTerminalCandidates(nearestTerminal);
 					if (TerminalCandidates.Count == 0 || extraUnparsedTokens.Length > 1 || unparsedEndTrimmedTextBetweenTokenAndCursor.Length < unparsedTextBetweenTokenAndCursor.Length)
 					{
 						InUnparsedData = true;
@@ -230,7 +228,7 @@ namespace SqlPad.Oracle
 
 			if (TerminalCandidates == null)
 			{
-				TerminalCandidates = Parser.GetTerminalCandidates(terminalCandidateSourceToken);
+				TerminalCandidates = OracleSqlParser.Instance.GetTerminalCandidates(terminalCandidateSourceToken);
 			}
 
 			InSelectList = (atAdHocTemporaryTerminal ? precedingTerminal : EffectiveTerminal).GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.QueryBlock), NonTerminals.SelectList) != null;

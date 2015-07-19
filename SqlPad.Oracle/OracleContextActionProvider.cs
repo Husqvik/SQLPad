@@ -13,11 +13,10 @@ namespace SqlPad.Oracle
 	public class OracleContextActionProvider : IContextActionProvider
 	{
 		private static readonly ContextAction[] EmptyCollection = new ContextAction[0];
-		private readonly OracleSqlParser _oracleParser = new OracleSqlParser();
 
 		internal ICollection<ContextAction> GetContextActions(OracleDatabaseModelBase databaseModel, string statementText, int cursorPosition)
 		{
-			var documentStore = new SqlDocumentRepository(_oracleParser, new OracleStatementValidator(), databaseModel, statementText);
+			var documentStore = new SqlDocumentRepository(OracleSqlParser.Instance, new OracleStatementValidator(), databaseModel, statementText);
 			var executionContext = new CommandExecutionContext(statementText, cursorPosition, cursorPosition, 0, documentStore);
 			return GetContextActions(documentStore, executionContext);
 		}

@@ -37,7 +37,7 @@ namespace SqlPad.Oracle.Test
 		[TestFixture]
 		public class OracleStatementTest
 		{
-			private static readonly OracleSqlParser Parser = new OracleSqlParser();
+			private static readonly OracleSqlParser Parser = OracleSqlParser.Instance;
 
 			[Test(Description = @"")]
 			public void TestTryGetPlSqlUnitNameFromCreateProcedure()

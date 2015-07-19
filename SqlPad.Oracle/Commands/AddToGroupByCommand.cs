@@ -12,8 +12,6 @@ namespace SqlPad.Oracle.Commands
 	{
 		public const string Title = "Add to GROUP BY clause";
 
-		private static readonly OracleSqlParser Parser = new OracleSqlParser();
-
 		private string _groupingExpressionText;
 		private IList<StatementGrammarNode> _selectedTerminals;
 		private TextSegment _addedTextSegment = TextSegment.Empty;
@@ -34,7 +32,7 @@ namespace SqlPad.Oracle.Commands
 
 			ResolveAddedTextSegment();
 
-			return _groupingExpressionText != null && !_addedTextSegment.Equals(TextSegment.Empty) && Parser.IsRuleValid(NonTerminals.ExpressionList, _groupingExpressionText);
+			return _groupingExpressionText != null && !_addedTextSegment.Equals(TextSegment.Empty) && OracleSqlParser.Instance.IsRuleValid(NonTerminals.ExpressionList, _groupingExpressionText);
 		}
 
 		protected override void Execute()

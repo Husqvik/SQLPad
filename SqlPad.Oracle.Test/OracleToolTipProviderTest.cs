@@ -558,7 +558,7 @@ SELECT * FROM CTE";
 
 			var databaseModel = new OracleTestDatabaseModel();
 			databaseModel.AllObjects.Clear();
-			var documentStore = new SqlDocumentRepository(new OracleSqlParser(), new OracleStatementValidator(), databaseModel, query);
+			var documentStore = new SqlDocumentRepository(OracleSqlParser.Instance, new OracleStatementValidator(), databaseModel, query);
 			var toolTip = _toolTipProvider.GetToolTip(documentStore, 7);
 
 			toolTip.ShouldBe(null);

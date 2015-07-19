@@ -10,7 +10,7 @@ namespace SqlPad.Oracle.Test
 
 		public static SqlDocumentRepository CreateDocumentRepository()
 		{
-			return new SqlDocumentRepository(new OracleSqlParser(), new OracleStatementValidator(), DatabaseModel);
+			return new SqlDocumentRepository(OracleSqlParser.Instance, new OracleStatementValidator(), DatabaseModel);
 		}
 	}
 

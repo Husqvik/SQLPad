@@ -24,6 +24,7 @@ namespace SqlPad.Oracle
 		private static readonly HashSet<string> TerminatorValues;
 		private static readonly SqlGrammarRuleSequenceNonTerminal[] AvailableNonTerminals;
 		private static readonly Regex IdentifierMatcher;
+		public static readonly OracleSqlParser Instance = new OracleSqlParser();
 		
 		static OracleSqlParser()
 		{
@@ -121,6 +122,8 @@ namespace SqlPad.Oracle
 			TerminatorIds = new HashSet<string>(oracleGrammar.Terminators.Select(t => t.Id));
 			TerminatorValues = new HashSet<string>(TerminatorIds.Select(id => Terminals[id].Value));
 		}
+
+		private OracleSqlParser() { }
 
 		public static bool IsValidIdentifier(string identifier, ReservedWordScope scope = ReservedWordScope.Sql)
 		{

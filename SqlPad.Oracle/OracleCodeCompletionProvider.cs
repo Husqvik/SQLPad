@@ -13,8 +13,6 @@ namespace SqlPad.Oracle
 {
 	public class OracleCodeCompletionProvider : ICodeCompletionProvider
 	{
-		private static readonly OracleSqlParser Parser = new OracleSqlParser();
-
 		private const string JoinTypeJoin = "JOIN";
 		private const string JoinTypeInnerJoin = "INNER JOIN";
 		private const string JoinTypeLeftJoin = "LEFT JOIN";
@@ -166,7 +164,7 @@ namespace SqlPad.Oracle
 
 		internal ICollection<ICodeCompletionItem> ResolveItems(IDatabaseModel databaseModel, string statementText, int cursorPosition, bool forcedInvokation = true, params string[] categories)
 		{
-			var documentStore = new SqlDocumentRepository(Parser, new OracleStatementValidator(), databaseModel, statementText);
+			var documentStore = new SqlDocumentRepository(OracleSqlParser.Instance, new OracleStatementValidator(), databaseModel, statementText);
 			var sourceItems = ResolveItems(documentStore, databaseModel, cursorPosition, forcedInvokation);
 			return sourceItems.Where(i => categories.Length == 0 || categories.Contains(i.Category)).ToArray();
 		}

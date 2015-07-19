@@ -6,12 +6,11 @@ namespace SqlPad.Oracle
 {
 	public class OracleSnippetProvider : ICodeSnippetProvider
 	{
-		private readonly OracleSqlParser _oracleParser = new OracleSqlParser();
 		private static readonly ICodeSnippet[] EmptyCollection = new ICodeSnippet[0];
 
 		internal IEnumerable<ICodeSnippet> GetSnippets(string statementText, int cursorPosition, IDatabaseModel databaseModel)
 		{
-			var documentStore = new SqlDocumentRepository(_oracleParser, new OracleStatementValidator(), databaseModel, statementText);
+			var documentStore = new SqlDocumentRepository(OracleSqlParser.Instance, new OracleStatementValidator(), databaseModel, statementText);
 			return GetSnippets(documentStore, statementText, cursorPosition);
 		}
 
@@ -47,8 +46,8 @@ namespace SqlPad.Oracle
 			{
 				return EmptyCollection;
 			}
-			
-			var candidates = _oracleParser.GetTerminalCandidates(currentNode).Select(c => c.Id);
+
+			var candidates = OracleSqlParser.Instance.GetTerminalCandidates(currentNode).Select(c => c.Id);
 
 			return Snippets.SnippetCollection.Where(s => s.Name.ToUpperInvariant().Contains(textToReplace.ToUpperInvariant()) &&
 														 (s.AllowedTerminals == null || s.AllowedTerminals.Length == 0 || s.AllowedTerminals.Select(t => t.Id).Intersect(candidates).Any()))

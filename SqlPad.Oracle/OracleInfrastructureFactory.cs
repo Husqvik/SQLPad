@@ -31,7 +31,7 @@ namespace SqlPad.Oracle
 
 		public ISqlParser CreateParser()
 		{
-			return new OracleSqlParser();
+			return OracleSqlParser.Instance;
 		}
 
 		public IStatementValidator CreateStatementValidator()

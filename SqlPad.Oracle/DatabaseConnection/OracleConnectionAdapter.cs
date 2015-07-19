@@ -495,7 +495,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					return;
 				}
 
-				var statements = await new OracleSqlParser().ParseAsync(startupScript, cancellationToken);
+				var statements = await OracleSqlParser.Instance.ParseAsync(startupScript, cancellationToken);
 				foreach (var statement in statements)
 				{
 					command.CommandText = statement.RootNode.GetText(startupScript);

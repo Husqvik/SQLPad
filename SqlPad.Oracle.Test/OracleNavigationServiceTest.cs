@@ -78,7 +78,7 @@ namespace SqlPad.Oracle.Test
 
 			var databaseModel = new OracleTestDatabaseModel();
 			databaseModel.AllObjects.Clear();
-			var documentRepository = new SqlDocumentRepository(new OracleSqlParser(), new OracleStatementValidator(), databaseModel);
+			var documentRepository = new SqlDocumentRepository(OracleSqlParser.Instance, new OracleStatementValidator(), databaseModel);
 			documentRepository.UpdateStatements(query);
 
 			const int caretOffset = 13;

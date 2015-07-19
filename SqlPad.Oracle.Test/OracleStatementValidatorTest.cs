@@ -12,7 +12,7 @@ namespace SqlPad.Oracle.Test
 	[TestFixture]
 	public class OracleStatementValidatorTest
 	{
-		private readonly OracleSqlParser _oracleSqlParser = new OracleSqlParser();
+		private static readonly OracleSqlParser Parser = OracleSqlParser.Instance;
 		private readonly OracleStatementValidator _statementValidator = new OracleStatementValidator();
 
 		private OracleValidationModel BuildValidationModel(string statementText, StatementBase statement, OracleDatabaseModelBase databaseModel = null)
@@ -24,7 +24,7 @@ namespace SqlPad.Oracle.Test
 		public void TestTableNodeValidityWithFullyQualifiedAndNormalTableNames()
 		{
 			const string query = "SELECT * FROM SYS.DUAL, HUSQVIK.COUNTRY, HUSQVIK.INVALID, INVALID.ORDERS, V$SESSION";
-			var statement = _oracleSqlParser.Parse(query).Single();
+			var statement = Parser.Parse(query).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			
 			var validationModel = BuildValidationModel(query, statement);
@@ -46,7 +46,7 @@ namespace SqlPad.Oracle.Test
 		public void TestTableNodeValidityWithQuotedNotations()
 		{
 			const string query = "WITH XXX1 AS (SELECT 1 FROM XXX1) SELECT * FROM XXX1, SYS.XXX1, \"XXX1\", \"xXX1\", \"PUBLIC\".DUAL";
-			var statement = _oracleSqlParser.Parse(query).Single();
+			var statement = Parser.Parse(query).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			
 			var validationModel = BuildValidationModel(query, statement);
@@ -67,7 +67,7 @@ namespace SqlPad.Oracle.Test
 		public void TestNodeValidityForComplexQueryWithMultipleCommonTableExpressionsAtDifferentLevelAndScalarSubqueries()
 		{
 			const string sqlText = "WITH XXX AS (SELECT 3 COL FROM DUAL CTE_OUTER_ALIAS_1) SELECT VP1 COL1, (SELECT 1 FROM XXX SC_ALIAS_1) SCALARSUBQUERY FROM (WITH YYY AS (SELECT 1 FROM SYS.DUAL CTE_INNER_ALIAS_1), ZZZ AS (SELECT 2 FROM DUAL CTE_INNER_ALIAS_2), FFF AS (SELECT 4 FROM XXX CTE_INNER_ALIAS_3) SELECT COL + 1 VP1 FROM (SELECT TABLE_ALIAS_1.COL, TABLE_ALIAS_2.DUMMY || TABLE_ALIAS_2.DUMMY NOT_DUMMY FROM XXX TABLE_ALIAS_1, DUAL TABLE_ALIAS_2) TABLE_ALIAS_3) SUBQUERY";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 			
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			
@@ -82,7 +82,7 @@ namespace SqlPad.Oracle.Test
 		public void TestTableNodeValidityWhenUsingFullyQualifiedOrNormalNameOrCommonTableExpressionAlias()
 		{
 			const string sqlText = "WITH CTE AS (SELECT 1 FROM DUAL) SELECT CTE.*, SYS.DUAL.*, DUAL.*, HUSQVIK.CTE.* FROM DUAL CROSS JOIN CTE";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			
 			var validationModel = BuildValidationModel(sqlText, statement);
@@ -105,7 +105,7 @@ namespace SqlPad.Oracle.Test
 		public void TestTableNodeValidityInQueryWithCommonTableExpression()
 		{
 			const string sqlText = "WITH CTE AS (SELECT 1 COLUMN1, VAL COLUMN2, DUMMY COLUMN3 FROM DUAL) SELECT COLUMN1, 'X' || CTE.COLUMN1, CTE.VAL, CTE.COLUMN2, SYS.DUAL.COLUMN1, DUAL.VAL, DUAL.DUMMY FROM CTE, INVALID_TABLE";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 			
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			
@@ -129,7 +129,7 @@ namespace SqlPad.Oracle.Test
 		public void TestColumnNodeValidityInQueryWithCommonTableExpression()
 		{
 			const string sqlText = "WITH CTE AS (SELECT DUMMY VAL FROM DUAL) SELECT DUAL.VAL FROM CTE, DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 			
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			
@@ -146,7 +146,7 @@ namespace SqlPad.Oracle.Test
 		public void TestSameColumnNamesInSameObjectsInDifferentSchemas()
 		{
 			const string sqlText = @"SELECT SYS.DUAL.DUMMY FROM SYS.DUAL, ""PUBLIC"".DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 			
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			
@@ -162,7 +162,7 @@ namespace SqlPad.Oracle.Test
 		public void TestAmbiguousColumnAndObjectNames()
 		{
 			const string sqlText = @"SELECT DUAL.DUMMY FROM SYS.DUAL, ""PUBLIC"".DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -178,7 +178,7 @@ namespace SqlPad.Oracle.Test
 		public void TestAmbiguousColumnReferences()
 		{
 			const string query1 = "SELECT T2.DUMMY FROM (SELECT DUMMY FROM DUAL) T2, DUAL";
-			var statement = _oracleSqlParser.Parse(query1).Single();
+			var statement = Parser.Parse(query1).Single();
 			
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			
@@ -191,7 +191,7 @@ namespace SqlPad.Oracle.Test
 			nodeValidity[1].ShouldBe(true);
 
 			const string query2 = "SELECT DUMMY FROM (SELECT DUMMY FROM DUAL) t2, Dual";
-			statement = _oracleSqlParser.Parse(query2).Single();
+			statement = Parser.Parse(query2).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -213,7 +213,7 @@ namespace SqlPad.Oracle.Test
 		public void TestColumnNodeValidityWhenExposedFromSubqueryUsingAsterisk()
 		{
 			const string sqlText = "SELECT ID, NAME, DUMMY FROM (SELECT * FROM COUNTRY)";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -232,7 +232,7 @@ namespace SqlPad.Oracle.Test
 		public void TestColumnNodeValidityWhenExposedFromSubqueryUsingAsteriskOnSpecificObject()
 		{
 			const string sqlText = "SELECT ID, NAME, DUMMY FROM (SELECT COUNTRY.* FROM COUNTRY)";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -251,7 +251,7 @@ namespace SqlPad.Oracle.Test
 		public void TestColumnNodeValidityWhenTableAsInnerTableReference()
 		{
 			const string sqlText = "SELECT ID, NAME, DUMMY FROM (COUNTRY)";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -269,7 +269,7 @@ namespace SqlPad.Oracle.Test
 		public void TestTableNodeValidityInSimpleQuery()
 		{
 			const string sqlText = "SELECT SELECTION.DUMMY FROM SELECTION";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -286,7 +286,7 @@ namespace SqlPad.Oracle.Test
 		public void TestColumnNodeValidityWhenColumnsFromNestedSubqueries()
 		{
 			const string sqlText = "SELECT PROJECT_ID, SELECTION_ID, RESPONDENTBUCKET_ID, DUMMY FROM (SELECT * FROM (SELECT * FROM SELECTION))";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -307,7 +307,7 @@ namespace SqlPad.Oracle.Test
 		public void TestTableNodeValidityInConditions()
 		{
 			const string sqlText = "SELECT NULL FROM DUAL WHERE HUSQVIK.COUNTRY.ID = SELECTION.ID AND SYS.DUAL.DUMMY = DUMMY";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -336,7 +336,7 @@ RESPONDENTBUCKET
 JOIN TARGETGROUP TG ON RB.TARGETGROUP_ID = TG.TARGETGROUP_ID
 JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			
-			var statement = (OracleStatement)_oracleSqlParser.Parse(sqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(sqlText).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var objectNodeValidity = BuildValidationModel(sqlText, statement)
@@ -365,7 +365,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		{
 			var sqlText = String.Format(@"SELECT NULL FROM SELECTION {0} JOIN RESPONDENTBUCKET RB ON SELECTION.RESPONDENTBUCKET_ID = RB.RESPONDENTBUCKET_ID", joinType);
 			
-			var statement = (OracleStatement)_oracleSqlParser.Parse(sqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(sqlText).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var objectNodeValidity = BuildValidationModel(sqlText, statement)
@@ -383,7 +383,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestAmbiguousColumnFromSubquery()
 		{
 			const string sqlText = "SELECT NAME FROM (SELECT S.NAME, RB.NAME FROM SELECTION S JOIN RESPONDENTBUCKET RB ON S.RESPONDENTBUCKET_ID = RB.RESPONDENTBUCKET_ID)";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -402,7 +402,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestBasicFunctionCall()
 		{
 			const string sqlText = "SELECT COUNT(COUNT) OVER (), COUNT, HUSQVIK.COUNT, HUSQVIK.COUNT() FROM FTEST";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -433,7 +433,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestToCharFunctionCallWithMissingOptionalParameters()
 		{
 			const string sqlText = "SELECT TO_CHAR(1) FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -453,7 +453,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestFunctionCallWithWrongParameterCount()
 		{
 			const string sqlText = "SELECT COUNT(1, 2) FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -471,7 +471,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestNestedAnalyticFuctionCall()
 		{
 			const string sqlText = "SELECT NULLIF(COUNT(DUMMY) OVER (), 1) FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -489,7 +489,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestColumnNodeValidityUsingNestedQueryAndCountAsteriskFunction()
 		{
 			const string sqlText = "SELECT DUMMY FROM (SELECT DUMMY, COUNT(*) OVER () ROW_COUNT FROM (SELECT DUMMY FROM DUAL))";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -503,7 +503,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestParameterlessFuctionWithParenthesisRequirement()
 		{
 			const string sqlText = "SELECT SYS_GUID(), SYS_GUID(123), SYS_GUID, SYSGUID() FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -531,7 +531,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestFuctionRequiringNoParenthesis()
 		{
 			const string sqlText = "SELECT SESSIONTIMEZONE() FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -553,7 +553,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestParameterFuctionWithUnlimitedMaximumParameterCount()
 		{
 			const string sqlText = "SELECT COALESCE(SELECTION.RESPONDENTBUCKET_ID, SELECTION.SELECTION_ID) FROM SELECTION";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -569,7 +569,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestMultiParameterFunctionWithAnalyticFunctionAsOneParameter()
 		{
 			const string sqlText = "SELECT NVL(LAST_VALUE(DUMMY) OVER (), 'Replacement') FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -591,7 +591,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestTableNodeValidityWhenOneCommonTableExpressionReferencesAnother()
 		{
 			const string sqlText = "WITH T1 AS (SELECT 1 A FROM DUAL), T2 AS (SELECT 1 B FROM T1) SELECT B FROM T2";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -609,7 +609,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestTableNodeValidityWhenOneCommonTableExpressionReferencesAnotherDefinedLater()
 		{
 			const string sqlText = "WITH T1 AS (SELECT 1 A FROM T2), T2 AS (SELECT 1 B FROM T1) SELECT B FROM T2";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -627,7 +627,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestNodeValidityInOrderByClause()
 		{
 			const string sqlText = "SELECT * FROM HUSQVIK.SELECTION ORDER BY HUSQVIK.SELECTION.NAME, SELECTION.NAME, DUAL.DUMMY, SELECTION_ID, UNDEFINED_COLUMN, UPPER(''), UNDEFINED_FUNCTION()";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -671,7 +671,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestAliasReferenceNodeValidityInOrderByClause()
 		{
 			const string sqlText = "SELECT DUMMY NOT_DUMMY FROM DUAL ORDER BY NOT_DUMMY";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -691,7 +691,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestColumnReferenceNodeValidityInOrderByClause()
 		{
 			const string sqlText = "SELECT DUMMY NOT_DUMMY, DUMMY FROM DUAL ORDER BY DUMMY";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -714,7 +714,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestAmbiguousAliasReferenceNodeValidityInOrderByClause()
 		{
 			const string sqlText = "SELECT NAME, SELECTION_ID NAME FROM SELECTION ORDER BY NAME";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -737,7 +737,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestInvalidAliasReferenceNodeValidityInOrderByClause()
 		{
 			const string sqlText = "SELECT NAME X FROM SELECTION UNION ALL SELECT NAME FROM SELECTION ORDER BY NAME";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -760,7 +760,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestValidAliasReferenceNodeValidityInOrderByClauseUsingConcatenatedSubqueriesWithMissingAliasInLastQuery()
 		{
 			const string sqlText = "SELECT RESPONDENTBUCKET_ID ID FROM RESPONDENTBUCKET UNION ALL SELECT TARGETGROUP_ID ID FROM TARGETGROUP UNION ALL SELECT PROJECT_ID FROM PROJECT ORDER BY ID";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -786,7 +786,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestInvalidAliasReferenceNodeValidityInOrderByClauseUsingConcatenatedSubqueriesWithMissingAliasInLastQuery()
 		{
 			const string sqlText = "SELECT RESPONDENTBUCKET_ID ID FROM RESPONDENTBUCKET UNION ALL SELECT TARGETGROUP_ID FROM TARGETGROUP UNION ALL SELECT PROJECT_ID FROM PROJECT ORDER BY ID";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -812,7 +812,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestColumnNodeValidityWhenObjectReferenceIsAliasedCommonTableExpression()
 		{
 			const string sqlText = "WITH CTE AS (SELECT DUMMY FROM DUAL) SELECT	DUMMY FROM CTE T1";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -828,7 +828,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestGreatestFuctionWithUnlimitedMaximumParameterCount()
 		{
 			const string sqlText = "SELECT GREATEST(1, 2, 3) FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -844,7 +844,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestAmbiguousColumnReferenceUsingAsterisk()
 		{
 			const string sqlText = "SELECT * FROM (SELECT 1 NAME, 2 NAME FROM DUAL)";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -860,7 +860,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestFunctionIdentifierNodeValidWithoutOwnerNodeInSameSchema()
 		{
 			const string sqlText = "SELECT SQLPAD_FUNCTION() WITH_PARENTHESES, SQLPAD_FUNCTION WITHOUT_PARENTHESES FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -878,7 +878,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestNotAmbiguousRowIdReference()
 		{
 			const string sqlText = "SELECT SELECTION.ROWID FROM SELECTION, PROJECT";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -894,7 +894,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestSemanticErrorWhenUserNonAggregateFunctionHasAnalyticClause()
 		{
 			const string sqlText = "SELECT HUSQVIK.COUNT() OVER () FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -913,7 +913,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestColumnNodeValidityInCorrelatedSubquery()
 		{
 			const string sqlText = "SELECT * FROM DUAL D WHERE EXISTS (SELECT NULL FROM DUAL WHERE DUMMY = D.DUMMY)";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -935,7 +935,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestColumnNodeValidityInCorrelatedSubqueryWithoutObjectQualifierAndInSelectList()
 		{
 			const string sqlText = "SELECT (SELECT ID FROM INVOICES WHERE ID = S.SELECTION_ID) FROM SELECTION S WHERE EXISTS (SELECT NULL FROM INVOICES WHERE ID = SELECTION_ID)";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -957,7 +957,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestFunctionIdentifierNodeValidDefinedBySynonym()
 		{
 			const string sqlText = "SELECT DBMS_RANDOM.STRING('X', 16) FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -987,7 +987,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 
 		private void TestMissingFunctionInExistingPackageInternal(string statementText)
 		{
-			var statement = _oracleSqlParser.Parse(statementText).Single();
+			var statement = Parser.Parse(statementText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1005,7 +1005,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestSchemaFunctionWithCompilationErrors()
 		{
 			const string sqlText = "SELECT UNCOMPILABLE_FUNCTION() FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1021,7 +1021,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestPackageFunctionWithCompilationErrors()
 		{
 			const string sqlText = "SELECT UNCOMPILABLE_PACKAGE.FUNCTION() FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1039,7 +1039,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestBuildInFunctionValidityWithoutLoadedSchemaObjects()
 		{
 			const string sqlText = "SELECT NVL2(DUMMY, 'X', 'NOT DUMMY') FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1058,7 +1058,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestProgramValidityNodesWithObjectTypes()
 		{
 			const string sqlText = "SELECT XMLTYPE('<Root/>'), SYS.XMLTYPE('<Root/>') FROM DUAL WHERE XMLTYPE('<Root/>') IS NOT NULL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1078,7 +1078,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestObjectTypeConstructorWithInvalidParameterCount()
 		{
 			const string sqlText = "SELECT SYS.ODCIARGDESC(1) FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1100,7 +1100,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestCollectionTypeConstructorHasAlwaysValidParameterCount()
 		{
 			const string sqlText = "SELECT SYS.ODCIRAWLIST(NULL, NULL) FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1116,7 +1116,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestCollectionTypeConstructorWithNoParameters()
 		{
 			const string sqlText = "SELECT SYS.ODCIARGDESCLIST() FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1132,7 +1132,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestSequenceCombinedWithOrderByClause()
 		{
 			const string sqlText = "SELECT TEST_SEQ.NEXTVAL FROM DUAL ORDER BY 1";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1156,7 +1156,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestSequenceWithinSubquery()
 		{
 			const string sqlText = "SELECT NEXTVAL FROM (SELECT TEST_SEQ.NEXTVAL FROM DUAL)";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1175,7 +1175,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestColumnValidityNodesWithSequence()
 		{
 			const string sqlText = "SELECT TEST_SEQ.NEXTVAL, HUSQVIK.TEST_SEQ.\"NEXTVAL\", SYNONYM_TO_TEST_SEQ.CURRVAL FROM DUAL WHERE TEST_SEQ.\"CURRVAL\" < TEST_SEQ.NEXTVAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1208,7 +1208,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestSequenceInvalidColumnValidity()
 		{
 			const string sqlText = "SELECT TEST_SEQ.UNDEFINED_COLUMN FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1224,7 +1224,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestFunctionNodeValidityOverUndefinedDatabaseLink()
 		{
 			const string sqlText = "SELECT SQLPAD_FUNCTION@UNDEFINED_DB_LINK FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1243,7 +1243,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestObjectReferenceNodeValidityOverUndefinedDatabaseLink()
 		{
 			const string sqlText = "SELECT * FROM SELECTION@UNDEFINED_DB_LINK";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1262,7 +1262,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestSequenceAndPseudoColumnValidityOverUndefinedDatabaseLink()
 		{
 			const string sqlText = "SELECT TEST_SEQ.NEXTVAL@UNDEFINED_DB_LINK FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1292,7 +1292,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestInvalidIdentifier()
 		{
 			const string sqlText = "SELECT \"\" FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1309,7 +1309,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestInvalidBindVariableIdentifier()
 		{
 			const string sqlText = "SELECT :999999, :9 FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1326,7 +1326,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestAmbiguousColumnReferenceUsingAsteriskReferingAnotherAsterisk()
 		{
 			const string sqlText = "SELECT * FROM (SELECT * FROM DUAL, DUAL X)";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1344,7 +1344,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestExposedGeneratedColumnWithoutAliasValidity()
 		{
 			const string sqlText = "SELECT TO_CHAR FROM (SELECT TO_CHAR('') FROM DUAL)";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1366,7 +1366,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestUpdateSubqueryColumnValidity()
 		{
 			const string sqlText = "UPDATE (SELECT * FROM SELECTION) SET NAME = 'Dummy selection' WHERE SELECTION_ID = 0";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1382,7 +1382,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestValidInsertColumnCount()
 		{
 			const string sqlText = "INSERT INTO SELECTION (RESPONDENTBUCKET_ID, NAME) SELECT RESPONDENTBUCKET_ID, NAME FROM SELECTION";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1395,7 +1395,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestInvalidInsertColumnCountWithBothListsDefined()
 		{
 			const string sqlText = "INSERT INTO SELECTION (RESPONDENTBUCKET_ID, NAME) SELECT RESPONDENTBUCKET_ID, NAME, PROJECT_ID FROM SELECTION";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1413,7 +1413,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestInvalidInsertColumnCountWithInsertListOnly()
 		{
 			const string sqlText = "INSERT INTO SELECTION (RESPONDENTBUCKET_ID, NAME) SELECT * FROM SELECTION";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1431,7 +1431,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestInvalidInsertColumnCountWithSelectListOnly()
 		{
 			const string sqlText = "INSERT INTO SELECTION SELECT RESPONDENTBUCKET_ID, NAME, PROJECT_ID FROM SELECTION";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1447,7 +1447,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestInsertColumnNodeValidityUsingValuesCaluseWithFunctionTypeAndSequence()
 		{
 			const string sqlText = "INSERT INTO SELECTION (SELECTION_ID, SELECTIONNAME, RESPONDENTBUCKET_ID) VALUES (SQLPAD_FUNCTION, XMLTYPE(), TEST_SEQ.NEXTVAL)";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1473,7 +1473,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestUnfinishedInsertValidationModelBuild()
 		{
 			const string sqlText = "INSERT INTO SELECTION";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 
@@ -1488,7 +1488,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestConcatenatedQueryBlocksWithDifferentColumnCount()
 		{
 			const string sqlText = "SELECT 1, 2 FROM DUAL UNION ALL SELECT 1 FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1503,7 +1503,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestMultipleConcatenatedQueryBlocksWithDifferentColumnCountWithTerminatorSymbol()
 		{
 			const string sqlText = "SELECT 1 FROM DUAL UNION ALL SELECT 2 FROM DUAL UNION ALL SELECT 3, 4 FROM DUAL;";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1518,7 +1518,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestAggregationFunctionWithinAnalyticFunctionWithScalarFunction()
 		{
 			const string sqlText = "SELECT ROUND(RATIO_TO_REPORT(COUNT(*)) OVER (PARTITION BY TRUNC(NULL, 'HH')) * 100, 2) PERCENT FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1533,7 +1533,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestOrderByReferencesToAliasWhenSelectListContainsColumnWithSameName()
 		{
 			const string sqlText = "SELECT VAL + 1 VAL, VAL ALIAS FROM (SELECT 1 VAL FROM DUAL) ORDER BY VAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1548,7 +1548,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestOrderByAmbiguousColumnReference()
 		{
 			const string sqlText = "SELECT VAL + 1 VAL, VAL FROM (SELECT 1 VAL FROM DUAL) ORDER BY VAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1565,7 +1565,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestModelInitializatinWhileTypingConcatenatedSubquery()
 		{
 			const string sqlText = "SELECT NULL FROM DUAL UNION SELECT";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			BuildValidationModel(sqlText, statement);
 		}
@@ -1574,7 +1574,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestLongXmlAliases()
 		{
 			const string sqlText = "SELECT XMLELEMENT(NAME \"VeryLongXmlAliasVeryLongXmlAlias\", NULL) VAL1, XMLELEMENT(NAME VeryLongXmlAliasVeryLongXmlAlias, NULL) VAL2 FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1587,7 +1587,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestEmptyXmlAlias()
 		{
 			const string sqlText = "SELECT XMLELEMENT(NAME \"\", NULL) VAL FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1601,7 +1601,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestUndefinedPackageFunctionCall()
 		{
 			const string sqlText = @"SELECT UNDEFINEDPACKAGE.FUNCTION() FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1614,7 +1614,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestFullyQualifiedTableOverDatabaseLink()
 		{
 			const string sqlText = @"SELECT * FROM HUSQVIK.SELECTION@HQ_PDB_LOOPBACK";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1631,7 +1631,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestColumnSuggestionOverDatabaseLink()
 		{
 			const string sqlText = @"SELECT NAME FROM SELECTION@HQ_PDB_LOOPBACK, DUAL@HQ_PDB_LOOPBACK";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1647,7 +1647,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestColumnSuggestionOverDatabaseLinkWhenSameColumnAvailableFromLocalReference()
 		{
 			const string sqlText = @"SELECT DUMMY FROM DUAL, DUAL@HQ_PDB_LOOPBACK";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1663,7 +1663,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestNoColumnSuggestionOverDatabaseLinkWhenOnlySingleObjectReferenced()
 		{
 			const string sqlText = @"SELECT DUMMY FROM DUAL@HQ_PDB_LOOPBACK";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1676,7 +1676,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestAsteriskColumnSuggestionOverDatabaseLink()
 		{
 			const string sqlText = @"SELECT * FROM SELECTION@HQ_PDB_LOOPBACK";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1691,7 +1691,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestObjectQualifiedColumnSuggestionOverDatabaseLink()
 		{
 			const string sqlText = @"SELECT SELECTION.NAME FROM SELECTION@HQ_PDB_LOOPBACK";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1704,7 +1704,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestDateAndTimeStampLiteralInvalidFormat()
 		{
 			const string sqlText = @"SELECT DATE'2014-12-06 17:50:42', TIMESTAMP'2014-12-06', DATE'-2014-12-06', TIMESTAMP'+2014-12-06 17:50:42 CET' FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1723,7 +1723,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestInvalidDateAndTimeStampLiteralStartingWithSpace()
 		{
 			const string sqlText = @"SELECT DATE' 2014-12-06', TIMESTAMP' 2014-12-06 17:50:42' FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1742,7 +1742,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestInvalidDateAndTimeStampLiteralUsingMultiByteStrings()
 		{
 			const string sqlText = @"SELECT DATE N'2014-12-06', TIMESTAMP n'2014-12-06 17:50:42' FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1761,7 +1761,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestLevelFunctionWithoutConnectByClause()
 		{
 			const string sqlText = @"SELECT LEVEL FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1777,7 +1777,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestLevelFunctionOutsideQueryBlock()
 		{
 			const string sqlText = @"UPDATE DUAL SET DUMMY = LEVEL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1793,7 +1793,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestColumnResolutionFromTableCollectionExpressionUsingCollectionType()
 		{
 			const string sqlText = @"SELECT PLAN_TABLE_OUTPUT, COLUMN_VALUE FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR(NULL, NULL, 'ALLSTATS LAST ADVANCED')) T1, TABLE(SYS.ODCIRAWLIST(HEXTORAW('ABCDEF'), HEXTORAW('A12345'), HEXTORAW('F98765'))) T2";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1817,7 +1817,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestPipelinedFunctionReturningCollection()
 		{
 			const string sqlText = @"SELECT COLUMN_VALUE FROM TABLE(SQLPAD.PIPELINED_FUNCTION(SYSDATE, SYSDATE))";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1834,7 +1834,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestColumnResolutionFromXmlTable()
 		{
 			const string sqlText = @"SELECT SEQ#, TITLE, DESCRIPTION FROM XMLTABLE('for $i in $RSS_DATA/rss/channel/item return $i' PASSING HTTPURITYPE('http://servis.idnes.cz/rss.asp?c=zpravodaj').GETXML() AS RSS_DATA COLUMNS SEQ# FOR ORDINALITY, TITLE VARCHAR2(4000) PATH 'title', DESCRIPTION CLOB PATH 'description') T";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1852,7 +1852,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestOrderByClauseWithinScalarSubquery()
 		{
 			const string sqlText = @"SELECT (SELECT 1 FROM (SELECT 1 FROM DUAL ORDER BY DUMMY) ORDER BY DUMMY) FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1868,7 +1868,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestOrderByClauseWithinInClause()
 		{
 			const string sqlText = @"SELECT * FROM DUAL WHERE DUMMY IN (SELECT DUMMY FROM DUAL ORDER BY DUMMY)";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1884,7 +1884,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestDatabaseLinkPropagatedColumnUsingAsterisk()
 		{
 			const string sqlText = @"SELECT DUMMY FROM (SELECT * FROM DUAL@HQ_PDB_LOOPBACK)";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1903,7 +1903,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestDatabaseLinkPropagatedColumnUsingObjectQualifiedAsterisk()
 		{
 			const string sqlText = @"SELECT DUMMY FROM (SELECT DUAL.* FROM DUAL@HQ_PDB_LOOPBACK)";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1922,7 +1922,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		public void TestDicrepancyBetweenColumnsAndCommonTableExpressionExplicitColumnList()
 		{
 			const string sqlText = @"WITH CTE(C1) AS (SELECT 1, 2 FROM DUAL) SELECT C1 FROM CTE";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1951,7 +1951,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 	SELECT 5 FROM DUAL
 )
 SELECT * FROM CTE";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1979,7 +1979,7 @@ SELECT * FROM CTE";
 		public void TestScalarSubqueryWithMultipleColumns()
 		{
 			const string sqlText = @"SELECT (SELECT 1, 2 FROM DUAL) FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -1997,7 +1997,7 @@ SELECT * FROM CTE";
 		public void TestTableCollectionExpressionWithIncompatibleFunction()
 		{
 			const string sqlText = @"SELECT * FROM TABLE(NVL(1, 1))";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -2015,7 +2015,7 @@ SELECT * FROM CTE";
 		public void TestFunctionParameterErrors()
 		{
 			const string sqlText = @"SELECT TO_CHAR(left => 2), DBMS_XPLAN.DISPLAY_CURSOR(sql_idx => NULL, dummy + 1) FROM DUAL";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -2047,7 +2047,7 @@ SELECT * FROM CTE";
 		public void TestInvalidOrderByColumnIndex()
 		{
 			const string sqlText = @"SELECT T.*, '[' || NAME || ']' FROM (SELECT NAME FROM SELECTION) T ORDER BY 3, 2, 1, 4";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -2067,7 +2067,7 @@ SELECT * FROM CTE";
 		public void TestAggregateFunctionsInDifferentQueryBlockClauses()
 		{
 			const string sqlText = @"SELECT COUNT(T1.DUMMY) FROM DUAL T1 JOIN DUAL T2 ON COUNT(T1.DUMMY) = COUNT(T2.DUMMY) WHERE COUNT(T1.DUMMY) = 1 GROUP BY COUNT(T1.DUMMY) HAVING COUNT(T1.DUMMY) = 1 ORDER BY COUNT(T1.DUMMY)";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -2105,7 +2105,7 @@ SEARCH DEPTH FIRST BY VAL SET SEQ#
 CYCLE DUMMY SET CYCLE# TO 'X' DEFAULT 0.0E+000
 SELECT * FROM CTE";
 			
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -2125,7 +2125,7 @@ SEARCH DEPTH FIRST BY DUMMY1, DUMMY2, DUMMY3 SET DUMMY3
 CYCLE DUMMY2, DUMMY3 SET DUMMY4 TO 'String length <> 1' DEFAULT ''
 SELECT DUMMY1, DUMMY2, DUMMY3, DUMMY4 FROM CTE";
 			
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -2176,7 +2176,7 @@ SELECT DUMMY1, DUMMY2, DUMMY3, DUMMY4 FROM CTE";
 		{
 			const string sqlText = @"SELECT * FROM DUAL ORDER BY 1d";
 			
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -2189,7 +2189,7 @@ SELECT DUMMY1, DUMMY2, DUMMY3, DUMMY4 FROM CTE";
 		public void TestPartitionAndSubpartitionReferences()
 		{
 			const string sqlText = @"SELECT * FROM INVOICES PARTITION (P2015), INVOICES PARTITION (P2016), INVOICES SUBPARTITION (P2015_PRIVATE), INVOICES SUBPARTITION (P2016_ENTERPRISE), INVOICES PARTITION (P2015_PRIVATE), INVOICES SUBPARTITION (P2015)";
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -2224,7 +2224,7 @@ SELECT DUMMY1, DUMMY2, DUMMY3, DUMMY4 FROM CTE";
 		{
 			const string sqlText = @"SELECT NULL FROM DUAL WHERE LNNVL(1 <> 1) AND LNNVL((1 <> 1)) AND LNNVL(1 <> 1 AND 0 <> 0) AND LNNVL(0 BETWEEN 1 AND 2) AND LNNVL(DUMMY IN ('X')) AND LNNVL(DUMMY IN ('X', 'Y')) AND LNNVL(DUMMY IN (SELECT * FROM DUAL))";
 
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -2251,7 +2251,7 @@ FROM (
 			IN (1)
 	) PT";
 
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -2265,7 +2265,7 @@ FROM (
 		{
 			const string sqlText = @"SELECT * FROM TABLE(SQLPAD.CURSOR_FUNCTION(CURSOR(SELECT * FROM SELECTION WHERE ROWNUM <= 5)))";
 
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -2279,7 +2279,7 @@ FROM (
 		{
 			const string sqlText = @"SELECT (SELECT * FROM TABLE(DUMMY)) FROM DUAL";
 
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -2297,7 +2297,7 @@ FROM (
 		{
 			const string sqlText = @"SELECT (SELECT COUNT(*) FROM TABLE(DYNAMIC_TABLE)) FROM (SELECT COLLECT(DUMMY) DYNAMIC_TABLE FROM DUAL)";
 
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -2318,7 +2318,7 @@ FROM (
 		{
 			const string sqlText = @"SELECT CAST(NULL AS SYS.ODCIRAWLIST), CAST(NULL AS ODCIRAWLIST), CAST(NULL AS HUSQVIK.ODCIRAWLIST), CAST(NULL AS NONEXISTING_SCHEMA.ODCIRAWLIST), CAST(NULL AS INVALID_OBJECT_TYPE) FROM DUAL";
 
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -2345,7 +2345,7 @@ FROM (
 		{
 			const string sqlText = @"SELECT EXTRACT(SYSDATE) FROM DUAL";
 
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -2382,7 +2382,7 @@ FROM (
 FROM
 	DUAL";
 
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -2434,7 +2434,7 @@ FROM
 			)
 		)";
 
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -2454,7 +2454,7 @@ FROM
 		{
 			const string sqlText = @"SELECT RATIO_TO_REPORT(NULL) OVER (ORDER BY NULL) FROM DUAL";
 
-			var statement = _oracleSqlParser.Parse(sqlText).Single();
+			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
