@@ -4,8 +4,8 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -153,18 +153,57 @@ namespace SqlPad
 
 		private async void CellHyperlinkClickHandler(object sender, RoutedEventArgs e)
 		{
-			var cell = (DataGridCell)sender;
-			var currentRow = (object[])((Hyperlink)e.OriginalSource).DataContext;
-			var referenceConstraintExecutionModel = ((ColumnHeader)cell.Column.Header).FetchReferenceDataExecutionModel;
-			var columnIndex = ResultGrid.Columns.IndexOf(cell.Column);
-			referenceConstraintExecutionModel.BindVariables[0].Value = currentRow[columnIndex];
+			var hyperlink = e.OriginalSource as Hyperlink;
+			if (hyperlink == null)
+			{
+				return;
+			}
 
-			await _connectionAdapter.ExecuteStatementAsync(referenceConstraintExecutionModel, CancellationToken.None);
+			var cell = (DataGridCell)sender;
+			var currentRowValues = (object[])hyperlink.DataContext;
+			var referenceDataSource = ((ColumnHeader)cell.Column.Header).ReferenceDataSource;
+			var columnIndex = ResultGrid.Columns.IndexOf(cell.Column);
+			var executionModel = referenceDataSource.CreateExecutionModel();
+			executionModel.BindVariables[0].Value = currentRowValues[columnIndex];
+
+			var result = await _connectionAdapter.ExecuteChildStatementAsync(executionModel, CancellationToken.None);
+			if (result.InitialResultSet.Count == 0)
+			{
+				cell.Content = null;
+				return;
+			}
+
+			var firstRow = result.InitialResultSet[0];
+			var columnValues = result.ColumnHeaders.Select(
+					(t, i) => new CustomTypeAttributeValue
+					{
+						ColumnHeader = t,
+						Value = firstRow[i]
+					}).ToArray();
+
+			var record =
+				new SingleRecord
+				{
+					DataTypeName = referenceDataSource.ObjectName,
+					Attributes = columnValues
+				};
+
+			var row = (DataGridRow)cell.GetType().GetField("_owner", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(cell);
+			row.Height = Double.NaN;
+			var complexTypeViewer =
+				new ComplexTypeViewer
+				{
+					ComplexType = record,
+					GridTitle = "Source object: ",
+					RowTitle = "Column name"
+				};
+			
+			cell.Content = complexTypeViewer;
 		}
 
 		private DataGridBoundColumn CreateResultGridTextColumnTemplate(ColumnHeader columnHeader)
 		{
-			var hyperlinkColumnTemplate = columnHeader.FetchReferenceDataExecutionModel == null
+			var hyperlinkColumnTemplate = columnHeader.ReferenceDataSource == null
 				? null
 				: new DataGridHyperlinkColumn();
 
@@ -456,137 +495,12 @@ namespace SqlPad
 			App.SafeActionWithUserError(() => dataExporter.ExportToClipboard(ResultGrid, _documentPage.InfrastructureFactory.DataExportConverter));
 		}
 
-		private const string ExportClassTemplate =
-@"using System;
-using System.Data;
-
-public class Query
-{{
-	private IDbConnection _connection;
-
-	private const string CommandText =
-@""{0}"";
-{1}	
-	private IEnumerable<ResultRow> Execute()
-	{{
-		using (var command = _connection.CreateCommand())
-		{{
-			command.CommandText = CommandText;
-			{2}			_connection.Open();
-
-			using (var reader = command.ExecuteReader())
-			{{
-				while (reader.Read())
-				{{
-					var row =
-						new ResultRow
-						{{
-{3}
-						}};
-
-					yield return row;
-				}}
-			}}
-
-			_connection.Close();
-		}}
-	}}
-
-	private static T GetReaderValue<T>(object value)
-	{{
-		return value == DBNull.Value
-			? default(T)
-			: (T)value;
-	}}
-}}
-";
-
 		private void GenerateCSharpQuery(object sender, ExecutedRoutedEventArgs args)
 		{
 			var dialog = new SaveFileDialog { Filter = "C# files (*.cs)|*.cs|All files (*.*)|*", OverwritePrompt = true };
-			if (dialog.ShowDialog() != true)
+			if (dialog.ShowDialog() == true)
 			{
-				return;
-			}
-
-			var columnMapBuilder = new StringBuilder();
-			var resultRowPropertyBuilder = new StringBuilder();
-			var bindVariableBuilder = new StringBuilder();
-			var parameterBuilder = new StringBuilder();
-
-			if (_executionResult.Statement.BindVariables.Count > 0)
-			{
-				bindVariableBuilder.AppendLine();
-				parameterBuilder.AppendLine();
-				
-				foreach (var bindVariable in _executionResult.Statement.BindVariables)
-				{
-					bindVariableBuilder.Append("\tpublic ");
-					bindVariableBuilder.Append(bindVariable.InputType);
-					bindVariableBuilder.Append(" ");
-					bindVariableBuilder.Append(bindVariable.Name);
-					bindVariableBuilder.AppendLine(" { get; set; }");
-
-					var parameterName = String.Format("parameter{0}", bindVariable.Name);
-					parameterBuilder.Append("\t\t\tvar ");
-					parameterBuilder.Append(parameterName);
-					parameterBuilder.AppendLine(" = command.CreateParameter();");
-					parameterBuilder.Append("\t\t\t");
-					parameterBuilder.Append(parameterName);
-					parameterBuilder.Append(".Value = ");
-					parameterBuilder.Append(bindVariable.Name);
-					parameterBuilder.AppendLine(";");
-					parameterBuilder.Append("\t\t\tcommand.Parameters.Add(");
-					parameterBuilder.Append(parameterName);
-					parameterBuilder.AppendLine(");");
-					parameterBuilder.AppendLine();
-				}
-			}
-
-			var index = 0;
-			foreach (var column in _executionResult.ColumnHeaders)
-			{
-				index++;
-
-				var dataTypeName = String.Equals(column.DataType.Namespace, "System")
-					? column.DataType.Name
-					: column.DataType.FullName;
-
-				if (column.DataType.IsValueType)
-				{
-					dataTypeName = String.Format("{0}?", dataTypeName);
-				}
-
-				columnMapBuilder.Append("\t\t\t\t\t\t\t");
-				columnMapBuilder.Append(column.Name);
-				columnMapBuilder.Append(" = GetReaderValue<");
-				columnMapBuilder.Append(dataTypeName);
-				columnMapBuilder.Append(">(reader[\"");
-				columnMapBuilder.Append(column.Name);
-				columnMapBuilder.Append("\"])");
-
-				if (index < ResultGrid.Columns.Count)
-				{
-					columnMapBuilder.AppendLine(",");
-				}
-
-				resultRowPropertyBuilder.Append("\tpublic ");
-				resultRowPropertyBuilder.Append(dataTypeName);
-				resultRowPropertyBuilder.Append(" ");
-				resultRowPropertyBuilder.Append(column.Name);
-				resultRowPropertyBuilder.AppendLine(" { get; set; }");
-			}
-
-			var statementText = _executionResult.Statement.StatementText.Replace("\"", "\"\"");
-			var queryClass = String.Format(ExportClassTemplate, statementText, bindVariableBuilder, parameterBuilder, columnMapBuilder);
-
-			using (var writer = File.CreateText(dialog.FileName))
-			{
-				writer.WriteLine(queryClass);
-				writer.WriteLine("public class ResultRow");
-				writer.WriteLine("{");
-				writer.Write(resultRowPropertyBuilder);
-				writer.WriteLine("}");
+				CSharpQueryClassGenerator.Generate(_executionResult, dialog.FileName);
 			}
 		}
 
@@ -684,19 +598,20 @@ public class Query
 				return;
 			}
 
-			if (Keyboard.Modifiers != ModifierKeys.Shift)
+			var clearCurrentCells = Keyboard.Modifiers != ModifierKeys.Shift;
+			if (clearCurrentCells)
 			{
 				ResultGrid.SelectedCells.Clear();
 			}
 
 			_isSelectingCells = true;
 
-			var cells = ResultGrid.Items.Cast<object[]>()
-				.Select(r => new DataGridCellInfo(r, header.Column));
-
-			foreach (var cell in cells)
+			var selectedCells = new HashSet<DataGridCellInfo>(ResultGrid.SelectedCells);
+			foreach (object[] rowItems in ResultGrid.Items)
 			{
-				if (!ResultGrid.SelectedCells.Contains(cell))
+				var cell = new DataGridCellInfo(rowItems, header.Column);
+				//if (!ResultGrid.SelectedCells.Contains(cell))
+				if (clearCurrentCells || !selectedCells.Contains(cell))
 				{
 					ResultGrid.SelectedCells.Add(cell);
 				}
@@ -968,5 +883,38 @@ public class Query
 		private void ButtonDebuggerAbortClickHandler(object sender, RoutedEventArgs e)
 		{
 		}
+	}
+
+	internal class SingleRecord : IComplexType
+	{
+		public bool IsNull { get { return false; } }
+
+		public string ToSqlLiteral()
+		{
+			throw new NotImplementedException();
+		}
+
+		public string ToXml()
+		{
+			throw new NotImplementedException();
+		}
+
+		public string ToJson()
+		{
+			throw new NotImplementedException();
+		}
+
+		public string DataTypeName { get; set; }
+
+		public bool IsEditable { get { throw new NotImplementedException(); } }
+
+		public long Length { get { throw new NotImplementedException(); } }
+		
+		public void Prefetch()
+		{
+			throw new NotImplementedException();
+		}
+
+		public IReadOnlyList<CustomTypeAttributeValue> Attributes { get; set; }
 	}
 }

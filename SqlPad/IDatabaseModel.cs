@@ -51,6 +51,8 @@ namespace SqlPad
 
 		Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
 
+		Task<StatementExecutionResult> ExecuteChildStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
+
 		Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken);
 
 		Task<IReadOnlyList<object[]>> FetchRecordsAsync(int rowCount, CancellationToken cancellationToken);
@@ -60,8 +62,6 @@ namespace SqlPad
 		void CommitTransaction();
 
 		Task RollbackTransaction();
-
-		void CloseActiveReader();
 	}
 
 	public class ColumnHeader
@@ -73,13 +73,20 @@ namespace SqlPad
 		public string DatabaseDataType { get; set; }
 
 		public Type DataType { get; set; }
-		
-		public StatementExecutionModel FetchReferenceDataExecutionModel { get; set; }
+
+		public IReferenceDataSource ReferenceDataSource { get; set; }
 
 		public override string ToString()
 		{
 			return Name;
 		}
+	}
+
+	public interface IReferenceDataSource
+	{
+		string ObjectName { get; }
+
+		StatementExecutionModel CreateExecutionModel();
 	}
 
 	public class DatabaseModelConnectionErrorArgs : EventArgs

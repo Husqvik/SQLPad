@@ -510,7 +510,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 	public abstract class OracleCustomTypeBase : IComplexType
 	{
-		private List<CustomTypeAttributeValue> _attributes;
+		private IReadOnlyList<CustomTypeAttributeValue> _attributes;
 		private string _preview;
 
 		public abstract string DataTypeName { get; }
@@ -538,7 +538,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		
 		public void Prefetch() { }
 
-		public ICollection<CustomTypeAttributeValue> Attributes
+		public IReadOnlyList<CustomTypeAttributeValue> Attributes
 		{
 			get { return _attributes ?? BuildAttributeCollection(); }
 		}
@@ -561,7 +561,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return String.Format("{0}={1}", attribute.ColumnHeader.Name, String.IsNullOrEmpty(stringValue) ? "NULL" : stringValue);
 		}
 
-		private ICollection<CustomTypeAttributeValue> BuildAttributeCollection()
+		private IReadOnlyList<CustomTypeAttributeValue> BuildAttributeCollection()
 		{
 			var attributeSource = GetType().GetFields(BindingFlags.Instance | BindingFlags.Public)
 				.Select(f =>
@@ -582,7 +582,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 							},
 						Value = CustomTypeValueConverter.ConvertItem(fa.Field.GetValue(this), OracleLargeTextValue.DefaultPreviewLength)
 					})
-				.ToList();
+				.ToList()
+				.AsReadOnly();
 
 			return _attributes = attributeSource;
 		}

@@ -111,7 +111,7 @@
 				</DataGrid>
 			</TabItem>
 			<TabItem x:Name="TabComplexType" Header="Complex type" Visibility="Collapsed">
-				<sqlPad:ComplexTypeViewer x:Name="ComplexTypeViewer" />
+				<sqlPad:ComplexTypeViewer x:Name="ComplexTypeViewer" GridTitle="Type: " RowTitle="Column name" />
 			</TabItem>
 		</TabControl>
 	</Grid>

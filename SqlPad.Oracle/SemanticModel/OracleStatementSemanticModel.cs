@@ -2771,21 +2771,10 @@ namespace SqlPad.Oracle.SemanticModel
 						continue;
 					}
 
-					columnHeader.FetchReferenceDataExecutionModel =
-						new StatementExecutionModel
-						{
-							StatementText = String.Format("SELECT * FROM {0} WHERE {1} = :KEY", sourceObject.FullyQualifiedName, physicalColumnName),
-							BindVariables =
-								new[]
-								{
-									new BindVariableModel(
-										new BindVariableConfiguration
-										{
-											Name = "KEY",
-											DataType = column.ColumnDescription.DataType.FullyQualifiedName.Name.Trim('"')
-										})
-								}
-						};
+					var statementText = StatementText = String.Format("SELECT * FROM {0} WHERE {1} = :KEY", referenceConstraint.TargetObject.FullyQualifiedName, physicalColumnName);
+					var keyDataType = column.ColumnDescription.DataType.FullyQualifiedName.Name.Trim('"');
+					var objectName = referenceConstraint.TargetObject.FullyQualifiedName.ToString();
+					columnHeader.ReferenceDataSource = new OracleReferenceDataSource(objectName, statementText, keyDataType);
 				}
 			}
 		}
@@ -2934,5 +2923,39 @@ namespace SqlPad.Oracle.SemanticModel
 		public OracleQueryBlock RowSource { get; set; }
 
 		public OracleDataObjectReference DataObjectReference { get { return ObjectReferences.Count == 1 ? ObjectReferences.First() : null; } }
+	}
+
+	public class OracleReferenceDataSource : IReferenceDataSource
+	{
+		private readonly string _statementText;
+		private readonly string _keyDataType;
+		
+		public string ObjectName { get; private set; }
+
+		public StatementExecutionModel CreateExecutionModel()
+		{
+			return
+				new StatementExecutionModel
+				{
+					StatementText = _statementText,
+					BindVariables =
+						new[]
+						{
+							new BindVariableModel(
+								new BindVariableConfiguration
+								{
+									Name = "KEY",
+									DataType = _keyDataType
+								})
+						}
+				};
+		}
+
+		internal OracleReferenceDataSource(string objectName, string statementText, string keyDataType)
+		{
+			ObjectName = objectName;
+			_statementText = statementText;
+			_keyDataType = keyDataType;
+		}
 	}
 }

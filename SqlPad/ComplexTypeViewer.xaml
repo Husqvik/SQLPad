@@ -5,7 +5,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:sqlPad="clr-namespace:SqlPad"
              mc:Ignorable="d"
-             d:DesignHeight="300" d:DesignWidth="300">
+             d:DesignHeight="300" d:DesignWidth="300"
+			 DataContext="{Binding RelativeSource={RelativeSource Self}}">
 
 	<UserControl.Resources>
 		<sqlPad:CellValueConverter x:Key="ValueConverter"/>
@@ -34,22 +35,27 @@
 			</TextBox>
 		</DataTemplate>-->
 	</UserControl.Resources>
-	<StackPanel x:Name="RootPanel">
-		<TextBlock Padding="0,3,0,3">
-			<Run Text="Type: "/>
-			<Run Text="{Binding DataTypeName, Mode=OneTime}"/>
+	<StackPanel>
+		<TextBlock Padding="0,3,0,3" HorizontalAlignment="Left">
+			<Run Text="{Binding GridTitle}" />
+			<Run Text="{Binding ComplexType.DataTypeName}" />
 		</TextBlock>
 		<DataGrid x:Name="ComplexTypeViewerGrid"
 				  AutoGenerateColumns="False"
+				  CanUserAddRows="False"
 				  CanUserDeleteRows="False"
 				  CanUserReorderColumns="False"
-				  MinRowHeight="20"
-				  ItemsSource="{Binding Attributes}"
+				  RowHeight="21"
+				  RowHeaderWidth="0"
+				  ItemsSource="{Binding ComplexType.Attributes}"
 				  MaxColumnWidth="{Binding ElementName=ComplexTypeViewerGrid, Path=ActualWidth}"
+				  BeginningEdit="ComplexTypeViewerGridBeginningEditHandler"
+				  Sorting="ComplexTypeViewerGridSortingHandler"
+				  MouseDown="ComplexTypeViewerGridMouseDownHandler"
 				  HorizontalGridLinesBrush="LightGray"
 				  VerticalGridLinesBrush="LightGray">
 			<DataGrid.Columns>
-				<DataGridTextColumn Header="Attribute name"
+				<DataGridTextColumn x:Name="AttributeNameColumn"
 									Binding="{Binding ColumnHeader.Name}"
 									EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />
 				<!--<DataGridTemplateColumn Header="Value"

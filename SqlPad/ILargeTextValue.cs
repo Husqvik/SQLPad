@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace SqlPad
@@ -51,9 +52,10 @@ namespace SqlPad
 
 	public interface IComplexType : ILargeValue
 	{
-		ICollection<CustomTypeAttributeValue> Attributes { get; }
+		IReadOnlyList<CustomTypeAttributeValue> Attributes { get; }
 	}
 
+	[DebuggerDisplay("CustomTypeAttributeValue (ColumnName={ColumnHeader.Name}; Value={Value})")]
 	public struct CustomTypeAttributeValue
 	{
 		public ColumnHeader ColumnHeader { get; set; }

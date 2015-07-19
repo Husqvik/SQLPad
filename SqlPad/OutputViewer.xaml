@@ -137,7 +137,6 @@
 							  MaxColumnWidth="{Binding ElementName=ResultGrid, Path=ActualWidth}"
 							  VirtualizingStackPanel.VirtualizationMode="Recycling"
 							  EnableColumnVirtualization="True"
-							  RowHeight="21"
 							  CanUserSortColumns="False"
 							  CanUserDeleteRows="False"
 							  CanUserAddRows="False"
@@ -152,6 +151,15 @@
 							  ScrollViewer.ScrollChanged="ResultGridScrollChangedHandler"
 							  MouseDoubleClick="ResultGridMouseDoubleClickHandler"
 							  DataGridColumnHeader.Click="ColumnHeaderMouseClickHandler">
+
+						<DataGrid.RowStyle>
+							<Style>
+								<Style.Setters>
+									<Setter Property="DataGridRow.Height" Value="21"/>
+								</Style.Setters>
+							</Style>
+						</DataGrid.RowStyle>
+
 						<DataGrid.CommandBindings>
 							<CommandBinding Command="{StaticResource ExportToCsvFileCommand}" Executed="ExportDataFileHandler" CanExecute="CanExportDataHandler" />
 							<CommandBinding Command="{StaticResource ExportToTsvFileCommand}" Executed="ExportDataFileHandler" CanExecute="CanExportDataHandler" />

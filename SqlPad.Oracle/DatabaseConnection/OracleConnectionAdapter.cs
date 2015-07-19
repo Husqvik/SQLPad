@@ -28,6 +28,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private readonly ConnectionStringSettings _connectionString;
 		private readonly List<OracleTraceEvent> _activeTraceEvents = new List<OracleTraceEvent>();
+		private readonly List<OracleDataReader> _childReaders = new List<OracleDataReader>();
 
 		private bool _isExecuting;
 		private bool _databaseOutputEnabled;
@@ -36,7 +37,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private string _identifier;
 		private OracleConnection _userConnection;
 		private OracleDataReader _userDataReader;
-		private OracleCommand _userCommand;
 		private string _userCommandSqlId;
 		private int _userCommandChildNumber;
 		private OracleTransaction _userTransaction;
@@ -236,11 +236,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return Task.Factory.StartNew(() => ExecuteUserTransactionAction(t => t.Rollback()));
 		}
 
-		public override void CloseActiveReader()
-		{
-			DisposeCommandAndReader();
-		}
-
 		public async override Task<ExecutionStatisticsPlanItemCollection> GetCursorExecutionStatisticsAsync(CancellationToken cancellationToken)
 		{
 			var cursorExecutionStatisticsDataProvider = new CursorExecutionStatisticsDataProvider(_userCommandSqlId, _userCommandChildNumber);
@@ -250,44 +245,16 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return cursorExecutionStatisticsDataProvider.ItemCollection;
 		}
 
-		public override async Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
+		public override Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
 			PreInitialize();
 
-			try
-			{
-				_isExecuting = true;
-				return await ExecuteUserStatement(executionModel, cancellationToken);
-			}
-			catch (OracleException exception)
-			{
-				var errorCode = (OracleErrorCode)exception.Number;
-				if (errorCode.In(OracleErrorCode.EndOfFileOnCommunicationChannel, OracleErrorCode.NotConnectedToOracle))
-				{
-					InitializeUserConnection();
+			return ExecuteUserStatementAsync(executionModel, true, cancellationToken);
+		}
 
-					_userTraceFileName = String.Empty;
-					
-					lock (_activeTraceEvents)
-					{
-						_activeTraceEvents.Clear();
-					}
-
-					_databaseModel.Disconnect(exception);
-
-					throw;
-				}
-				else if (errorCode != OracleErrorCode.UserInvokedCancellation)
-				{
-					throw;
-				}
-			}
-			finally
-			{
-				_isExecuting = false;
-			}
-
-			return StatementExecutionResult.Empty;
+		public override Task<StatementExecutionResult> ExecuteChildStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
+		{
+			return ExecuteUserStatementAsync(executionModel, false, cancellationToken);
 		}
 
 		private void PreInitialize()
@@ -345,10 +312,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 				_userDataReader.Dispose();
 			}
 
-			if (_userCommand != null)
-			{
-				_userCommand.Dispose();
-			}
+			_childReaders.ForEach(r => r.Dispose());
+			_childReaders.Clear();
 		}
 
 		private static bool CanFetchFromReader(IDataReader reader)
@@ -555,8 +520,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 				return;
 			}
 
-			_userCommand.CommandText = String.Format("CALL DBMS_OUTPUT.{0}", EnableDatabaseOutput ? "ENABLE(1)" : "DISABLE()");
-			await _userCommand.ExecuteNonQueryAsynchronous(cancellationToken);
+			using (var command = _userConnection.CreateCommand())
+			{
+				command.CommandText = String.Format("CALL DBMS_OUTPUT.{0}", EnableDatabaseOutput ? "ENABLE(1)" : "DISABLE()");
+				await command.ExecuteNonQueryAsynchronous(cancellationToken);
+			}
+			
 			_databaseOutputEnabled = EnableDatabaseOutput;
 		}
 
@@ -570,68 +539,110 @@ namespace SqlPad.Oracle.DatabaseConnection
 			OracleGlobalization.SetThreadInfo(info);
 		}
 
-		private async Task<StatementExecutionResult> ExecuteUserStatement(StatementExecutionModel executionModel, CancellationToken cancellationToken)
+		private async Task<StatementExecutionResult> ExecuteUserStatementAsync(StatementExecutionModel executionModel, bool isMain, CancellationToken cancellationToken)
 		{
+			_isExecuting = true;
+			
 			_userCommandHasCompilationErrors = false;
 
-			SetOracleGlobalization();
-
-			await EnsureUserConnectionOpen(cancellationToken);
-
-			_userCommand = _userConnection.CreateCommand();
-
-			await EnsureDatabaseOutput(cancellationToken);
-
-			_userCommand.BindByName = true;
-			_userCommand.AddToStatementCache = false;
-
-			if (_userTransaction == null)
+			try
 			{
-				_userTransaction = _userConnection.BeginTransaction();
-			}
+				SetOracleGlobalization();
 
-			_userCommand.CommandText = executionModel.StatementText.Replace("\r\n", "\n");
-			_userCommand.InitialLONGFetchSize = OracleDatabaseModel.InitialLongFetchSize;
+				await EnsureUserConnectionOpen(cancellationToken);
 
-			foreach (var variable in executionModel.BindVariables)
-			{
-				_userCommand.AddSimpleParameter(variable.Name, variable.Value, variable.DataType);
-			}
+				await EnsureDatabaseOutput(cancellationToken);
 
-			if (executionModel.GatherExecutionStatistics)
-			{
-				_executionStatisticsDataProvider = new SessionExecutionStatisticsDataProvider(_databaseModel.StatisticsKeys, _userSessionId);
-				await _databaseModel.UpdateModelAsync(cancellationToken, true, _executionStatisticsDataProvider.SessionBeginExecutionStatisticsDataProvider);
-			}
-
-			//Task.Factory.StartNew(() => TestDebug(cancellationToken), cancellationToken).Wait(cancellationToken);
-
-			_userDataReader = await _userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
-
-			var exception = await ResolveExecutionPlanIdentifiersAndTransactionStatus(cancellationToken);
-			if (exception != null)
-			{
-				await SafeResolveTransactionStatus(cancellationToken);
-			}
-
-			UpdateBindVariables(executionModel);
-
-			return
-				new StatementExecutionResult
+				using (var userCommand = _userConnection.CreateCommand())
 				{
-					Statement = executionModel,
-					AffectedRowCount = _userDataReader.RecordsAffected,
-					DatabaseOutput = await RetrieveDatabaseOutput(cancellationToken),
-					ExecutedSuccessfully = true,
-					ColumnHeaders = GetColumnHeadersFromReader(_userDataReader),
-					InitialResultSet = await FetchRecordsAsync(executionModel.InitialFetchRowCount, cancellationToken),
-					CompilationErrors = _userCommandHasCompilationErrors ? await RetrieveCompilationErrors(executionModel.Statement, cancellationToken) : new CompilationError[0]
-				};
+					userCommand.BindByName = true;
+					userCommand.AddToStatementCache = false;
+
+					if (_userTransaction == null)
+					{
+						_userTransaction = _userConnection.BeginTransaction();
+					}
+
+					userCommand.CommandText = executionModel.StatementText.Replace("\r\n", "\n");
+					userCommand.InitialLONGFetchSize = OracleDatabaseModel.InitialLongFetchSize;
+
+					foreach (var variable in executionModel.BindVariables)
+					{
+						userCommand.AddSimpleParameter(variable.Name, variable.Value, variable.DataType);
+					}
+
+					if (executionModel.GatherExecutionStatistics)
+					{
+						_executionStatisticsDataProvider = new SessionExecutionStatisticsDataProvider(_databaseModel.StatisticsKeys, _userSessionId);
+						await _databaseModel.UpdateModelAsync(cancellationToken, true, _executionStatisticsDataProvider.SessionBeginExecutionStatisticsDataProvider);
+					}
+
+					var dataReader = await userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
+					if (isMain)
+					{
+						_userDataReader = dataReader;
+						//Task.Factory.StartNew(() => TestDebug(userCommand, cancellationToken), cancellationToken).Wait(cancellationToken);
+					}
+					else
+					{
+						_childReaders.Add(dataReader);
+					}
+
+					var exception = await ResolveExecutionPlanIdentifiersAndTransactionStatus(cancellationToken);
+					if (exception != null)
+					{
+						await SafeResolveTransactionStatus(cancellationToken);
+					}
+
+					UpdateBindVariables(executionModel, userCommand);
+
+					return
+						new StatementExecutionResult
+						{
+							Statement = executionModel,
+							AffectedRowCount = dataReader.RecordsAffected,
+							DatabaseOutput = await RetrieveDatabaseOutput(cancellationToken),
+							ExecutedSuccessfully = true,
+							ColumnHeaders = GetColumnHeadersFromReader(dataReader),
+							InitialResultSet = await FetchRecordsFromReader(dataReader, executionModel.InitialFetchRowCount, false).EnumerateAsync(cancellationToken),
+							CompilationErrors = _userCommandHasCompilationErrors ? await RetrieveCompilationErrors(executionModel.Statement, cancellationToken) : new CompilationError[0]
+						};
+				}
+			}
+			catch (OracleException exception)
+			{
+				var errorCode = (OracleErrorCode)exception.Number;
+				if (errorCode.In(OracleErrorCode.EndOfFileOnCommunicationChannel, OracleErrorCode.NotConnectedToOracle))
+				{
+					InitializeUserConnection();
+
+					_userTraceFileName = String.Empty;
+
+					lock (_activeTraceEvents)
+					{
+						_activeTraceEvents.Clear();
+					}
+
+					_databaseModel.Disconnect(exception);
+
+					throw;
+				}
+				else if (errorCode != OracleErrorCode.UserInvokedCancellation)
+				{
+					throw;
+				}
+			}
+			finally
+			{
+				_isExecuting = false;
+			}
+
+			return StatementExecutionResult.Empty;
 		}
 
-		private void TestDebug(CancellationToken cancellationToken)
+		private void TestDebug(OracleCommand userCommand, CancellationToken cancellationToken)
 		{
-			var debuggedAction = new Task(async () => _userDataReader = await _userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken));
+			var debuggedAction = new Task(async () => _userDataReader = await userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken));
 
 			using (var debuggerSession = new OracleDebuggerSession(_userConnection, debuggedAction))
 			{
@@ -650,10 +661,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 		}
 
-		private void UpdateBindVariables(StatementExecutionModel executionModel)
+		private static void UpdateBindVariables(StatementExecutionModel executionModel, OracleCommand userCommand)
 		{
 			var bindVariableModels = executionModel.BindVariables.ToDictionary(v => v.Name, v => v);
-			foreach (OracleParameter parameter in _userCommand.Parameters)
+			foreach (OracleParameter parameter in userCommand.Parameters)
 			{
 				var value = parameter.Value;
 				if (parameter.Value is OracleDecimal)

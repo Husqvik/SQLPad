@@ -21,6 +21,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public abstract Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
 
+		public abstract Task<StatementExecutionResult> ExecuteChildStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
+
 		public abstract Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken);
 
 		public abstract Task<IReadOnlyList<object[]>> FetchRecordsAsync(int rowCount, CancellationToken cancellationToken);
@@ -30,8 +32,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 		public abstract void CommitTransaction();
 
 		public abstract Task RollbackTransaction();
-
-		public abstract void CloseActiveReader();
 
 		public abstract Task<ExecutionStatisticsPlanItemCollection> GetCursorExecutionStatisticsAsync(CancellationToken cancellationToken);
 

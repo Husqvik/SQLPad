@@ -60,6 +60,11 @@ namespace SqlPad.Oracle.Test
 			return Task.FromResult(result);
 		}
 
+		public override Task<StatementExecutionResult> ExecuteChildStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
+		{
+			return ExecuteStatementAsync(executionModel, cancellationToken);
+		}
+
 		public override Task ActivateTraceEvents(IEnumerable<OracleTraceEvent> traceEvents, CancellationToken cancellationToken)
 		{
 			return Task.FromResult(0);
@@ -97,8 +102,6 @@ namespace SqlPad.Oracle.Test
 		public override void CommitTransaction() { }
 
 		public override Task RollbackTransaction() { return Task.FromResult(0); }
-
-		public override void CloseActiveReader() { }
 
 		public override Task<ExecutionStatisticsPlanItemCollection> GetCursorExecutionStatisticsAsync(CancellationToken cancellationToken)
 		{
