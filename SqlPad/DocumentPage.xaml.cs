@@ -1143,7 +1143,7 @@ namespace SqlPad
 
 		private void ShowHideBindVariableList()
 		{
-			if (_sqlDocumentRepository.Statements == null)
+			if (_sqlDocumentRepository.Statements == null || !String.Equals(_sqlDocumentRepository.StatementText, Editor.Text))
 			{
 				return;
 			}
