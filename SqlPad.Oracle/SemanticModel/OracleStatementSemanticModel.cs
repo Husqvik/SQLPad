@@ -2758,20 +2758,21 @@ namespace SqlPad.Oracle.SemanticModel
 				
 				foreach (var column in columns)
 				{
-					string physicalColumnName;
-					var sourceObject = GetSourceObject(column, out physicalColumnName);
+					string localColumnName;
+					var sourceObject = GetSourceObject(column, out localColumnName);
 					if (sourceObject == null)
 					{
 						continue;
 					}
 
-					var referenceConstraint = sourceObject.ForeignKeys.FirstOrDefault(r => r.Columns.Count == 1 && String.Equals(r.Columns[0], physicalColumnName));
+					var referenceConstraint = sourceObject.ForeignKeys.FirstOrDefault(r => r.Columns.Count == 1 && String.Equals(r.Columns[0], localColumnName));
 					if (referenceConstraint == null)
 					{
 						continue;
 					}
 
-					var statementText = StatementText = String.Format("SELECT * FROM {0} WHERE {1} = :KEY", referenceConstraint.TargetObject.FullyQualifiedName, physicalColumnName);
+					var referenceColumnName = referenceConstraint.ReferenceConstraint.Columns[0];
+					var statementText = StatementText = String.Format("SELECT * FROM {0} WHERE {1} = :KEY", referenceConstraint.TargetObject.FullyQualifiedName, referenceColumnName);
 					var keyDataType = column.ColumnDescription.DataType.FullyQualifiedName.Name.Trim('"');
 					var objectName = referenceConstraint.TargetObject.FullyQualifiedName.ToString();
 					columnHeader.ReferenceDataSource = new OracleReferenceDataSource(objectName, statementText, keyDataType);

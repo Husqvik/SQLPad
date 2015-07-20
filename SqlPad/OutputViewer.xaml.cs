@@ -15,6 +15,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 using Microsoft.Win32;
 using SqlPad.FindReplace;
@@ -151,9 +152,9 @@ namespace SqlPad
 			AppendRows(executionResult.InitialResultSet);
 		}
 
-		private async void CellHyperlinkClickHandler(object sender, RoutedEventArgs e)
+		private async void CellHyperlinkClickHandler(object sender, RoutedEventArgs args)
 		{
-			var hyperlink = e.OriginalSource as Hyperlink;
+			var hyperlink = args.OriginalSource as Hyperlink;
 			if (hyperlink == null)
 			{
 				return;
@@ -166,10 +167,21 @@ namespace SqlPad
 			var executionModel = referenceDataSource.CreateExecutionModel();
 			executionModel.BindVariables[0].Value = currentRowValues[columnIndex];
 
-			var result = await _connectionAdapter.ExecuteChildStatementAsync(executionModel, CancellationToken.None);
+			StatementExecutionResult result;
+
+			try
+			{
+				result = await _connectionAdapter.ExecuteChildStatementAsync(executionModel, CancellationToken.None);
+			}
+			catch (Exception e)
+			{
+				cell.Content = new TextBlock { Text = e.Message, Background = Brushes.Red };
+				return;
+			}
+			
 			if (result.InitialResultSet.Count == 0)
 			{
-				cell.Content = null;
+				cell.Content = "Record not found. ";
 				return;
 			}
 

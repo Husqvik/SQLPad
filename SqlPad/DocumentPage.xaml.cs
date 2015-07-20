@@ -1181,7 +1181,8 @@ namespace SqlPad
 				bindVariableCount++;
 				
 				BindVariableConfiguration currentVariable;
-				if (_currentBindVariables.TryGetValue(statementVariable.Name, out currentVariable))
+				if (_currentBindVariables.TryGetValue(statementVariable.Name, out currentVariable) &&
+				    currentVariable.Nodes.Select(n => n.SourcePosition).SequenceEqual(statementVariable.Nodes.Select(n => n.SourcePosition)))
 				{
 					matchedCount++;
 					statementVariable.DataType = currentVariable.DataType;
