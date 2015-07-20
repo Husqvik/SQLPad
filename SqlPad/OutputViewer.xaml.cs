@@ -4,8 +4,6 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,9 +11,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Threading;
 using Microsoft.Win32;
 using SqlPad.FindReplace;
@@ -140,7 +136,7 @@ namespace SqlPad
 
 			foreach (var columnHeader in _executionResult.ColumnHeaders)
 			{
-				var columnTemplate = CreateResultGridTextColumnTemplate(columnHeader);
+				var columnTemplate = CreateDataGridTextColumnTemplate(columnHeader, _connectionAdapter);
 				ResultGrid.Columns.Add(columnTemplate);
 			}
 
@@ -152,91 +148,21 @@ namespace SqlPad
 			AppendRows(executionResult.InitialResultSet);
 		}
 
-		private async void CellHyperlinkClickHandler(object sender, RoutedEventArgs args)
+		internal static DataGridColumn CreateDataGridTextColumnTemplate(ColumnHeader columnHeader, IConnectionAdapter connectionAdapter = null)
 		{
-			var hyperlink = args.OriginalSource as Hyperlink;
-			if (hyperlink == null)
-			{
-				return;
-			}
+			var textBoxFactory = new FrameworkElementFactory(typeof(TextBox));
+			textBoxFactory.SetValue(TextBoxBase.IsReadOnlyProperty, true);
+			textBoxFactory.SetValue(TextBoxBase.IsReadOnlyCaretVisibleProperty, true);
+			textBoxFactory.SetBinding(TextBox.TextProperty, new Binding(String.Format("[{0}]", columnHeader.ColumnIndex)) { Converter = CellValueConverter.Instance });
+			var editingDataTemplate = new DataTemplate(typeof(DependencyObject)) { VisualTree = textBoxFactory };
 
-			var cell = (DataGridCell)sender;
-			var currentRowValues = (object[])hyperlink.DataContext;
-			var referenceDataSource = ((ColumnHeader)cell.Column.Header).ReferenceDataSource;
-			var columnIndex = ResultGrid.Columns.IndexOf(cell.Column);
-			var executionModel = referenceDataSource.CreateExecutionModel();
-			executionModel.BindVariables[0].Value = currentRowValues[columnIndex];
-
-			StatementExecutionResult result;
-
-			try
-			{
-				result = await _connectionAdapter.ExecuteChildStatementAsync(executionModel, CancellationToken.None);
-			}
-			catch (Exception e)
-			{
-				cell.Content = new TextBlock { Text = e.Message, Background = Brushes.Red };
-				return;
-			}
-			
-			if (result.InitialResultSet.Count == 0)
-			{
-				cell.Content = "Record not found. ";
-				return;
-			}
-
-			var firstRow = result.InitialResultSet[0];
-			var columnValues = result.ColumnHeaders.Select(
-					(t, i) => new CustomTypeAttributeValue
-					{
-						ColumnHeader = t,
-						Value = firstRow[i]
-					}).ToArray();
-
-			var record =
-				new SingleRecord
+			var columnTemplate =
+				new DataGridTemplateColumn
 				{
-					DataTypeName = referenceDataSource.ObjectName,
-					Attributes = columnValues
+					Header = columnHeader,
+					CellTemplateSelector = new ResultSetDataGridTemplateSelector(connectionAdapter, columnHeader),
+					CellEditingTemplate = editingDataTemplate
 				};
-
-			var row = (DataGridRow)cell.GetType().GetField("_owner", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(cell);
-			row.Height = Double.NaN;
-			var complexTypeViewer =
-				new ComplexTypeViewer
-				{
-					ComplexType = record,
-					GridTitle = "Source object: ",
-					RowTitle = "Column name"
-				};
-			
-			cell.Content = complexTypeViewer;
-		}
-
-		private DataGridBoundColumn CreateResultGridTextColumnTemplate(ColumnHeader columnHeader)
-		{
-			var hyperlinkColumnTemplate = columnHeader.ReferenceDataSource == null
-				? null
-				: new DataGridHyperlinkColumn();
-
-			var columnTemplate = CreateDataGridTextColumnTemplate(columnHeader, hyperlinkColumnTemplate);
-			if (hyperlinkColumnTemplate != null)
-			{
-				columnTemplate.CellStyle = columnTemplate.CellStyle == null
-					? (Style)Resources["CellStyleHyperLink"]
-					: (Style)Resources["CellStyleHyperLinkRightAlign"];
-			}
-
-			return columnTemplate;
-		}
-
-		internal static DataGridBoundColumn CreateDataGridTextColumnTemplate(ColumnHeader columnHeader, DataGridBoundColumn columnTemplate = null)
-		{
-			columnTemplate = columnTemplate ?? new DataGridTextColumn();
-			columnTemplate.Header = columnHeader;
-			
-			columnTemplate.Binding = new Binding(String.Format("[{0}]", columnHeader.ColumnIndex)) { Converter = CellValueConverter.Instance };
-			columnTemplate.EditingElementStyle = (Style)Application.Current.Resources["CellTextBoxStyleReadOnly"];
 
 			if (columnHeader.DataType.In(typeof(Decimal), typeof(Int16), typeof(Int32), typeof(Int64), typeof(Byte)))
 			{
@@ -895,38 +821,5 @@ namespace SqlPad
 		private void ButtonDebuggerAbortClickHandler(object sender, RoutedEventArgs e)
 		{
 		}
-	}
-
-	internal class SingleRecord : IComplexType
-	{
-		public bool IsNull { get { return false; } }
-
-		public string ToSqlLiteral()
-		{
-			throw new NotImplementedException();
-		}
-
-		public string ToXml()
-		{
-			throw new NotImplementedException();
-		}
-
-		public string ToJson()
-		{
-			throw new NotImplementedException();
-		}
-
-		public string DataTypeName { get; set; }
-
-		public bool IsEditable { get { throw new NotImplementedException(); } }
-
-		public long Length { get { throw new NotImplementedException(); } }
-		
-		public void Prefetch()
-		{
-			throw new NotImplementedException();
-		}
-
-		public IReadOnlyList<CustomTypeAttributeValue> Attributes { get; set; }
 	}
 }

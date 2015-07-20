@@ -20,6 +20,24 @@ namespace SqlPad
 			return typedParent ?? FindParent<T>(parent);
 		}
 
+		public static T GetVisualChild<T>(this Visual parent) where T : Visual
+		{
+			var child = default(T);
+			var numVisuals = VisualTreeHelper.GetChildrenCount(parent);
+			for (var i = 0; i < numVisuals; i++)
+			{
+				var v = (Visual)VisualTreeHelper.GetChild(parent, i);
+				child = v as T ?? GetVisualChild<T>(v);
+				
+				if (child != null)
+				{
+					break;
+				}
+			}
+
+			return child;
+		}
+
 		public static T AsPopupChild<T>(this T control) where T : Control
 		{
 			control.Background = (SolidColorBrush)Application.Current.Resources["PopupBackgroundBrush"];

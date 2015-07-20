@@ -38,13 +38,6 @@
 		<sqlPad:SqlInsertDataExporter x:Key="SqlInsertDataExporter" />
 		<sqlPad:SqlUpdateDataExporter x:Key="SqlUpdateDataExporter" />
 		<sqlPad:XmlDataExporter x:Key="XmlDataExporter" />
-
-		<Style x:Key="CellStyleHyperLinkRightAlign" BasedOn="{StaticResource CellStyleRightAlign}">
-			<EventSetter Event="Hyperlink.Click" Handler="CellHyperlinkClickHandler" />
-		</Style>
-		<Style x:Key="CellStyleHyperLink">
-			<EventSetter Event="Hyperlink.Click" Handler="CellHyperlinkClickHandler" />
-		</Style>
 	</UserControl.Resources>
 
 	<DockPanel LastChildFill="True">
