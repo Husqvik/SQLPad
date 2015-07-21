@@ -22,7 +22,7 @@ namespace SqlPad.Oracle
 
 		public IEnumerable<ICodeSnippet> GetSnippets(SqlDocumentRepository sqlDocumentRepository, string statementText, int cursorPosition)
 		{
-			if (sqlDocumentRepository == null || sqlDocumentRepository.Statements == null)
+			if (sqlDocumentRepository?.Statements == null)
 				return EmptyCollection;
 
 			var statement = sqlDocumentRepository.Statements.TakeWhile(s => s.SourcePosition.IndexStart <= cursorPosition - 1).LastOrDefault();
@@ -34,8 +34,7 @@ namespace SqlPad.Oracle
 				                  ?? statement.GetNearestTerminalToPosition(cursorPosition);
 			}
 
-			if (currentNode != null && currentNode.Id == OracleGrammarDescription.Terminals.RightParenthesis &&
-				currentNode.PrecedingTerminal != null && currentNode.PrecedingTerminal.PrecedingTerminal != null)
+			if (currentNode != null && String.Equals(currentNode.Id, OracleGrammarDescription.Terminals.RightParenthesis) && currentNode.PrecedingTerminal?.PrecedingTerminal != null)
 			{
 				currentNode = currentNode.PrecedingTerminal.PrecedingTerminal;
 			}

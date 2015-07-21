@@ -13,11 +13,11 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private readonly List<string> _columnNameExtensions = new List<string>();
 
-		public StatementGrammarNode PivotClause { get; private set; }
+		public StatementGrammarNode PivotClause { get; }
 		
-		public OracleDataObjectReference SourceReference { get; private set; }
+		public OracleDataObjectReference SourceReference { get; }
 		
-		public OracleReferenceContainer SourceReferenceContainer { get; private set; }
+		public OracleReferenceContainer SourceReferenceContainer { get; }
 
 		public IReadOnlyList<StatementGrammarNode> AggregateFunctions { get; private set; }
 
@@ -56,12 +56,9 @@ namespace SqlPad.Oracle.SemanticModel
 			AggregateFunctions = aggregateExpressions.AsReadOnly();
 		}
 
-		public override IReadOnlyList<OracleColumn> Columns
-		{
-			get { return _columns ?? ResolvePivotClause(); }
-		}
+		public override IReadOnlyList<OracleColumn> Columns => _columns ?? ResolvePivotClause();
 
-		private IReadOnlyList<OracleColumn> ResolvePivotClause()
+	    private IReadOnlyList<OracleColumn> ResolvePivotClause()
 		{
 			var columns = new List<OracleColumn>();
 

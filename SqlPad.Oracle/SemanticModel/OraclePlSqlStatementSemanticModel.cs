@@ -20,17 +20,17 @@ namespace SqlPad.Oracle.SemanticModel
 		private readonly List<OraclePlSqlProgram> _programs = new List<OraclePlSqlProgram>();
 		private readonly List<OracleStatementSemanticModel> _sqlModels = new List<OracleStatementSemanticModel>();
 
-		public IDatabaseModel DatabaseModel { get { return _databaseModel; } }
-		
-		public StatementBase Statement { get; private set; }
+		public IDatabaseModel DatabaseModel => _databaseModel;
+
+	    public StatementBase Statement { get; private set; }
 		
 		public string StatementText { get; private set; }
 		
-		public bool HasDatabaseModel { get { return DatabaseModel == null; } }
-		
-		public ICollection<RedundantTerminalGroup> RedundantSymbolGroups { get { return new RedundantTerminalGroup[0]; } }
+		public bool HasDatabaseModel => DatabaseModel == null;
 
-		public OraclePlSqlStatementSemanticModel(OracleDatabaseModelBase databaseModel, OracleStatement statement, string statementText)
+	    public ICollection<RedundantTerminalGroup> RedundantSymbolGroups => new RedundantTerminalGroup[0];
+
+	    public OraclePlSqlStatementSemanticModel(OracleDatabaseModelBase databaseModel, OracleStatement statement, string statementText)
 		{
 			_databaseModel = databaseModel;
 			Statement = statement;

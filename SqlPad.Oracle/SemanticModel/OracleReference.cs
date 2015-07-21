@@ -14,23 +14,20 @@ namespace SqlPad.Oracle.SemanticModel
 			ObjectNodeObjectReferences = new HashSet<OracleObjectWithColumnsReference>();
 		}
 
-		public OracleObjectIdentifier FullyQualifiedObjectName
-		{
-			get { return _fullyQualifiedName ?? (_fullyQualifiedName = BuildFullyQualifiedObjectName()).Value; }
-		}
+		public OracleObjectIdentifier FullyQualifiedObjectName => _fullyQualifiedName ?? (_fullyQualifiedName = BuildFullyQualifiedObjectName()).Value;
 
-		protected virtual OracleObjectIdentifier BuildFullyQualifiedObjectName()
+	    protected virtual OracleObjectIdentifier BuildFullyQualifiedObjectName()
 		{
 			return OracleObjectIdentifier.Create(OwnerNode, ObjectNode, null);
 		}
 
-		public bool HasExplicitDefinition { get { return SelectListColumn == null || SelectListColumn.HasExplicitDefinition; } }
+		public bool HasExplicitDefinition => SelectListColumn == null || SelectListColumn.HasExplicitDefinition;
 
-		public abstract string Name { get; }
+	    public abstract string Name { get; }
 
-		public virtual string NormalizedName { get { return Name.ToQuotedIdentifier(); } }
+		public virtual string NormalizedName => Name.ToQuotedIdentifier();
 
-		public StatementPlacement Placement { get; set; }
+	    public StatementPlacement Placement { get; set; }
 
 		public OracleQueryBlock Owner { get; set; }
 
@@ -56,12 +53,9 @@ namespace SqlPad.Oracle.SemanticModel
 			_container = container;
 		}
 
-		public OracleReferenceContainer Container
-		{
-			get { return SelectListColumn ?? Owner ?? _container; }
-		}
+		public OracleReferenceContainer Container => SelectListColumn ?? Owner ?? _container;
 
-		public StatementGrammarNode DatabaseLinkNode { get; set; }
+	    public StatementGrammarNode DatabaseLinkNode { get; set; }
 
 		public OracleDatabaseLink DatabaseLink { get; set; }
 

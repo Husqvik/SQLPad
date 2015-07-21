@@ -36,80 +36,77 @@ namespace SqlPad.Oracle
 
 		private readonly List<SuggestedKeywordClause> _keywordsClauses = new List<SuggestedKeywordClause>();
 
-		public int CursorPosition { get; private set; }
+		public int CursorPosition { get; }
 
-		public bool Schema { get; private set; }
+		public bool Schema { get; }
 
-		public bool SchemaDataObject { get; private set; }
+		public bool SchemaDataObject { get; }
 		
-		public bool Sequence { get; private set; }
+		public bool Sequence { get; }
 		
 		public bool PipelinedFunction { get; private set; }
 		
-		public bool SchemaDataObjectReference { get; private set; }
+		public bool SchemaDataObjectReference { get; }
 		
-		public bool Column { get; private set; }
+		public bool Column { get; }
 
 		public bool UpdateSetColumn { get; private set; }
 
-		public bool AllColumns { get; private set; }
+		public bool AllColumns { get; }
 		
-		public bool JoinType { get; private set; }
+		public bool JoinType { get; }
 		
-		public bool DataType { get; private set; }
+		public bool DataType { get; }
 		
-		public bool JoinCondition { get; private set; }
+		public bool JoinCondition { get; }
 		
-		public bool SchemaProgram { get; private set; }
+		public bool SchemaProgram { get; }
 
-		public bool PackageFunction { get; private set; }
+		public bool PackageFunction { get; }
 
-		public bool DatabaseLink { get; private set; }
+		public bool DatabaseLink { get; }
 		
 		public bool ColumnAlias { get; private set; }
 
-		public bool ExplicitPartition { get; private set; }
+		public bool ExplicitPartition { get; }
 		
-		public bool ExplicitSubPartition { get; private set; }
+		public bool ExplicitSubPartition { get; }
 
-		public bool SpecialFunctionParameter { get; private set; }
+		public bool SpecialFunctionParameter { get; }
 		
 		public bool InsertIntoColumns { get; private set; }
 		
 		public bool InUnparsedData { get; private set; }
 
-		public bool InComment { get; private set; }
+		public bool InComment { get; }
 
-		public bool InQueryBlockFromClause { get; private set; }
+		public bool InQueryBlockFromClause { get; }
 
-		public bool InSelectList { get; private set; }
+		public bool InSelectList { get; }
 
-		public bool IsCursorTouchingIdentifier { get; private set; }
+		public bool IsCursorTouchingIdentifier { get; }
 
 		public bool IsNewExpressionWithInvalidGrammar { get; private set; }
 		
 		public StatementGrammarNode CurrentTerminal { get; private set; }
 
-		public StatementGrammarNode EffectiveTerminal { get; private set; }
+		public StatementGrammarNode EffectiveTerminal { get; }
 
-		public OracleStatement Statement { get; private set; }
+		public OracleStatement Statement { get; }
 		
-		public OracleStatementSemanticModel SemanticModel { get; private set; }
+		public OracleStatementSemanticModel SemanticModel { get; }
 
-		public OracleQueryBlock CurrentQueryBlock { get; private set; }
+		public OracleQueryBlock CurrentQueryBlock { get; }
 
-		public ICollection<TerminalCandidate> TerminalCandidates { get; private set; }
+		public ICollection<TerminalCandidate> TerminalCandidates { get; }
 
-		public ICollection<SuggestedKeywordClause> KeywordsClauses { get { return _keywordsClauses; } }
+		public ICollection<SuggestedKeywordClause> KeywordsClauses => _keywordsClauses;
 
-		private bool Any
-		{
-			get { return Schema || SchemaDataObject || PipelinedFunction || SchemaDataObjectReference || Column || AllColumns || JoinType || DataType || JoinCondition || SchemaProgram || DatabaseLink || Sequence || PackageFunction || SpecialFunctionParameter || ExplicitPartition || ExplicitSubPartition || _keywordsClauses.Count > 0; }
-		}
+	    private bool Any => Schema || SchemaDataObject || PipelinedFunction || SchemaDataObjectReference || Column || AllColumns || JoinType || DataType || JoinCondition || SchemaProgram || DatabaseLink || Sequence || PackageFunction || SpecialFunctionParameter || ExplicitPartition || ExplicitSubPartition || _keywordsClauses.Count > 0;
 
-		public bool ExistsTerminalValue { get { return !String.IsNullOrEmpty(TerminalValuePartUntilCaret); } }
-		
-		public string TerminalValuePartUntilCaret { get; private set; }
+	    public bool ExistsTerminalValue => !String.IsNullOrEmpty(TerminalValuePartUntilCaret);
+
+	    public string TerminalValuePartUntilCaret { get; private set; }
 		
 		public string TerminalValueUnderCursor { get; private set; }
 
@@ -329,7 +326,7 @@ namespace SqlPad.Oracle
 			if (aggregateFunctionCallNode != null)
 			{
 				var programReference = SemanticModel.GetProgramReference(aggregateFunctionCallNode.FirstTerminalNode);
-				supportDistinct = programReference != null && programReference.Metadata != null && programReference.Metadata.IsAggregate;
+				supportDistinct = programReference?.Metadata != null && programReference.Metadata.IsAggregate;
 			}
 
 			var keywordClauses = TerminalCandidates.Where(c => AvailableKeywordsToSuggest.Contains(c.Id) || (InSelectList && String.Equals(c.Id, Terminals.Partition)) || (supportDistinct && c.Id.In(Terminals.Distinct, Terminals.Unique)))
@@ -527,26 +524,23 @@ namespace SqlPad.Oracle
 		public StatementGrammarNode ObjectIdentifier { get; set; }
 		public StatementGrammarNode Identifier { get; set; }
 
-		public StatementGrammarNode IdentifierUnderCursor
-		{
-			get { return GetTerminalIfUnderCursor(Identifier) ?? GetTerminalIfUnderCursor(ObjectIdentifier) ?? GetTerminalIfUnderCursor(SchemaIdentifier); }
-		}
+		public StatementGrammarNode IdentifierUnderCursor => GetTerminalIfUnderCursor(Identifier) ?? GetTerminalIfUnderCursor(ObjectIdentifier) ?? GetTerminalIfUnderCursor(SchemaIdentifier);
 
-		public int CursorPosition { get; set; }
+	    public int CursorPosition { get; set; }
 
-		public bool HasSchemaIdentifier { get { return SchemaIdentifier != null; } }
-		public bool HasObjectIdentifier { get { return ObjectIdentifier != null; } }
-		public bool HasIdentifier { get { return Identifier != null; } }
+		public bool HasSchemaIdentifier => SchemaIdentifier != null;
+	    public bool HasObjectIdentifier => ObjectIdentifier != null;
+	    public bool HasIdentifier => Identifier != null;
 
-		public string SchemaIdentifierOriginalValue { get { return SchemaIdentifier == null ? null : SchemaIdentifier.Token.Value; } }
-		public string ObjectIdentifierOriginalValue { get { return ObjectIdentifier == null ? null : ObjectIdentifier.Token.Value; } }
-		public string IdentifierOriginalValue { get { return Identifier == null ? null : Identifier.Token.Value; } }
+	    public string SchemaIdentifierOriginalValue => SchemaIdentifier?.Token.Value;
+	    public string ObjectIdentifierOriginalValue => ObjectIdentifier?.Token.Value;
+	    public string IdentifierOriginalValue => Identifier?.Token.Value;
 
-		public string SchemaIdentifierEffectiveValue { get { return GetTerminalEffectiveValue(SchemaIdentifier); } }
-		public string ObjectIdentifierEffectiveValue { get { return GetTerminalEffectiveValue(ObjectIdentifier); } }
-		public string IdentifierEffectiveValue { get { return GetTerminalEffectiveValue(Identifier); } }
+	    public string SchemaIdentifierEffectiveValue => GetTerminalEffectiveValue(SchemaIdentifier);
+	    public string ObjectIdentifierEffectiveValue => GetTerminalEffectiveValue(ObjectIdentifier);
+	    public string IdentifierEffectiveValue => GetTerminalEffectiveValue(Identifier);
 
-		private string GetTerminalEffectiveValue(StatementNode terminal)
+	    private string GetTerminalEffectiveValue(StatementNode terminal)
 		{
 			if (terminal == null || terminal.SourcePosition.IndexStart > CursorPosition)
 				return null;

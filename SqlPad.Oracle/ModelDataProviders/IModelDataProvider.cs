@@ -36,11 +36,11 @@ namespace SqlPad.Oracle.ModelDataProviders
 			throw new NotSupportedException("Override this method if you want to map data from the reader. ");
 		}
 
-		public virtual bool HasScalarResult { get { return false; } }
+		public virtual bool HasScalarResult => false;
 
-		public virtual bool IsValid { get { return true; } }
+	    public virtual bool IsValid => true;
 
-		public virtual void MapScalarValue(object value)
+	    public virtual void MapScalarValue(object value)
 		{
 			throw new NotSupportedException("Override this method to get scalar value from a query. ");
 		}

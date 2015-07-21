@@ -58,7 +58,7 @@ namespace SqlPad.Oracle
 								.Select(p => $"{p.Name.ToSimpleIdentifier()}{(String.IsNullOrEmpty(p.FullDataTypeName) ? null : $": {p.FullDataTypeName}")}")
 								.ToArray(),
 							CurrentParameterIndex = fo.CurrentParameterIndex,
-							ReturnedDatatype = returnParameter == null ? null : returnParameter.FullDataTypeName,
+							ReturnedDatatype = returnParameter?.FullDataTypeName,
 							IsParameterMetadataAvailable = !String.IsNullOrEmpty(metadata.Identifier.Owner) || metadata.Type == ProgramType.StatementFunction
 						};
 				});
@@ -84,7 +84,7 @@ namespace SqlPad.Oracle
 				.OrderByDescending(r => r.RootNode.Level)
 				.FirstOrDefault();
 
-			if (programReferenceBase == null || programReferenceBase.Metadata == null)
+			if (programReferenceBase?.Metadata == null)
 			{
 				return Enumerable.Empty<OracleCodeCompletionFunctionOverload>();
 			}
@@ -171,7 +171,7 @@ namespace SqlPad.Oracle
 
 		public ICollection<ICodeCompletionItem> ResolveItems(SqlDocumentRepository sqlDocumentRepository, IDatabaseModel databaseModel, int cursorPosition, bool forcedInvokation)
 		{
-			if (sqlDocumentRepository == null || sqlDocumentRepository.Statements == null)
+			if (sqlDocumentRepository?.Statements == null)
 				return EmptyCollection;
 
 			var completionType = new OracleCodeCompletionType(sqlDocumentRepository, sqlDocumentRepository.StatementText, cursorPosition);
@@ -914,7 +914,7 @@ namespace SqlPad.Oracle
 		{
 			var safeObjectPartQuotedIdentifier = MakeSaveQuotedIdentifier(objectNamePart);
 			var safeTokenValueQuotedIdentifier = node == null ? null : MakeSaveQuotedIdentifier(node.Token.Value);
-			var objectNamePartUpperInvariant = objectNamePart == null ? String.Empty : objectNamePart.ToUpperInvariant();
+			var objectNamePartUpperInvariant = objectNamePart?.ToUpperInvariant() ?? String.Empty;
 			return objects
 				.Where(o => !String.Equals(safeObjectPartQuotedIdentifier, o.Identifier2) &&
 							(node == null || !String.Equals(safeTokenValueQuotedIdentifier, o.Identifier2)) && CodeCompletionSearchHelper.IsMatch(o.Identifier2, objectNamePart))
@@ -940,21 +940,15 @@ namespace SqlPad.Oracle
 			
 			public string Identifier2 { get; set; }
 
-			public string CompletionText { get { return OracleObjectIdentifier.MergeIdentifiersIntoSimpleString(Identifier1, Identifier2); } }
-			
-			public string Category { get; set; }
+			public string CompletionText => OracleObjectIdentifier.MergeIdentifiersIntoSimpleString(Identifier1, Identifier2);
 
-			public int CaretOffset
-			{
-				get { return IsSchemaType() ? -1 : 0; }
-			}
+		    public string Category { get; set; }
 
-			public string TextPostFix
-			{
-				get { return IsSchemaType() ? "()" : null; }
-			}
+			public int CaretOffset => IsSchemaType() ? -1 : 0;
 
-			private bool IsSchemaType()
+		    public string TextPostFix => IsSchemaType() ? "()" : null;
+
+		    private bool IsSchemaType()
 			{
 				var targetObject = SchemaObject.GetTargetSchemaObject();
 				return targetObject != null && targetObject.Type == OracleSchemaObjectType.Type;

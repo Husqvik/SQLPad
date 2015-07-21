@@ -165,12 +165,9 @@ namespace SqlPad.Oracle
 				return OracleObjectIdentifier.Empty;
 
 			var schemaPrefixNode = queryTableExpression.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.SchemaPrefix);
-			if (schemaPrefixNode != null)
-			{
-				schemaPrefixNode = schemaPrefixNode.ChildNodes.First();
-			}
+		    schemaPrefixNode = schemaPrefixNode?.ChildNodes.First();
 
-			return OracleObjectIdentifier.Create(schemaPrefixNode, tableIdentifierNode, null);
+		    return OracleObjectIdentifier.Create(schemaPrefixNode, tableIdentifierNode, null);
 		}
 
 		public static bool IsWithinSelectClauseOrExpression(this StatementGrammarNode node)
@@ -206,9 +203,7 @@ namespace SqlPad.Oracle
 
 		public static StatementGrammarNode GetParentExpression(this StatementGrammarNode node)
 		{
-			return node == null
-				? null
-				: node.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBlock, NonTerminals.Expression);
+			return node?.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBlock, NonTerminals.Expression);
 		}
 
 		public static string ToCategoryLabel(this ReferenceType type)

@@ -28,20 +28,17 @@ namespace SqlPad.Oracle
 
 		internal Regex RegexMatcher { get; private set; }
 
-		internal bool IsFixed { get { return RegexMatcher == null; } }
+		internal bool IsFixed => RegexMatcher == null;
 	}
 
 	[DebuggerDisplay("SqlGrammarRuleSequenceTerminal (Id={Id}, IsOptional={IsOptional})")]
 	public partial class SqlGrammarRuleSequenceTerminal : ISqlGrammarRuleSequenceItem
 	{
-		public bool IsRequired
-		{
-			get { return !isOptionalFieldSpecified || (isOptionalFieldSpecified && !IsOptional); }
-		}
+		public bool IsRequired => !isOptionalFieldSpecified || (isOptionalFieldSpecified && !IsOptional);
 
-		public NodeType Type { get { return NodeType.Terminal; } }
+	    public NodeType Type => NodeType.Terminal;
 
-		public SqlGrammarRuleSequence ParentSequence { get; set; }
+	    public SqlGrammarRuleSequence ParentSequence { get; set; }
 
 		public int SequenceIndex { get; set; }
 		
@@ -51,14 +48,11 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("SqlGrammarRuleSequenceNonTerminal (Id={Id}, IsOptional={IsOptional})")]
 	public partial class SqlGrammarRuleSequenceNonTerminal : ISqlGrammarRuleSequenceItem
 	{
-		public bool IsRequired
-		{
-			get { return !isOptionalFieldSpecified || (isOptionalFieldSpecified && !IsOptional); }
-		}
+		public bool IsRequired => !isOptionalFieldSpecified || (isOptionalFieldSpecified && !IsOptional);
 
-		public NodeType Type { get { return NodeType.NonTerminal; } }
+	    public NodeType Type => NodeType.NonTerminal;
 
-		public SqlGrammarRuleSequence ParentSequence { get; set; }
+	    public SqlGrammarRuleSequence ParentSequence { get; set; }
 
 		public int SequenceIndex { get; set; }
 		

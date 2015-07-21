@@ -21,12 +21,9 @@ namespace SqlPad.Oracle
 				SourcePosition = new SourcePosition { IndexStart = -1, IndexEnd = -1 }
 			};
 
-		public override ICollection<BindVariableConfiguration> BindVariables
-		{
-			get { return _bindVariables ?? (_bindVariables = BuildBindVariableCollection()); }
-		}
+		public override ICollection<BindVariableConfiguration> BindVariables => _bindVariables ?? (_bindVariables = BuildBindVariableCollection());
 
-		public override bool IsDataManipulation
+	    public override bool IsDataManipulation
 		{
 			get
 			{
@@ -105,9 +102,6 @@ namespace SqlPad.Oracle
 		{
 		}
 
-		public override IEnumerable<FoldingSection> FoldingSections
-		{
-			get { return FoldingSectionProvider.GetFoldingSections(Tokens); }
-		}
+		public override IEnumerable<FoldingSection> FoldingSections => FoldingSectionProvider.GetFoldingSections(Tokens);
 	}
 }

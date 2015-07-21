@@ -13,19 +13,16 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public abstract IReadOnlyList<OracleColumn> Columns { get; }
 
-		public virtual ICollection<OracleQueryBlock> QueryBlocks { get { return _queryBlocks; } }
+		public virtual ICollection<OracleQueryBlock> QueryBlocks => _queryBlocks;
 
-		public abstract ReferenceType Type { get; }
+	    public abstract ReferenceType Type { get; }
 	}
 
 	public class OraclePartitionReference : OracleReference
 	{
-		public override string Name
-		{
-			get { return ObjectNode.Token.Value; }
-		}
+		public override string Name => ObjectNode.Token.Value;
 
-		public OraclePartitionBase Partition { get; set; }
+	    public OraclePartitionBase Partition { get; set; }
 		
 		public OracleDataObjectReference DataObjectReference { get; set; }
 	}
@@ -35,15 +32,14 @@ namespace SqlPad.Oracle.SemanticModel
 	{
 		private IReadOnlyList<OracleColumn> _columns;
 		private IReadOnlyList<OracleColumn> _pseudoColumns;
-		private readonly ReferenceType _referenceType;
 
-		internal static readonly string RowIdNormalizedName = TerminalValues.RowIdPseudoColumn.ToQuotedIdentifier();
+	    internal static readonly string RowIdNormalizedName = TerminalValues.RowIdPseudoColumn.ToQuotedIdentifier();
 
 		public static readonly OracleDataObjectReference[] EmptyArray = new OracleDataObjectReference[0];
 
 		public OracleDataObjectReference(ReferenceType referenceType)
 		{
-			_referenceType = referenceType;
+			Type = referenceType;
 		}
 
 		public override string Name { get { throw new NotImplementedException(); } }
@@ -177,7 +173,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public FlashbackOption FlashbackOption { get; set; }
 		
-		public override ReferenceType Type { get { return _referenceType; } }
+		public override ReferenceType Type { get; }
 	}
 
 	[Flags]

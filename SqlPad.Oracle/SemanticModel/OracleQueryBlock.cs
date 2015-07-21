@@ -26,27 +26,18 @@ namespace SqlPad.Oracle.SemanticModel
 			AccessibleQueryBlocks = new List<OracleQueryBlock>();
 		}
 
-		private bool IsFrozen
-		{
-			get { return _namedColumns != null; }
-		}
+		private bool IsFrozen => _namedColumns != null;
 
-		public ILookup<string, OracleSelectListColumn> NamedColumns
+	    public ILookup<string, OracleSelectListColumn> NamedColumns
 		{
 			get { return _namedColumns ?? (_namedColumns = _columns.Concat(_attachedColumns).ToLookup(c => c.NormalizedName)); }
 		}
 
-		public OracleDataObjectReference SelfObjectReference
-		{
-			get { return _selfObjectReference ?? BuildSelfObjectReference(); }
-		}
+		public OracleDataObjectReference SelfObjectReference => _selfObjectReference ?? BuildSelfObjectReference();
 
-		public bool HasRemoteAsteriskReferences
-		{
-			get { return _hasRemoteAsteriskReferences ?? (_hasRemoteAsteriskReferences = HasRemoteAsteriskReferencesInternal(this)).Value; }
-		}
+	    public bool HasRemoteAsteriskReferences => _hasRemoteAsteriskReferences ?? (_hasRemoteAsteriskReferences = HasRemoteAsteriskReferencesInternal(this)).Value;
 
-		private OracleDataObjectReference BuildSelfObjectReference()
+	    private OracleDataObjectReference BuildSelfObjectReference()
 		{
 			_selfObjectReference = new OracleDataObjectReference(ReferenceType.InlineView)
 			                       {
@@ -59,11 +50,11 @@ namespace SqlPad.Oracle.SemanticModel
 			return _selfObjectReference;
 		}
 
-		public string Alias { get { return AliasNode == null ? null : AliasNode.Token.Value; } }
+		public string Alias => AliasNode?.Token.Value;
 
-		public string NormalizedAlias { get { return Alias.ToQuotedIdentifier(); } }
+	    public string NormalizedAlias => Alias.ToQuotedIdentifier();
 
-		public StatementGrammarNode AliasNode { get; set; }
+	    public StatementGrammarNode AliasNode { get; set; }
 
 		public QueryBlockType Type { get; set; }
 		
@@ -99,14 +90,11 @@ namespace SqlPad.Oracle.SemanticModel
 		
 		public bool IsRedundant { get; set; }
 
-		public IList<OracleProgramMetadata> AttachedFunctions { get { return _attachedFunctions; } }
+		public IList<OracleProgramMetadata> AttachedFunctions => _attachedFunctions;
 
-		public IEnumerable<OracleProgramMetadata> AccessibleAttachedFunctions
-		{
-			get { return GetAccessibleAttachedFunctions(this); }
-		}
+	    public IEnumerable<OracleProgramMetadata> AccessibleAttachedFunctions => GetAccessibleAttachedFunctions(this);
 
-		private static IEnumerable<OracleProgramMetadata> GetAccessibleAttachedFunctions(OracleQueryBlock queryBlock)
+	    private static IEnumerable<OracleProgramMetadata> GetAccessibleAttachedFunctions(OracleQueryBlock queryBlock)
 		{
 			var attachedFunctions = (IEnumerable<OracleProgramMetadata>)queryBlock._attachedFunctions;
 			if (queryBlock.Parent != null)
@@ -117,15 +105,15 @@ namespace SqlPad.Oracle.SemanticModel
 			return attachedFunctions;
 		}
 		
-		public IReadOnlyList<OracleQueryBlock> CommonTableExpressions { get { return _commonTableExpressions; } }
-		
-		public IReadOnlyList<OracleSelectListColumn> Columns { get { return _columns; } }
+		public IReadOnlyList<OracleQueryBlock> CommonTableExpressions => _commonTableExpressions;
 
-		public IReadOnlyList<OracleSelectListColumn> AttachedColumns { get { return _attachedColumns; } }
-		
-		public IReadOnlyCollection<OracleSelectListColumn> AsteriskColumns { get { return _asteriskColumns; } }
+	    public IReadOnlyList<OracleSelectListColumn> Columns => _columns;
 
-		public OracleSqlModelReference ModelReference { get; set; }
+	    public IReadOnlyList<OracleSelectListColumn> AttachedColumns => _attachedColumns;
+
+	    public IReadOnlyCollection<OracleSelectListColumn> AsteriskColumns => _asteriskColumns;
+
+	    public OracleSqlModelReference ModelReference { get; set; }
 
 		public IEnumerable<OracleReferenceContainer> ChildContainers
 		{

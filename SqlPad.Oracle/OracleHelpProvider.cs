@@ -79,7 +79,7 @@ namespace SqlPad.Oracle
 			EnsureDocumentationDictionaries();
 
 			var programReference = semanticModel.GetProgramReference(terminal);
-			if (programReference != null && programReference.Metadata != null && programReference.Metadata.Type != ProgramType.StatementFunction)
+			if (programReference?.Metadata != null && programReference.Metadata.Type != ProgramType.StatementFunction)
 			{
 				ShowSqlFunctionDocumentation(programReference.Metadata.Identifier);
 				return;

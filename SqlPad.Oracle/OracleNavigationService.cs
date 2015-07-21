@@ -18,7 +18,7 @@ namespace SqlPad.Oracle
 
 			var semanticModel = (OracleStatementSemanticModel)documentRepository.ValidationModels[statement].SemanticModel;
 			var queryBlock = semanticModel.GetQueryBlock(executionContext.CaretOffset);
-			return queryBlock == null ? null : (int?)queryBlock.RootNode.SourcePosition.IndexStart;
+			return queryBlock?.RootNode.SourcePosition.IndexStart;
 		}
 
 		public int? NavigateToDefinition(CommandExecutionContext executionContext)
@@ -81,9 +81,7 @@ namespace SqlPad.Oracle
 		{
 			var column = queryBlock.AllColumnReferences.SingleOrDefault(c => c.ObjectNode == terminal);
 
-			var dataObjectReference = column == null
-				? null
-				: column.ValidObjectReference as OracleDataObjectReference;
+			var dataObjectReference = column?.ValidObjectReference as OracleDataObjectReference;
 			
 			if (dataObjectReference == null)
 				return null;
@@ -102,7 +100,7 @@ namespace SqlPad.Oracle
 		private static int? NavigateToColumnDefinition(OracleQueryBlock queryBlock, StatementGrammarNode terminal)
 		{
 			var column = queryBlock.AllColumnReferences.SingleOrDefault(c => c.ColumnNode == terminal);
-			if (column == null || column.ValidObjectReference == null || column.ValidObjectReference.QueryBlocks.Count != 1)
+			if (column?.ValidObjectReference == null || column.ValidObjectReference.QueryBlocks.Count != 1)
 				return null;
 
 			var childQueryBlock = column.ValidObjectReference.QueryBlocks.Single();
@@ -117,9 +115,7 @@ namespace SqlPad.Oracle
 
 			if (!selectListColumn.IsDirectReference)
 			{
-				return selectListColumn.AliasNode == null
-					? selectListColumn.RootNode.SourcePosition.IndexStart
-					: selectListColumn.AliasNode.SourcePosition.IndexStart;
+				return selectListColumn.AliasNode?.SourcePosition.IndexStart ?? selectListColumn.RootNode.SourcePosition.IndexStart;
 			}
 
 			var columnReference = selectListColumn.ColumnReferences.Single();

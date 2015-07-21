@@ -18,9 +18,9 @@ namespace SqlPad.Oracle.ExecutionPlan
 
 		public T RootItem { get; private set; }
 
-		public IReadOnlyDictionary<int, T> AllItems { get { return _allItems; } }
+		public IReadOnlyDictionary<int, T> AllItems => _allItems;
 
-		public void Add(T item)
+	    public void Add(T item)
 		{
 			if (_currentExecutionStep > 0)
 			{
@@ -131,9 +131,9 @@ namespace SqlPad.Oracle.ExecutionPlan
 
 		public int Depth { get; set; }
 
-		public bool IsLeaf { get { return _childItems.Count == 0; } }
+		public bool IsLeaf => _childItems.Count == 0;
 
-		public string Operation { get; set; }
+	    public string Operation { get; set; }
 
 		public string Options { get; set; }
 
@@ -177,12 +177,9 @@ namespace SqlPad.Oracle.ExecutionPlan
 
 		public ExecutionPlanItem Parent { get; private set; }
 
-		public IReadOnlyList<ExecutionPlanItem> ChildItems
-		{
-			get { return _childItems.AsReadOnly(); }
-		}
+		public IReadOnlyList<ExecutionPlanItem> ChildItems => _childItems.AsReadOnly();
 
-		public IEnumerable<ExecutionPlanItem> AllChildItems
+	    public IEnumerable<ExecutionPlanItem> AllChildItems
 		{
 			get { return _childItems.Concat(_childItems.SelectMany(i => i.AllChildItems)); }
 		}

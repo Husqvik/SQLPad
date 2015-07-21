@@ -7,24 +7,19 @@ namespace SqlPad.Oracle.SemanticModel
 	[DebuggerDisplay("OracleSpecialTableReference (Alias={Name})")]
 	public class OracleSpecialTableReference : OracleDataObjectReference
 	{
-		private readonly IReadOnlyList<OracleColumn> _columns;
-
-		public OracleSpecialTableReference(ReferenceType referenceType, IEnumerable<OracleColumn> columns)
+	    public OracleSpecialTableReference(ReferenceType referenceType, IEnumerable<OracleColumn> columns)
 			: base(referenceType)
 		{
-			_columns = new List<OracleColumn>(columns).AsReadOnly();
+			Columns = new List<OracleColumn>(columns).AsReadOnly();
 		}
 
-		public override string Name { get { return AliasNode == null ? null : AliasNode.Token.Value; } }
+		public override string Name => AliasNode?.Token.Value;
 
-		protected override OracleObjectIdentifier BuildFullyQualifiedObjectName()
+	    protected override OracleObjectIdentifier BuildFullyQualifiedObjectName()
 		{
 			return OracleObjectIdentifier.Create(null, Name);
 		}
 
-		public override IReadOnlyList<OracleColumn> Columns
-		{
-			get { return _columns; }
-		}
+		public override IReadOnlyList<OracleColumn> Columns { get; }
 	}
 }

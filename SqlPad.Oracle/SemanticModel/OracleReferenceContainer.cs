@@ -26,17 +26,17 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public OracleStatementSemanticModel SemanticModel { get; private set; }
 
-		public ICollection<OracleTypeReference> TypeReferences { get; private set; }
+		public ICollection<OracleTypeReference> TypeReferences { get; }
 
-		public ICollection<OracleSequenceReference> SequenceReferences { get; private set; }
+		public ICollection<OracleSequenceReference> SequenceReferences { get; }
 
-		public IList<OracleColumnReference> ColumnReferences { get; private set; }
+		public IList<OracleColumnReference> ColumnReferences { get; }
 
-		public ICollection<OracleProgramReference> ProgramReferences { get; private set; }
+		public ICollection<OracleProgramReference> ProgramReferences { get; }
 
-		public ICollection<OracleDataObjectReference> ObjectReferences { get; private set; }
+		public ICollection<OracleDataObjectReference> ObjectReferences { get; }
 
-		public ICollection<OracleDataTypeReference> DataTypeReferences { get; private set; }
+		public ICollection<OracleDataTypeReference> DataTypeReferences { get; }
 
 		public IEnumerable<OracleReference> AllReferences
 		{

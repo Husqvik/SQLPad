@@ -8,9 +8,9 @@ namespace SqlPad.Oracle.SemanticModel
 	[DebuggerDisplay("OracleProgramReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Object={ObjectNode == null ? null : ObjectNode.Token.Value}; Function={FunctionIdentifierNode.Token.Value}; Metadata={Metadata})")]
 	public class OracleProgramReference : OracleProgramReferenceBase
 	{
-		public override string Name { get { return FunctionIdentifierNode.Token.Value; } }
+		public override string Name => FunctionIdentifierNode.Token.Value;
 
-		public StatementGrammarNode FunctionIdentifierNode { get; set; }
+	    public StatementGrammarNode FunctionIdentifierNode { get; set; }
 		
 		public StatementGrammarNode AnalyticClauseNode { get; set; }
 		
@@ -25,9 +25,9 @@ namespace SqlPad.Oracle.SemanticModel
 	[DebuggerDisplay("OracleTypeReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Type={ObjectNode.Token.Value}; Metadata={Metadata})")]
 	public class OracleTypeReference : OracleProgramReferenceBase
 	{
-		public override string Name { get { return ObjectNode.Token.Value; } }
+		public override string Name => ObjectNode.Token.Value;
 
-		public override OracleProgramMetadata Metadata
+	    public override OracleProgramMetadata Metadata
 		{
 			get { return ((OracleTypeBase)SchemaObject.GetTargetSchemaObject()).GetConstructorMetadata(); }
 			set { throw new NotSupportedException("Metadata cannot be set. It is inferred from type attributes"); }

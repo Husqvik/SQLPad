@@ -18,13 +18,13 @@ namespace SqlPad.Oracle
 		}
 
 		#region Implementation of IInfrastructureFactory
-		public string SchemaLabel { get { return "Schema"; } }
+		public string SchemaLabel => "Schema";
 
-		public IDataExportConverter DataExportConverter { get { return ExportConverter; } }
+	    public IDataExportConverter DataExportConverter => ExportConverter;
 
-		public ICommandFactory CommandFactory { get { return _commandFactory; } }
-		
-		public ITokenReader CreateTokenReader(string sqlText)
+	    public ICommandFactory CommandFactory => _commandFactory;
+
+	    public ITokenReader CreateTokenReader(string sqlText)
 		{
 			return OracleTokenReader.Create(sqlText);
 		}

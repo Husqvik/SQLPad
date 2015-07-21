@@ -30,48 +30,39 @@ namespace SqlPad.Oracle.SemanticModel
 		{
 			OuterReferenceCount++;
 
-			if (AsteriskColumn != null)
-			{
-				AsteriskColumn.RegisterOuterReference();
-			}
+		    AsteriskColumn?.RegisterOuterReference();
 		}
 
 		public int OuterReferenceCount { get; private set; }
 
-		public bool IsReferenced { get { return OuterReferenceCount > 0; } }
-		
-		public bool IsDirectReference { get; set; }
+		public bool IsReferenced => OuterReferenceCount > 0;
+
+	    public bool IsDirectReference { get; set; }
 		
 		public bool IsAsterisk { get; set; }
 		
-		public OracleSelectListColumn AsteriskColumn { get; private set; }
+		public OracleSelectListColumn AsteriskColumn { get; }
 
-		public bool HasExplicitDefinition { get { return AsteriskColumn == null; } }
+		public bool HasExplicitDefinition => AsteriskColumn == null;
 
-		public string NormalizedName
+	    public string NormalizedName
 		{
 			get
 			{
 				if (!String.IsNullOrEmpty(ExplicitNormalizedName))
 					return ExplicitNormalizedName;
 
-				if (_aliasNode != null)
-					return _normalizedName;
-
-				return _columnDescription == null
-					? null
-					: _columnDescription.Name;
+			    return _aliasNode != null
+			        ? _normalizedName
+			        : _columnDescription?.Name;
 			}
 		}
 
 		public string ExplicitNormalizedName { get; set; }
 
-		public bool HasExplicitAlias
-		{
-			get { return !IsAsterisk && HasExplicitDefinition && String.Equals(RootNode.LastTerminalNode.Id, Terminals.ColumnAlias); }
-		}
+		public bool HasExplicitAlias => !IsAsterisk && HasExplicitDefinition && String.Equals(RootNode.LastTerminalNode.Id, Terminals.ColumnAlias);
 
-		public StatementGrammarNode AliasNode
+	    public StatementGrammarNode AliasNode
 		{
 			get { return _aliasNode; }
 			set
@@ -82,7 +73,7 @@ namespace SqlPad.Oracle.SemanticModel
 				}
 
 				_aliasNode = value;
-				_normalizedName = _aliasNode == null ? null : _aliasNode.Token.Value.ToQuotedIdentifier();
+				_normalizedName = _aliasNode?.Token.Value.ToQuotedIdentifier();
 			}
 		}
 

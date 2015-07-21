@@ -19,10 +19,10 @@ namespace SqlPad.Oracle
 			CommentType = commentType;
 		}
 
-		string IToken.Value { get { return Value; } }
+		string IToken.Value => Value;
 
-		int IToken.Index { get { return Index; } }
+	    int IToken.Index => Index;
 
-		CommentType IToken.CommentType { get { return CommentType; } }
+	    CommentType IToken.CommentType => CommentType;
 	}
 }

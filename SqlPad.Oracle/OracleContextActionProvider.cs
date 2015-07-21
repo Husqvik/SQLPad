@@ -28,7 +28,7 @@ namespace SqlPad.Oracle
 
 		public ICollection<ContextAction> GetContextActions(SqlDocumentRepository sqlDocumentRepository, CommandExecutionContext executionContext)
 		{
-			if (sqlDocumentRepository == null || sqlDocumentRepository.Statements == null || executionContext.StatementText != sqlDocumentRepository.StatementText)
+			if (sqlDocumentRepository?.Statements == null || executionContext.StatementText != sqlDocumentRepository.StatementText)
 				return EmptyCollection;
 
 			var currentTerminal = sqlDocumentRepository.Statements.GetTerminalAtPosition(executionContext.CaretOffset);

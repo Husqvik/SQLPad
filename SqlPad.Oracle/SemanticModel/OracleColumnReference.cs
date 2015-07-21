@@ -18,16 +18,13 @@ namespace SqlPad.Oracle.SemanticModel
 			SetContainer(referenceContainer);
 		}
 
-		public override string Name { get { return _columnNode.Token.Value; } }
+		public override string Name => _columnNode.Token.Value;
 
-		public override string NormalizedName
-		{
-			get { return _normalizedName; }
-		}
+	    public override string NormalizedName => _normalizedName;
 
-		public bool ReferencesAllColumns { get { return _columnNode.Token.Value == "*"; } }
+	    public bool ReferencesAllColumns => _columnNode.Token.Value == "*";
 
-		public StatementGrammarNode ColumnNode
+	    public StatementGrammarNode ColumnNode
 		{
 			get { return _columnNode; }
 			set
@@ -38,11 +35,11 @@ namespace SqlPad.Oracle.SemanticModel
 				}
 
 				_columnNode = value;
-				_normalizedName = _columnNode == null ? null : _columnNode.Token.Value.ToQuotedIdentifier();
+				_normalizedName = _columnNode?.Token.Value.ToQuotedIdentifier();
 			}
 		}
 
-		public ICollection<OracleObjectWithColumnsReference> ColumnNodeObjectReferences { get; private set; }
+		public ICollection<OracleObjectWithColumnsReference> ColumnNodeObjectReferences { get; }
 
 		public ICollection<OracleColumn> ColumnNodeColumnReferences { get; set; }
 		

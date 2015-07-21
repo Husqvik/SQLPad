@@ -18,17 +18,12 @@ namespace SqlPad.Oracle.SemanticModel
 	{
 		private readonly List<OracleColumn> _columns = new List<OracleColumn>();
 
-		public IReadOnlyList<OracleColumn> Columns { get { return _columns.AsReadOnly(); } }
+		public IReadOnlyList<OracleColumn> Columns => _columns.AsReadOnly();
 
-		public override void VisitColumnReference(OracleColumnReference columnReference)
+	    public override void VisitColumnReference(OracleColumnReference columnReference)
 		{
-			if (columnReference.ValidObjectReference == null)
-			{
-				return;
-			}
-			
-			var matchedColumns = columnReference.ValidObjectReference.Columns.Where(c => String.Equals(columnReference.NormalizedName, c.Name)).ToArray();
-			if (matchedColumns.Length != 1)
+	        var matchedColumns = columnReference.ValidObjectReference?.Columns.Where(c => String.Equals(columnReference.NormalizedName, c.Name)).ToArray();
+			if (matchedColumns?.Length != 1)
 			{
 				return;
 			}

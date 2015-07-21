@@ -11,11 +11,11 @@ namespace SqlPad.Oracle.SemanticModel
 		private readonly IReadOnlyList<OracleSelectListColumn> _sqlModelColumns;
 		private IReadOnlyList<OracleColumn> _columns;
 
-		public OracleReferenceContainer SourceReferenceContainer { get; private set; }
+		public OracleReferenceContainer SourceReferenceContainer { get; }
 
-		public OracleReferenceContainer DimensionReferenceContainer { get; private set; }
+		public OracleReferenceContainer DimensionReferenceContainer { get; }
 		
-		public OracleReferenceContainer MeasuresReferenceContainer { get; private set; }
+		public OracleReferenceContainer MeasuresReferenceContainer { get; }
 
 		public IReadOnlyCollection<OracleReferenceContainer> ChildContainers { get; private set; }
 

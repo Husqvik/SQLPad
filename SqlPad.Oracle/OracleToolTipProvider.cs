@@ -149,7 +149,7 @@ namespace SqlPad.Oracle
 				.OfType<OracleProgramReferenceBase>()
 				.SingleOrDefault(r => r.ParameterReferences.Any(parameterFilter));
 
-			if (programReference == null || programReference.Metadata == null)
+			if (programReference?.Metadata == null)
 			{
 				return null;
 			}
@@ -184,7 +184,7 @@ namespace SqlPad.Oracle
 								: c.ColumnDescription.Name,
 							FullTypeName = c.ColumnDescription.FullTypeName,
 							ColumnIndex = i + 1,
-							RowSourceName = validObjectReference == null ? String.Empty : validObjectReference.FullyQualifiedObjectName.ToString()
+							RowSourceName = validObjectReference?.FullyQualifiedObjectName.ToString() ?? String.Empty
 						};
 				}).ToArray();
 
@@ -327,7 +327,7 @@ namespace SqlPad.Oracle
 			}
 
 			var partitionReference = reference as OraclePartitionReference;
-			if (partitionReference != null && partitionReference.Partition != null)
+			if (partitionReference?.Partition != null)
 			{
 				var subPartition = partitionReference.Partition as OracleSubPartition;
 				if (subPartition != null)
@@ -461,13 +461,8 @@ namespace SqlPad.Oracle
 
 		private OracleDatabaseLink GetDatabaseLink(OracleQueryBlock queryBlock, StatementGrammarNode terminal)
 		{
-			if (queryBlock == null)
-			{
-				return null;
-			}
-
-			var databaseLinkReference = queryBlock.DatabaseLinkReferences.SingleOrDefault(l => l.DatabaseLinkNode.Terminals.Contains(terminal));
-			return databaseLinkReference == null ? null : databaseLinkReference.DatabaseLink;
+		    var databaseLinkReference = queryBlock?.DatabaseLinkReferences.SingleOrDefault(l => l.DatabaseLinkNode.Terminals.Contains(terminal));
+			return databaseLinkReference?.DatabaseLink;
 		}
 	}
 }

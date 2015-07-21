@@ -17,9 +17,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public IModelDataProvider SessionEndExecutionStatisticsDataProvider { get; private set; }
 
-		public ICollection<SessionExecutionStatisticsRecord> ExecutionStatistics { get { return _statisticsModel.StatisticsRecords.Values; } }
+		public ICollection<SessionExecutionStatisticsRecord> ExecutionStatistics => _statisticsModel.StatisticsRecords.Values;
 
-		public SessionExecutionStatisticsDataProvider(IDictionary<int, string> statisticsKeys, int sessionId)
+	    public SessionExecutionStatisticsDataProvider(IDictionary<int, string> statisticsKeys, int sessionId)
 		{
 			_statisticsModel = new SessionExecutionStatisticsModel(statisticsKeys, sessionId);
 			SessionBeginExecutionStatisticsDataProvider = new SessionExecutionStatisticsDataProviderInternal(_statisticsModel, true);
@@ -44,12 +44,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 				DataModel.StatisticsRecords.Clear();
 			}
 
-			public override bool IsValid
-			{
-				get { return _executionStart || DataModel.StatisticsKeys.Count > 0; }
-			}
+			public override bool IsValid => _executionStart || DataModel.StatisticsKeys.Count > 0;
 
-			public override void MapReaderData(OracleDataReader reader)
+		    public override void MapReaderData(OracleDataReader reader)
 			{
 				if (DataModel.StatisticsKeys.Count == 0)
 				{
@@ -100,11 +97,11 @@ namespace SqlPad.Oracle.ModelDataProviders
 			public readonly Dictionary<string, SessionExecutionStatisticsRecord> ExecutionStartRecords = new Dictionary<string, SessionExecutionStatisticsRecord>();
 			public readonly Dictionary<string, SessionExecutionStatisticsRecord> StatisticsRecords = new Dictionary<string, SessionExecutionStatisticsRecord>();
 
-			public int SessionId { get; private set; }
+			public int SessionId { get; }
 
 			public bool IsInitialized { get; private set; }
 
-			public IDictionary<int, string> StatisticsKeys { get; private set; }
+			public IDictionary<int, string> StatisticsKeys { get; }
 
 			public void ExecutionStartRecordsSet()
 			{

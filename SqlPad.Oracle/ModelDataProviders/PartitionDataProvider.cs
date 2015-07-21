@@ -88,7 +88,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 				command.CommandText = BuildCommandText(OracleDatabaseCommands.SelectTablePartitionDetailsCommandTextBase, _includeInMemorySettings);
 				PartitionDataProvider.InitializeCommand(command, _partitionOwner);
 
-				command.AddSimpleParameter("PARTITION_NAME", _partitionDataModel == null ? null : _partitionDataModel.Name);
+				command.AddSimpleParameter("PARTITION_NAME", _partitionDataModel?.Name);
 			}
 
 			public override void MapReaderData(OracleDataReader reader)
@@ -146,8 +146,8 @@ namespace SqlPad.Oracle.ModelDataProviders
 				command.CommandText = BuildCommandText(OracleDatabaseCommands.SelectTableSubPartitionsDetailsCommandTextBase, _includeInMemorySettings);
 				PartitionDataProvider.InitializeCommand(command, _subPartitionOwner);
 
-				command.AddSimpleParameter("PARTITION_NAME", _partitionDataModel == null ? null : _partitionDataModel.Name);
-				command.AddSimpleParameter("SUBPARTITION_NAME", _subPartitionDataModel == null ? null : _subPartitionDataModel.Name);
+				command.AddSimpleParameter("PARTITION_NAME", _partitionDataModel?.Name);
+				command.AddSimpleParameter("SUBPARTITION_NAME", _subPartitionDataModel?.Name);
 			}
 
 			public override void MapReaderData(OracleDataReader reader)

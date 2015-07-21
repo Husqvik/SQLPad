@@ -20,9 +20,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 		
 		public IModelDataProvider LoadExplainPlanUpdater { get; private set; }
 
-		public ExecutionPlanItemCollection ItemCollection { get { return _dataMmodel.ItemCollection; } }
+		public ExecutionPlanItemCollection ItemCollection => _dataMmodel.ItemCollection;
 
-		public ExplainPlanDataProvider(string statementText, string planKey, OracleObjectIdentifier targetTableIdentifier)
+	    public ExplainPlanDataProvider(string statementText, string planKey, OracleObjectIdentifier targetTableIdentifier)
 		{
 			_dataMmodel = new ExplainPlanModelInternal(statementText, planKey, targetTableIdentifier);
 			CreateExplainPlanUpdater = new CreateExplainPlanDataProviderInternal(_dataMmodel);
@@ -65,11 +65,11 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		private class ExplainPlanModelInternal : ModelBase
 		{
-			public string StatementText { get; private set; }
+			public string StatementText { get; }
 			
-			public string ExecutionPlanKey { get; private set; }
+			public string ExecutionPlanKey { get; }
 			
-			public string TargetTableName { get; private set; }
+			public string TargetTableName { get; }
 
 			public ExecutionPlanItemCollection ItemCollection { get; set; }
 			

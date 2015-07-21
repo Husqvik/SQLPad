@@ -29,9 +29,9 @@ namespace SqlPad.Oracle
 
 		private readonly SqlFormatterOptions _options;
 		
-		public CommandExecutionHandler ExecutionHandler { get; private set; }
+		public CommandExecutionHandler ExecutionHandler { get; }
 
-		public CommandExecutionHandler SingleLineExecutionHandler { get; private set; }
+		public CommandExecutionHandler SingleLineExecutionHandler { get; }
 
 		private static readonly HashSet<LineBreakSettings> LineBreaks =
 			new HashSet<LineBreakSettings>

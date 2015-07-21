@@ -84,7 +84,7 @@ namespace SqlPad.Oracle
 			_rawUpperInvariantValue = value.ToRawUpperInvariant();
 		}
 
-		public string Value { get; private set; }
+		public string Value { get; }
 
 		public bool AllowPartialMatch { get; set; }
 
@@ -109,9 +109,7 @@ namespace SqlPad.Oracle
 		public IEnumerable<string> IsMatch(TElement element)
 		{
 			var elements = Selector(element);
-			return elements == null
-				? EmptyArray
-				: elements.Where(IsElementMatch);
+			return elements?.Where(IsElementMatch) ?? EmptyArray;
 		}
 
 		private bool IsElementMatch(string elementValue)
@@ -136,12 +134,9 @@ namespace SqlPad.Oracle
 		{
 		}
 
-		protected override Func<OracleProgramMetadata, IEnumerable<string>> Selector
-		{
-			get { return _selector; }
-		}
+		protected override Func<OracleProgramMetadata, IEnumerable<string>> Selector => _selector;
 
-		public FunctionMatchElement AsResultValue()
+	    public FunctionMatchElement AsResultValue()
 		{
 			IsResultValue = true;
 			return this;
@@ -226,14 +221,12 @@ namespace SqlPad.Oracle
 		private static IEnumerable<string> SelectSynonymOwnerHandler(OracleProgramMetadata metadata)
 		{
 			var synonyms = GetSynonymsFor(metadata);
-			return synonyms == null ? null : synonyms.Select(s => s.Owner);
+			return synonyms?.Select(s => s.Owner);
 		}
 
 		private static IEnumerable<OracleSynonym> GetSynonymsFor(OracleProgramMetadata metadata)
 		{
-			return metadata == null || metadata.Owner == null
-				? null
-				: metadata.Owner.Synonyms;
+			return metadata?.Owner?.Synonyms;
 		}
 	}
 }

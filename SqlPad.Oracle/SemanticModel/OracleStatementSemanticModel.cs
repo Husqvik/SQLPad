@@ -464,12 +464,9 @@ namespace SqlPad.Oracle.SemanticModel
 					{
 						ICollection<KeyValuePair<StatementGrammarNode, string>> commonTableExpressions = new Dictionary<StatementGrammarNode, string>();
 						var schemaTerminal = queryTableExpression[NonTerminals.SchemaPrefix];
-						if (schemaTerminal != null)
-						{
-							schemaTerminal = schemaTerminal.ChildNodes[0];
-						}
+					    schemaTerminal = schemaTerminal?.ChildNodes[0];
 
-						var tableName = objectIdentifierNode.Token.Value.ToQuotedIdentifier();
+					    var tableName = objectIdentifierNode.Token.Value.ToQuotedIdentifier();
 						if (schemaTerminal == null)
 						{
 							commonTableExpressions.AddRange(cteReferences.Where(n => n.Value == tableName));
@@ -482,7 +479,7 @@ namespace SqlPad.Oracle.SemanticModel
 							referenceType = ReferenceType.SchemaObject;
 
 							var objectName = objectIdentifierNode.Token.Value;
-							var owner = schemaTerminal == null ? null : schemaTerminal.Token.Value;
+							var owner = schemaTerminal?.Token.Value;
 
 							if (HasDatabaseModel)
 							{
@@ -690,12 +687,8 @@ namespace SqlPad.Oracle.SemanticModel
 		{
 			var subqueryComponentNode = queryBlock.RootNode.GetAncestor(NonTerminals.CommonTableExpression);
 			queryBlock.RecursiveSearchClause = subqueryComponentNode[NonTerminals.SubqueryFactoringSearchClause];
-			if (queryBlock.RecursiveSearchClause == null)
-			{
-				return;
-			}
 
-			var orderExpressionListNode = queryBlock.RecursiveSearchClause[NonTerminals.OrderExpressionList];
+		    var orderExpressionListNode = queryBlock.RecursiveSearchClause?[NonTerminals.OrderExpressionList];
 			if (orderExpressionListNode == null)
 			{
 				return;
@@ -774,12 +767,7 @@ namespace SqlPad.Oracle.SemanticModel
 		private OracleSpecialTableReference ResolveXmlTableReference(OracleQueryBlock queryBlock, StatementGrammarNode tableReferenceNonterminal)
 		{
 			var xmlTableClause = tableReferenceNonterminal.GetDescendantsWithinSameQueryBlock(NonTerminals.XmlTableClause).SingleOrDefault();
-			if (xmlTableClause == null)
-			{
-				return null;
-			}
-
-			var xmlTableOptions = xmlTableClause[NonTerminals.XmlTableOptions];
+		    var xmlTableOptions = xmlTableClause?[NonTerminals.XmlTableOptions];
 			if (xmlTableOptions == null)
 			{
 				return null;
@@ -873,12 +861,8 @@ namespace SqlPad.Oracle.SemanticModel
 			foreach (var queryBlock in _queryBlockNodes.Values)
 			{
 				var modelClause = queryBlock.RootNode[NonTerminals.ModelClause];
-				if (modelClause == null)
-				{
-					continue;
-				}
 
-				var modelColumnClauses = modelClause[NonTerminals.MainModel, NonTerminals.ModelColumnClauses];
+			    var modelColumnClauses = modelClause?[NonTerminals.MainModel, NonTerminals.ModelColumnClauses];
 				if (modelColumnClauses == null || modelColumnClauses.ChildNodes.Count < 5)
 				{
 					continue;
@@ -1350,13 +1334,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private void ResolveMainObjectReferenceMerge()
 		{
-			var rootNode = Statement.RootNode[0, 0];
-			if (rootNode == null)
-			{
-				return;
-			}
-
-			var mergeTarget = rootNode[2];
+		    var mergeTarget = Statement.RootNode[0, 0]?[2];
 			if (mergeTarget == null || !String.Equals(mergeTarget.Id, NonTerminals.MergeTarget))
 			{
 				return;
@@ -1371,7 +1349,7 @@ namespace SqlPad.Oracle.SemanticModel
 			var objectReferenceAlias = mergeTarget[Terminals.ObjectAlias];
 			MainObjectReferenceContainer.MainObjectReference = CreateDataObjectReference(mergeTarget, objectIdentifier, objectReferenceAlias);
 
-			var mergeSource = rootNode[NonTerminals.UsingMergeSource, NonTerminals.MergeSource];
+			var mergeSource = Statement.RootNode[0, 0][NonTerminals.UsingMergeSource, NonTerminals.MergeSource];
 			if (mergeSource == null)
 			{
 				return;
@@ -1389,7 +1367,7 @@ namespace SqlPad.Oracle.SemanticModel
 				mergeSourceReference = MainQueryBlock.SelfObjectReference;
 			}
 
-			var mergeCondition = rootNode[6];
+			var mergeCondition = Statement.RootNode[0, 0][6];
 			if (mergeCondition == null || !String.Equals(mergeCondition.Id, NonTerminals.Condition))
 			{
 				return;
@@ -1398,7 +1376,7 @@ namespace SqlPad.Oracle.SemanticModel
 			var mergeConditionIdentifiers = mergeCondition.GetDescendantsWithinSameQueryBlock(Terminals.Identifier, Terminals.RowIdPseudoColumn);
 			ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(null, MainObjectReferenceContainer, mergeConditionIdentifiers, StatementPlacement.None, null);
 
-			var updateInsertClause = rootNode[8];
+			var updateInsertClause = Statement.RootNode[0, 0][8];
 			if (updateInsertClause != null && String.Equals(updateInsertClause.Id, NonTerminals.MergeUpdateInsertClause))
 			{
 				var updateInsertClauseIdentifiers = updateInsertClause.GetDescendantsWithinSameQueryBlock(Terminals.Identifier, Terminals.RowIdPseudoColumn);
@@ -1421,18 +1399,8 @@ namespace SqlPad.Oracle.SemanticModel
 		private void ResolveMainObjectReferenceUpdateOrDelete()
 		{
 			var rootNode = Statement.RootNode[0, 0];
-			if (rootNode == null)
-			{
-				return;
-			}
-
-			var tableReferenceNode = rootNode[NonTerminals.TableReference];
-			if (tableReferenceNode == null)
-			{
-				return;
-			}
-
-			var innerTableReference = tableReferenceNode.GetDescendantsWithinSameQueryBlock(NonTerminals.InnerTableReference).SingleOrDefault();
+		    var tableReferenceNode = rootNode?[NonTerminals.TableReference];
+		    var innerTableReference = tableReferenceNode?.GetDescendantsWithinSameQueryBlock(NonTerminals.InnerTableReference).SingleOrDefault();
 			if (innerTableReference == null)
 			{
 				return;
@@ -1565,7 +1533,7 @@ namespace SqlPad.Oracle.SemanticModel
 			OracleSchemaObject schemaObject = null;
 			if (HasDatabaseModel)
 			{
-				var owner = schemaPrefixNode == null ? null : schemaPrefixNode.Token.Value;
+				var owner = schemaPrefixNode?.Token.Value;
 				schemaObject = _databaseModel.GetFirstSchemaObject<OracleDataObject>(_databaseModel.GetPotentialSchemaObjectIdentifiers(owner, objectIdentifier.Token.Value));
 			}
 
@@ -1930,7 +1898,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 			var originalIdentifier = OracleProgramIdentifier.CreateFromValues(owner, programReference.FullyQualifiedObjectName.NormalizedName, programReference.NormalizedName);
 			var hasAnalyticClause = programReference.AnalyticClauseNode != null;
-			var parameterCount = programReference.ParameterReferences == null ? 0 : programReference.ParameterReferences.Count;
+			var parameterCount = programReference.ParameterReferences?.Count ?? 0;
 			var result = _databaseModel.GetProgramMetadata(originalIdentifier, parameterCount, true, hasAnalyticClause);
 			if (result.Metadata == null && !String.IsNullOrEmpty(originalIdentifier.Package) && String.IsNullOrEmpty(programReference.FullyQualifiedObjectName.NormalizedOwner))
 			{
@@ -2441,9 +2409,7 @@ namespace SqlPad.Oracle.SemanticModel
 		private StatementGrammarNode GetPrefixNodeFromPrefixedColumnReference(StatementGrammarNode identifier)
 		{
 			var prefixedColumnReferenceNode = identifier.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference) ?? identifier.ParentNode;
-			return prefixedColumnReferenceNode == null
-				? null
-				: prefixedColumnReferenceNode[NonTerminals.Prefix];
+			return prefixedColumnReferenceNode?[NonTerminals.Prefix];
 		}
 
 		private void FindSelectListReferences(OracleQueryBlock queryBlock)
@@ -2853,7 +2819,7 @@ namespace SqlPad.Oracle.SemanticModel
 		{
 			var cteNode = cteListNode[0];
 			var objectIdentifierNode = cteNode[0];
-			var cteAlias = objectIdentifierNode == null ? null : objectIdentifierNode.Token.Value.ToQuotedIdentifier();
+			var cteAlias = objectIdentifierNode?.Token.Value.ToQuotedIdentifier();
 			return new CommonTableExpressionReference { CteNode = cteNode, CteAlias = cteAlias };
 		}
 
