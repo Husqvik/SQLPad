@@ -107,13 +107,13 @@ namespace SqlPad.Oracle.DebugTrace
 					? "Local"
 					: "Remote";
 
-				Messages.ShowError(String.Format("{0} trace directory '{1}' does not exist or is not accessible. ", directoryType, directoryName));
+				Messages.ShowError($"{directoryType} trace directory '{directoryName}' does not exist or is not accessible. ");
 				return;
 			}
 
 			var arguments = File.Exists(TraceFileName)
-				? String.Format("/select,{0}", TraceFileName)
-				: String.Format("/root,{0}", directoryName);
+				? $"/select,{TraceFileName}"
+			    : $"/root,{directoryName}";
 
 			Process.Start("explorer.exe", arguments);
 		}

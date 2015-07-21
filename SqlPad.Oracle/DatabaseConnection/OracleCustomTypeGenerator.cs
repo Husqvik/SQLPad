@@ -30,8 +30,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private OracleCustomTypeGenerator(string connectionStringName)
 		{
-			_customTypeAssemblyName = String.Format("{0}.{1}", DynamicAssemblyNameBase, connectionStringName);
-			var customTypeAssemblyFileName = String.Format("{0}.dll", _customTypeAssemblyName);
+			_customTypeAssemblyName = $"{DynamicAssemblyNameBase}.{connectionStringName}";
+			var customTypeAssemblyFileName = $"{_customTypeAssemblyName}.dll";
 			var directoryName = Path.GetDirectoryName(CurrentAssembly.Location);
 			var customTypeAssemblyFullFileName = Path.Combine(directoryName, customTypeAssemblyFileName);
 
@@ -41,7 +41,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				//_customTypeHostDomain = AppDomain.CreateDomain(String.Format("{0}.{1}", "CustomTypeHostDomain", connectionStringName));
 				//_customTypeHostDomain.Load(DynamicAssemblyNameBase);
 
-				Trace.WriteLine(String.Format("{0} - Custom object and collection types assembly '{1}' has been found and loaded. ", DateTime.Now, customTypeAssemblyFileName));
+				Trace.WriteLine($"{DateTime.Now} - Custom object and collection types assembly '{customTypeAssemblyFileName}' has been found and loaded. ");
 			}
 
 			_customTypeAssemblyFile = new FileInfo(customTypeAssemblyFullFileName);
@@ -69,7 +69,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				return;
 			}
 
-			Trace.WriteLine(String.Format("{0} - Custom object and collection types generation started. ", DateTime.Now));
+			Trace.WriteLine($"{DateTime.Now} - Custom object and collection types generation started. ");
 
 			var stopwatch = Stopwatch.StartNew();
 
@@ -124,13 +124,13 @@ namespace SqlPad.Oracle.DatabaseConnection
 			stopwatch.Stop();
 
 			var collectionTypeCount = customTypes.Count - objectTypeCount;
-			Trace.WriteLine(String.Format("{0} - {1} Custom object types and {2} collection types generated into {3} in {4}. ", DateTime.Now, objectTypeCount, collectionTypeCount, _customTypeAssemblyFile.Name, stopwatch.Elapsed));
+			Trace.WriteLine($"{DateTime.Now} - {objectTypeCount} Custom object types and {collectionTypeCount} collection types generated into {_customTypeAssemblyFile.Name} in {stopwatch.Elapsed}. ");
 		}
 
 		private static void CreateOracleObjectType(ModuleBuilder customTypeModuleBuilder, OracleTypeObject objectType, IDictionary<string, Type> customTypes)
 		{
 			var fullyQualifiedObjectTypeName = objectType.FullyQualifiedName.ToString().Replace("\"", null);
-			var customTypeClassName = String.Format("{0}.ObjectTypes.{1}", DynamicAssemblyNameBase, MakeValidMemberName(fullyQualifiedObjectTypeName));
+			var customTypeClassName = $"{DynamicAssemblyNameBase}.ObjectTypes.{MakeValidMemberName(fullyQualifiedObjectTypeName)}";
 			var customTypeBuilder = customTypeModuleBuilder.DefineType(customTypeClassName, TypeAttributes.Public | TypeAttributes.Class, typeof(OracleCustomTypeBase), new[] { typeof(IOracleCustomType), typeof(IOracleCustomTypeFactory), typeof(IValue) });
 			AddOracleCustomTypeMappingAttribute(customTypeBuilder, fullyQualifiedObjectTypeName);
 
@@ -328,7 +328,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var baseFactoryType = typeof(OracleTableValueFactoryBase<>);
 			baseFactoryType = baseFactoryType.MakeGenericType(targetType);
 			var fullyQualifiedCollectionTypeName = collectionType.FullyQualifiedName.ToString().Replace("\"", null); ;
-			var customTypeClassName = String.Format("{0}.CollectionTypes.{1}", DynamicAssemblyNameBase, MakeValidMemberName(fullyQualifiedCollectionTypeName));
+			var customTypeClassName = $"{DynamicAssemblyNameBase}.CollectionTypes.{MakeValidMemberName(fullyQualifiedCollectionTypeName)}";
 
 			var customTypeBuilder = customTypeModuleBuilder.DefineType(customTypeClassName, TypeAttributes.Public | TypeAttributes.Class, baseFactoryType);
 			AddOracleCustomTypeMappingAttribute(customTypeBuilder, fullyQualifiedCollectionTypeName);
@@ -405,9 +405,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_enclosingCharacter = enclosingCharacter;
 		}
 
-		public bool IsNull { get { return Array == null; } }
+		public bool IsNull => Array == null;
 
-		public string ToSqlLiteral()
+	    public string ToSqlLiteral()
 		{
 			throw new NotImplementedException();
 		}
@@ -436,23 +436,20 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public string ElementTypeName { get; private set; }
 		
-		public bool IsEditable { get { return false; } }
-		
-		public long Length { get { return Array == null ? 0 : Array.Length; } }
-		
-		public void Prefetch() { }
+		public bool IsEditable => false;
+
+	    public long Length => Array?.Length ?? 0;
+
+	    public void Prefetch() { }
 
 		public IList Records
 		{
 			get { return Array.Select(i => CustomTypeValueConverter.ConvertItem(i, OracleLargeTextValue.DefaultPreviewLength)).ToArray(); }
 		}
 
-		public ColumnHeader ColumnHeader
-		{
-			get { return _columnHeader ?? BuildColumnHeader(); }
-		}
+		public ColumnHeader ColumnHeader => _columnHeader ?? BuildColumnHeader();
 
-		private ColumnHeader BuildColumnHeader()
+	    private ColumnHeader BuildColumnHeader()
 		{
 			_columnHeader =
 				new ColumnHeader
@@ -484,7 +481,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				items = items.Select(i => String.Format("{0}{1}{0}", _enclosingCharacter, i));
 			}
 
-			return String.Format("{0}({1}{2})", DataTypeName, String.Join(", ", items), Array.Length > PreviewMaxItemCount ? String.Format(", {0} ({1} items)", OracleLargeTextValue.Ellipsis, Array.Length) : String.Empty);
+			return $"{DataTypeName}({String.Join(", ", items)}{(Array.Length > PreviewMaxItemCount ? $", {OracleLargeTextValue.Ellipsis} ({Array.Length} items)" : String.Empty)})";
 		}
 
 		private static object ToPrintable(object value)
@@ -503,8 +500,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 				: largeBinaryValue.Value.ToHexString();
 			
 			return hexValue.Length > LargeValuePreviewLength
-				? String.Format("{0}{1}", hexValue.Substring(0, LargeValuePreviewLength), OracleLargeTextValue.Ellipsis)
-				: hexValue;
+				? $"{hexValue.Substring(0, LargeValuePreviewLength)}{OracleLargeTextValue.Ellipsis}"
+			    : hexValue;
 		}
 	}
 
@@ -532,18 +529,15 @@ namespace SqlPad.Oracle.DatabaseConnection
 			throw new NotImplementedException();
 		}
 
-		public bool IsEditable { get { return false; } }
+		public bool IsEditable => false;
 
-		public long Length { get { throw new NotSupportedException(); } }
+	    public long Length { get { throw new NotSupportedException(); } }
 		
 		public void Prefetch() { }
 
-		public IReadOnlyList<CustomTypeAttributeValue> Attributes
-		{
-			get { return _attributes ?? BuildAttributeCollection(); }
-		}
+		public IReadOnlyList<CustomTypeAttributeValue> Attributes => _attributes ?? BuildAttributeCollection();
 
-		public override string ToString()
+	    public override string ToString()
 		{
 			return _preview ?? BuildPreview();
 		}
@@ -552,13 +546,13 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			var attributeValues = BuildAttributeCollection();
 			var attributeValuesPreview = String.Join(", ", attributeValues.Select(FormatAttributeLabel));
-			return _preview = String.Format("{0}({1})", DataTypeName, attributeValuesPreview);
+			return _preview = $"{DataTypeName}({attributeValuesPreview})";
 		}
 
 		private string FormatAttributeLabel(CustomTypeAttributeValue attribute)
 		{
 			var stringValue = Convert.ToString(attribute.Value);
-			return String.Format("{0}={1}", attribute.ColumnHeader.Name, String.IsNullOrEmpty(stringValue) ? "NULL" : stringValue);
+			return $"{attribute.ColumnHeader.Name}={(String.IsNullOrEmpty(stringValue) ? "NULL" : stringValue)}";
 		}
 
 		private IReadOnlyList<CustomTypeAttributeValue> BuildAttributeCollection()

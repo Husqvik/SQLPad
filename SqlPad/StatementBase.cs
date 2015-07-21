@@ -38,12 +38,9 @@ namespace SqlPad
 		
 		public abstract bool IsDataManipulation { get; }
 
-		public ICollection<StatementGrammarNode> InvalidGrammarNodes
-		{
-			get { return _invalidGrammarNodes ?? (_invalidGrammarNodes = BuildInvalidGrammarNodeCollection()); }
-		}
+		public ICollection<StatementGrammarNode> InvalidGrammarNodes => _invalidGrammarNodes ?? (_invalidGrammarNodes = BuildInvalidGrammarNodeCollection());
 
-		private ICollection<StatementGrammarNode> BuildInvalidGrammarNodeCollection()
+	    private ICollection<StatementGrammarNode> BuildInvalidGrammarNodeCollection()
 		{
 			return RootNode == null
 				? EmptyNodes
@@ -69,23 +66,18 @@ namespace SqlPad
 			}
 		}
 
-		public IReadOnlyList<StatementGrammarNode> AllTerminals
-		{
-			get { return _allTerminals ?? (_allTerminals = BuildTerminalCollection()); }
-		}
-		public StatementGrammarNode LastTerminalNode
-		{
-			get { return RootNode == null ? null : (TerminatorNode ?? RootNode.LastTerminalNode); }
-		}
+		public IReadOnlyList<StatementGrammarNode> AllTerminals => _allTerminals ?? (_allTerminals = BuildTerminalCollection());
 
-		private IReadOnlyList<StatementGrammarNode> BuildTerminalCollection()
+	    public StatementGrammarNode LastTerminalNode => RootNode == null ? null : (TerminatorNode ?? RootNode.LastTerminalNode);
+
+	    private IReadOnlyList<StatementGrammarNode> BuildTerminalCollection()
 		{
-			return RootNode == null ? EmptyNodes : RootNode.Terminals.ToArray();
+			return RootNode?.Terminals.ToArray() ?? EmptyNodes;
 		}
 
 		public StatementGrammarNode GetNodeAtPosition(int position, Func<StatementGrammarNode, bool> filter = null)
 		{
-			return RootNode == null ? null : RootNode.GetNodeAtPosition(position, filter);
+			return RootNode?.GetNodeAtPosition(position, filter);
 		}
 
 		public StatementGrammarNode GetTerminalAtPosition(int position, Func<StatementGrammarNode, bool> filter = null)
@@ -96,7 +88,7 @@ namespace SqlPad
 
 		public StatementGrammarNode GetNearestTerminalToPosition(int position, Func<StatementGrammarNode, bool> filter = null)
 		{
-			return RootNode == null ? null : RootNode.GetNearestTerminalToPosition(position, filter);
+			return RootNode?.GetNearestTerminalToPosition(position, filter);
 		}
 	}
 

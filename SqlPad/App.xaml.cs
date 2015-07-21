@@ -134,7 +134,7 @@ namespace SqlPad
 				}
 			}
 
-			File.WriteAllText(Path.Combine(ConfigurationProvider.FolderNameErrorLog, String.Format("Error_{0}.log", DateTime.UtcNow.Ticks)), logBuilder.ToString());
+			File.WriteAllText(Path.Combine(ConfigurationProvider.FolderNameErrorLog, $"Error_{DateTime.UtcNow.Ticks}.log"), logBuilder.ToString());
 		}
 
 		public App() { }

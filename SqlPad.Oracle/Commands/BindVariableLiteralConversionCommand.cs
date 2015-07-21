@@ -74,13 +74,13 @@ namespace SqlPad.Oracle.Commands
 						textSegment.Text = Convert.ToString(_bindVariable.Value);
 						break;
 					case TerminalValues.Date:
-						textSegment.Text = String.Format("DATE'{0}'", _bindVariable.Value);
+						textSegment.Text = $"DATE'{_bindVariable.Value}'";
 						break;
 					case TerminalValues.Timestamp:
-						textSegment.Text = String.Format("TIMESTAMP'{0}'", _bindVariable.Value);
+						textSegment.Text = $"TIMESTAMP'{_bindVariable.Value}'";
 						break;
 					default:
-						textSegment.Text = String.Format("'{0}'", _bindVariable.Value);
+						textSegment.Text = $"'{_bindVariable.Value}'";
 						break;
 				}
 

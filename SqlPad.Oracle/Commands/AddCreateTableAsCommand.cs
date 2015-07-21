@@ -129,7 +129,7 @@ namespace SqlPad.Oracle.Commands
 				columnPosition++;
 				builder.Append("\t");
 				var columnName = column.NormalizedName.ToSimpleIdentifier();
-				builder.Append(String.IsNullOrEmpty(columnName) ? String.Format("COLUMN{0}", columnPosition) : columnName);
+				builder.Append(String.IsNullOrEmpty(columnName) ? $"COLUMN{columnPosition}" : columnName);
 
 				if (!includeDataTypes)
 				{

@@ -62,7 +62,7 @@ namespace SqlPad
 				return;
 
 			if (token == null)
-				throw new ArgumentNullException("token");
+				throw new ArgumentNullException(nameof(token));
 
 			IsGrammarValid = true;
 			FirstTerminalNode = this;
@@ -70,14 +70,11 @@ namespace SqlPad
 			TerminalCount = 1;
 		}
 
-		public NodeType Type { get; private set; }
+		public NodeType Type { get; }
 
-		public StatementGrammarNode RootNode
-		{
-			get { return GetRootNode(); }
-		}
+		public StatementGrammarNode RootNode => GetRootNode();
 
-		private StatementGrammarNode GetRootNode()
+	    private StatementGrammarNode GetRootNode()
 		{
 			return ParentNode == null ? this : ParentNode.GetRootNode();
 		}
@@ -87,11 +84,11 @@ namespace SqlPad
 			get
 			{
 				var previousNode = GetPrecedingNode(this);
-				return previousNode == null ? null : previousNode.LastTerminalNode;
+				return previousNode?.LastTerminalNode;
 			}
 		}
 
-		private StatementGrammarNode GetPrecedingNode(StatementGrammarNode node)
+		private static StatementGrammarNode GetPrecedingNode(StatementGrammarNode node)
 		{
 			var parentNode = node.ParentNode;
 			if (parentNode == null)
@@ -108,11 +105,11 @@ namespace SqlPad
 			get
 			{
 				var followingNode = GetFollowingNode(this);
-				return followingNode == null ? null : followingNode.FirstTerminalNode;
+				return followingNode?.FirstTerminalNode;
 			}
 		}
 
-		private StatementGrammarNode GetFollowingNode(StatementGrammarNode node)
+		private static StatementGrammarNode GetFollowingNode(StatementGrammarNode node)
 		{
 			if (node.ParentNode == null)
 				return null;
@@ -137,11 +134,11 @@ namespace SqlPad
 		
 		public bool IsGrammarValid { get; set; }
 
-		public IReadOnlyList<StatementGrammarNode> ChildNodes { get { return _childNodes.AsReadOnly(); } }
+		public IReadOnlyList<StatementGrammarNode> ChildNodes => _childNodes.AsReadOnly();
 
-		public ICollection<StatementCommentNode> Comments { get { return _commentNodes ?? (_commentNodes = new List<StatementCommentNode>()); } }
+	    public ICollection<StatementCommentNode> Comments => _commentNodes ?? (_commentNodes = new List<StatementCommentNode>());
 
-		public bool IsRequiredIncludingParent
+	    public bool IsRequiredIncludingParent
 		{
 			get
 			{
@@ -184,12 +181,9 @@ namespace SqlPad
 			return new SourcePosition { IndexStart = indexStart, IndexEnd = indexEnd };
 		}
 
-		public IReadOnlyList<StatementGrammarNode> Terminals 
-		{
-			get { return _terminals ?? GatherTerminals(); }
-		}
+		public IReadOnlyList<StatementGrammarNode> Terminals => _terminals ?? GatherTerminals();
 
-		private IReadOnlyList<StatementGrammarNode> GatherTerminals()
+	    private IReadOnlyList<StatementGrammarNode> GatherTerminals()
 		{
 			var statementGrammarNodes = new StatementGrammarNode[TerminalCount];
 			var offset = 0;
@@ -219,12 +213,9 @@ namespace SqlPad
 			}
 		}
 
-		public IEnumerable<StatementGrammarNode> AllChildNodes
-		{
-			get { return GetChildNodes(); }
-		}
+		public IEnumerable<StatementGrammarNode> AllChildNodes => GetChildNodes();
 
-		private IEnumerable<StatementGrammarNode> GetChildNodes(Func<StatementGrammarNode, bool> filter = null)
+	    private IEnumerable<StatementGrammarNode> GetChildNodes(Func<StatementGrammarNode, bool> filter = null)
 		{
 			return Type == NodeType.Terminal
 				? Enumerable.Empty<StatementGrammarNode>()
@@ -234,8 +225,8 @@ namespace SqlPad
 		#region Overrides of Object
 		public override string ToString()
 		{
-			var terminalValue = Type == NodeType.NonTerminal || Token == null ? String.Empty : String.Format("; TokenValue={0}", Token.Value);
-			return String.Format("StatementGrammarNode (Id={0}; Type={1}; IsRequired={2}; IsGrammarValid={3}; Level={4}; TerminalCount={5}; SourcePosition=({6}-{7}){8})", Id, Type, IsRequired, IsGrammarValid, Level, TerminalCount, SourcePosition.IndexStart, SourcePosition.IndexEnd, terminalValue);
+			var terminalValue = Type == NodeType.NonTerminal || Token == null ? String.Empty : $"; TokenValue={Token.Value}";
+			return $"StatementGrammarNode (Id={Id}; Type={Type}; IsRequired={IsRequired}; IsGrammarValid={IsGrammarValid}; Level={Level}; TerminalCount={TerminalCount}; SourcePosition=({SourcePosition.IndexStart}-{SourcePosition.IndexEnd}){terminalValue})";
 		}
 		#endregion
 
@@ -255,7 +246,7 @@ namespace SqlPad
 			foreach (var node in nodes)
 			{
 				if (node.ParentNode != null)
-					throw new InvalidOperationException(String.Format("Node '{0}' has been already associated with another parent. ", node.Id));
+					throw new InvalidOperationException($"Node '{node.Id}' has been already associated with another parent. ");
 
 				if (node.Type == NodeType.Terminal)
 				{
@@ -331,7 +322,7 @@ namespace SqlPad
 			if (String.Equals(Id, ancestorNodeId))
 				return level;
 			
-			return ParentNode != null ? ParentNode.GetAncestorDistance(ancestorNodeId, level + 1) : null;
+			return ParentNode?.GetAncestorDistance(ancestorNodeId, level + 1);
 		}
 
 		public bool HasAncestor(StatementGrammarNode node, bool includeSelf = false)

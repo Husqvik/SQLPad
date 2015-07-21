@@ -37,7 +37,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 			public override void InitializeCommand(OracleCommand command)
 			{
-				command.CommandText = String.Format("EXPLAIN PLAN SET STATEMENT_ID = '{0}' INTO {1} FOR\n{2}", DataModel.ExecutionPlanKey, DataModel.TargetTableName, DataModel.StatementText);
+				command.CommandText = $"EXPLAIN PLAN SET STATEMENT_ID = '{DataModel.ExecutionPlanKey}' INTO {DataModel.TargetTableName} FOR\n{DataModel.StatementText}";
 			}
 
 			public override void MapReaderData(OracleDataReader reader) { }

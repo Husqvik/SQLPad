@@ -78,7 +78,7 @@ namespace SqlPad
 				: e =>
 				{
 					var entry = (StatementExecutionHistoryEntry)e;
-					var textToSearch = String.Format("{0} {1}", entry.StatementText.ToUpperInvariant(), CellValueConverter.FormatDateTime(entry.ExecutedAt).ToUpperInvariant());
+					var textToSearch = $"{entry.StatementText.ToUpperInvariant()} {CellValueConverter.FormatDateTime(entry.ExecutedAt).ToUpperInvariant()}";
 					return searchedWords.All(textToSearch.Contains);
 				};
 

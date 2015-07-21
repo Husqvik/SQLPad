@@ -10,29 +10,24 @@ namespace SqlPad
 	public class SqlDocumentRepository
 	{
 		private readonly object _lockObject = new object();
-		private IDictionary<StatementBase, IValidationModel> _validationModels = new Dictionary<StatementBase, IValidationModel>();
-		//private IDictionary<StatementBase, IValidationModel> _precedingValidationModels = new Dictionary<StatementBase, IValidationModel>();
+	    //private IDictionary<StatementBase, IValidationModel> _precedingValidationModels = new Dictionary<StatementBase, IValidationModel>();
 		private readonly ISqlParser _parser;
 		private readonly IStatementValidator _validator;
 		private readonly IDatabaseModel _databaseModel;
-		private StatementCollection _statements = new StatementCollection(new StatementBase[0], new IToken[0], new StatementCommentNode[0]);
 
-		public StatementCollection Statements
-		{
-			get { return _statements; }
-		}
+	    public StatementCollection Statements { get; private set; } = new StatementCollection(new StatementBase[0], new IToken[0], new StatementCommentNode[0]);
 
-		public string StatementText { get; private set; }
+	    public string StatementText { get; private set; }
 
-		public IDictionary<StatementBase, IValidationModel> ValidationModels { get { return _validationModels; } }
+		public IDictionary<StatementBase, IValidationModel> ValidationModels { get; private set; } = new Dictionary<StatementBase, IValidationModel>();
 
-		public SqlDocumentRepository(ISqlParser parser, IStatementValidator validator, IDatabaseModel databaseModel, string statementText = null)
+	    public SqlDocumentRepository(ISqlParser parser, IStatementValidator validator, IDatabaseModel databaseModel, string statementText = null)
 		{
 			if (parser == null)
-				throw new ArgumentNullException("parser");
+				throw new ArgumentNullException(nameof(parser));
 
 			if (validator == null)
-				throw new ArgumentNullException("validator");
+				throw new ArgumentNullException(nameof(validator));
 
 			_parser = parser;
 			_validator = validator;
@@ -80,9 +75,9 @@ namespace SqlPad
 
 			lock (_lockObject)
 			{
-				_statements = statements;
+				Statements = statements;
 				//_precedingValidationModels = _validationModels;
-				_validationModels = validationModels;
+				ValidationModels = validationModels;
 				StatementText = statementText;
 			}
 		}

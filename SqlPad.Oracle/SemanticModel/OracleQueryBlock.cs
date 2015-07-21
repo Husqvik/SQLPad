@@ -206,12 +206,12 @@ namespace SqlPad.Oracle.SemanticModel
 		{
 			if (queryBlock == null)
 			{
-				throw new ArgumentNullException("queryBlock");
+				throw new ArgumentNullException(nameof(queryBlock));
 			}
 
 			if (queryBlock.Type != QueryBlockType.CommonTableExpression)
 			{
-				throw new ArgumentException("Query block must be of type 'CommonTableExpression'. ", "queryBlock");
+				throw new ArgumentException("Query block must be of type 'CommonTableExpression'. ", nameof(queryBlock));
 			}
 
 			CheckIfFrozen();

@@ -23,12 +23,9 @@ namespace SqlPad
 				Encoding = Encoding.UTF8
 			};
 
-		public string FileNameFilter
-		{
-			get { return "XML files (*.xml)|*.xml|All files (*.*)|*"; }
-		}
+		public string FileNameFilter => "XML files (*.xml)|*.xml|All files (*.*)|*";
 
-		public void ExportToClipboard(DataGrid dataGrid, IDataExportConverter dataExportConverter)
+	    public void ExportToClipboard(DataGrid dataGrid, IDataExportConverter dataExportConverter)
 		{
 			ExportToFile(null, dataGrid, dataExportConverter);
 		}

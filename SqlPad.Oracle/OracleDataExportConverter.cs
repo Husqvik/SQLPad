@@ -17,7 +17,7 @@ namespace SqlPad.Oracle
 			var vendorValue = value as IValue;
 			return vendorValue != null
 				? vendorValue.ToSqlLiteral()
-				: String.Format("'{0}'", stringValue.Replace("'", "''"));
+				: $"'{stringValue.Replace("'", "''")}'";
 		}
 
 		public string ToColumnName(string columnHeader)
@@ -28,8 +28,8 @@ namespace SqlPad.Oracle
 			}
 			
 			return columnHeader.RequiresQuotes()
-				? String.Format("\"{0}\"", columnHeader.Replace('"', ' '))
-				: columnHeader;
+				? $"\"{columnHeader.Replace('"', ' ')}\""
+			    : columnHeader;
 		}
 
 		public string ToXml(object value)
@@ -45,7 +45,7 @@ namespace SqlPad.Oracle
 			var vendorValue = value as IValue;
 			return vendorValue != null
 				? vendorValue.ToJson()
-				: String.Format("\"{0}\"", value.ToString().Replace("\"", "\\\""));
+				: $"\"{value.ToString().Replace("\"", "\\\"")}\"";
 		}
 	}
 }

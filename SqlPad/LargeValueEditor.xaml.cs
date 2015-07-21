@@ -254,7 +254,7 @@ namespace SqlPad
 			var filterSettings = "Text files (*.txt)|*.txt|All files (*.*)|*";
 			if (_isXml)
 			{
-				filterSettings = String.Format("XML files (*.xml)|*.xml|{0}", filterSettings);
+				filterSettings = $"XML files (*.xml)|*.xml|{filterSettings}";
 			}
 
 			var dialog = new SaveFileDialog { Filter = filterSettings, OverwritePrompt = true };

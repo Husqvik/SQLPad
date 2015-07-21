@@ -66,14 +66,11 @@ namespace SqlPad
 			}
 		}
 
-		public Visibility AffectedRowCountVisibility
-		{
-			get { return _affectedRowCount == -1 ? Visibility.Collapsed : Visibility.Visible; }
-		}
+		public Visibility AffectedRowCountVisibility => _affectedRowCount == -1 ? Visibility.Collapsed : Visibility.Visible;
 
-		public Visibility StatementExecutionInfoSeparatorVisibility
-		{
-			get { return !_resultGridAvailable && (AffectedRowCountVisibility == Visibility.Collapsed && !_ddlStatementExecutedSuccessfully) ? Visibility.Collapsed : Visibility.Visible; }
-		}
+	    public Visibility StatementExecutionInfoSeparatorVisibility =>
+	        !_resultGridAvailable && (AffectedRowCountVisibility == Visibility.Collapsed && !_ddlStatementExecutedSuccessfully)
+	            ? Visibility.Collapsed
+	            : Visibility.Visible;
 	}
 }

@@ -110,12 +110,12 @@ namespace SqlPad
 				try
 				{
 					_instance = (WorkDocumentCollection)Serializer.Deserialize(file, _instance, typeof(WorkDocumentCollection));
-					Trace.WriteLine(String.Format("WorkDocumentCollection ({0} document(s)) successfully loaded from '{1}'. ", _instance._workingDocuments.Count, fileName));
+					Trace.WriteLine($"WorkDocumentCollection ({_instance._workingDocuments.Count} document(s)) successfully loaded from '{fileName}'. ");
 					return true;
 				}
 				catch (Exception e)
 				{
-					Trace.WriteLine(String.Format("WorkDocumentCollection deserialization from '{0}' failed: {1}", fileName, e));
+					Trace.WriteLine($"WorkDocumentCollection deserialization from '{fileName}' failed: {e}");
 				}
 			}
 
@@ -161,7 +161,7 @@ namespace SqlPad
 		{
 			if (!Directory.Exists(directory))
 			{
-				throw new ArgumentException(String.Format("Directory '{0}' does not exist. ", directory), "directory");
+				throw new ArgumentException($"Directory '{directory}' does not exist. ", nameof(directory));
 			}
 
 			return Path.Combine(directory, ConfigurationFileName);
@@ -189,16 +189,16 @@ namespace SqlPad
 			set { Instance._activeDocumentIndex = value; }
 		}
 
-		public static IReadOnlyList<WorkDocument> WorkingDocuments { get { return Instance._workingDocuments.Values.ToArray(); } }
-		
-		public static IReadOnlyList<WorkDocument> RecentDocuments { get { return Instance._recentFiles.AsReadOnly(); } }
+		public static IReadOnlyList<WorkDocument> WorkingDocuments => Instance._workingDocuments.Values.ToArray();
 
-		public static bool TryGetWorkingDocumentFor(string fileName, out WorkDocument workDocument)
+	    public static IReadOnlyList<WorkDocument> RecentDocuments => Instance._recentFiles.AsReadOnly();
+
+	    public static bool TryGetWorkingDocumentFor(string fileName, out WorkDocument workDocument)
 		{
 			if (fileName == null)
-				throw new ArgumentNullException("fileName");
+				throw new ArgumentNullException(nameof(fileName));
 
-			workDocument = Instance._workingDocuments.Values.FirstOrDefault(d => d.File != null && d.File.FullName.ToLowerInvariant() == fileName.ToLowerInvariant());
+			workDocument = Instance._workingDocuments.Values.FirstOrDefault(d => d.File != null && String.Equals(d.File.FullName.ToUpperInvariant(), fileName.ToUpperInvariant()));
 			return workDocument != null;
 		}
 
@@ -279,7 +279,7 @@ namespace SqlPad
 		{
 			if (workDocument == null)
 			{
-				throw new ArgumentNullException("workDocument");
+				throw new ArgumentNullException(nameof(workDocument));
 			}
 		}
 

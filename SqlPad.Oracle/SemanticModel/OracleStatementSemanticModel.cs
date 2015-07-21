@@ -1828,7 +1828,7 @@ namespace SqlPad.Oracle.SemanticModel
 							exposedColumns = columns;
 							break;
 						default:
-							throw new NotImplementedException(String.Format("Reference '{0}' is not implemented yet. ", objectReference.Type));
+							throw new NotImplementedException($"Reference '{objectReference.Type}' is not implemented yet. ");
 					}
 
 					var exposedColumnDictionary = new Dictionary<string, OracleColumnReference>();

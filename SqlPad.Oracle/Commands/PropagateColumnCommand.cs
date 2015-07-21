@@ -35,7 +35,7 @@ namespace SqlPad.Oracle.Commands
 			settingsModel.ValidationRule = new OracleIdentifierValidationRule();
 
 			settingsModel.Title = "Add Column Alias";
-			settingsModel.Description = String.Format("Enter an alias for the expression '{0}'", CurrentNode.Token.Value);
+			settingsModel.Description = $"Enter an alias for the expression '{CurrentNode.Token.Value}'";
 
 			settingsModel.Heading = settingsModel.Title;
 

@@ -16,7 +16,7 @@ namespace SqlPad.FindReplace
 
 		public static string GetRegexPattern(IEnumerable<string> searchedWords)
 		{
-			var regexPatterns = searchedWords.Select(w => String.Format("({0})", RegularExpressionEscapeCharacters.Aggregate(w, (p, c) => p.Replace(c, String.Format("\\{0}", c)))));
+			var regexPatterns = searchedWords.Select(w => $"({RegularExpressionEscapeCharacters.Aggregate(w, (p, c) => p.Replace(c, $"\\{c}"))})");
 			return String.Join("|", regexPatterns);
 		}	
 	}

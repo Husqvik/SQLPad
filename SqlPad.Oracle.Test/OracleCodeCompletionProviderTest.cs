@@ -35,7 +35,7 @@ SELECT * FROM CTE JOIN DUAL ON TO_CHAR(VAL) <> DUMMY CROSS APPLY (SELECT * FROM 
 				var effectiveQuery = query.Substring(0, i);
 				var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, effectiveQuery, effectiveQuery.Length);
 
-				Trace.WriteLine(String.Format("Caret position: {0}; Suggested items: {1}", effectiveQuery.Length, items.Count));
+				Trace.WriteLine($"Caret position: {effectiveQuery.Length}; Suggested items: {items.Count}");
 			}
 		}
 

@@ -240,7 +240,7 @@ namespace SqlPad
 		{
 			var message = document.WorkDocument.File == null
 				? "Do you want to save the document?"
-				: String.Format("Do you want to save changes in '{0}'?", document.WorkDocument.File.FullName);
+				: $"Do you want to save changes in '{document.WorkDocument.File.FullName}'?";
 			
 			var dialogResult = MessageBox.Show(message, "Confirmation", MessageBoxButton.YesNoCancel, MessageBoxImage.Question, MessageBoxResult.Yes);
 			switch (dialogResult)
@@ -252,7 +252,7 @@ namespace SqlPad
 				case MessageBoxResult.Cancel:
 					return false;
 				default:
-					throw new NotSupportedException(String.Format("'{0}' result is not supported. ", dialogResult));
+					throw new NotSupportedException($"'{dialogResult}' result is not supported. ");
 			}
 		}
 
@@ -427,7 +427,7 @@ namespace SqlPad
 			}
 			else
 			{
-				var result = MessageBox.Show(this, String.Format("File '{0}' does not exist anymore. Do you want to remove the link? ", workDocument.DocumentFileName), "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes);
+				var result = MessageBox.Show(this, $"File '{workDocument.DocumentFileName}' does not exist anymore. Do you want to remove the link? ", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes);
 				if (result == MessageBoxResult.Yes)
 				{
 					WorkDocumentCollection.RemoveRecentDocument(workDocument);
@@ -443,7 +443,7 @@ namespace SqlPad
 			Index = index;
 			WorkDocument = workDocument;
 			DocumentFileName = workDocument.DocumentFileName.Replace("_", "__");
-			var command = new RoutedCommand(String.Format("OpenRecentFile{0}", index), typeof(ContextMenu));
+			var command = new RoutedCommand($"OpenRecentFile{index}", typeof(ContextMenu));
 
 			Command = command;
 		}

@@ -16,7 +16,7 @@ namespace SqlPad.Oracle
 		public IToolTip GetToolTip(SqlDocumentRepository sqlDocumentRepository, int cursorPosition)
 		{
 			if (sqlDocumentRepository == null)
-				throw new ArgumentNullException("sqlDocumentRepository");
+				throw new ArgumentNullException(nameof(sqlDocumentRepository));
 
 			var node = sqlDocumentRepository.Statements.GetNodeAtPosition(cursorPosition);
 			if (node == null)
@@ -159,8 +159,8 @@ namespace SqlPad.Oracle
 			OracleProgramParameterMetadata parameterMetadata;
 			var parameterName = parameter.OptionalIdentifierTerminal.Token.Value.ToQuotedIdentifier();
 			return programReference.Metadata.NamedParameters.TryGetValue(parameterName, out parameterMetadata)
-				? String.Format("{0}: {1}", parameterMetadata.Name.ToSimpleIdentifier(), parameterMetadata.FullDataTypeName)
-				: null;
+				? $"{parameterMetadata.Name.ToSimpleIdentifier()}: {parameterMetadata.FullDataTypeName}"
+			    : null;
 		}
 
 		private static IToolTip BuildAsteriskToolTip(OracleQueryBlock queryBlock, StatementGrammarNode asteriskTerminal)
@@ -221,14 +221,14 @@ namespace SqlPad.Oracle
 			}
 
 			var objectPrefix = columnReference.ObjectNode == null && !String.IsNullOrEmpty(validObjectReference.FullyQualifiedObjectName.Name)
-				? String.Format("{0}.", validObjectReference.FullyQualifiedObjectName)
-				: null;
+				? $"{validObjectReference.FullyQualifiedObjectName}."
+			    : null;
 
 			var qualifiedColumnName = isSchemaObject && targetSchemaObject.Type == OracleSchemaObjectType.Sequence
 				? null
-				: String.Format("{0}{1} ", objectPrefix, columnReference.Name.ToSimpleIdentifier());
+				: $"{objectPrefix}{columnReference.Name.ToSimpleIdentifier()} ";
 
-			var tip = String.Format("{0}{1} {2}{3}", qualifiedColumnName, columnReference.ColumnDescription.FullTypeName, columnReference.ColumnDescription.Nullable ? null : "NOT ", "NULL");
+			var tip = $"{qualifiedColumnName}{columnReference.ColumnDescription.FullTypeName} {(columnReference.ColumnDescription.Nullable ? null : "NOT ")}{"NULL"}";
 			return new ToolTipObject {DataContext = tip};
 		}
 
@@ -263,7 +263,7 @@ namespace SqlPad.Oracle
 
 			return defaultValue.Length < 256
 				? defaultValue
-				: String.Format("{0}{1}", defaultValue.Substring(0, 255), OracleLargeTextValue.Ellipsis);
+				: $"{defaultValue.Substring(0, 255)}{OracleLargeTextValue.Ellipsis}";
 		}
 
 		private static string GetTypeToolTip(OracleStatementSemanticModel semanticModel, StatementGrammarNode node)
@@ -371,11 +371,11 @@ namespace SqlPad.Oracle
 			var synonym = schemaObject as OracleSynonym;
 			if (synonym != null)
 			{
-				tip = String.Format("{0} => ", GetSchemaObjectToolTip(synonym));
+				tip = $"{GetSchemaObjectToolTip(synonym)} => ";
 				schemaObject = synonym.SchemaObject;
 			}
 
-			return String.Format("{0}{1}", tip, GetSchemaObjectToolTip(schemaObject));
+			return $"{tip}{GetSchemaObjectToolTip(schemaObject)}";
 		}
 
 		private static string GetSchemaObjectToolTip(OracleSchemaObject schemaObject)
@@ -407,7 +407,7 @@ namespace SqlPad.Oracle
 
 		private static string GetObjectTitle(OracleObjectIdentifier schemaObjectIdentifier, string objectType)
 		{
-			return String.Format("{0} ({1})", schemaObjectIdentifier, CultureInfo.InvariantCulture.TextInfo.ToTitleCase(objectType));
+			return $"{schemaObjectIdentifier} ({CultureInfo.InvariantCulture.TextInfo.ToTitleCase(objectType)})";
 		}
 
 		private static ToolTipProgram GetFunctionToolTip(OracleStatementSemanticModel semanticModel, StatementGrammarNode terminal)

@@ -18,22 +18,13 @@ namespace SqlPad
 
 		private static readonly double[] FontSizes = { FontSizeMin, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, FontSizeMax };
 
-		public int CurrentLine
-		{
-			get { return (int)GetValue(CurrentLineKey.DependencyProperty); }
-		}
+		public int CurrentLine => (int)GetValue(CurrentLineKey.DependencyProperty);
 
-		public int CurrentColumn
-		{
-			get { return (int)GetValue(CurrentColumnKey.DependencyProperty); }
-		}
+	    public int CurrentColumn => (int)GetValue(CurrentColumnKey.DependencyProperty);
 
-		public int? CurrentSelectionLength
-		{
-			get { return (int?)GetValue(CurrentSelectionLengthKey.DependencyProperty); }
-		}
+	    public int? CurrentSelectionLength => (int?)GetValue(CurrentSelectionLengthKey.DependencyProperty);
 
-		protected override void OnInitialized(EventArgs e)
+	    protected override void OnInitialized(EventArgs e)
 		{
 			base.OnInitialized(e);
 

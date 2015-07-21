@@ -22,22 +22,13 @@ namespace SqlPad
 
 		public string ProviderName { get; private set; }
 
-		public IDictionary<string, BindVariableConfiguration> BindVariablesInternal
-		{
-			get { return _bindVariables ?? (_bindVariables = new Dictionary<string, BindVariableConfiguration>()); }
-		}
+		public IDictionary<string, BindVariableConfiguration> BindVariablesInternal => _bindVariables ?? (_bindVariables = new Dictionary<string, BindVariableConfiguration>());
 
-		public ICollection<StatementExecutionHistoryEntry> StatementExecutionHistory
-		{
-			get { return _statementExecutionHistory ?? (_statementExecutionHistory = new HashSet<StatementExecutionHistoryEntry>()); }
-		}
+	    public ICollection<StatementExecutionHistoryEntry> StatementExecutionHistory => _statementExecutionHistory ?? (_statementExecutionHistory = new HashSet<StatementExecutionHistoryEntry>());
 
-		public ICollection<BindVariableConfiguration> BindVariables
-		{
-			get { return BindVariablesInternal.Values; }
-		}
+	    public ICollection<BindVariableConfiguration> BindVariables => BindVariablesInternal.Values;
 
-		public BindVariableConfiguration GetBindVariable(string variableName)
+	    public BindVariableConfiguration GetBindVariable(string variableName)
 		{
 			BindVariableConfiguration bindVariable;
 			return BindVariablesInternal.TryGetValue(variableName, out bindVariable)
@@ -60,7 +51,7 @@ namespace SqlPad
 					StatementExecutionHistory.Remove(oldRecord);
 				}
 
-				Trace.WriteLine(String.Format("Statement execution history limit of {0} entries has been reached. Oldest entries have been removed. ", MaxExecutedStatementHistoryLength));
+				Trace.WriteLine($"Statement execution history limit of {MaxExecutedStatementHistoryLength} entries has been reached. Oldest entries have been removed. ");
 			}
 
 			StatementExecutionHistory.Add(entry);

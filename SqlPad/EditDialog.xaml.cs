@@ -17,7 +17,7 @@ namespace SqlPad
 		public EditDialog(CommandSettingsModel model)
 		{
 			if (model == null)
-				throw new ArgumentNullException("model");
+				throw new ArgumentNullException(nameof(model));
 
 			InitializeComponent();
 

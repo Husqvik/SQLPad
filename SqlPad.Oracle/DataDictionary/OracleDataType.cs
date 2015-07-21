@@ -51,27 +51,27 @@ namespace SqlPad.Oracle.DataDictionary
 					if (effectiveLength.HasValue)
 					{
 						var unit = dataType.Unit == DataUnit.Byte ? " BYTE" : " CHAR";
-						effectiveSize = String.Format("({0}{1})", effectiveLength, dataType.Unit == DataUnit.NotApplicable ? null : unit);
+						effectiveSize = $"({effectiveLength}{(dataType.Unit == DataUnit.NotApplicable ? null : unit)})";
 					}
 
-					name = String.Format("{0}{1}", name, effectiveSize);
+					name = $"{name}{effectiveSize}";
 					break;
 				case TerminalValues.Float:
 				case TerminalValues.Number:
-					var decimalScale = dataType.Scale > 0 ? String.Format(", {0}", dataType.Scale) : null;
+					var decimalScale = dataType.Scale > 0 ? $", {dataType.Scale}" : null;
 					if (dataType.Precision > 0 || dataType.Scale > 0)
 					{
-						name = String.Format("{0}({1}{2})", name, dataType.Precision == null ? "*" : Convert.ToString(dataType.Precision), decimalScale);
+						name = $"{name}({(dataType.Precision == null ? "*" : Convert.ToString(dataType.Precision))}{decimalScale})";
 					}
 					
 					break;
 				case TerminalValues.Raw:
-					name = String.Format("{0}({1})", name, dataType.Length);
+					name = $"{name}({dataType.Length})";
 					break;
 				case TerminalValues.Timestamp:
 					if (dataType.Scale.HasValue)
 					{
-						name = String.Format("{0}({1})", name, dataType.Scale);
+						name = $"{name}({dataType.Scale})";
 					}
 					
 					break;

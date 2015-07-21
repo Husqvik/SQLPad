@@ -102,7 +102,7 @@ namespace SqlPad.Oracle.Commands
 					nodes = GetColumnReferenceUsage();
 					break;
 				default:
-					throw new NotSupportedException(String.Format("Terminal '{0}' is not supported. ", _currentNode.Id));
+					throw new NotSupportedException($"Terminal '{_currentNode.Id}' is not supported. ");
 			}
 
 			_executionContext.SegmentsToReplace.AddRange(

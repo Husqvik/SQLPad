@@ -95,7 +95,7 @@ namespace SqlPad.Oracle.Commands
 
 			if (!String.IsNullOrEmpty(_dataObjectReference.FullyQualifiedObjectName.Name))
 			{
-				builder.Append(String.Format(" {0}", _dataObjectReference.FullyQualifiedObjectName.Name.ToSimpleIdentifier()));	
+				builder.Append($" {_dataObjectReference.FullyQualifiedObjectName.Name.ToSimpleIdentifier()}");	
 			}
 
 			ExecutionContext.SegmentsToReplace.Add(
@@ -119,10 +119,10 @@ namespace SqlPad.Oracle.Commands
 			var tableAlias = settingsModel.Value;
 
 			var builder = new StringBuilder("SELECT ");
-			var objectQualifier = String.IsNullOrEmpty(tableAlias) ? null : String.Format("{0}.", tableAlias);
+			var objectQualifier = String.IsNullOrEmpty(tableAlias) ? null : $"{tableAlias}.";
 			var columnList = String.Join(", ", CurrentQueryBlock.Columns
 				.Where(c => !c.IsAsterisk && !String.IsNullOrEmpty(c.NormalizedName))
-				.Select(c => String.Format("{0}{1}", objectQualifier, c.NormalizedName.ToSimpleIdentifier())));
+				.Select(c => $"{objectQualifier}{c.NormalizedName.ToSimpleIdentifier()}"));
 
 			builder.Append(columnList);
 			builder.Append(" FROM (");
@@ -144,7 +144,7 @@ namespace SqlPad.Oracle.Commands
 				{
 					IndextStart = subqueryIndexEnd + 1,
 					Length = 0,
-					Text = String.IsNullOrEmpty(tableAlias) ? ")" : String.Format(") {0}", tableAlias)
+					Text = String.IsNullOrEmpty(tableAlias) ? ")" : $") {tableAlias}"
 				});
 		}
 	}

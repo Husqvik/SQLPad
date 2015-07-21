@@ -80,29 +80,29 @@ namespace SqlPad
 
 		internal TabItem TabItem { get; private set; }
 		
-		internal ContextMenu TabItemContextMenu { get { return ((ContentControl)TabItem.Header).ContextMenu; } }
+		internal ContextMenu TabItemContextMenu => ((ContentControl)TabItem.Header).ContextMenu;
 
-		internal static bool IsParsingSynchronous { get; set; }
+	    internal static bool IsParsingSynchronous { get; set; }
 
 		public bool IsBusy { get { return _outputViewers.Any(v => v.IsBusy); } }
 
-		internal bool IsSelectedPage { get { return Equals(((TabItem)App.MainWindow.DocumentTabControl.SelectedItem).Content); } }
+		internal bool IsSelectedPage => Equals(((TabItem)App.MainWindow.DocumentTabControl.SelectedItem).Content);
 
-		public TextEditorAdapter EditorAdapter { get; private set; }
+	    public TextEditorAdapter EditorAdapter { get; private set; }
 
-		public WorkDocument WorkDocument { get; private set; }
+		public WorkDocument WorkDocument { get; }
 
-		public bool IsDirty { get { return !String.Equals(Editor.Text, _originalWorkDocumentContent); } }
+		public bool IsDirty => !String.Equals(Editor.Text, _originalWorkDocumentContent);
 
-		public IDatabaseModel DatabaseModel { get; private set; }
+	    public IDatabaseModel DatabaseModel { get; private set; }
 
-		public IReadOnlyList<OutputViewer> OutputViewers { get { return _outputViewers; } }
+		public IReadOnlyList<OutputViewer> OutputViewers => _outputViewers;
 
-		public IReadOnlyList<string> Schemas { get { return _schemas; } }
+	    public IReadOnlyList<string> Schemas => _schemas;
 
-		private OutputViewer ActiveOutputViewer { get { return (OutputViewer)OutputViewerList.SelectedItem; } }
+	    private OutputViewer ActiveOutputViewer => (OutputViewer)OutputViewerList.SelectedItem;
 
-		public DocumentPage(WorkDocument workDocument = null)
+	    public DocumentPage(WorkDocument workDocument = null)
 		{
 			InitializeComponent();
 
@@ -165,7 +165,7 @@ namespace SqlPad
 			var builder = new StringBuilder(statementText);
 
 			var statement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
-			if (statement != null && statement.RootNode != null)
+			if (statement?.RootNode != null)
 			{
 				insertIndex = statement.SourcePosition.IndexEnd + 1;
 				builder.Insert(0, Environment.NewLine, 2);
@@ -184,7 +184,7 @@ namespace SqlPad
 		{
 			DocumentHeaderToolTip = WorkDocument.File == null
 				? "Unsaved"
-				: String.Format("{0}{1}Last change: {2}", WorkDocument.File.FullName, Environment.NewLine, WorkDocument.File.LastWriteTime);
+				: $"{WorkDocument.File.FullName}{Environment.NewLine}Last change: {WorkDocument.File.LastWriteTime}";
 		}
 		
 		private void InitializeFileWatcher()
@@ -204,7 +204,7 @@ namespace SqlPad
 		{
 			App.MainWindow.DocumentTabControl.SelectedItem = TabItem;
 
-			var message = String.Format("File '{0}' has been deleted. Do you want to close the document? ", fullFileName);
+			var message = $"File '{fullFileName}' has been deleted. Do you want to close the document? ";
 			if (MessageBox.Show(App.MainWindow, message, "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes) == MessageBoxResult.No)
 			{
 				return;
@@ -230,7 +230,7 @@ namespace SqlPad
 				{
 					App.MainWindow.DocumentTabControl.SelectedItem = TabItem;
 
-					var message = String.Format("File '{0}' has been changed by another application. Do you want to load new content? ", fileSystemEventArgs.FullPath);
+					var message = $"File '{fileSystemEventArgs.FullPath}' has been changed by another application. Do you want to load new content? ";
 					if (MessageBox.Show(App.MainWindow, message, "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes) == MessageBoxResult.Yes)
 					{
 						Editor.Load(fileSystemEventArgs.FullPath);
@@ -379,12 +379,9 @@ namespace SqlPad
 		{
 			_connectionString = connectionString;
 
-			if (DatabaseModel != null)
-			{
-				DatabaseModel.Dispose();
-			}
+		    DatabaseModel?.Dispose();
 
-			ResetSchemas();
+		    ResetSchemas();
 
 			var connectionConfiguration = ConfigurationProvider.GetConnectionCofiguration(_connectionString.Name);
 			_providerConfiguration = WorkDocumentCollection.GetProviderConfiguration(_connectionString.ProviderName);
@@ -424,13 +421,13 @@ namespace SqlPad
 		{
 			if (_outputViewers.Count >= MaximumOutputViewersPerPage)
 			{
-				throw new InvalidOperationException(string.Format("Maximum number of simultaneous views is {0}. ", MaximumOutputViewersPerPage));
+				throw new InvalidOperationException($"Maximum number of simultaneous views is {MaximumOutputViewersPerPage}. ");
 			}
 
 			var outputViewer =
 				new OutputViewer(this)
 				{
-					Title = String.Format("View {0}", ++_outputViewerCounter),
+					Title = $"View {++_outputViewerCounter}",
 					EnableDatabaseOutput = WorkDocument.EnableDatabaseOutput,
 					KeepDatabaseOutputHistory = WorkDocument.KeepDatabaseOutputHistory
 				};
@@ -849,27 +846,18 @@ namespace SqlPad
 			App.MainWindow.DocumentTabControl.SelectionChanged -= DocumentTabControlSelectionChangedHandler;
 			Application.Current.Deactivated -= ApplicationDeactivatedHandler;
 
-			if (_documentFileWatcher != null)
-			{
-				_documentFileWatcher.Dispose();
-			}
+		    _documentFileWatcher?.Dispose();
 
-			TabItemContextMenu.CommandBindings.Clear();
+		    TabItemContextMenu.CommandBindings.Clear();
 
 			_timerReParse.Stop();
 			_timerReParse.Dispose();
 
-			if (_parsingCancellationTokenSource != null)
-			{
-				_parsingCancellationTokenSource.Dispose();
-			}
+		    _parsingCancellationTokenSource?.Dispose();
 
-			DisposeOutputViewers();
+		    DisposeOutputViewers();
 
-			if (DatabaseModel != null)
-			{
-				DatabaseModel.Dispose();
-			}
+		    DatabaseModel?.Dispose();
 		}
 
 		private void DisposeOutputViewers()
@@ -1137,7 +1125,7 @@ namespace SqlPad
 				case "}":
 					return "{";
 				default:
-					throw new ArgumentException("invalid parenthesis symbol", "parenthesisOrBracket");
+					throw new ArgumentException("invalid parenthesis symbol", nameof(parenthesisOrBracket));
 			}
 		}
 
@@ -1341,7 +1329,7 @@ namespace SqlPad
 			}
 			catch (Exception e)
 			{
-				Trace.WriteLine(String.Format("Code completion window item generation failed: {0}", e));
+				Trace.WriteLine($"Code completion window item generation failed: {e}");
 				App.CreateErrorLog(e);
 				return;
 			}

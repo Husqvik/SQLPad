@@ -89,7 +89,7 @@ namespace SqlPad
 
 				timer.Stop();
 
-				Trace.WriteLine(String.Format("{0} - Cache for '{1}' stored in {2}", DateTime.Now, cacheKey, timer.Elapsed));
+				Trace.WriteLine($"{DateTime.Now} - Cache for '{cacheKey}' stored in {timer.Elapsed}");
 
 				using (var stream = File.Create(CacheConfigrationFileName))
 				{
@@ -125,7 +125,7 @@ namespace SqlPad
 			Files = new Dictionary<string, CacheFile>();
 		}
 
-		public IDictionary<string, CacheFile> Files { get; private set; }
+		public IDictionary<string, CacheFile> Files { get; }
 	}
 
 	[Serializable]

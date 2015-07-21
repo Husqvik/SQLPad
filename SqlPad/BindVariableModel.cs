@@ -9,13 +9,13 @@ namespace SqlPad
 			BindVariable = bindVariable;
 		}
 
-		public BindVariableConfiguration BindVariable { get; private set; }
+		public BindVariableConfiguration BindVariable { get; }
 
-		public string Name { get { return BindVariable.Name; } }
-		
-		public ICollection<string> DataTypes { get { return BindVariable.DataTypes.Keys; } }
+		public string Name => BindVariable.Name;
 
-		public object Value
+	    public ICollection<string> DataTypes => BindVariable.DataTypes.Keys;
+
+	    public object Value
 		{
 			get { return BindVariable.Value; }
 			set
@@ -28,12 +28,9 @@ namespace SqlPad
 			}
 		}
 
-		public string InputType
-		{
-			get { return BindVariable.DataTypes[BindVariable.DataType].Name; }
-		}
+		public string InputType => BindVariable.DataTypes[BindVariable.DataType].Name;
 
-		public string DataType
+	    public string DataType
 		{
 			get { return BindVariable.DataType; }
 			set

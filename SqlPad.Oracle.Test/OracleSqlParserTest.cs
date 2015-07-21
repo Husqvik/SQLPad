@@ -1800,7 +1800,7 @@ FROM DUAL";
 		[TestCase("FULL", Terminals.Full)]
 		public void TestLeftJoinClauseWhereLeftMustNotBeRecognizedAsAlias(string joinType, string terminalId)
 		{
-			var query1 = String.Format("SELECT NULL FROM SELECTION {0} JOIN RESPONDENTBUCKET RB ON SELECTION.RESPONDENTBUCKET_ID = RB.RESPONDENTBUCKET_ID", joinType);
+			var query1 = $"SELECT NULL FROM SELECTION {joinType} JOIN RESPONDENTBUCKET RB ON SELECTION.RESPONDENTBUCKET_ID = RB.RESPONDENTBUCKET_ID";
 			var result = Parser.Parse(query1);
 
 			result.Count.ShouldBe(1);
@@ -1876,7 +1876,7 @@ FROM DUAL";
 				parsingStopwatch.Stop();
 				cancellationStopwatch.Stop();
 
-				Trace.WriteLine(String.Format("Parsing successfully cancelled; parse time: {0} ms; cancellation time: {1} ms", parsingStopwatch.ElapsedMilliseconds, cancellationStopwatch.ElapsedMilliseconds));
+				Trace.WriteLine($"Parsing successfully cancelled; parse time: {parsingStopwatch.ElapsedMilliseconds} ms; cancellation time: {cancellationStopwatch.ElapsedMilliseconds} ms");
 			}
 		}
 

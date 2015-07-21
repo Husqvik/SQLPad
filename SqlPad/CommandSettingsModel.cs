@@ -9,9 +9,8 @@ namespace SqlPad
 	public class CommandSettingsModel : ModelBase
 	{
 		private string _value = String.Empty;
-		private readonly IDictionary<string, BooleanOption> _booleanOptions = new Dictionary<string, BooleanOption>();
 
-		public CommandSettingsModel()
+	    public CommandSettingsModel()
 		{
 			Description = String.Empty;
 			Heading = String.Empty;
@@ -38,13 +37,13 @@ namespace SqlPad
 
 		public Visibility BooleanOptionsVisibility { get; set; }
 
-		public IDictionary<string, BooleanOption> BooleanOptions { get { return _booleanOptions; } }
+		public IDictionary<string, BooleanOption> BooleanOptions { get; } = new Dictionary<string, BooleanOption>();
 
-		public ValidationRule ValidationRule { get; set; }
+	    public ValidationRule ValidationRule { get; set; }
 
 		public void AddBooleanOption(BooleanOption option)
 		{
-			_booleanOptions.Add(option.OptionIdentifier, option);
+			BooleanOptions.Add(option.OptionIdentifier, option);
 		}
 	}
 

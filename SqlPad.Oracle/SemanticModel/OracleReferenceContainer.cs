@@ -11,7 +11,7 @@ namespace SqlPad.Oracle.SemanticModel
 		{
 			if (semanticModel == null)
 			{
-				throw new ArgumentNullException("semanticModel");
+				throw new ArgumentNullException(nameof(semanticModel));
 			}
 
 			SemanticModel = semanticModel;

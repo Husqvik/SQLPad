@@ -28,7 +28,7 @@ namespace SqlPad.Oracle
 		public IValidationModel BuildValidationModel(IStatementSemanticModel semanticModel)
 		{
 			if (semanticModel == null)
-				throw new ArgumentNullException("semanticModel");
+				throw new ArgumentNullException(nameof(semanticModel));
 
 			var oracleSemanticModel = (OracleStatementSemanticModel)semanticModel;
 
@@ -56,13 +56,13 @@ namespace SqlPad.Oracle
 					case ReferenceType.TableCollection:
 						var tableCollectionReference = (OracleTableCollectionReference)objectReference;
 						var tableCollectionProgramReference = tableCollectionReference.RowSourceReference as OracleProgramReference;
-						if (tableCollectionProgramReference != null && tableCollectionProgramReference.Metadata != null &&
-							!tableCollectionProgramReference.Metadata.ReturnParameter.DataType.In(OracleTypeCollection.OracleCollectionTypeNestedTable, OracleTypeCollection.OracleCollectionTypeVarryingArray))
-						{
-							validationModel.ProgramNodeValidity[tableCollectionProgramReference.FunctionIdentifierNode] = new InvalidNodeValidationData(OracleSemanticErrorType.FunctionReturningRowSetRequired) { Node = tableCollectionProgramReference.FunctionIdentifierNode };
-						}
+				        if (tableCollectionProgramReference?.Metadata != null &&
+				            !tableCollectionProgramReference.Metadata.ReturnParameter.DataType.In(OracleTypeCollection.OracleCollectionTypeNestedTable, OracleTypeCollection.OracleCollectionTypeVarryingArray))
+				        {
+				            validationModel.ProgramNodeValidity[tableCollectionProgramReference.FunctionIdentifierNode] = new InvalidNodeValidationData(OracleSemanticErrorType.FunctionReturningRowSetRequired) {Node = tableCollectionProgramReference.FunctionIdentifierNode};
+				        }
 
-						var tableCollectionColumnReference = tableCollectionReference.RowSourceReference as OracleColumnReference;
+				        var tableCollectionColumnReference = tableCollectionReference.RowSourceReference as OracleColumnReference;
 						if (tableCollectionColumnReference != null && databaseModel != null && databaseModel.IsMetadataAvailable && tableCollectionColumnReference.ColumnDescription != null &&
 						    !tableCollectionColumnReference.ColumnDescription.DataType.IsDynamicCollection && !String.IsNullOrEmpty(tableCollectionColumnReference.ColumnDescription.DataType.FullyQualifiedName.Name))
 						{
@@ -682,7 +682,7 @@ namespace SqlPad.Oracle
 			}
 
 			var firstQueryBlock = queryBlock.AllPrecedingConcatenatedQueryBlocks.LastOrDefault();
-			return firstQueryBlock == null ? null :  firstQueryBlock.OrderByClause;
+			return firstQueryBlock?.OrderByClause;
 		}
 
 		private static void ValidateDatabaseLinkReference(IDictionary<StatementGrammarNode, INodeValidationData> nodeValidityDictionary, OracleReference databaseLinkReference)
@@ -791,8 +791,7 @@ namespace SqlPad.Oracle
 				}
 				else if (programReference.Metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramLevel)
 				{
-					if (programReference.Owner == null || programReference.Owner.HierarchicalQueryClause == null ||
-					    programReference.Owner.HierarchicalQueryClause[NonTerminals.HierarchicalQueryConnectByClause] == null)
+					if (programReference.Owner?.HierarchicalQueryClause?[NonTerminals.HierarchicalQueryConnectByClause] == null)
 					{
 						validationModel.ProgramNodeValidity[programReference.FunctionIdentifierNode] =
 							new SemanticErrorNodeValidationData(OracleSemanticErrorType.ConnectByClauseRequired, OracleSemanticErrorType.ConnectByClauseRequired)
@@ -841,7 +840,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private bool IsInClauseValidWithLnNvl(StatementGrammarNode parameterNode)
+		private static bool IsInClauseValidWithLnNvl(StatementGrammarNode parameterNode)
 		{
 			if (parameterNode[Terminals.In] == null)
 			{
@@ -849,28 +848,18 @@ namespace SqlPad.Oracle
 			}
 			
 			var parameters = parameterNode[NonTerminals.ExpressionListOrNestedQuery];
-			if (parameters == null)
-			{
-				return true;
-			}
-
-			var expressionList = parameters[NonTerminals.ExpressionList];
-			if (expressionList != null && expressionList.GetDescendants(NonTerminals.ExpressionCommaChainedList).Any())
-			{
-				return false;
-			}
-
-			return true;
+		    var expressionList = parameters?[NonTerminals.ExpressionList];
+			return expressionList == null || !expressionList.GetDescendants(NonTerminals.ExpressionCommaChainedList).Any();
 		}
 
-		private string GetCompilationError(OracleProgramReferenceBase reference)
+		private static string GetCompilationError(OracleReference reference)
 		{
 			return reference.SchemaObject == null || reference.SchemaObject.IsValid
 				? OracleSemanticErrorType.None
 				: OracleSemanticErrorType.ObjectStatusInvalid;
 		}
 
-		private INodeValidationData GetInvalidIdentifierValidationData(StatementGrammarNode node)
+		private static INodeValidationData GetInvalidIdentifierValidationData(StatementGrammarNode node)
 		{
 			if (!node.Id.IsIdentifierOrAlias())
 				return null;
@@ -924,7 +913,7 @@ namespace SqlPad.Oracle
 			return result;
 		}
 
-		private void ResolveColumnNodeValidities(OracleValidationModel validationModel, OracleReferenceContainer referenceContainer)
+		private static void ResolveColumnNodeValidities(OracleValidationModel validationModel, OracleReferenceContainer referenceContainer)
 		{
 			if (referenceContainer.ColumnReferences.Count == 0)
 			{
@@ -943,7 +932,7 @@ namespace SqlPad.Oracle
 
 				var databaseLinkReferenceCount = sourceObjectReferences.Count(r => r.DatabaseLinkNode != null);
 
-				if (columnReference.ValidObjectReference == null || columnReference.ValidObjectReference.DatabaseLinkNode == null)
+				if (columnReference.ValidObjectReference?.DatabaseLinkNode == null)
 				{
 					// Schema
 					if (columnReference.OwnerNode != null)
@@ -1006,9 +995,9 @@ namespace SqlPad.Oracle
 
 		private struct IdentifierValidationResult
 		{
-			public bool IsValid { get { return String.IsNullOrEmpty(ErrorMessage); } }
-			
-			public string ErrorMessage { get; set; }
+			public bool IsValid => String.IsNullOrEmpty(ErrorMessage);
+
+		    public string ErrorMessage { get; set; }
 
 			public bool IsNumericBindVariable { get; set; }
 			
@@ -1024,23 +1013,23 @@ namespace SqlPad.Oracle
 		private readonly Dictionary<StatementGrammarNode, INodeValidationData> _identifierNodeValidity = new Dictionary<StatementGrammarNode, INodeValidationData>();
 		private readonly Dictionary<StatementGrammarNode, INodeValidationData> _invalidNonTerminals = new Dictionary<StatementGrammarNode, INodeValidationData>();
 
-		IStatementSemanticModel IValidationModel.SemanticModel { get { return SemanticModel; } }
+		IStatementSemanticModel IValidationModel.SemanticModel => SemanticModel;
 
-		public OracleStatementSemanticModel SemanticModel { get; set; }
+	    public OracleStatementSemanticModel SemanticModel { get; set; }
 
-		public StatementBase Statement { get { return SemanticModel.Statement; } }
+		public StatementBase Statement => SemanticModel.Statement;
 
-		public IDictionary<StatementGrammarNode, INodeValidationData> ObjectNodeValidity { get { return _objectNodeValidity; } }
+	    public IDictionary<StatementGrammarNode, INodeValidationData> ObjectNodeValidity => _objectNodeValidity;
 
-		public IDictionary<StatementGrammarNode, INodeValidationData> ColumnNodeValidity { get { return _columnNodeValidity; } }
+	    public IDictionary<StatementGrammarNode, INodeValidationData> ColumnNodeValidity => _columnNodeValidity;
 
-		public IDictionary<StatementGrammarNode, INodeValidationData> ProgramNodeValidity { get { return _programNodeValidity; } }
+	    public IDictionary<StatementGrammarNode, INodeValidationData> ProgramNodeValidity => _programNodeValidity;
 
-		public IDictionary<StatementGrammarNode, INodeValidationData> IdentifierNodeValidity { get { return _identifierNodeValidity; } }
+	    public IDictionary<StatementGrammarNode, INodeValidationData> IdentifierNodeValidity => _identifierNodeValidity;
 
-		public IDictionary<StatementGrammarNode, INodeValidationData> InvalidNonTerminals { get { return _invalidNonTerminals; } }
+	    public IDictionary<StatementGrammarNode, INodeValidationData> InvalidNonTerminals => _invalidNonTerminals;
 
-		public IEnumerable<INodeValidationData> AllNodes
+	    public IEnumerable<INodeValidationData> AllNodes
 		{
 			get
 			{
@@ -1089,19 +1078,13 @@ namespace SqlPad.Oracle
 
 		public bool IsRecognized { get; set; }
 
-		public virtual string SuggestionType
-		{
-			get { return null; }
-		}
+		public virtual string SuggestionType => null;
 
-		public virtual string SemanticErrorType
-		{
-			get { return _objectReferences.Count >= 2 ? OracleSemanticErrorType.AmbiguousReference : OracleSemanticErrorType.None; }
-		}
+	    public virtual string SemanticErrorType => _objectReferences.Count >= 2 ? OracleSemanticErrorType.AmbiguousReference : OracleSemanticErrorType.None;
 
-		public ICollection<OracleObjectWithColumnsReference> ObjectReferences { get { return _objectReferences; } }
+	    public ICollection<OracleObjectWithColumnsReference> ObjectReferences => _objectReferences;
 
-		public ICollection<string> ObjectNames
+	    public ICollection<string> ObjectNames
 		{
 			get
 			{
@@ -1114,22 +1097,16 @@ namespace SqlPad.Oracle
 
 		public StatementGrammarNode Node { get; set; }
 
-		public virtual string ToolTipText
-		{
-			get
-			{
-				return SemanticErrorType == OracleSemanticErrorType.None
-					? Node.Type == NodeType.NonTerminal
-						? null
-						: Node.Id
-					: FormatToolTipWithObjectNames();
-			}
-		}
+		public virtual string ToolTipText => SemanticErrorType == OracleSemanticErrorType.None
+		    ? Node.Type == NodeType.NonTerminal
+		        ? null
+		        : Node.Id
+		    : FormatToolTipWithObjectNames();
 
-		private string FormatToolTipWithObjectNames()
+	    private string FormatToolTipWithObjectNames()
 		{
 			var objectNames = ObjectNames;
-			return String.Format("{0}{1}", SemanticErrorType, objectNames.Count == 0 ? null : String.Format(" ({0})", String.Join(", ", ObjectNames)));
+			return $"{SemanticErrorType}{(objectNames.Count == 0 ? null : $" ({String.Join(", ", ObjectNames)})")}";
 		}
 	}
 
@@ -1143,12 +1120,9 @@ namespace SqlPad.Oracle
 			IsRecognized = true;
 		}
 
-		public override string SemanticErrorType { get { return _semanticError; } }
+		public override string SemanticErrorType => _semanticError;
 
-		public override string ToolTipText
-		{
-			get { return _semanticError; }
-		}
+	    public override string ToolTipText => _semanticError;
 	}
 
 	public class SuggestionData : NodeValidationData
@@ -1160,14 +1134,11 @@ namespace SqlPad.Oracle
 			_suggestionType = suggestionType;
 		}
 
-		public override string SuggestionType { get { return _suggestionType; } }
+		public override string SuggestionType => _suggestionType;
 
-		public override string SemanticErrorType { get { return OracleSemanticErrorType.None; } }
+	    public override string SemanticErrorType => OracleSemanticErrorType.None;
 
-		public override string ToolTipText
-		{
-			get { return _suggestionType; }
-		}
+	    public override string ToolTipText => _suggestionType;
 	}
 
 	public class ColumnNodeValidationData : NodeValidationData
@@ -1180,7 +1151,7 @@ namespace SqlPad.Oracle
 		{
 			if (columnReference == null)
 			{
-				throw new ArgumentNullException("columnReference");
+				throw new ArgumentNullException(nameof(columnReference));
 			}
 			
 			_columnReference = columnReference;
@@ -1209,25 +1180,19 @@ namespace SqlPad.Oracle
 				   asteriskColumnReference.ObjectNodeObjectReferences.First() == implicitColumnReference.ColumnNodeObjectReferences.First();
 		}
 
-		public ICollection<OracleColumn> ColumnNodeColumnReferences { get { return _columnReference.ColumnNodeColumnReferences; } }
+		public ICollection<OracleColumn> ColumnNodeColumnReferences => _columnReference.ColumnNodeColumnReferences;
 
-		public override string SemanticErrorType
-		{
-			get
-			{
-				return _ambiguousColumnNames.Length > 0 || ColumnNodeColumnReferences.Count >= 2
-					? OracleSemanticErrorType.AmbiguousReference
-					: base.SemanticErrorType;
-			}
-		}
+	    public override string SemanticErrorType => _ambiguousColumnNames.Length > 0 || ColumnNodeColumnReferences.Count >= 2
+		    ? OracleSemanticErrorType.AmbiguousReference
+		    : base.SemanticErrorType;
 
-		public override string ToolTipText
+	    public override string ToolTipText
 		{
 			get
 			{
 				var additionalInformation = _ambiguousColumnNames.Length > 0
-					? String.Format(" ({0})", String.Join(", ", _ambiguousColumnNames))
-					: String.Empty;
+					? $" ({String.Join(", ", _ambiguousColumnNames)})"
+				    : String.Empty;
 
 				return _ambiguousColumnNames.Length > 0 && ObjectReferences.Count <= 1
 					? OracleSemanticErrorType.AmbiguousReference + additionalInformation
@@ -1238,20 +1203,14 @@ namespace SqlPad.Oracle
 
 	public class SemanticErrorNodeValidationData : NodeValidationData
 	{
-		private readonly string _toolTipText;
-		private readonly string _semanticErrorType;
-
-		public SemanticErrorNodeValidationData(string semanticErrorType, string toolTipText)
+	    public SemanticErrorNodeValidationData(string semanticErrorType, string toolTipText)
 		{
-			_toolTipText = toolTipText;
-			_semanticErrorType = semanticErrorType;
+			ToolTipText = toolTipText;
+			SemanticErrorType = semanticErrorType;
 		}
 
-		public override string SemanticErrorType { get { return _semanticErrorType; } }
+		public override string SemanticErrorType { get; }
 
-		public override string ToolTipText
-		{
-			get { return _toolTipText; }
-		}
+	    public override string ToolTipText { get; }
 	}
 }

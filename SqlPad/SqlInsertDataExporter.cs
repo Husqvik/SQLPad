@@ -13,7 +13,7 @@ namespace SqlPad
 			var sqlTemplateBuilder = new StringBuilder("INSERT INTO MY_TABLE (", 32768);
 			sqlTemplateBuilder.Append(String.Join(", ", headerArray));
 			sqlTemplateBuilder.Append(") VALUES (");
-			sqlTemplateBuilder.Append(String.Join(", ", headerArray.Select((c, i) => String.Format("{{{0}}}", i))));
+			sqlTemplateBuilder.Append(String.Join(", ", headerArray.Select((c, i) => $"{{{i}}}")));
 			sqlTemplateBuilder.Append(");");
 
 			return sqlTemplateBuilder.ToString();

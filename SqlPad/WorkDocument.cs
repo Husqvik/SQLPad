@@ -20,22 +20,13 @@ namespace SqlPad
 			HeaderBackgroundColorCode = DefaultDocumentHeaderBackgroundColorCode;
 		}
 
-		private List<bool> FoldingStatesInternal
-		{
-			get { return _foldingStates ?? (_foldingStates = new List<bool>()); }
-		}
+		private List<bool> FoldingStatesInternal => _foldingStates ?? (_foldingStates = new List<bool>());
 
-		public IList<bool> FoldingStates
-		{
-			get { return FoldingStatesInternal.AsReadOnly(); }
-		}
+	    public IList<bool> FoldingStates => FoldingStatesInternal.AsReadOnly();
 
-		public bool IsSqlx
-		{
-			get { return File != null && IsSqlxExtension(File.Extension); }
-		}
+	    public bool IsSqlx => File != null && IsSqlxExtension(File.Extension);
 
-		public static bool IsSqlxFile(string fileName)
+	    public static bool IsSqlxFile(string fileName)
 		{
 			return IsSqlxExtension(new FileInfo(fileName).Extension);
 		}
@@ -51,13 +42,13 @@ namespace SqlPad
 			FoldingStatesInternal.AddRange(foldingStates);
 		}
 
-		public string Identifier { get { return File == null ? DocumentId.ToString("N") : File.Name; } }
+		public string Identifier => File?.Name ?? DocumentId.ToString("N");
 
 		public Guid DocumentId { get; private set; }
 
-		public FileInfo File { get { return String.IsNullOrEmpty(DocumentFileName) ? null : new FileInfo(DocumentFileName); } }
-		
-		public string DocumentFileName { get; set; }
+		public FileInfo File => String.IsNullOrEmpty(DocumentFileName) ? null : new FileInfo(DocumentFileName);
+
+	    public string DocumentFileName { get; set; }
 		
 		public string DocumentTitle { get; set; }
 		

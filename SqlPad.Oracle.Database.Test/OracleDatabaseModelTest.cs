@@ -84,19 +84,19 @@ WHERE
 			databaseModel.Version.Major.ShouldBeGreaterThanOrEqualTo(11);
 
 			databaseModel.AllObjects.Count.ShouldBeGreaterThan(0);
-			Trace.WriteLine(String.Format("All object dictionary has {0} members. ", databaseModel.AllObjects.Count));
+			Trace.WriteLine($"All object dictionary has {databaseModel.AllObjects.Count} members. ");
 			
 			databaseModel.DatabaseLinks.Count.ShouldBeGreaterThan(0);
-			Trace.WriteLine(String.Format("Database link dictionary has {0} members. ", databaseModel.DatabaseLinks.Count));
+			Trace.WriteLine($"Database link dictionary has {databaseModel.DatabaseLinks.Count} members. ");
 
 			databaseModel.CharacterSets.Count.ShouldBeGreaterThan(0);
-			Trace.WriteLine(String.Format("Character set collection has {0} members. ", databaseModel.CharacterSets.Count));
+			Trace.WriteLine($"Character set collection has {databaseModel.CharacterSets.Count} members. ");
 
 			databaseModel.StatisticsKeys.Count.ShouldBeGreaterThan(0);
-			Trace.WriteLine(String.Format("Statistics key dictionary has {0} members. ", databaseModel.StatisticsKeys.Count));
+			Trace.WriteLine($"Statistics key dictionary has {databaseModel.StatisticsKeys.Count} members. ");
 
 			databaseModel.SystemParameters.Count.ShouldBeGreaterThan(0);
-			Trace.WriteLine(String.Format("System parameters dictionary has {0} members. ", databaseModel.SystemParameters.Count));
+			Trace.WriteLine($"System parameters dictionary has {databaseModel.SystemParameters.Count} members. ");
 
 			var objectForScriptCreation = databaseModel.GetFirstSchemaObject<OracleSchemaObject>(databaseModel.GetPotentialSchemaObjectIdentifiers("SYS", "OBJ$"));
 			objectForScriptCreation.ShouldNotBe(null);
@@ -156,7 +156,7 @@ WHERE
 			var statisticsRecords = taskStatistics.Result.Where(r => r.Value != 0).ToArray();
 			statisticsRecords.Length.ShouldBeGreaterThan(0);
 
-			var statistics = String.Join(Environment.NewLine, statisticsRecords.Select(r => String.Format("{0}: {1}", r.Name.PadRight(40), r.Value)));
+			var statistics = String.Join(Environment.NewLine, statisticsRecords.Select(r => $"{r.Name.PadRight(40)}: {r.Value}"));
 			Trace.WriteLine("Execution statistics output: " + Environment.NewLine + statistics + Environment.NewLine);
 		}
 
@@ -212,10 +212,10 @@ WHERE
 				var clobValue = (OracleClobValue)firstRow[1];
 				clobValue.ToString().ShouldBe(expectedPreview);
 				clobValue.DataTypeName.ShouldBe("CLOB");
-				var expectedLiteral = String.Format("TO_CLOB('{0}')", clobParameter);
+				var expectedLiteral = $"TO_CLOB('{clobParameter}')";
 				clobValue.ToSqlLiteral().ShouldBe(expectedLiteral);
-				clobValue.ToXml().ShouldBe(String.Format("<![CDATA[{0}]]>", clobParameter));
-				clobValue.ToJson().ShouldBe(String.Format("\"{0}\"", clobParameter));
+				clobValue.ToXml().ShouldBe($"<![CDATA[{clobParameter}]]>");
+				clobValue.ToJson().ShouldBe($"\"{clobParameter}\"");
 				firstRow[2].ShouldBeTypeOf<OracleClobValue>();
 				var nClobValue = (OracleClobValue)firstRow[2];
 				nClobValue.DataTypeName.ShouldBe("NCLOB");
@@ -238,7 +238,7 @@ WHERE
 				timestampValue.ToJson().ShouldBe("\"2014-11-01T14:16:32.123\"");
 				firstRow[6].ShouldBeTypeOf<OracleNumber>();
 				var numberValue = (OracleNumber)firstRow[6];
-				var expectedValue = String.Format("0{0}1234567890123456789012345678901234567891", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator);
+				var expectedValue = $"0{CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator}1234567890123456789012345678901234567891";
 				numberValue.ToString().ShouldBe(expectedValue);
 				numberValue.ToSqlLiteral().ShouldBe("0.1234567890123456789012345678901234567891");
 				firstRow[7].ShouldBeTypeOf<OracleXmlValue>();
@@ -249,7 +249,7 @@ WHERE
 				xmlValue.ToSqlLiteral().ShouldBe("XMLTYPE('<root/>\n')");
 				firstRow[8].ShouldBeTypeOf<OracleNumber>();
 				numberValue = (OracleNumber)firstRow[8];
-				expectedValue = String.Format("1{0}23456789012345678901234567890123456789E-125", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator);
+				expectedValue = $"1{CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator}23456789012345678901234567890123456789E-125";
 				numberValue.ToString().ShouldBe(expectedValue);
 				numberValue.ToSqlLiteral().ShouldBe("1.23456789012345678901234567890123456789E-125");
 				firstRow[9].ShouldBeTypeOf<OracleDateTime>();

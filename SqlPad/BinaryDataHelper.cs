@@ -52,7 +52,7 @@ namespace SqlPad
 			var i = 0;
 			while (i < bytesPerLine && sourceBytes.MoveNext())
 			{
-				hexadecimalPart.Append(String.Format("{0:X2}{1}", sourceBytes.Current, i < bytesPerLine - 1 ? " " : "|"));
+				hexadecimalPart.Append($"{sourceBytes.Current:X2}{(i < bytesPerLine - 1 ? " " : "|")}");
 
 				var character = Convert.ToChar(sourceBytes.Current);
 				textPart.Append(Char.IsControl(character) ? '.' : character);

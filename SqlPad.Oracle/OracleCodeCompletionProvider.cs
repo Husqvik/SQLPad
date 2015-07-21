@@ -55,7 +55,7 @@ namespace SqlPad.Oracle
 							Name = metadata.Identifier.FullyQualifiedIdentifier,
 							Parameters = metadata.Parameters
 								.Where(p => p.Direction != ParameterDirection.ReturnValue && p.DataLevel == 0)
-								.Select(p => String.Format("{0}{1}", p.Name.ToSimpleIdentifier(), String.IsNullOrEmpty(p.FullDataTypeName) ? null : String.Format(": {0}", p.FullDataTypeName)))
+								.Select(p => $"{p.Name.ToSimpleIdentifier()}{(String.IsNullOrEmpty(p.FullDataTypeName) ? null : $": {p.FullDataTypeName}")}")
 								.ToArray(),
 							CurrentParameterIndex = fo.CurrentParameterIndex,
 							ReturnedDatatype = returnParameter == null ? null : returnParameter.FullDataTypeName,
@@ -382,7 +382,7 @@ namespace SqlPad.Oracle
 					var name = t.Name.ToSimpleIdentifier();
 					var text = !String.IsNullOrEmpty(owner) || String.Equals(t.Owner, OracleDatabaseModelBase.SchemaPublic) || String.IsNullOrEmpty(t.Owner)
 						? name
-						: String.Format("{0}.{1}", t.Owner.ToSimpleIdentifier(), name);
+						: $"{t.Owner.ToSimpleIdentifier()}.{name}";
 
 					var addSizeParentheses = text.In(TerminalValues.Varchar2, TerminalValues.NVarchar2, TerminalValues.Char, TerminalValues.NChar, TerminalValues.Raw);
 
@@ -390,7 +390,7 @@ namespace SqlPad.Oracle
 						new OracleCodeCompletionItem
 						{
 							Name = text,
-							Text = addSizeParentheses ? String.Format("{0}()", text) : text,
+							Text = addSizeParentheses ? $"{text}()" : text,
 							Category = OracleCodeCompletionCategory.DataType,
 							StatementNode = completionType.ReferenceIdentifier.IdentifierUnderCursor,
 							CaretOffset = addSizeParentheses ? -1 : 0
@@ -780,7 +780,7 @@ namespace SqlPad.Oracle
 		{
 			var text = String.IsNullOrEmpty(objectPrefix)
 				? columnName.ToSimpleIdentifier()
-				: String.Format("{0}.{1}", objectPrefix, columnName.ToSimpleIdentifier());
+				: $"{objectPrefix}.{columnName.ToSimpleIdentifier()}";
 			
 			return new OracleCodeCompletionItem
 			       {
@@ -856,7 +856,7 @@ namespace SqlPad.Oracle
 						new OracleCodeCompletionItem
 						{
 							Name = functionName,
-							Text = String.Format("{0}{1}{2}", functionName, postFix, analyticClause),
+							Text = $"{functionName}{postFix}{analyticClause}",
 							StatementNode = node,
 							Category = category,
 							InsertOffset = insertOffset,
@@ -882,7 +882,7 @@ namespace SqlPad.Oracle
 
 			if (!metadataCollection.Any(m => m.IsAggregate) && metadata.IsAnalytic)
 			{
-				return String.Format(" OVER ({0})", orderByClause);
+				return $" OVER ({orderByClause})";
 			}
 
 			return String.Empty;
@@ -968,7 +968,7 @@ namespace SqlPad.Oracle
 
 			var preFix = identifierPart[0] != '"' && identifierPart[identifierPart.Length - 1] == '"' ? "\"" : null;
 			var postFix = identifierPart[0] == '"' && identifierPart[identifierPart.Length - 1] != '"' ? "\"" : null;
-			return String.Format("{0}{1}{2}", preFix, identifierPart, postFix).ToQuotedIdentifier();
+			return $"{preFix}{identifierPart}{postFix}".ToQuotedIdentifier();
 		}
 
 		private bool IsDataObject(OracleSchemaObject schemaObject)

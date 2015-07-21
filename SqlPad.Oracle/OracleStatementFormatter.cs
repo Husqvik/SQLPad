@@ -105,7 +105,7 @@ namespace SqlPad.Oracle
 				case Terminals.Comma:
 					return LineBreakPosition.AfterNode;
 				default:
-					throw new NotSupportedException(String.Format("Node '{0}' is not supported. ", node.Id));
+					throw new NotSupportedException($"Node '{node.Id}' is not supported. ");
 			}
 		}
 

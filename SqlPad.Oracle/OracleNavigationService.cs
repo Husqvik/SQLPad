@@ -45,7 +45,7 @@ namespace SqlPad.Oracle
 				case Terminals.ObjectIdentifier:
 					return NavigateToObjectDefinition(queryBlock, terminal);
 				default:
-					throw new NotSupportedException(String.Format("Terminal '{0}' is not supported. ", terminal.Id));
+					throw new NotSupportedException($"Terminal '{terminal.Id}' is not supported. ");
 			}
 		}
 

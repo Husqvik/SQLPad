@@ -15,12 +15,9 @@ namespace SqlPad
 		private const string QuoteCharacter = "\"";
 		private const string EscapedQuote = "&quot;";
 
-		public string FileNameFilter
-		{
-			get { return "HTML files (*.html)|*.html|All files (*.*)|*"; }
-		}
+		public string FileNameFilter => "HTML files (*.html)|*.html|All files (*.*)|*";
 
-		public void ExportToClipboard(DataGrid dataGrid, IDataExportConverter dataExportConverter)
+	    public void ExportToClipboard(DataGrid dataGrid, IDataExportConverter dataExportConverter)
 		{
 			ExportToFile(null, dataGrid, dataExportConverter);
 		}
@@ -44,8 +41,8 @@ namespace SqlPad
 			var columnHeaders = orderedColumns
 				.Select(c => ((ColumnHeader)c.Header).Name.Replace(QuoteCharacter, EscapedQuote));
 
-			var headerLine = BuildlTableRowTemplate(columnHeaders.Select(h => String.Format("<th>{0}</th>", h)));
-			var htmlTableRowTemplate = BuildlTableRowTemplate(Enumerable.Range(0, orderedColumns.Length).Select(i => String.Format("<td>{{{0}}}</td>", i)));
+			var headerLine = BuildlTableRowTemplate(columnHeaders.Select(h => $"<th>{h}</th>"));
+			var htmlTableRowTemplate = BuildlTableRowTemplate(Enumerable.Range(0, orderedColumns.Length).Select(i => $"<td>{{{i}}}</td>"));
 
 			var rows = dataGrid.Items;
 

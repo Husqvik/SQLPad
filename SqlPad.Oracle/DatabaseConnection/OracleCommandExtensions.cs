@@ -101,7 +101,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public static async Task SetSchema(this OracleCommand command, string schema, CancellationToken cancellationToken)
 		{
-			command.CommandText = String.Format("ALTER SESSION SET CURRENT_SCHEMA = \"{0}\"", schema);
+			command.CommandText = $"ALTER SESSION SET CURRENT_SCHEMA = \"{schema}\"";
 			await command.ExecuteNonQueryAsynchronous(cancellationToken);
 		}
 
@@ -160,7 +160,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 			catch (Exception e)
 			{
-				Trace.WriteLine(String.Format("Command cancellation failed: {0}", e));
+				Trace.WriteLine($"Command cancellation failed: {e}");
 			}
 		}
 	}

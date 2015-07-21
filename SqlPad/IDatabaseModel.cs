@@ -97,7 +97,7 @@ namespace SqlPad
 		{
 			if (exception == null)
 			{
-				throw new ArgumentNullException("exception");
+				throw new ArgumentNullException(nameof(exception));
 			}
 			
 			Exception = exception;

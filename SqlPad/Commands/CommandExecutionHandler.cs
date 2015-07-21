@@ -24,17 +24,17 @@ namespace SqlPad.Commands
 	{
 		private readonly List<TextSegment> _segmentsToReplace = new List<TextSegment>();
 
-		public IList<TextSegment> SegmentsToReplace { get { return _segmentsToReplace; } }
+		public IList<TextSegment> SegmentsToReplace => _segmentsToReplace;
 
-		public string StatementText { get; private set; }
+	    public string StatementText { get; private set; }
 		
 		public SqlDocumentRepository DocumentRepository { get; private set; }
 		
 		public int SelectionStart { get; private set; }
 
-		public int SelectionEnd { get { return SelectionStart + SelectionLength; } }
-		
-		public int CaretOffset { get; set; }
+		public int SelectionEnd => SelectionStart + SelectionLength;
+
+	    public int CaretOffset { get; set; }
 
 		public int SelectionLength { get; set; }
 		
@@ -43,7 +43,7 @@ namespace SqlPad.Commands
 		public void EnsureSettingsProviderAvailable()
 		{
 			if (SettingsProvider == null)
-				throw new InvalidOperationException(String.Format("Settings provider is mandatory. "));
+				throw new InvalidOperationException("Settings provider is mandatory. ");
 		}
 
 		public CommandExecutionContext(string statementText, int caretOffset, int selectionStart, int selectionLength, SqlDocumentRepository documentRepository)

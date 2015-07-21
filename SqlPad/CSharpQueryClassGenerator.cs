@@ -70,7 +70,7 @@ public class Query
 					bindVariableBuilder.Append(bindVariable.Name);
 					bindVariableBuilder.AppendLine(" { get; set; }");
 
-					var parameterName = String.Format("parameter{0}", bindVariable.Name);
+					var parameterName = $"parameter{bindVariable.Name}";
 					parameterBuilder.Append("\t\t\tvar ");
 					parameterBuilder.Append(parameterName);
 					parameterBuilder.AppendLine(" = command.CreateParameter();");
@@ -97,7 +97,7 @@ public class Query
 
 				if (column.DataType.IsValueType)
 				{
-					dataTypeName = String.Format("{0}?", dataTypeName);
+					dataTypeName = $"{dataTypeName}?";
 				}
 
 				columnMapBuilder.Append("\t\t\t\t\t\t\t");

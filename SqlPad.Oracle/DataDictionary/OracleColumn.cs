@@ -16,12 +16,9 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public string Name { get; set; }
 
-		public string FullTypeName
-		{
-			get { return OracleDataType.ResolveFullTypeName(DataType, CharacterSize); }
-		}
+		public string FullTypeName => OracleDataType.ResolveFullTypeName(DataType, CharacterSize);
 
-		public int? CharacterSize { get; set; }
+	    public int? CharacterSize { get; set; }
 
 		public bool Nullable { get; set; }
 		

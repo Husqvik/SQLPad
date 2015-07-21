@@ -51,14 +51,14 @@ namespace SqlPad.Test
 			var testClassType = Type.GetType(testClassName);
 			if (testClassType == null)
 			{
-				throw new ArgumentException(string.Format("Test class '{0}' was not found. ", testClassName));
+				throw new ArgumentException($"Test class '{testClassName}' was not found. ");
 			}
 
 			var testMethodName = (string)AppDomain.CurrentDomain.GetData(DomainParameterTestMethodName);
 			var testMethodInfo = testClassType.GetMethod(testMethodName, BindingFlags.Static | BindingFlags.NonPublic);
 			if (testMethodInfo == null)
 			{
-				throw new ArgumentException(string.Format("Test method '{0}' was not found. ", testMethodName));
+				throw new ArgumentException($"Test method '{testMethodName}' was not found. ");
 			}
 
 			var testContext =

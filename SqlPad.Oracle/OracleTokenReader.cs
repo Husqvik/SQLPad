@@ -19,7 +19,7 @@ namespace SqlPad.Oracle
 		private OracleTokenReader(TextReader sqlReader)
 		{
 			if (sqlReader == null)
-				throw new ArgumentNullException("sqlReader");
+				throw new ArgumentNullException(nameof(sqlReader));
 			
 			_sqlReader = sqlReader;
 		}

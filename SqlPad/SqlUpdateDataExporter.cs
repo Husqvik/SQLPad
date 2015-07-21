@@ -11,12 +11,9 @@ namespace SqlPad
 {
 	public abstract class SqlBaseDataExporter : IDataExporter
 	{
-		public string FileNameFilter
-		{
-			get { return "SQL files (*.sql)|*.sql|All files (*.*)|*"; }
-		}
+		public string FileNameFilter => "SQL files (*.sql)|*.sql|All files (*.*)|*";
 
-		public void ExportToClipboard(DataGrid dataGrid, IDataExportConverter dataExportConverter)
+	    public void ExportToClipboard(DataGrid dataGrid, IDataExportConverter dataExportConverter)
 		{
 			ExportToFile(null, dataGrid, dataExportConverter);
 		}
@@ -75,7 +72,7 @@ namespace SqlPad
 
 		protected override string BuildSqlCommandTemplate(IEnumerable<string> columnHeaders)
 		{
-			return String.Format("UPDATE MY_TABLE SET {0};", String.Join(", ", columnHeaders.Select((h, i) => String.Format(UpdateColumnClauseMask, h, i))));
+			return $"UPDATE MY_TABLE SET {String.Join(", ", columnHeaders.Select((h, i) => String.Format(UpdateColumnClauseMask, h, i)))};";
 		}
 	}
 }

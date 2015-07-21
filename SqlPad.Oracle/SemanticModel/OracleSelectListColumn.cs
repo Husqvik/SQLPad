@@ -172,7 +172,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 			if (!String.Equals(expressionNode.Id, NonTerminals.Expression))
 			{
-				throw new ArgumentException("Node ID must be 'Expression'. ", "expressionNode");
+				throw new ArgumentException("Node ID must be 'Expression'. ", nameof(expressionNode));
 			}
 
 			StatementGrammarNode analyzedNode;

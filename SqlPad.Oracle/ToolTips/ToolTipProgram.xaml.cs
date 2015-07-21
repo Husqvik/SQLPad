@@ -51,7 +51,7 @@ namespace SqlPad.Oracle.ToolTips
 
 			if (!String.IsNullOrEmpty(metadata.Identifier.Package))
 			{
-				label = String.Format("{0}{1}", label, label == null ? "Package " : "package ");
+				label = $"{label}{(label == null ? "Package " : "package ")}";
 			}
 			else if (!String.IsNullOrEmpty(metadata.Identifier.Owner))
 			{
@@ -59,7 +59,7 @@ namespace SqlPad.Oracle.ToolTips
 			}
 			
 			var programType = metadata.Type.ToString().ToLowerInvariant();
-			return String.Format("{0}{1}", label, programType);
+			return $"{label}{programType}";
 		}
 	}
 }

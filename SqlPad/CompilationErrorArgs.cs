@@ -10,7 +10,7 @@ namespace SqlPad
 		{
 			if (compilationError == null)
 			{
-				throw new ArgumentNullException("compilationError");
+				throw new ArgumentNullException(nameof(compilationError));
 			}
 			
 			CompilationError = compilationError;

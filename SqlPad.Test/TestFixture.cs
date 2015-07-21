@@ -10,7 +10,7 @@ namespace SqlPad.Test
 		{
 			var tempDirectoryName = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
 			Directory.CreateDirectory(tempDirectoryName);
-			Trace.WriteLine(String.Format("Test temp directory '{0}' has been created. ", tempDirectoryName));
+			Trace.WriteLine($"Test temp directory '{tempDirectoryName}' has been created. ");
 			return tempDirectoryName;
 		}
 	}

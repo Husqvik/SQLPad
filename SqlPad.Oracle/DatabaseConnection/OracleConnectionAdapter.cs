@@ -54,11 +54,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 			set { UpdateModuleName(value); }
 		}
 
-		public override IDatabaseModel DatabaseModel { get { return _databaseModel; } }
+		public override IDatabaseModel DatabaseModel => _databaseModel;
 
-		public override string TraceFileName { get { return _userTraceFileName; } }
+	    public override string TraceFileName => _userTraceFileName;
 
-		public OracleConnectionAdapter(OracleDatabaseModel databaseModel)
+	    public OracleConnectionAdapter(OracleDatabaseModel databaseModel)
 		{
 			_databaseModel = databaseModel;
 			_connectionString = _databaseModel.ConnectionString;
@@ -93,7 +93,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			try
 			{
 				await ExecuteSimpleCommandUsingUserConnection(commandText, cancellationToken);
-				Trace.WriteLine(String.Format("Enable trace event statement executed successfully: \n{0}", commandText));
+				Trace.WriteLine($"Enable trace event statement executed successfully: \n{commandText}");
 			}
 			catch
 			{
@@ -123,7 +123,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			foreach (var traceEvent in traceEvents)
 			{
-				builder.AppendLine(String.Format("\tEXECUTE IMMEDIATE '{0}';", getCommandTextFunc(traceEvent).Replace("'", "''")));
+				builder.AppendLine($"\tEXECUTE IMMEDIATE '{getCommandTextFunc(traceEvent).Replace("'", "''")}';");
 			}
 
 			builder.Append("END;");
@@ -146,7 +146,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 
 			await ExecuteSimpleCommandUsingUserConnection(commandText, cancellationToken);
-			Trace.WriteLine(String.Format("Disable trace event statement executed successfully: \n{0}", commandText));
+			Trace.WriteLine($"Disable trace event statement executed successfully: \n{commandText}");
 		}
 
 		internal void SwitchCurrentSchema()
@@ -167,7 +167,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private void UpdateModuleName(string identifier)
 		{
 			_identifier = identifier;
-			_moduleName = String.Format("{0}/{1}/{2}", ModuleNameSqlPadDatabaseModelBase, _databaseModel.ConnectionIdentifier, _identifier);
+			_moduleName = $"{ModuleNameSqlPadDatabaseModelBase}/{_databaseModel.ConnectionIdentifier}/{_identifier}";
 		}
 
 		private void InitializeUserConnection()
@@ -204,14 +204,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_databaseModel.RemoveConnectionAdapter(this);
 		}
 
-		public override bool CanFetch
-		{
-			get { return CanFetchFromReader(_userDataReader) && !_isExecuting; }
-		}
+		public override bool CanFetch => CanFetchFromReader(_userDataReader) && !_isExecuting;
 
-		public override bool IsExecuting { get { return _isExecuting; } }
+	    public override bool IsExecuting => _isExecuting;
 
-		public override bool EnableDatabaseOutput { get; set; }
+	    public override bool EnableDatabaseOutput { get; set; }
 
 		public override async Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken)
 		{
@@ -224,9 +221,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return FetchRecordsFromReader(_userDataReader, rowCount, false).EnumerateAsync(cancellationToken);
 		}
 
-		public override bool HasActiveTransaction { get { return !String.IsNullOrEmpty(_userTransactionId); } }
+		public override bool HasActiveTransaction => !String.IsNullOrEmpty(_userTransactionId);
 
-		public override void CommitTransaction()
+	    public override void CommitTransaction()
 		{
 			ExecuteUserTransactionAction(t => t.Commit());
 		}
@@ -307,12 +304,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private void DisposeCommandAndReader()
 		{
-			if (_userDataReader != null)
-			{
-				_userDataReader.Dispose();
-			}
+		    _userDataReader?.Dispose();
 
-			_childReaders.ForEach(r => r.Dispose());
+		    _childReaders.ForEach(r => r.Dispose());
 			_childReaders.Clear();
 		}
 
@@ -391,7 +385,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 						var oracleString = reader.GetOracleString(i);
 						var stringValue = oracleString.IsNull
 							? String.Empty
-							: String.Format("{0}{1}", oracleString.Value, oracleString.Value.Length == OracleDatabaseModel.InitialLongFetchSize ? OracleLargeTextValue.Ellipsis : null);
+							: $"{oracleString.Value}{(oracleString.Value.Length == OracleDatabaseModel.InitialLongFetchSize ? OracleLargeTextValue.Ellipsis : null)}";
 
 						value = new OracleSimpleValue(stringValue);
 						break;
@@ -444,10 +438,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				if (prefetch)
 				{
 					var largeValue = value as ILargeValue;
-					if (largeValue != null)
-					{
-						largeValue.Prefetch();
-					}
+				    largeValue?.Prefetch();
 				}
 
 				columnData[i] = value;
@@ -479,11 +470,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 					try
 					{
 						await command.ExecuteNonQueryAsynchronous(cancellationToken);
-						Trace.WriteLine(String.Format("Startup script command '{0}' executed successfully. ", command.CommandText));
+						Trace.WriteLine($"Startup script command '{command.CommandText}' executed successfully. ");
 					}
 					catch (Exception e)
 					{
-						Trace.WriteLine(String.Format("Startup script command '{0}' failed: {1}", command.CommandText, e));
+						Trace.WriteLine($"Startup script command '{command.CommandText}' failed: {e}");
 					}
 				}
 
@@ -495,7 +486,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				}
 				catch (Exception e)
 				{
-					Trace.WriteLine(String.Format("Trace file name retrieval failed: {0}", e));
+					Trace.WriteLine($"Trace file name retrieval failed: {e}");
 				}
 			}
 		}
@@ -522,7 +513,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			using (var command = _userConnection.CreateCommand())
 			{
-				command.CommandText = String.Format("CALL DBMS_OUTPUT.{0}", EnableDatabaseOutput ? "ENABLE(1)" : "DISABLE()");
+				command.CommandText = $"CALL DBMS_OUTPUT.{(EnableDatabaseOutput ? "ENABLE(1)" : "DISABLE()")}";
 				await command.ExecuteNonQueryAsynchronous(cancellationToken);
 			}
 			
@@ -535,7 +526,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var numberFormat = CultureInfo.CurrentCulture.NumberFormat;
 			var decimalSeparator = numberFormat.NumberDecimalSeparator;
 			var groupSeparator = numberFormat.NumberGroupSeparator;
-			info.NumericCharacters = String.Format("{0}{1}", decimalSeparator.Length == 1 ? decimalSeparator : ".", groupSeparator.Length == 1 ? groupSeparator : " ");
+			info.NumericCharacters = $"{(decimalSeparator.Length == 1 ? decimalSeparator : ".")}{(groupSeparator.Length == 1 ? groupSeparator : " ")}";
 			OracleGlobalization.SetThreadInfo(info);
 		}
 
@@ -771,7 +762,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					}
 					catch (OracleException e)
 					{
-						Trace.WriteLine(String.Format("Execution plan identifers and transaction status could not been fetched: {0}", e));
+						Trace.WriteLine($"Execution plan identifers and transaction status could not been fetched: {e}");
 						return e;
 					}
 				}

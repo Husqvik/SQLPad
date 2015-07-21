@@ -10,10 +10,7 @@ namespace SqlPad
 		private const string ElementInfrastructureConfigurations = "infrastructureConfigurations";
 
 		[ConfigurationProperty(ElementInfrastructureConfigurations)]
-		public InfrastructureConfigurationElementCollection Infrastructures
-		{
-			get { return base[ElementInfrastructureConfigurations] as InfrastructureConfigurationElementCollection; }
-		}
+		public InfrastructureConfigurationElementCollection Infrastructures => base[ElementInfrastructureConfigurations] as InfrastructureConfigurationElementCollection;
 	}
 
 	[DebuggerDisplay("InfrastructureConfigurationSection (ConnectionStringName={ConnectionStringName}, InfrastructureFactory={InfrastructureFactory})")]

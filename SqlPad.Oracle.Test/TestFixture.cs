@@ -29,10 +29,10 @@ namespace SqlPad.Oracle.Test
 			{
 				var followingTerminal = sortedTerminals[i];
 				if (terminal.SourcePosition.IndexEnd >= followingTerminal.SourcePosition.IndexStart)
-					throw new InvalidOperationException(String.Format("Terminals '{0}' and '{1}' within the statement are overlapping. ", terminal.Id, followingTerminal.Id));
+					throw new InvalidOperationException($"Terminals '{terminal.Id}' and '{followingTerminal.Id}' within the statement are overlapping. ");
 
 				if (followingTerminal != allTerminals[i])
-					throw new InvalidOperationException(String.Format("Terminals within the statement are in invalid order (index {0}). ", i));
+					throw new InvalidOperationException($"Terminals within the statement are in invalid order (index {i}). ");
 
 				terminal = followingTerminal;
 			}

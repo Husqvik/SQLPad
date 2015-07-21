@@ -19,7 +19,7 @@ namespace SqlPad.Oracle.ToolTips
 				? "Schema"
 				: "User/schema";
 
-			LabelTitle.Text = String.Format("{0} ({1})", dataModel.Schema.Name.ToSimpleIdentifier(), objectType);
+			LabelTitle.Text = $"{dataModel.Schema.Name.ToSimpleIdentifier()} ({objectType})";
 		}
 
 		public Control Control { get { return this; } }

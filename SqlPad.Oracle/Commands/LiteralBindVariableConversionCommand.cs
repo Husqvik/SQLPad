@@ -92,7 +92,7 @@ namespace SqlPad.Oracle.Commands
 				var textSegment =
 					new TextSegment
 					{
-						Text = String.Format(":{0}", settingsModel.Value),
+						Text = $":{settingsModel.Value}",
 						IndextStart = indexStart,
 						Length = replaceLength
 					};

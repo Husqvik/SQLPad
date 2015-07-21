@@ -25,7 +25,7 @@ namespace SqlPad.Oracle.Commands
 		protected OracleCommandBase(CommandExecutionContext executionContext)
 		{
 			if (executionContext == null)
-				throw new ArgumentNullException("executionContext");
+				throw new ArgumentNullException(nameof(executionContext));
 
 			ExecutionContext = executionContext;
 
@@ -56,7 +56,7 @@ namespace SqlPad.Oracle.Commands
 
 		protected virtual Task ExecuteAsync(CancellationToken cancellationToken)
 		{
-			throw new NotSupportedException(String.Format("Task '{0}' does not support asynchronous execution. ", GetType().FullName));
+			throw new NotSupportedException($"Task '{GetType().FullName}' does not support asynchronous execution. ");
 		}
 
 		public static CommandExecutionHandler CreateStandardExecutionHandler<TCommand>(string commandName) where TCommand : OracleCommandBase

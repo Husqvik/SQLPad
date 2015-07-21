@@ -368,7 +368,7 @@ namespace SqlPad
 				return;
 			}
 
-			//await _validator.ApplyReferenceConstraintsAsync(executionResult, _documentPage.DatabaseModel, _statementExecutionCancellationTokenSource.Token);
+			await _validator.ApplyReferenceConstraintsAsync(executionResult, _documentPage.DatabaseModel, _statementExecutionCancellationTokenSource.Token);
 
 			DisplayResult(executionResult);
 		}
@@ -789,7 +789,12 @@ namespace SqlPad
 			}
 		}
 
-		private void ApplicationDeactivatedHandler(object sender, EventArgs eventArgs)
+        private void CleanUpVirtualizedItemHandler(object sender, CleanUpVirtualizedItemEventArgs e)
+        {
+            e.Cancel = ResultSetDataGridTemplateSelector.CanBeRecycled(e.UIElement);
+        }
+
+        private void ApplicationDeactivatedHandler(object sender, EventArgs eventArgs)
 		{
 			DataGridTabHeaderPopup.IsOpen = false;
 		}

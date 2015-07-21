@@ -40,7 +40,7 @@ namespace SqlPad.Oracle.ExecutionPlan
 			}
 			catch (Exception e)
 			{
-				Messages.ShowError(String.Format("Execution statistics cannot be retrieved: {0}", e.Message));
+				Messages.ShowError($"Execution statistics cannot be retrieved: {e.Message}");
 			}
 
 			if (itemCollection == null)
@@ -131,7 +131,7 @@ namespace SqlPad.Oracle.ExecutionPlan
 			var planItem = value as ExecutionStatisticsPlanItem;
 			return planItem == null || planItem.LastMemoryUsedBytes == null
 				? String.Empty
-				: String.Format("{0} ({1}, {2})", DataSpaceConverter.PrettyPrint(planItem.LastMemoryUsedBytes.Value), planItem.LastExecutionMethod, planItem.WorkAreaSizingPolicy);
+				: $"{DataSpaceConverter.PrettyPrint(planItem.LastMemoryUsedBytes.Value)} ({planItem.LastExecutionMethod}, {planItem.WorkAreaSizingPolicy})";
 		}
 	}
 
@@ -142,7 +142,7 @@ namespace SqlPad.Oracle.ExecutionPlan
 			var planItem = value as ExecutionStatisticsPlanItem;
 			return planItem == null || planItem.LastMemoryUsedBytes == null
 				? String.Empty
-				: String.Format("{0} total/{1} optimal/{2} one-pass/{3} multi-pass", planItem.TotalWorkAreaExecutions, planItem.OptimalWorkAreaExecutions, planItem.OnePassWorkAreaExecutions, planItem.MultiPassWorkAreaExecutions);
+				: $"{planItem.TotalWorkAreaExecutions} total/{planItem.OptimalWorkAreaExecutions} optimal/{planItem.OnePassWorkAreaExecutions} one-pass/{planItem.MultiPassWorkAreaExecutions} multi-pass";
 		}
 	}
 

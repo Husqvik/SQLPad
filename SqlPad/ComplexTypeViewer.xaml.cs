@@ -53,7 +53,7 @@ namespace SqlPad
 			}
 		}
 
-		private void ComplexTypeViewerGridMouseDownHandler(object sender, MouseButtonEventArgs e)
+		private void ColumnHeaderClickHandler(object sender, RoutedEventArgs e)
 		{
 			e.Handled = true;
 		}

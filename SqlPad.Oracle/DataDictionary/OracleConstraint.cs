@@ -23,19 +23,19 @@ namespace SqlPad.Oracle.DataDictionary
 	[DebuggerDisplay("OraclePrimaryKeyConstraint (Name={FullyQualifiedName.Name}; IsEnabled={IsEnabled}; IsDeferrable={IsDeferrable}; IsValidated={IsValidated}; IsRelied={IsRelied})")]
 	public class OraclePrimaryKeyConstraint : OracleUniqueConstraint
 	{
-		public override ConstraintType Type { get { return ConstraintType.PrimaryKey; } }
+		public override ConstraintType Type => ConstraintType.PrimaryKey;
 	}
 
 	[DebuggerDisplay("OracleUniqueConstraint (Name={FullyQualifiedName.Name}; IsEnabled={IsEnabled}; IsDeferrable={IsDeferrable}; IsValidated={IsValidated}; IsRelied={IsRelied})")]
 	public class OracleUniqueConstraint : OracleConstraint
 	{
-		public override ConstraintType Type { get { return ConstraintType.Unique; } }
+		public override ConstraintType Type => ConstraintType.Unique;
 	}
 
 	[DebuggerDisplay("OracleCheckConstraint (Name={FullyQualifiedName.Name}; IsEnabled={IsEnabled}; IsDeferrable={IsDeferrable}; IsValidated={IsValidated}; IsRelied={IsRelied})")]
 	public class OracleCheckConstraint : OracleConstraint
 	{
-		public override ConstraintType Type { get { return ConstraintType.Check; } }
+		public override ConstraintType Type => ConstraintType.Check;
 	}
 
 	[DebuggerDisplay("OracleForeignKeyConstraint (Name={FullyQualifiedName.Name}; IsEnabled={IsEnabled}; IsDeferrable={IsDeferrable}; IsValidated={IsValidated}; IsRelied={IsRelied})")]
@@ -47,7 +47,7 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public DeleteRule DeleteRule { get; set; }
 
-		public override ConstraintType Type { get { return ConstraintType.ForeignKey; } }
+		public override ConstraintType Type => ConstraintType.ForeignKey;
 	}
 
 	public enum ConstraintType

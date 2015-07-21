@@ -16,17 +16,11 @@ namespace SqlPad
 		private const string DoubleQuotes = "\"\"";
 		private const string CsvSeparator = ";";
 
-		protected virtual string Separator
-		{
-			get { return CsvSeparator; }
-		}
+		protected virtual string Separator => CsvSeparator;
 
-		public virtual string FileNameFilter
-		{
-			get { return "CSV files (*.csv)|*.csv|All files (*.*)|*"; }
-		}
+	    public virtual string FileNameFilter => "CSV files (*.csv)|*.csv|All files (*.*)|*";
 
-		public void ExportToClipboard(DataGrid dataGrid, IDataExportConverter dataExportConverter)
+	    public void ExportToClipboard(DataGrid dataGrid, IDataExportConverter dataExportConverter)
 		{
 			ExportToFile(null, dataGrid, dataExportConverter);
 		}

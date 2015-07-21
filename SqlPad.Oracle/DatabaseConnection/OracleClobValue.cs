@@ -24,9 +24,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private string _preview;
 		private string _value;
 
-		public bool IsEditable { get { return false; } }
+		public bool IsEditable => false;
 
-		public abstract string DataTypeName { get; }
+	    public abstract string DataTypeName { get; }
 		
 		public abstract bool IsNull { get; }
 
@@ -34,29 +34,23 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public string ToXml()
 		{
-			return String.Format("<![CDATA[{0}]]>", Value);
+			return $"<![CDATA[{Value}]]>";
 		}
 
 		public string ToJson()
 		{
 			return IsNull
 				? "null"
-				: String.Format("\"{0}\"", Value.Replace("\"", "\\\""));
+				: $"\"{Value.Replace("\"", "\\\"")}\"";
 		}
 
 		public abstract long Length { get; }
 
-		public virtual int PreviewLength
-		{
-			get { return DefaultPreviewLength; }
-		}
+		public virtual int PreviewLength => DefaultPreviewLength;
 
-		public string Preview
-		{
-			get { return _preview ?? BuildPreview(); }
-		}
+	    public string Preview => _preview ?? BuildPreview();
 
-		private string BuildPreview()
+	    private string BuildPreview()
 		{
 			if (IsNull)
 			{
@@ -71,7 +65,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var indexFirstLineBreak = preview.IndexOf('\n', 0, preview.Length < PreviewLength ? preview.Length : PreviewLength);
 			if (preview.Length > PreviewLength || indexFirstLineBreak != -1)
 			{
-				preview = String.Format("{0}{1}", preview.Substring(0, indexFirstLineBreak != -1 ? indexFirstLineBreak : PreviewLength), Ellipsis);
+				preview = $"{preview.Substring(0, indexFirstLineBreak != -1 ? indexFirstLineBreak : PreviewLength)}{Ellipsis}";
 			}
 
 			return _preview = preview;
@@ -116,27 +110,23 @@ namespace SqlPad.Oracle.DatabaseConnection
 	public class OracleXmlValue : OracleLargeTextValue, IDisposable
 	{
 		private readonly OracleXmlType _xmlType;
-		private readonly int _previewLength;
 
-		public override string DataTypeName { get { return TerminalValues.XmlType; } }
+	    public override string DataTypeName => TerminalValues.XmlType;
 
-		public override long Length { get { return Value.Length; } }
+	    public override long Length => Value.Length;
 
-		public override bool IsNull { get { return _xmlType.IsNull; } }
+	    public override bool IsNull => _xmlType.IsNull;
 
-		public override string ToSqlLiteral()
+	    public override string ToSqlLiteral()
 		{
 			return IsNull
 				? TerminalValues.Null
-				: String.Format("{0}('{1}')", TerminalValues.XmlType, Value.Replace("'", "''"));
+				: $"{TerminalValues.XmlType}('{Value.Replace("'", "''")}')";
 		}
 
-		public override int PreviewLength
-		{
-			get { return _previewLength; }
-		}
+		public override int PreviewLength { get; }
 
-		protected override string GetValue()
+	    protected override string GetValue()
 		{
 			return _xmlType.Value;
 		}
@@ -144,7 +134,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		public OracleXmlValue(OracleXmlType xmlType, int previewLength = DefaultPreviewLength)
 		{
 			_xmlType = xmlType;
-			_previewLength = previewLength;
+			PreviewLength = previewLength;
 		}
 
 		public override void GetChunk(StringBuilder stringBuilder, int offset, int length)
@@ -163,33 +153,31 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 	public class OracleSimpleValue : ILargeTextValue
 	{
-		private readonly string _value;
-
-		public OracleSimpleValue(object value)
+	    public OracleSimpleValue(object value)
 		{
-			_value = Convert.ToString(value);
+			Preview = Convert.ToString(value);
 			IsNull = value == DBNull.Value;
 		}
 
-		public bool IsNull { get; private set; }
+		public bool IsNull { get; }
 
 		public string ToSqlLiteral()
 		{
 			return IsNull
 				? TerminalValues.Null
-				: String.Format("'{0}'", _value.Replace("'", "''"));
+				: $"'{Preview.Replace("'", "''")}'";
 		}
 
 		public string ToXml()
 		{
-			return _value;
+			return Preview;
 		}
 
 		public string ToJson()
 		{
 			return IsNull
 				? "null"
-				: String.Format("\"{0}\"", Value.Replace("\"", "\\\""));
+				: $"\"{Value.Replace("\"", "\\\"")}\"";
 		}
 
 		public string DataTypeName
@@ -197,27 +185,24 @@ namespace SqlPad.Oracle.DatabaseConnection
 			get { throw new NotImplementedException(); }
 		}
 
-		public long Length
+		public long Length => Preview.Length;
+
+	    public void GetChunk(StringBuilder stringBuilder, int offset, int length)
 		{
-			get { return _value.Length; }
+			stringBuilder.Append(Preview.Substring(offset, length));
 		}
 
-		public void GetChunk(StringBuilder stringBuilder, int offset, int length)
+		public bool IsEditable => false;
+
+	    public void Prefetch() { }
+
+		public string Preview { get; }
+
+	    public string Value => Preview;
+
+	    public override string ToString()
 		{
-			stringBuilder.Append(_value.Substring(offset, length));
-		}
-
-		public bool IsEditable { get { return false; } }
-		
-		public void Prefetch() { }
-
-		public string Preview { get { return _value; } }
-		
-		public string Value { get { return _value; } }
-
-		public override string ToString()
-		{
-			return _value;
+			return Preview;
 		}
 	}
 
@@ -226,28 +211,23 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private const int MaximumChunkSize = 16777216;
 
 		private readonly OracleClob _clob;
-		private readonly int _previewLength;
-		private readonly string _dataTypeName;
 
-		public override string DataTypeName { get { return _dataTypeName; } }
+	    public override string DataTypeName { get; }
 
-		public override long Length { get { return _clob.Length; } }
+	    public override long Length => _clob.Length;
 
-		public override bool IsNull { get { return _clob.IsNull || _clob.IsEmpty; } }
+	    public override bool IsNull => _clob.IsNull || _clob.IsEmpty;
 
-		public override string ToSqlLiteral()
+	    public override string ToSqlLiteral()
 		{
 			return IsNull
 				? TerminalValues.Null
-				: String.Format("TO_{0}CLOB('{1}')", _clob.IsNClob ? "N" : null, Value.Replace("'", "''"));
+				: $"TO_{(_clob.IsNClob ? "N" : null)}CLOB('{Value.Replace("'", "''")}')";
 		}
 
-		public override int PreviewLength
-		{
-			get { return _previewLength; }
-		}
+		public override int PreviewLength { get; }
 
-		protected override string GetValue()
+	    protected override string GetValue()
 		{
 			var totalLength = (int)_clob.Length / 2;
 			var builder = new StringBuilder(totalLength);
@@ -269,8 +249,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 		public OracleClobValue(string dataTypeName, OracleClob clob, int previewLength = DefaultPreviewLength)
 		{
 			_clob = clob;
-			_previewLength = previewLength;
-			_dataTypeName = dataTypeName;
+			PreviewLength = previewLength;
+			DataTypeName = dataTypeName;
 		}
 
 		public override void GetChunk(StringBuilder stringBuilder, int offset, int length)
@@ -291,17 +271,17 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private readonly OracleBlob _blob;
 		private byte[] _value;
 
-		public string DataTypeName { get { return TerminalValues.Blob; } }
-		
-		public bool IsEditable { get { return false; } }
-		
-		public bool IsNull { get { return _blob.IsNull || _blob.IsEmpty; } }
+		public string DataTypeName => TerminalValues.Blob;
 
-		public string ToSqlLiteral()
+	    public bool IsEditable => false;
+
+	    public bool IsNull => _blob.IsNull || _blob.IsEmpty;
+
+	    public string ToSqlLiteral()
 		{
 			return IsNull
 				? TerminalValues.Null
-				: String.Format("TO_BLOB('{0}')", Value.ToHexString());
+				: $"TO_BLOB('{Value.ToHexString()}')";
 		}
 
 		public string ToXml()
@@ -314,9 +294,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return OracleRawValue.ToJson(Value);
 		}
 
-		public long Length { get { return _blob.Length; } }
+		public long Length => _blob.Length;
 
-		public byte[] Value
+	    public byte[] Value
 		{
 			get
 			{
@@ -354,7 +334,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override string ToString()
 		{
-			return Length == 0 ? String.Empty : String.Format("(BLOB[{0} B])", Length);
+			return Length == 0 ? String.Empty : $"(BLOB[{Length} B])";
 		}
 
 		public void Prefetch()
@@ -390,9 +370,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 		}
 
-		public bool IsNull { get { return _value.IsNull; } }
+		public bool IsNull => _value.IsNull;
 
-		public string ToSqlLiteral()
+	    public string ToSqlLiteral()
 		{
 			return IsNull
 				? TerminalValues.Null
@@ -423,7 +403,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		internal static string FormatValue(OracleDateTime dateTime, int nanoseconds, int fractionPrecision)
 		{
 			var fractionPart = nanoseconds.ToString(CultureInfo.InvariantCulture).PadRight(9, '0').Substring(0, fractionPrecision);
-			return String.Format("{0}{1}", dateTime, String.IsNullOrEmpty(fractionPart) ? null : String.Format(".{0}", fractionPart));
+			return $"{dateTime}{(String.IsNullOrEmpty(fractionPart) ? null : $".{fractionPart}")}";
 		}
 
 		internal static int GetFractionPrecision<T>(T value)
@@ -435,42 +415,40 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			if (!String.IsNullOrEmpty(timeZone))
 			{
-				timeZone = String.Format(" {0}", timeZone.Trim());
+				timeZone = $" {timeZone.Trim()}";
 			}
 
-			var nanoSecondsExtension = nanoseconds == 0 ? null : String.Format(".{0}", nanoseconds.ToString("000000000"));
+			var nanoSecondsExtension = nanoseconds == 0 ? null : $".{nanoseconds.ToString("000000000")}";
 
-			return String.Format("TIMESTAMP'{0}{1}-{2}-{3} {4}:{5}:{6}{7}{8}'", dateTime.IsBeforeCrist ? "-" : null, dateTime.Value.Year, dateTime.Value.Month, dateTime.Value.Day, dateTime.Value.Hour, dateTime.Value.Minute, dateTime.Value.Second, nanoSecondsExtension, timeZone);
+			return $"TIMESTAMP'{(dateTime.IsBeforeCrist ? "-" : null)}{dateTime.Value.Year}-{dateTime.Value.Month}-{dateTime.Value.Day} {dateTime.Value.Hour}:{dateTime.Value.Minute}:{dateTime.Value.Second}{nanoSecondsExtension}{timeZone}'";
 		}
 
 		internal static string ToXml(OracleDateTime dateTime, int nanoseconds)
 		{
-			var miliSecondsExtension = nanoseconds == 0 ? null : String.Format(".{0}", Math.Round(nanoseconds / 1E+6m).ToString("000"));
-			return String.Format("{0}{1}", dateTime.Value.ToString("yyyy-MM-ddTHH:mm:ss"), miliSecondsExtension);
+			var miliSecondsExtension = nanoseconds == 0 ? null : $".{Math.Round(nanoseconds / 1E+6m).ToString("000")}";
+			return $"{dateTime.Value.ToString("yyyy-MM-ddTHH:mm:ss")}{miliSecondsExtension}";
 		}
 
 		internal static string ToJson(OracleDateTime dateTime, int nanoseconds, string timeZone)
 		{
-			var miliSecondsExtension = nanoseconds == 0 ? null : String.Format(".{0}", Math.Round(nanoseconds / 1E+6m).ToString("000"));
-			return String.Format("\"{0}{1}{2}\"", dateTime.Value.ToString("yyyy-MM-ddTHH:mm:ss"), miliSecondsExtension, String.IsNullOrEmpty(timeZone) ? null : timeZone.Trim());
+			var miliSecondsExtension = nanoseconds == 0 ? null : $".{Math.Round(nanoseconds / 1E+6m).ToString("000")}";
+			return $"\"{dateTime.Value.ToString("yyyy-MM-ddTHH:mm:ss")}{miliSecondsExtension}{(String.IsNullOrEmpty(timeZone) ? null : timeZone.Trim())}\"";
 		}
 	}
 
 	public class OracleDateTime : IValue
 	{
 		public const string IsoDateDotNetFormatMask = "yyyy-MM-dd HH:mm:ss";
-		
-		private readonly DateTime _value;
 
-		public DateTime Value { get { return _value; } }
+	    public DateTime Value { get; }
 
-		public bool IsNull { get; private set; }
+	    public bool IsNull { get; }
 
 		public string ToSqlLiteral()
 		{
 			return IsNull
 				? TerminalValues.Null
-				: String.Format("TO_DATE('{0}{1}', 'SYYYY-MM-DD HH24:MI:SS')", IsBeforeCrist ? "-" : null, _value.ToString(IsoDateDotNetFormatMask));
+				: $"TO_DATE('{(IsBeforeCrist ? "-" : null)}{Value.ToString(IsoDateDotNetFormatMask)}', 'SYYYY-MM-DD HH24:MI:SS')";
 		}
 
 		public string ToXml()
@@ -487,7 +465,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				: OracleTimestamp.ToJson(this, 0, null);
 		}
 
-		public bool IsBeforeCrist { get; private set; }
+		public bool IsBeforeCrist { get; }
 
 		public OracleDateTime()
 		{
@@ -496,7 +474,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public OracleDateTime(int year, int month, int day, int hour, int minute, int second)
 		{
-			_value = new DateTime(Math.Abs(year), month, day, hour, minute, second);
+			Value = new DateTime(Math.Abs(year), month, day, hour, minute, second);
 			IsBeforeCrist = year < 0;
 		}
 
@@ -504,7 +482,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			return IsNull
 				? String.Empty
-				: String.Format("{0}{1}", IsBeforeCrist ? "BC " : null, CellValueConverter.FormatDateTime(_value));
+				: $"{(IsBeforeCrist ? "BC " : null)}{CellValueConverter.FormatDateTime(Value)}";
 		}
 	}
 
@@ -523,9 +501,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 		}
 
-		public bool IsNull { get { return _value.IsNull; } }
+		public bool IsNull => _value.IsNull;
 
-		public string ToSqlLiteral()
+	    public string ToSqlLiteral()
 		{
 			return IsNull
 				? TerminalValues.Null
@@ -550,7 +528,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			return _value.IsNull
 				? String.Empty
-				: String.Format("{0} {1}", OracleTimestamp.FormatValue(_dateTime, _value.Nanosecond, OracleTimestamp.GetFractionPrecision(_value)), _value.TimeZone);
+				: $"{OracleTimestamp.FormatValue(_dateTime, _value.Nanosecond, OracleTimestamp.GetFractionPrecision(_value))} {_value.TimeZone}";
 		}
 	}
 
@@ -569,9 +547,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 		}
 
-		public bool IsNull { get { return _value.IsNull; } }
+		public bool IsNull => _value.IsNull;
 
-		public string ToSqlLiteral()
+	    public string ToSqlLiteral()
 		{
 			return IsNull
 				? TerminalValues.Null
@@ -621,13 +599,13 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 		}
 
-		public string DataTypeName { get { return TerminalValues.Raw; } }
-		
-		public bool IsEditable { get { return false; } }
-		
-		public bool IsNull { get { return _oracleBinary.IsNull; } }
+		public string DataTypeName => TerminalValues.Raw;
 
-		public string ToSqlLiteral()
+	    public bool IsEditable => false;
+
+	    public bool IsNull => _oracleBinary.IsNull;
+
+	    public string ToSqlLiteral()
 		{
 			return IsNull
 				? TerminalValues.Null
@@ -644,13 +622,13 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return ToJson(Value);
 		}
 
-		public long Length { get { return _oracleBinary.Length; } }
-		
-		public void Prefetch()
+		public long Length => _oracleBinary.Length;
+
+	    public void Prefetch()
 		{
 		}
 
-		public byte[] Value { get; private set; }
+		public byte[] Value { get; }
 		
 		public byte[] GetChunk(int bytes)
 		{
@@ -664,21 +642,21 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		internal static string ToSqlLiteral(byte[] value)
 		{
-			return String.Format("'{0}'", value.ToHexString());
+			return $"'{value.ToHexString()}'";
 		}
 
 		internal static string ToXml(byte[] value)
 		{
 			return value.Length == 0
 				? null
-				: String.Format("<![CDATA[{0}]]>", Convert.ToBase64String(value));
+				: $"<![CDATA[{Convert.ToBase64String(value)}]]>";
 		}
 
 		internal static string ToJson(byte[] value)
 		{
 			return value.Length == 0
 					? "null"
-					: String.Format("\"{0}\"", Convert.ToBase64String(value));
+					: $"\"{Convert.ToBase64String(value)}\"";
 		}
 	}
 
@@ -709,9 +687,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return value;
 		}
 
-		public bool IsNull { get { return _oracleDecimal.IsNull; } }
+		public bool IsNull => _oracleDecimal.IsNull;
 
-		public string ToSqlLiteral()
+	    public string ToSqlLiteral()
 		{
 			if (IsNull)
 			{
@@ -761,20 +739,19 @@ namespace SqlPad.Oracle.DatabaseConnection
 	{
 		private const int BufferSize = 8192;
 		private readonly OracleDataReader _reader;
-		private byte[] _value;
-		private readonly int _columnIndex;
+	    private readonly int _columnIndex;
 
-		public string DataTypeName { get { return "LONG RAW"; } }
+		public string DataTypeName => "LONG RAW";
 
-		public bool IsEditable { get { return false; } }
+	    public bool IsEditable => false;
 
-		public bool IsNull { get; private set; }
+	    public bool IsNull { get; }
 
 		public string ToSqlLiteral()
 		{
 			return IsNull
 				? TerminalValues.Null
-				: OracleRawValue.ToSqlLiteral(_value);
+				: OracleRawValue.ToSqlLiteral(Value);
 		}
 
 		public string ToXml()
@@ -787,13 +764,13 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return OracleRawValue.ToJson(Value);
 		}
 
-		public long Length { get { return _value.Length; } }
+		public long Length => Value.Length;
 
-		public byte[] Value { get { return _value; } }
+	    public byte[] Value { get; }
 
-		public OracleLongRawValue(OracleBinary binary)
+	    public OracleLongRawValue(OracleBinary binary)
 		{
-			_value = binary.IsNull ? new byte[0] : binary.Value;
+			Value = binary.IsNull ? new byte[0] : binary.Value;
 			IsNull = binary.IsNull;
 		}
 
@@ -804,7 +781,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override string ToString()
 		{
-			return _value.Length == 0 ? String.Empty : "(LONG RAW)";
+			return Value.Length == 0 ? String.Empty : "(LONG RAW)";
 		}
 
 		private byte[] FetchValue()

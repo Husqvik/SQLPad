@@ -125,7 +125,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 				case "O":
 					return "With read only";
 				default:
-					throw new NotSupportedException(String.Format("Constraint type '{0}' is not supported. ", code));
+					throw new NotSupportedException($"Constraint type '{code}' is not supported. ");
 			}
 		}
 	}
@@ -623,7 +623,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public RemoteTableColumnDataProvider(string databaseLink, OracleObjectIdentifier objectIdentifer) : base(null)
 		{
-			_commandText = String.Format("SELECT * FROM {0}@{1} WHERE 1 = 0", objectIdentifer.ToNormalizedString(), databaseLink);
+			_commandText = $"SELECT * FROM {objectIdentifer.ToNormalizedString()}@{databaseLink} WHERE 1 = 0";
 		}
 
 		public IReadOnlyList<string> Columns
@@ -639,7 +639,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 		public override void MapReaderData(OracleDataReader reader)
 		{
 			var columnNames = OracleConnectionAdapter.GetColumnHeadersFromReader(reader)
-				.Select(h => String.Format("\"{0}\"", h.Name));
+				.Select(h => $"\"{h.Name}\"");
 
 			_columns.AddRange(columnNames);
 		}

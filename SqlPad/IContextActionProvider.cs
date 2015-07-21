@@ -22,7 +22,7 @@ namespace SqlPad
 			IsLongOperation = isLongOperation;
 		}
 
-		public string Name { get; private set; }
+		public string Name { get; }
 
 		public bool IsLongOperation { get; private set; }
 

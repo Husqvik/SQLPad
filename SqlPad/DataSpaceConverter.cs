@@ -14,25 +14,25 @@ namespace SqlPad
 		{
 			if (bytes < 1024)
 			{
-				return String.Format("{0} B", bytes);
+				return $"{bytes} B";
 			}
 			
 			if (bytes < 1048576)
 			{
-				return String.Format("{0} kB", Math.Round(bytes / 1024m));
+				return $"{Math.Round(bytes / 1024m)} kB";
 			}
 
 			if (bytes < 1073741824)
 			{
-				return String.Format("{0} MB", Math.Round(bytes / 1048576m, 1));
+				return $"{Math.Round(bytes / 1048576m, 1)} MB";
 			}
 
 			if (bytes < 1099511627776)
 			{
-				return String.Format("{0} GB", Math.Round(bytes / 1073741824m, 2));
+				return $"{Math.Round(bytes / 1073741824m, 2)} GB";
 			}
 
-			return String.Format("{0} TB", Math.Round(bytes / 1099511627776m, 2));
+			return $"{Math.Round(bytes / 1099511627776m, 2)} TB";
 		}
 	}
 }

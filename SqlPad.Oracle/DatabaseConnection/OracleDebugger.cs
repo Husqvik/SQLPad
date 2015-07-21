@@ -25,12 +25,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private OracleRuntimeInfo _runtimeInfo;
 		private string _debuggerSessionId;
 		
-		internal OracleRuntimeInfo RuntimeInfo
-		{
-			get { return _runtimeInfo; }
-		}
+		internal OracleRuntimeInfo RuntimeInfo => _runtimeInfo;
 
-		public OracleDebuggerSession(OracleConnection debuggedSession, Task debuggedAction)
+	    public OracleDebuggerSession(OracleConnection debuggedSession, Task debuggedAction)
 		{
 			_debuggedSessionCommand = debuggedSession.CreateCommand();
 			_debuggedSessionCommand.BindByName = true;
@@ -68,7 +65,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_debuggedSessionCommand.ExecuteNonQuery();
 			_debuggerSessionId = ((OracleString)debuggedSessionIdParameter.Value).Value;
 
-			Trace.WriteLine(String.Format("Target debug session initialized. Debug session ID = {0}", _debuggerSessionId));
+			Trace.WriteLine($"Target debug session initialized. Debug session ID = {_debuggerSessionId}");
 
 			await Attach(cancellationToken);
 			Trace.WriteLine("Debugger attached. ");
@@ -194,7 +191,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var nullableValue = GetNullableValueFromOracleDecimal(parameter);
 			if (nullableValue == null)
 			{
-				throw new InvalidOperationException(String.Format("Parameter '{0}' must be not null. ", parameter.ParameterName));
+				throw new InvalidOperationException($"Parameter '{parameter.ParameterName}' must be not null. ");
 			}
 
 			return nullableValue.Value;
@@ -295,7 +292,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public void Trace()
 		{
-			System.Diagnostics.Trace.WriteLine(String.Format("OerException = {0}; BreakpointNumber = {1}; StackDepth = {2}; InterpreterDepth = {3}; Reason = {4}; IsTerminated = {5}", OerException, BreakpointNumber, StackDepth, InterpreterDepth, Reason, IsTerminated));
+			System.Diagnostics.Trace.WriteLine($"OerException = {OerException}; BreakpointNumber = {BreakpointNumber}; StackDepth = {StackDepth}; InterpreterDepth = {InterpreterDepth}; Reason = {Reason}; IsTerminated = {IsTerminated}");
 			SourceLocation.Trace();
 		}
 	}
@@ -318,7 +315,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public void Trace()
 		{
-			System.Diagnostics.Trace.WriteLine(String.Format("LineNumber = {0}; DatabaseLink = {1}; EntryPointName = {2}; Owner = {3}; Name = {4}; Namespace = {5}; LibraryUnitType = {6}", LineNumber, DatabaseLink, EntryPointName, Owner, Name, Namespace, LibraryUnitType));
+			System.Diagnostics.Trace.WriteLine($"LineNumber = {LineNumber}; DatabaseLink = {DatabaseLink}; EntryPointName = {EntryPointName}; Owner = {Owner}; Name = {Name}; Namespace = {Namespace}; LibraryUnitType = {LibraryUnitType}");
 		}
 	}
 

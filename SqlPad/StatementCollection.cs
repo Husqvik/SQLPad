@@ -18,9 +18,9 @@ namespace SqlPad
 		
 		public IReadOnlyList<IToken> Tokens { get; private set; }
 
-		public virtual IEnumerable<FoldingSection> FoldingSections { get { return Enumerable.Empty<FoldingSection>(); } }
+		public virtual IEnumerable<FoldingSection> FoldingSections => Enumerable.Empty<FoldingSection>();
 
-		public StatementBase GetStatementAtPosition(int position)
+	    public StatementBase GetStatementAtPosition(int position)
 		{
 			return Items.LastOrDefault(s => s.SourcePosition.IndexStart <= position && s.SourcePosition.IndexEnd + 1 >= position);
 		}
@@ -28,7 +28,7 @@ namespace SqlPad
 		public StatementGrammarNode GetNodeAtPosition(int position, Func<StatementGrammarNode, bool> filter = null)
 		{
 			var statement = GetStatementAtPosition(position);
-			return statement == null ? null : statement.GetNodeAtPosition(position, filter);
+			return statement?.GetNodeAtPosition(position, filter);
 		}
 
 		public StatementGrammarNode GetTerminalAtPosition(int position, Func<StatementGrammarNode, bool> filter = null)

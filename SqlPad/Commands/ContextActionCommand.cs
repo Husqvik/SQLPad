@@ -14,10 +14,10 @@ namespace SqlPad.Commands
 		public ContextActionCommand(SqlTextEditor textEditor, ContextAction contextAction)
 		{
 			if (textEditor == null)
-				throw new ArgumentNullException("textEditor");
+				throw new ArgumentNullException(nameof(textEditor));
 			
 			if (contextAction == null)
-				throw new ArgumentNullException("contextAction");
+				throw new ArgumentNullException(nameof(contextAction));
 
 			_textEditor = textEditor;
 			ContextAction = contextAction;

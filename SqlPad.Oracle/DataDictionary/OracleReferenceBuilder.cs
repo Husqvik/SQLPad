@@ -100,7 +100,7 @@ namespace SqlPad.Oracle.DataDictionary
 				return dataType;
 			}
 
-			throw new ArgumentException("Node ID must be 'JsonValueReturnType' or 'JsonQueryReturnType'. ", "jsonReturnTypeNode");
+			throw new ArgumentException("Node ID must be 'JsonValueReturnType' or 'JsonQueryReturnType'. ", nameof(jsonReturnTypeNode));
 		}
 
 		private static void ResolveTypeMetadata(OracleDataTypeReference dataTypeReference)

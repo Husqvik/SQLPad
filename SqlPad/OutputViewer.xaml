@@ -128,8 +128,8 @@
 							  AutoGenerateColumns="False"
 							  ItemsSource="{Binding ResultRowItems}"
 							  MaxColumnWidth="{Binding ElementName=ResultGrid, Path=ActualWidth}"
+                              EnableColumnVirtualization="True"
 							  VirtualizingStackPanel.VirtualizationMode="Recycling"
-							  EnableColumnVirtualization="True"
 							  CanUserSortColumns="False"
 							  CanUserDeleteRows="False"
 							  CanUserAddRows="False"
@@ -142,6 +142,7 @@
 							  BeginningEdit="ResultGridBeginningEditHandler"
 							  SelectedCellsChanged="ResultGridSelectedCellsChangedHandler"
 							  ScrollViewer.ScrollChanged="ResultGridScrollChangedHandler"
+                              VirtualizingStackPanel.CleanUpVirtualizedItem="CleanUpVirtualizedItemHandler"
 							  MouseDoubleClick="ResultGridMouseDoubleClickHandler"
 							  DataGridColumnHeader.Click="ColumnHeaderMouseClickHandler">
 

@@ -62,10 +62,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			_connectionString = connectionString;
 			ConnectionIdentifier = identifier;
-			_moduleName = String.Format("{0}/{1}", ModuleNameSqlPadDatabaseModelBase, identifier);
+			_moduleName = $"{ModuleNameSqlPadDatabaseModelBase}/{identifier}";
 			_oracleConnectionString = new OracleConnectionStringBuilder(connectionString.ConnectionString);
 			_currentSchema = _oracleConnectionString.UserID;
-			_connectionStringName = String.Format("{0}_{1}", _oracleConnectionString.DataSource, _currentSchema);
+			_connectionStringName = $"{_oracleConnectionString.DataSource}_{_currentSchema}";
 
 			lock (ActiveDataModelRefresh)
 			{
@@ -111,7 +111,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_allSchemas = refreshedModel._allSchemas;
 			_schemas = refreshedModel._schemas;
 
-			Trace.WriteLine(String.Format("{0} - Metadata for '{1}/{2}' has been retrieved from the cache. ", DateTime.Now, _connectionStringName, ConnectionIdentifier));
+			Trace.WriteLine($"{DateTime.Now} - Metadata for '{_connectionStringName}/{ConnectionIdentifier}' has been retrieved from the cache. ");
 
 			lock (ActiveDataModelRefresh)
 			{
@@ -148,7 +148,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private void SetRefreshTimerInterval()
 		{
 			_refreshTimer.Interval = ConfigurationProvider.Configuration.DataModel.DataModelRefreshPeriod * 60000;
-			Trace.WriteLine(String.Format("Data model refresh timer set: {0} minute(s). ", ConfigurationProvider.Configuration.DataModel.DataModelRefreshPeriod));
+			Trace.WriteLine($"Data model refresh timer set: {ConfigurationProvider.Configuration.DataModel.DataModelRefreshPeriod} minute(s). ");
 		}
 
 		public static void ValidateConfiguration()
@@ -161,12 +161,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 
 			var traceMessage = odacVersion == null
-				? String.Format("{0} registry entry was not found. ", OracleDataAccessComponents)
-				: String.Format("{0} version {1} found. ", OracleDataAccessComponents, odacVersion);
+				? $"{OracleDataAccessComponents} registry entry was not found. "
+			    : $"{OracleDataAccessComponents} version {odacVersion} found. ";
 
 			Trace.WriteLine(traceMessage);
 
-			Trace.WriteLine(String.Format("{0} assembly version {1}", OracleDataAccessComponents, typeof(OracleConnection).Assembly.FullName));
+			Trace.WriteLine($"{OracleDataAccessComponents} assembly version {typeof (OracleConnection).Assembly.FullName}");
 		}
 
 		public static OracleDatabaseModel GetDatabaseModel(ConnectionStringSettings connectionString, string identifier = null)
@@ -195,24 +195,21 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_backgroundTask = Task.Factory.StartNew(action);
 		}
 
-		public override ILookup<OracleProgramIdentifier, OracleProgramMetadata> AllFunctionMetadata { get { return _allFunctionMetadata; } }
+		public override ILookup<OracleProgramIdentifier, OracleProgramMetadata> AllFunctionMetadata => _allFunctionMetadata;
 
-		protected override ILookup<OracleProgramIdentifier, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadata { get { return _dataDictionary.NonSchemaFunctionMetadata; } }
+	    protected override ILookup<OracleProgramIdentifier, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadata => _dataDictionary.NonSchemaFunctionMetadata;
 
-		protected override ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuiltInPackageFunctionMetadata { get { return _dataDictionary.BuiltInPackageFunctionMetadata; } }
+	    protected override ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuiltInPackageFunctionMetadata => _dataDictionary.BuiltInPackageFunctionMetadata;
 
-		public override ConnectionStringSettings ConnectionString { get { return _connectionString; } }
+	    public override ConnectionStringSettings ConnectionString => _connectionString;
 
-		public override bool IsInitialized { get { return _isInitialized; } }
+	    public override bool IsInitialized => _isInitialized;
 
-		public override bool IsMetadataAvailable { get { return _dataDictionary != OracleDataDictionary.EmptyDictionary; } }
+	    public override bool IsMetadataAvailable => _dataDictionary != OracleDataDictionary.EmptyDictionary;
 
-		public override bool HasDbaPrivilege
-		{
-			get { return String.Equals(_oracleConnectionString.DBAPrivilege.ToUpperInvariant(), "SYSDBA"); }
-		}
+	    public override bool HasDbaPrivilege => String.Equals(_oracleConnectionString.DBAPrivilege.ToUpperInvariant(), "SYSDBA");
 
-		public override string CurrentSchema
+	    public override string CurrentSchema
 		{
 			get { return _currentSchema; }
 			set
@@ -226,25 +223,25 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 		}
 
-		public override string DatabaseDomainName { get { return DatabaseProperties[_connectionString.ConnectionString].DomainName; } }
+		public override string DatabaseDomainName => DatabaseProperties[_connectionString.ConnectionString].DomainName;
 
-		public override ICollection<string> Schemas { get { return _schemas; } }
-		
-		public override IReadOnlyDictionary<string, OracleSchema> AllSchemas { get { return _allSchemas; } }
+	    public override ICollection<string> Schemas => _schemas;
 
-		public override IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get { return _dataDictionary.AllObjects; } }
+	    public override IReadOnlyDictionary<string, OracleSchema> AllSchemas => _allSchemas;
 
-		public override IDictionary<OracleObjectIdentifier, OracleDatabaseLink> DatabaseLinks { get { return _dataDictionary.DatabaseLinks; } }
+	    public override IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects => _dataDictionary.AllObjects;
 
-		public override ICollection<string> CharacterSets { get { return _dataDictionary.CharacterSets; } }
+	    public override IDictionary<OracleObjectIdentifier, OracleDatabaseLink> DatabaseLinks => _dataDictionary.DatabaseLinks;
 
-		public override IDictionary<int, string> StatisticsKeys { get { return _dataDictionary.StatisticsKeys; } }
+	    public override ICollection<string> CharacterSets => _dataDictionary.CharacterSets;
 
-		public override IDictionary<string, string> SystemParameters { get { return _dataDictionary.SystemParameters; } }
+	    public override IDictionary<int, string> StatisticsKeys => _dataDictionary.StatisticsKeys;
 
-		public override Version Version { get { return DatabaseProperties[_connectionString.ConnectionString].Version; } }
+	    public override IDictionary<string, string> SystemParameters => _dataDictionary.SystemParameters;
 
-		public override void RefreshIfNeeded()
+	    public override Version Version => DatabaseProperties[_connectionString.ConnectionString].Version;
+
+	    public override void RefreshIfNeeded()
 		{
 			if (IsRefreshNeeded)
 			{
@@ -252,27 +249,15 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 		}
 
-		public override bool IsFresh
-		{
-			get { return !IsRefreshNeeded; }
-		}
+		public override bool IsFresh => !IsRefreshNeeded;
 
-		private bool IsRefreshNeeded
-		{
-			get { return DataDictionaryValidityTimestamp < DateTime.Now; }
-		}
+	    private bool IsRefreshNeeded => DataDictionaryValidityTimestamp < DateTime.Now;
 
-		private DateTime DataDictionaryValidityTimestamp
-		{
-			get { return _dataDictionary.Timestamp.AddMinutes(ConfigurationProvider.Configuration.DataModel.DataModelRefreshPeriod); }
-		}
+	    private DateTime DataDictionaryValidityTimestamp => _dataDictionary.Timestamp.AddMinutes(ConfigurationProvider.Configuration.DataModel.DataModelRefreshPeriod);
 
-		public override ILookup<string, string> ContextData
-		{
-			get { return _dataDictionaryMapper.GetContextData(); }
-		}
+	    public override ILookup<string, string> ContextData => _dataDictionaryMapper.GetContextData();
 
-		public override Task Refresh(bool force = false)
+	    public override Task Refresh(bool force = false)
 		{
 			lock (ActiveDataModelRefresh)
 			{
@@ -281,7 +266,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					var taskCompletionSource = new TaskCompletionSource<OracleDataDictionary>();
 					WaitingDataModelRefresh[_connectionStringName].Add(new RefreshModel { DatabaseModel = this, TaskCompletionSource = taskCompletionSource });
 
-					Trace.WriteLine(String.Format("{0} - Cache for '{1}' is being loaded by other requester. Waiting until operation finishes. ", DateTime.Now, _connectionStringName));
+					Trace.WriteLine($"{DateTime.Now} - Cache for '{_connectionStringName}' is being loaded by other requester. Waiting until operation finishes. ");
 
 					RaiseEvent(RefreshStarted);
 					return taskCompletionSource.Task;
@@ -451,7 +436,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					}
 					catch (Exception e)
 					{
-						Trace.WriteLine(String.Format("Update model failed: {0}", e));
+						Trace.WriteLine($"Update model failed: {e}");
 
 						if (!suppressException)
 						{
@@ -556,10 +541,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			_isInitialized = false;
 
-			if (Disconnected != null)
-			{
-				Disconnected(this, new DatabaseModelConnectionErrorArgs(exception));
-			}
+		    Disconnected?.Invoke(this, new DatabaseModelConnectionErrorArgs(exception));
 		}
 
 		private void EnsureDatabaseVersion(OracleConnection connection)
@@ -639,12 +621,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var isRefreshDone = !IsRefreshNeeded && !force;
 			if (isRefreshDone)
 			{
-				Trace.WriteLine(String.Format("{0} - Cache for '{1}' is valid until {2}. ", DateTime.Now, _connectionStringName, DataDictionaryValidityTimestamp));
+				Trace.WriteLine($"{DateTime.Now} - Cache for '{_connectionStringName}' is valid until {DataDictionaryValidityTimestamp}. ");
 				return;
 			}
 
 			var reason = force ? "has been forced to refresh" : (_dataDictionary.Timestamp > DateTime.MinValue ? "has expired" : "does not exist or is corrupted");
-			Trace.WriteLine(String.Format("{0} - Cache for '{1}' {2}. Cache refresh started. ", DateTime.Now, _connectionStringName, reason));
+			Trace.WriteLine($"{DateTime.Now} - Cache for '{_connectionStringName}' {reason}. Cache refresh started. ");
 
 			_isRefreshing = true;
 			RaiseEvent(InternalRefreshStarted);
@@ -662,7 +644,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				}
 				catch (Exception e)
 				{
-					Trace.WriteLine(String.Format("Storing metadata cache failed: {0}", e));
+					Trace.WriteLine($"Storing metadata cache failed: {e}");
 				}
 			}
 
@@ -678,7 +660,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			{
 				var stopwatch = Stopwatch.StartNew();
 				UpdateSchemas(_dataDictionaryMapper.GetSchemaNames());
-				Trace.WriteLine(String.Format("Fetch schema metadata finished in {0}. ", stopwatch.Elapsed));
+				Trace.WriteLine($"Fetch schema metadata finished in {stopwatch.Elapsed}. ");
 
 				var allObjects = _dataDictionaryMapper.BuildDataDictionary();
 
@@ -725,7 +707,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					}
 				}
 
-				Trace.WriteLine(String.Format("Function and procedure metadata schema object mapping finished in {0}. ", stopwatch.Elapsed));
+				Trace.WriteLine($"Function and procedure metadata schema object mapping finished in {stopwatch.Elapsed}. ");
 
 				var databaseLinks = _dataDictionaryMapper.GetDatabaseLinks();
 				var characterSets = _dataDictionaryMapper.GetCharacterSets();
@@ -734,7 +716,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 				_dataDictionary = new OracleDataDictionary(allObjects, databaseLinks, nonSchemaBuiltInFunctionMetadata, characterSets, statisticsKeys, systemParameters, lastRefresh);
 
-				Trace.WriteLine(String.Format("{0} - Data dictionary metadata cache has been initialized successfully. ", DateTime.Now));
+				Trace.WriteLine($"{DateTime.Now} - Data dictionary metadata cache has been initialized successfully. ");
 
 				//_customTypeGenerator.GenerateCustomTypeAssembly(_dataDictionary);
 
@@ -744,7 +726,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 			catch(Exception e)
 			{
-				Trace.WriteLine(String.Format("Oracle data dictionary refresh failed: {0}", e));
+				Trace.WriteLine($"Oracle data dictionary refresh failed: {e}");
 				return false;
 			}
 		}
@@ -779,16 +761,16 @@ namespace SqlPad.Oracle.DatabaseConnection
 				try
 				{
 					RaiseEvent(RefreshStarted);
-					Trace.WriteLine(String.Format("{0} - Attempt to load metadata for '{1}/{2}' from cache. ", DateTime.Now, _connectionStringName, ConnectionIdentifier));
+					Trace.WriteLine($"{DateTime.Now} - Attempt to load metadata for '{_connectionStringName}/{ConnectionIdentifier}' from cache. ");
 					var stopwatch = Stopwatch.StartNew();
 					_dataDictionary = CachedDataDictionaries[_connectionStringName] = OracleDataDictionary.Deserialize(stream);
-					Trace.WriteLine(String.Format("{0} - Metadata for '{1}/{2}' loaded from cache in {3}", DateTime.Now, _connectionStringName, ConnectionIdentifier, stopwatch.Elapsed));
+					Trace.WriteLine($"{DateTime.Now} - Metadata for '{_connectionStringName}/{ConnectionIdentifier}' loaded from cache in {stopwatch.Elapsed}");
 					BuildAllFunctionMetadata();
 					RemoveActiveRefreshTask();
 				}
 				catch (Exception e)
 				{
-					Trace.WriteLine(String.Format("Oracle data dictionary cache deserialization failed: {0}", e));
+					Trace.WriteLine($"Oracle data dictionary cache deserialization failed: {e}");
 				}
 				finally
 				{
@@ -816,7 +798,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			catch (Exception e)
 			{
 				_dataDictionary = OracleDataDictionary.EmptyDictionary;
-				Trace.WriteLine(String.Format("All function metadata lookup initialization from cache failed: {0}", e));
+				Trace.WriteLine($"All function metadata lookup initialization from cache failed: {e}");
 			}
 		}
 
@@ -827,13 +809,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private void RaiseEvent(EventHandler eventHandler)
 		{
-			if (eventHandler != null)
-			{
-				eventHandler(this, EventArgs.Empty);
-			}
+		    eventHandler?.Invoke(this, EventArgs.Empty);
 		}
 
-		public override Task Initialize()
+	    public override Task Initialize()
 		{
 			return Task.Factory.StartNew(InitializeInternal);
 		}
@@ -846,14 +825,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 			catch(Exception e)
 			{
-				Trace.WriteLine(String.Format("Database model initialization failed: {0}", e));
+				Trace.WriteLine($"Database model initialization failed: {e}");
 
-				if (InitializationFailed != null)
-				{
-					InitializationFailed(this, new DatabaseModelConnectionErrorArgs(e));
-				}
+			    InitializationFailed?.Invoke(this, new DatabaseModelConnectionErrorArgs(e));
 
-				return;
+			    return;
 			}
 			
 			_isInitialized = true;

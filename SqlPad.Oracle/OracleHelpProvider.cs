@@ -150,7 +150,7 @@ namespace SqlPad.Oracle
 				var program = packageDocumentation.SubPrograms.SingleOrDefault(sp => String.Equals(sp.Name, identifier.Name));
 				if (program != null)
 				{
-					Process.Start(String.Format("{0}{1}", packageDocumentation.Url, program.ElementId));
+					Process.Start($"{packageDocumentation.Url}{program.ElementId}");
 				}
 			}
 		}

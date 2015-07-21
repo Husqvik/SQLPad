@@ -29,12 +29,7 @@ namespace SqlPad
 
 		protected void RaisePropertyChanged(string propertyName)
 		{
-			if (PropertyChanged == null)
-			{
-				return;
-			}
-
-			PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+		    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
 	}
 }

@@ -117,14 +117,14 @@ namespace SqlPad.Oracle.Commands
 			if (columnNames.Length == 0)
 				return TextSegment.Empty;
 
-			var columnListText = String.Format("{0}{1}{2}", "(", String.Join(", ", columnNames), ")");
+			var columnListText = $"{"("}{String.Join(", ", columnNames)}{")"}";
 			if (_columnList == null)
 			{
 				return new TextSegment
 				{
 					IndextStart = _insertTarget.TargetNode.SourcePosition.IndexEnd + 1,
 					Length = 0,
-					Text = String.Format(" {0}", columnListText)
+					Text = $" {columnListText}"
 				};
 			}
 

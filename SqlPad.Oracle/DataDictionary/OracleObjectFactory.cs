@@ -41,7 +41,7 @@ namespace SqlPad.Oracle.DataDictionary
 				case "C":
 					return new OracleCheckConstraint();
 				default:
-					throw new InvalidOperationException(String.Format("Constraint type '{0}' not supported. ", constraintType));
+					throw new InvalidOperationException($"Constraint type '{constraintType}' not supported. ");
 			}
 		}
 
@@ -64,7 +64,7 @@ namespace SqlPad.Oracle.DataDictionary
 				case OracleSchemaObjectType.Package:
 					return new OraclePackage();
 				default:
-					throw new InvalidOperationException(String.Format("Object type '{0}' not supported. ", objectType));
+					throw new InvalidOperationException($"Object type '{objectType}' not supported. ");
 			}
 		}
 	}

@@ -15,12 +15,9 @@ namespace SqlPad
 		private const string QuoteCharacter = "\"";
 		private const string EscapedQuote = "\\\"";
 
-		public string FileNameFilter
-		{
-			get { return "JSON files (*.json)|*.json|All files (*.*)|*"; }
-		}
+		public string FileNameFilter => "JSON files (*.json)|*.json|All files (*.*)|*";
 
-		public void ExportToClipboard(DataGrid dataGrid, IDataExportConverter dataExportConverter)
+	    public void ExportToClipboard(DataGrid dataGrid, IDataExportConverter dataExportConverter)
 		{
 			ExportToFile(null, dataGrid, dataExportConverter);
 		}
@@ -46,7 +43,7 @@ namespace SqlPad
 
 			var jsonTemplateBuilder = new StringBuilder();
 			jsonTemplateBuilder.AppendLine("  {{");
-			jsonTemplateBuilder.AppendLine(String.Join(String.Format(",{0}", Environment.NewLine), columnHeaders));
+			jsonTemplateBuilder.AppendLine(String.Join($",{Environment.NewLine}", columnHeaders));
 			jsonTemplateBuilder.Append("  }}");
 
 			var rows = dataGrid.Items;

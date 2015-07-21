@@ -233,7 +233,7 @@ namespace SqlPad.Oracle
 					return OracleCodeCompletionCategory.PivotTable;
 			}
 
-			throw new NotSupportedException(String.Format("Value '{0}' is not supported. ", type));
+			throw new NotSupportedException($"Value '{type}' is not supported. ");
 		}
 
 		public static OracleSchemaObject GetTargetSchemaObject(this OracleSchemaObject schemaObject)

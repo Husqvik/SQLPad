@@ -67,11 +67,11 @@ namespace SqlPad.Oracle.Commands
 			{
 				case Terminals.ObjectIdentifier:
 					settingsModel.Title = "Add Object Alias";
-					settingsModel.Description = String.Format("Enter an alias for the object '{0}'", CurrentNode.Token.Value);
+					settingsModel.Description = $"Enter an alias for the object '{CurrentNode.Token.Value}'";
 					break;
 				case Terminals.Identifier:
 					settingsModel.Title = "Add Column Alias";
-					settingsModel.Description = String.Format("Enter an alias for the column '{0}'", CurrentNode.Token.Value);
+					settingsModel.Description = $"Enter an alias for the column '{CurrentNode.Token.Value}'";
 					break;
 			}
 
@@ -146,7 +146,7 @@ namespace SqlPad.Oracle.Commands
 					{
 						IndextStart = (dataObjectReference.DatabaseLinkNode ?? dataObjectReference.ObjectNode).SourcePosition.IndexEnd + 1,
 						Length = 0,
-						Text = String.Format(" {0}", alias)
+						Text = $" {alias}"
 					};
 			}
 

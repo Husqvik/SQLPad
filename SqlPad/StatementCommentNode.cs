@@ -7,10 +7,10 @@ namespace SqlPad
 	public class StatementCommentNode : StatementNode
 	{
 		public StatementCommentNode(StatementGrammarNode parentNode, IToken token)
-			: base(parentNode == null ? null : parentNode.Statement, token)
+			: base(parentNode?.Statement, token)
 		{
 			if (token == null)
-				throw new ArgumentNullException("token");
+				throw new ArgumentNullException(nameof(token));
 
 			ParentNode = parentNode;
 		}

@@ -8,9 +8,9 @@ namespace SqlPad
 	{
 		private readonly SqlTextEditor _editor;
 
-		public FoldingManager FoldingManager { get; private set; }
+		public FoldingManager FoldingManager { get; }
 
-		public FoldingMargin FoldingMargin { get; private set; }
+		public FoldingMargin FoldingMargin { get; }
 
 		public SqlFoldingStrategy(FoldingManager foldingManager, SqlTextEditor editor)
 		{

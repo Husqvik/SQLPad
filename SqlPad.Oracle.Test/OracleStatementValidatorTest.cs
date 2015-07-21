@@ -363,7 +363,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		[TestCase("FULL OUTER")]
 		public void TestTableNodeValidyInLeftJoinClauseWithoutSourceTableAlias(string joinType)
 		{
-			var sqlText = String.Format(@"SELECT NULL FROM SELECTION {0} JOIN RESPONDENTBUCKET RB ON SELECTION.RESPONDENTBUCKET_ID = RB.RESPONDENTBUCKET_ID", joinType);
+			var sqlText = $@"SELECT NULL FROM SELECTION {joinType} JOIN RESPONDENTBUCKET RB ON SELECTION.RESPONDENTBUCKET_ID = RB.RESPONDENTBUCKET_ID";
 			
 			var statement = (OracleStatement)Parser.Parse(sqlText).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);

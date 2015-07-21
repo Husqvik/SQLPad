@@ -38,7 +38,7 @@ namespace SqlPad.Oracle
 			foreach (var rule in oracleGrammar.Rules)
 			{
 				if (NonTerminalRules.ContainsKey(rule.StartingNonTerminal))
-					throw new InvalidOperationException(String.Format("Rule with starting non-terminal '{0}' has been already defined. ", rule.StartingNonTerminal));
+					throw new InvalidOperationException($"Rule with starting non-terminal '{rule.StartingNonTerminal}' has been already defined. ");
 
 				NonTerminalRules.Add(rule.StartingNonTerminal, rule);
 			}
@@ -47,7 +47,7 @@ namespace SqlPad.Oracle
 			foreach (var terminal in oracleGrammar.Terminals)
 			{
 				if (Terminals.ContainsKey(terminal.Id))
-					throw new InvalidOperationException(String.Format("Terminal '{0}' has been already defined. ", terminal.Id));
+					throw new InvalidOperationException($"Terminal '{terminal.Id}' has been already defined. ");
 
 				terminal.Initialize();
 				Terminals.Add(terminal.Id, terminal);
@@ -114,7 +114,7 @@ namespace SqlPad.Oracle
 
 			if (exceptionMessageBuilder.Length > 0)
 			{
-				throw new InvalidOperationException(String.Format("Grammar description is invalid. {0}{1}", Environment.NewLine, exceptionMessageBuilder));
+				throw new InvalidOperationException($"Grammar description is invalid. {Environment.NewLine}{exceptionMessageBuilder}");
 			}
 
 			AvailableNonTerminals = oracleGrammar.StartSymbols.Select(s => CreateInitialNonTerminal(s.Id)).ToArray();
@@ -221,7 +221,7 @@ namespace SqlPad.Oracle
 		private static void EnsureReaderNotNull(OracleTokenReader tokenReader)
 		{
 			if (tokenReader == null)
-				throw new ArgumentNullException("tokenReader");
+				throw new ArgumentNullException(nameof(tokenReader));
 		}
 
 		public Task<StatementCollection> ParseAsync(IEnumerable<OracleToken> tokens, CancellationToken cancellationToken)
@@ -238,7 +238,7 @@ namespace SqlPad.Oracle
 			{
 				if (node.Type != NodeType.Terminal)
 				{
-					throw new ArgumentException("Node must be a terminal node. ", "node");
+					throw new ArgumentException("Node must be a terminal node. ", nameof(node));
 				}
 
 				MatchNode(node, candidates);

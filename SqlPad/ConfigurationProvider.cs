@@ -23,16 +23,11 @@ namespace SqlPad
 
 		public static string FolderNameUserData = DefaultUserDataFolderName;
 		private static string _folderNameErrorLog;
-		private static string _folderNameWorkArea;
-		private static string _folderNameMetadataCache;
 
-		public static readonly string FolderNameApplication = Path.GetDirectoryName(typeof(App).Assembly.Location);
+	    public static readonly string FolderNameApplication = Path.GetDirectoryName(typeof(App).Assembly.Location);
 		private static readonly string ConfigurationFilePath = Path.Combine(FolderNameApplication, ConfigurationFileName);
 
-		private static string _folderNameSnippets = Path.Combine(FolderNameApplication, Snippets.SnippetDirectoryName);
-		private static string _folderNameCodeGenerationItems = Path.Combine(FolderNameApplication, Snippets.CodeGenerationItemDirectoryName);
-
-		private static readonly Dictionary<string, ConnectionConfiguration> InternalInfrastructureFactories;
+	    private static readonly Dictionary<string, ConnectionConfiguration> InternalInfrastructureFactories;
 		
 		private static readonly FileSystemWatcher ConfigurationWatcher;
 		private static DateTime _lastConfigurationFileChange;
@@ -41,7 +36,7 @@ namespace SqlPad
 		{
 			SetWorkAreaAndErrorLogFolders();
 
-			CreateDirectoryIfNotExists(DefaultUserDataFolderName, _folderNameWorkArea);
+			CreateDirectoryIfNotExists(DefaultUserDataFolderName, FolderNameWorkArea);
 
 			var databaseConfiguration = (DatabaseConnectionConfigurationSection)ConfigurationManager.GetSection(DatabaseConnectionConfigurationSection.SectionName);
 			if (databaseConfiguration == null)
@@ -89,9 +84,9 @@ namespace SqlPad
 
 			Trace.WriteLine("Configuration file has changed. ");
 
-			if (Configure() && ConfigurationChanged != null)
+			if (Configure())
 			{
-				ConfigurationChanged(Configuration, EventArgs.Empty);
+				ConfigurationChanged?.Invoke(Configuration, EventArgs.Empty);
 			}
 		}
 
@@ -126,14 +121,14 @@ namespace SqlPad
 				return connectionConfiguration;
 			}
 
-			throw new ArgumentException(String.Format("Connection string '{0}' doesn't exist. ", connectionStringName), "connectionStringName");
+			throw new ArgumentException($"Connection string '{connectionStringName}' doesn't exist. ", nameof(connectionStringName));
 		}
 
 		public static Configuration Configuration { get; private set; }
 
-		public static ConnectionStringSettingsCollection ConnectionStrings { get { return ConfigurationManager.ConnectionStrings; } }
+		public static ConnectionStringSettingsCollection ConnectionStrings => ConfigurationManager.ConnectionStrings;
 
-		public static string FolderNameErrorLog
+	    public static string FolderNameErrorLog
 		{
 			get
 			{
@@ -142,15 +137,15 @@ namespace SqlPad
 			}
 		}
 
-		public static string FolderNameWorkArea { get { return _folderNameWorkArea; } }
-		
-		public static string FolderNameMetadataCache { get { return _folderNameMetadataCache; } }
-		
-		public static string FolderNameSnippets { get { return _folderNameSnippets; } }
+		public static string FolderNameWorkArea { get; private set; }
 
-		public static string FolderNameCodeGenerationItems { get { return _folderNameCodeGenerationItems; } }
+	    public static string FolderNameMetadataCache { get; private set; }
 
-		public static void SetUserDataFolder(string directoryName)
+	    public static string FolderNameSnippets { get; private set; } = Path.Combine(FolderNameApplication, Snippets.SnippetDirectoryName);
+
+	    public static string FolderNameCodeGenerationItems { get; private set; } = Path.Combine(FolderNameApplication, Snippets.CodeGenerationItemDirectoryName);
+
+	    public static void SetUserDataFolder(string directoryName)
 		{
 			CheckDirectoryExists(directoryName);
 
@@ -165,34 +160,34 @@ namespace SqlPad
 		{
 			CheckDirectoryExists(directoryName);
 			
-			_folderNameSnippets = directoryName;
+			FolderNameSnippets = directoryName;
 		}
 
 		public static void SetCodeGenerationItemFolder(string directoryName)
 		{
 			CheckDirectoryExists(directoryName);
 
-			_folderNameCodeGenerationItems = directoryName;
+			FolderNameCodeGenerationItems = directoryName;
 		}
 
 		private static void CheckDirectoryExists(string directoryName)
 		{
 			if (!Directory.Exists(directoryName))
 			{
-				throw new ArgumentException(String.Format("Directory '{0}' does not exist. ", directoryName));
+				throw new ArgumentException($"Directory '{directoryName}' does not exist. ");
 			}
 		}
 
 		private static void SetWorkAreaAndErrorLogFolders()
 		{
 			_folderNameErrorLog = Path.Combine(FolderNameUserData, PostfixErrorLog);
-			_folderNameWorkArea = Path.Combine(FolderNameUserData, PostfixWorkArea);
-			_folderNameMetadataCache = Path.Combine(FolderNameUserData, PostfixMetadataCache);
+			FolderNameWorkArea = Path.Combine(FolderNameUserData, PostfixWorkArea);
+			FolderNameMetadataCache = Path.Combine(FolderNameUserData, PostfixMetadataCache);
 		}
 
 		private static void ConfigureWorkArea()
 		{
-			CreateDirectoryIfNotExists(_folderNameWorkArea);
+			CreateDirectoryIfNotExists(FolderNameWorkArea);
 			WorkDocumentCollection.Configure();
 		}
 
@@ -225,7 +220,7 @@ namespace SqlPad
 			var infrastructureFactoryType = Type.GetType(typeName);
 			if (infrastructureFactoryType == null)
 			{
-				throw new ConfigurationErrorsException(String.Format("Infrastructure factory type '{0}' has not been found. ", typeName));
+				throw new ConfigurationErrorsException($"Infrastructure factory type '{typeName}' has not been found. ");
 			}
 
 			return infrastructureFactoryType;

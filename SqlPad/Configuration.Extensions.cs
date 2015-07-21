@@ -25,12 +25,12 @@ namespace SqlPad
 			
 			try
 			{
-				Trace.WriteLine(String.Format("DateTime format test '{0}' => {1} succeeded. ", resultGridField.DateFormat, DateTime.Now.ToString(resultGridField.DateFormat)));
+				Trace.WriteLine($"DateTime format test '{resultGridField.DateFormat}' => {DateTime.Now.ToString(resultGridField.DateFormat)} succeeded. ");
 			}
 			catch
 			{
 				var dateFormat = CultureInfo.CurrentUICulture.DateTimeFormat.UniversalSortableDateTimePattern;
-				Trace.WriteLine(String.Format("DateFormat mask '{0}' is invalid. Using system UI culture - {1} ({2}). ", resultGridField.DateFormat, dateFormat, DateTime.Now));
+				Trace.WriteLine($"DateFormat mask '{resultGridField.DateFormat}' is invalid. Using system UI culture - {dateFormat} ({DateTime.Now}). ");
 				resultGridField.DateFormat = dateFormat;
 			}
 		}

@@ -46,7 +46,7 @@ namespace SqlPad.Oracle.Commands
 					{
 						IndextStart = (f.ObjectNode ?? f.FunctionIdentifierNode).SourcePosition.IndexStart,
 						Length = 0,
-						Text = String.Format("{0}.", f.Metadata.Identifier.Owner.ToSimpleIdentifier())
+						Text = $"{f.Metadata.Identifier.Owner.ToSimpleIdentifier()}."
 					});
 		}
 
@@ -59,7 +59,7 @@ namespace SqlPad.Oracle.Commands
 					{
 						IndextStart = o.ObjectNode.SourcePosition.IndexStart,
 						Length = 0,
-						Text = String.Format("{0}.", o.SchemaObject.Owner.ToSimpleIdentifier())
+						Text = $"{o.SchemaObject.Owner.ToSimpleIdentifier()}."
 					});
 		}
 

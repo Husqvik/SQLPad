@@ -25,7 +25,7 @@ namespace SqlPad
 			}
 			catch (Exception e)
 			{
-				return String.Format("Data conversion error: {0}", e);
+				return $"Data conversion error: {e}";
 			}
 		}
 

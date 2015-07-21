@@ -57,11 +57,11 @@ namespace SqlPad.Oracle.Commands
 				var columnReference = column.ColumnReferences.FirstOrDefault();
 				var prefix = columnReference == null || columnReference.ValidObjectReference == null || column.HasExplicitAlias
 					? null
-					: String.Format("{0}.", columnReference.ValidObjectReference.FullyQualifiedObjectName);
+					: $"{columnReference.ValidObjectReference.FullyQualifiedObjectName}.";
 				
 				var expressionText = column.HasExplicitDefinition && !column.HasExplicitAlias
 					? column.RootNode.GetText(ExecutionContext.StatementText)
-					: String.Format("{0}{1}", prefix, column.NormalizedName.ToSimpleIdentifier());
+					: $"{prefix}{column.NormalizedName.ToSimpleIdentifier()}";
 
 				yield return
 					new TextSegment

@@ -80,9 +80,7 @@ namespace SqlPad.Oracle.Test
 				{ SystemParameterNameMaxStringSize, "STANDARD" }
 			};
 
-		private readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> _allObjects;
-
-		private static readonly HashSet<OracleDatabaseLink> DatabaseLinksInternal =
+	    private static readonly HashSet<OracleDatabaseLink> DatabaseLinksInternal =
 			new HashSet<OracleDatabaseLink>
 			{
 				new OracleDatabaseLink
@@ -101,10 +99,7 @@ namespace SqlPad.Oracle.Test
 				}
 			};
 
-		private readonly IDictionary<OracleObjectIdentifier, OracleDatabaseLink> _databaseLinks = DatabaseLinksInternal.ToDictionary(l => l.FullyQualifiedName, l => l);
-		private readonly IDictionary<string, string> _systemParameters = new Dictionary<string, string>(SystemParametersInternal);
-		
-		internal Version TestDatabaseVersion = InitialTestDatabaseVersion;
+	    internal Version TestDatabaseVersion = InitialTestDatabaseVersion;
 
 		static OracleTestDatabaseModel()
 		{
@@ -507,7 +502,7 @@ namespace SqlPad.Oracle.Test
 
 		public OracleTestDatabaseModel()
 		{
-			_allObjects = new Dictionary<OracleObjectIdentifier, OracleSchemaObject>(AllObjectDictionary);
+			AllObjects = new Dictionary<OracleObjectIdentifier, OracleSchemaObject>(AllObjectDictionary);
 		}
 
 		private static void AddConstraints()
@@ -625,13 +620,13 @@ namespace SqlPad.Oracle.Test
 				}.AsReadOnly();
 		}
 
-		public override ILookup<OracleProgramIdentifier, OracleProgramMetadata> AllFunctionMetadata { get { return AllFunctionMetadataInternal; } }
+		public override ILookup<OracleProgramIdentifier, OracleProgramMetadata> AllFunctionMetadata => AllFunctionMetadataInternal;
 
-		protected override ILookup<OracleProgramIdentifier, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadata { get { return NonSchemaBuiltInFunctionMetadataInternal; } }
+	    protected override ILookup<OracleProgramIdentifier, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadata => NonSchemaBuiltInFunctionMetadataInternal;
 
-		protected override ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuiltInPackageFunctionMetadata { get { return BuiltInPackageFunctionMetadataInternal; } }
+	    protected override ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuiltInPackageFunctionMetadata => BuiltInPackageFunctionMetadataInternal;
 
-		private static readonly HashSet<OracleSchemaObject> AllObjectsInternal = new HashSet<OracleSchemaObject>
+	    private static readonly HashSet<OracleSchemaObject> AllObjectsInternal = new HashSet<OracleSchemaObject>
 		{
 			new OracleTable
 			{
@@ -977,38 +972,35 @@ TABLESPACE ""TBS_HQ_PDB""";
 
 		private static readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> ObjectsInternal;
 
-		public override ConnectionStringSettings ConnectionString { get { return ConnectionStringInternal; } }
+		public override ConnectionStringSettings ConnectionString => ConnectionStringInternal;
 
-		public override string CurrentSchema { get; set; }
+	    public override string CurrentSchema { get; set; }
 		
-		public override bool IsInitialized { get { return true; } }
+		public override bool IsInitialized => true;
 
-		public override bool IsMetadataAvailable { get { return true; } }
-		
-		public override ICollection<string> Schemas { get { return SchemasInternal; } }
-		
-		public override IReadOnlyDictionary<string, OracleSchema> AllSchemas { get { return AllSchemasInternal; } }
+	    public override bool IsMetadataAvailable => true;
 
-		public IDictionary<OracleObjectIdentifier, OracleSchemaObject> Objects { get { return ObjectsInternal; } }
+	    public override ICollection<string> Schemas => SchemasInternal;
 
-		public override IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get { return _allObjects; } }
+	    public override IReadOnlyDictionary<string, OracleSchema> AllSchemas => AllSchemasInternal;
 
-		public override IDictionary<OracleObjectIdentifier, OracleDatabaseLink> DatabaseLinks { get { return _databaseLinks; } }
+	    public IDictionary<OracleObjectIdentifier, OracleSchemaObject> Objects => ObjectsInternal;
 
-		public override ICollection<string> CharacterSets { get { return CharacterSetsInternal; } }
+	    public override IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get; }
 
-		public override IDictionary<int, string> StatisticsKeys { get { return StatisticsKeysInternal; } }
+	    public override IDictionary<OracleObjectIdentifier, OracleDatabaseLink> DatabaseLinks { get; } = DatabaseLinksInternal.ToDictionary(l => l.FullyQualifiedName, l => l);
 
-		public override IDictionary<string, string> SystemParameters { get { return _systemParameters; } }
+	    public override ICollection<string> CharacterSets => CharacterSetsInternal;
 
-		public override Version Version { get { return TestDatabaseVersion; } }
+	    public override IDictionary<int, string> StatisticsKeys => StatisticsKeysInternal;
 
-		public override ILookup<string, string> ContextData
-		{
-			get { return ContextDataInternal; }
-		}
+	    public override IDictionary<string, string> SystemParameters { get; } = new Dictionary<string, string>(SystemParametersInternal);
 
-		public override Task Refresh(bool force = false)
+	    public override Version Version => TestDatabaseVersion;
+
+	    public override ILookup<string, string> ContextData => ContextDataInternal;
+
+	    public override Task Refresh(bool force = false)
 		{
 			RefreshStarted(this, EventArgs.Empty);
 			RefreshCompleted(this, EventArgs.Empty);
@@ -1030,9 +1022,9 @@ TABLESPACE ""TBS_HQ_PDB""";
 			RefreshCompleted = null;
 		}
 
-		public override bool IsFresh { get { return true; } }
+		public override bool IsFresh => true;
 
-		public override event EventHandler Initialized = delegate { };
+	    public override event EventHandler Initialized = delegate { };
 
 		public override event EventHandler<DatabaseModelConnectionErrorArgs> InitializationFailed;
 
@@ -1220,14 +1212,11 @@ TABLESPACE ""TBS_HQ_PDB""";
 			return Task.FromResult((IReadOnlyList<string>)remoteColumns.AsReadOnly());
 		}
 
-		public override bool HasDbaPrivilege
-		{
-			get { return false; }
-		}
+		public override bool HasDbaPrivilege => false;
 
-		public override string DatabaseDomainName { get { return CurrentDatabaseDomainNameInternal; } }
+	    public override string DatabaseDomainName => CurrentDatabaseDomainNameInternal;
 
-		public override Task<ExecutionPlanItemCollection> ExplainPlanAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
+	    public override Task<ExecutionPlanItemCollection> ExplainPlanAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
 			var rootItem = new ExecutionPlanItem();
 			OracleTestConnectionAdapter.SetBasePlanItemData(rootItem);

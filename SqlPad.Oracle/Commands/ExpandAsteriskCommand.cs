@@ -76,7 +76,7 @@ namespace SqlPad.Oracle.Commands
 				var databaseLinkIdentifier = String.Concat(databaseLinkReference.DatabaseLinkNode.Terminals.Select(t => t.Token.Value));
 				var remoteObjectIdenrifier = OracleObjectIdentifier.Create(databaseLinkReference.OwnerNode, databaseLinkReference.ObjectNode, null);
 				var columnNames = await CurrentQueryBlock.SemanticModel.DatabaseModel.GetRemoteTableColumnsAsync(databaseLinkIdentifier, remoteObjectIdenrifier, cancellationToken);
-				expandedColumns.AddRange(columnNames.Select(n => new ExpandedColumn { ColumnName = String.Format("{0}.{1}", databaseLinkReference.FullyQualifiedObjectName, n.ToSimpleIdentifier()) }));
+				expandedColumns.AddRange(columnNames.Select(n => new ExpandedColumn { ColumnName = $"{databaseLinkReference.FullyQualifiedObjectName}.{n.ToSimpleIdentifier()}"}));
 			}
 
 			foreach (var expandedColumn in expandedColumns)
@@ -111,7 +111,7 @@ namespace SqlPad.Oracle.Commands
 					columnNameLabel.Foreground = dataTypeLabel.Foreground = Brushes.DimGray;
 				}
 
-				columnNameLabel.Text = String.Format("{0}{1}", expandedColumn.ColumnName, extraInformation);
+				columnNameLabel.Text = $"{expandedColumn.ColumnName}{extraInformation}";
 
 				_settingsModel.AddBooleanOption(
 					new BooleanOption
@@ -246,9 +246,9 @@ namespace SqlPad.Oracle.Commands
 			var objectPrefix = objectReference.FullyQualifiedObjectName.ToString();
 			var usedObjectPrefix = String.IsNullOrEmpty(objectPrefix)
 				? null
-				: String.Format("{0}.", objectPrefix);
+				: $"{objectPrefix}.";
 
-			return String.Format("{0}{1}", usedObjectPrefix, simpleColumnName);
+			return $"{usedObjectPrefix}{simpleColumnName}";
 		}
 
 		[DebuggerDisplay("ExpandedColumn (ColumnName={ColumnName}; IsPseudoColumn={IsPseudoColumn}; IsHidden={IsHidden})")]

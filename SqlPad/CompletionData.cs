@@ -42,7 +42,7 @@ namespace SqlPad
 
 		private void BuildDecription()
 		{
-			var descriptionText = String.IsNullOrEmpty(Snippet.Description) ? null : String.Format("{0}{1}", Environment.NewLine, Snippet.Description);
+			var descriptionText = String.IsNullOrEmpty(Snippet.Description) ? null : $"{Environment.NewLine}{Snippet.Description}";
 			var description = new TextBlock();
 			description.Inlines.Add(new Bold(new Run("Code Snippet")));
 			description.Inlines.Add(new Run(descriptionText));
@@ -139,14 +139,11 @@ namespace SqlPad
 			return String.Format(preformattedText, firstParameter);
 		}
 
-		public StatementGrammarNode Node { get; private set; }
+		public StatementGrammarNode Node { get; }
 
-		public ImageSource Image
-		{
-			get { return null; }
-		}
+		public ImageSource Image => null;
 
-		public string Text { get; private set; }
+	    public string Text { get; }
 
 		public object Content { get; private set; }
 
@@ -182,6 +179,6 @@ namespace SqlPad
 			}
 		}
 
-		public double Priority { get { return 0; } }
+		public double Priority => 0;
 	}
 }

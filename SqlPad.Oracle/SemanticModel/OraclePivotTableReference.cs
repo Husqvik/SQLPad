@@ -48,7 +48,7 @@ namespace SqlPad.Oracle.SemanticModel
 				foreach (var pivotAggregationFunction in pivotExpressions.GetDescendants(OracleGrammarDescription.NonTerminals.PivotAliasedAggregationFunction))
 				{
 					var aliasNode = pivotAggregationFunction[OracleGrammarDescription.NonTerminals.ColumnAsAlias, OracleGrammarDescription.Terminals.ColumnAlias];
-					_columnNameExtensions.Add(aliasNode == null ? String.Empty : String.Format("_{0}", aliasNode.Token.Value.ToQuotedIdentifier().Trim('"')));
+					_columnNameExtensions.Add(aliasNode == null ? String.Empty : $"_{aliasNode.Token.Value.ToQuotedIdentifier().Trim('"')}");
 					aggregateExpressions.Add(pivotAggregationFunction);
 				}
 			}

@@ -331,7 +331,7 @@ namespace SqlPad.Oracle.ToolTips
 
 		public string IndexColumns
 		{
-			get { return String.Join(", ", _indexColumns.Select(c => String.Format("{0}{1}", c.ColumnName, c.SortOrder == SortOrder.Descending ? " DESC" : null))); }
+			get { return String.Join(", ", _indexColumns.Select(c => $"{c.ColumnName}{(c.SortOrder == SortOrder.Descending ? " DESC" : null)}")); }
 		}
 	}
 
@@ -364,12 +364,12 @@ namespace SqlPad.Oracle.ToolTips
 			var populatedRatio = Math.Round(((decimal)storageBytes.Value - nonPopulatedBytes.Value) / storageBytes.Value * 100, 2);
 			var isPopulating = populationStatus == "STARTED";
 			var populationStatusLabel = isPopulating ? " - ongoing" : null;
-			var populatedRatioLabel = populatedRatio < 100 || isPopulating ? String.Format("{0} %", populatedRatio) : null;
+			var populatedRatioLabel = populatedRatio < 100 || isPopulating ? $"{populatedRatio} %" : null;
 			var populationStatusDetail = populatedRatio == 100 && populationStatusLabel == null
 				? null
-				: String.Format("({0}{1})", populatedRatioLabel, populationStatusLabel);
+				: $"({populatedRatioLabel}{populationStatusLabel})";
 
-			return String.Format("{0} {1}", DataSpaceConverter.PrettyPrint(allocatedInMemoryBytes.Value), populationStatusDetail);
+			return $"{DataSpaceConverter.PrettyPrint(allocatedInMemoryBytes.Value)} {populationStatusDetail}";
 		}
 
 		public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)

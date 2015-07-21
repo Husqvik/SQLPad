@@ -40,9 +40,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 		
 		public bool RequiresDbaPrivilege { get; private set; }
 		
-		public string Title { get; private set; }
+		public string Title { get; }
 		
-		public TraceEventScope Scope { get; private set; }
+		public TraceEventScope Scope { get; }
 
 		public int Level
 		{
@@ -51,19 +51,19 @@ namespace SqlPad.Oracle.DatabaseConnection
 			{
 				if (SupportedLevels == null)
 				{
-					throw new InvalidOperationException(String.Format("Event trace '{0}' does not support level option. ", Title));
+					throw new InvalidOperationException($"Event trace '{Title}' does not support level option. ");
 				}
 
 				if (!SupportedLevels.Contains(value))
 				{
-					throw new ArgumentException(String.Format("Level {0} is not supported. Supported levels are: {1} ", value, String.Join(", ", SupportedLevels)), "value");
+					throw new ArgumentException($"Level {value} is not supported. Supported levels are: {String.Join(", ", SupportedLevels)} ", nameof(value));
 				}
 
 				_level = value;
 			}
 		}
 
-		public IReadOnlyList<int> SupportedLevels { get; private set; }
+		public IReadOnlyList<int> SupportedLevels { get; }
 
 		public OracleTraceEvent(int eventCode, string title, TraceEventScope scope, string enableEventTraceParameter, string disableEventTraceParameter, bool requiresDbaPrivilege, IReadOnlyList<int> supportedLevels)
 		{
@@ -85,14 +85,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 		}
 
-		public string CommandTextDisable
-		{
-			get { return BuildCommandText(_disableEventTraceParameter); }
-		}
+		public string CommandTextDisable => BuildCommandText(_disableEventTraceParameter);
 
-		private string BuildCommandText(string parameter)
+	    private string BuildCommandText(string parameter)
 		{
-			return String.Format("ALTER {0} SET EVENTS {1}", Scope.ToString().ToUpperInvariant(), parameter);
+			return $"ALTER {Scope.ToString().ToUpperInvariant()} SET EVENTS {parameter}";
 		}
 	}
 

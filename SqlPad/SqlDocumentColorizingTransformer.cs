@@ -37,9 +37,9 @@ namespace SqlPad
 		private StatementCollection _statements;
 		private IDictionary<StatementBase, IValidationModel> _validationModels;
 
-		public IList<StatementGrammarNode> HighlightParenthesis { get { return _highlightParenthesis.AsReadOnly(); } }
-		
-		public IEnumerable<TextSegment> HighlightSegments { get { return _highlightSegments.SelectMany(c => c); } }
+		public IList<StatementGrammarNode> HighlightParenthesis => _highlightParenthesis.AsReadOnly();
+
+	    public IEnumerable<TextSegment> HighlightSegments { get { return _highlightSegments.SelectMany(c => c); } }
 
 		public void SetParser(ISqlParser parser)
 		{

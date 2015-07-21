@@ -75,15 +75,15 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public static string MergeIdentifiersIntoSimpleString(string identifier1, string identifier2)
 		{
-			var ownerPrefix = String.IsNullOrEmpty(identifier1) ? null : String.Format("{0}.", identifier1.ToSimpleIdentifier());
-			return String.Format("{0}{1}", ownerPrefix, identifier2.ToSimpleIdentifier());
+			var ownerPrefix = String.IsNullOrEmpty(identifier1) ? null : $"{identifier1.ToSimpleIdentifier()}.";
+			return $"{ownerPrefix}{identifier2.ToSimpleIdentifier()}";
 		}
 
 		#region Overrides of ValueType
 		public override string ToString()
 		{
-			var ownerPrefix = !HasOwner ? null : String.Format("{0}.", Owner.ToSimpleIdentifier());
-			return String.Format("{0}{1}", ownerPrefix, Name.ToSimpleIdentifier());
+			var ownerPrefix = !HasOwner ? null : $"{Owner.ToSimpleIdentifier()}.";
+			return $"{ownerPrefix}{Name.ToSimpleIdentifier()}";
 		}
 		#endregion
 
