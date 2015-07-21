@@ -8,9 +8,9 @@ namespace SqlPad
 {
 	public static class WpfExtensions
 	{
-		public static T FindParent<T>(DependencyObject child) where T : DependencyObject
-		{
-			var parent = VisualTreeHelper.GetParent(child);
+		public static T FindParent<T>(this Visual child) where T : Visual
+        {
+			var parent = (Visual)VisualTreeHelper.GetParent(child);
 			if (parent == null)
 			{
 				return null;
@@ -20,14 +20,14 @@ namespace SqlPad
 			return typedParent ?? FindParent<T>(parent);
 		}
 
-		public static T GetVisualChild<T>(this Visual parent) where T : Visual
+		public static T FindVisualChild<T>(this Visual parent) where T : Visual
 		{
 			var child = default(T);
 			var numVisuals = VisualTreeHelper.GetChildrenCount(parent);
 			for (var i = 0; i < numVisuals; i++)
 			{
 				var v = (Visual)VisualTreeHelper.GetChild(parent, i);
-				child = v as T ?? GetVisualChild<T>(v);
+				child = v as T ?? FindVisualChild<T>(v);
 				
 				if (child != null)
 				{

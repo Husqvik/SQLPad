@@ -68,26 +68,23 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 		}
 
-		IDatabaseModel IStatementSemanticModel.DatabaseModel { get { return DatabaseModel; } }
+		IDatabaseModel IStatementSemanticModel.DatabaseModel => DatabaseModel;
 
-		public OracleStatement Statement { get; private set; }
+	    public OracleStatement Statement { get; }
 
-		StatementBase IStatementSemanticModel.Statement { get { return Statement; } }
+		StatementBase IStatementSemanticModel.Statement => Statement;
+
+	    public string StatementText { get; private set; }
 		
-		public string StatementText { get; private set; }
-		
-		public bool HasDatabaseModel { get { return _databaseModel != null; } }
+		public bool HasDatabaseModel => _databaseModel != null;
 
-		public ICollection<OracleQueryBlock> QueryBlocks
-		{
-			get { return _queryBlockNodes.Values; }
-		}
+	    public ICollection<OracleQueryBlock> QueryBlocks => _queryBlockNodes.Values;
 
-		public ICollection<OracleInsertTarget> InsertTargets { get { return _insertTargets; }}
+	    public ICollection<OracleInsertTarget> InsertTargets => _insertTargets;
 
-		public ICollection<RedundantTerminalGroup> RedundantSymbolGroups { get { return _redundantTerminalGroups.AsReadOnly(); } } 
+	    public ICollection<RedundantTerminalGroup> RedundantSymbolGroups => _redundantTerminalGroups.AsReadOnly();
 
-		public OracleMainObjectReferenceContainer MainObjectReferenceContainer { get; private set; }
+	    public OracleMainObjectReferenceContainer MainObjectReferenceContainer { get; private set; }
 
 		public IEnumerable<OracleReferenceContainer> AllReferenceContainers
 		{
@@ -112,12 +109,9 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 		}
 
-		public IEnumerable<OracleLiteral> Literals
-		{
-			get { return _literals; }
-		}
+		public IEnumerable<OracleLiteral> Literals => _literals;
 
-		public OracleStatementSemanticModel(string statementText, OracleStatement statement) : this(statement, null)
+	    public OracleStatementSemanticModel(string statementText, OracleStatement statement) : this(statement, null)
 		{
 			StatementText = statementText;
 		}
@@ -125,16 +119,20 @@ namespace SqlPad.Oracle.SemanticModel
 		public OracleStatementSemanticModel(string statementText, OracleStatement statement, OracleDatabaseModelBase databaseModel)
 			: this(statement, databaseModel)
 		{
-			if (databaseModel == null)
-				throw new ArgumentNullException("databaseModel");
+		    if (databaseModel == null)
+		    {
+		        throw new ArgumentNullException(nameof(databaseModel));
+		    }
 
 			StatementText = statementText;
 		}
 
 		private OracleStatementSemanticModel(OracleStatement statement, OracleDatabaseModelBase databaseModel)
 		{
-			if (statement == null)
-				throw new ArgumentNullException("statement");
+		    if (statement == null)
+		    {
+		        throw new ArgumentNullException(nameof(statement));
+		    }
 
 			Statement = statement;
 			_databaseModel = databaseModel;
@@ -341,15 +339,8 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private static StatementGrammarNode GetQueryBlockRootFromNestedQuery(StatementGrammarNode ownerQueryNode)
 		{
-			if (ownerQueryNode == null)
-			{
-				return null;
-			}
-			
-			var subquery = ownerQueryNode[NonTerminals.Subquery];
-			return subquery == null
-				? null
-				: subquery.GetDescendants(NonTerminals.QueryBlock).First();
+		    var subquery = ownerQueryNode?[NonTerminals.Subquery];
+			return subquery?.GetDescendants(NonTerminals.QueryBlock).First();
 		}
 
 		private void Build()
@@ -2753,26 +2744,22 @@ namespace SqlPad.Oracle.SemanticModel
 
 			foreach (var columnHeader in columnHeaders)
 			{
-				var columns = MainQueryBlock.NamedColumns[String.Format("\"{0}\"", columnHeader.Name)]
+				var columns = MainQueryBlock.NamedColumns[$"\"{columnHeader.Name}\""]
 					.Where(c => c.ColumnDescription.DataType.IsPrimitive);
 				
 				foreach (var column in columns)
 				{
 					string localColumnName;
 					var sourceObject = GetSourceObject(column, out localColumnName);
-					if (sourceObject == null)
-					{
-						continue;
-					}
 
-					var referenceConstraint = sourceObject.ForeignKeys.FirstOrDefault(r => r.Columns.Count == 1 && String.Equals(r.Columns[0], localColumnName));
+				    var referenceConstraint = sourceObject?.ReferenceConstraints.FirstOrDefault(r => r.Columns.Count == 1 && String.Equals(r.Columns[0], localColumnName));
 					if (referenceConstraint == null)
 					{
 						continue;
 					}
 
 					var referenceColumnName = referenceConstraint.ReferenceConstraint.Columns[0];
-					var statementText = StatementText = String.Format("SELECT * FROM {0} WHERE {1} = :KEY", referenceConstraint.TargetObject.FullyQualifiedName, referenceColumnName);
+					var statementText = StatementText = $"SELECT * FROM {referenceConstraint.TargetObject.FullyQualifiedName} WHERE {referenceColumnName} = :KEY";
 					var keyDataType = column.ColumnDescription.DataType.FullyQualifiedName.Name.Trim('"');
 					var objectName = referenceConstraint.TargetObject.FullyQualifiedName.ToString();
 					columnHeader.ReferenceDataSource = new OracleReferenceDataSource(objectName, statementText, keyDataType);
@@ -2793,7 +2780,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 				var columnReference = column.ColumnReferences[0];
 				var objectReference = columnReference.ValidObjectReference;
-				if (objectReference == null)
+				if (objectReference == null || columnReference.ColumnNodeColumnReferences.Count != 1)
 				{
 					return null;
 				}
@@ -2801,7 +2788,7 @@ namespace SqlPad.Oracle.SemanticModel
 				var dataObject = objectReference.SchemaObject.GetTargetSchemaObject() as OracleDataObject;
 				if (dataObject != null)
 				{
-					physicalColumnName = columnReference.NormalizedName;
+					physicalColumnName = columnReference.ColumnNodeColumnReferences.First().Name;
 					return dataObject;
 				}
 
@@ -2923,7 +2910,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public OracleQueryBlock RowSource { get; set; }
 
-		public OracleDataObjectReference DataObjectReference { get { return ObjectReferences.Count == 1 ? ObjectReferences.First() : null; } }
+		public OracleDataObjectReference DataObjectReference => ObjectReferences.Count == 1 ? ObjectReferences.First() : null;
 	}
 
 	public class OracleReferenceDataSource : IReferenceDataSource
@@ -2931,7 +2918,7 @@ namespace SqlPad.Oracle.SemanticModel
 		private readonly string _statementText;
 		private readonly string _keyDataType;
 		
-		public string ObjectName { get; private set; }
+		public string ObjectName { get; }
 
 		public StatementExecutionModel CreateExecutionModel()
 		{

@@ -30,8 +30,7 @@ namespace SqlPad
 		private readonly ObservableCollection<object[]> _resultRows = new ObservableCollection<object[]>();
 		private readonly SessionExecutionStatisticsCollection _sessionExecutionStatistics = new SessionExecutionStatisticsCollection();
 		private readonly ObservableCollection<CompilationError> _compilationErrors = new ObservableCollection<CompilationError>();
-		private readonly StatusInfoModel _statusInfo = new StatusInfoModel();
-		private readonly DatabaseProviderConfiguration _providerConfiguration;
+	    private readonly DatabaseProviderConfiguration _providerConfiguration;
 		private readonly DocumentPage _documentPage;
 		private readonly IConnectionAdapter _connectionAdapter;
 		private readonly IStatementValidator _validator;
@@ -45,9 +44,9 @@ namespace SqlPad
 
 		public event EventHandler<CompilationErrorArgs> CompilationError;
 
-		public IExecutionPlanViewer ExecutionPlanViewer { get; private set; }
+		public IExecutionPlanViewer ExecutionPlanViewer { get; }
 		
-		public ITraceViewer TraceViewer { get; private set; }
+		public ITraceViewer TraceViewer { get; }
 
 		private bool IsCancellationRequested
 		{
@@ -60,12 +59,9 @@ namespace SqlPad
 
 		public bool KeepDatabaseOutputHistory { get; set; }
 
-		public StatusInfoModel StatusInfo
-		{
-			get { return _statusInfo; }
-		}
+		public StatusInfoModel StatusInfo { get; } = new StatusInfoModel();
 
-		public bool IsBusy
+	    public bool IsBusy
 		{
 			get { return _isRunning; }
 			private set
@@ -75,13 +71,13 @@ namespace SqlPad
 			}
 		}
 
-		public IReadOnlyList<object[]> ResultRowItems { get { return _resultRows; } }
+		public IReadOnlyList<object[]> ResultRowItems => _resultRows;
 
-		public IReadOnlyList<SessionExecutionStatisticsRecord> SessionExecutionStatistics { get { return _sessionExecutionStatistics; } }
+	    public IReadOnlyList<SessionExecutionStatisticsRecord> SessionExecutionStatistics => _sessionExecutionStatistics;
 
-		public IReadOnlyList<CompilationError> CompilationErrors { get { return _compilationErrors; } }
+	    public IReadOnlyList<CompilationError> CompilationErrors => _compilationErrors;
 
-		public OutputViewer(DocumentPage documentPage)
+	    public OutputViewer(DocumentPage documentPage)
 		{
 			InitializeComponent();
 			
@@ -142,7 +138,7 @@ namespace SqlPad
 
 			ResultGrid.HeadersVisibility = DataGridHeadersVisibility.Column;
 
-			_statusInfo.ResultGridAvailable = true;
+			StatusInfo.ResultGridAvailable = true;
 			_resultRows.Clear();
 
 			AppendRows(executionResult.InitialResultSet);
@@ -153,12 +149,12 @@ namespace SqlPad
 			var textBoxFactory = new FrameworkElementFactory(typeof(TextBox));
 			textBoxFactory.SetValue(TextBoxBase.IsReadOnlyProperty, true);
 			textBoxFactory.SetValue(TextBoxBase.IsReadOnlyCaretVisibleProperty, true);
-			textBoxFactory.SetBinding(TextBox.TextProperty, new Binding(String.Format("[{0}]", columnHeader.ColumnIndex)) { Converter = CellValueConverter.Instance });
+			textBoxFactory.SetBinding(TextBox.TextProperty, new Binding($"[{columnHeader.ColumnIndex}]") { Converter = CellValueConverter.Instance });
 			var editingDataTemplate = new DataTemplate(typeof(DependencyObject)) { VisualTree = textBoxFactory };
 
 			var columnTemplate =
 				new DataGridTemplateColumn
-				{
+                {
 					Header = columnHeader,
 					CellTemplateSelector = new ResultSetDataGridTemplateSelector(connectionAdapter, columnHeader),
 					CellEditingTemplate = editingDataTemplate
@@ -208,11 +204,11 @@ namespace SqlPad
 			TabStatistics.Visibility = Visibility.Collapsed;
 			TabExecutionPlan.Visibility = Visibility.Collapsed;
 
-			_statusInfo.ResultGridAvailable = false;
-			_statusInfo.MoreRowsAvailable = false;
-			_statusInfo.DdlStatementExecutedSuccessfully = false;
-			_statusInfo.AffectedRowCount = -1;
-			_statusInfo.SelectedRowIndex = 0;
+			StatusInfo.ResultGridAvailable = false;
+			StatusInfo.MoreRowsAvailable = false;
+			StatusInfo.DdlStatementExecutedSuccessfully = false;
+			StatusInfo.AffectedRowCount = -1;
+			StatusInfo.SelectedRowIndex = 0;
 			
 			WriteDatabaseOutput(String.Empty);
 
@@ -233,12 +229,9 @@ namespace SqlPad
 			}
 		}
 
-		private bool IsPreviousTabAlwaysVisible
-		{
-			get { return _previousSelectedTab != null && IsTabAlwaysVisible(_previousSelectedTab); }
-		}
-		
-		private void SelectPreviousTab()
+		private bool IsPreviousTabAlwaysVisible => _previousSelectedTab != null && IsTabAlwaysVisible(_previousSelectedTab);
+
+	    private void SelectPreviousTab()
 		{
 			if (_previousSelectedTab != null)
 			{
@@ -320,7 +313,7 @@ namespace SqlPad
 			}
 			else
 			{
-				Trace.WriteLine(String.Format("Executes statement not stored in the execution history. The maximum allowed size is {0} characters while the statement has {1} characters.", MaxHistoryEntrySize, executionHistoryRecord.StatementText.Length));
+				Trace.WriteLine($"Executes statement not stored in the execution history. The maximum allowed size is {MaxHistoryEntrySize} characters while the statement has {executionHistoryRecord.StatementText.Length} characters.");
 			}
 
 			var executionResult = innerTask.Result;
@@ -365,11 +358,11 @@ namespace SqlPad
 			{
 				if (executionResult.AffectedRowCount == -1)
 				{
-					_statusInfo.DdlStatementExecutedSuccessfully = true;
+					StatusInfo.DdlStatementExecutedSuccessfully = true;
 				}
 				else
 				{
-					_statusInfo.AffectedRowCount = executionResult.AffectedRowCount;
+					StatusInfo.AffectedRowCount = executionResult.AffectedRowCount;
 				}
 
 				return;
@@ -382,7 +375,7 @@ namespace SqlPad
 
 		private void NotifyExecutionCanceled()
 		{
-			_statusInfo.ExecutionTimerMessage = "Canceled";
+			StatusInfo.ExecutionTimerMessage = "Canceled";
 		}
 
 		private async Task ExecuteUsingCancellationToken(Func<Task> function)
@@ -454,7 +447,7 @@ namespace SqlPad
 				return;
 			}
 
-			_statusInfo.SelectedRowIndex = ResultGrid.CurrentCell.Item == null
+			StatusInfo.SelectedRowIndex = ResultGrid.CurrentCell.Item == null
 				? 0
 				: ResultGrid.Items.IndexOf(ResultGrid.CurrentCell.Item) + 1;
 
@@ -557,7 +550,7 @@ namespace SqlPad
 
 			_isSelectingCells = false;
 
-			_statusInfo.SelectedRowIndex = ResultGrid.SelectedCells.Count;
+			StatusInfo.SelectedRowIndex = ResultGrid.SelectedCells.Count;
 
 			CalculateSelectedCellStatistics();
 
@@ -652,7 +645,7 @@ namespace SqlPad
 		private void AppendRows(IEnumerable<object[]> rows)
 		{
 			_resultRows.AddRange(rows);
-			_statusInfo.MoreRowsAvailable = _connectionAdapter.CanFetch;
+			StatusInfo.MoreRowsAvailable = _connectionAdapter.CanFetch;
 		}
 
 		private async Task<ActionResult> SafeTimedActionAsync(Func<Task> action)
@@ -735,30 +728,30 @@ namespace SqlPad
 			string formattedValue;
 			if (timeSpan.TotalMilliseconds < 1000)
 			{
-				formattedValue = String.Format("{0} {1}", (int)timeSpan.TotalMilliseconds, "ms");
+				formattedValue = $"{(int)timeSpan.TotalMilliseconds} ms";
 			}
 			else if (timeSpan.TotalMilliseconds < 60000)
 			{
-				formattedValue = String.Format("{0} {1}", Math.Round(timeSpan.TotalMilliseconds / 1000, 2), "s");
+				formattedValue = $"{Math.Round(timeSpan.TotalMilliseconds / 1000, 2)} s";
 			}
 			else
 			{
-				formattedValue = String.Format("{0:00}:{1:00}", (int)timeSpan.TotalMinutes, timeSpan.Seconds);
+				formattedValue = $"{(int)timeSpan.TotalMinutes:00}:{timeSpan.Seconds:00}";
 			}
 
 			if (isCanceling)
 			{
-				formattedValue = String.Format("Canceling... {0}", formattedValue);
+				formattedValue = $"Canceling... {formattedValue}";
 			}
 
-			_statusInfo.ExecutionTimerMessage = formattedValue;
+			StatusInfo.ExecutionTimerMessage = formattedValue;
 		}
 
 		private struct ActionResult
 		{
-			public bool IsSuccessful { get { return Exception == null; } }
+			public bool IsSuccessful => Exception == null;
 
-			public Exception Exception { get; set; }
+		    public Exception Exception { get; set; }
 
 			public TimeSpan Elapsed { get; set; }
 		}

@@ -25,11 +25,11 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public abstract string Type { get; }
 
-		public string Name { get { return FullyQualifiedName.NormalizedName; } }
+		public string Name => FullyQualifiedName.NormalizedName;
 
-		public string Owner { get { return FullyQualifiedName.NormalizedOwner; } }
+	    public string Owner => FullyQualifiedName.NormalizedOwner;
 
-		public ICollection<OracleSynonym> Synonyms { get { return _synonyms ?? (_synonyms = new HashSet<OracleSynonym>()); } }
+	    public ICollection<OracleSynonym> Synonyms => _synonyms ?? (_synonyms = new HashSet<OracleSynonym>());
 	}
 
 	public abstract class OracleDataObject : OracleSchemaObject
@@ -46,7 +46,7 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public IDictionary<string, OracleColumn> Columns { get; set; }
 
-		public IEnumerable<OracleForeignKeyConstraint> ForeignKeys { get { return Constraints.OfType<OracleForeignKeyConstraint>(); } }
+		public IEnumerable<OracleForeignKeyConstraint> ReferenceConstraints => Constraints.OfType<OracleForeignKeyConstraint>();
 	}
 
 	[DebuggerDisplay("OracleMaterializedView (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
@@ -75,7 +75,7 @@ namespace SqlPad.Oracle.DataDictionary
 		
 		public DateTime? LastRefresh { get; set; }
 
-		public override string Type { get { return OracleSchemaObjectType.MaterializedView; } }
+		public override string Type => OracleSchemaObjectType.MaterializedView;
 	}
 
 	public enum MaterializedViewRefreshMode
@@ -96,7 +96,7 @@ namespace SqlPad.Oracle.DataDictionary
 	{
 		public string StatementText { get; set; }
 
-		public override string Type { get { return OracleSchemaObjectType.View; } }
+		public override string Type => OracleSchemaObjectType.View;
 	}
 
 	[DebuggerDisplay("OracleSynonym (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
@@ -104,12 +104,9 @@ namespace SqlPad.Oracle.DataDictionary
 	{
 		public OracleSchemaObject SchemaObject { get; set; }
 
-		public bool IsPublic
-		{
-			get { return String.Equals(FullyQualifiedName.NormalizedOwner, OracleDatabaseModelBase.SchemaPublic); }
-		}
+		public bool IsPublic => String.Equals(FullyQualifiedName.NormalizedOwner, OracleDatabaseModelBase.SchemaPublic);
 
-		public override string Type { get { return OracleSchemaObjectType.Synonym; } }
+	    public override string Type => OracleSchemaObjectType.Synonym;
 	}
 
 	[DebuggerDisplay("OracleTable (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
@@ -124,9 +121,9 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public bool IsInternal { get; set; }
 
-		public override string Type { get { return OracleSchemaObjectType.Table; } }
+		public override string Type => OracleSchemaObjectType.Table;
 
-		public IDictionary<string, OraclePartition> Partitions { get; set; }
+	    public IDictionary<string, OraclePartition> Partitions { get; set; }
 
 		public ICollection<string> PartitionKeyColumns { get; set; }
 
@@ -145,7 +142,7 @@ namespace SqlPad.Oracle.DataDictionary
 	{
 		private Dictionary<string, OracleSubPartition> _subPartitions;
 
-		public IDictionary<string, OracleSubPartition> SubPartitions { get { return _subPartitions ?? (_subPartitions = new Dictionary<string, OracleSubPartition>()); } }
+		public IDictionary<string, OracleSubPartition> SubPartitions => _subPartitions ?? (_subPartitions = new Dictionary<string, OracleSubPartition>());
 	}
 
 	[DebuggerDisplay("OracleSubPartition (Name={Name}; Position={Position})")]
@@ -158,9 +155,8 @@ namespace SqlPad.Oracle.DataDictionary
 	{
 		public const string NormalizedColumnNameCurrentValue = "\"CURRVAL\"";
 		public const string NormalizedColumnNameNextValue = "\"NEXTVAL\"";
-		private readonly IReadOnlyList<OracleColumn> _columns;
 
-		public OracleSequence()
+	    public OracleSequence()
 		{
 			var nextValueColumn =
 				new OracleColumn
@@ -186,7 +182,7 @@ namespace SqlPad.Oracle.DataDictionary
 						}
 				};
 
-			_columns =
+			Columns =
 				new List<OracleColumn>
 				{
 					nextValueColumn,
@@ -194,9 +190,9 @@ namespace SqlPad.Oracle.DataDictionary
 				}.AsReadOnly();
 		}
 
-		public IReadOnlyList<OracleColumn> Columns { get { return _columns; } }
+		public IReadOnlyList<OracleColumn> Columns { get; }
 
-		public decimal CurrentValue { get; set; }
+	    public decimal CurrentValue { get; set; }
 
 		public decimal Increment { get; set; }
 
@@ -210,7 +206,7 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public bool CanCycle { get; set; }
 
-		public override string Type { get { return OracleSchemaObjectType.Sequence; } }
+		public override string Type => OracleSchemaObjectType.Sequence;
 	}
 
 	public interface IFunctionCollection
@@ -225,9 +221,9 @@ namespace SqlPad.Oracle.DataDictionary
 	{
 		private readonly List<OracleProgramMetadata> _functions = new List<OracleProgramMetadata>();
 
-		public ICollection<OracleProgramMetadata> Functions { get { return _functions; } } 
+		public ICollection<OracleProgramMetadata> Functions => _functions;
 
-		public override string Type { get { return OracleSchemaObjectType.Package; } }
+	    public override string Type => OracleSchemaObjectType.Package;
 	}
 
 	[DebuggerDisplay("OracleFunction (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
@@ -235,9 +231,9 @@ namespace SqlPad.Oracle.DataDictionary
 	{
 		public OracleProgramMetadata Metadata { get; set; }
 
-		ICollection<OracleProgramMetadata> IFunctionCollection.Functions { get { return new [] { Metadata }; } }
+		ICollection<OracleProgramMetadata> IFunctionCollection.Functions => new [] { Metadata };
 
-		public override string Type { get { return OracleSchemaObjectType.Function; } }
+	    public override string Type => OracleSchemaObjectType.Function;
 	}
 
 	[DebuggerDisplay("OracleProcedure (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
@@ -245,7 +241,7 @@ namespace SqlPad.Oracle.DataDictionary
 	{
 		public OracleProgramMetadata Metadata { get; set; }
 
-		public override string Type { get { return OracleSchemaObjectType.Procedure; } }
+		public override string Type => OracleSchemaObjectType.Procedure;
 	}
 
 	public abstract class OracleTypeBase : OracleSchemaObject
@@ -256,9 +252,9 @@ namespace SqlPad.Oracle.DataDictionary
 
 		private OracleProgramMetadata _constructorMetadata;
 		
-		public override string Type { get { return OracleSchemaObjectType.Type; } }
+		public override string Type => OracleSchemaObjectType.Type;
 
-		public abstract string TypeCode { get; }
+	    public abstract string TypeCode { get; }
 
 		public OracleProgramMetadata GetConstructorMetadata()
 		{
@@ -284,9 +280,9 @@ namespace SqlPad.Oracle.DataDictionary
 			return this;
 		}
 
-		public override string TypeCode { get { return _typeCode; } }
+		public override string TypeCode => _typeCode;
 
-		public IList<OracleTypeAttribute> Attributes { get; set; }
+	    public IList<OracleTypeAttribute> Attributes { get; set; }
 
 		protected override OracleProgramMetadata BuildConstructorMetadata()
 		{
@@ -327,9 +323,9 @@ namespace SqlPad.Oracle.DataDictionary
 		public const string OracleCollectionTypeNestedTable = "TABLE";
 		public const string OracleCollectionTypeVarryingArray = "VARRAY";
 
-		public override string TypeCode { get { return TypeCodeCollection; } }
+		public override string TypeCode => TypeCodeCollection;
 
-		public OracleCollectionType CollectionType { get; set; }
+	    public OracleCollectionType CollectionType { get; set; }
 
 		public int? UpperBound { get; set; }
 
@@ -342,18 +338,15 @@ namespace SqlPad.Oracle.DataDictionary
 			var returnParameterType = CollectionType == OracleCollectionType.Table ? OracleCollectionTypeNestedTable : OracleCollectionTypeVarryingArray;
 			var constructorMetadata = new OracleProgramMetadata(ProgramType.CollectionConstructor, OracleProgramIdentifier.CreateFromValues(FullyQualifiedName.Owner, null, FullyQualifiedName.Name), false, false, false, false, false, false, 0, UpperBound ?? Int32.MaxValue, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeParenthesis, false);
 			constructorMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, returnParameterType, FullyQualifiedName, false));
-			constructorMetadata.AddParameter(new OracleProgramParameterMetadata(String.Format("array of {0}", elementTypeLabel), 1, 1, 0, ParameterDirection.Input, String.Empty, OracleObjectIdentifier.Empty, true));
+			constructorMetadata.AddParameter(new OracleProgramParameterMetadata($"array of {elementTypeLabel}", 1, 1, 0, ParameterDirection.Input, String.Empty, OracleObjectIdentifier.Empty, true));
 			constructorMetadata.Owner = this;
 			
 			return constructorMetadata;
 		}
 
-		public ICollection<OracleProgramMetadata> Functions
-		{
-			get { return new [] { BuildConstructorMetadata() }; }
-		}
+		public ICollection<OracleProgramMetadata> Functions => new [] { BuildConstructorMetadata() };
 
-		public OracleDataType ElementDataType { get; set; }
+	    public OracleDataType ElementDataType { get; set; }
 	}
 
 	[DebuggerDisplay("OracleSchema (Name={Name}; Created={Created}; IsOracleMaintained={IsOracleMaintained}; IsCommon={IsCommon})")]
