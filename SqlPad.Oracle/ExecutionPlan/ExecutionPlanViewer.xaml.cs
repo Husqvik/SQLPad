@@ -19,9 +19,9 @@ namespace SqlPad.Oracle.ExecutionPlan
 		private readonly OracleDatabaseModelBase _databaseModel;
 		private readonly ExecutionPlanViewerModel _viewModel = new ExecutionPlanViewerModel();
 
-		public Control Control { get { return this; } }
+		public Control Control => this;
 
-		public ExecutionPlanViewer(OracleDatabaseModelBase databaseModel)
+	    public ExecutionPlanViewer(OracleDatabaseModelBase databaseModel)
 		{
 			InitializeComponent();
 			
@@ -129,7 +129,7 @@ namespace SqlPad.Oracle.ExecutionPlan
 		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			var planItem = value as ExecutionStatisticsPlanItem;
-			return planItem == null || planItem.LastMemoryUsedBytes == null
+			return planItem?.LastMemoryUsedBytes == null
 				? String.Empty
 				: $"{DataSpaceConverter.PrettyPrint(planItem.LastMemoryUsedBytes.Value)} ({planItem.LastExecutionMethod}, {planItem.WorkAreaSizingPolicy})";
 		}
@@ -140,7 +140,7 @@ namespace SqlPad.Oracle.ExecutionPlan
 		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			var planItem = value as ExecutionStatisticsPlanItem;
-			return planItem == null || planItem.LastMemoryUsedBytes == null
+			return planItem?.LastMemoryUsedBytes == null
 				? String.Empty
 				: $"{planItem.TotalWorkAreaExecutions} total/{planItem.OptimalWorkAreaExecutions} optimal/{planItem.OnePassWorkAreaExecutions} one-pass/{planItem.MultiPassWorkAreaExecutions} multi-pass";
 		}
@@ -155,7 +155,7 @@ namespace SqlPad.Oracle.ExecutionPlan
 			return itemsControl.ItemContainerGenerator.IndexFromContainer(item) == itemsControl.Items.Count - 1;
 		}
 
-		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			return false;
 		}

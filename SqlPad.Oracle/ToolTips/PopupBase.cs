@@ -32,16 +32,13 @@ namespace SqlPad.Oracle.ToolTips
 
 		public event EventHandler Pin;
 
-		public Control Control { get { return this; } }
+		public Control Control => this;
 
-		public FrameworkElement InnerContent { get { return (FrameworkElement)Content; } }
+	    public FrameworkElement InnerContent => (FrameworkElement)Content;
 
-		private void PinHandler(object sender, RoutedEventArgs e)
-		{
-			if (Pin != null)
-			{
-				Pin(this, EventArgs.Empty);
-			}
-		}
+	    private void PinHandler(object sender, RoutedEventArgs e)
+	    {
+	        Pin?.Invoke(this, EventArgs.Empty);
+	    }
 	}
 }

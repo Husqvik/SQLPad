@@ -23,9 +23,9 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public DataUnit Unit { get; set; }
 
-		public bool IsPrimitive { get { return !FullyQualifiedName.HasOwner; } }
+		public bool IsPrimitive => !FullyQualifiedName.HasOwner;
 
-		public static OracleDataType CreateTimestampDataType(int precision)
+	    public static OracleDataType CreateTimestampDataType(int precision)
 		{
 			return new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, TerminalValues.Timestamp), Precision = precision };
 		}

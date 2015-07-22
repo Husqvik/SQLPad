@@ -10,11 +10,11 @@ namespace SqlPad.Oracle.ToolTips
 	{
 		public event EventHandler Pin;
 
-		public Control Control { get { return this; } }
+		public Control Control => this;
 
-		public FrameworkElement InnerContent { get { return this; } }
+	    public FrameworkElement InnerContent => this;
 
-		public ToolTipAsterisk()
+	    public ToolTipAsterisk()
 		{
 			InitializeComponent();
 		}

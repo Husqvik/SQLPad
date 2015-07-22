@@ -416,13 +416,13 @@ WHERE
 		{
 			public const string TextValue = "</root>";
 
-			public string DataTypeName { get { return "CLOB"; } }
+			public string DataTypeName => "CLOB";
 
-			public bool IsEditable { get { return false; } }
-			
-			public bool IsNull { get { return false; } }
+		    public bool IsEditable => false;
 
-			public string ToSqlLiteral()
+		    public bool IsNull => false;
+
+		    public string ToSqlLiteral()
 			{
 				return "TO_CLOB('</root>')";
 			}
@@ -437,13 +437,13 @@ WHERE
 				return "'</root>'";
 			}
 
-			public long Length { get { return TextValue.Length; } }
+			public long Length => TextValue.Length;
 
-			public string Preview { get { throw new NotImplementedException(); } }
+		    public string Preview { get { throw new NotImplementedException(); } }
 
-			public string Value { get { return TextValue; } }
+			public string Value => TextValue;
 
-			public void GetChunk(StringBuilder stringBuilder, int offset, int length)
+		    public void GetChunk(StringBuilder stringBuilder, int offset, int length)
 			{
 				throw new NotImplementedException();
 			}

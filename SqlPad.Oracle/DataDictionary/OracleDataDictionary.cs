@@ -32,27 +32,15 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public DateTime Timestamp { get; private set; }
 
-		public IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects
-		{
-			get { return _allObjects ?? InitialDictionary; }
-		}
+		public IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects => _allObjects ?? InitialDictionary;
 
-		public IDictionary<OracleObjectIdentifier, OracleDatabaseLink> DatabaseLinks
-		{
-			get { return _databaseLinks ?? InitialDatabaseLinkDictionary; }
-		}
+	    public IDictionary<OracleObjectIdentifier, OracleDatabaseLink> DatabaseLinks => _databaseLinks ?? InitialDatabaseLinkDictionary;
 
-		public ILookup<OracleProgramIdentifier, OracleProgramMetadata> NonSchemaFunctionMetadata
-		{
-			get { return _nonSchemaFunctionMetadataLookup ?? BuildNonSchemaFunctionMetadata(); }
-		}
+	    public ILookup<OracleProgramIdentifier, OracleProgramMetadata> NonSchemaFunctionMetadata => _nonSchemaFunctionMetadataLookup ?? BuildNonSchemaFunctionMetadata();
 
-		public ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuiltInPackageFunctionMetadata
-		{
-			get { return _builtInPackageFunctionMetadata ?? BuildBuiltInPackageFunctionMetadata(); }
-		}
+	    public ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuiltInPackageFunctionMetadata => _builtInPackageFunctionMetadata ?? BuildBuiltInPackageFunctionMetadata();
 
-		private ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuildBuiltInPackageFunctionMetadata()
+	    private ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuildBuiltInPackageFunctionMetadata()
 		{
 			OracleSchemaObject standardPackage;
 			var functions = AllObjects.TryGetValue(OracleDatabaseModelBase.BuiltInFunctionPackageIdentifier, out standardPackage)
@@ -68,22 +56,13 @@ namespace SqlPad.Oracle.DataDictionary
 			return _nonSchemaFunctionMetadataLookup = nonSchemaFunctionMetadata.ToLookup(m => m.Identifier);
 		}
 
-		public ICollection<string> CharacterSets
-		{
-			get { return _characterSets ?? InitialCharacterSetCollection; }
-		}
+		public ICollection<string> CharacterSets => _characterSets ?? InitialCharacterSetCollection;
 
-		public IDictionary<int, string> StatisticsKeys
-		{
-			get { return _statisticsKeys ?? InitialStatisticsKeys; }
-		}
+	    public IDictionary<int, string> StatisticsKeys => _statisticsKeys ?? InitialStatisticsKeys;
 
-		public IDictionary<string, string> SystemParameters
-		{
-			get { return _systemParameters ?? InitialSystemParameters; }
-		}
+	    public IDictionary<string, string> SystemParameters => _systemParameters ?? InitialSystemParameters;
 
-		static OracleDataDictionary()
+	    static OracleDataDictionary()
 		{
 			Serializer = TypeModel.Create();
 			var oracleDataDictionaryType = Serializer.Add(typeof(OracleDataDictionary), false);

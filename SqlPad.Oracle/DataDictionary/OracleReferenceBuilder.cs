@@ -225,12 +225,7 @@ namespace SqlPad.Oracle.DataDictionary
 		private static void TryResolveNumericPrecisionAndScale(OracleDataTypeReference dataTypeReference, StatementGrammarNode definitionNode)
 		{
 			var numericPrecisionScaleNode = definitionNode[NonTerminals.DataTypeNumericPrecisionAndScale];
-			if (numericPrecisionScaleNode == null)
-			{
-				return;
-			}
-
-			var precisionValueTerminal = numericPrecisionScaleNode[NonTerminals.IntegerOrAsterisk, Terminals.IntegerLiteral];
+		    var precisionValueTerminal = numericPrecisionScaleNode?[NonTerminals.IntegerOrAsterisk, Terminals.IntegerLiteral];
 			if (precisionValueTerminal == null)
 			{
 				return;
@@ -257,12 +252,7 @@ namespace SqlPad.Oracle.DataDictionary
 		private static void TryResolveVarcharDetails(OracleDataTypeReference dataTypeReference, StatementGrammarNode definitionNode)
 		{
 			var varyingCharacterSimplePrecisionNode = definitionNode.GetSingleDescendant(NonTerminals.DataTypeVarcharSimplePrecision);
-			if (varyingCharacterSimplePrecisionNode == null)
-			{
-				return;
-			}
-
-			var valueTerminal = varyingCharacterSimplePrecisionNode[Terminals.IntegerLiteral];
+		    var valueTerminal = varyingCharacterSimplePrecisionNode?[Terminals.IntegerLiteral];
 			if (valueTerminal == null)
 			{
 				return;

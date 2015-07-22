@@ -36,11 +36,11 @@ namespace SqlPad.Oracle.DebugTrace
 
 		private readonly ObservableCollection<OracleTraceEventModel> _traceEvents = new ObservableCollection<OracleTraceEventModel>();
 
-		public Control Control { get { return this; } }
+		public Control Control => this;
 
-		public IReadOnlyCollection<OracleTraceEventModel> TraceEvents { get { return _traceEvents; } }
+	    public IReadOnlyCollection<OracleTraceEventModel> TraceEvents => _traceEvents;
 
-		public OracleTraceViewer(OracleConnectionAdapterBase connectionAdapter)
+	    public OracleTraceViewer(OracleConnectionAdapterBase connectionAdapter)
 		{
 			InitializeComponent();
 

@@ -95,12 +95,9 @@ namespace SqlPad.Oracle.ToolTips
 			set { UpdateValueAndRaisePropertyChanged(ref _averageRowSize, value); }
 		}
 
-		public Visibility TablespaceNameVisibility
-		{
-			get { return String.IsNullOrEmpty(_tablespaceName) ? Visibility.Collapsed : Visibility.Visible; }
-		}
+		public Visibility TablespaceNameVisibility => String.IsNullOrEmpty(_tablespaceName) ? Visibility.Collapsed : Visibility.Visible;
 
-		public long? AllocatedBytes
+	    public long? AllocatedBytes
 		{
 			get { return _allocatedBytes; }
 			set { UpdateValueAndRaisePropertyChanged(ref _allocatedBytes, value); }
@@ -144,11 +141,11 @@ namespace SqlPad.Oracle.ToolTips
 			RaisePropertyChanged("PartitionDetailsVisibility");
 		}
 
-		public ICollection<IndexDetailsModel> IndexDetails { get { return _indexDetails; } }
+		public ICollection<IndexDetailsModel> IndexDetails => _indexDetails;
 
-		public ICollection<PartitionDetailsModel> VisiblePartitionDetails { get { return _visiblePartitionDetails; } }
+	    public ICollection<PartitionDetailsModel> VisiblePartitionDetails => _visiblePartitionDetails;
 
-		public void AddPartition(PartitionDetailsModel partition)
+	    public void AddPartition(PartitionDetailsModel partition)
 		{
 			_partitionDetailsDictionary.Add(partition.Name, partition);
 
@@ -164,22 +161,13 @@ namespace SqlPad.Oracle.ToolTips
 			}
 		}
 
-		public Visibility MorePartitionsExistMessageVisibility
-		{
-			get { return _partitionDetailsDictionary.Count > MaxVisiblePartitionCount ? Visibility.Visible : Visibility.Collapsed; }
-		}
-		
-		public int VisiblePartitionCount
-		{
-			get { return MaxVisiblePartitionCount; }
-		}
+		public Visibility MorePartitionsExistMessageVisibility => _partitionDetailsDictionary.Count > MaxVisiblePartitionCount ? Visibility.Visible : Visibility.Collapsed;
 
-		public int PartitionCount
-		{
-			get { return _partitionDetailsDictionary.Count; }
-		}
+	    public int VisiblePartitionCount => MaxVisiblePartitionCount;
 
-		public PartitionDetailsModel GetPartitions(string partitionName)
+	    public int PartitionCount => _partitionDetailsDictionary.Count;
+
+	    public PartitionDetailsModel GetPartitions(string partitionName)
 		{
 			return _partitionDetailsDictionary[partitionName];
 		}
@@ -220,22 +208,13 @@ namespace SqlPad.Oracle.ToolTips
 			set { UpdateValueAndRaisePropertyChanged(ref _isTemporary, value); }
 		}
 
-		public Visibility ClusterNameVisibility
-		{
-			get { return String.IsNullOrEmpty(_clusterName) ? Visibility.Collapsed : Visibility.Visible; }
-		}
+		public Visibility ClusterNameVisibility => String.IsNullOrEmpty(_clusterName) ? Visibility.Collapsed : Visibility.Visible;
 
-		public Visibility IndexDetailsVisibility
-		{
-			get { return _indexDetails.Count > 0 ? Visibility.Visible : Visibility.Collapsed; }
-		}
+	    public Visibility IndexDetailsVisibility => _indexDetails.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
 
-		public Visibility PartitionDetailsVisibility
-		{
-			get { return _visiblePartitionDetails.Count > 0 ? Visibility.Visible : Visibility.Collapsed; }
-		}
+	    public Visibility PartitionDetailsVisibility => _visiblePartitionDetails.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
 
-		public long? InMemoryAllocatedBytes { get; private set; }
+	    public long? InMemoryAllocatedBytes { get; private set; }
 		public long? StorageBytes { get; private set; }
 		public long? NonPopulatedBytes { get; private set; }
 		public string InMemoryPopulationStatus { get; private set; }
@@ -259,12 +238,9 @@ namespace SqlPad.Oracle.ToolTips
 			RaisePropertyChanged("InMemoryAllocationStatusVisibility");
 		}
 
-		public Visibility InMemoryAllocationStatusVisibility
-		{
-			get { return InMemoryAllocatedBytes.HasValue ? Visibility.Visible : Visibility.Collapsed; }
-		}
+		public Visibility InMemoryAllocationStatusVisibility => InMemoryAllocatedBytes.HasValue ? Visibility.Visible : Visibility.Collapsed;
 
-		public string Comment
+	    public string Comment
 		{
 			get { return _comment; }
 			set
@@ -276,10 +252,7 @@ namespace SqlPad.Oracle.ToolTips
 			}
 		}
 
-		public Visibility CommentVisibility
-		{
-			get { return String.IsNullOrEmpty(_comment) ? Visibility.Collapsed : Visibility.Visible; }
-		}
+		public Visibility CommentVisibility => String.IsNullOrEmpty(_comment) ? Visibility.Collapsed : Visibility.Visible;
 	}
 
 	public class IndexDetailsModel : ModelBase
@@ -325,9 +298,9 @@ namespace SqlPad.Oracle.ToolTips
 		
 		public long? DistinctKeys { get; set; }
 
-		public ICollection<IndexColumnModel> Columns { get { return _indexColumns; } }
+		public ICollection<IndexColumnModel> Columns => _indexColumns;
 
-		public string TablespaceName { get; set; }
+	    public string TablespaceName { get; set; }
 
 		public string IndexColumns
 		{

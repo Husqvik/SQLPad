@@ -22,9 +22,9 @@ namespace SqlPad.Oracle.ToolTips
 			LabelTitle.Text = $"{dataModel.Schema.Name.ToSimpleIdentifier()} ({objectType})";
 		}
 
-		public Control Control { get { return this; } }
+		public Control Control => this;
 
-		public FrameworkElement InnerContent { get { return this; } }
+	    public FrameworkElement InnerContent => this;
 	}
 
 	public class OracleSchemaModel : ModelBase

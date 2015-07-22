@@ -13,8 +13,8 @@ namespace SqlPad.Oracle.ToolTips
 			InitializeComponent();
 		}
 
-		public Control Control { get { return this; } }
+		public Control Control => this;
 
-		public FrameworkElement InnerContent { get { return this; } }
+	    public FrameworkElement InnerContent => this;
 	}
 }

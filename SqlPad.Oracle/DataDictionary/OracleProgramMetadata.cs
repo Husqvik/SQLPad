@@ -46,12 +46,9 @@ namespace SqlPad.Oracle.DataDictionary
 			}
 		}
 
-		public IReadOnlyDictionary<string, OracleProgramParameterMetadata> NamedParameters
-		{
-			get { return _parameterDictionary ?? BuildParameterDictionary(); }
-		}
+		public IReadOnlyDictionary<string, OracleProgramParameterMetadata> NamedParameters => _parameterDictionary ?? BuildParameterDictionary();
 
-		public void AddParameter(OracleProgramParameterMetadata parameterMetadata)
+	    public void AddParameter(OracleProgramParameterMetadata parameterMetadata)
 		{
 			AddParameters(Enumerable.Repeat(parameterMetadata, 1));
 		}
@@ -78,12 +75,9 @@ namespace SqlPad.Oracle.DataDictionary
 				.ToDictionary(p => p.Name);
 		}
 
-		public OracleProgramParameterMetadata ReturnParameter
-		{
-			get { return Type == ProgramType.Procedure || Parameters.Count == 0 ? null : Parameters[0]; }
-		}
+		public OracleProgramParameterMetadata ReturnParameter => Type == ProgramType.Procedure || Parameters.Count == 0 ? null : Parameters[0];
 
-		public bool IsBuiltIn { get; private set; }
+	    public bool IsBuiltIn { get; private set; }
 		
 		public ProgramType Type { get; private set; }
 
@@ -124,12 +118,9 @@ namespace SqlPad.Oracle.DataDictionary
 			}
 		}
 
-		public bool IsPackageFunction
-		{
-			get { return !String.IsNullOrEmpty(Identifier.Package); }
-		}
+		public bool IsPackageFunction => !String.IsNullOrEmpty(Identifier.Package);
 
-		public AuthId AuthId { get; private set; }
+	    public AuthId AuthId { get; private set; }
 
 		public string DisplayType { get; private set; }
 		
@@ -167,7 +158,7 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public bool IsOptional { get; private set; }
 
-		public string FullDataTypeName { get { return !CustomDataType.HasOwner ? DataType.Trim('"') : CustomDataType.ToString(); } }
+		public string FullDataTypeName => !CustomDataType.HasOwner ? DataType.Trim('"') : CustomDataType.ToString();
 	}
 
 	public enum ParameterDirection

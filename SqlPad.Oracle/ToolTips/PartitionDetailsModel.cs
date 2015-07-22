@@ -24,9 +24,9 @@ namespace SqlPad.Oracle.ToolTips
 			RaisePropertyChanged("SubPartitionDetailsVisibility");
 		}
 
-		public ICollection<SubPartitionDetailsModel> SubPartitionDetails { get { return _visibleSubPartitionDetails; } }
+		public ICollection<SubPartitionDetailsModel> SubPartitionDetails => _visibleSubPartitionDetails;
 
-		public void AddSubPartition(SubPartitionDetailsModel subPartition)
+	    public void AddSubPartition(SubPartitionDetailsModel subPartition)
 		{
 			_subPartitionDetailsDictionary.Add(subPartition.Name, subPartition);
 
@@ -42,25 +42,13 @@ namespace SqlPad.Oracle.ToolTips
 			}
 		}
 
-		public Visibility SubPartitionDetailsVisibility
-		{
-			get { return _visibleSubPartitionDetails.Count > 0 ? Visibility.Visible : Visibility.Collapsed; }
-		}
+		public Visibility SubPartitionDetailsVisibility => _visibleSubPartitionDetails.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
 
-		public Visibility MoreSubPartitionsExistMessageVisibility
-		{
-			get { return _subPartitionDetailsDictionary.Count > _maxVisibleSubPartitionCount ? Visibility.Visible : Visibility.Collapsed; }
-		}
+	    public Visibility MoreSubPartitionsExistMessageVisibility => _subPartitionDetailsDictionary.Count > _maxVisibleSubPartitionCount ? Visibility.Visible : Visibility.Collapsed;
 
-		public int VisibleSubPartitionCount
-		{
-			get { return _maxVisibleSubPartitionCount; }
-		}
+	    public int VisibleSubPartitionCount => _maxVisibleSubPartitionCount;
 
-		public int SubPartitionCount
-		{
-			get { return _subPartitionDetailsDictionary.Count; }
-		}
+	    public int SubPartitionCount => _subPartitionDetailsDictionary.Count;
 	}
 
 	public abstract class PartitionDetailsModelBase : SegmentDetailsModelBase
@@ -71,7 +59,7 @@ namespace SqlPad.Oracle.ToolTips
 
 		public string HighValue { get; set; }
 
-		public Type Type { get { return GetType(); } }
+		public Type Type => GetType();
 	}
 
 	public class SubPartitionDetailsModel : PartitionDetailsModelBase

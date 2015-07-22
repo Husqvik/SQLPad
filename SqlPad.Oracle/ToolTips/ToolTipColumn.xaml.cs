@@ -26,12 +26,9 @@ namespace SqlPad.Oracle.ToolTips
 			_constraintDetails.CollectionChanged += delegate { RaisePropertyChanged("ConstraintDetailsVisibility"); };
 		}
 
-		public Visibility ConstraintDetailsVisibility
-		{
-			get { return _constraintDetails.Count > 0 ? Visibility.Visible : Visibility.Collapsed; }
-		}
+		public Visibility ConstraintDetailsVisibility => _constraintDetails.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
 
-		public ICollection<ConstraintDetailsModel> ConstraintDetails { get { return _constraintDetails; } } 
+	    public ICollection<ConstraintDetailsModel> ConstraintDetails => _constraintDetails;
 	}
 
 	public class ColumnDetailsModel : ModelWithConstraints, IModelWithComment, IModelWithIndexes
@@ -57,9 +54,9 @@ namespace SqlPad.Oracle.ToolTips
 			_indexDetails.CollectionChanged += delegate { RaisePropertyChanged("IndexDetailsVisibility"); };
 		}
 
-		public ICollection<IndexDetailsModel> IndexDetails { get { return _indexDetails; } } 
+		public ICollection<IndexDetailsModel> IndexDetails => _indexDetails;
 
-		public string Owner { get; set; }
+	    public string Owner { get; set; }
 
 		public string Name { get; set; }
 		
@@ -121,12 +118,9 @@ namespace SqlPad.Oracle.ToolTips
 			}
 		}
 
-		public Visibility InMemoryCompressionVisibility
-		{
-			get { return String.IsNullOrEmpty(_inMemoryCompression) ? Visibility.Collapsed : Visibility.Visible; }
-		}
+		public Visibility InMemoryCompressionVisibility => String.IsNullOrEmpty(_inMemoryCompression) ? Visibility.Collapsed : Visibility.Visible;
 
-		public string HistogramType
+	    public string HistogramType
 		{
 			get { return _histogramType; }
 			set { UpdateValueAndRaisePropertyChanged(ref _histogramType, value); }
@@ -150,12 +144,9 @@ namespace SqlPad.Oracle.ToolTips
 			}
 		}
 
-		public Visibility HistogramVisibility
-		{
-			get { return _histogramPoints == null || _histogramPoints.Count == 0 ? Visibility.Collapsed : Visibility.Visible; }
-		}
+		public Visibility HistogramVisibility => _histogramPoints == null || _histogramPoints.Count == 0 ? Visibility.Collapsed : Visibility.Visible;
 
-		public double HistogramHeight
+	    public double HistogramHeight
 		{
 			get { return _histogramHeight; }
 			set { UpdateValueAndRaisePropertyChanged(ref _histogramHeight, value); }
@@ -178,17 +169,11 @@ namespace SqlPad.Oracle.ToolTips
 			}
 		}
 
-		public Visibility CommentVisibility
-		{
-			get { return String.IsNullOrEmpty(_comment) ? Visibility.Collapsed : Visibility.Visible; }
-		}
+		public Visibility CommentVisibility => String.IsNullOrEmpty(_comment) ? Visibility.Collapsed : Visibility.Visible;
 
-		public Visibility IndexDetailsVisibility
-		{
-			get { return _indexDetails.Count > 0 ? Visibility.Visible : Visibility.Collapsed; }
-		}
+	    public Visibility IndexDetailsVisibility => _indexDetails.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
 
-		private static PointCollection ConvertToPointCollection(IList<double> values, bool smooth = false)
+	    private static PointCollection ConvertToPointCollection(IList<double> values, bool smooth = false)
 		{
 			if (smooth)
 			{

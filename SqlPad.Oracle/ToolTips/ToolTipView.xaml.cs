@@ -29,9 +29,6 @@ namespace SqlPad.Oracle.ToolTips
 			}
 		}
 
-		public Visibility CommentVisibility
-		{
-			get { return String.IsNullOrEmpty(_comment) ? Visibility.Collapsed : Visibility.Visible; }
-		}
+		public Visibility CommentVisibility => String.IsNullOrEmpty(_comment) ? Visibility.Collapsed : Visibility.Visible;
 	}
 }

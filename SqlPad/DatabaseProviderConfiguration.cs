@@ -24,11 +24,11 @@ namespace SqlPad
 
 		public IDictionary<string, BindVariableConfiguration> BindVariablesInternal => _bindVariables ?? (_bindVariables = new Dictionary<string, BindVariableConfiguration>());
 
-	    public ICollection<StatementExecutionHistoryEntry> StatementExecutionHistory => _statementExecutionHistory ?? (_statementExecutionHistory = new HashSet<StatementExecutionHistoryEntry>());
+		public ICollection<StatementExecutionHistoryEntry> StatementExecutionHistory => _statementExecutionHistory ?? (_statementExecutionHistory = new HashSet<StatementExecutionHistoryEntry>());
 
-	    public ICollection<BindVariableConfiguration> BindVariables => BindVariablesInternal.Values;
+		public ICollection<BindVariableConfiguration> BindVariables => BindVariablesInternal.Values;
 
-	    public BindVariableConfiguration GetBindVariable(string variableName)
+		public BindVariableConfiguration GetBindVariable(string variableName)
 		{
 			BindVariableConfiguration bindVariable;
 			return BindVariablesInternal.TryGetValue(variableName, out bindVariable)

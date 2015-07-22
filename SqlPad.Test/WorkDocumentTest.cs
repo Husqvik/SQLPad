@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using Shouldly;
@@ -13,6 +14,8 @@ namespace SqlPad.Test
 		{
 			WorkDocumentCollection.WorkingDocuments.Count.ShouldBe(0);
 
+			const string statementText = "SELECT * FROM DUAL";
+
 			var newWorkingDocument =
 				new WorkDocument
 				{
@@ -25,7 +28,7 @@ namespace SqlPad.Test
 					SelectionStart = 10,
 					EditorGridRowHeight = 142.17,
 					EditorGridColumnWidth = 98.32,
-					Text = "SELECT * FROM DUAL",
+					Text = statementText,
 					TabIndex = 3,
 					EnableDatabaseOutput = true,
 					KeepDatabaseOutputHistory = true,
@@ -35,19 +38,21 @@ namespace SqlPad.Test
 			const int expectedActiveDocumentIndex = 666;
 			WorkDocumentCollection.ActiveDocumentIndex = expectedActiveDocumentIndex;
 			WorkDocumentCollection.AddDocument(newWorkingDocument);
-			
+
 			const string providerName = "Oracle.DataAccess.Client";
 			const string bindVariableDataType = "CHAR";
 			const string bindVariableName = "Variable";
 			const string bindVariableValue = "TestValue";
 			var providerConfiguration = WorkDocumentCollection.GetProviderConfiguration(providerName);
-			providerConfiguration.SetBindVariable(new BindVariableConfiguration { DataType = bindVariableDataType, Name = bindVariableName, Value = bindVariableValue });
+			providerConfiguration.SetBindVariable(new BindVariableConfiguration {DataType = bindVariableDataType, Name = bindVariableName, Value = bindVariableValue});
+			var statementExecutedAt = new DateTime(2015, 7, 22, 7, 53, 55);
+			providerConfiguration.AddStatementExecution(new StatementExecutionHistoryEntry {ExecutedAt = statementExecutedAt, StatementText = statementText});
 
 			WorkDocumentCollection.Save();
 
 			var fileInfo = new FileInfo(Path.Combine(TempDirectoryName, "WorkArea", WorkDocumentCollection.ConfigurationFileName));
 			fileInfo.Exists.ShouldBe(true);
-			fileInfo.Length.ShouldBe(314);
+			fileInfo.Length.ShouldBe(347);
 
 			WorkDocumentCollection.Configure();
 			WorkDocumentCollection.WorkingDocuments.Count.ShouldBe(1);
@@ -77,6 +82,11 @@ namespace SqlPad.Test
 			deserializedBindVariable.DataType.ShouldBe(bindVariableDataType);
 			deserializedBindVariable.Name.ShouldBe(bindVariableName);
 			deserializedBindVariable.Value.ShouldBe(bindVariableValue);
+
+			deserializedProviderConfiguration.StatementExecutionHistory.Count.ShouldBe(1);
+			var historyEntry = deserializedProviderConfiguration.StatementExecutionHistory.Single();
+			historyEntry.ExecutedAt.ShouldBe(statementExecutedAt);
+			historyEntry.StatementText.ShouldBe(statementText);
 
 			WorkDocumentCollection.ActiveDocumentIndex.ShouldBe(expectedActiveDocumentIndex);
 		}
