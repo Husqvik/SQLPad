@@ -53,10 +53,10 @@ namespace SqlPad
 		private DataTemplate CreateHyperlinkDataTemplate()
 		{
 			var textBlockFactory = new FrameworkElementFactory(typeof(TextBlock));
-            var hyperlinkFactory = new FrameworkElementFactory(typeof(Hyperlink));
-            var runFactory = new FrameworkElementFactory(typeof(Run));
-            runFactory.SetBinding(Run.TextProperty, new Binding($"[{_columnIndex}]") { Converter = CellValueConverter.Instance, Mode = BindingMode.OneWay });
-            hyperlinkFactory.AppendChild(runFactory);
+			var hyperlinkFactory = new FrameworkElementFactory(typeof(Hyperlink));
+			var runFactory = new FrameworkElementFactory(typeof(Run));
+			runFactory.SetBinding(Run.TextProperty, new Binding($"[{_columnIndex}]") { Converter = CellValueConverter.Instance, Mode = BindingMode.OneWay });
+			hyperlinkFactory.AppendChild(runFactory);
 			hyperlinkFactory.AddHandler(Hyperlink.ClickEvent, (RoutedEventHandler)CellHyperlinkClickHandler);
 			hyperlinkFactory.SetBinding(FrameworkContentElement.TagProperty, new Binding { RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(DataGridRow), 1) });
 			textBlockFactory.AppendChild(hyperlinkFactory);
@@ -76,7 +76,7 @@ namespace SqlPad
 			executionModel.BindVariables[0].Value = currentRowValues[_columnIndex];
 
 			var row = (DataGridRow)hyperlink.Tag;
-		    var cellPresenter = row.FindVisualChild<DataGridCellsPresenter>();
+			var cellPresenter = row.FindVisualChild<DataGridCellsPresenter>();
 			var cell = (DataGridCell)cellPresenter.ItemContainerGenerator.ContainerFromIndex(_columnIndex);
 
 			StatementExecutionResult result;
@@ -118,41 +118,42 @@ namespace SqlPad
 				{
 					ComplexType = record,
 					GridTitle = "Source object: ",
-					RowTitle = "Column name"
+					RowTitle = "Column name",
+					ConnectionAdapter = _connectionAdapter
 				};
 
-            var dataGrid = row.FindParent<DataGrid>();
-            var headersPresenter = dataGrid.FindVisualChild<DataGridColumnHeadersPresenter>();
+			var dataGrid = row.FindParent<DataGrid>();
+			var headersPresenter = dataGrid.FindVisualChild<DataGridColumnHeadersPresenter>();
 
-            cell.Content =
+			cell.Content =
 				new ScrollViewer
 				{
 					Content = complexTypeViewer,
 					HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
 					VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                    MaxHeight = dataGrid.ActualHeight - headersPresenter.ActualHeight
-                };
-        }
+					MaxHeight = dataGrid.ActualHeight - headersPresenter.ActualHeight
+				};
+		}
 
-	    public static bool CanBeRecycled(UIElement uiElement)
-	    {
-            var row = (DataGridRow)uiElement;
-            var cellPresenter = row.FindVisualChild<DataGridCellsPresenter>();
-            var columnCount = ((object[])row.DataContext).Length;
-            for (var index = 0; index < columnCount; index++)
-            {
-                var cell = (DataGridCell)cellPresenter.ItemContainerGenerator.ContainerFromIndex(index);
-                if (cell?.Content is ScrollViewer)
-                {
-                    return true;
-                }
-            }
+		public static bool CanBeRecycled(UIElement uiElement)
+		{
+			var row = (DataGridRow)uiElement;
+			var cellPresenter = row.FindVisualChild<DataGridCellsPresenter>();
+			var columnCount = ((object[])row.DataContext).Length;
+			for (var index = 0; index < columnCount; index++)
+			{
+				var cell = (DataGridCell)cellPresenter.ItemContainerGenerator.ContainerFromIndex(index);
+				if (!(cell?.Content is ContentPresenter))
+				{
+					return true;
+				}
+			}
 
-	        return false;
-	    }
-    }
+			return false;
+		}
+	}
 
-    internal class SingleRecord : IComplexType
+	internal class SingleRecord : IComplexType
 	{
 		public bool IsNull => false;
 

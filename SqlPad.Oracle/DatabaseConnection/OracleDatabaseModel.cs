@@ -134,7 +134,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private OracleDatabaseModel GetDatabaseModelIfDifferentCompatibleInstance(object sender)
 		{
 			var refreshedModel = (OracleDatabaseModel)sender;
-			return sender == this || ConnectionString.ConnectionString != refreshedModel.ConnectionString.ConnectionString
+			return sender == this || !String.Equals(ConnectionString.ConnectionString, refreshedModel.ConnectionString.ConnectionString)
 				? null
 				: refreshedModel;
 		}
