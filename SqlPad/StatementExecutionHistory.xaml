@@ -1,6 +1,6 @@
 ﻿<Window x:Class="SqlPad.StatementExecutionHistory"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:sqlPad="clr-namespace:SqlPad"
@@ -52,6 +52,7 @@
 						</StackPanel.ContextMenu>
 
 						<TextBlock Text="{Binding ExecutedAt, Converter={StaticResource DateTimeConverter}}" Width="160" />
+						<!--<sqlPad:SearchTextBox Text="{Binding Tags, UpdateSourceTrigger=PropertyChanged}" Width="120" MaxLength="64" Height="21" Margin="0,0,16,0" Watermark="Tags" TextWrapping="NoWrap" />-->
 						<TextBlock Text="{Binding StatementText}" />
 					</StackPanel>
 				</DataTemplate>

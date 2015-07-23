@@ -46,13 +46,14 @@ namespace SqlPad.Test
 			var providerConfiguration = WorkDocumentCollection.GetProviderConfiguration(providerName);
 			providerConfiguration.SetBindVariable(new BindVariableConfiguration {DataType = bindVariableDataType, Name = bindVariableName, Value = bindVariableValue});
 			var statementExecutedAt = new DateTime(2015, 7, 22, 7, 53, 55);
-			providerConfiguration.AddStatementExecution(new StatementExecutionHistoryEntry {ExecutedAt = statementExecutedAt, StatementText = statementText});
+			const string historyEntryTag = "Test";
+			providerConfiguration.AddStatementExecution(new StatementExecutionHistoryEntry(statementText, statementExecutedAt) { Tags = historyEntryTag });
 
 			WorkDocumentCollection.Save();
 
 			var fileInfo = new FileInfo(Path.Combine(TempDirectoryName, "WorkArea", WorkDocumentCollection.ConfigurationFileName));
 			fileInfo.Exists.ShouldBe(true);
-			fileInfo.Length.ShouldBe(347);
+			fileInfo.Length.ShouldBe(354);
 
 			WorkDocumentCollection.Configure();
 			WorkDocumentCollection.WorkingDocuments.Count.ShouldBe(1);
@@ -87,6 +88,7 @@ namespace SqlPad.Test
 			var historyEntry = deserializedProviderConfiguration.StatementExecutionHistory.Single();
 			historyEntry.ExecutedAt.ShouldBe(statementExecutedAt);
 			historyEntry.StatementText.ShouldBe(statementText);
+			historyEntry.Tags.ShouldBe(historyEntryTag);
 
 			WorkDocumentCollection.ActiveDocumentIndex.ShouldBe(expectedActiveDocumentIndex);
 		}

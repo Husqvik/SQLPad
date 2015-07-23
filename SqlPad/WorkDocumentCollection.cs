@@ -52,7 +52,8 @@ namespace SqlPad
 			bindVariableConfigurationType.Add("Name", "DataType", "_internalValue");
 
 			var statementExecutionType = Serializer.Add(typeof(StatementExecutionHistoryEntry), false);
-			statementExecutionType.Add("StatementText", "ExecutedAt");
+			statementExecutionType.UseConstructor = false;
+			statementExecutionType.Add("StatementText", "ExecutedAt", "Tags");
 		}
 
 		private WorkDocumentCollection() {}

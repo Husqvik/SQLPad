@@ -294,7 +294,7 @@ namespace SqlPad
 
 			_connectionAdapter.EnableDatabaseOutput = EnableDatabaseOutput;
 
-			var executionHistoryRecord = new StatementExecutionHistoryEntry { ExecutedAt = DateTime.Now };
+			var executedAt = DateTime.Now;
 
 			Task<StatementExecutionResult> innerTask = null;
 			var actionResult = await SafeTimedActionAsync(() => innerTask = _connectionAdapter.ExecuteStatementAsync(executionModel, _statementExecutionCancellationTokenSource.Token));
@@ -305,7 +305,8 @@ namespace SqlPad
 				return;
 			}
 
-			LastStatementText = executionHistoryRecord.StatementText = executionModel.StatementText;
+			var executionHistoryRecord = new StatementExecutionHistoryEntry(executionModel.StatementText, executedAt);
+			LastStatementText = executionModel.StatementText;
 
 			if (executionHistoryRecord.StatementText.Length <= MaxHistoryEntrySize)
 			{

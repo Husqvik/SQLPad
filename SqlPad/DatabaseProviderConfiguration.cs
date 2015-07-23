@@ -68,12 +68,20 @@ namespace SqlPad
 		}
 	}
 
-	[DebuggerDisplay("StatementExecutionHistoryEntry (StatementText={StatementText}, ExecutedAt={ExecutedAt})")]
+	[DebuggerDisplay("StatementExecutionHistoryEntry (StatementText={StatementText}, ExecutedAt={ExecutedAt}, Tags={Tags})")]
 	public class StatementExecutionHistoryEntry
 	{
-		public string StatementText { get; set; }
+		public string StatementText { get; private set; }
 
-		public DateTime ExecutedAt { get; set; }
+		public DateTime ExecutedAt { get; private set; }
+
+		public string Tags { get; set; }
+
+		public StatementExecutionHistoryEntry(string statementText, DateTime executedAt)
+		{
+			StatementText = statementText;
+			ExecutedAt = executedAt;
+		}
 
 		protected bool Equals(StatementExecutionHistoryEntry other)
 		{

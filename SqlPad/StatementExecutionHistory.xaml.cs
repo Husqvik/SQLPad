@@ -19,15 +19,9 @@ namespace SqlPad
 		private readonly DatabaseProviderConfiguration _providerConfiguration;
 		private readonly ICollectionView _collectionView;
 
-		public ICollection<StatementExecutionHistoryEntry> ExecutionHistoryEntries
-		{
-			get { return _historyEntries; }
-		}
+		public ICollection<StatementExecutionHistoryEntry> ExecutionHistoryEntries => _historyEntries;
 
-		private StatementExecutionHistoryEntry SelectedEntry
-		{
-			get { return (StatementExecutionHistoryEntry)_collectionView.CurrentItem; }
-		}
+		private StatementExecutionHistoryEntry SelectedEntry => (StatementExecutionHistoryEntry)_collectionView.CurrentItem;
 
 		public StatementExecutionHistory(string providerName)
 		{
@@ -78,7 +72,7 @@ namespace SqlPad
 				: e =>
 				{
 					var entry = (StatementExecutionHistoryEntry)e;
-					var textToSearch = $"{entry.StatementText.ToUpperInvariant()} {CellValueConverter.FormatDateTime(entry.ExecutedAt).ToUpperInvariant()}";
+					var textToSearch = $"{entry.StatementText.ToUpperInvariant()} {CellValueConverter.FormatDateTime(entry.ExecutedAt).ToUpperInvariant()} {entry.Tags?.ToUpperInvariant()}";
 					return searchedWords.All(textToSearch.Contains);
 				};
 

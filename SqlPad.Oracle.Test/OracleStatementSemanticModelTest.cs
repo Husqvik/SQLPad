@@ -2362,5 +2362,33 @@ FROM
 			columns[2].DataTypeReferences.Count.ShouldBe(1);
 			columns[2].DataTypeReferences.Single().SchemaObject.ShouldNotBe(null);
 		}
+
+		[Test(Description = @"")]
+		public void TestApplyReferenceConstraints()
+		{
+			const string query1 = @"SELECT * FROM TARGETGROUP";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var columnHeaders =
+				new []
+				{
+					new ColumnHeader { Name = "PROJECT_ID" }
+				};
+
+			semanticModel.ApplyReferenceConstraints(columnHeaders);
+
+			var referenceDataSource = columnHeaders[0].ReferenceDataSource;
+			referenceDataSource.ShouldNotBe(null);
+			referenceDataSource.ObjectName.ShouldBe("HUSQVIK.PROJECT");
+			var executionModel = referenceDataSource.CreateExecutionModel();
+
+			executionModel.BindVariables.Count.ShouldBe(1);
+			executionModel.BindVariables[0].Name.ShouldBe("KEY");
+			executionModel.StatementText.ShouldBe("SELECT * FROM HUSQVIK.PROJECT WHERE \"PROJECT_ID\" = :KEY");
+        }
 	}
 }
