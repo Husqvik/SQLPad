@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace SqlPad
@@ -172,14 +173,38 @@ namespace SqlPad
 			var dataGrid = row.FindParent<DataGrid>();
 			var headersPresenter = dataGrid.FindVisualChild<DataGridColumnHeadersPresenter>();
 
-			cell.Content =
+			var parentElement = (FrameworkElement)dataGrid.Parent;
+			var maxHeight = Double.IsNaN(parentElement.MaxHeight) ? parentElement.ActualHeight : parentElement.MaxHeight - headersPresenter.ActualHeight;
+
+			var contentcontainer =
 				new ScrollViewer
 				{
 					Content = referenceDataGrid,
 					HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
 					VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-					MaxHeight = ((FrameworkElement)dataGrid.Parent).ActualHeight - headersPresenter.ActualHeight
+					MaxHeight = maxHeight,
+					Tag = cell.Content
 				};
+
+			contentcontainer.KeyDown += ContentContainerKeyDownHandler;
+
+			cell.Content = contentcontainer;
+		}
+
+		private static void ContentContainerKeyDownHandler(object sender, KeyEventArgs keyEventArgs)
+		{
+			if (keyEventArgs.Key != Key.Escape)
+			{
+				return;
+			}
+
+			var scrollViewer = (ScrollViewer)sender;
+			var cell = (DataGridCell)scrollViewer.Parent;
+			cell.Content = scrollViewer.Tag;
+			var row = cell.FindParent<DataGridRow>();
+			row.Height = 21;
+
+			keyEventArgs.Handled = true;
 		}
 
 		public static bool CanBeRecycled(UIElement uiElement)
