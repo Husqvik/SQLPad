@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using SqlPad.Oracle.DatabaseConnection;
@@ -2701,64 +2702,98 @@ namespace SqlPad.Oracle.SemanticModel
 			return columnReference;
 		}
 
-		public void ApplyReferenceConstraints(IReadOnlyList<ColumnHeader> columnHeaders)
+		public ICollection<IReferenceDataSource> ApplyReferenceConstraints(IReadOnlyList<ColumnHeader> columnHeaders)
 		{
+			var childDataSources = new List<IReferenceDataSource>();
+
 			if (MainQueryBlock == null)
 			{
-				return;
+				return childDataSources;
 			}
 
+			var uniqueConstraints = new HashSet<OracleUniqueConstraint>();
 			foreach (var columnHeader in columnHeaders)
 			{
-				var columns = MainQueryBlock.NamedColumns[$"\"{columnHeader.Name}\""]
+				var selectedColumns = MainQueryBlock.NamedColumns[$"\"{columnHeader.Name}\""]
 					.Where(c => c.ColumnDescription.DataType.IsPrimitive);
 
-				foreach (var column in columns)
+				foreach (var selectedColumn in selectedColumns)
 				{
 					string localColumnName;
-					var sourceObject = GetSourceObject(column, out localColumnName);
+					var sourceObject = GetSourceObject(selectedColumn, out localColumnName);
 					if (sourceObject == null)
 					{
 						continue;
 					}
 
-					var constraints = sourceObject.Constraints
-						.Where(r => r.Columns.Count == 1 && String.Equals(r.Columns[0], localColumnName) && r.Type != ConstraintType.Check)
-						.ToArray();
-
 					var parentReferenceDataSources = new List<OracleReferenceDataSource>();
-					foreach (var referenceConstraint in constraints.OfType<OracleReferenceConstraint>())
+					foreach (var constraint in sourceObject.Constraints)
 					{
-						var referenceColumnName = referenceConstraint.ReferenceConstraint.Columns[0];
-						var statementText = StatementText = $"SELECT * FROM {referenceConstraint.TargetObject.FullyQualifiedName} WHERE {referenceColumnName} = :KEY0";
-						var objectName = referenceConstraint.TargetObject.FullyQualifiedName.ToString();
-						var constraintName = referenceConstraint.FullyQualifiedName.ToString();
-						var keyDataType = column.ColumnDescription.DataType.FullyQualifiedName.Name.Trim('"');
-						var peferenceDataSource = new OracleReferenceDataSource(objectName, constraintName, statementText, new [] { keyDataType });
-						parentReferenceDataSources.Add(peferenceDataSource);
+						var referenceConstraint = constraint as OracleReferenceConstraint;
+						if (referenceConstraint != null && referenceConstraint.Columns.Count == 1 && String.Equals(referenceConstraint.Columns[0], localColumnName))
+						{
+							var referenceColumnName = referenceConstraint.ReferenceConstraint.Columns[0];
+							var statementText = StatementText = $"SELECT * FROM {referenceConstraint.TargetObject.FullyQualifiedName} WHERE {referenceColumnName} = :KEY0";
+							var objectName = referenceConstraint.TargetObject.FullyQualifiedName.ToString();
+							var constraintName = referenceConstraint.FullyQualifiedName.ToString();
+							var keyDataType = selectedColumn.ColumnDescription.DataType.FullyQualifiedName.Name.Trim('"');
+							var peferenceDataSource = new OracleReferenceDataSource(objectName, constraintName, statementText, new[] {keyDataType});
+							parentReferenceDataSources.Add(peferenceDataSource);
+						}
+
+						var uniqueConstraint = constraint as OracleUniqueConstraint;
+						if (uniqueConstraint != null)
+						{
+							uniqueConstraints.Add(uniqueConstraint);
+						}
 					}
 
 					columnHeader.ParentReferenceDataSources = parentReferenceDataSources.AsReadOnly();
-
-					var uniqueConstraints = constraints.OfType<OracleUniqueConstraint>();
-					foreach (var uniqueConstraint in uniqueConstraints)
-					{
-						var remoteReferenceConstraints = DatabaseModel.UniqueConstraintReferringReferenceConstraints[uniqueConstraint.FullyQualifiedName];
-						foreach (var remoteReferenceConstraint in remoteReferenceConstraints)
-						{
-							var predicate = String.Join(" AND ", remoteReferenceConstraint.Columns.Select((c, i) => $"{c} = :KEY{i}"));
-							var statementText = StatementText = $"SELECT * FROM {remoteReferenceConstraint.Owner.FullyQualifiedName} WHERE {predicate}";
-							var objectName = remoteReferenceConstraint.Owner.FullyQualifiedName.ToString();
-							var constraintName = remoteReferenceConstraint.FullyQualifiedName.ToString();
-
-							//remoteReferenceConstraint.Owner
-
-							var keyDataType = column.ColumnDescription.DataType.FullyQualifiedName.Name.Trim('"'); // FIX
-							var referenceDataSource = new OracleReferenceDataSource(objectName, constraintName, statementText, new [] { keyDataType });
-						}
-					}
 				}
 			}
+
+			foreach (var uniqueConstraint in uniqueConstraints)
+			{
+				var remoteReferenceConstraints = DatabaseModel.UniqueConstraintReferringReferenceConstraints[uniqueConstraint.FullyQualifiedName];
+				foreach (var remoteReferenceConstraint in remoteReferenceConstraints)
+				{
+					var predicate = String.Join(" AND ", remoteReferenceConstraint.Columns.Select((c, i) => $"{c} = :KEY{i}"));
+					var statementText = StatementText = $"SELECT * FROM {remoteReferenceConstraint.Owner.FullyQualifiedName} WHERE {predicate}";
+					var objectName = remoteReferenceConstraint.Owner.FullyQualifiedName.ToString();
+					var constraintName = remoteReferenceConstraint.FullyQualifiedName.ToString();
+					var dataObject = (OracleDataObject)remoteReferenceConstraint.Owner;
+
+					var incompatibleDataFound = false;
+					var dataTypes = new List<string>();
+					foreach (var constraintColumn in remoteReferenceConstraint.Columns)
+					{
+						OracleColumn column;
+						if (!dataObject.Columns.TryGetValue(constraintColumn, out column) || !column.DataType.IsPrimitive)
+						{
+							incompatibleDataFound = true;
+							var message = column == null
+								? $"Column '{constraintColumn}' not found in object '{dataObject.FullyQualifiedName}' metadata. "
+								: $"Column '{dataObject.FullyQualifiedName}.{constraintColumn}' does not have primitive data type. ";
+
+							Trace.WriteLine($"Reference constraint data source cannot be created. {message}");
+
+							break;
+						}
+
+						dataTypes.Add(column.DataType.FullyQualifiedName.Name.Trim('"'));
+					}
+
+					if (incompatibleDataFound)
+					{
+						continue;
+					}
+
+					var referenceDataSource = new OracleReferenceDataSource(objectName, constraintName, statementText, dataTypes);
+					childDataSources.Add(referenceDataSource);
+				}
+			}
+
+			return childDataSources;
 		}
 
 		private static OracleDataObject GetSourceObject(OracleSelectListColumn column, out string physicalColumnName)
@@ -2910,7 +2945,7 @@ namespace SqlPad.Oracle.SemanticModel
 	public class OracleReferenceDataSource : IReferenceDataSource
 	{
 		private readonly string _statementText;
-		private readonly string[] _keyDataTypes;
+		private readonly IReadOnlyList<string> _keyDataTypes;
 		
 		public string ObjectName { get; }
 
@@ -2923,9 +2958,9 @@ namespace SqlPad.Oracle.SemanticModel
 				throw new ArgumentNullException(nameof(keys));
 			}
 
-			if (keys.Length != _keyDataTypes.Length)
+			if (keys.Length != _keyDataTypes.Count)
 			{
-				throw new ArgumentException($"Invalid number of values - expected: {_keyDataTypes.Length}; actual: {keys.Length}", nameof(keys));
+				throw new ArgumentException($"Invalid number of values - expected: {_keyDataTypes.Count}; actual: {keys.Length}", nameof(keys));
 			}
 
 			return
@@ -2946,14 +2981,14 @@ namespace SqlPad.Oracle.SemanticModel
 				};
 		}
 
-		internal OracleReferenceDataSource(string objectName, string constraintName, string statementText, string[] keyDataTypes)
+		internal OracleReferenceDataSource(string objectName, string constraintName, string statementText, IReadOnlyList<string> keyDataTypes)
 		{
 			if (keyDataTypes == null)
 			{
 				throw new ArgumentNullException(nameof(keyDataTypes));
 			}
 
-			if (keyDataTypes.Length == 0)
+			if (keyDataTypes.Count == 0)
 			{
 				throw new ArgumentException("Reference data source requires at least on key. ", nameof(keyDataTypes));
 			}

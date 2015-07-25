@@ -183,12 +183,12 @@ namespace SqlPad.Oracle
 			return validationModel;
 		}
 
-		public async Task ApplyReferenceConstraintsAsync(StatementExecutionResult executionResult, IDatabaseModel databaseModel, CancellationToken cancellationToken)
+		public async Task<ICollection<IReferenceDataSource>> ApplyReferenceConstraintsAsync(StatementExecutionResult executionResult, IDatabaseModel databaseModel, CancellationToken cancellationToken)
 		{
 			// TODO: Optimize - check if executed text differs from statement text to skip parsing
 			var statements = await OracleSqlParser.Instance.ParseAsync(executionResult.Statement.StatementText, cancellationToken);
 			var semanticModel = (OracleStatementSemanticModel)BuildSemanticModel(executionResult.Statement.StatementText, statements[0], databaseModel);
-			semanticModel.ApplyReferenceConstraints(executionResult.ColumnHeaders);
+			return semanticModel.ApplyReferenceConstraints(executionResult.ColumnHeaders);
 		}
 
 		private void ValidateLiterals(OracleValidationModel validationModel)

@@ -11,6 +11,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Microsoft.Win32;
@@ -126,10 +127,8 @@ namespace SqlPad
 			view.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
 		}
 
-		public void DisplayResult(StatementExecutionResult executionResult)
+		private void DisplayResult()
 		{
-			_executionResult = executionResult;
-			_hasExecutionResult = true;
 			ResultGrid.Columns.Clear();
 
 			foreach (var columnHeader in _executionResult.ColumnHeaders)
@@ -143,7 +142,7 @@ namespace SqlPad
 			StatusInfo.ResultGridAvailable = true;
 			_resultRows.Clear();
 
-			AppendRows(executionResult.InitialResultSet);
+			AppendRows(_executionResult.InitialResultSet);
 		}
 
 		internal static DataGridColumn CreateDataGridTemplateColumn(ColumnHeader columnHeader, IStatementValidator statementValidator = null, IConnectionAdapter connectionAdapter = null)
@@ -319,8 +318,9 @@ namespace SqlPad
 				Trace.WriteLine($"Executes statement not stored in the execution history. The maximum allowed size is {MaxHistoryEntrySize} characters while the statement has {executionHistoryRecord.StatementText.Length} characters.");
 			}
 
-			var executionResult = innerTask.Result;
-			if (!executionResult.ExecutedSuccessfully)
+			_executionResult = innerTask.Result;
+
+			if (!_executionResult.ExecutedSuccessfully)
 			{
 				NotifyExecutionCanceled();
 				return;
@@ -330,9 +330,9 @@ namespace SqlPad
 
 			UpdateTimerMessage(actionResult.Elapsed, false);
 			
-			WriteDatabaseOutput(executionResult.DatabaseOutput);
+			WriteDatabaseOutput(_executionResult.DatabaseOutput);
 
-			if (executionResult.Statement.GatherExecutionStatistics)
+			if (_executionResult.Statement.GatherExecutionStatistics)
 			{
 				await ExecutionPlanViewer.ShowActualAsync(_connectionAdapter, _statementExecutionCancellationTokenSource.Token);
 				TabStatistics.Visibility = Visibility.Visible;
@@ -345,10 +345,10 @@ namespace SqlPad
 				SelectPreviousTab();
 			}
 
-			if (executionResult.CompilationErrors.Count > 0)
+			if (_executionResult.CompilationErrors.Count > 0)
 			{
 				var lineOffset = _documentPage.Editor.GetLineNumberByOffset(executionModel.Statement.SourcePosition.IndexStart);
-				foreach (var error in executionResult.CompilationErrors)
+				foreach (var error in _executionResult.CompilationErrors)
 				{
 					error.Line += lineOffset;
 					_compilationErrors.Add(error);
@@ -357,23 +357,59 @@ namespace SqlPad
 				ShowCompilationErrors();
 			}
 
-			if (executionResult.ColumnHeaders.Count == 0)
+			if (_executionResult.ColumnHeaders.Count == 0)
 			{
-				if (executionResult.AffectedRowCount == -1)
+				if (_executionResult.AffectedRowCount == -1)
 				{
 					StatusInfo.DdlStatementExecutedSuccessfully = true;
 				}
 				else
 				{
-					StatusInfo.AffectedRowCount = executionResult.AffectedRowCount;
+					StatusInfo.AffectedRowCount = _executionResult.AffectedRowCount;
 				}
 
 				return;
 			}
 
-			await _statementValidator.ApplyReferenceConstraintsAsync(executionResult, _documentPage.DatabaseModel, _statementExecutionCancellationTokenSource.Token);
+			_hasExecutionResult = true;
 
-			DisplayResult(executionResult);
+			var childReferenceDataSources = await _statementValidator.ApplyReferenceConstraintsAsync(_executionResult, _documentPage.DatabaseModel, _statementExecutionCancellationTokenSource.Token);
+
+			DisplayResult();
+
+			//AddChildReferenceColumns(childReferenceDataSources);
+		}
+
+		private void AddChildReferenceColumns(IEnumerable<IReferenceDataSource> childReferenceDataSources)
+		{
+			foreach (var childReferenceDataSource in childReferenceDataSources)
+			{
+				var textBlockFactory = new FrameworkElementFactory(typeof(TextBlock));
+				var hyperlinkFactory = new FrameworkElementFactory(typeof(Hyperlink));
+				var runFactory = new FrameworkElementFactory(typeof(Run));
+				runFactory.SetValue(Run.TextProperty, "Show child records");
+				hyperlinkFactory.AppendChild(runFactory);
+				hyperlinkFactory.AddHandler(Hyperlink.ClickEvent, (RoutedEventHandler)CellHyperlinkExpandChildRecordsClickHandler);
+				hyperlinkFactory.SetBinding(FrameworkContentElement.TagProperty, new Binding { RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(DataGridRow), 1) });
+				textBlockFactory.AppendChild(hyperlinkFactory);
+
+				var cellTemplate = new DataTemplate(typeof(DependencyObject)) { VisualTree = textBlockFactory };
+
+				var columnTemplate =
+					new DataGridTemplateColumn
+					{
+						Header = new TextBlock { Text = $"{childReferenceDataSource.ObjectName} ({childReferenceDataSource.ConstraintName})" },
+						IsReadOnly = true,
+						CellTemplate = cellTemplate
+					};
+
+				ResultGrid.Columns.Add(columnTemplate);
+			}
+		}
+
+		private async void CellHyperlinkExpandChildRecordsClickHandler(object sender, RoutedEventArgs args)
+		{
+			var hyperlink = (Hyperlink)sender;
 		}
 
 		private void NotifyExecutionCanceled()

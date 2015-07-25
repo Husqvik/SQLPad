@@ -392,8 +392,9 @@ WHERE
 					ColumnHeaders = columnHeaders,
 					InitialResultSet = dataRows
 				};
-			
-			outputViewer.DisplayResult(executionResult);
+
+			typeof(OutputViewer).GetField("_executionResult", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(outputViewer, executionResult);
+			typeof(OutputViewer).GetMethod("DisplayResult", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(outputViewer, null);
 
 			outputViewer.ResultGrid.ItemsSource = dataRows;
 			

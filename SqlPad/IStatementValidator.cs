@@ -12,7 +12,7 @@ namespace SqlPad
 
 		IValidationModel BuildValidationModel(IStatementSemanticModel semanticModel);
 
-		Task ApplyReferenceConstraintsAsync(StatementExecutionResult executionResult, IDatabaseModel databaseModel, CancellationToken cancellationToken);
+		Task<ICollection<IReferenceDataSource>> ApplyReferenceConstraintsAsync(StatementExecutionResult executionResult, IDatabaseModel databaseModel, CancellationToken cancellationToken);
 	}
 
 	public interface IStatementSemanticModel

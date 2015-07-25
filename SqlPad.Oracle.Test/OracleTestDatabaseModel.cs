@@ -624,7 +624,11 @@ namespace SqlPad.Oracle.Test
 
 		public override ILookup<OracleObjectIdentifier, OracleReferenceConstraint> UniqueConstraintReferringReferenceConstraints
 		{
-			get { throw new NotImplementedException(); }
+			get
+			{
+				// TODO: Add valid data
+				return Enumerable.Empty<OracleReferenceConstraint>().ToLookup(c => c.FullyQualifiedName);
+			}
 		}
 
 		protected override ILookup<OracleProgramIdentifier, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadata => NonSchemaBuiltInFunctionMetadataInternal;

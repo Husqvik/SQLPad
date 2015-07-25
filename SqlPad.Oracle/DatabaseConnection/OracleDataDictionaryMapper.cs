@@ -420,8 +420,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			var rely = OracleReaderValueConvert.ToString(reader["RELY"]);
 			var constraint = OracleObjectFactory.CreateConstraint((string)reader["CONSTRAINT_TYPE"], owner, QualifyStringObject(reader["CONSTRAINT_NAME"]), (string)reader["STATUS"] == "ENABLED", (string)reader["VALIDATED"] == "VALIDATED", (string)reader["DEFERRABLE"] == "DEFERRABLE", rely == "RELY");
-			constraint.Owner = ownerObject;
-			((OracleDataObject)ownerObject).Constraints.Add(constraint);
+			var dataObject = (OracleDataObject)ownerObject;
+			constraint.Owner = dataObject;
+			dataObject.Constraints.Add(constraint);
 
 			var referenceConstraint = constraint as OracleReferenceConstraint;
 			if (referenceConstraint != null)

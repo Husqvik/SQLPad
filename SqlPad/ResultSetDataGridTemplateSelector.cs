@@ -135,7 +135,7 @@ namespace SqlPad
 			}
 
 			contentcontainer.Tag = cell.Content;
-            contentcontainer.KeyDown += ContentContainerKeyDownHandler;
+			contentcontainer.KeyDown += ContentContainerKeyDownHandler;
 
 			cell.Content = contentcontainer;
 		}
