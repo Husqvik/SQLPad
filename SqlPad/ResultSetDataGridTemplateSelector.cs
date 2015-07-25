@@ -15,7 +15,7 @@ namespace SqlPad
 {
 	internal class ResultSetDataGridTemplateSelector : DataTemplateSelector
 	{
-		private static readonly Style ColumnHeaderClickBubbleCancelation = new Style();
+		public static readonly Style ColumnHeaderClickBubbleCancelation = new Style();
 		private static readonly DataTemplate EditingTemplate = new DataTemplate(typeof(TextBox));
 
 		private readonly int _columnIndex;
@@ -72,8 +72,6 @@ namespace SqlPad
 				.Select(s => s.CreateExecutionModel(new [] { currentRowValues[_columnIndex] }));
 		}
 
-		protected virtual int ColumnIndex => _columnIndex;
-
 		protected virtual IReadOnlyCollection<IReferenceDataSource> GetReferenceDataSources(DataGridRow row) => _columnHeader.ParentReferenceDataSources;
 
 		private static DataTemplate CreateTextDataTemplate(string bindingPath)
@@ -91,22 +89,21 @@ namespace SqlPad
 			runFactory.SetBinding(Run.TextProperty, new Binding(bindingPath) { Converter = CellValueConverter.Instance, Mode = BindingMode.OneWay });
 			hyperlinkFactory.AppendChild(runFactory);
 			hyperlinkFactory.AddHandler(Hyperlink.ClickEvent, hyperLinkClickHandler);
-			hyperlinkFactory.SetBinding(FrameworkContentElement.TagProperty, new Binding { RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(DataGridRow), 1) });
+			hyperlinkFactory.SetBinding(FrameworkContentElement.TagProperty, new Binding { RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(DataGridCell), 1) });
 			textBlockFactory.AppendChild(hyperlinkFactory);
 			return new DataTemplate(typeof(DependencyObject)) { VisualTree = textBlockFactory };
 		}
 
 		private async void CellHyperlinkClickHandler(object sender, RoutedEventArgs args)
 		{
-			var hyperlink = args.OriginalSource as Hyperlink;
+			var hyperlink = sender as Hyperlink;
 			if (hyperlink == null)
 			{
 				return;
 			}
 
-			var row = (DataGridRow)hyperlink.Tag;
-			var cellPresenter = row.FindVisualChild<DataGridCellsPresenter>();
-			var cell = (DataGridCell)cellPresenter.ItemContainerGenerator.ContainerFromIndex(ColumnIndex);
+			var cell = (DataGridCell)hyperlink.Tag;
+			var row = cell.FindParent<DataGridRow>();
 
 			var stackPanel = new StackPanel();
 			var index = 0;
@@ -116,28 +113,33 @@ namespace SqlPad
 				await BuildParentRecordDataGrid(stackPanel, references[index++].ObjectName, executionModel);
 			}
 
-			row.Height = Double.NaN;
-			var dataGrid = row.FindParent<DataGrid>();
-			var headersPresenter = dataGrid.FindVisualChild<DataGridColumnHeadersPresenter>();
+			cell.Content = ConfigureAndWrapUsingScrollViewerIfNeeded(cell, stackPanel);
+		}
 
-			FrameworkElement contentcontainer = stackPanel;
+		internal static FrameworkElement ConfigureAndWrapUsingScrollViewerIfNeeded(DataGridCell cell, FrameworkElement contentContainer)
+		{
+			var row = cell.FindParent<DataGridRow>();
+			var dataGrid = row.FindParent<DataGrid>();
 			var dockPanel = dataGrid.Parent as DockPanel;
 			if (dockPanel != null)
 			{
-				contentcontainer =
+				var headersPresenter = dataGrid.FindVisualChild<DataGridColumnHeadersPresenter>();
+
+				contentContainer =
 					new ScrollViewer
 					{
-						Content = stackPanel,
+						Content = contentContainer,
 						HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
 						VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
 						MaxHeight = dockPanel.ActualHeight - headersPresenter.ActualHeight
 					};
 			}
 
-			contentcontainer.Tag = cell.Content;
-			contentcontainer.KeyDown += ContentContainerKeyDownHandler;
+			row.Height = Double.NaN;
 
-			cell.Content = contentcontainer;
+			contentContainer.Tag = cell.Content;
+			contentContainer.KeyDown += ContentContainerKeyDownHandler;
+			return contentContainer;
 		}
 
 		private async Task BuildParentRecordDataGrid(Panel container, string objectName, StatementExecutionModel executionModel)
@@ -171,13 +173,13 @@ namespace SqlPad
 				}).ToArray();
 
 			var referenceDataGrid =
-					new DataGrid
-					{
-						Style = (Style)Application.Current.Resources["ResultSetDataGrid"],
-						RowHeaderWidth = 0,
-						CanUserReorderColumns = false,
-						ItemsSource = columnValues
-					};
+				new DataGrid
+				{
+					Style = (Style)Application.Current.Resources["ResultSetDataGrid"],
+					RowHeaderWidth = 0,
+					CanUserReorderColumns = false,
+					ItemsSource = columnValues
+				};
 
 			referenceDataGrid.BeginningEdit += App.ResultGridBeginningEditCancelTextInputHandlerImplementation;
 			//referenceDataGrid.Sorting += (sender, args) => args.Handled = args.Column.DisplayIndex != 0;
@@ -268,8 +270,6 @@ namespace SqlPad
 			var customTypeAttributeValue = (CustomTypeAttributeValue)row.DataContext;
 			return customTypeAttributeValue.ColumnHeader.ParentReferenceDataSources;
 		}
-
-		protected override int ColumnIndex => 1;
 
 		public override DataTemplate SelectTemplate(object item, DependencyObject container)
 		{

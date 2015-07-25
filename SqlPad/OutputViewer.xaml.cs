@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,6 +14,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 using Microsoft.Win32;
 using SqlPad.FindReplace;
@@ -129,20 +131,25 @@ namespace SqlPad
 
 		private void DisplayResult()
 		{
-			ResultGrid.Columns.Clear();
-
-			foreach (var columnHeader in _executionResult.ColumnHeaders)
-			{
-				var columnTemplate = CreateDataGridTemplateColumn(columnHeader, _statementValidator, _connectionAdapter);
-				ResultGrid.Columns.Add(columnTemplate);
-			}
-
-			ResultGrid.HeadersVisibility = DataGridHeadersVisibility.Column;
+			InitializeDataGridColumns(ResultGrid, _executionResult.ColumnHeaders);
 
 			StatusInfo.ResultGridAvailable = true;
 			_resultRows.Clear();
 
 			AppendRows(_executionResult.InitialResultSet);
+		}
+
+		private void InitializeDataGridColumns(DataGrid dataGrid, IEnumerable<ColumnHeader> columnHeaders)
+		{
+			dataGrid.Columns.Clear();
+
+			foreach (var columnHeader in columnHeaders)
+			{
+				var columnTemplate = CreateDataGridTemplateColumn(columnHeader, _statementValidator, _connectionAdapter);
+				dataGrid.Columns.Add(columnTemplate);
+			}
+
+			dataGrid.HeadersVisibility = DataGridHeadersVisibility.Column;
 		}
 
 		internal static DataGridColumn CreateDataGridTemplateColumn(ColumnHeader columnHeader, IStatementValidator statementValidator = null, IConnectionAdapter connectionAdapter = null)
@@ -155,7 +162,7 @@ namespace SqlPad
 
 			var columnTemplate =
 				new DataGridTemplateColumn
-                {
+				{
 					Header = columnHeader,
 					CellTemplateSelector = new ResultSetDataGridTemplateSelector(statementValidator, connectionAdapter, columnHeader),
 					CellEditingTemplate = editingDataTemplate
@@ -172,12 +179,19 @@ namespace SqlPad
 
 		internal static void ShowLargeValueEditor(DataGrid dataGrid)
 		{
-			var currentRow = (object[])dataGrid.CurrentItem;
-			if (currentRow == null || dataGrid.CurrentColumn == null)
+			var currentRowValues = (object[])dataGrid.CurrentItem;
+			if (currentRowValues == null || dataGrid.CurrentColumn == null)
+			{
 				return;
+			}
 
 			var columnIndex = dataGrid.Columns.IndexOf(dataGrid.CurrentColumn);
-			var cellValue = currentRow[columnIndex];
+			if (columnIndex == -1 || columnIndex >= currentRowValues.Length)
+			{
+				return;
+			}
+
+			var cellValue = currentRowValues[columnIndex];
 			var largeValue = cellValue as ILargeValue;
 			if (largeValue != null)
 			{
@@ -377,10 +391,10 @@ namespace SqlPad
 
 			DisplayResult();
 
-			//AddChildReferenceColumns(childReferenceDataSources);
+			AddChildReferenceColumns(ResultGrid, childReferenceDataSources);
 		}
 
-		private void AddChildReferenceColumns(IEnumerable<IReferenceDataSource> childReferenceDataSources)
+		private void AddChildReferenceColumns(DataGrid dataGrid, IEnumerable<IReferenceDataSource> childReferenceDataSources)
 		{
 			foreach (var childReferenceDataSource in childReferenceDataSources)
 			{
@@ -390,7 +404,8 @@ namespace SqlPad
 				runFactory.SetValue(Run.TextProperty, "Show child records");
 				hyperlinkFactory.AppendChild(runFactory);
 				hyperlinkFactory.AddHandler(Hyperlink.ClickEvent, (RoutedEventHandler)CellHyperlinkExpandChildRecordsClickHandler);
-				hyperlinkFactory.SetBinding(FrameworkContentElement.TagProperty, new Binding { RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(DataGridRow), 1) });
+				hyperlinkFactory.SetBinding(FrameworkContentElement.TagProperty, new Binding { RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(DataGridCell), 1) });
+				hyperlinkFactory.SetValue(FrameworkContentElement.DataContextProperty, childReferenceDataSource);
 				textBlockFactory.AppendChild(hyperlinkFactory);
 
 				var cellTemplate = new DataTemplate(typeof(DependencyObject)) { VisualTree = textBlockFactory };
@@ -403,13 +418,59 @@ namespace SqlPad
 						CellTemplate = cellTemplate
 					};
 
-				ResultGrid.Columns.Add(columnTemplate);
+				dataGrid.Columns.Add(columnTemplate);
 			}
 		}
 
 		private async void CellHyperlinkExpandChildRecordsClickHandler(object sender, RoutedEventArgs args)
 		{
 			var hyperlink = (Hyperlink)sender;
+			var dataSource = (IReferenceDataSource)hyperlink.DataContext;
+			var cell = (DataGridCell)hyperlink.Tag;
+			var row = cell.FindParent<DataGridRow>();
+			var currentRowValues = (object[])row.DataContext;
+			var keyValues = dataSource.ColumnHeaders.Select(h => currentRowValues[h.ColumnIndex]).ToArray();
+
+			var executionModel = dataSource.CreateExecutionModel(keyValues);
+
+			FrameworkElement element;
+
+			try
+			{
+				var cancellationToken = CancellationToken.None;
+				var executionResult = await _connectionAdapter.ExecuteChildStatementAsync(executionModel, cancellationToken);
+				await _statementValidator.ApplyReferenceConstraintsAsync(executionResult, _connectionAdapter.DatabaseModel, cancellationToken);
+
+				var childRecordDataGrid =
+					new DataGrid
+					{
+						HeadersVisibility = DataGridHeadersVisibility.Column,
+						Style = (Style)Application.Current.Resources["ResultSetDataGrid"],
+						ItemsSource = new ObservableCollection<object[]>(executionResult.InitialResultSet)
+					};
+
+				childRecordDataGrid.AddHandler(VirtualizingStackPanel.CleanUpVirtualizedItemEvent, (CleanUpVirtualizedItemEventHandler)CleanUpVirtualizedItemHandler);
+				childRecordDataGrid.BeginningEdit += App.ResultGridBeginningEditCancelTextInputHandlerImplementation;
+				childRecordDataGrid.MouseDoubleClick += ResultGridMouseDoubleClickHandler;
+
+				InitializeDataGridColumns(childRecordDataGrid, executionResult.ColumnHeaders);
+
+				var childReferenceDataSources = await _statementValidator.ApplyReferenceConstraintsAsync(executionResult, _documentPage.DatabaseModel, cancellationToken);
+				AddChildReferenceColumns(childRecordDataGrid, childReferenceDataSources);
+
+				foreach (var columnTemplate in childRecordDataGrid.Columns)
+				{
+					columnTemplate.HeaderStyle = ResultSetDataGridTemplateSelector.ColumnHeaderClickBubbleCancelation;
+				}
+
+				element = childRecordDataGrid;
+			}
+			catch (Exception e)
+			{
+				element = new TextBlock { Text = e.Message, Background = Brushes.Red };
+			}
+
+			cell.Content = ResultSetDataGridTemplateSelector.ConfigureAndWrapUsingScrollViewerIfNeeded(cell, element);
 		}
 
 		private void NotifyExecutionCanceled()
@@ -476,7 +537,7 @@ namespace SqlPad
 
 		private void ResultGridMouseDoubleClickHandler(object sender, MouseButtonEventArgs e)
 		{
-			ShowLargeValueEditor(ResultGrid);
+			ShowLargeValueEditor((DataGrid)sender);
 		}
 
 		private void ResultGridSelectedCellsChangedHandler(object sender, SelectedCellsChangedEventArgs e)
@@ -818,12 +879,12 @@ namespace SqlPad
 			}
 		}
 
-        private void CleanUpVirtualizedItemHandler(object sender, CleanUpVirtualizedItemEventArgs e)
-        {
-            e.Cancel = ResultSetDataGridTemplateSelector.CanBeRecycled(e.UIElement);
-        }
+		private void CleanUpVirtualizedItemHandler(object sender, CleanUpVirtualizedItemEventArgs e)
+		{
+			e.Cancel = ResultSetDataGridTemplateSelector.CanBeRecycled(e.UIElement);
+		}
 
-        private void ApplicationDeactivatedHandler(object sender, EventArgs eventArgs)
+		private void ApplicationDeactivatedHandler(object sender, EventArgs eventArgs)
 		{
 			DataGridTabHeaderPopup.IsOpen = false;
 		}

@@ -2737,7 +2737,7 @@ namespace SqlPad.Oracle.SemanticModel
 							var objectName = referenceConstraint.TargetObject.FullyQualifiedName.ToString();
 							var constraintName = referenceConstraint.FullyQualifiedName.ToString();
 							var keyDataType = selectedColumn.ColumnDescription.DataType.FullyQualifiedName.Name.Trim('"');
-							var peferenceDataSource = new OracleReferenceDataSource(objectName, constraintName, statementText, new[] {keyDataType});
+							var peferenceDataSource = new OracleReferenceDataSource(objectName, constraintName, statementText, new [] { columnHeader }, new[] { keyDataType });
 							parentReferenceDataSources.Add(peferenceDataSource);
 						}
 
@@ -2754,6 +2754,12 @@ namespace SqlPad.Oracle.SemanticModel
 
 			foreach (var uniqueConstraint in uniqueConstraints)
 			{
+				var matchedHeaders = columnHeaders.Where(h => MainQueryBlock.NamedColumns[$"\"{h.Name}\""].Any(c => SelectColumnMatchesUniqueConstraintColumns(c, uniqueConstraint))).ToArray();
+				if (matchedHeaders.Length != uniqueConstraint.Columns.Count)
+				{
+					continue;
+				}
+
 				var remoteReferenceConstraints = DatabaseModel.UniqueConstraintReferringReferenceConstraints[uniqueConstraint.FullyQualifiedName];
 				foreach (var remoteReferenceConstraint in remoteReferenceConstraints)
 				{
@@ -2788,12 +2794,20 @@ namespace SqlPad.Oracle.SemanticModel
 						continue;
 					}
 
-					var referenceDataSource = new OracleReferenceDataSource(objectName, constraintName, statementText, dataTypes);
+					var referenceDataSource = new OracleReferenceDataSource(objectName, constraintName, statementText, matchedHeaders, dataTypes);
 					childDataSources.Add(referenceDataSource);
 				}
 			}
 
 			return childDataSources;
+		}
+
+		private bool SelectColumnMatchesUniqueConstraintColumns(OracleSelectListColumn selectColumn, OracleUniqueConstraint constraint)
+		{
+			string originalColumnName;
+			var sourceObject = GetSourceObject(selectColumn, out originalColumnName);
+			return sourceObject == constraint.Owner &&
+			       constraint.Columns.Any(c => String.Equals(c, originalColumnName));
 		}
 
 		private static OracleDataObject GetSourceObject(OracleSelectListColumn column, out string physicalColumnName)
@@ -2946,7 +2960,9 @@ namespace SqlPad.Oracle.SemanticModel
 	{
 		private readonly string _statementText;
 		private readonly IReadOnlyList<string> _keyDataTypes;
-		
+
+		public IReadOnlyList<ColumnHeader> ColumnHeaders { get; }
+
 		public string ObjectName { get; }
 
 		public string ConstraintName { get; }
@@ -2981,8 +2997,13 @@ namespace SqlPad.Oracle.SemanticModel
 				};
 		}
 
-		internal OracleReferenceDataSource(string objectName, string constraintName, string statementText, IReadOnlyList<string> keyDataTypes)
+		internal OracleReferenceDataSource(string objectName, string constraintName, string statementText, IReadOnlyList<ColumnHeader> columnHeaders, IReadOnlyList<string> keyDataTypes)
 		{
+			if (columnHeaders == null)
+			{
+				throw new ArgumentNullException(nameof(columnHeaders));
+			}
+
 			if (keyDataTypes == null)
 			{
 				throw new ArgumentNullException(nameof(keyDataTypes));
@@ -2993,9 +3014,15 @@ namespace SqlPad.Oracle.SemanticModel
 				throw new ArgumentException("Reference data source requires at least on key. ", nameof(keyDataTypes));
 			}
 
+			if (columnHeaders.Count != keyDataTypes.Count)
+			{
+				throw new ArgumentException($"Number of column headers ({columnHeaders.Count}) does not match the number of key data types ({keyDataTypes.Count}). ", nameof(columnHeaders));
+			}
+
 			ObjectName = objectName;
 			ConstraintName = constraintName;
 			_statementText = statementText;
+			ColumnHeaders = columnHeaders;
 			_keyDataTypes = keyDataTypes;
 		}
 	}

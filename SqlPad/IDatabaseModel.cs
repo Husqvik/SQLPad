@@ -84,6 +84,8 @@ namespace SqlPad
 
 	public interface IReferenceDataSource
 	{
+		IReadOnlyList<ColumnHeader> ColumnHeaders { get; }
+
 		string ObjectName { get; }
 
 		string ConstraintName { get; }
