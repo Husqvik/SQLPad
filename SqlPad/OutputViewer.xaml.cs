@@ -449,7 +449,7 @@ namespace SqlPad
 				var childRecordDataGrid =
 					new DataGrid
 					{
-						HeadersVisibility = DataGridHeadersVisibility.Column,
+						RowHeaderWidth = 0,
 						Style = (Style)Application.Current.Resources["ResultSetDataGrid"],
 						ItemsSource = new ObservableCollection<object[]>(executionResult.InitialResultSet)
 					};
@@ -572,7 +572,14 @@ namespace SqlPad
 			var hasOnlyNumericValues = true;
 			foreach (var selectedCell in ResultGrid.SelectedCells)
 			{
-				var cellValue = ((object[])selectedCell.Item)[selectedCell.Column.DisplayIndex];
+				if (selectedCell.Column.IsReadOnly)
+				{
+					return;
+				}
+
+				var rowValues = (object[])selectedCell.Item;
+				var columnHeader = (ColumnHeader)selectedCell.Column.Header;
+				var cellValue = rowValues[columnHeader.ColumnIndex];
 				var stringValue = cellValue.ToString();
 				if (String.IsNullOrEmpty(stringValue))
 				{
