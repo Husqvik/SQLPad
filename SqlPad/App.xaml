@@ -21,6 +21,32 @@
 		<Style x:Key="HeaderStyleRightAlign">
 			<Setter Property="Control.HorizontalContentAlignment" Value="Right" />
 		</Style>
+		<Style x:Key="CellTextblockLeftAlign">
+			<Setter Property="TextBlock.HorizontalAlignment" Value="Left" />
+		</Style>
+		<Style x:Key="EditingCellTextblockLeftAlign" BasedOn="{StaticResource CellTextBoxStyleReadOnly}">
+			<Setter Property="TextBlock.HorizontalAlignment" Value="Left" />
+		</Style>
+
+		<Style x:Key="DefaultDataGridRowHeight">
+			<Style.Setters>
+				<Setter Property="DataGridRow.Height" Value="21"/>
+			</Style.Setters>
+		</Style>
+
+		<Style x:Key="ResultSetDataGrid">
+			<Setter Property="DataGrid.EnableColumnVirtualization" Value="True" />
+			<Setter Property="VirtualizingStackPanel.VirtualizationMode" Value="Recycling" />
+			<Setter Property="DataGrid.AutoGenerateColumns" Value="False" />
+			<Setter Property="DataGrid.CanUserSortColumns" Value="False" />
+			<Setter Property="DataGrid.CanUserDeleteRows" Value="False" />
+			<Setter Property="DataGrid.CanUserAddRows" Value="False" />
+			<Setter Property="DataGrid.SelectionMode" Value="Extended" />
+			<Setter Property="DataGrid.SelectionUnit" Value="CellOrRowHeader" />
+			<Setter Property="DataGrid.HorizontalGridLinesBrush" Value="LightGray" />
+			<Setter Property="DataGrid.VerticalGridLinesBrush" Value="LightGray" />
+			<Setter Property="DataGrid.RowStyle" Value="{StaticResource DefaultDataGridRowHeight}" />
+		</Style>
 
 		<TextDecoration x:Key="WaveErrorUnderline">
 			<TextDecoration.Pen>

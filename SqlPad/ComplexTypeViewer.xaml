@@ -6,12 +6,12 @@
              xmlns:sqlPad="clr-namespace:SqlPad"
              mc:Ignorable="d"
              d:DesignHeight="96" d:DesignWidth="200"
-			 DataContext="{Binding RelativeSource={RelativeSource Self}}">
+             DataContext="{Binding RelativeSource={RelativeSource Self}}">
 
 	<UserControl.Resources>
 		<sqlPad:CellValueConverter x:Key="ValueConverter"/>
 
-		<!--<sqlPad:CustomTypeDataTemplateSelector x:Key="CustomDataTemplateSelector" />
+		<!--
 		<DataTemplate x:Key="PrimitiveValueTypeTemplate">
 			<TextBlock>
 				<TextBlock.Text>
@@ -37,11 +37,11 @@
 	</UserControl.Resources>
 	<StackPanel>
 		<TextBlock Margin="2,0,2,0" HorizontalAlignment="Left">
-			<Run Text="{Binding GridTitle}" />
+			<Run Text="Type: " />
 			<Run Text="{Binding ComplexType.DataTypeName}" />
 		</TextBlock>
 		<DataGrid x:Name="ComplexTypeViewerGrid"
-                  HorizontalAlignment="Stretch"
+				  HorizontalAlignment="Stretch"
 				  AutoGenerateColumns="False"
 				  CanUserAddRows="False"
 				  CanUserDeleteRows="False"
@@ -49,45 +49,23 @@
 				  RowHeaderWidth="0"
 				  ItemsSource="{Binding ComplexType.Attributes}"
 				  MaxColumnWidth="{Binding ElementName=ComplexTypeViewerGrid, Path=ActualWidth}"
-				  BeginningEdit="ComplexTypeViewerGridBeginningEditHandler"
+				  BeginningEdit="ResultGridBeginningEditCancelTextInputHandler"
 				  Sorting="ComplexTypeViewerGridSortingHandler"
+				  RowStyle="{StaticResource DefaultDataGridRowHeight}"
 				  HorizontalGridLinesBrush="LightGray"
 				  VerticalGridLinesBrush="LightGray">
-            <DataGrid.Resources>
-                <Style x:Key="CellTextblockAlignLeft">
-                    <Setter Property="TextBlock.HorizontalAlignment" Value="Left" />
-                </Style>
-                <Style x:Key="EditingCellTextblockAlignLeft" BasedOn="{StaticResource CellTextBoxStyleReadOnly}">
-                    <Setter Property="TextBlock.HorizontalAlignment" Value="Left" />
-                </Style>
-                <Style x:Key="ColumnHeaderClickBubbleCancelation">
-                    <EventSetter Event="ButtonBase.Click" Handler="ColumnHeaderClickHandler" />
-                </Style>
-            </DataGrid.Resources>
-            
-            <DataGrid.RowStyle>
-                <Style>
-                    <Style.Setters>
-                        <Setter Property="DataGridRow.Height" Value="21"/>
-                    </Style.Setters>
-                </Style>
-            </DataGrid.RowStyle>
 
-            <DataGrid.Columns>
-                <DataGridTextColumn x:Name="AttributeNameColumn"
-                                    ElementStyle="{StaticResource CellTextblockAlignLeft}"
-									EditingElementStyle="{StaticResource EditingCellTextblockAlignLeft}"
-                                    HeaderStyle="{StaticResource ColumnHeaderClickBubbleCancelation}"
-                                    Binding="{Binding ColumnHeader.Name}" />
+			<DataGrid.Columns>
+				<DataGridTextColumn x:Name="AttributeNameColumn"
+									Header="Attribute name"
+									EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}"
+									Binding="{Binding ColumnHeader.Name}" />
 				<!--<DataGridTemplateColumn Header="Value"
 										CellTemplateSelector="{StaticResource CustomDataTemplateSelector}"
 										CellEditingTemplateSelector="{StaticResource CustomDataEditingTemplateSelector}" />-->
 				<DataGridTextColumn Header="Value"
-                                    ElementStyle="{StaticResource CellTextblockAlignLeft}"
-									EditingElementStyle="{StaticResource EditingCellTextblockAlignLeft}"
-                                    HeaderStyle="{StaticResource ColumnHeaderClickBubbleCancelation}"
-									Binding="{Binding Path=Value, Converter={StaticResource ValueConverter}}">
-				</DataGridTextColumn>
+									EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}"
+									Binding="{Binding Path=Value, Converter={StaticResource ValueConverter}}" />
 			</DataGrid.Columns>
 		</DataGrid>
 	</StackPanel>

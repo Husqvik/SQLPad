@@ -6,6 +6,8 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace SqlPad
 {
@@ -15,10 +17,7 @@ namespace SqlPad
 		public static readonly string Version;
 		private static readonly Dictionary<string, StatementExecutionHistory> ExecutionHistoryWindows = new Dictionary<string, StatementExecutionHistory>();
 
-		public new static MainWindow MainWindow
-		{
-			get { return (MainWindow)Current.MainWindow; }
-		}
+		public new static MainWindow MainWindow => (MainWindow)Current.MainWindow;
 
 		static App()
 		{
@@ -27,6 +26,15 @@ namespace SqlPad
 			Version = assembly.GetName().Version.ToString();
 			var buildInfo = assembly.GetCustomAttribute<AssemblyBuildInfo>();
 			VersionTimestamp = buildInfo.VersionTimestampString;
+		}
+
+		internal static void ResultGridBeginningEditCancelTextInputHandlerImplementation(object sender, DataGridBeginningEditEventArgs e)
+		{
+			var textCompositionArgs = e.EditingEventArgs as TextCompositionEventArgs;
+			if (textCompositionArgs != null)
+			{
+				e.Cancel = true;
+			}
 		}
 
 		internal static async Task<Exception> SafeActionAsync(Func<Task> action)

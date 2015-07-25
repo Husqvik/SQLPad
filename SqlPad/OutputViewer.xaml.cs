@@ -33,7 +33,7 @@ namespace SqlPad
 	    private readonly DatabaseProviderConfiguration _providerConfiguration;
 		private readonly DocumentPage _documentPage;
 		private readonly IConnectionAdapter _connectionAdapter;
-		private readonly IStatementValidator _validator;
+		private readonly IStatementValidator _statementValidator;
 
 		private bool _isRunning;
 		private bool _isSelectingCells;
@@ -71,6 +71,8 @@ namespace SqlPad
 			}
 		}
 
+		internal EventHandler<DataGridBeginningEditEventArgs> ResultGridBeginningEditCancelTextInputHandler => App.ResultGridBeginningEditCancelTextInputHandlerImplementation;
+
 		public IReadOnlyList<object[]> ResultRowItems => _resultRows;
 
 	    public IReadOnlyList<SessionExecutionStatisticsRecord> SessionExecutionStatistics => _sessionExecutionStatistics;
@@ -95,7 +97,7 @@ namespace SqlPad
 
 			_connectionAdapter = _documentPage.DatabaseModel.CreateConnectionAdapter();
 
-			_validator = _documentPage.InfrastructureFactory.CreateStatementValidator();
+			_statementValidator = _documentPage.InfrastructureFactory.CreateStatementValidator();
 
 			ExecutionPlanViewer = _documentPage.InfrastructureFactory.CreateExecutionPlanViewer(_documentPage.DatabaseModel);
 			TabExecutionPlan.Content = ExecutionPlanViewer.Control;
@@ -132,7 +134,7 @@ namespace SqlPad
 
 			foreach (var columnHeader in _executionResult.ColumnHeaders)
 			{
-				var columnTemplate = CreateDataGridTextColumnTemplate(columnHeader, _connectionAdapter);
+				var columnTemplate = CreateDataGridTemplateColumn(columnHeader, _statementValidator, _connectionAdapter);
 				ResultGrid.Columns.Add(columnTemplate);
 			}
 
@@ -144,7 +146,7 @@ namespace SqlPad
 			AppendRows(executionResult.InitialResultSet);
 		}
 
-		internal static DataGridColumn CreateDataGridTextColumnTemplate(ColumnHeader columnHeader, IConnectionAdapter connectionAdapter = null)
+		internal static DataGridColumn CreateDataGridTemplateColumn(ColumnHeader columnHeader, IStatementValidator statementValidator = null, IConnectionAdapter connectionAdapter = null)
 		{
 			var textBoxFactory = new FrameworkElementFactory(typeof(TextBox));
 			textBoxFactory.SetValue(TextBoxBase.IsReadOnlyProperty, true);
@@ -156,7 +158,7 @@ namespace SqlPad
 				new DataGridTemplateColumn
                 {
 					Header = columnHeader,
-					CellTemplateSelector = new ResultSetDataGridTemplateSelector(connectionAdapter, columnHeader),
+					CellTemplateSelector = new ResultSetDataGridTemplateSelector(statementValidator, connectionAdapter, columnHeader),
 					CellEditingTemplate = editingDataTemplate
 				};
 
@@ -369,7 +371,7 @@ namespace SqlPad
 				return;
 			}
 
-			await _validator.ApplyReferenceConstraintsAsync(executionResult, _documentPage.DatabaseModel, _statementExecutionCancellationTokenSource.Token);
+			await _statementValidator.ApplyReferenceConstraintsAsync(executionResult, _documentPage.DatabaseModel, _statementExecutionCancellationTokenSource.Token);
 
 			DisplayResult(executionResult);
 		}
@@ -600,15 +602,6 @@ namespace SqlPad
 			}
 
 			CompilationError(this, new CompilationErrorArgs(errorUnderCursor));
-		}
-
-		private void ResultGridBeginningEditHandler(object sender, DataGridBeginningEditEventArgs e)
-		{
-			var textCompositionArgs = e.EditingEventArgs as TextCompositionEventArgs;
-			if (textCompositionArgs != null)
-			{
-				e.Cancel = true;
-			}
 		}
 
 		private void CanFetchAllRowsHandler(object sender, CanExecuteRoutedEventArgs canExecuteRoutedEventArgs)

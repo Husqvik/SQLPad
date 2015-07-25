@@ -2,14 +2,14 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 
 namespace SqlPad
 {
 	public partial class ComplexTypeViewer
 	{
 		public static readonly DependencyProperty ComplexTypeProperty = DependencyProperty.Register("ComplexType", typeof(IComplexType), typeof(ComplexTypeViewer), new FrameworkPropertyMetadata());
-		public static readonly DependencyProperty GridTitleProperty = DependencyProperty.Register("GridTitle", typeof(string), typeof(ComplexTypeViewer), new FrameworkPropertyMetadata(String.Empty));
+
+		internal EventHandler<DataGridBeginningEditEventArgs> ResultGridBeginningEditCancelTextInputHandler => App.ResultGridBeginningEditCancelTextInputHandlerImplementation;
 
 		public ComplexTypeViewer()
 		{
@@ -23,39 +23,12 @@ namespace SqlPad
 			set { SetValue(ComplexTypeProperty, value); }
 		}
 
-		[Bindable(true)]
-		public string GridTitle
-		{
-			get { return (string)GetValue(GridTitleProperty); }
-			set { SetValue(GridTitleProperty, value); }
-		}
-
-		public string RowTitle
-		{
-			get { return (string)AttributeNameColumn.Header; }
-			set { AttributeNameColumn.Header = value; }
-		}
-
-		private void ComplexTypeViewerGridBeginningEditHandler(object sender, DataGridBeginningEditEventArgs e)
-		{
-			var textCompositionArgs = e.EditingEventArgs as TextCompositionEventArgs;
-			if (textCompositionArgs != null)
-			{
-				e.Cancel = true;
-			}
-		}
-
 		private void ComplexTypeViewerGridSortingHandler(object sender, DataGridSortingEventArgs e)
 		{
 			if (!Equals(e.Column, AttributeNameColumn))
 			{
 				e.Handled = true;
 			}
-		}
-
-		private void ColumnHeaderClickHandler(object sender, RoutedEventArgs e)
-		{
-			e.Handled = true;
 		}
 	}
 

@@ -1,13 +1,13 @@
 ﻿<UserControl x:Class="SqlPad.OutputViewer"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:sqlPad="clr-namespace:SqlPad"
-             xmlns:commands="clr-namespace:SqlPad.Commands"
-             xmlns:globalization="clr-namespace:System.Globalization;assembly=mscorlib"
-             mc:Ignorable="d" 
-             d:DesignHeight="140" d:DesignWidth="384"
+			 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:sqlPad="clr-namespace:SqlPad"
+			 xmlns:commands="clr-namespace:SqlPad.Commands"
+			 xmlns:globalization="clr-namespace:System.Globalization;assembly=mscorlib"
+			 mc:Ignorable="d" 
+			 d:DesignHeight="140" d:DesignWidth="384"
 			 MouseMove="OutputViewerMouseMoveHandler"
 			 DataContext="{Binding RelativeSource={RelativeSource Self}}">
 	<UserControl.Resources>
@@ -124,35 +124,16 @@
 						</StackPanel>
 					</StackPanel>
 
-					<DataGrid x:Name="ResultGrid"
-							  AutoGenerateColumns="False"
+					<DataGrid x:Name="ResultGrid" Style="{StaticResource ResultSetDataGrid}"
 							  ItemsSource="{Binding ResultRowItems}"
 							  MaxColumnWidth="{Binding ElementName=ResultGrid, Path=ActualWidth}"
-                              EnableColumnVirtualization="True"
-							  VirtualizingStackPanel.VirtualizationMode="Recycling"
-							  CanUserSortColumns="False"
-							  CanUserDeleteRows="False"
-							  CanUserAddRows="False"
 							  HeadersVisibility="None"
-							  IsTextSearchEnabled="True"
-							  SelectionMode="Extended"
-							  SelectionUnit="CellOrRowHeader"
-							  HorizontalGridLinesBrush="LightGray"
-							  VerticalGridLinesBrush="LightGray"
-							  BeginningEdit="ResultGridBeginningEditHandler"
+							  BeginningEdit="ResultGridBeginningEditCancelTextInputHandler"
 							  SelectedCellsChanged="ResultGridSelectedCellsChangedHandler"
 							  ScrollViewer.ScrollChanged="ResultGridScrollChangedHandler"
-                              VirtualizingStackPanel.CleanUpVirtualizedItem="CleanUpVirtualizedItemHandler"
+							  VirtualizingStackPanel.CleanUpVirtualizedItem="CleanUpVirtualizedItemHandler"
 							  MouseDoubleClick="ResultGridMouseDoubleClickHandler"
 							  DataGridColumnHeader.Click="ColumnHeaderMouseClickHandler">
-
-						<DataGrid.RowStyle>
-							<Style>
-								<Style.Setters>
-									<Setter Property="DataGridRow.Height" Value="21"/>
-								</Style.Setters>
-							</Style>
-						</DataGrid.RowStyle>
 
 						<DataGrid.CommandBindings>
 							<CommandBinding Command="{StaticResource ExportToCsvFileCommand}" Executed="ExportDataFileHandler" CanExecute="CanExportDataHandler" />
@@ -209,8 +190,9 @@
 							  AutoGenerateColumns="False"
 							  CanUserDeleteRows="False"
 							  CanUserAddRows="False"
-							  RowHeight="21"
-							  BeginningEdit="ResultGridBeginningEditHandler"
+							  CanUserReorderColumns="False"
+							  RowStyle="{StaticResource DefaultDataGridRowHeight}"
+							  BeginningEdit="ResultGridBeginningEditCancelTextInputHandler"
 							  HorizontalGridLinesBrush="LightGray"
 							  VerticalGridLinesBrush="LightGray">
 						<DataGrid.Columns>
@@ -240,7 +222,7 @@
 						  CanUserDeleteRows="False"
 						  CanUserAddRows="False"
 						  RowHeight="21"
-						  BeginningEdit="ResultGridBeginningEditHandler"
+						  BeginningEdit="ResultGridBeginningEditCancelTextInputHandler"
 						  MouseDoubleClick="ErrorListMouseDoubleClickHandler"
 						  HorizontalGridLinesBrush="LightGray"
 						  VerticalGridLinesBrush="LightGray">

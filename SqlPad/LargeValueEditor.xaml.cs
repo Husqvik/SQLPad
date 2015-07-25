@@ -91,7 +91,7 @@ namespace SqlPad
 				{
 					TabCollection.Visibility = Visibility.Visible;
 					TabControl.SelectedItem = TabCollection;
-					var columnTemplate = OutputViewer.CreateDataGridTextColumnTemplate(collectionValue.ColumnHeader);
+					var columnTemplate = OutputViewer.CreateDataGridTemplateColumn(collectionValue.ColumnHeader);
 					CollectionViewer.Columns.Add(columnTemplate);
 					CollectionViewer.ItemsSource = collectionValue.Records.Cast<object>().Select(r => new [] { r }).ToArray();
 				}
