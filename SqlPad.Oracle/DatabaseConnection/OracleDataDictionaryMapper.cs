@@ -108,7 +108,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 			{
 				OracleConstraint constraint;
 				if (!constraints.TryGetValue(constraintPair.Key.FullyQualifiedName, out constraint))
+				{
 					continue;
+				}
 
 				List<string> columns;
 				if (constraintColumns.TryGetValue(constraintPair.Key.FullyQualifiedName, out columns))
@@ -116,9 +118,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 					constraint.Columns = columns.AsReadOnly();
 				}
 
-				var foreignKeyConstraint = constraintPair.Key as OracleForeignKeyConstraint;
+				var foreignKeyConstraint = constraintPair.Key as OracleReferenceConstraint;
 				if (foreignKeyConstraint == null)
+				{
 					continue;
+				}
 
 				var referenceConstraint = (OracleUniqueConstraint)constraints[constraintPair.Value];
 				foreignKeyConstraint.TargetObject = referenceConstraint.Owner;
@@ -417,7 +421,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			constraint.Owner = ownerObject;
 			((OracleDataObject)ownerObject).Constraints.Add(constraint);
 
-			var foreignKeyConstraint = constraint as OracleForeignKeyConstraint;
+			var foreignKeyConstraint = constraint as OracleReferenceConstraint;
 			if (foreignKeyConstraint != null)
 			{
 				var cascadeAction = DeleteRule.None;

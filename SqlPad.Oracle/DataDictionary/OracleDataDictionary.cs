@@ -104,10 +104,10 @@ namespace SqlPad.Oracle.DataDictionary
 
 			oracleConstraintType.AddSubType(101, typeof(OracleCheckConstraint));
 			oracleConstraintType.AddSubType(102, typeof(OracleUniqueConstraint));
-			oracleConstraintType.AddSubType(103, typeof(OracleForeignKeyConstraint));
+			oracleConstraintType.AddSubType(103, typeof(OracleReferenceConstraint));
 
 			Serializer.Add(typeof(OracleCheckConstraint), true).AsReferenceDefault = true;
-			var oracleForeignKeyConstraintType = Serializer.Add(typeof(OracleForeignKeyConstraint), false);
+			var oracleForeignKeyConstraintType = Serializer.Add(typeof(OracleReferenceConstraint), false);
 			oracleForeignKeyConstraintType.AsReferenceDefault = true;
 			oracleForeignKeyConstraintType.Add("TargetObject", "ReferenceConstraint", "DeleteRule");
 

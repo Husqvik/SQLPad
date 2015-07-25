@@ -174,7 +174,7 @@ namespace SqlPad
 			var headersPresenter = dataGrid.FindVisualChild<DataGridColumnHeadersPresenter>();
 
 			var parentElement = (FrameworkElement)dataGrid.Parent;
-			var maxHeight = Double.IsNaN(parentElement.MaxHeight) ? parentElement.ActualHeight : parentElement.MaxHeight - headersPresenter.ActualHeight;
+			var maxHeight = Double.IsInfinity(parentElement.MaxHeight) ? parentElement.ActualHeight : parentElement.MaxHeight - headersPresenter.ActualHeight;
 
 			var contentcontainer =
 				new ScrollViewer

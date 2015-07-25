@@ -46,7 +46,7 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public IDictionary<string, OracleColumn> Columns { get; set; }
 
-		public IEnumerable<OracleForeignKeyConstraint> ReferenceConstraints => Constraints.OfType<OracleForeignKeyConstraint>();
+		public IEnumerable<OracleReferenceConstraint> ReferenceConstraints => Constraints.OfType<OracleReferenceConstraint>();
 	}
 
 	[DebuggerDisplay("OracleMaterializedView (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]

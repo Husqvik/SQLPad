@@ -2712,23 +2712,35 @@ namespace SqlPad.Oracle.SemanticModel
 			{
 				var columns = MainQueryBlock.NamedColumns[$"\"{columnHeader.Name}\""]
 					.Where(c => c.ColumnDescription.DataType.IsPrimitive);
-				
+
 				foreach (var column in columns)
 				{
 					string localColumnName;
 					var sourceObject = GetSourceObject(column, out localColumnName);
-
-				    var referenceConstraint = sourceObject?.ReferenceConstraints.FirstOrDefault(r => r.Columns.Count == 1 && String.Equals(r.Columns[0], localColumnName));
-					if (referenceConstraint == null)
+					if (sourceObject == null)
 					{
 						continue;
 					}
 
-					var referenceColumnName = referenceConstraint.ReferenceConstraint.Columns[0];
-					var statementText = StatementText = $"SELECT * FROM {referenceConstraint.TargetObject.FullyQualifiedName} WHERE {referenceColumnName} = :KEY";
-					var keyDataType = column.ColumnDescription.DataType.FullyQualifiedName.Name.Trim('"');
-					var objectName = referenceConstraint.TargetObject.FullyQualifiedName.ToString();
-					columnHeader.ReferenceDataSource = new OracleReferenceDataSource(objectName, statementText, keyDataType);
+					var constraints = sourceObject.Constraints
+						.Where(r => r.Columns.Count == 1 && String.Equals(r.Columns[0], localColumnName) && r.Type != ConstraintType.Check)
+						.ToArray();
+
+					var referenceConstraint = constraints.OfType<OracleReferenceConstraint>().FirstOrDefault();
+					if (referenceConstraint != null)
+					{
+						var referenceColumnName = referenceConstraint.ReferenceConstraint.Columns[0];
+						var statementText = StatementText = $"SELECT * FROM {referenceConstraint.TargetObject.FullyQualifiedName} WHERE {referenceColumnName} = :KEY";
+						var keyDataType = column.ColumnDescription.DataType.FullyQualifiedName.Name.Trim('"');
+						var objectName = referenceConstraint.TargetObject.FullyQualifiedName.ToString();
+						columnHeader.ReferenceDataSource = new OracleReferenceDataSource(objectName, statementText, keyDataType);
+					}
+
+					/*var uniqueConstraints = constraints.OfType<OracleUniqueConstraint>();
+					foreach (var uniqueConstraint in uniqueConstraints)
+					{
+						
+					}*/
 				}
 			}
 		}

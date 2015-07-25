@@ -37,7 +37,7 @@ namespace SqlPad.Oracle.DataDictionary
 				case "U":
 					return new OracleUniqueConstraint();
 				case "R":
-					return new OracleForeignKeyConstraint();
+					return new OracleReferenceConstraint();
 				case "C":
 					return new OracleCheckConstraint();
 				default:

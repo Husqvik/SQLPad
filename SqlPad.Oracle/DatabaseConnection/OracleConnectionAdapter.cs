@@ -195,7 +195,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override void Dispose()
 		{
-			RollbackTransaction().Wait();
+			ExecuteUserTransactionAction(delegate { });
 
 			DisposeCommandAndReader();
 

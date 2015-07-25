@@ -521,7 +521,7 @@ namespace SqlPad.Oracle.Test
 			sourceObject.Constraints =
 				new List<OracleConstraint>
 				{
-					new OracleForeignKeyConstraint
+					new OracleReferenceConstraint
 					{
 						FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"FK_TARGETGROUP_PROJECT\""),
 						Columns = new[] { "\"PROJECT_ID\"" },
@@ -545,7 +545,7 @@ namespace SqlPad.Oracle.Test
 			sourceObject.Constraints =
 				new List<OracleConstraint>
 				{
-					new OracleForeignKeyConstraint
+					new OracleReferenceConstraint
 					{
 						FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"FK_INVOICELINES_INVOICES\""),
 						Columns = new[] { "\"INVOICE_ID\"" },
@@ -569,7 +569,7 @@ namespace SqlPad.Oracle.Test
 			sourceObject.Constraints =
 				new List<OracleConstraint>
 				{
-					new OracleForeignKeyConstraint
+					new OracleReferenceConstraint
 					{
 						FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"FK_RESPONDENTBUCKET_TARGETGROUP\""),
 						Columns = new[] { "\"TARGETGROUP_ID\"" },
@@ -577,7 +577,7 @@ namespace SqlPad.Oracle.Test
 						Owner = sourceObject,
 						TargetObject = targetGroupTable
 					},
-					new OracleForeignKeyConstraint
+					new OracleReferenceConstraint
 					{
 						FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"FK_RESPONDENTBUCKET_PROJECT\""),
 						Columns = new[] { "\"PROJECT_ID\"" },
@@ -601,7 +601,7 @@ namespace SqlPad.Oracle.Test
 			sourceObject.Constraints =
 				new List<OracleConstraint>
 				{
-					new OracleForeignKeyConstraint
+					new OracleReferenceConstraint
 					{
 						FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"FK_SELECTION_RESPONDENTBUCKET\""),
 						Columns = new[] { "\"RESPONDENTBUCKET_ID\"" },
@@ -609,7 +609,7 @@ namespace SqlPad.Oracle.Test
 						Owner = sourceObject,
 						TargetObject = respondentBucketTable
 					},
-					new OracleForeignKeyConstraint
+					new OracleReferenceConstraint
 					{
 						FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"FK_SELECTION_PROJECT\""),
 						Columns = new[] { "\"PROJECT_ID\"" },

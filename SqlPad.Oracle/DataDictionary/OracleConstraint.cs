@@ -39,7 +39,7 @@ namespace SqlPad.Oracle.DataDictionary
 	}
 
 	[DebuggerDisplay("OracleForeignKeyConstraint (Name={FullyQualifiedName.Name}; IsEnabled={IsEnabled}; IsDeferrable={IsDeferrable}; IsValidated={IsValidated}; IsRelied={IsRelied})")]
-	public class OracleForeignKeyConstraint : OracleConstraint
+	public class OracleReferenceConstraint : OracleConstraint
 	{
 		public OracleSchemaObject TargetObject { get; set; }
 
