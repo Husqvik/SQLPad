@@ -396,6 +396,11 @@ namespace SqlPad
 
 		private void AddChildReferenceColumns(DataGrid dataGrid, IEnumerable<IReferenceDataSource> childReferenceDataSources)
 		{
+			if (!EnableReferenceConstraintChildren)
+			{
+				return;
+			}
+
 			foreach (var childReferenceDataSource in childReferenceDataSources)
 			{
 				var textBlockFactory = new FrameworkElementFactory(typeof(TextBlock));
@@ -439,7 +444,7 @@ namespace SqlPad
 			{
 				var cancellationToken = CancellationToken.None;
 				var executionResult = await _connectionAdapter.ExecuteChildStatementAsync(executionModel, cancellationToken);
-				await _statementValidator.ApplyReferenceConstraintsAsync(executionResult, _connectionAdapter.DatabaseModel, cancellationToken);
+				var childReferenceDataSources = await _statementValidator.ApplyReferenceConstraintsAsync(executionResult, _connectionAdapter.DatabaseModel, cancellationToken);
 
 				var childRecordDataGrid =
 					new DataGrid
@@ -454,8 +459,6 @@ namespace SqlPad
 				childRecordDataGrid.MouseDoubleClick += ResultGridMouseDoubleClickHandler;
 
 				InitializeDataGridColumns(childRecordDataGrid, executionResult.ColumnHeaders);
-
-				var childReferenceDataSources = await _statementValidator.ApplyReferenceConstraintsAsync(executionResult, _documentPage.DatabaseModel, cancellationToken);
 				AddChildReferenceColumns(childRecordDataGrid, childReferenceDataSources);
 
 				foreach (var columnTemplate in childRecordDataGrid.Columns)

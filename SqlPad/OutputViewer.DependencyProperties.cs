@@ -10,6 +10,7 @@ namespace SqlPad
 		public static readonly DependencyProperty ShowAllSessionExecutionStatisticsProperty = DependencyProperty.Register("ShowAllSessionExecutionStatistics", typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(ShowAllSessionExecutionStatisticsPropertyChangedCallbackHandler));
 		public static readonly DependencyProperty EnableDatabaseOutputProperty = DependencyProperty.Register("EnableDatabaseOutput", typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
 		public static readonly DependencyProperty IsPinnedProperty = DependencyProperty.Register("IsPinned", typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
+		public static readonly DependencyProperty EnableReferenceConstraintChildrenProperty = DependencyProperty.Register("EnableReferenceConstraintChildren", typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
 		public static readonly DependencyProperty TitleProperty = DependencyProperty.Register("Title", typeof(string), typeof(OutputViewer), new FrameworkPropertyMetadata(TitlePropertyChangedCallbackHandler));
 		public static readonly DependencyProperty DatabaseOutputProperty = DependencyProperty.Register("DatabaseOutput", typeof(string), typeof(OutputViewer), new FrameworkPropertyMetadata(String.Empty));
 		public static readonly DependencyProperty LastStatementTextProperty = DependencyProperty.Register("LastStatementText", typeof(string), typeof(OutputViewer), new FrameworkPropertyMetadata(String.Empty));
@@ -123,6 +124,13 @@ namespace SqlPad
 		{
 			get { return (bool)GetValue(IsPinnedProperty); }
 			set { SetValue(IsPinnedProperty, value); }
+		}
+
+		[Bindable(true)]
+		public bool EnableReferenceConstraintChildren
+		{
+			get { return (bool)GetValue(EnableReferenceConstraintChildrenProperty); }
+			set { SetValue(EnableReferenceConstraintChildrenProperty, value); }
 		}
 
 		[Bindable(true)]
