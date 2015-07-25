@@ -31,7 +31,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			foreach (var schemaObject in schemaTypeAndMateralizedViewMetadataSource)
 			{
-				AddSchemaObjectToDictionary(_allObjects, schemaObject);
+				AddObjectToDictionary(_allObjects, schemaObject, schemaObject.Type);
 			}
 
 			Trace.WriteLine($"Fetch types and materialized views metadata finished in {stopwatch.Elapsed}. ");
@@ -94,7 +94,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var constraints = new Dictionary<OracleObjectIdentifier, OracleConstraint>();
 			foreach (var constraintPair in constraintSource)
 			{
-				constraints[constraintPair.Key.FullyQualifiedName] = constraintPair.Key;
+				AddObjectToDictionary(constraints, constraintPair.Key, "CONSTRAINT");
 			}
 
 			Trace.WriteLine($"Fetch constraint metadata finished in {stopwatch.Elapsed}. ");
@@ -621,7 +621,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					break;
 				default:
 					schemaObject = OracleObjectFactory.CreateSchemaObjectMetadata(objectType, objectTypeIdentifer.NormalizedOwner, objectTypeIdentifer.NormalizedName, isValid, created, lastDdl, isTemporary);
-					AddSchemaObjectToDictionary(_allObjects, schemaObject);
+					AddObjectToDictionary(_allObjects, schemaObject, schemaObject.Type);
 					break;
 			}
 
@@ -699,11 +699,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 		}
 
-		private static void AddSchemaObjectToDictionary(IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects, OracleSchemaObject schemaObject)
+		private static void AddObjectToDictionary<T>(IDictionary<OracleObjectIdentifier, T> allObjects, T schemaObject, string objectType) where T : OracleObject
 		{
 			if (allObjects.ContainsKey(schemaObject.FullyQualifiedName))
 			{
-				Trace.WriteLine($"Object '{schemaObject.FullyQualifiedName}' ({schemaObject.Type}) is already in the dictionary. ");
+				Trace.WriteLine($"Object '{schemaObject.FullyQualifiedName}' ({objectType}) is already in the dictionary. ");
 			}
 			else
 			{

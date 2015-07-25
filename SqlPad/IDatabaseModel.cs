@@ -74,7 +74,7 @@ namespace SqlPad
 
 		public Type DataType { get; set; }
 
-		public IReferenceDataSource ReferenceDataSource { get; set; }
+		public IReadOnlyCollection<IReferenceDataSource> ParentReferenceDataSources { get; set; }
 
 		public override string ToString()
 		{
@@ -86,7 +86,9 @@ namespace SqlPad
 	{
 		string ObjectName { get; }
 
-		StatementExecutionModel CreateExecutionModel();
+		string ConstraintName { get; }
+
+		StatementExecutionModel CreateExecutionModel(object[] keys);
 	}
 
 	public class DatabaseModelConnectionErrorArgs : EventArgs

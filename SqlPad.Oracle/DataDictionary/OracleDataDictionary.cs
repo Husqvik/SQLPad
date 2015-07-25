@@ -56,7 +56,7 @@ namespace SqlPad.Oracle.DataDictionary
 			return _nonSchemaFunctionMetadataLookup = nonSchemaFunctionMetadata.ToLookup(m => m.Identifier);
 		}
 
-		public ICollection<string> CharacterSets => _characterSets ?? InitialCharacterSetCollection;
+		public IReadOnlyCollection<string> CharacterSets => _characterSets ?? InitialCharacterSetCollection;
 
 	    public IDictionary<int, string> StatisticsKeys => _statisticsKeys ?? InitialStatisticsKeys;
 

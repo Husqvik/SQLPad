@@ -40,6 +40,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private Task _backgroundTask;
 		private readonly CancellationTokenSource _backgroundTaskCancellationTokenSource = new CancellationTokenSource();
 		private ILookup<OracleProgramIdentifier, OracleProgramMetadata> _allFunctionMetadata = Enumerable.Empty<OracleProgramMetadata>().ToLookup(m => m.Identifier);
+		private ILookup<OracleObjectIdentifier, OracleReferenceConstraint> _uniqueConstraintReferringReferenceConstraints = Enumerable.Empty<OracleReferenceConstraint>().ToLookup(m => m.FullyQualifiedName);
 		private readonly ConnectionStringSettings _connectionString;
 		private readonly string _moduleName;
 		private HashSet<string> _schemas = new HashSet<string>();
@@ -56,7 +57,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private static readonly HashSet<string> ActiveDataModelRefresh = new HashSet<string>();
 		private static readonly Dictionary<string, List<RefreshModel>> WaitingDataModelRefresh = new Dictionary<string, List<RefreshModel>>();
 
-		public string ConnectionIdentifier { get; private set; }
+		public string ConnectionIdentifier { get; }
 
 		private OracleDatabaseModel(ConnectionStringSettings connectionString, string identifier)
 		{
@@ -108,6 +109,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			_dataDictionary = refreshedModel._dataDictionary;
 			_allFunctionMetadata = refreshedModel._allFunctionMetadata;
+			_uniqueConstraintReferringReferenceConstraints = refreshedModel._uniqueConstraintReferringReferenceConstraints;
 			_allSchemas = refreshedModel._allSchemas;
 			_schemas = refreshedModel._schemas;
 
@@ -197,6 +199,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override ILookup<OracleProgramIdentifier, OracleProgramMetadata> AllFunctionMetadata => _allFunctionMetadata;
 
+		public override ILookup<OracleObjectIdentifier, OracleReferenceConstraint> UniqueConstraintReferringReferenceConstraints => _uniqueConstraintReferringReferenceConstraints;
+
 	    protected override ILookup<OracleProgramIdentifier, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadata => _dataDictionary.NonSchemaFunctionMetadata;
 
 	    protected override ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuiltInPackageFunctionMetadata => _dataDictionary.BuiltInPackageFunctionMetadata;
@@ -233,7 +237,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 	    public override IDictionary<OracleObjectIdentifier, OracleDatabaseLink> DatabaseLinks => _dataDictionary.DatabaseLinks;
 
-	    public override ICollection<string> CharacterSets => _dataDictionary.CharacterSets;
+	    public override IReadOnlyCollection<string> CharacterSets => _dataDictionary.CharacterSets;
 
 	    public override IDictionary<int, string> StatisticsKeys => _dataDictionary.StatisticsKeys;
 
@@ -524,7 +528,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 				{
 					_currentSchema = _currentSchema,
 					_dataDictionary = _dataDictionary,
-					_allFunctionMetadata = _allFunctionMetadata
+					_allFunctionMetadata = _allFunctionMetadata,
+					_uniqueConstraintReferringReferenceConstraints = _uniqueConstraintReferringReferenceConstraints
 				};
 
 			return clone;
@@ -666,7 +671,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 				var userFunctions = _dataDictionaryMapper.GetUserFunctionMetadata().SelectMany(g => g).ToArray();
 				var builtInFunctions = _dataDictionaryMapper.GetBuiltInFunctionMetadata().SelectMany(g => g).ToArray();
-				_allFunctionMetadata = builtInFunctions.Concat(userFunctions.Where(f => f.Type == ProgramType.Function))
+				_allFunctionMetadata = builtInFunctions
+					.Concat(userFunctions.Where(f => f.Type == ProgramType.Function))
 					.ToLookup(m => m.Identifier);
 
 				stopwatch.Reset();
@@ -709,10 +715,16 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 				Trace.WriteLine($"Function and procedure metadata schema object mapping finished in {stopwatch.Elapsed}. ");
 
+				stopwatch.Reset();
+
+				BuildUniqueConstraintReferringReferenceConstraintLookup(allObjects.Values);
+
 				var databaseLinks = _dataDictionaryMapper.GetDatabaseLinks();
 				var characterSets = _dataDictionaryMapper.GetCharacterSets();
 				var statisticsKeys = SafeFetchDictionary(_dataDictionaryMapper.GetStatisticsKeys, "OracleDataDictionaryMapper.GetStatisticsKeys failed: ");
 				var systemParameters = SafeFetchDictionary(_dataDictionaryMapper.GetSystemParameters, "OracleDataDictionaryMapper.GetSystemParameters failed: ");
+
+				Trace.WriteLine($"Unique constraint, database link, character sets, statistics keys and system parameter mapping finished in {stopwatch.Elapsed}. ");
 
 				_dataDictionary = new OracleDataDictionary(allObjects, databaseLinks, nonSchemaBuiltInFunctionMetadata, characterSets, statisticsKeys, systemParameters, lastRefresh);
 
@@ -729,6 +741,14 @@ namespace SqlPad.Oracle.DatabaseConnection
 				Trace.WriteLine($"Oracle data dictionary refresh failed: {e}");
 				return false;
 			}
+		}
+
+		private void BuildUniqueConstraintReferringReferenceConstraintLookup(IEnumerable<OracleSchemaObject> allObjects)
+		{
+			_uniqueConstraintReferringReferenceConstraints = allObjects
+				.OfType<OracleDataObject>()
+				.SelectMany(o => o.ReferenceConstraints)
+				.ToLookup(c => c.ReferenceConstraint.FullyQualifiedName);
 		}
 
 		private Dictionary<TKey, TValue> SafeFetchDictionary<TKey, TValue>(Func<IEnumerable<KeyValuePair<TKey, TValue>>> fetchKeyValuePairFunction, string traceMessage)
@@ -754,7 +774,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			if (CachedDataDictionaries.TryGetValue(_connectionStringName, out dataDictionary))
 			{
 				_dataDictionary = dataDictionary;
-				BuildAllFunctionMetadata();
+				BuildSupportLookups();
 			}
 			else if (MetadataCache.TryLoadDatabaseModelCache(_connectionStringName, out stream))
 			{
@@ -765,7 +785,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					var stopwatch = Stopwatch.StartNew();
 					_dataDictionary = CachedDataDictionaries[_connectionStringName] = OracleDataDictionary.Deserialize(stream);
 					Trace.WriteLine($"{DateTime.Now} - Metadata for '{_connectionStringName}/{ConnectionIdentifier}' loaded from cache in {stopwatch.Elapsed}");
-					BuildAllFunctionMetadata();
+					BuildSupportLookups();
 					RemoveActiveRefreshTask();
 				}
 				catch (Exception e)
@@ -782,7 +802,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_cacheLoaded = true;
 		}
 
-		private void BuildAllFunctionMetadata()
+		private void BuildSupportLookups()
 		{
 			try
 			{
@@ -790,15 +810,16 @@ namespace SqlPad.Oracle.DatabaseConnection
 					.OfType<IFunctionCollection>()
 					.SelectMany(o => o.Functions);
 
-				functionMetadata = FilterFunctionsWithUnavailableMetadata(functionMetadata)
-					.Concat(_dataDictionary.NonSchemaFunctionMetadata.SelectMany(g => g));
+				_allFunctionMetadata = FilterFunctionsWithUnavailableMetadata(functionMetadata)
+					.Concat(_dataDictionary.NonSchemaFunctionMetadata.SelectMany(g => g))
+					.ToLookup(m => m.Identifier);
 
-				_allFunctionMetadata = functionMetadata.ToLookup(m => m.Identifier);
+				BuildUniqueConstraintReferringReferenceConstraintLookup(_dataDictionary.AllObjects.Values);
 			}
 			catch (Exception e)
 			{
 				_dataDictionary = OracleDataDictionary.EmptyDictionary;
-				Trace.WriteLine($"All function metadata lookup initialization from cache failed: {e}");
+				Trace.WriteLine($"All function metadata or unique constraint referring reference constraint lookup initialization from cache failed: {e}");
 			}
 		}
 

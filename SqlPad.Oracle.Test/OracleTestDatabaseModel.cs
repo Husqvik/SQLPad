@@ -180,7 +180,7 @@ namespace SqlPad.Oracle.Test
 				new OracleSynonym
 				{
 					FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"RAWLIST\""),
-					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"ODCIRAWLIST\"" && o.Owner == OracleDatabaseModelBase.SchemaSys),
+					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"ODCIRAWLIST\"" && o.Owner == SchemaSys),
 					IsValid = true
 				};
 			
@@ -197,15 +197,15 @@ namespace SqlPad.Oracle.Test
 			randomStringFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"LEN\"", 2, 2, 0, ParameterDirection.Input, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
 			randomStringFunctionMetadata.Owner = dbmsRandom;
 			dbmsRandom.Functions.Add(randomStringFunctionMetadata);
-			var randomNormalFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(OracleDatabaseModelBase.SchemaSys, PackageDbmsRandom, "NORMAL"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			var randomNormalFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageDbmsRandom, "NORMAL"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
 			randomNormalFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
 			randomNormalFunctionMetadata.Owner = dbmsRandom;
 			dbmsRandom.Functions.Add(randomNormalFunctionMetadata);
-			var randomValueFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(OracleDatabaseModelBase.SchemaSys, PackageDbmsRandom, "VALUE"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			var randomValueFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageDbmsRandom, "VALUE"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
 			randomValueFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
 			randomValueFunctionMetadata.Owner = dbmsRandom;
 			dbmsRandom.Functions.Add(randomValueFunctionMetadata);
-			var randomValueTwoParameterFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(OracleDatabaseModelBase.SchemaSys, PackageDbmsRandom, "VALUE"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			var randomValueTwoParameterFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageDbmsRandom, "VALUE"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
 			randomValueTwoParameterFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
 			randomValueTwoParameterFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"LOW\"", 1, 1, 0, ParameterDirection.Input, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
 			randomValueTwoParameterFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"HIGH\"", 2, 2, 0, ParameterDirection.Input, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
@@ -227,8 +227,8 @@ namespace SqlPad.Oracle.Test
 			#region SYS.DBMS_XPLAN
 			var dbmsXPlan = (OraclePackage)AllObjectsInternal.Single(o => o.Name == "\"DBMS_XPLAN\"" && o.Owner == SchemaSys);
 			var displayCursorFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("SYS", "DBMS_XPLAN", "DISPLAY_CURSOR"), false, false, true, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, false);
-			displayCursorFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, OracleTypeCollection.OracleCollectionTypeNestedTable, OracleObjectIdentifier.Create(OracleDatabaseModelBase.SchemaSys, "DBMS_XPLAN_TYPE_TABLE"), false));
-			displayCursorFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 1, 1, 1, ParameterDirection.ReturnValue, OracleTypeBase.TypeCodeObject, OracleObjectIdentifier.Create(OracleDatabaseModelBase.SchemaSys, "DBMS_XPLAN_TYPE"), false));
+			displayCursorFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, OracleTypeCollection.OracleCollectionTypeNestedTable, OracleObjectIdentifier.Create(SchemaSys, "DBMS_XPLAN_TYPE_TABLE"), false));
+			displayCursorFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 1, 1, 1, ParameterDirection.ReturnValue, OracleTypeBase.TypeCodeObject, OracleObjectIdentifier.Create(SchemaSys, "DBMS_XPLAN_TYPE"), false));
 			displayCursorFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"SQL_ID\"", 1, 1, 0, ParameterDirection.Input, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, true));
 			displayCursorFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"CURSOR_CHILD_NUMBER\"", 2, 2, 0, ParameterDirection.Input, TerminalValues.Number, OracleObjectIdentifier.Empty, true));
 			displayCursorFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"FORMAT\"", 3, 3, 0, ParameterDirection.Input, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, true));
@@ -622,7 +622,12 @@ namespace SqlPad.Oracle.Test
 
 		public override ILookup<OracleProgramIdentifier, OracleProgramMetadata> AllFunctionMetadata => AllFunctionMetadataInternal;
 
-	    protected override ILookup<OracleProgramIdentifier, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadata => NonSchemaBuiltInFunctionMetadataInternal;
+		public override ILookup<OracleObjectIdentifier, OracleReferenceConstraint> UniqueConstraintReferringReferenceConstraints
+		{
+			get { throw new NotImplementedException(); }
+		}
+
+		protected override ILookup<OracleProgramIdentifier, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadata => NonSchemaBuiltInFunctionMetadataInternal;
 
 	    protected override ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuiltInPackageFunctionMetadata => BuiltInPackageFunctionMetadataInternal;
 
@@ -990,7 +995,7 @@ TABLESPACE ""TBS_HQ_PDB""";
 
 	    public override IDictionary<OracleObjectIdentifier, OracleDatabaseLink> DatabaseLinks { get; } = DatabaseLinksInternal.ToDictionary(l => l.FullyQualifiedName, l => l);
 
-	    public override ICollection<string> CharacterSets => CharacterSetsInternal;
+	    public override IReadOnlyCollection<string> CharacterSets => CharacterSetsInternal;
 
 	    public override IDictionary<int, string> StatisticsKeys => StatisticsKeysInternal;
 

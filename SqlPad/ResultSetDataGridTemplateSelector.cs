@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -39,7 +41,7 @@ namespace SqlPad
 		{
 			_columnHeader = columnHeader;
 			_columnIndex = columnHeader.ColumnIndex;
-			_hasReferenceConstraint = columnHeader.ReferenceDataSource != null;
+			_hasReferenceConstraint = columnHeader.ParentReferenceDataSources?.Count > 0;
 		}
 
 		protected ResultSetDataGridTemplateSelector(IStatementValidator statementValidator, IConnectionAdapter connectionAdapter, string bindingPath)
@@ -63,17 +65,16 @@ namespace SqlPad
 				: HyperlinkDataTemplate;
 		}
 
-		protected virtual StatementExecutionModel BuildExecutionModel(DataGridRow row)
+		protected virtual IEnumerable<StatementExecutionModel> BuildExecutionModels(DataGridRow row)
 		{
 			var currentRowValues = (object[])row.DataContext;
-			var executionModel = _columnHeader.ReferenceDataSource.CreateExecutionModel();
-			executionModel.BindVariables[0].Value = currentRowValues[_columnIndex];
-			return executionModel;
+			return _columnHeader.ParentReferenceDataSources
+				.Select(s => s.CreateExecutionModel(new [] { currentRowValues[_columnIndex] }));
 		}
 
 		protected virtual int ColumnIndex => _columnIndex;
 
-		protected virtual string GetObjectName(DataGridRow row) => _columnHeader.ReferenceDataSource.ObjectName;
+		protected virtual IReadOnlyCollection<IReferenceDataSource> GetReferenceDataSources(DataGridRow row) => _columnHeader.ParentReferenceDataSources;
 
 		private static DataTemplate CreateTextDataTemplate(string bindingPath)
 		{
@@ -104,10 +105,43 @@ namespace SqlPad
 			}
 
 			var row = (DataGridRow)hyperlink.Tag;
-			var executionModel = BuildExecutionModel(row);
 			var cellPresenter = row.FindVisualChild<DataGridCellsPresenter>();
 			var cell = (DataGridCell)cellPresenter.ItemContainerGenerator.ContainerFromIndex(ColumnIndex);
 
+			var stackPanel = new StackPanel();
+			var index = 0;
+			var references = GetReferenceDataSources(row).ToArray();
+			foreach (var executionModel in BuildExecutionModels(row))
+			{
+				await BuildParentRecordDataGrid(stackPanel, references[index++].ObjectName, executionModel);
+			}
+
+			row.Height = Double.NaN;
+			var dataGrid = row.FindParent<DataGrid>();
+			var headersPresenter = dataGrid.FindVisualChild<DataGridColumnHeadersPresenter>();
+
+			FrameworkElement contentcontainer = stackPanel;
+			var dockPanel = dataGrid.Parent as DockPanel;
+			if (dockPanel != null)
+			{
+				contentcontainer =
+					new ScrollViewer
+					{
+						Content = stackPanel,
+						HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+						VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+						MaxHeight = dockPanel.ActualHeight - headersPresenter.ActualHeight
+					};
+			}
+
+			contentcontainer.Tag = cell.Content;
+            contentcontainer.KeyDown += ContentContainerKeyDownHandler;
+
+			cell.Content = contentcontainer;
+		}
+
+		private async Task BuildParentRecordDataGrid(Panel container, string objectName, StatementExecutionModel executionModel)
+		{
 			StatementExecutionResult executionResult;
 
 			try
@@ -118,13 +152,13 @@ namespace SqlPad
 			}
 			catch (Exception e)
 			{
-				cell.Content = new TextBlock { Text = e.Message, Background = Brushes.Red };
+				container.Children.Add(new TextBlock { Text = e.Message, Background = Brushes.Red });
 				return;
 			}
 
 			if (executionResult.InitialResultSet.Count == 0)
 			{
-				cell.Content = "Record not found. ";
+				container.Children.Add(new TextBlock { Text = "Record not found. " });
 				return;
 			}
 
@@ -171,34 +205,9 @@ namespace SqlPad
 
 			referenceDataGrid.Columns.Add(columnHyperlinkValueTemplate);
 
-			row.Height = Double.NaN;
-			var dataGrid = row.FindParent<DataGrid>();
-			var headersPresenter = dataGrid.FindVisualChild<DataGridColumnHeadersPresenter>();
-
-			var stackPanel = new StackPanel();
-			var objectName = GetObjectName(row);
 			var textBlock = new TextBlock { Text = $"Source: {objectName}", Margin = new Thickness(2, 0, 2, 0), HorizontalAlignment = HorizontalAlignment.Left };
-			stackPanel.Children.Add(textBlock);
-			stackPanel.Children.Add(referenceDataGrid);
-
-			FrameworkElement contentcontainer = stackPanel;
-			var dockPanel = dataGrid.Parent as DockPanel;
-			if (dockPanel != null)
-			{
-				contentcontainer =
-					new ScrollViewer
-					{
-						Content = stackPanel,
-						HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
-						VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-						Tag = cell.Content,
-						MaxHeight = dockPanel.ActualHeight - headersPresenter.ActualHeight
-					};
-			}
-
-			contentcontainer.KeyDown += ContentContainerKeyDownHandler;
-
-			cell.Content = contentcontainer;
+			container.Children.Add(textBlock);
+			container.Children.Add(referenceDataGrid);
 		}
 
 		private static void ContentContainerKeyDownHandler(object sender, KeyEventArgs keyEventArgs)
@@ -208,11 +217,11 @@ namespace SqlPad
 				return;
 			}
 
-			var scrollViewer = (ScrollViewer)sender;
-			var cell = (DataGridCell)scrollViewer.Parent;
-			cell.Content = scrollViewer.Tag;
-			var row = cell.FindParent<DataGridRow>();
-			row.Height = 21;
+			var element = (FrameworkElement)sender;
+			var cell = (DataGridCell)element.Parent;
+			cell.Content = element.Tag;
+			//var row = cell.FindParent<DataGridRow>();
+			//row.Height = 21;
 
 			keyEventArgs.Handled = true;
 		}
@@ -247,18 +256,17 @@ namespace SqlPad
 			textBlockFactory.SetValue(FrameworkElement.HorizontalAlignmentProperty, HorizontalAlignment.Left);
 		}
 
-		protected override StatementExecutionModel BuildExecutionModel(DataGridRow row)
+		protected override IEnumerable<StatementExecutionModel> BuildExecutionModels(DataGridRow row)
 		{
 			var customTypeAttributeValue = (CustomTypeAttributeValue)row.DataContext;
-			var executionModel = customTypeAttributeValue.ColumnHeader.ReferenceDataSource.CreateExecutionModel();
-			executionModel.BindVariables[0].Value = customTypeAttributeValue.Value;
-			return executionModel;
+			return customTypeAttributeValue.ColumnHeader.ParentReferenceDataSources
+				.Select(s => s.CreateExecutionModel(new [] { customTypeAttributeValue.Value }));
 		}
 
-		protected override string GetObjectName(DataGridRow row)
+		protected override IReadOnlyCollection<IReferenceDataSource> GetReferenceDataSources(DataGridRow row)
 		{
 			var customTypeAttributeValue = (CustomTypeAttributeValue)row.DataContext;
-			return customTypeAttributeValue.ColumnHeader.ReferenceDataSource.ObjectName;
+			return customTypeAttributeValue.ColumnHeader.ParentReferenceDataSources;
 		}
 
 		protected override int ColumnIndex => 1;
@@ -271,7 +279,7 @@ namespace SqlPad
 			}
 
 			var attribute = (CustomTypeAttributeValue)item;
-			return attribute.Value == DBNull.Value || attribute.ColumnHeader.ReferenceDataSource == null
+			return attribute.Value == DBNull.Value || attribute.ColumnHeader.ParentReferenceDataSources == null || attribute.ColumnHeader.ParentReferenceDataSources.Count == 0
 				? TextDataTemplate
 				: HyperlinkDataTemplate;
 		}

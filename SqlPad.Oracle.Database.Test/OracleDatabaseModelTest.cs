@@ -44,7 +44,7 @@ WHERE
 		[Test]
 		public void TestModelInitialization()
 		{
-			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString, "Original"))
 			{
 				databaseModel.Schemas.Count.ShouldBe(0);
 				databaseModel.AllObjects.Count.ShouldBe(0);
@@ -61,7 +61,7 @@ WHERE
 				databaseModel.Initialize();
 				refreshStartedResetEvent.WaitOne();
 
-				using (var modelClone = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+				using (var modelClone = OracleDatabaseModel.GetDatabaseModel(_connectionString, "Clone"))
 				{
 					var cloneRefreshTask = modelClone.Refresh();
 					refreshFinishedResetEvent.WaitOne();

@@ -2726,21 +2726,37 @@ namespace SqlPad.Oracle.SemanticModel
 						.Where(r => r.Columns.Count == 1 && String.Equals(r.Columns[0], localColumnName) && r.Type != ConstraintType.Check)
 						.ToArray();
 
-					var referenceConstraint = constraints.OfType<OracleReferenceConstraint>().FirstOrDefault();
-					if (referenceConstraint != null)
+					var parentReferenceDataSources = new List<OracleReferenceDataSource>();
+					foreach (var referenceConstraint in constraints.OfType<OracleReferenceConstraint>())
 					{
 						var referenceColumnName = referenceConstraint.ReferenceConstraint.Columns[0];
-						var statementText = StatementText = $"SELECT * FROM {referenceConstraint.TargetObject.FullyQualifiedName} WHERE {referenceColumnName} = :KEY";
-						var keyDataType = column.ColumnDescription.DataType.FullyQualifiedName.Name.Trim('"');
+						var statementText = StatementText = $"SELECT * FROM {referenceConstraint.TargetObject.FullyQualifiedName} WHERE {referenceColumnName} = :KEY0";
 						var objectName = referenceConstraint.TargetObject.FullyQualifiedName.ToString();
-						columnHeader.ReferenceDataSource = new OracleReferenceDataSource(objectName, statementText, keyDataType);
+						var constraintName = referenceConstraint.FullyQualifiedName.ToString();
+						var keyDataType = column.ColumnDescription.DataType.FullyQualifiedName.Name.Trim('"');
+						var peferenceDataSource = new OracleReferenceDataSource(objectName, constraintName, statementText, new [] { keyDataType });
+						parentReferenceDataSources.Add(peferenceDataSource);
 					}
 
-					/*var uniqueConstraints = constraints.OfType<OracleUniqueConstraint>();
+					columnHeader.ParentReferenceDataSources = parentReferenceDataSources.AsReadOnly();
+
+					var uniqueConstraints = constraints.OfType<OracleUniqueConstraint>();
 					foreach (var uniqueConstraint in uniqueConstraints)
 					{
-						
-					}*/
+						var remoteReferenceConstraints = DatabaseModel.UniqueConstraintReferringReferenceConstraints[uniqueConstraint.FullyQualifiedName];
+						foreach (var remoteReferenceConstraint in remoteReferenceConstraints)
+						{
+							var predicate = String.Join(" AND ", remoteReferenceConstraint.Columns.Select((c, i) => $"{c} = :KEY{i}"));
+							var statementText = StatementText = $"SELECT * FROM {remoteReferenceConstraint.Owner.FullyQualifiedName} WHERE {predicate}";
+							var objectName = remoteReferenceConstraint.Owner.FullyQualifiedName.ToString();
+							var constraintName = remoteReferenceConstraint.FullyQualifiedName.ToString();
+
+							//remoteReferenceConstraint.Owner
+
+							var keyDataType = column.ColumnDescription.DataType.FullyQualifiedName.Name.Trim('"'); // FIX
+							var referenceDataSource = new OracleReferenceDataSource(objectName, constraintName, statementText, new [] { keyDataType });
+						}
+					}
 				}
 			}
 		}
@@ -2894,34 +2910,58 @@ namespace SqlPad.Oracle.SemanticModel
 	public class OracleReferenceDataSource : IReferenceDataSource
 	{
 		private readonly string _statementText;
-		private readonly string _keyDataType;
+		private readonly string[] _keyDataTypes;
 		
 		public string ObjectName { get; }
 
-		public StatementExecutionModel CreateExecutionModel()
+		public string ConstraintName { get; }
+
+		public StatementExecutionModel CreateExecutionModel(object[] keys)
 		{
+			if (keys == null)
+			{
+				throw new ArgumentNullException(nameof(keys));
+			}
+
+			if (keys.Length != _keyDataTypes.Length)
+			{
+				throw new ArgumentException($"Invalid number of values - expected: {_keyDataTypes.Length}; actual: {keys.Length}", nameof(keys));
+			}
+
 			return
 				new StatementExecutionModel
 				{
 					StatementText = _statementText,
 					BindVariables =
-						new[]
-						{
+						_keyDataTypes.Select(
+							(t, i) =>
 							new BindVariableModel(
 								new BindVariableConfiguration
 								{
-									Name = "KEY",
-									DataType = _keyDataType
+									Name = $"KEY{i}",
+									DataType = t,
+									Value = keys[i]
 								})
-						}
+							).ToArray()
 				};
 		}
 
-		internal OracleReferenceDataSource(string objectName, string statementText, string keyDataType)
+		internal OracleReferenceDataSource(string objectName, string constraintName, string statementText, string[] keyDataTypes)
 		{
+			if (keyDataTypes == null)
+			{
+				throw new ArgumentNullException(nameof(keyDataTypes));
+			}
+
+			if (keyDataTypes.Length == 0)
+			{
+				throw new ArgumentException("Reference data source requires at least on key. ", nameof(keyDataTypes));
+			}
+
 			ObjectName = objectName;
+			ConstraintName = constraintName;
 			_statementText = statementText;
-			_keyDataType = keyDataType;
+			_keyDataTypes = keyDataTypes;
 		}
 	}
 }

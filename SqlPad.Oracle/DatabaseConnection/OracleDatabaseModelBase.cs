@@ -137,6 +137,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public abstract ILookup<OracleProgramIdentifier, OracleProgramMetadata> AllFunctionMetadata { get; }
 
+		public abstract ILookup<OracleObjectIdentifier, OracleReferenceConstraint> UniqueConstraintReferringReferenceConstraints { get; }
+
 		protected abstract ILookup<OracleProgramIdentifier, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadata { get; }
 		
 		protected abstract ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuiltInPackageFunctionMetadata { get; }
@@ -145,7 +147,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public abstract IDictionary<OracleObjectIdentifier, OracleDatabaseLink> DatabaseLinks { get; }
 
-		public abstract ICollection<string> CharacterSets { get; }
+		public abstract IReadOnlyCollection<string> CharacterSets { get; }
 
 		public abstract IDictionary<int, string> StatisticsKeys { get; }
 		

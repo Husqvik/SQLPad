@@ -2381,14 +2381,18 @@ FROM
 
 			semanticModel.ApplyReferenceConstraints(columnHeaders);
 
-			var referenceDataSource = columnHeaders[0].ReferenceDataSource;
-			referenceDataSource.ShouldNotBe(null);
+			var referenceDataSources = columnHeaders[0].ParentReferenceDataSources;
+			referenceDataSources.ShouldNotBe(null);
+			referenceDataSources.Count.ShouldBe(1);
+			var referenceDataSource = referenceDataSources.First();
 			referenceDataSource.ObjectName.ShouldBe("HUSQVIK.PROJECT");
-			var executionModel = referenceDataSource.CreateExecutionModel();
+			referenceDataSource.ConstraintName.ShouldBe("HUSQVIK.FK_TARGETGROUP_PROJECT");
+			var executionModel = referenceDataSource.CreateExecutionModel(new object[] { 123 });
 
 			executionModel.BindVariables.Count.ShouldBe(1);
-			executionModel.BindVariables[0].Name.ShouldBe("KEY");
-			executionModel.StatementText.ShouldBe("SELECT * FROM HUSQVIK.PROJECT WHERE \"PROJECT_ID\" = :KEY");
+			executionModel.BindVariables[0].Name.ShouldBe("KEY0");
+			executionModel.BindVariables[0].Value.ShouldBe(123);
+			executionModel.StatementText.ShouldBe("SELECT * FROM HUSQVIK.PROJECT WHERE \"PROJECT_ID\" = :KEY0");
         }
 	}
 }
