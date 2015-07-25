@@ -73,6 +73,8 @@ namespace SqlPad
 
 		protected virtual int ColumnIndex => _columnIndex;
 
+		protected virtual string GetObjectName(DataGridRow row) => _columnHeader.ReferenceDataSource.ObjectName;
+
 		private static DataTemplate CreateTextDataTemplate(string bindingPath)
 		{
 			var textBlockFactory = new FrameworkElementFactory(typeof(TextBlock));
@@ -173,18 +175,26 @@ namespace SqlPad
 			var dataGrid = row.FindParent<DataGrid>();
 			var headersPresenter = dataGrid.FindVisualChild<DataGridColumnHeadersPresenter>();
 
-			var parentElement = (FrameworkElement)dataGrid.Parent;
-			var maxHeight = Double.IsInfinity(parentElement.MaxHeight) ? parentElement.ActualHeight : parentElement.MaxHeight - headersPresenter.ActualHeight;
+			var stackPanel = new StackPanel();
+			var objectName = GetObjectName(row);
+			var textBlock = new TextBlock { Text = $"Source: {objectName}", Margin = new Thickness(2, 0, 2, 0), HorizontalAlignment = HorizontalAlignment.Left };
+			stackPanel.Children.Add(textBlock);
+			stackPanel.Children.Add(referenceDataGrid);
 
-			var contentcontainer =
-				new ScrollViewer
-				{
-					Content = referenceDataGrid,
-					HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
-					VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-					MaxHeight = maxHeight,
-					Tag = cell.Content
-				};
+			FrameworkElement contentcontainer = stackPanel;
+			var dockPanel = dataGrid.Parent as DockPanel;
+			if (dockPanel != null)
+			{
+				contentcontainer =
+					new ScrollViewer
+					{
+						Content = stackPanel,
+						HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+						VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+						Tag = cell.Content,
+						MaxHeight = dockPanel.ActualHeight - headersPresenter.ActualHeight
+					};
+			}
 
 			contentcontainer.KeyDown += ContentContainerKeyDownHandler;
 
@@ -243,6 +253,12 @@ namespace SqlPad
 			var executionModel = customTypeAttributeValue.ColumnHeader.ReferenceDataSource.CreateExecutionModel();
 			executionModel.BindVariables[0].Value = customTypeAttributeValue.Value;
 			return executionModel;
+		}
+
+		protected override string GetObjectName(DataGridRow row)
+		{
+			var customTypeAttributeValue = (CustomTypeAttributeValue)row.DataContext;
+			return customTypeAttributeValue.ColumnHeader.ReferenceDataSource.ObjectName;
 		}
 
 		protected override int ColumnIndex => 1;

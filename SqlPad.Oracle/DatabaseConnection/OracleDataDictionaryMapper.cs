@@ -118,15 +118,15 @@ namespace SqlPad.Oracle.DatabaseConnection
 					constraint.Columns = columns.AsReadOnly();
 				}
 
-				var foreignKeyConstraint = constraintPair.Key as OracleReferenceConstraint;
-				if (foreignKeyConstraint == null)
+				var referenceConstraint = constraintPair.Key as OracleReferenceConstraint;
+				if (referenceConstraint == null)
 				{
 					continue;
 				}
 
-				var referenceConstraint = (OracleUniqueConstraint)constraints[constraintPair.Value];
-				foreignKeyConstraint.TargetObject = referenceConstraint.Owner;
-				foreignKeyConstraint.ReferenceConstraint = referenceConstraint;
+				var referencedUniqueConstraint = (OracleUniqueConstraint)constraints[constraintPair.Value];
+				referenceConstraint.TargetObject = referencedUniqueConstraint.Owner;
+				referenceConstraint.ReferenceConstraint = referencedUniqueConstraint;
 			}
 
 			Trace.WriteLine($"Fetch column constraint metadata finished in {stopwatch.Elapsed}. ");
@@ -414,15 +414,17 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var ownerObjectFullyQualifiedName = OracleObjectIdentifier.Create(owner, QualifyStringObject(reader["TABLE_NAME"]));
 			OracleSchemaObject ownerObject;
 			if (!_allObjects.TryGetValue(ownerObjectFullyQualifiedName, out ownerObject))
+			{
 				return new KeyValuePair<OracleConstraint, OracleObjectIdentifier>(null, remoteConstraintIdentifier);
+			}
 
 			var rely = OracleReaderValueConvert.ToString(reader["RELY"]);
 			var constraint = OracleObjectFactory.CreateConstraint((string)reader["CONSTRAINT_TYPE"], owner, QualifyStringObject(reader["CONSTRAINT_NAME"]), (string)reader["STATUS"] == "ENABLED", (string)reader["VALIDATED"] == "VALIDATED", (string)reader["DEFERRABLE"] == "DEFERRABLE", rely == "RELY");
 			constraint.Owner = ownerObject;
 			((OracleDataObject)ownerObject).Constraints.Add(constraint);
 
-			var foreignKeyConstraint = constraint as OracleReferenceConstraint;
-			if (foreignKeyConstraint != null)
+			var referenceConstraint = constraint as OracleReferenceConstraint;
+			if (referenceConstraint != null)
 			{
 				var cascadeAction = DeleteRule.None;
 				switch ((string)reader["DELETE_RULE"])
@@ -437,7 +439,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 						break;
 				}
 
-				foreignKeyConstraint.DeleteRule = cascadeAction;
+				referenceConstraint.DeleteRule = cascadeAction;
 				remoteConstraintIdentifier = OracleObjectIdentifier.Create(QualifyStringObject(reader["R_OWNER"]), QualifyStringObject(reader["R_CONSTRAINT_NAME"]));
 			}
 

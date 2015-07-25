@@ -666,24 +666,23 @@ namespace SqlPad
 			_connectionAdapter.Dispose();
 		}
 
-		private void ButtonCommitTransactionClickHandler(object sender, RoutedEventArgs e)
+		private async void ButtonCommitTransactionClickHandler(object sender, RoutedEventArgs e)
 		{
-			App.SafeActionWithUserError(() =>
-			{
-				_connectionAdapter.CommitTransaction();
-				SetValue(TransactionControlVisibityProperty, Visibility.Collapsed);
-			});
-
-			_documentPage.Editor.Focus();
+			await ExecuteTransactionOperation(_connectionAdapter.CommitTransaction);
 		}
 
 		private async void ButtonRollbackTransactionClickHandler(object sender, RoutedEventArgs e)
+		{
+			await ExecuteTransactionOperation(_connectionAdapter.RollbackTransaction);
+		}
+
+		private async Task ExecuteTransactionOperation(Func<Task> transactionOperation)
 		{
 			IsTransactionControlEnabled = false;
 
 			IsBusy = true;
 
-			var result = await SafeTimedActionAsync(_connectionAdapter.RollbackTransaction);
+			var result = await SafeTimedActionAsync(transactionOperation);
 			UpdateTimerMessage(result.Elapsed, false);
 
 			if (result.IsSuccessful)

@@ -59,7 +59,7 @@ namespace SqlPad
 
 		bool HasActiveTransaction { get; }
 
-		void CommitTransaction();
+		Task CommitTransaction();
 
 		Task RollbackTransaction();
 	}

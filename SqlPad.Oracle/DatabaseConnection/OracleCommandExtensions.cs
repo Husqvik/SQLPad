@@ -88,6 +88,16 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return ExecuteAsynchronous<object>(delegate { /* ODAC does not support cancellation of a connection being opened. */ }, delegate { connection.Open(); return null; }, cancellationToken);
 		}
 
+		public static Task RollbackAsynchronous(this OracleTransaction transaction)
+		{
+			return ExecuteAsynchronous<object>(delegate { }, delegate { transaction.Rollback(); return null; }, CancellationToken.None);
+		}
+
+		public static Task CommitAsynchronous(this OracleTransaction transaction)
+		{
+			return ExecuteAsynchronous<object>(delegate { }, delegate { transaction.Commit(); return null; }, CancellationToken.None);
+		}
+
 		public static async Task<bool> EnsureConnectionOpen(this OracleConnection connection, CancellationToken cancellationToken)
 		{
 			if (connection.State == ConnectionState.Open)

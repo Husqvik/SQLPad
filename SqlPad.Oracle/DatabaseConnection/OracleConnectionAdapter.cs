@@ -195,7 +195,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override void Dispose()
 		{
-			ExecuteUserTransactionAction(delegate { });
+			DisposeUserTransaction();
 
 			DisposeCommandAndReader();
 
@@ -223,14 +223,14 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override bool HasActiveTransaction => !String.IsNullOrEmpty(_userTransactionId);
 
-	    public override void CommitTransaction()
+	    public override Task CommitTransaction()
 		{
-			ExecuteUserTransactionAction(t => t.Commit());
+			return ExecuteUserTransactionAction(async t => await t.CommitAsynchronous());
 		}
 
 		public override Task RollbackTransaction()
 		{
-			return Task.Factory.StartNew(() => ExecuteUserTransactionAction(t => t.Rollback()));
+			return ExecuteUserTransactionAction(async t => await t.RollbackAsynchronous());
 		}
 
 		public async override Task<ExecutionStatisticsPlanItemCollection> GetCursorExecutionStatisticsAsync(CancellationToken cancellationToken)
@@ -262,7 +262,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			DisposeCommandAndReader();
 		}
 
-		private void ExecuteUserTransactionAction(Action<OracleTransaction> action)
+		private async Task ExecuteUserTransactionAction(Func<OracleTransaction, Task> action)
 		{
 			if (!HasActiveTransaction)
 			{
@@ -272,23 +272,26 @@ namespace SqlPad.Oracle.DatabaseConnection
 			try
 			{
 				_isExecuting = true;
-				action(_userTransaction);
+				await action(_userTransaction);
 			}
 			finally
 			{
 				_isExecuting = false;
 			}
 
-			_userTransactionId = null;
-			_userTransactionIsolationLevel = IsolationLevel.Unspecified;
-
 			DisposeUserTransaction();
 		}
 
 		private void DisposeUserTransaction()
 		{
-			_userTransaction.Dispose();
-			_userTransaction = null;
+			_userTransactionId = null;
+			_userTransactionIsolationLevel = IsolationLevel.Unspecified;
+
+			if (_userTransaction != null)
+			{
+				_userTransaction.Dispose();
+				_userTransaction = null;
+			}
 		}
 
 		private void DisposeUserConnection()

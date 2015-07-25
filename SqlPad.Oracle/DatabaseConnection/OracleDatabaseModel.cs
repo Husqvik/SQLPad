@@ -447,7 +447,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					{
 						if (transaction != null)
 						{
-							transaction.Rollback();
+							await transaction.RollbackAsynchronous();
 							transaction.Dispose();
 						}
 					}
