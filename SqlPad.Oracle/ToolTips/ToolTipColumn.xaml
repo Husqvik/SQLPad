@@ -42,7 +42,7 @@
 					<RowDefinition Height="Auto" />
 					<RowDefinition Height="Auto" />
 				</Grid.RowDefinitions>
-				<TextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding Comment}" Visibility="{Binding CommentVisibility}" Style="{StaticResource TextBoxBackgroundLessReadOnly}" />
+				<TextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding Comment}" Visibility="{Binding Comment, Converter={StaticResource ObjectToVisibilityConverter}}" Style="{StaticResource TextBoxBackgroundLessReadOnly}" />
 				<TextBlock Grid.Row="1" Grid.Column="0" Text="Owner: " />
 				<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Owner}" />
 				<TextBlock Grid.Row="2" Grid.Column="0" Text="Name: " />

@@ -78,7 +78,7 @@ namespace SqlPad.Oracle.ToolTips
 			{
 				if (UpdateValueAndRaisePropertyChanged(ref _tablespaceName, value))
 				{
-					RaisePropertyChanged("TablespaceNameVisibility");
+					RaisePropertyChanged(nameof(TablespaceNameVisibility));
 				}
 			}
 		}
@@ -132,13 +132,13 @@ namespace SqlPad.Oracle.ToolTips
 
 		public TableDetailsModel()
 		{
-			_indexDetails.CollectionChanged += delegate { RaisePropertyChanged("IndexDetailsVisibility"); };
+			_indexDetails.CollectionChanged += delegate { RaisePropertyChanged(nameof(IndexDetailsVisibility)); };
 			_visiblePartitionDetails.CollectionChanged += VisiblePartitionDetailsCollectionChangedHandler;
 		}
 
 		private void VisiblePartitionDetailsCollectionChangedHandler(object sender, NotifyCollectionChangedEventArgs args)
 		{
-			RaisePropertyChanged("PartitionDetailsVisibility");
+			RaisePropertyChanged(nameof(PartitionDetailsVisibility));
 		}
 
 		public ICollection<IndexDetailsModel> IndexDetails => _indexDetails;
@@ -155,9 +155,9 @@ namespace SqlPad.Oracle.ToolTips
 			}
 			else
 			{
-				RaisePropertyChanged("MorePartitionsExistMessageVisibility");
-				RaisePropertyChanged("VisiblePartitionCount");
-				RaisePropertyChanged("PartitionCount");
+				RaisePropertyChanged(nameof(MorePartitionsExistMessageVisibility));
+				RaisePropertyChanged(nameof(VisiblePartitionCount));
+				RaisePropertyChanged(nameof(PartitionCount));
 			}
 		}
 
@@ -197,7 +197,7 @@ namespace SqlPad.Oracle.ToolTips
 			{
 				if (UpdateValueAndRaisePropertyChanged(ref _clusterName, value))
 				{
-					RaisePropertyChanged("ClusterNameVisibility");
+					RaisePropertyChanged(nameof(ClusterNameVisibility));
 				}
 			}
 		}
@@ -231,11 +231,11 @@ namespace SqlPad.Oracle.ToolTips
 				return;
 			}
 
-			RaisePropertyChanged("InMemoryAllocatedBytes");
-			RaisePropertyChanged("StorageBytes");
-			RaisePropertyChanged("NonPopulatedBytes");
-			RaisePropertyChanged("InMemoryPopulationStatus");
-			RaisePropertyChanged("InMemoryAllocationStatusVisibility");
+			RaisePropertyChanged(nameof(InMemoryAllocatedBytes));
+			RaisePropertyChanged(nameof(StorageBytes));
+			RaisePropertyChanged(nameof(NonPopulatedBytes));
+			RaisePropertyChanged(nameof(InMemoryPopulationStatus));
+			RaisePropertyChanged(nameof(InMemoryAllocationStatusVisibility));
 		}
 
 		public Visibility InMemoryAllocationStatusVisibility => InMemoryAllocatedBytes.HasValue ? Visibility.Visible : Visibility.Collapsed;
@@ -243,16 +243,8 @@ namespace SqlPad.Oracle.ToolTips
 	    public string Comment
 		{
 			get { return _comment; }
-			set
-			{
-				if (UpdateValueAndRaisePropertyChanged(ref _comment, value))
-				{
-					RaisePropertyChanged("CommentVisibility");
-				}
-			}
+			set { UpdateValueAndRaisePropertyChanged(ref _comment, value); }
 		}
-
-		public Visibility CommentVisibility => String.IsNullOrEmpty(_comment) ? Visibility.Collapsed : Visibility.Visible;
 	}
 
 	public class IndexDetailsModel : ModelBase
@@ -261,7 +253,7 @@ namespace SqlPad.Oracle.ToolTips
 
 		public IndexDetailsModel()
 		{
-			_indexColumns.CollectionChanged += delegate { RaisePropertyChanged("IndexColumns"); };
+			_indexColumns.CollectionChanged += delegate { RaisePropertyChanged(nameof(IndexColumns)); };
 		}
 
 		public string Owner { get; set; }

@@ -50,7 +50,7 @@
 					<RowDefinition Height="Auto" />
 					<RowDefinition Height="Auto" />
 				</Grid.RowDefinitions>
-				<TextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding Comment}" Visibility="{Binding CommentVisibility}" Style="{StaticResource TextBoxBackgroundLessReadOnly}" />
+				<TextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding Comment}" Visibility="{Binding Comment, Converter={StaticResource ObjectToVisibilityConverter}}" Style="{StaticResource TextBoxBackgroundLessReadOnly}" />
 				<TextBlock Grid.Row="1" Grid.Column="0" Text="Tablespace: " Visibility="{Binding TablespaceNameVisibility}" />
 				<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding TablespaceName}" Visibility="{Binding TablespaceNameVisibility}" />
 				<TextBlock Grid.Row="2" Grid.Column="0" Text="Organization: " />

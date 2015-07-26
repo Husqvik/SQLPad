@@ -118,7 +118,6 @@
     <Compile Include="ExecutionPlan\ExecutionPlanViewer.xaml.cs">
       <DependentUpon>ExecutionPlanViewer.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ExecutionPlan\ExecutionPlanViewerModel.cs" />
     <Compile Include="ModelDataProviders\CursorExecutionStatisticsDataProvider.cs" />
     <Compile Include="ExecutionPlan\ExecutionStatisticsPlanItemCollection.cs" />
     <Compile Include="ModelDataProviders\ExplainPlanDataProvider.cs" />

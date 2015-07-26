@@ -16,22 +16,35 @@ namespace SqlPad.Oracle.ExecutionPlan
 {
 	public partial class ExecutionPlanViewer : IExecutionPlanViewer
 	{
+		public static readonly DependencyProperty TotalExecutionsProperty = DependencyProperty.Register(nameof(TotalExecutions), typeof(int), typeof(ExecutionPlanViewer), new FrameworkPropertyMetadata());
+		public static readonly DependencyProperty TextExecutionPlanProperty = DependencyProperty.Register(nameof(TextExecutionPlan), typeof(string), typeof(ExecutionPlanViewer), new FrameworkPropertyMetadata());
+
+		public int TotalExecutions
+		{
+			get { return (int)GetValue(TotalExecutionsProperty); }
+			private set { SetValue(TotalExecutionsProperty, value); }
+		}
+
+		public string TextExecutionPlan
+		{
+			get { return (string)GetValue(TextExecutionPlanProperty); }
+			private set { SetValue(TextExecutionPlanProperty, value); }
+		}
+
 		private readonly OracleDatabaseModelBase _databaseModel;
-		private readonly ExecutionPlanViewerModel _viewModel = new ExecutionPlanViewerModel();
 
 		public Control Control => this;
 
-	    public ExecutionPlanViewer(OracleDatabaseModelBase databaseModel)
+		public ExecutionPlanViewer(OracleDatabaseModelBase databaseModel)
 		{
 			InitializeComponent();
 			
 			_databaseModel = databaseModel;
-
-			DataContext = _viewModel;
 		}
 
 		public async Task ShowActualAsync(IConnectionAdapter connectionAdapter, CancellationToken cancellationToken)
 		{
+			TextExecutionPlan = null;
 			ExecutionStatisticsPlanItemCollection itemCollection = null;
 			
 			try
@@ -49,20 +62,19 @@ namespace SqlPad.Oracle.ExecutionPlan
 			}
 			
 			SetRootItem(itemCollection.RootItem);
-			_viewModel.CursorStatisticsOptionsVisibility = Visibility.Visible;
-			_viewModel.TextExecutionPlan = itemCollection.PlanText;
-			_viewModel.TotalExecutions = itemCollection.RootItem.Executions;
+			TextExecutionPlan = itemCollection.PlanText;
+			TotalExecutions = itemCollection.RootItem.Executions;
 		}
 
 		public async Task ExplainAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
-			_viewModel.TextExecutionPlan = null;
-			_viewModel.CursorStatisticsOptionsVisibility = Visibility.Collapsed;
+			TextExecutionPlan = null;
 			var itemCollection = await _databaseModel.ExplainPlanAsync(executionModel, cancellationToken);
 
 			if (itemCollection != null)
 			{
 				SetRootItem(itemCollection.RootItem);
+				TabTreeView.IsSelected = true;
 			}
 		}
 

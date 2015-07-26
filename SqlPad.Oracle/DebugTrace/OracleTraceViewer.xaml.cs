@@ -15,8 +15,8 @@ namespace SqlPad.Oracle.DebugTrace
 {
 	public partial class OracleTraceViewer : ITraceViewer
 	{
-		public static readonly DependencyProperty IsTracingProperty = DependencyProperty.Register("IsTracing", typeof(bool), typeof(OracleTraceViewer), new FrameworkPropertyMetadata(false));
-		public static readonly DependencyProperty TraceFileNameProperty = DependencyProperty.Register("TraceFileName", typeof(string), typeof(OracleTraceViewer), new FrameworkPropertyMetadata(String.Empty));
+		public static readonly DependencyProperty IsTracingProperty = DependencyProperty.Register(nameof(IsTracing), typeof(bool), typeof(OracleTraceViewer), new FrameworkPropertyMetadata(false));
+		public static readonly DependencyProperty TraceFileNameProperty = DependencyProperty.Register(nameof(TraceFileName), typeof(string), typeof(OracleTraceViewer), new FrameworkPropertyMetadata(String.Empty));
 
 		[Bindable(true)]
 		public bool IsTracing

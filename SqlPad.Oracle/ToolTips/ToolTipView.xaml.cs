@@ -1,7 +1,4 @@
-﻿using System;
-using System.Windows;
-
-namespace SqlPad.Oracle.ToolTips
+﻿namespace SqlPad.Oracle.ToolTips
 {
 	public partial class ToolTipView
 	{
@@ -20,15 +17,7 @@ namespace SqlPad.Oracle.ToolTips
 		public string Comment
 		{
 			get { return _comment; }
-			set
-			{
-				if (UpdateValueAndRaisePropertyChanged(ref _comment, value))
-				{
-					RaisePropertyChanged("CommentVisibility");
-				}
-			}
+			set { UpdateValueAndRaisePropertyChanged(ref _comment, value); }
 		}
-
-		public Visibility CommentVisibility => String.IsNullOrEmpty(_comment) ? Visibility.Collapsed : Visibility.Visible;
 	}
 }

@@ -23,7 +23,7 @@ namespace SqlPad.Oracle.ToolTips
 
 		protected ModelWithConstraints()
 		{
-			_constraintDetails.CollectionChanged += delegate { RaisePropertyChanged("ConstraintDetailsVisibility"); };
+			_constraintDetails.CollectionChanged += delegate { RaisePropertyChanged(nameof(ConstraintDetailsVisibility)); };
 		}
 
 		public Visibility ConstraintDetailsVisibility => _constraintDetails.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
@@ -51,7 +51,7 @@ namespace SqlPad.Oracle.ToolTips
 
 		public ColumnDetailsModel()
 		{
-			_indexDetails.CollectionChanged += delegate { RaisePropertyChanged("IndexDetailsVisibility"); };
+			_indexDetails.CollectionChanged += delegate { RaisePropertyChanged(nameof(IndexDetailsVisibility)); };
 		}
 
 		public ICollection<IndexDetailsModel> IndexDetails => _indexDetails;
@@ -113,7 +113,7 @@ namespace SqlPad.Oracle.ToolTips
 			{
 				if (UpdateValueAndRaisePropertyChanged(ref _inMemoryCompression, value))
 				{
-					RaisePropertyChanged("InMemoryCompressionVisibility");
+					RaisePropertyChanged(nameof(InMemoryCompressionVisibility));
 				}
 			}
 		}
@@ -139,7 +139,7 @@ namespace SqlPad.Oracle.ToolTips
 			{
 				if (UpdateValueAndRaisePropertyChanged(ref _histogramPoints, value))
 				{
-					RaisePropertyChanged("HistogramVisibility");
+					RaisePropertyChanged(nameof(HistogramVisibility));
 				}
 			}
 		}
@@ -160,16 +160,8 @@ namespace SqlPad.Oracle.ToolTips
 		public string Comment
 		{
 			get { return _comment; }
-			set
-			{
-				if (UpdateValueAndRaisePropertyChanged(ref _comment, value))
-				{
-					RaisePropertyChanged("CommentVisibility");
-				}
-			}
+			set { UpdateValueAndRaisePropertyChanged(ref _comment, value); }
 		}
-
-		public Visibility CommentVisibility => String.IsNullOrEmpty(_comment) ? Visibility.Collapsed : Visibility.Visible;
 
 	    public Visibility IndexDetailsVisibility => _indexDetails.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
 

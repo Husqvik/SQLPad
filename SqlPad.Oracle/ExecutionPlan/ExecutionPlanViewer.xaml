@@ -1,12 +1,13 @@
 ﻿<UserControl x:Class="SqlPad.Oracle.ExecutionPlan.ExecutionPlanViewer"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:sqlPad="clr-namespace:SqlPad;assembly=SqlPad"
              xmlns:executionPlan="clr-namespace:SqlPad.Oracle.ExecutionPlan"
-             mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300">
+             mc:Ignorable="d"
+             d:DesignHeight="160" d:DesignWidth="300"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}">
 	<UserControl.Resources>
 		<sqlPad:DataSpaceConverter x:Key="DataSpaceConverter" />
 		<sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintNumericConverter" />
@@ -505,9 +506,22 @@
 	</UserControl.Resources>
 
 	<TabControl>
-		<TabItem Header="Tree">
+		<TabItem Header="Tree" x:Name="TabTreeView">
 			<DockPanel LastChildFill="True">
-				<GroupBox Header="Options" Visibility="{Binding CursorStatisticsOptionsVisibility}" DockPanel.Dock="Top" Padding="2,2,2,2">
+				<GroupBox Header="Options" DockPanel.Dock="Top" Padding="2,2,2,2">
+					<GroupBox.Style>
+						<Style>
+							<Style.Setters>
+								<Setter Property="GroupBox.Visibility" Value="Visible" />
+							</Style.Setters>
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding TextExecutionPlan}" Value="{x:Null}">
+									<Setter Property="GroupBox.Visibility" Value="Collapsed" />
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</GroupBox.Style>
+
 					<StackPanel Orientation="Horizontal">
 						<RadioButton x:Name="ShowLastExecution" IsChecked="True">
 							<TextBlock Text="Last" Padding="0,0,10,0" />

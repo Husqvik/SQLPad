@@ -11,17 +11,16 @@ namespace SqlPad.Oracle.ToolTips
 	{
 		private readonly ObservableCollection<SubPartitionDetailsModel> _visibleSubPartitionDetails = new ObservableCollection<SubPartitionDetailsModel>();
 		private readonly Dictionary<string, SubPartitionDetailsModel> _subPartitionDetailsDictionary = new Dictionary<string, SubPartitionDetailsModel>();
-		private readonly int _maxVisibleSubPartitionCount;
 
 		public PartitionDetailsModel(int maxVisibleSubPartitionCount = 4)
 		{
-			_maxVisibleSubPartitionCount = maxVisibleSubPartitionCount;
+			VisibleSubPartitionCount = maxVisibleSubPartitionCount;
 			_visibleSubPartitionDetails.CollectionChanged += VisibleSubPartitionDetailsCollectionChangedHandler;
 		}
 
 		private void VisibleSubPartitionDetailsCollectionChangedHandler(object sender, NotifyCollectionChangedEventArgs args)
 		{
-			RaisePropertyChanged("SubPartitionDetailsVisibility");
+			RaisePropertyChanged(nameof(SubPartitionDetailsVisibility));
 		}
 
 		public ICollection<SubPartitionDetailsModel> SubPartitionDetails => _visibleSubPartitionDetails;
@@ -30,25 +29,25 @@ namespace SqlPad.Oracle.ToolTips
 		{
 			_subPartitionDetailsDictionary.Add(subPartition.Name, subPartition);
 
-			if (_visibleSubPartitionDetails.Count < _maxVisibleSubPartitionCount)
+			if (_visibleSubPartitionDetails.Count < VisibleSubPartitionCount)
 			{
 				_visibleSubPartitionDetails.Add(subPartition);
 			}
 			else
 			{
-				RaisePropertyChanged("MoreSubPartitionsExistMessageVisibility");
-				RaisePropertyChanged("VisibleSubPartitionCount");
-				RaisePropertyChanged("SubPartitionCount");
+				RaisePropertyChanged(nameof(MoreSubPartitionsExistMessageVisibility));
+				RaisePropertyChanged(nameof(VisibleSubPartitionCount));
+				RaisePropertyChanged(nameof(SubPartitionCount));
 			}
 		}
 
 		public Visibility SubPartitionDetailsVisibility => _visibleSubPartitionDetails.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
 
-	    public Visibility MoreSubPartitionsExistMessageVisibility => _subPartitionDetailsDictionary.Count > _maxVisibleSubPartitionCount ? Visibility.Visible : Visibility.Collapsed;
+	    public Visibility MoreSubPartitionsExistMessageVisibility => _subPartitionDetailsDictionary.Count > VisibleSubPartitionCount ? Visibility.Visible : Visibility.Collapsed;
 
-	    public int VisibleSubPartitionCount => _maxVisibleSubPartitionCount;
+	    public int VisibleSubPartitionCount { get; }
 
-	    public int SubPartitionCount => _subPartitionDetailsDictionary.Count;
+		public int SubPartitionCount => _subPartitionDetailsDictionary.Count;
 	}
 
 	public abstract class PartitionDetailsModelBase : SegmentDetailsModelBase
