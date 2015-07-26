@@ -103,6 +103,7 @@
     <Compile Include="Bookmarks\IconMargin.cs" />
     <Compile Include="CellValueConverter.cs" />
     <Compile Include="CSharpQueryClassGenerator.cs" />
+    <Compile Include="DataGridHelper.cs" />
     <Compile Include="FindReplace\TextSearchHelper.cs" />
     <Compile Include="IDebuggerSession.cs" />
     <Compile Include="OutputViewer.DependencyProperties.cs" />

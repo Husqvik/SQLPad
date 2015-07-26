@@ -131,72 +131,12 @@ namespace SqlPad
 
 		private void DisplayResult()
 		{
-			InitializeDataGridColumns(ResultGrid, _executionResult.ColumnHeaders);
+			DataGridHelper.InitializeDataGridColumns(ResultGrid, _executionResult.ColumnHeaders, _statementValidator, _connectionAdapter);
 
 			StatusInfo.ResultGridAvailable = true;
 			_resultRows.Clear();
 
 			AppendRows(_executionResult.InitialResultSet);
-		}
-
-		private void InitializeDataGridColumns(DataGrid dataGrid, IEnumerable<ColumnHeader> columnHeaders)
-		{
-			dataGrid.Columns.Clear();
-
-			foreach (var columnHeader in columnHeaders)
-			{
-				var columnTemplate = CreateDataGridTemplateColumn(columnHeader, _statementValidator, _connectionAdapter);
-				dataGrid.Columns.Add(columnTemplate);
-			}
-
-			dataGrid.HeadersVisibility = DataGridHeadersVisibility.Column;
-		}
-
-		internal static DataGridColumn CreateDataGridTemplateColumn(ColumnHeader columnHeader, IStatementValidator statementValidator = null, IConnectionAdapter connectionAdapter = null)
-		{
-			var textBoxFactory = new FrameworkElementFactory(typeof(TextBox));
-			textBoxFactory.SetValue(TextBoxBase.IsReadOnlyProperty, true);
-			textBoxFactory.SetValue(TextBoxBase.IsReadOnlyCaretVisibleProperty, true);
-			textBoxFactory.SetBinding(TextBox.TextProperty, new Binding($"[{columnHeader.ColumnIndex}]") { Converter = CellValueConverter.Instance });
-			var editingDataTemplate = new DataTemplate(typeof(DependencyObject)) { VisualTree = textBoxFactory };
-
-			var columnTemplate =
-				new DataGridTemplateColumn
-				{
-					Header = columnHeader,
-					CellTemplateSelector = new ResultSetDataGridTemplateSelector(statementValidator, connectionAdapter, columnHeader),
-					CellEditingTemplate = editingDataTemplate
-				};
-
-			if (columnHeader.DataType.In(typeof(Decimal), typeof(Int16), typeof(Int32), typeof(Int64), typeof(Byte)))
-			{
-				columnTemplate.HeaderStyle = (Style)Application.Current.Resources["HeaderStyleRightAlign"];
-				columnTemplate.CellStyle = (Style)Application.Current.Resources["CellStyleRightAlign"];
-			}
-
-			return columnTemplate;
-		}
-
-		internal static void ShowLargeValueEditor(DataGrid dataGrid)
-		{
-			var currentRowValues = (object[])dataGrid.CurrentItem;
-			if (currentRowValues == null || dataGrid.CurrentColumn == null)
-			{
-				return;
-			}
-
-			var columnIndex = dataGrid.Columns.IndexOf(dataGrid.CurrentColumn);
-			if (columnIndex == -1 || columnIndex >= currentRowValues.Length)
-			{
-				return;
-			}
-
-			var cellValue = currentRowValues[columnIndex];
-			var largeValue = cellValue as ILargeValue;
-			if (largeValue != null)
-			{
-				new LargeValueEditor(((ColumnHeader)dataGrid.CurrentColumn.Header).Name, largeValue) { Owner = Window.GetWindow(dataGrid) }.ShowDialog();
-			}
 		}
 
 		public void Cancel()
@@ -458,7 +398,7 @@ namespace SqlPad
 				childRecordDataGrid.BeginningEdit += App.ResultGridBeginningEditCancelTextInputHandlerImplementation;
 				childRecordDataGrid.MouseDoubleClick += ResultGridMouseDoubleClickHandler;
 
-				InitializeDataGridColumns(childRecordDataGrid, executionResult.ColumnHeaders);
+				DataGridHelper.InitializeDataGridColumns(childRecordDataGrid, executionResult.ColumnHeaders, _statementValidator, _connectionAdapter);
 				AddChildReferenceColumns(childRecordDataGrid, childReferenceDataSources);
 
 				foreach (var columnTemplate in childRecordDataGrid.Columns)
@@ -473,7 +413,7 @@ namespace SqlPad
 				element = new TextBlock { Text = e.Message, Background = Brushes.Red };
 			}
 
-			cell.Content = ResultSetDataGridTemplateSelector.ConfigureAndWrapUsingScrollViewerIfNeeded(cell, element);
+			cell.Content = DataGridHelper.ConfigureAndWrapUsingScrollViewerIfNeeded(cell, element);
 		}
 
 		private void NotifyExecutionCanceled()
@@ -540,7 +480,7 @@ namespace SqlPad
 
 		private void ResultGridMouseDoubleClickHandler(object sender, MouseButtonEventArgs e)
 		{
-			ShowLargeValueEditor((DataGrid)sender);
+			DataGridHelper.ShowLargeValueEditor((DataGrid)sender);
 		}
 
 		private void ResultGridSelectedCellsChangedHandler(object sender, SelectedCellsChangedEventArgs e)
@@ -891,7 +831,7 @@ namespace SqlPad
 
 		private void CleanUpVirtualizedItemHandler(object sender, CleanUpVirtualizedItemEventArgs e)
 		{
-			e.Cancel = ResultSetDataGridTemplateSelector.CanBeRecycled(e.UIElement);
+			e.Cancel = DataGridHelper.CanBeRecycled(e.UIElement);
 		}
 
 		private void ApplicationDeactivatedHandler(object sender, EventArgs eventArgs)

@@ -12,12 +12,17 @@ using System.Data;
 
 public class Query
 {{
-	private IDbConnection _connection;
+	private readonly IDbConnection _connection;
 
 	private const string CommandText =
 @""{0}"";
-{1}	
-	private IEnumerable<ResultRow> Execute()
+
+	public Query(IDbConnection connection)
+	{
+		_connection = connection;
+	}
+
+	private IEnumerable<ResultRow> Execute({1})
 	{{
 		using (var command = _connection.CreateCommand())
 		{{
@@ -57,18 +62,23 @@ public class Query
 			var bindVariableBuilder = new StringBuilder();
 			var parameterBuilder = new StringBuilder();
 
+			var index = 0;
 			if (executionResult.Statement.BindVariables.Count > 0)
 			{
-				bindVariableBuilder.AppendLine();
 				parameterBuilder.AppendLine();
 
 				foreach (var bindVariable in executionResult.Statement.BindVariables)
 				{
-					bindVariableBuilder.Append("\tpublic ");
+					index++;
+
 					bindVariableBuilder.Append(bindVariable.InputType);
 					bindVariableBuilder.Append(" ");
 					bindVariableBuilder.Append(bindVariable.Name);
-					bindVariableBuilder.AppendLine(" { get; set; }");
+
+					if (index < executionResult.Statement.BindVariables.Count)
+					{
+						bindVariableBuilder.Append(", ");
+					}
 
 					var parameterName = $"parameter{bindVariable.Name}";
 					parameterBuilder.Append("\t\t\tvar ");
@@ -86,7 +96,7 @@ public class Query
 				}
 			}
 
-			var index = 0;
+			index = 0;
 			foreach (var column in executionResult.ColumnHeaders)
 			{
 				index++;
@@ -104,9 +114,9 @@ public class Query
 				columnMapBuilder.Append(column.Name);
 				columnMapBuilder.Append(" = GetReaderValue<");
 				columnMapBuilder.Append(dataTypeName);
-				columnMapBuilder.Append(">(reader[\"");
+				columnMapBuilder.Append(">(reader[nameof(ResultRow.");
 				columnMapBuilder.Append(column.Name);
-				columnMapBuilder.Append("\"])");
+				columnMapBuilder.Append(")])");
 
 				if (index < executionResult.ColumnHeaders.Count)
 				{

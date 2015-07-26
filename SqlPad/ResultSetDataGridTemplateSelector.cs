@@ -8,7 +8,6 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
 
 namespace SqlPad
@@ -113,33 +112,7 @@ namespace SqlPad
 				await BuildParentRecordDataGrid(stackPanel, references[index++].ObjectName, executionModel);
 			}
 
-			cell.Content = ConfigureAndWrapUsingScrollViewerIfNeeded(cell, stackPanel);
-		}
-
-		internal static FrameworkElement ConfigureAndWrapUsingScrollViewerIfNeeded(DataGridCell cell, FrameworkElement contentContainer)
-		{
-			var row = cell.FindParent<DataGridRow>();
-			var dataGrid = row.FindParent<DataGrid>();
-			var dockPanel = dataGrid.Parent as DockPanel;
-			if (dockPanel != null)
-			{
-				var headersPresenter = dataGrid.FindVisualChild<DataGridColumnHeadersPresenter>();
-
-				contentContainer =
-					new ScrollViewer
-					{
-						Content = contentContainer,
-						HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
-						VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-						MaxHeight = dockPanel.ActualHeight - headersPresenter.ActualHeight
-					};
-			}
-
-			row.Height = Double.NaN;
-
-			contentContainer.Tag = cell.Content;
-			contentContainer.KeyDown += ContentContainerKeyDownHandler;
-			return contentContainer;
+			cell.Content = DataGridHelper.ConfigureAndWrapUsingScrollViewerIfNeeded(cell, stackPanel);
 		}
 
 		private async Task BuildParentRecordDataGrid(Panel container, string objectName, StatementExecutionModel executionModel)
@@ -211,39 +184,6 @@ namespace SqlPad
 			var textBlock = new TextBlock { Text = $"Source: {objectName}", Margin = new Thickness(2, 0, 2, 0), HorizontalAlignment = HorizontalAlignment.Left };
 			container.Children.Add(textBlock);
 			container.Children.Add(referenceDataGrid);
-		}
-
-		private static void ContentContainerKeyDownHandler(object sender, KeyEventArgs keyEventArgs)
-		{
-			if (keyEventArgs.Key != Key.Escape)
-			{
-				return;
-			}
-
-			var element = (FrameworkElement)sender;
-			var cell = (DataGridCell)element.Parent;
-			cell.Content = element.Tag;
-			//var row = cell.FindParent<DataGridRow>();
-			//row.Height = 21;
-
-			keyEventArgs.Handled = true;
-		}
-
-		public static bool CanBeRecycled(UIElement uiElement)
-		{
-			var row = (DataGridRow)uiElement;
-			var cellPresenter = row.FindVisualChild<DataGridCellsPresenter>();
-			var columnCount = ((object[])row.DataContext).Length;
-			for (var index = 0; index < columnCount; index++)
-			{
-				var cell = (DataGridCell)cellPresenter.ItemContainerGenerator.ContainerFromIndex(index);
-				if (!(cell?.Content is ContentPresenter))
-				{
-					return true;
-				}
-			}
-
-			return false;
 		}
 	}
 
