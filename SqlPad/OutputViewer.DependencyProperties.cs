@@ -1,32 +1,33 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Data;
 
 namespace SqlPad
 {
 	public partial class OutputViewer
 	{
 		#region dependency properties registration
-		public static readonly DependencyProperty ShowAllSessionExecutionStatisticsProperty = DependencyProperty.Register("ShowAllSessionExecutionStatistics", typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(ShowAllSessionExecutionStatisticsPropertyChangedCallbackHandler));
-		public static readonly DependencyProperty EnableDatabaseOutputProperty = DependencyProperty.Register("EnableDatabaseOutput", typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
-		public static readonly DependencyProperty IsPinnedProperty = DependencyProperty.Register("IsPinned", typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
-		public static readonly DependencyProperty EnableReferenceConstraintChildrenProperty = DependencyProperty.Register("EnableReferenceConstraintChildren", typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
-		public static readonly DependencyProperty TitleProperty = DependencyProperty.Register("Title", typeof(string), typeof(OutputViewer), new FrameworkPropertyMetadata(TitlePropertyChangedCallbackHandler));
-		public static readonly DependencyProperty DatabaseOutputProperty = DependencyProperty.Register("DatabaseOutput", typeof(string), typeof(OutputViewer), new FrameworkPropertyMetadata(String.Empty));
-		public static readonly DependencyProperty LastStatementTextProperty = DependencyProperty.Register("LastStatementText", typeof(string), typeof(OutputViewer), new FrameworkPropertyMetadata(String.Empty));
+		public static readonly DependencyProperty ShowAllSessionExecutionStatisticsProperty = DependencyProperty.Register(nameof(ShowAllSessionExecutionStatistics), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(ShowAllSessionExecutionStatisticsPropertyChangedCallbackHandler));
+		public static readonly DependencyProperty EnableDatabaseOutputProperty = DependencyProperty.Register(nameof(EnableDatabaseOutput), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
+		public static readonly DependencyProperty IsPinnedProperty = DependencyProperty.Register(nameof(IsPinned), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
+		public static readonly DependencyProperty EnableReferenceConstraintChildrenProperty = DependencyProperty.Register(nameof(EnableReferenceConstraintChildren), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
+		public static readonly DependencyProperty TitleProperty = DependencyProperty.Register(nameof(Title), typeof(string), typeof(OutputViewer), new FrameworkPropertyMetadata(TitlePropertyChangedCallbackHandler));
+		public static readonly DependencyProperty DatabaseOutputProperty = DependencyProperty.Register(nameof(DatabaseOutput), typeof(string), typeof(OutputViewer), new FrameworkPropertyMetadata(String.Empty));
+		public static readonly DependencyProperty LastStatementTextProperty = DependencyProperty.Register(nameof(LastStatementText), typeof(string), typeof(OutputViewer), new FrameworkPropertyMetadata(String.Empty));
 
-		public static readonly DependencyProperty IsDebuggerControlEnabledProperty = DependencyProperty.Register("IsDebuggerControlEnabled", typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
-		public static readonly DependencyProperty IsTransactionControlEnabledProperty = DependencyProperty.Register("IsTransactionControlEnabled", typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(true));
-		public static readonly DependencyProperty TransactionControlVisibityProperty = DependencyProperty.Register("TransactionControlVisibity", typeof(Visibility), typeof(OutputViewer), new FrameworkPropertyMetadata(Visibility.Collapsed));
+		public static readonly DependencyProperty IsDebuggerControlEnabledProperty = DependencyProperty.Register(nameof(IsDebuggerControlEnabled), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
+		public static readonly DependencyProperty IsTransactionControlEnabledProperty = DependencyProperty.Register(nameof(IsTransactionControlEnabled), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(true));
+		public static readonly DependencyProperty TransactionControlVisibityProperty = DependencyProperty.Register(nameof(TransactionControlVisibity), typeof(Visibility), typeof(OutputViewer), new FrameworkPropertyMetadata(Visibility.Collapsed));
 
-		public static readonly DependencyProperty SelectedCellNumericInfoVisibilityProperty = DependencyProperty.Register("SelectedCellNumericInfoVisibility", typeof(Visibility), typeof(OutputViewer), new FrameworkPropertyMetadata(Visibility.Collapsed));
-		public static readonly DependencyProperty SelectedCellInfoVisibilityProperty = DependencyProperty.Register("SelectedCellInfoVisibility", typeof(Visibility), typeof(OutputViewer), new FrameworkPropertyMetadata(Visibility.Collapsed));
+		public static readonly DependencyProperty SelectedCellNumericInfoVisibilityProperty = DependencyProperty.Register(nameof(SelectedCellNumericInfoVisibility), typeof(Visibility), typeof(OutputViewer), new FrameworkPropertyMetadata(Visibility.Collapsed));
+		public static readonly DependencyProperty SelectedCellInfoVisibilityProperty = DependencyProperty.Register(nameof(SelectedCellInfoVisibility), typeof(Visibility), typeof(OutputViewer), new FrameworkPropertyMetadata(Visibility.Collapsed));
 
-		public static readonly DependencyProperty SelectedCellValueCountProperty = DependencyProperty.Register("SelectedCellValueCount", typeof(int), typeof(OutputViewer), new FrameworkPropertyMetadata(0));
-		public static readonly DependencyProperty SelectedCellSumProperty = DependencyProperty.Register("SelectedCellSum", typeof(decimal), typeof(OutputViewer), new FrameworkPropertyMetadata(0m));
-		public static readonly DependencyProperty SelectedCellAverageProperty = DependencyProperty.Register("SelectedCellAverage", typeof(decimal), typeof(OutputViewer), new FrameworkPropertyMetadata(0m));
-		public static readonly DependencyProperty SelectedCellMinProperty = DependencyProperty.Register("SelectedCellMin", typeof(decimal), typeof(OutputViewer), new FrameworkPropertyMetadata(0m));
-		public static readonly DependencyProperty SelectedCellMaxProperty = DependencyProperty.Register("SelectedCellMax", typeof(decimal), typeof(OutputViewer), new FrameworkPropertyMetadata(0m));
+		public static readonly DependencyProperty SelectedCellValueCountProperty = DependencyProperty.Register(nameof(SelectedCellValueCount), typeof(int), typeof(OutputViewer), new FrameworkPropertyMetadata(0));
+		public static readonly DependencyProperty SelectedCellSumProperty = DependencyProperty.Register(nameof(SelectedCellSum), typeof(decimal), typeof(OutputViewer), new FrameworkPropertyMetadata(0m));
+		public static readonly DependencyProperty SelectedCellAverageProperty = DependencyProperty.Register(nameof(SelectedCellAverage), typeof(decimal), typeof(OutputViewer), new FrameworkPropertyMetadata(0m));
+		public static readonly DependencyProperty SelectedCellMinProperty = DependencyProperty.Register(nameof(SelectedCellMin), typeof(decimal), typeof(OutputViewer), new FrameworkPropertyMetadata(0m));
+		public static readonly DependencyProperty SelectedCellMaxProperty = DependencyProperty.Register(nameof(SelectedCellMax), typeof(decimal), typeof(OutputViewer), new FrameworkPropertyMetadata(0m));
 		#endregion
 
 		#region dependency property accessors
@@ -39,7 +40,9 @@ namespace SqlPad
 
 		private static void ShowAllSessionExecutionStatisticsPropertyChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
 		{
-			((OutputViewer)dependencyObject).ApplySessionExecutionStatisticsFilter();
+			var outputViewer = (OutputViewer)dependencyObject;
+			var viewSource = (CollectionViewSource)outputViewer.TabStatistics.Resources["SortedSessionExecutionStatistics"];
+			viewSource.View.Refresh();
 		}
 
 		[Bindable(true)]

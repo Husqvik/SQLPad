@@ -13,9 +13,9 @@ namespace SqlPad
 
 		public string Name => BindVariable.Name;
 
-	    public ICollection<string> DataTypes => BindVariable.DataTypes.Keys;
+		public ICollection<string> DataTypes => BindVariable.DataTypes.Keys;
 
-	    public object Value
+		public object Value
 		{
 			get { return BindVariable.Value; }
 			set
@@ -24,13 +24,13 @@ namespace SqlPad
 					return;
 
 				BindVariable.Value = value;
-				RaisePropertyChanged("Value");
+				RaisePropertyChanged(nameof(Value));
 			}
 		}
 
 		public string InputType => BindVariable.DataTypes[BindVariable.DataType].Name;
 
-	    public string DataType
+		public string DataType
 		{
 			get { return BindVariable.DataType; }
 			set
@@ -44,10 +44,10 @@ namespace SqlPad
 				if (previousInputType != InputType)
 				{
 					Value = null;
-					RaisePropertyChanged("InputType");
+					RaisePropertyChanged(nameof(InputType));
 				}
 
-				RaisePropertyChanged("DataType");
+				RaisePropertyChanged(nameof(DataType));
 			}
 		}
 	}

@@ -9,20 +9,20 @@ namespace SqlPad
 	public partial class DocumentPage
 	{
 		#region dependency properties registration
-		public static readonly DependencyProperty ConnectionStatusProperty = DependencyProperty.Register("ConnectionStatus", typeof(ConnectionStatus), typeof(DocumentPage), new FrameworkPropertyMetadata(ConnectionStatus.Connecting));
-		public static readonly DependencyProperty EnableDebugModeProperty = DependencyProperty.Register("EnableDebugMode", typeof(bool), typeof(DocumentPage), new FrameworkPropertyMetadata(true));
-		public static readonly DependencyProperty IsProductionConnectionProperty = DependencyProperty.Register("IsProductionConnection", typeof(bool), typeof(DocumentPage), new FrameworkPropertyMetadata(false));
-		public static readonly DependencyProperty IsModifiedProperty = DependencyProperty.Register("IsModified", typeof(bool), typeof(DocumentPage), new FrameworkPropertyMetadata(false));
-		public static readonly DependencyProperty IsRunningProperty = DependencyProperty.Register("IsRunning", typeof(bool), typeof(DocumentPage), new FrameworkPropertyMetadata(false));
-		public static readonly DependencyProperty ConnectionErrorMessageProperty = DependencyProperty.Register("ConnectionErrorMessage", typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(String.Empty));
-		public static readonly DependencyProperty DocumentHeaderBackgroundColorCodeProperty = DependencyProperty.Register("DocumentHeaderBackgroundColorCode", typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(DocumentHeaderBackgroundColorCodePropertyChangedCallbackHandler) { DefaultValue = WorkDocument.DefaultDocumentHeaderBackgroundColorCode });
-		public static readonly DependencyProperty DocumentHeaderProperty = DependencyProperty.Register("DocumentHeader", typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(DocumentHeaderPropertyChangedCallbackHandler));
-		public static readonly DependencyProperty DocumentHeaderToolTipProperty = DependencyProperty.Register("DocumentHeaderToolTip", typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(String.Empty));
-		public static readonly DependencyProperty DateTimeFormatProperty = DependencyProperty.Register("DateTimeFormat", typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata());
-		public static readonly DependencyProperty SchemaLabelProperty = DependencyProperty.Register("SchemaLabel", typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(String.Empty));
-		public static readonly DependencyProperty CurrentSchemaProperty = DependencyProperty.Register("CurrentSchema", typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(CurrentSchemaPropertyChangedCallbackHandler));
-		public static readonly DependencyProperty CurrentConnectionProperty = DependencyProperty.Register("CurrentConnection", typeof(ConnectionStringSettings), typeof(DocumentPage), new FrameworkPropertyMetadata(CurrentConnectionPropertyChangedCallbackHandler));
-		public static readonly DependencyProperty BindVariablesProperty = DependencyProperty.Register("BindVariables", typeof(IReadOnlyList<BindVariableModel>), typeof(DocumentPage), new FrameworkPropertyMetadata(new BindVariableModel[0]));
+		public static readonly DependencyProperty ConnectionStatusProperty = DependencyProperty.Register(nameof(ConnectionStatus), typeof(ConnectionStatus), typeof(DocumentPage), new FrameworkPropertyMetadata(ConnectionStatus.Connecting));
+		public static readonly DependencyProperty EnableDebugModeProperty = DependencyProperty.Register(nameof(EnableDebugMode), typeof(bool), typeof(DocumentPage), new FrameworkPropertyMetadata(true));
+		public static readonly DependencyProperty IsProductionConnectionProperty = DependencyProperty.Register(nameof(IsProductionConnection), typeof(bool), typeof(DocumentPage), new FrameworkPropertyMetadata(false));
+		public static readonly DependencyProperty IsModifiedProperty = DependencyProperty.Register(nameof(IsModified), typeof(bool), typeof(DocumentPage), new FrameworkPropertyMetadata(false));
+		public static readonly DependencyProperty IsRunningProperty = DependencyProperty.Register(nameof(IsRunning), typeof(bool), typeof(DocumentPage), new FrameworkPropertyMetadata(false));
+		public static readonly DependencyProperty ConnectionErrorMessageProperty = DependencyProperty.Register(nameof(ConnectionErrorMessage), typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(String.Empty));
+		public static readonly DependencyProperty DocumentHeaderBackgroundColorCodeProperty = DependencyProperty.Register(nameof(DocumentHeaderBackgroundColorCode), typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(DocumentHeaderBackgroundColorCodePropertyChangedCallbackHandler) { DefaultValue = WorkDocument.DefaultDocumentHeaderBackgroundColorCode });
+		public static readonly DependencyProperty DocumentHeaderProperty = DependencyProperty.Register(nameof(DocumentHeader), typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(DocumentHeaderPropertyChangedCallbackHandler));
+		public static readonly DependencyProperty DocumentHeaderToolTipProperty = DependencyProperty.Register(nameof(DocumentHeaderToolTip), typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(String.Empty));
+		public static readonly DependencyProperty DateTimeFormatProperty = DependencyProperty.Register(nameof(DateTimeFormat), typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata());
+		public static readonly DependencyProperty SchemaLabelProperty = DependencyProperty.Register(nameof(SchemaLabel), typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(String.Empty));
+		public static readonly DependencyProperty CurrentSchemaProperty = DependencyProperty.Register(nameof(CurrentSchema), typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(CurrentSchemaPropertyChangedCallbackHandler));
+		public static readonly DependencyProperty CurrentConnectionProperty = DependencyProperty.Register(nameof(CurrentConnection), typeof(ConnectionStringSettings), typeof(DocumentPage), new FrameworkPropertyMetadata(CurrentConnectionPropertyChangedCallbackHandler));
+		public static readonly DependencyProperty BindVariablesProperty = DependencyProperty.Register(nameof(BindVariables), typeof(IReadOnlyList<BindVariableModel>), typeof(DocumentPage), new FrameworkPropertyMetadata(new BindVariableModel[0]));
 		#endregion
 
 		#region dependency property accessors

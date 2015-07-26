@@ -6,6 +6,7 @@
 			 xmlns:sqlPad="clr-namespace:SqlPad"
 			 xmlns:commands="clr-namespace:SqlPad.Commands"
 			 xmlns:globalization="clr-namespace:System.Globalization;assembly=mscorlib"
+			 xmlns:componentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
 			 mc:Ignorable="d" 
 			 d:DesignHeight="140" d:DesignWidth="384"
 			 MouseMove="OutputViewerMouseMoveHandler"
@@ -185,9 +186,17 @@
 				</DockPanel>
 			</TabItem>
 			<TabItem Header="_Statistics" x:Name="TabStatistics">
+				<TabItem.Resources>
+					<CollectionViewSource x:Key="SortedSessionExecutionStatistics" Source="{Binding SessionExecutionStatistics}" Filter="SessionExecutionStatisticsFilterHandler">
+						<CollectionViewSource.SortDescriptions>
+							<componentModel:SortDescription PropertyName="Name"/>
+						</CollectionViewSource.SortDescriptions>
+					</CollectionViewSource>
+				</TabItem.Resources>
+
 				<DockPanel>
 					<CheckBox DockPanel.Dock="Right" Margin="4" Content="Show _All" IsChecked="{Binding ShowAllSessionExecutionStatistics}" />
-					<DataGrid ItemsSource="{Binding SessionExecutionStatistics}"
+					<DataGrid ItemsSource="{Binding Source={StaticResource SortedSessionExecutionStatistics}}"
 							  AutoGenerateColumns="False"
 							  CanUserDeleteRows="False"
 							  CanUserAddRows="False"
@@ -196,6 +205,7 @@
 							  BeginningEdit="ResultGridBeginningEditCancelTextInputHandler"
 							  HorizontalGridLinesBrush="LightGray"
 							  VerticalGridLinesBrush="LightGray">
+
 						<DataGrid.Columns>
 							<DataGridTextColumn Header="Name" Binding="{Binding Path=Name}"
 												EditingElementStyle="{StaticResource CellTextBoxStyleReadOnly}" />

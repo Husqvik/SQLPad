@@ -24,7 +24,7 @@ namespace SqlPad
 			{
 				if (UpdateValueAndRaisePropertyChanged(ref _resultGridAvailable, value))
 				{
-					RaisePropertyChanged("StatementExecutionInfoSeparatorVisibility");
+					RaisePropertyChanged(nameof(StatementExecutionInfoSeparatorVisibility));
 				}
 			}
 		}
@@ -36,7 +36,7 @@ namespace SqlPad
 			{
 				if (UpdateValueAndRaisePropertyChanged(ref _ddlStatementExecutedSuccessfully, value))
 				{
-					RaisePropertyChanged("StatementExecutionInfoSeparatorVisibility");
+					RaisePropertyChanged(nameof(StatementExecutionInfoSeparatorVisibility));
 				}
 			}
 		}
@@ -61,8 +61,8 @@ namespace SqlPad
 				if (!UpdateValueAndRaisePropertyChanged(ref _affectedRowCount, value))
 					return;
 
-				RaisePropertyChanged("AffectedRowCountVisibility");
-				RaisePropertyChanged("StatementExecutionInfoSeparatorVisibility");
+				RaisePropertyChanged(nameof(AffectedRowCountVisibility));
+				RaisePropertyChanged(nameof(StatementExecutionInfoSeparatorVisibility));
 			}
 		}
 

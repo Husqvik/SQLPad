@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -65,7 +64,7 @@ namespace SqlPad
 
 		public StatusInfoModel StatusInfo { get; } = new StatusInfoModel();
 
-	    public bool IsBusy
+		public bool IsBusy
 		{
 			get { return _isRunning; }
 			private set
@@ -79,19 +78,17 @@ namespace SqlPad
 
 		public IReadOnlyList<object[]> ResultRowItems => _resultRows;
 
-	    public IReadOnlyList<SessionExecutionStatisticsRecord> SessionExecutionStatistics => _sessionExecutionStatistics;
+		public IReadOnlyList<SessionExecutionStatisticsRecord> SessionExecutionStatistics => _sessionExecutionStatistics;
 
-	    public IReadOnlyList<CompilationError> CompilationErrors => _compilationErrors;
+		public IReadOnlyList<CompilationError> CompilationErrors => _compilationErrors;
 
-	    public OutputViewer(DocumentPage documentPage)
+		public OutputViewer(DocumentPage documentPage)
 		{
 			InitializeComponent();
 			
 			_timerExecutionMonitor.Elapsed += delegate { Dispatcher.Invoke(() => UpdateTimerMessage(_stopWatch.Elapsed, IsCancellationRequested)); };
 
 			Application.Current.Deactivated += ApplicationDeactivatedHandler;
-
-			SetUpSessionExecutionStatisticsView();
 
 			Initialize();
 
@@ -110,24 +107,9 @@ namespace SqlPad
 			TabTrace.Content = TraceViewer.Control;
 		}
 
-		private void SetUpSessionExecutionStatisticsView()
+		private void SessionExecutionStatisticsFilterHandler(object sender, FilterEventArgs e)
 		{
-			ApplySessionExecutionStatisticsFilter();
-			SetUpSessionExecutionStatisticsSorting();
-		}
-
-		private void ApplySessionExecutionStatisticsFilter()
-		{
-			var view = CollectionViewSource.GetDefaultView(_sessionExecutionStatistics);
-			view.Filter = ShowAllSessionExecutionStatistics
-				? (Predicate<object>)null
-				: o => ((SessionExecutionStatisticsRecord)o).Value != 0;
-		}
-
-		private void SetUpSessionExecutionStatisticsSorting()
-		{
-			var view = CollectionViewSource.GetDefaultView(_sessionExecutionStatistics);
-			view.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
+			e.Accepted = ShowAllSessionExecutionStatistics || ((SessionExecutionStatisticsRecord)e.Item).Value != 0;
 		}
 
 		private void DisplayResult()

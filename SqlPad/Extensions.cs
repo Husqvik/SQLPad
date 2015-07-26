@@ -100,8 +100,7 @@ namespace SqlPad
 
 		class PathEvaluator : DependencyObject
 		{
-			private static readonly DependencyProperty DummyProperty =
-				DependencyProperty.Register("Dummy", typeof(object), typeof(PathEvaluator), new UIPropertyMetadata(null));
+			private static readonly DependencyProperty DummyProperty = DependencyProperty.Register("Dummy", typeof(object), typeof(PathEvaluator), new UIPropertyMetadata(null));
 
 			public static object Eval(object source, PropertyPath path)
 			{

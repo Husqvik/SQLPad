@@ -16,7 +16,7 @@ namespace SqlPad.FindReplace
 	{
 		private FindReplaceDialog _dialog;
 
-		private FindReplaceDialog dialog
+		private FindReplaceDialog Dialog
 		{
 			get
 			{
@@ -36,7 +36,7 @@ namespace SqlPad.FindReplace
 
 		private void TabMainOnSelectionChanged(object sender, SelectionChangedEventArgs selectionChangedEventArgs)
 		{
-			dialog.Title = dialog.tabMain.SelectedIndex == 0 ? "Find" : "Find And Replace";
+			Dialog.Title = Dialog.tabMain.SelectedIndex == 0 ? "Find" : "Find And Replace";
 		}
 
 		public FindReplaceManager()
@@ -77,7 +77,7 @@ namespace SqlPad.FindReplace
 		}
 
 		public static readonly DependencyProperty EditorsProperty =
-			DependencyProperty.Register("Editors", typeof(IEnumerable), typeof(FindReplaceManager), new PropertyMetadata(null));
+			DependencyProperty.Register(nameof(Editors), typeof(IEnumerable), typeof(FindReplaceManager), new PropertyMetadata(null));
 
 		/// <summary>
 		/// The editor in which the current search operation takes place.
@@ -89,7 +89,7 @@ namespace SqlPad.FindReplace
 		}
 
 		public static readonly DependencyProperty CurrentEditorProperty =
-			DependencyProperty.Register("CurrentEditor", typeof(object), typeof(FindReplaceManager), new PropertyMetadata(0));
+			DependencyProperty.Register(nameof(CurrentEditor), typeof(object), typeof(FindReplaceManager), new PropertyMetadata(0));
 
 
 		/// <summary>
@@ -102,10 +102,10 @@ namespace SqlPad.FindReplace
 		}
 
 		public static readonly DependencyProperty InterfaceConverterProperty =
-			DependencyProperty.Register("InterfaceConverter", typeof(IValueConverter), typeof(FindReplaceManager), new PropertyMetadata(null));
+			DependencyProperty.Register(nameof(InterfaceConverter), typeof(IValueConverter), typeof(FindReplaceManager), new PropertyMetadata(null));
 
 		public static readonly DependencyProperty TextToFindProperty =
-			DependencyProperty.Register("TextToFind", typeof(string), typeof(FindReplaceManager), new UIPropertyMetadata(String.Empty));
+			DependencyProperty.Register(nameof(TextToFind), typeof(string), typeof(FindReplaceManager), new UIPropertyMetadata(String.Empty));
 
 		public string TextToFind
 		{
@@ -122,7 +122,7 @@ namespace SqlPad.FindReplace
 
 		// Using a DependencyProperty as the backing store for ReplacementText.  This enables animation, styling, binding, etc...
 		public static readonly DependencyProperty ReplacementTextProperty =
-			DependencyProperty.Register("ReplacementText", typeof(string), typeof(FindReplaceManager), new UIPropertyMetadata(String.Empty));
+			DependencyProperty.Register(nameof(ReplacementText), typeof(string), typeof(FindReplaceManager), new UIPropertyMetadata(String.Empty));
 
 		public bool UseWildcards
 		{
@@ -131,7 +131,7 @@ namespace SqlPad.FindReplace
 		}
 
 		public static readonly DependencyProperty UseWildcardsProperty =
-			DependencyProperty.Register("UseWildcards", typeof(bool), typeof(FindReplaceManager), new UIPropertyMetadata(false));
+			DependencyProperty.Register(nameof(UseWildcards), typeof(bool), typeof(FindReplaceManager), new UIPropertyMetadata(false));
 
 		public bool SearchUp
 		{
@@ -140,7 +140,7 @@ namespace SqlPad.FindReplace
 		}
 
 		public static readonly DependencyProperty SearchUpProperty =
-			DependencyProperty.Register("SearchUp", typeof(bool), typeof(FindReplaceManager), new UIPropertyMetadata(false));
+			DependencyProperty.Register(nameof(SearchUp), typeof(bool), typeof(FindReplaceManager), new UIPropertyMetadata(false));
 
 		public bool CaseSensitive
 		{
@@ -149,7 +149,7 @@ namespace SqlPad.FindReplace
 		}
 
 		public static readonly DependencyProperty CaseSensitiveProperty =
-			DependencyProperty.Register("CaseSensitive", typeof(bool), typeof(FindReplaceManager), new UIPropertyMetadata(false));
+			DependencyProperty.Register(nameof(CaseSensitive), typeof(bool), typeof(FindReplaceManager), new UIPropertyMetadata(false));
 
 		public bool UseRegEx
 		{
@@ -158,7 +158,7 @@ namespace SqlPad.FindReplace
 		}
 
 		public static readonly DependencyProperty UseRegExProperty =
-			DependencyProperty.Register("UseRegEx", typeof(bool), typeof(FindReplaceManager), new UIPropertyMetadata(false));
+			DependencyProperty.Register(nameof(UseRegEx), typeof(bool), typeof(FindReplaceManager), new UIPropertyMetadata(false));
 
 		public bool WholeWord
 		{
@@ -167,7 +167,7 @@ namespace SqlPad.FindReplace
 		}
 
 		public static readonly DependencyProperty WholeWordProperty =
-			DependencyProperty.Register("WholeWord", typeof(bool), typeof(FindReplaceManager), new UIPropertyMetadata(false));
+			DependencyProperty.Register(nameof(WholeWord), typeof(bool), typeof(FindReplaceManager), new UIPropertyMetadata(false));
 
 		public bool AcceptsReturn
 		{
@@ -176,7 +176,7 @@ namespace SqlPad.FindReplace
 		}
 
 		public static readonly DependencyProperty AcceptsReturnProperty =
-			DependencyProperty.Register("AcceptsReturn", typeof(bool), typeof(FindReplaceManager), new UIPropertyMetadata(false));
+			DependencyProperty.Register(nameof(AcceptsReturn), typeof(bool), typeof(FindReplaceManager), new UIPropertyMetadata(false));
 
 		public enum SearchScope
 		{
@@ -191,7 +191,7 @@ namespace SqlPad.FindReplace
 		}
 
 		public static readonly DependencyProperty SearchInProperty =
-			DependencyProperty.Register("SearchIn", typeof(SearchScope), typeof(FindReplaceManager), new UIPropertyMetadata(SearchScope.CurrentDocument));
+			DependencyProperty.Register(nameof(SearchIn), typeof(SearchScope), typeof(FindReplaceManager), new UIPropertyMetadata(SearchScope.CurrentDocument));
 
 		public double WindowLeft
 		{
@@ -200,7 +200,7 @@ namespace SqlPad.FindReplace
 		}
 
 		public static readonly DependencyProperty WindowLeftProperty =
-			DependencyProperty.Register("WindowLeft", typeof(double), typeof(FindReplaceManager), new UIPropertyMetadata(100.0));
+			DependencyProperty.Register(nameof(WindowLeft), typeof(double), typeof(FindReplaceManager), new UIPropertyMetadata(100.0));
 
 		public double WindowTop
 		{
@@ -209,7 +209,7 @@ namespace SqlPad.FindReplace
 		}
 
 		public static readonly DependencyProperty WindowTopProperty =
-			DependencyProperty.Register("WindowTop", typeof(double), typeof(FindReplaceManager), new UIPropertyMetadata(100.0));
+			DependencyProperty.Register(nameof(WindowTop), typeof(double), typeof(FindReplaceManager), new UIPropertyMetadata(100.0));
 
 		/// <summary>
 		/// Determines whether to display the Search in combo box
@@ -221,7 +221,7 @@ namespace SqlPad.FindReplace
 		}
 
 		public static readonly DependencyProperty ShowSearchInProperty =
-			DependencyProperty.Register("ShowSearchIn", typeof(bool), typeof(FindReplaceManager), new UIPropertyMetadata(true));
+			DependencyProperty.Register(nameof(ShowSearchIn), typeof(bool), typeof(FindReplaceManager), new UIPropertyMetadata(true));
 
 		/// <summary>
 		/// Determines whether the "Replace"-page in the dialog in shown or not.
@@ -234,7 +234,7 @@ namespace SqlPad.FindReplace
 
 		// Using a DependencyProperty as the backing store for AllowReplace.  This enables animation, styling, binding, etc...
 		public static readonly DependencyProperty AllowReplaceProperty =
-			DependencyProperty.Register("AllowReplace", typeof(bool), typeof(FindReplaceManager), new UIPropertyMetadata(true));
+			DependencyProperty.Register(nameof(AllowReplace), typeof(bool), typeof(FindReplaceManager), new UIPropertyMetadata(true));
 
 		/// <summary>
 		/// The Window that serves as the parent of the Find/Replace dialog
@@ -246,19 +246,19 @@ namespace SqlPad.FindReplace
 		}
 
 		public static readonly DependencyProperty OwnerWindowProperty =
-			DependencyProperty.Register("OwnerWindow", typeof(Window), typeof(FindReplaceManager), new UIPropertyMetadata(null));
+			DependencyProperty.Register(nameof(OwnerWindow), typeof(Window), typeof(FindReplaceManager), new UIPropertyMetadata(null));
 		#endregion
 
 		private IEditor GetCurrentEditor()
 		{
 			if (CurrentEditor == null)
 				return null;
-			if (CurrentEditor is IEditor)
-				return CurrentEditor as IEditor;
-			if (InterfaceConverter == null)
-				return null;
 
-			return InterfaceConverter.Convert(CurrentEditor, typeof(IEditor), null, CultureInfo.CurrentCulture) as IEditor;
+			var iEditor = CurrentEditor as IEditor;
+			if (iEditor != null)
+				return iEditor;
+
+			return InterfaceConverter?.Convert(CurrentEditor, typeof(IEditor), null, CultureInfo.CurrentCulture) as IEditor;
 		}
 
 		private IEditor GetNextEditor(bool previous = false)
@@ -290,6 +290,7 @@ namespace SqlPad.FindReplace
 			{
 				options = options | RegexOptions.RightToLeft;
 			}
+
 			if (!CaseSensitive)
 			{
 				options = options | RegexOptions.IgnoreCase;
@@ -348,14 +349,14 @@ namespace SqlPad.FindReplace
 		/// </summary>
 		public void ShowAsFind()
 		{
-			dialog.tabMain.SelectedIndex = 0;
+			Dialog.tabMain.SelectedIndex = 0;
 
-			SetDefaultSearchedText(dialog.txtFind);
+			SetDefaultSearchedText(Dialog.txtFind);
 
-			dialog.Show();
-			dialog.Activate();
-			dialog.txtFind.Focus();
-			dialog.txtFind.SelectAll();
+			Dialog.Show();
+			Dialog.Activate();
+			Dialog.txtFind.Focus();
+			Dialog.txtFind.SelectAll();
 		}
 
 		private void SetDefaultSearchedText(TextBox textBox)
@@ -378,14 +379,14 @@ namespace SqlPad.FindReplace
 		/// </summary>
 		public void ShowAsReplace()
 		{
-			dialog.tabMain.SelectedIndex = 1;
+			Dialog.tabMain.SelectedIndex = 1;
 
-			SetDefaultSearchedText(dialog.txtFind2);
+			SetDefaultSearchedText(Dialog.txtFind2);
 
-			dialog.Show();
-			dialog.Activate();
-			dialog.txtFind2.Focus();
-			dialog.txtFind2.SelectAll();
+			Dialog.Show();
+			Dialog.Activate();
+			Dialog.txtFind2.Focus();
+			Dialog.txtFind2.SelectAll();
 		}
 
 		public void ShowAsReplace(object target)
@@ -480,7 +481,7 @@ namespace SqlPad.FindReplace
 		/// </summary>
 		public void CloseWindow()
 		{
-			dialog.Close();
+			Dialog.Close();
 		}
 	}
 

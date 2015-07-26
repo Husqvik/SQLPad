@@ -7,7 +7,7 @@ namespace SqlPad
 {
 	public partial class ComplexTypeViewer
 	{
-		public static readonly DependencyProperty ComplexTypeProperty = DependencyProperty.Register("ComplexType", typeof(IComplexType), typeof(ComplexTypeViewer), new FrameworkPropertyMetadata());
+		public static readonly DependencyProperty ComplexTypeProperty = DependencyProperty.Register(nameof(ComplexType), typeof(IComplexType), typeof(ComplexTypeViewer), new FrameworkPropertyMetadata());
 
 		internal EventHandler<DataGridBeginningEditEventArgs> ResultGridBeginningEditCancelTextInputHandler => App.ResultGridBeginningEditCancelTextInputHandlerImplementation;
 
