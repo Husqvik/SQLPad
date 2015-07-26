@@ -34,19 +34,16 @@ namespace SqlPad
 
 		public Task ExportToFileAsync(string fileName, DataGrid dataGrid, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
 		{
-			var orderedColumns = dataGrid.Columns
-					.OrderBy(c => c.DisplayIndex)
-					.ToArray();
-
+			var orderedColumns = DataExportHelper.GetOrderedExportableColumns(dataGrid);
 			var columnHeaders = orderedColumns
-				.Select(c => ((ColumnHeader)c.Header).Name.Replace(QuoteCharacter, EscapedQuote));
+				.Select(h => h.Name.Replace(QuoteCharacter, EscapedQuote));
 
 			var headerLine = BuildlTableRowTemplate(columnHeaders.Select(h => $"<th>{h}</th>"));
-			var htmlTableRowTemplate = BuildlTableRowTemplate(Enumerable.Range(0, orderedColumns.Length).Select(i => $"<td>{{{i}}}</td>"));
+			var htmlTableRowTemplate = BuildlTableRowTemplate(Enumerable.Range(0, orderedColumns.Count).Select(i => $"<td>{{{i}}}</td>"));
 
 			var rows = dataGrid.Items;
 
-			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(headerLine, htmlTableRowTemplate, rows, w, cancellationToken));
+			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(orderedColumns, headerLine, htmlTableRowTemplate, rows, w, cancellationToken));
 		}
 
 		private static string BuildlTableRowTemplate(IEnumerable<string> columnValues)
@@ -58,7 +55,7 @@ namespace SqlPad
 			return htmlTableRowTemplateBuilder.ToString();
 		}
 
-		private void ExportInternal(string headerLine, string htmlTemplate, ICollection rows, TextWriter writer, CancellationToken cancellationToken)
+		private void ExportInternal(IReadOnlyList<ColumnHeader> orderedColumns, string headerLine, string htmlTemplate, ICollection rows, TextWriter writer, CancellationToken cancellationToken)
 		{
 			writer.Write("<!DOCTYPE html><html><head><title></title></head><body><table border=\"1\" style=\"border-collapse:collapse\">");
 			writer.Write(headerLine);
@@ -67,7 +64,7 @@ namespace SqlPad
 			{
 				cancellationToken.ThrowIfCancellationRequested();
 
-				var values = rowValues.Select((t, i) => (object)FormatHtmlValue(t)).ToArray();
+				var values = orderedColumns.Select(h => (object)FormatHtmlValue(rowValues[h.ColumnIndex])).ToArray();
 				writer.Write(htmlTemplate, values);
 			}
 

@@ -572,13 +572,13 @@ namespace SqlPad
 			var hasOnlyNumericValues = true;
 			foreach (var selectedCell in ResultGrid.SelectedCells)
 			{
-				if (selectedCell.Column.IsReadOnly)
+				var columnHeader = selectedCell.Column.Header as ColumnHeader;
+				if (columnHeader == null)
 				{
 					return;
 				}
 
 				var rowValues = (object[])selectedCell.Item;
-				var columnHeader = (ColumnHeader)selectedCell.Column.Header;
 				var cellValue = rowValues[columnHeader.ColumnIndex];
 				var stringValue = cellValue.ToString();
 				if (String.IsNullOrEmpty(stringValue))

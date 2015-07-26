@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -37,21 +38,18 @@ namespace SqlPad
 
 		public Task ExportToFileAsync(string fileName, DataGrid dataGrid, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
 		{
-			var orderedColumns = dataGrid.Columns
-					.OrderBy(c => c.DisplayIndex)
-					.ToArray();
-
+			var orderedColumns = DataExportHelper.GetOrderedExportableColumns(dataGrid);
 			var columnHeaders = orderedColumns
-				.Select(c => String.Format(MaskWrapByQuote, ((ColumnHeader)c.Header).Name.Replace(QuoteCharacter, DoubleQuotes)));
+				.Select(h => String.Format(MaskWrapByQuote, h.Name.Replace(QuoteCharacter, DoubleQuotes)));
 
 			var headerLine = String.Join(Separator, columnHeaders);
 
 			var rows = (IEnumerable)dataGrid.Items;
 
-			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(headerLine, rows, w, cancellationToken));
+			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(orderedColumns, headerLine, rows, w, cancellationToken));
 		}
 
-		private void ExportInternal(string headerLine, IEnumerable rows, TextWriter writer, CancellationToken cancellationToken)
+		private void ExportInternal(IReadOnlyList<ColumnHeader> orderedColumns, string headerLine, IEnumerable rows, TextWriter writer, CancellationToken cancellationToken)
 		{
 			writer.WriteLine(headerLine);
 
@@ -59,7 +57,7 @@ namespace SqlPad
 			{
 				cancellationToken.ThrowIfCancellationRequested();
 
-				var contentLine = String.Join(Separator, rowValues.Select((t, i) => FormatCsvValue(t)));
+				var contentLine = String.Join(Separator, orderedColumns.Select(c => FormatCsvValue(rowValues[c.ColumnIndex])));
 				writer.WriteLine(contentLine);
 			}
 		}

@@ -30,30 +30,27 @@ namespace SqlPad
 
 		public Task ExportToFileAsync(string fileName, DataGrid dataGrid, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
 		{
-			var orderedColumns = dataGrid.Columns
-					.OrderBy(c => c.DisplayIndex)
-					.ToArray();
-
+			var orderedColumns = DataExportHelper.GetOrderedExportableColumns(dataGrid);
 			var columnHeaders = orderedColumns
-				.Select((c, i) => dataExportConverter.ToColumnName(((ColumnHeader)c.Header).Name).Replace("{", "{{").Replace("}", "}}"));
+				.Select(h => dataExportConverter.ToColumnName(h.Name).Replace("{", "{{").Replace("}", "}}"));
 
 			var sqlTemplate = BuildSqlCommandTemplate(columnHeaders);
 
 			var rows = dataGrid.Items;
 
-			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(sqlTemplate, rows, w, dataExportConverter, cancellationToken));
+			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(orderedColumns, sqlTemplate, rows, w, dataExportConverter, cancellationToken));
 		}
 
 
 		protected abstract string BuildSqlCommandTemplate(IEnumerable<string> columnHeaders);
 
-		private void ExportInternal(string sqlTemplate, IEnumerable rows, TextWriter writer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
+		private void ExportInternal(IReadOnlyList<ColumnHeader> orderedColumns, string sqlTemplate, IEnumerable rows, TextWriter writer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
 		{
 			foreach (object[] rowValues in rows)
 			{
 				cancellationToken.ThrowIfCancellationRequested();
 
-				var values = rowValues.Select((t, i) => (object)FormatSqlValue(t, dataExportConverter)).ToArray();
+				var values = orderedColumns.Select(h => (object)FormatSqlValue(rowValues[h.ColumnIndex], dataExportConverter)).ToArray();
 				writer.WriteLine(sqlTemplate, values);
 			}
 		}

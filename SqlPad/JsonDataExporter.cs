@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -34,12 +35,9 @@ namespace SqlPad
 
 		public Task ExportToFileAsync(string fileName, DataGrid dataGrid, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
 		{
-			var orderedColumns = dataGrid.Columns
-					.OrderBy(c => c.DisplayIndex)
-					.ToArray();
-
+			var orderedColumns = DataExportHelper.GetOrderedExportableColumns(dataGrid);
 			var columnHeaders = orderedColumns
-				.Select((c, i) => String.Format(MaskJsonValue, ((ColumnHeader)c.Header).Name.Replace("{", "{{").Replace("}", "}}").Replace(QuoteCharacter, EscapedQuote), i));
+				.Select((h, i) => String.Format(MaskJsonValue, h.Name.Replace("{", "{{").Replace("}", "}}").Replace(QuoteCharacter, EscapedQuote), i));
 
 			var jsonTemplateBuilder = new StringBuilder();
 			jsonTemplateBuilder.AppendLine("  {{");
@@ -48,10 +46,10 @@ namespace SqlPad
 
 			var rows = dataGrid.Items;
 
-			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(jsonTemplateBuilder.ToString(), rows, w, dataExportConverter, cancellationToken));
+			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(orderedColumns, jsonTemplateBuilder.ToString(), rows, w, dataExportConverter, cancellationToken));
 		}
 
-		private void ExportInternal(string jsonTemplate, ICollection rows, TextWriter writer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
+		private void ExportInternal(IReadOnlyList<ColumnHeader> orderedColumns, string jsonTemplate, ICollection rows, TextWriter writer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
 		{
 			writer.WriteLine('[');
 
@@ -60,7 +58,7 @@ namespace SqlPad
 			{
 				cancellationToken.ThrowIfCancellationRequested();
 
-				var values = rowValues.Select(t => (object)FormatJsonValue(t, dataExportConverter)).ToArray();
+				var values = orderedColumns.Select(h => (object)FormatJsonValue(rowValues[h.ColumnIndex], dataExportConverter)).ToArray();
 				writer.Write(jsonTemplate, values);
 
 				if (rowIndex < rows.Count)

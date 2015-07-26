@@ -42,17 +42,17 @@ namespace SqlPad
 
 		public Task ExportToFileAsync(string fileName, DataGrid dataGrid, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
 		{
-			var columnHeaders = dataGrid.Columns
-					.OrderBy(c => c.DisplayIndex)
-					.Select(c => FormatColumnHeaderAsXmlElementName(((ColumnHeader)c.Header).Name))
+			var orderedColumns = DataExportHelper.GetOrderedExportableColumns(dataGrid);
+			var columnHeaders = orderedColumns
+					.Select(h => FormatColumnHeaderAsXmlElementName(h.Name))
 					.ToArray();
 
 			var rows = (IEnumerable)dataGrid.Items;
 
-			return Task.Factory.StartNew(() => ExportInternal(columnHeaders, rows, fileName, dataExportConverter, cancellationToken), cancellationToken);
+			return Task.Factory.StartNew(() => ExportInternal(orderedColumns, columnHeaders, rows, fileName, dataExportConverter, cancellationToken), cancellationToken);
 		}
 
-		private void ExportInternal(IReadOnlyList<string> columnHeaders, IEnumerable rows, string fileName, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
+		private void ExportInternal(IReadOnlyList<ColumnHeader> orderedColumns, IReadOnlyList<string> columnHeaders, IEnumerable rows, string fileName, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
 		{
 			var columnCount = columnHeaders.Count;
 
@@ -73,7 +73,7 @@ namespace SqlPad
 
 					for (var i = 0; i < columnCount; i++)
 					{
-						xmlWriter.WriteElementString(columnHeaders[i], FormatXmlValue(rowValues[i], dataExportConverter));
+						xmlWriter.WriteElementString(columnHeaders[i], FormatXmlValue(rowValues[orderedColumns[i].ColumnIndex], dataExportConverter));
 					}
 
 					xmlWriter.WriteEndElement();
