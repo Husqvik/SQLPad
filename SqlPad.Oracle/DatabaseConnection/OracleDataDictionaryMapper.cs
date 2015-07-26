@@ -11,7 +11,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 {
 	internal class OracleDataDictionaryMapper
 	{
-		private readonly Dictionary<OracleObjectIdentifier, OracleSchemaObject> _allObjects = new Dictionary<OracleObjectIdentifier, OracleSchemaObject>();
 		private readonly OracleDatabaseModel _databaseModel;
 
 		public const int LongFetchSize = 4096;
@@ -23,61 +22,62 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public IDictionary<OracleObjectIdentifier, OracleSchemaObject> BuildDataDictionary()
 		{
-			_allObjects.Clear();
+			var allObjects = new Dictionary<OracleObjectIdentifier, OracleSchemaObject>();
+			var databaseVersion = _databaseModel.Version;
 
 			var stopwatch = Stopwatch.StartNew();
-			var schemaTypeMetadataSource = _databaseModel.ExecuteReader(v => OracleDatabaseCommands.SelectTypesCommandText, MapSchemaType);
-			var schemaTypeAndMateralizedViewMetadataSource = schemaTypeMetadataSource.Concat(_databaseModel.ExecuteReader(v => OracleDatabaseCommands.SelectMaterializedViewCommandText, MapMaterializedView));
+			var schemaTypeMetadataSource = _databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectTypesCommandText, MapSchemaType);
+			var schemaTypeAndMateralizedViewMetadataSource = schemaTypeMetadataSource.Concat(_databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectMaterializedViewCommandText, MapMaterializedView));
 
 			foreach (var schemaObject in schemaTypeAndMateralizedViewMetadataSource)
 			{
-				AddObjectToDictionary(_allObjects, schemaObject, schemaObject.Type);
+				AddObjectToDictionary(allObjects, schemaObject, schemaObject.Type);
 			}
 
 			Trace.WriteLine($"Fetch types and materialized views metadata finished in {stopwatch.Elapsed}. ");
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(v => OracleDatabaseCommands.SelectAllObjectsCommandText, MapSchemaObject).Count();
+			_databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectAllObjectsCommandText, r => MapSchemaObject(r, allObjects)).Count();
 
 			Trace.WriteLine($"Fetch all objects metadata finished in {stopwatch.Elapsed}. ");
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(v => OracleDatabaseCommands.SelectTablesCommandText, MapTable).Count();
+			_databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectTablesCommandText, r => MapTable(r, allObjects)).Count();
 
 			Trace.WriteLine($"Fetch table metadata finished in {stopwatch.Elapsed}. ");
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(v => OracleDatabaseCommands.SelectPartitionsCommandText, MapPartitions).Count();
+			_databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectPartitionsCommandText, r => MapPartitions(r, allObjects)).Count();
 
 			Trace.WriteLine($"Fetch table partition metadata finished in {stopwatch.Elapsed}. ");
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(v => OracleDatabaseCommands.SelectSubPartitionsCommandText, MapSubPartitions).Count();
+			_databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectSubPartitionsCommandText, r => MapSubPartitions(r, allObjects)).Count();
 
 			Trace.WriteLine($"Fetch table sub-partition metadata finished in {stopwatch.Elapsed}. ");
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(v => OracleDatabaseCommands.SelectTablePartitionKeysCommandText, (v, r) => MapPartitionKeys(r, t => t.PartitionKeyColumns)).Count();
+			_databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectTablePartitionKeysCommandText, r => MapPartitionKeys(r, allObjects, t => t.PartitionKeyColumns)).Count();
 
 			Trace.WriteLine($"Fetch table partition key metadata finished in {stopwatch.Elapsed}. ");
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(v => OracleDatabaseCommands.SelectTableSubPartitionKeysCommandText, (v, r) => MapPartitionKeys(r, t => t.SubPartitionKeyColumns)).Count();
+			_databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectTableSubPartitionKeysCommandText, r => MapPartitionKeys(r, allObjects, t => t.SubPartitionKeyColumns)).Count();
 
 			Trace.WriteLine($"Fetch table sub-partition key metadata finished in {stopwatch.Elapsed}. ");
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(v => OracleDatabaseCommands.SelectSynonymTargetsCommandText, MapSynonymTarget).Count();
+			_databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectSynonymTargetsCommandText, r => MapSynonymTarget(r, allObjects)).Count();
 
 			Trace.WriteLine($"Fetch synonyms metadata finished in {stopwatch.Elapsed}. ");
 			stopwatch.Restart();
 
-			var columnMetadataSource = _databaseModel.ExecuteReader(v => String.Format(OracleDatabaseCommands.SelectTableColumnsCommandTextBase, v.Major >= 12 ? ", HIDDEN_COLUMN, USER_GENERATED" : null), MapTableColumn);
+			var columnMetadataSource = _databaseModel.ExecuteReader(() => String.Format(OracleDatabaseCommands.SelectTableColumnsCommandTextBase, databaseVersion.Major >= 12 ? ", HIDDEN_COLUMN, USER_GENERATED" : null), r => MapTableColumn(r, databaseVersion));
 
 			foreach (var columnMetadata in columnMetadataSource)
 			{
 				OracleSchemaObject schemaObject;
-				if (!_allObjects.TryGetValue(columnMetadata.Key, out schemaObject))
+				if (!allObjects.TryGetValue(columnMetadata.Key, out schemaObject))
 					continue;
 
 				var dataObject = (OracleDataObject)schemaObject;
@@ -87,7 +87,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			Trace.WriteLine($"Fetch table column metadata in {stopwatch.Elapsed}. ");
 			stopwatch.Restart();
 
-			var constraintSource = _databaseModel.ExecuteReader(v => OracleDatabaseCommands.SelectConstraintsCommandText, MapConstraintWithReferenceIdentifier)
+			var constraintSource = _databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectConstraintsCommandText, r => MapConstraintWithReferenceIdentifier(r, allObjects))
 				.Where(c => c.Key != null)
 				.ToArray();
 
@@ -100,7 +100,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			Trace.WriteLine($"Fetch constraint metadata finished in {stopwatch.Elapsed}. ");
 			stopwatch.Restart();
 
-			var constraintColumns = _databaseModel.ExecuteReader(v => OracleDatabaseCommands.SelectConstraintColumnsCommandText, MapConstraintColumn)
+			var constraintColumns = _databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectConstraintColumnsCommandText, MapConstraintColumn)
 				.GroupBy(c => c.Key)
 				.ToDictionary(g => g.Key, g => g.Select(kvp => kvp.Value).ToList());
 
@@ -132,22 +132,22 @@ namespace SqlPad.Oracle.DatabaseConnection
 			Trace.WriteLine($"Fetch column constraint metadata finished in {stopwatch.Elapsed}. ");
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(v => OracleDatabaseCommands.SelectSequencesCommandText, MapSequence).Count();
+			_databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectSequencesCommandText, r => MapSequence(r, allObjects)).Count();
 
 			Trace.WriteLine($"Fetch sequence metadata finished in {stopwatch.Elapsed}. ");
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(v => OracleDatabaseCommands.SelectTypeAttributesCommandText, MapTypeAttributes).Count();
+			_databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectTypeAttributesCommandText, r => MapTypeAttributes(r, allObjects)).Count();
 
 			Trace.WriteLine($"Fetch type attribute metadata finished in {stopwatch.Elapsed}. ");
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(v => OracleDatabaseCommands.SelectCollectionTypeAttributesCommandText, MapCollectionTypeAttributes).Count();
+			_databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectCollectionTypeAttributesCommandText, r => MapCollectionTypeAttributes(r, allObjects)).Count();
 
 			Trace.WriteLine($"Fetch collection attribute metadata finished in {stopwatch.Elapsed}. ");
 			stopwatch.Restart();
 
-			return new ReadOnlyDictionary<OracleObjectIdentifier, OracleSchemaObject>(_allObjects);
+			return new ReadOnlyDictionary<OracleObjectIdentifier, OracleSchemaObject>(allObjects);
 		}
 
 		public ILookup<OracleProgramIdentifier, OracleProgramMetadata> GetUserFunctionMetadata()
@@ -168,15 +168,16 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public ILookup<string, string> GetContextData()
 		{
-			return _databaseModel.ExecuteReader(v => OracleDatabaseCommands.SelectContextDataCommandText, MapContextData).ToLookup(r => r.Key, r => r.Value);
+			return _databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectContextDataCommandText, MapContextData).ToLookup(r => r.Key, r => r.Value);
 		}
 
 		public IEnumerable<OracleSchema> GetSchemaNames()
 		{
-			return _databaseModel.ExecuteReader(v => String.Format(OracleDatabaseCommands.SelectAllSchemasCommandTextBase, v.Major >= 12 ? ", COMMON, ORACLE_MAINTAINED" : null), MapSchema);
+			var databaseVersion = _databaseModel.Version;
+			return _databaseModel.ExecuteReader(() => String.Format(OracleDatabaseCommands.SelectAllSchemasCommandTextBase, databaseVersion.Major >= 12 ? ", COMMON, ORACLE_MAINTAINED" : null), r => MapSchema(r, databaseVersion));
 		}
 
-		private static OracleSchema MapSchema(Version version, IDataRecord reader)
+		private static OracleSchema MapSchema(IDataRecord reader, Version version)
 		{
 			var schema =
 				new OracleSchema
@@ -196,7 +197,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public IEnumerable<string> GetCharacterSets()
 		{
-			return _databaseModel.ExecuteReader(v => OracleDatabaseCommands.SelectCharacterSetsCommandText, (v, r) => ((string)r["VALUE"]));
+			return _databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectCharacterSetsCommandText, r => ((string)r["VALUE"]));
 		}
 
 		public IEnumerable<KeyValuePair<int, string>> GetStatisticsKeys()
@@ -205,26 +206,26 @@ namespace SqlPad.Oracle.DatabaseConnection
 				? OracleDatabaseCommands.SelectStatisticsKeysCommandText
 				: OracleDatabaseCommands.SelectStatisticsKeysOracle11CommandText;
 
-			return _databaseModel.ExecuteReader(v => command, MapStatisticsKey);
+			return _databaseModel.ExecuteReader(() => command, MapStatisticsKey);
 		}
 
 		public IDictionary<OracleObjectIdentifier, OracleDatabaseLink> GetDatabaseLinks()
 		{
-			return _databaseModel.ExecuteReader(v => OracleDatabaseCommands.SelectDatabaseLinksCommandText, MapDatabaseLink)
+			return _databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectDatabaseLinksCommandText, MapDatabaseLink)
 				.ToDictionary(l => l.FullyQualifiedName, l => l);
 		}
 
 		public IEnumerable<KeyValuePair<string, string>> GetSystemParameters()
 		{
-			return _databaseModel.ExecuteReader(v => OracleDatabaseCommands.SelectSystemParametersCommandText, MapParameter);
+			return _databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectSystemParametersCommandText, MapParameter);
 		}
 
 		private ILookup<OracleProgramIdentifier, OracleProgramMetadata> GetFunctionMetadataCollection(string selectFunctionMetadataCommandText, string selectParameterMetadataCommandText, bool isBuiltIn)
 		{
-			var functionMetadataSource = _databaseModel.ExecuteReader(v => selectFunctionMetadataCommandText, (v, r) => MapProgramMetadata(r, isBuiltIn));
+			var functionMetadataSource = _databaseModel.ExecuteReader(() => selectFunctionMetadataCommandText, r => MapProgramMetadata(r, isBuiltIn));
 			var functionMetadataLookup = functionMetadataSource.ToLookup(m => m.Identifier);
 
-			var functionParameterMetadataSource = _databaseModel.ExecuteReader(v => selectParameterMetadataCommandText, MapProgramParameterMetadata);
+			var functionParameterMetadataSource = _databaseModel.ExecuteReader(() => selectParameterMetadataCommandText, MapProgramParameterMetadata);
 			foreach (var functionIdentifierParameterMetadata in functionParameterMetadataSource)
 			{
 				var functionMetadata = functionMetadataLookup[functionIdentifierParameterMetadata.Key]
@@ -236,12 +237,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return functionMetadataLookup;
 		}
 
-		private static KeyValuePair<int, string> MapStatisticsKey(Version version, IDataRecord reader)
+		private static KeyValuePair<int, string> MapStatisticsKey(IDataRecord reader)
 		{
 			return new KeyValuePair<int, string>(Convert.ToInt32(reader["STATISTIC#"]), (string)reader["DISPLAY_NAME"]);
 		}
 
-		private static KeyValuePair<string, string> MapContextData(Version version, IDataRecord reader)
+		private static KeyValuePair<string, string> MapContextData(IDataRecord reader)
 		{
 			return new KeyValuePair<string, string>((string)reader["NAMESPACE"], (string)reader["ATTRIBUTE"]);
 		}
@@ -264,7 +265,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return new OracleProgramMetadata(type, identifier, isAnalytic, isAggregate, isPipelined, isOffloadable, parallelSupport, isDeterministic, metadataMinimumArguments, metadataMaximumArguments, authId, displayType, isBuiltIn);
 		}
 
-		private KeyValuePair<OracleProgramIdentifier, OracleProgramParameterMetadata> MapProgramParameterMetadata(Version version, IDataRecord reader)
+		private KeyValuePair<OracleProgramIdentifier, OracleProgramParameterMetadata> MapProgramParameterMetadata(IDataRecord reader)
 		{
 			var identifier = CreateFunctionIdentifierFromReaderValues(reader["OWNER"], reader["PACKAGE_NAME"], reader["PROGRAM_NAME"], reader["OVERLOAD"]);
 
@@ -302,11 +303,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return OracleProgramIdentifier.CreateFromValues(owner == DBNull.Value ? null : QualifyStringObject(owner), package == DBNull.Value ? null : QualifyStringObject(package), QualifyStringObject(name), Convert.ToInt32(overload));
 		}
 
-		private OracleTypeObject MapTypeAttributes(Version version, IDataRecord reader)
+		private OracleTypeObject MapTypeAttributes(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
 		{
 			var typeFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["TYPE_NAME"]));
 			OracleSchemaObject typeObject;
-			if (!_allObjects.TryGetValue(typeFullyQualifiedName, out typeObject))
+			if (!allObjects.TryGetValue(typeFullyQualifiedName, out typeObject))
 				return null;
 
 			var type = (OracleTypeObject)typeObject;
@@ -336,11 +337,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return type;
 		}
 
-		private OracleTypeCollection MapCollectionTypeAttributes(Version version, IDataRecord reader)
+		private OracleTypeCollection MapCollectionTypeAttributes(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
 		{
 			var typeFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["TYPE_NAME"]));
 			OracleSchemaObject typeObject;
-			if (!_allObjects.TryGetValue(typeFullyQualifiedName, out typeObject))
+			if (!allObjects.TryGetValue(typeFullyQualifiedName, out typeObject))
 				return null;
 
 			var collectionType = (OracleTypeCollection)typeObject;
@@ -364,7 +365,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return collectionType;
 		}
 
-		private static OracleDatabaseLink MapDatabaseLink(Version version, IDataRecord reader)
+		private static OracleDatabaseLink MapDatabaseLink(IDataRecord reader)
 		{
 			var databaseLinkFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["DB_LINK"]));
 			return
@@ -377,16 +378,16 @@ namespace SqlPad.Oracle.DatabaseConnection
 				};
 		}
 
-		private static KeyValuePair<string, string> MapParameter(Version version, IDataRecord reader)
+		private static KeyValuePair<string, string> MapParameter(IDataRecord reader)
 		{
 			return new KeyValuePair<string, string>((string)reader["NAME"], OracleReaderValueConvert.ToString(reader["VALUE"]));
 		}
 
-		private OracleSequence MapSequence(Version version, IDataRecord reader)
+		private OracleSequence MapSequence(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
 		{
 			var sequenceFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["SEQUENCE_OWNER"]), QualifyStringObject(reader["SEQUENCE_NAME"]));
 			OracleSchemaObject sequenceObject;
-			if (!_allObjects.TryGetValue(sequenceFullyQualifiedName, out sequenceObject))
+			if (!allObjects.TryGetValue(sequenceFullyQualifiedName, out sequenceObject))
 				return null;
 
 			var sequence = (OracleSequence)sequenceObject;
@@ -401,19 +402,19 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return sequence;
 		}
 
-		private static KeyValuePair<OracleObjectIdentifier, string> MapConstraintColumn(Version version, IDataRecord reader)
+		private static KeyValuePair<OracleObjectIdentifier, string> MapConstraintColumn(IDataRecord reader)
 		{
 			var column = (string)reader["COLUMN_NAME"];
 			return new KeyValuePair<OracleObjectIdentifier, string>(OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["CONSTRAINT_NAME"])), column[0] == '"' ? column : QualifyStringObject(column));
 		}
 
-		private KeyValuePair<OracleConstraint, OracleObjectIdentifier> MapConstraintWithReferenceIdentifier(Version version, IDataRecord reader)
+		private KeyValuePair<OracleConstraint, OracleObjectIdentifier> MapConstraintWithReferenceIdentifier(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
 		{
 			var remoteConstraintIdentifier = OracleObjectIdentifier.Empty;
 			var owner = QualifyStringObject(reader["OWNER"]);
 			var ownerObjectFullyQualifiedName = OracleObjectIdentifier.Create(owner, QualifyStringObject(reader["TABLE_NAME"]));
 			OracleSchemaObject ownerObject;
-			if (!_allObjects.TryGetValue(ownerObjectFullyQualifiedName, out ownerObject))
+			if (!allObjects.TryGetValue(ownerObjectFullyQualifiedName, out ownerObject))
 			{
 				return new KeyValuePair<OracleConstraint, OracleObjectIdentifier>(null, remoteConstraintIdentifier);
 			}
@@ -447,7 +448,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return new KeyValuePair<OracleConstraint, OracleObjectIdentifier>(constraint, remoteConstraintIdentifier);
 		}
 
-		private static KeyValuePair<OracleObjectIdentifier, OracleColumn> MapTableColumn(Version version, IDataRecord reader)
+		private static KeyValuePair<OracleObjectIdentifier, OracleColumn> MapTableColumn(IDataRecord reader, Version version)
 		{
 			var dataTypeIdentifier = OracleObjectIdentifier.Create(QualifyStringObject(reader["DATA_TYPE_OWNER"]), QualifyStringObject(reader["DATA_TYPE"]));
 			var dataType =
@@ -491,18 +492,18 @@ namespace SqlPad.Oracle.DatabaseConnection
 				: DataUnit.NotApplicable;
 		}
 
-		private OracleSchemaObject MapSynonymTarget(Version version, IDataRecord reader)
+		private OracleSchemaObject MapSynonymTarget(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
 		{
 			var synonymFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["SYNONYM_NAME"]));
 			OracleSchemaObject synonymObject;
-			if (!_allObjects.TryGetValue(synonymFullyQualifiedName, out synonymObject))
+			if (!allObjects.TryGetValue(synonymFullyQualifiedName, out synonymObject))
 			{
 				return null;
 			}
 
 			var objectFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["TABLE_OWNER"]), QualifyStringObject(reader["TABLE_NAME"]));
 			OracleSchemaObject schemaObject;
-			if (!_allObjects.TryGetValue(objectFullyQualifiedName, out schemaObject))
+			if (!allObjects.TryGetValue(objectFullyQualifiedName, out schemaObject))
 			{
 				return null;
 			}
@@ -514,11 +515,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return synonymObject;
 		}
 
-		private OracleTable MapTable(Version version, IDataRecord reader)
+		private OracleTable MapTable(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
 		{
 			var tableFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["TABLE_NAME"]));
 			OracleSchemaObject schemaObject;
-			if (!_allObjects.TryGetValue(tableFullyQualifiedName, out schemaObject))
+			if (!allObjects.TryGetValue(tableFullyQualifiedName, out schemaObject))
 			{
 				return null;
 			}
@@ -528,9 +529,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return table;
 		}
 
-		private OraclePartition MapPartitions(Version version, IDataRecord reader)
+		private OraclePartition MapPartitions(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
 		{
-			var ownerTable = GetTableForPartition(reader);
+			var ownerTable = GetTableForPartition(reader, allObjects);
 			if (ownerTable == null)
 			{
 				return null;
@@ -548,9 +549,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return partition;
 		}
 
-		private OracleTable MapPartitionKeys(IDataRecord reader, Func<OracleTable, ICollection<string>> getKeyCollectionFunction)
+		private OracleTable MapPartitionKeys(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects, Func<OracleTable, ICollection<string>> getKeyCollectionFunction)
 		{
-			var ownerTable = GetTableForPartition(reader);
+			var ownerTable = GetTableForPartition(reader, allObjects);
 			if (ownerTable == null)
 			{
 				return null;
@@ -561,18 +562,18 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return ownerTable;
 		}
 
-		private OracleTable GetTableForPartition(IDataRecord reader)
+		private OracleTable GetTableForPartition(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
 		{
 			var tableFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["TABLE_OWNER"]), QualifyStringObject(reader["TABLE_NAME"]));
 			OracleSchemaObject schemaObject;
-			return _allObjects.TryGetValue(tableFullyQualifiedName, out schemaObject)
+			return allObjects.TryGetValue(tableFullyQualifiedName, out schemaObject)
 				? (OracleTable)schemaObject
 				: null;
 		}
 
-		private OracleSubPartition MapSubPartitions(Version version, IDataRecord reader)
+		private OracleSubPartition MapSubPartitions(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
 		{
-			var ownerTable = GetTableForPartition(reader);
+			var ownerTable = GetTableForPartition(reader, allObjects);
 			if (ownerTable == null)
 			{
 				return null;
@@ -591,7 +592,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return subPartition;
 		}
 
-		private object MapSchemaObject(Version version, IDataRecord reader)
+		private object MapSchemaObject(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
 		{
 			var objectTypeIdentifer = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["OBJECT_NAME"]));
 			var objectType = (string)reader["OBJECT_TYPE"];
@@ -604,7 +605,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			switch (objectType)
 			{
 				case OracleSchemaObjectType.Table:
-					if (_allObjects.TryGetValue(objectTypeIdentifer, out schemaObject))
+					if (allObjects.TryGetValue(objectTypeIdentifer, out schemaObject))
 					{
 						goto case OracleSchemaObjectType.MaterializedView;
 					}
@@ -612,7 +613,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					goto default;
 				case OracleSchemaObjectType.MaterializedView:
 				case OracleSchemaObjectType.Type:
-					if (schemaObject == null && _allObjects.TryGetValue(objectTypeIdentifer, out schemaObject))
+					if (schemaObject == null && allObjects.TryGetValue(objectTypeIdentifer, out schemaObject))
 					{
 						schemaObject.Created = created;
 						schemaObject.IsTemporary = isTemporary;
@@ -622,14 +623,14 @@ namespace SqlPad.Oracle.DatabaseConnection
 					break;
 				default:
 					schemaObject = OracleObjectFactory.CreateSchemaObjectMetadata(objectType, objectTypeIdentifer.NormalizedOwner, objectTypeIdentifer.NormalizedName, isValid, created, lastDdl, isTemporary);
-					AddObjectToDictionary(_allObjects, schemaObject, schemaObject.Type);
+					AddObjectToDictionary(allObjects, schemaObject, schemaObject.Type);
 					break;
 			}
 
 			return schemaObject;
 		}
 
-		private static OracleSchemaObject MapSchemaType(Version version, IDataRecord reader)
+		private static OracleSchemaObject MapSchemaType(IDataRecord reader)
 		{
 			var owner = QualifyStringObject(reader["OWNER"]);
 
@@ -661,7 +662,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return schemaType;
 		}
 
-		private static OracleSchemaObject MapMaterializedView(Version version, IDataRecord reader)
+		private static OracleSchemaObject MapMaterializedView(IDataRecord reader)
 		{
 			var refreshModeRaw = (string)reader["REFRESH_MODE"];
 

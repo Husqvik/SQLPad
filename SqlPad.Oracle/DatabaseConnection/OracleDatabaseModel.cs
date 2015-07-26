@@ -201,19 +201,19 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override ILookup<OracleObjectIdentifier, OracleReferenceConstraint> UniqueConstraintReferringReferenceConstraints => _uniqueConstraintReferringReferenceConstraints;
 
-	    protected override ILookup<OracleProgramIdentifier, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadata => _dataDictionary.NonSchemaFunctionMetadata;
+		protected override ILookup<OracleProgramIdentifier, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadata => _dataDictionary.NonSchemaFunctionMetadata;
 
-	    protected override ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuiltInPackageFunctionMetadata => _dataDictionary.BuiltInPackageFunctionMetadata;
+		protected override ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuiltInPackageFunctionMetadata => _dataDictionary.BuiltInPackageFunctionMetadata;
 
-	    public override ConnectionStringSettings ConnectionString => _connectionString;
+		public override ConnectionStringSettings ConnectionString => _connectionString;
 
-	    public override bool IsInitialized => _isInitialized;
+		public override bool IsInitialized => _isInitialized;
 
-	    public override bool IsMetadataAvailable => _dataDictionary != OracleDataDictionary.EmptyDictionary;
+		public override bool IsMetadataAvailable => _dataDictionary != OracleDataDictionary.EmptyDictionary;
 
-	    public override bool HasDbaPrivilege => String.Equals(_oracleConnectionString.DBAPrivilege.ToUpperInvariant(), "SYSDBA");
+		public override bool HasDbaPrivilege => String.Equals(_oracleConnectionString.DBAPrivilege.ToUpperInvariant(), "SYSDBA");
 
-	    public override string CurrentSchema
+		public override string CurrentSchema
 		{
 			get { return _currentSchema; }
 			set
@@ -229,23 +229,23 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override string DatabaseDomainName => DatabaseProperties[_connectionString.ConnectionString].DomainName;
 
-	    public override ICollection<string> Schemas => _schemas;
+		public override ICollection<string> Schemas => _schemas;
 
-	    public override IReadOnlyDictionary<string, OracleSchema> AllSchemas => _allSchemas;
+		public override IReadOnlyDictionary<string, OracleSchema> AllSchemas => _allSchemas;
 
-	    public override IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects => _dataDictionary.AllObjects;
+		public override IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects => _dataDictionary.AllObjects;
 
-	    public override IDictionary<OracleObjectIdentifier, OracleDatabaseLink> DatabaseLinks => _dataDictionary.DatabaseLinks;
+		public override IDictionary<OracleObjectIdentifier, OracleDatabaseLink> DatabaseLinks => _dataDictionary.DatabaseLinks;
 
-	    public override IReadOnlyCollection<string> CharacterSets => _dataDictionary.CharacterSets;
+		public override IReadOnlyCollection<string> CharacterSets => _dataDictionary.CharacterSets;
 
-	    public override IDictionary<int, string> StatisticsKeys => _dataDictionary.StatisticsKeys;
+		public override IDictionary<int, string> StatisticsKeys => _dataDictionary.StatisticsKeys;
 
-	    public override IDictionary<string, string> SystemParameters => _dataDictionary.SystemParameters;
+		public override IDictionary<string, string> SystemParameters => _dataDictionary.SystemParameters;
 
-	    public override Version Version => DatabaseProperties[_connectionString.ConnectionString].Version;
+		public override Version Version => DatabaseProperties[_connectionString.ConnectionString].Version;
 
-	    public override void RefreshIfNeeded()
+		public override void RefreshIfNeeded()
 		{
 			if (IsRefreshNeeded)
 			{
@@ -549,33 +549,38 @@ namespace SqlPad.Oracle.DatabaseConnection
 		    Disconnected?.Invoke(this, new DatabaseModelConnectionErrorArgs(exception));
 		}
 
-		private void EnsureDatabaseVersion(OracleConnection connection)
+		private void EnsureDatabaseProperties()
 		{
 			DatabaseProperty property;
-			if (!DatabaseProperties.TryGetValue(_connectionString.ConnectionString, out property))
+			if (DatabaseProperties.TryGetValue(_connectionString.ConnectionString, out property))
 			{
+				return;
+			}
+
+			using (var connection = new OracleConnection(_connectionString.ConnectionString))
+			{
+				connection.Open();
+
 				var versionString = connection.ServerVersion.Remove(connection.ServerVersion.LastIndexOf('.'));
 
 				DatabaseProperties[_connectionString.ConnectionString] =
 					new DatabaseProperty
 					{
-						DomainName = connection.DatabaseDomainName == "null" ? null : connection.DatabaseDomainName,
+						DomainName = String.Equals(connection.DatabaseDomainName, "null") ? null : connection.DatabaseDomainName,
 						Version = Version.Parse(versionString)
 					};
 			}
 		}
 
-		internal IEnumerable<T> ExecuteReader<T>(Func<Version, string> getCommandTextFunction, Func<Version, OracleDataReader, T> formatFunction)
+		internal IEnumerable<T> ExecuteReader<T>(Func<string> getCommandTextFunction, Func<OracleDataReader, T> formatFunction)
 		{
 			using (var connection = new OracleConnection(_connectionString.ConnectionString))
 			{
+				connection.Open();
+
 				using (var command = connection.CreateCommand())
 				{
-					connection.Open();
-
-					EnsureDatabaseVersion(connection);
-
-					command.CommandText = getCommandTextFunction(Version);
+					command.CommandText = getCommandTextFunction();
 					command.BindByName = true;
 					command.InitialLONGFetchSize = OracleDataDictionaryMapper.LongFetchSize;
 
@@ -602,7 +607,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 						{
 							while (reader.Read())
 							{
-								yield return formatFunction(Version, reader);
+								yield return formatFunction(reader);
 							}
 						}
 					}
@@ -936,6 +941,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 						return;
 					}
 
+					_databaseModel.EnsureDatabaseProperties();
 					_schemas = _databaseModel._dataDictionaryMapper.GetSchemaNames().ToList().AsReadOnly();
 					Trace.WriteLine("Schema metadata loaded. ");
 				}

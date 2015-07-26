@@ -631,10 +631,10 @@ namespace SqlPad
 		private void DatabaseModelRefreshCompletedHandler(object sender, EventArgs eventArgs)
 		{
 			Dispatcher.Invoke(() =>
-			                  {
-				                  ProgressBar.IsIndeterminate = false;
-								  SetSchemas(DatabaseModel.Schemas);
-			                  });
+			{
+				ProgressBar.IsIndeterminate = false;
+				SetSchemas(DatabaseModel.Schemas);
+			});
 		}
 
 		private void InitializeGenericCommandBindings()
