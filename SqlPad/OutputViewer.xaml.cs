@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -472,9 +473,14 @@ namespace SqlPad
 		private void GenerateCSharpQuery(object sender, ExecutedRoutedEventArgs args)
 		{
 			var dialog = new SaveFileDialog { Filter = "C# files (*.cs)|*.cs|All files (*.*)|*", OverwritePrompt = true };
-			if (dialog.ShowDialog() == true)
+			if (dialog.ShowDialog() != true)
 			{
-				CSharpQueryClassGenerator.Generate(_executionResult, dialog.FileName);
+				return;
+			}
+
+			using (var writer = File.CreateText(dialog.FileName))
+			{
+				CSharpQueryClassGenerator.Generate(_executionResult, writer);
 			}
 		}
 

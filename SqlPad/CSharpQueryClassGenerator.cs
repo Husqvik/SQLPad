@@ -18,9 +18,9 @@ public class Query
 @""{0}"";
 
 	public Query(IDbConnection connection)
-	{
+	{{
 		_connection = connection;
-	}
+	}}
 
 	private IEnumerable<ResultRow> Execute({1})
 	{{
@@ -55,7 +55,8 @@ public class Query
 	}}
 }}
 ";
-		public static void Generate(StatementExecutionResult executionResult, string fileName)
+
+		public static void Generate(StatementExecutionResult executionResult, TextWriter writer)
 		{
 			var columnMapBuilder = new StringBuilder();
 			var resultRowPropertyBuilder = new StringBuilder();
@@ -133,14 +134,11 @@ public class Query
 			var statementText = executionResult.Statement.StatementText.Replace("\"", "\"\"");
 			var queryClass = String.Format(ExportClassTemplate, statementText, bindVariableBuilder, parameterBuilder, columnMapBuilder);
 
-			using (var writer = File.CreateText(fileName))
-			{
-				writer.WriteLine(queryClass);
-				writer.WriteLine("public class ResultRow");
-				writer.WriteLine("{");
-				writer.Write(resultRowPropertyBuilder);
-				writer.WriteLine("}");
-			}
+			writer.WriteLine(queryClass);
+			writer.WriteLine("public class ResultRow");
+			writer.WriteLine("{");
+			writer.Write(resultRowPropertyBuilder);
+			writer.WriteLine("}");
 		}
 	}
 }
