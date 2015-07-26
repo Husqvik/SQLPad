@@ -44,7 +44,7 @@
 	<DockPanel LastChildFill="True">
 		<StackPanel DockPanel.Dock="Left">
 			<ToggleButton Content="_Pin" ToolTip="Keep/reuse current result view" Margin="2" IsChecked="{Binding RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType=sqlPad:OutputViewer}, Path=IsPinned}" Background="Transparent" />
-			<ToggleButton Content="_R" ToolTip="Enable/disable reference constraint child records columns" Margin="2" IsChecked="{Binding RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType=sqlPad:OutputViewer}, Path=EnableReferenceConstraintChildren}" Background="Transparent" />
+			<ToggleButton Content="_FK" ToolTip="Enable/disable foreign key children data access" Margin="2" IsChecked="{Binding RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType=sqlPad:OutputViewer}, Path=EnableChildReferenceDataSources}" Background="Transparent" />
 		</StackPanel>
 
 		<StackPanel Visibility="{Binding TransactionControlVisibity}" IsEnabled="{Binding IsTransactionControlEnabled}" Orientation="Horizontal" DockPanel.Dock="Top">

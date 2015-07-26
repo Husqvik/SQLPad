@@ -319,7 +319,7 @@ namespace SqlPad
 
 		private void AddChildReferenceColumns(DataGrid dataGrid, IEnumerable<IReferenceDataSource> childReferenceDataSources)
 		{
-			if (!EnableReferenceConstraintChildren)
+			if (!EnableChildReferenceDataSources)
 			{
 				return;
 			}

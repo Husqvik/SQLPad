@@ -35,7 +35,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public abstract Task<ExecutionStatisticsPlanItemCollection> GetCursorExecutionStatisticsAsync(CancellationToken cancellationToken);
 
-		public abstract Task ActivateTraceEvents(IEnumerable<OracleTraceEvent> traceEvents, CancellationToken cancellationToken);
+		public abstract Task ActivateTraceEvents(IEnumerable<OracleTraceEvent> traceEvents, string traceIdentifier, CancellationToken cancellationToken);
 
 		public abstract Task StopTraceEvents(CancellationToken cancellationToken);
 

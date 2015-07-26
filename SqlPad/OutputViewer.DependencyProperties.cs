@@ -11,7 +11,7 @@ namespace SqlPad
 		public static readonly DependencyProperty ShowAllSessionExecutionStatisticsProperty = DependencyProperty.Register(nameof(ShowAllSessionExecutionStatistics), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(ShowAllSessionExecutionStatisticsPropertyChangedCallbackHandler));
 		public static readonly DependencyProperty EnableDatabaseOutputProperty = DependencyProperty.Register(nameof(EnableDatabaseOutput), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
 		public static readonly DependencyProperty IsPinnedProperty = DependencyProperty.Register(nameof(IsPinned), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
-		public static readonly DependencyProperty EnableReferenceConstraintChildrenProperty = DependencyProperty.Register(nameof(EnableReferenceConstraintChildren), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
+		public static readonly DependencyProperty EnableChildReferenceDataSourcesProperty = DependencyProperty.Register(nameof(EnableChildReferenceDataSources), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
 		public static readonly DependencyProperty TitleProperty = DependencyProperty.Register(nameof(Title), typeof(string), typeof(OutputViewer), new FrameworkPropertyMetadata(TitlePropertyChangedCallbackHandler));
 		public static readonly DependencyProperty DatabaseOutputProperty = DependencyProperty.Register(nameof(DatabaseOutput), typeof(string), typeof(OutputViewer), new FrameworkPropertyMetadata(String.Empty));
 		public static readonly DependencyProperty LastStatementTextProperty = DependencyProperty.Register(nameof(LastStatementText), typeof(string), typeof(OutputViewer), new FrameworkPropertyMetadata(String.Empty));
@@ -130,10 +130,10 @@ namespace SqlPad
 		}
 
 		[Bindable(true)]
-		public bool EnableReferenceConstraintChildren
+		public bool EnableChildReferenceDataSources
 		{
-			get { return (bool)GetValue(EnableReferenceConstraintChildrenProperty); }
-			set { SetValue(EnableReferenceConstraintChildrenProperty, value); }
+			get { return (bool)GetValue(EnableChildReferenceDataSourcesProperty); }
+			set { SetValue(EnableChildReferenceDataSourcesProperty, value); }
 		}
 
 		[Bindable(true)]

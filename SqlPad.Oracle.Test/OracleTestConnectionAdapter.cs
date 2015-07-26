@@ -62,7 +62,7 @@ namespace SqlPad.Oracle.Test
 			return ExecuteStatementAsync(executionModel, cancellationToken);
 		}
 
-		public override Task ActivateTraceEvents(IEnumerable<OracleTraceEvent> traceEvents, CancellationToken cancellationToken)
+		public override Task ActivateTraceEvents(IEnumerable<OracleTraceEvent> traceEvents, string traceIdentifier, CancellationToken cancellationToken)
 		{
 			return Task.FromResult(0);
 		}

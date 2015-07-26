@@ -68,18 +68,18 @@ namespace SqlPad.Oracle.DataDictionary
 			var oracleDataDictionaryType = Serializer.Add(typeof(OracleDataDictionary), false);
 			oracleDataDictionaryType.AsReferenceDefault = true;
 			oracleDataDictionaryType.UseConstructor = false;
-			oracleDataDictionaryType.Add("Timestamp", "_allObjects", "_databaseLinks", "_nonSchemaFunctionMetadata", "_characterSets", "_statisticsKeys", "_systemParameters");
+			oracleDataDictionaryType.Add(nameof(Timestamp), nameof(_allObjects), nameof(_databaseLinks), nameof(_nonSchemaFunctionMetadata), nameof(_characterSets), nameof(_statisticsKeys), nameof(_systemParameters));
 			
 			var oracleObjectIdentifierType = Serializer.Add(typeof(OracleObjectIdentifier), false);
-			oracleObjectIdentifierType.Add("Owner", "Name", "NormalizedOwner", "NormalizedName");
+			oracleObjectIdentifierType.Add(nameof(OracleObjectIdentifier.Owner), nameof(OracleObjectIdentifier.Name), nameof(OracleObjectIdentifier.NormalizedOwner), nameof(OracleObjectIdentifier.NormalizedName));
 
 			var oracleColumnType = Serializer.Add(typeof(OracleColumn), false);
 			oracleColumnType.UseConstructor = false;
-			oracleColumnType.Add("Name", "DataType", "CharacterSize", "Nullable", "Virtual", "DefaultValue", "Hidden", "UserGenerated");
+			oracleColumnType.Add(nameof(OracleColumn.Name), nameof(OracleColumn.DataType), nameof(OracleColumn.CharacterSize), nameof(OracleColumn.Nullable), nameof(OracleColumn.Virtual), nameof(OracleColumn.DefaultValue), nameof(OracleColumn.Hidden), nameof(OracleColumn.UserGenerated));
 
 			var oracleObjectType = Serializer.Add(typeof(OracleObject), false);
 			oracleObjectType.AsReferenceDefault = true;
-			oracleObjectType.Add("FullyQualifiedName");
+			oracleObjectType.Add(nameof(OracleObject.FullyQualifiedName));
 			oracleObjectType.AddSubType(101, typeof(OracleSchemaObject));
 			oracleObjectType.AddSubType(102, typeof(OracleConstraint));
 			oracleObjectType.AddSubType(103, typeof(OracleDatabaseLink));
@@ -88,19 +88,19 @@ namespace SqlPad.Oracle.DataDictionary
 
 			var oracleSchemaObjectType = Serializer.Add(typeof(OracleSchemaObject), false);
 			oracleSchemaObjectType.AsReferenceDefault = true;
-			oracleSchemaObjectType.Add("Created", "LastDdl", "IsValid", "IsTemporary", "_synonyms");
+			oracleSchemaObjectType.Add(nameof(OracleSchemaObject.Created), nameof(OracleSchemaObject.LastDdl), nameof(OracleSchemaObject.IsValid), nameof(OracleSchemaObject.IsTemporary), "_synonyms");
 
 			var oracleDatabaseLinkType = Serializer.Add(typeof(OracleDatabaseLink), false);
 			oracleDatabaseLinkType.AsReferenceDefault = true;
-			oracleDatabaseLinkType.Add("UserName", "Host", "Created");
+			oracleDatabaseLinkType.Add(nameof(OracleDatabaseLink.UserName), nameof(OracleDatabaseLink.Host), nameof(OracleDatabaseLink.Created));
 
 			var oracleOracleDataTypeType = Serializer.Add(typeof(OracleDataType), false);
 			oracleOracleDataTypeType.AsReferenceDefault = true;
-			oracleOracleDataTypeType.Add("Length", "Precision", "Scale", "Unit");
+			oracleOracleDataTypeType.Add(nameof(OracleDataType.Length), nameof(OracleDataType.Precision), nameof(OracleDataType.Scale), nameof(OracleDataType.Unit));
 
 			var oracleConstraintType = Serializer.Add(typeof(OracleConstraint), false);
 			oracleConstraintType.AsReferenceDefault = true;
-			oracleConstraintType.Add("Owner", "Columns", "IsEnabled", "IsDeferrable", "IsValidated", "IsRelied");
+			oracleConstraintType.Add(nameof(OracleConstraint.Owner), nameof(OracleConstraint.Columns), nameof(OracleConstraint.IsEnabled), nameof(OracleConstraint.IsDeferrable), nameof(OracleConstraint.IsValidated), nameof(OracleConstraint.IsRelied));
 
 			oracleConstraintType.AddSubType(101, typeof(OracleCheckConstraint));
 			oracleConstraintType.AddSubType(102, typeof(OracleUniqueConstraint));
@@ -109,7 +109,7 @@ namespace SqlPad.Oracle.DataDictionary
 			Serializer.Add(typeof(OracleCheckConstraint), true).AsReferenceDefault = true;
 			var oracleForeignKeyConstraintType = Serializer.Add(typeof(OracleReferenceConstraint), false);
 			oracleForeignKeyConstraintType.AsReferenceDefault = true;
-			oracleForeignKeyConstraintType.Add("TargetObject", "ReferenceConstraint", "DeleteRule");
+			oracleForeignKeyConstraintType.Add(nameof(OracleReferenceConstraint.TargetObject), nameof(OracleReferenceConstraint.ReferenceConstraint), nameof(OracleReferenceConstraint.DeleteRule));
 
 			Serializer.Add(typeof(OraclePrimaryKeyConstraint), true).AsReferenceDefault = true;
 			var oracleUniqueConstraintType = Serializer.Add(typeof(OracleUniqueConstraint), true);
@@ -118,7 +118,7 @@ namespace SqlPad.Oracle.DataDictionary
 
 			var oraclePartitionBaseType = Serializer.Add(typeof(OraclePartitionBase), false);
 			oraclePartitionBaseType.AsReferenceDefault = true;
-			oraclePartitionBaseType.Add("Name", "Position");
+			oraclePartitionBaseType.Add(nameof(OraclePartitionBase.Name), nameof(OraclePartitionBase.Position));
 
 			oraclePartitionBaseType.AddSubType(101, typeof(OraclePartition));
 			oraclePartitionBaseType.AddSubType(102, typeof(OracleSubPartition));
@@ -143,15 +143,15 @@ namespace SqlPad.Oracle.DataDictionary
 
 			var oracleDataObjectType = Serializer.Add(typeof(OracleDataObject), false);
 			oracleDataObjectType.AsReferenceDefault = true;
-			oracleDataObjectType.Add("Organization", "Constraints", "Columns");
+			oracleDataObjectType.Add(nameof(OracleDataObject.Organization), nameof(OracleDataObject.Constraints), nameof(OracleDataObject.Columns));
 
 			var oracleSynonymType = Serializer.Add(typeof(OracleSynonym), false);
 			oracleSynonymType.AsReferenceDefault = true;
-			oracleSynonymType.Add("SchemaObject");
+			oracleSynonymType.Add(nameof(OracleSynonym.SchemaObject));
 
 			var oracleSequenceType = Serializer.Add(typeof(OracleSequence), false);
 			oracleSequenceType.AsReferenceDefault = true;
-			oracleSequenceType.Add("CurrentValue", "Increment", "MinimumValue", "MaximumValue", "CacheSize", "IsOrdered", "CanCycle");
+			oracleSequenceType.Add(nameof(OracleSequence.CurrentValue), nameof(OracleSequence.Increment), nameof(OracleSequence.MinimumValue), nameof(OracleSequence.MaximumValue), nameof(OracleSequence.CacheSize), nameof(OracleSequence.IsOrdered), nameof(OracleSequence.CanCycle));
 
 			var oraclePackageType = Serializer.Add(typeof(OraclePackage), false);
 			oraclePackageType.AsReferenceDefault = true;
@@ -159,54 +159,54 @@ namespace SqlPad.Oracle.DataDictionary
 
 			var oracleFunctionType = Serializer.Add(typeof(OracleFunction), false);
 			oracleFunctionType.AsReferenceDefault = true;
-			oracleFunctionType.Add("Metadata");
+			oracleFunctionType.Add(nameof(OracleFunction.Metadata));
 
 			var oracleProcedureType = Serializer.Add(typeof(OracleProcedure), false);
 			oracleProcedureType.AsReferenceDefault = true;
-			oracleProcedureType.Add("Metadata");
+			oracleProcedureType.Add(nameof(OracleProcedure.Metadata));
 
 			oracleTypeBaseType.AddSubType(101, typeof(OracleTypeObject));
 			oracleTypeBaseType.AddSubType(102, typeof(OracleTypeCollection));
 			var oracleObjectTypeType = Serializer.Add(typeof(OracleTypeObject), false);
 			oracleObjectTypeType.AsReferenceDefault = true;
-			oracleObjectTypeType.Add("_typeCode", "Attributes");
+			oracleObjectTypeType.Add("_typeCode", nameof(OracleTypeObject.Attributes));
 
 			var oracleObjectTypeAttributeType = Serializer.Add(typeof(OracleTypeAttribute), false);
 			oracleObjectTypeAttributeType.AsReferenceDefault = true;
-			oracleObjectTypeAttributeType.Add("Name", "DataType", "IsInherited");
+			oracleObjectTypeAttributeType.Add(nameof(OracleTypeAttribute.Name), nameof(OracleTypeAttribute.DataType), nameof(OracleTypeAttribute.IsInherited));
 			
 			var oracleCollectionType = Serializer.Add(typeof(OracleTypeCollection), false);
 			oracleCollectionType.AsReferenceDefault = true;
-			oracleCollectionType.Add("ElementDataType", "CollectionType", "UpperBound");
+			oracleCollectionType.Add(nameof(OracleTypeCollection.ElementDataType), nameof(OracleTypeCollection.CollectionType), nameof(OracleTypeCollection.UpperBound));
 
 			oracleDataObjectType.AddSubType(101, typeof(OracleTable));
 			oracleDataObjectType.AddSubType(102, typeof(OracleView));
 			var oracleTableType = Serializer.Add(typeof(OracleTable), false);
 			oracleTableType.AsReferenceDefault = true;
-			oracleTableType.Add("IsInternal", "Partitions", "PartitionKeyColumns", "SubPartitionKeyColumns");
+			oracleTableType.Add(nameof(OracleTable.IsInternal), nameof(OracleTable.Partitions), nameof(OracleTable.PartitionKeyColumns), nameof(OracleTable.SubPartitionKeyColumns));
 
 			oracleTableType.AddSubType(101, typeof(OracleMaterializedView));
 			var oracleMaterializedViewType = Serializer.Add(typeof(OracleMaterializedView), false);
 			oracleMaterializedViewType.AsReferenceDefault = true;
-			oracleMaterializedViewType.Add("TableName", "IsUpdatable", "IsPrebuilt", "RefreshMode", "RefreshType", "RefreshMethod", "RefreshGroup", "LastRefresh", "StartWith", "Next", "Query");
+			oracleMaterializedViewType.Add(nameof(OracleMaterializedView.TableName), nameof(OracleMaterializedView.IsUpdatable), nameof(OracleMaterializedView.IsPrebuilt), nameof(OracleMaterializedView.RefreshMode), nameof(OracleMaterializedView.RefreshType), nameof(OracleMaterializedView.RefreshMethod), nameof(OracleMaterializedView.RefreshGroup), nameof(OracleMaterializedView.LastRefresh), nameof(OracleMaterializedView.StartWith), nameof(OracleMaterializedView.Next), nameof(OracleMaterializedView.Query));
 
 			var oracleViewType = Serializer.Add(typeof(OracleView), false);
 			oracleViewType.AsReferenceDefault = true;
-			oracleViewType.Add("StatementText");
+			oracleViewType.Add(nameof(OracleView.StatementText));
 
 			var oracleFunctionIdentifierType = Serializer.Add(typeof(OracleProgramIdentifier), false);
 			oracleFunctionIdentifierType.UseConstructor = false;
-			oracleFunctionIdentifierType.Add("Owner", "Name", "Package", "Overload");
+			oracleFunctionIdentifierType.Add(nameof(OracleProgramIdentifier.Owner), nameof(OracleProgramIdentifier.Name), nameof(OracleProgramIdentifier.Package), nameof(OracleProgramIdentifier.Overload));
 
 			var oracleFunctionMetadataType = Serializer.Add(typeof(OracleProgramMetadata), false);
 			oracleFunctionMetadataType.AsReferenceDefault = true;
 			oracleFunctionMetadataType.UseConstructor = false;
-			oracleFunctionMetadataType.Add("_parameters", "Identifier", "IsAnalytic", "IsAggregate", "IsPipelined", "IsOffloadable", "ParallelSupport", "IsDeterministic", "_metadataMinimumArguments", "_metadataMaximumArguments", "AuthId", "DisplayType", "IsBuiltIn", "Owner", "Type");
+			oracleFunctionMetadataType.Add("_parameters", nameof(OracleProgramMetadata.Identifier), nameof(OracleProgramMetadata.IsAnalytic), nameof(OracleProgramMetadata.IsAggregate), nameof(OracleProgramMetadata.IsPipelined), nameof(OracleProgramMetadata.IsOffloadable), nameof(OracleProgramMetadata.ParallelSupport), nameof(OracleProgramMetadata.IsDeterministic), "_metadataMinimumArguments", "_metadataMaximumArguments", nameof(OracleProgramMetadata.AuthId), nameof(OracleProgramMetadata.DisplayType), nameof(OracleProgramMetadata.IsBuiltIn), nameof(OracleProgramMetadata.Owner), nameof(OracleProgramMetadata.Type));
 
 			var oracleFunctionParameterMetadataType = Serializer.Add(typeof(OracleProgramParameterMetadata), false);
 			oracleFunctionMetadataType.AsReferenceDefault = true;
 			oracleFunctionParameterMetadataType.UseConstructor = false;
-			oracleFunctionParameterMetadataType.Add("Name", "Position", "Sequence", "DataLevel", "DataType", "CustomDataType", "Direction", "IsOptional");
+			oracleFunctionParameterMetadataType.Add(nameof(OracleProgramParameterMetadata.Name), nameof(OracleProgramParameterMetadata.Position), nameof(OracleProgramParameterMetadata.Sequence), nameof(OracleProgramParameterMetadata.DataLevel), nameof(OracleProgramParameterMetadata.DataType), nameof(OracleProgramParameterMetadata.CustomDataType), nameof(OracleProgramParameterMetadata.Direction), nameof(OracleProgramParameterMetadata.IsOptional));
 		}
 
 		public OracleDataDictionary(IDictionary<OracleObjectIdentifier, OracleSchemaObject> schemaObjects, IDictionary<OracleObjectIdentifier, OracleDatabaseLink> databaseLinks, IEnumerable<OracleProgramMetadata> nonSchemaFunctionMetadata, IEnumerable<string> characterSets, IDictionary<int, string> statisticsKeys, IDictionary<string, string> systemParameters, DateTime timestamp)

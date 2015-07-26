@@ -17,6 +17,7 @@ namespace SqlPad.Oracle.DebugTrace
 	{
 		public static readonly DependencyProperty IsTracingProperty = DependencyProperty.Register(nameof(IsTracing), typeof(bool), typeof(OracleTraceViewer), new FrameworkPropertyMetadata(false));
 		public static readonly DependencyProperty TraceFileNameProperty = DependencyProperty.Register(nameof(TraceFileName), typeof(string), typeof(OracleTraceViewer), new FrameworkPropertyMetadata(String.Empty));
+		public static readonly DependencyProperty TraceIdentifierProperty = DependencyProperty.Register(nameof(TraceIdentifier), typeof(string), typeof(OracleTraceViewer), new FrameworkPropertyMetadata(String.Empty));
 
 		[Bindable(true)]
 		public bool IsTracing
@@ -30,6 +31,13 @@ namespace SqlPad.Oracle.DebugTrace
 		{
 			get { return (string)GetValue(TraceFileNameProperty); }
 			private set { SetValue(TraceFileNameProperty, value); }
+		}
+
+		[Bindable(true)]
+		public string TraceIdentifier
+		{
+			get { return (string)GetValue(TraceIdentifierProperty); }
+			set { SetValue(TraceIdentifierProperty, value); }
 		}
 
 		private readonly OracleConnectionAdapterBase _connectionAdapter;
@@ -50,6 +58,11 @@ namespace SqlPad.Oracle.DebugTrace
 			var hasDbaPrivilege = ((OracleDatabaseModelBase)connectionAdapter.DatabaseModel).HasDbaPrivilege;
 
 			_traceEvents.AddRange(eventSource.Select(e => new OracleTraceEventModel { TraceEvent = e, IsEnabled = hasDbaPrivilege || !e.RequiresDbaPrivilege }));
+		}
+
+		private void ComponentLoadedHandler(object sender, RoutedEventArgs e)
+		{
+			UpdateTraceFileName();
 		}
 
 		private void SelectItemCommandExecutedHandler(object sender, ExecutedRoutedEventArgs e)
@@ -83,7 +96,7 @@ namespace SqlPad.Oracle.DebugTrace
 						return;
 					}
 					
-					await _connectionAdapter.ActivateTraceEvents(selectedEvents, CancellationToken.None);
+					await _connectionAdapter.ActivateTraceEvents(selectedEvents, TraceIdentifier, CancellationToken.None);
 				}
 
 				IsTracing = !IsTracing;
@@ -93,6 +106,11 @@ namespace SqlPad.Oracle.DebugTrace
 				Messages.ShowError(e.Message);
 			}
 
+			UpdateTraceFileName();
+		}
+
+		private void UpdateTraceFileName()
+		{
 			TraceFileName = String.IsNullOrWhiteSpace(OracleConfiguration.Configuration.RemoteTraceDirectory)
 				? _connectionAdapter.TraceFileName
 				: Path.Combine(OracleConfiguration.Configuration.RemoteTraceDirectory, new FileInfo(_connectionAdapter.TraceFileName).Name);

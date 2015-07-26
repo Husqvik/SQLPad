@@ -71,7 +71,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			SwitchCurrentSchema();
 		}
 
-		public override async Task ActivateTraceEvents(IEnumerable<OracleTraceEvent> traceEvents, CancellationToken cancellationToken)
+		public override async Task ActivateTraceEvents(IEnumerable<OracleTraceEvent> traceEvents, string traceIdentifier, CancellationToken cancellationToken)
 		{
 			lock (_activeTraceEvents)
 			{
@@ -88,12 +88,15 @@ namespace SqlPad.Oracle.DatabaseConnection
 				}
 			}
 
-			var commandText = BuildTraceEventActionStatement(_activeTraceEvents, e => e.CommandTextEnable);
+			var preface =  $"EXECUTE IMMEDIATE 'ALTER SESSION SET TRACEFILE_IDENTIFIER = \"{traceIdentifier}\"';";
+			var commandText = BuildTraceEventActionStatement(_activeTraceEvents, () => preface, e => e.CommandTextEnable);
 
 			try
 			{
 				await ExecuteSimpleCommandUsingUserConnection(commandText, cancellationToken);
 				Trace.WriteLine($"Enable trace event statement executed successfully: \n{commandText}");
+
+				await RetrieveTraceFileName(cancellationToken);
 			}
 			catch
 			{
@@ -117,13 +120,20 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 		}
 
-		private static string BuildTraceEventActionStatement(IEnumerable<OracleTraceEvent> traceEvents, Func<OracleTraceEvent, string> getCommandTextFunc)
+		private static string BuildTraceEventActionStatement(IEnumerable<OracleTraceEvent> traceEvents, Func<string> prefaceFunction, Func<OracleTraceEvent, string> getCommandTextFunction)
 		{
 			var builder = new StringBuilder("BEGIN\n");
 
+			var preface = prefaceFunction?.Invoke();
+			if (!String.IsNullOrEmpty(preface))
+			{
+				builder.Append("\t");
+				builder.AppendLine(preface);
+			}
+
 			foreach (var traceEvent in traceEvents)
 			{
-				builder.AppendLine($"\tEXECUTE IMMEDIATE '{getCommandTextFunc(traceEvent).Replace("'", "''")}';");
+				builder.AppendLine($"\tEXECUTE IMMEDIATE '{getCommandTextFunction(traceEvent).Replace("'", "''")}';");
 			}
 
 			builder.Append("END;");
@@ -141,7 +151,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					return;
 				}
 
-				commandText = BuildTraceEventActionStatement(_activeTraceEvents, e => e.CommandTextDisable);
+				commandText = BuildTraceEventActionStatement(_activeTraceEvents, null, e => e.CommandTextDisable);
 				_activeTraceEvents.Clear();
 			}
 
@@ -481,11 +491,20 @@ namespace SqlPad.Oracle.DatabaseConnection
 					}
 				}
 
+				await RetrieveTraceFileName(cancellationToken);
+			}
+		}
+
+		private async Task RetrieveTraceFileName(CancellationToken cancellationToken)
+		{
+			using (var command = _userConnection.CreateCommand())
+			{
 				command.CommandText = OracleDatabaseCommands.SelectTraceFileFullName;
 
 				try
 				{
 					_userTraceFileName = (string)await command.ExecuteScalarAsynchronous(cancellationToken);
+					Trace.WriteLine($"Session ID {_userSessionId} trace file name is {_userTraceFileName}. ");
 				}
 				catch (Exception e)
 				{
