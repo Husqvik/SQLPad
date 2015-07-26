@@ -2374,12 +2374,13 @@ FROM
 			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
 
 			var columnHeaders =
-				new []
+				new[]
 				{
-					new ColumnHeader { Name = "PROJECT_ID" }
+					new ColumnHeader { Name = "PROJECT_ID" },
+					new ColumnHeader { Name = "TARGETGROUP_ID" }
 				};
 
-			semanticModel.ApplyReferenceConstraints(columnHeaders);
+			var childReferenceDataSources = semanticModel.ApplyReferenceConstraints(columnHeaders);
 
 			var referenceDataSources = columnHeaders[0].ParentReferenceDataSources;
 			referenceDataSources.ShouldNotBe(null);
@@ -2387,12 +2388,40 @@ FROM
 			var referenceDataSource = referenceDataSources.First();
 			referenceDataSource.ObjectName.ShouldBe("HUSQVIK.PROJECT");
 			referenceDataSource.ConstraintName.ShouldBe("HUSQVIK.FK_TARGETGROUP_PROJECT");
-			var executionModel = referenceDataSource.CreateExecutionModel(new object[] { 123 });
 
+			var executionModel = referenceDataSource.CreateExecutionModel(new object[] { 123 });
 			executionModel.BindVariables.Count.ShouldBe(1);
 			executionModel.BindVariables[0].Name.ShouldBe("KEY0");
 			executionModel.BindVariables[0].Value.ShouldBe(123);
 			executionModel.StatementText.ShouldBe("SELECT * FROM HUSQVIK.PROJECT WHERE \"PROJECT_ID\" = :KEY0");
-        }
+
+			childReferenceDataSources.Count.ShouldBe(1);
+			var respondentBucketTargetGroupReferenceDataSource = childReferenceDataSources.First();
+			respondentBucketTargetGroupReferenceDataSource.ObjectName.ShouldBe("HUSQVIK.RESPONDENTBUCKET");
+			respondentBucketTargetGroupReferenceDataSource.ConstraintName.ShouldBe("HUSQVIK.FK_RESPONDENTBUCKET_TARGETGROUP");
+			respondentBucketTargetGroupReferenceDataSource.ColumnHeaders.Count.ShouldBe(1);
+
+			executionModel = respondentBucketTargetGroupReferenceDataSource.CreateExecutionModel(new object[] { 456 });
+			executionModel.BindVariables.Count.ShouldBe(1);
+			executionModel.BindVariables[0].Name.ShouldBe("KEY0");
+			executionModel.BindVariables[0].Value.ShouldBe(456);
+			executionModel.StatementText.ShouldBe("SELECT * FROM HUSQVIK.RESPONDENTBUCKET WHERE \"TARGETGROUP_ID\" = :KEY0");
+		}
+
+		[Test(Description = @"")]
+		public void TestApplyReferenceConstraintsUsingOnlyNonPhysicalColumns()
+		{
+			const string query1 = @"SELECT * FROM (SELECT ROWNUM VAL FROM DUAL) T1";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+
+			var columnHeaders = new[] { new ColumnHeader { Name = "VAL" } };
+
+			var childReferenceDataSources = semanticModel.ApplyReferenceConstraints(columnHeaders);
+			childReferenceDataSources.Count.ShouldBe(0);
+		}
 	}
 }

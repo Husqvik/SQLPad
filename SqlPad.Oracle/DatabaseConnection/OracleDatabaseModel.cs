@@ -722,7 +722,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 				stopwatch.Reset();
 
-				BuildUniqueConstraintReferringReferenceConstraintLookup(allObjects.Values);
+				_uniqueConstraintReferringReferenceConstraints = BuildUniqueConstraintReferringReferenceConstraintLookup(allObjects.Values);
 
 				var databaseLinks = _dataDictionaryMapper.GetDatabaseLinks();
 				var characterSets = _dataDictionaryMapper.GetCharacterSets();
@@ -746,14 +746,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 				Trace.WriteLine($"Oracle data dictionary refresh failed: {e}");
 				return false;
 			}
-		}
-
-		private void BuildUniqueConstraintReferringReferenceConstraintLookup(IEnumerable<OracleSchemaObject> allObjects)
-		{
-			_uniqueConstraintReferringReferenceConstraints = allObjects
-				.OfType<OracleDataObject>()
-				.SelectMany(o => o.ReferenceConstraints)
-				.ToLookup(c => c.ReferenceConstraint.FullyQualifiedName);
 		}
 
 		private Dictionary<TKey, TValue> SafeFetchDictionary<TKey, TValue>(Func<IEnumerable<KeyValuePair<TKey, TValue>>> fetchKeyValuePairFunction, string traceMessage)
@@ -819,7 +811,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					.Concat(_dataDictionary.NonSchemaFunctionMetadata.SelectMany(g => g))
 					.ToLookup(m => m.Identifier);
 
-				BuildUniqueConstraintReferringReferenceConstraintLookup(_dataDictionary.AllObjects.Values);
+				_uniqueConstraintReferringReferenceConstraints = BuildUniqueConstraintReferringReferenceConstraintLookup(_dataDictionary.AllObjects.Values);
 			}
 			catch (Exception e)
 			{

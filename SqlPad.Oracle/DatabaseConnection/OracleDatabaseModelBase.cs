@@ -321,6 +321,14 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 		}
 
+		protected static ILookup<OracleObjectIdentifier, OracleReferenceConstraint> BuildUniqueConstraintReferringReferenceConstraintLookup(IEnumerable<OracleSchemaObject> allObjects)
+		{
+			return allObjects
+				.OfType<OracleDataObject>()
+				.SelectMany(o => o.ReferenceConstraints)
+				.ToLookup(c => c.ReferenceConstraint.FullyQualifiedName);
+		}
+
 		private static bool TryGetSchemaObjectProgramMetadata(OracleSchemaObject schemaObject, out IEnumerable<OracleProgramMetadata> functionMetadata)
 		{
 			var targetObject = schemaObject.GetTargetSchemaObject();

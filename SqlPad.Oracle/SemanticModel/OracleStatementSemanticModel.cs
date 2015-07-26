@@ -2835,7 +2835,7 @@ namespace SqlPad.Oracle.SemanticModel
 					return dataObject;
 				}
 
-				if (objectReference.QueryBlocks.Count != 1)
+				if (columnReference.ReferencesAllColumns || objectReference.QueryBlocks.Count != 1)
 				{
 					return null;
 				}

@@ -31,7 +31,8 @@ namespace SqlPad.Oracle.Test
 				{ InitialSchema, new OracleSchema { Name = InitialSchema, Created = new DateTime(2014, 9, 28, 0, 25, 43) } },
 				{ SchemaPublic, new OracleSchema { Name = SchemaPublic } }
 			};
-		
+
+		private static readonly ILookup<OracleObjectIdentifier, OracleReferenceConstraint> UniqueConstraintReferringReferenceConstraintsInternal;
 		private static readonly ILookup<OracleProgramIdentifier, OracleProgramMetadata> AllFunctionMetadataInternal;
 		private static readonly ILookup<OracleProgramIdentifier, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadataInternal;
 		private static readonly ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuiltInPackageFunctionMetadataInternal;
@@ -497,6 +498,8 @@ namespace SqlPad.Oracle.Test
 				.ToLookup(m => m.Identifier);
 			#endregion
 
+			UniqueConstraintReferringReferenceConstraintsInternal = BuildUniqueConstraintReferringReferenceConstraintLookup(AllObjectsInternal);
+
 			Instance = new OracleTestDatabaseModel { CurrentSchema = InitialSchema };
 		}
 
@@ -622,10 +625,7 @@ namespace SqlPad.Oracle.Test
 
 		public override ILookup<OracleProgramIdentifier, OracleProgramMetadata> AllFunctionMetadata => AllFunctionMetadataInternal;
 
-		public override ILookup<OracleObjectIdentifier, OracleReferenceConstraint> UniqueConstraintReferringReferenceConstraints
-		{
-			get { return Enumerable.Empty<OracleReferenceConstraint>().ToLookup(c => c.FullyQualifiedName); }
-		}
+		public override ILookup<OracleObjectIdentifier, OracleReferenceConstraint> UniqueConstraintReferringReferenceConstraints => UniqueConstraintReferringReferenceConstraintsInternal;
 
 		protected override ILookup<OracleProgramIdentifier, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadata => NonSchemaBuiltInFunctionMetadataInternal;
 
