@@ -40,5 +40,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		public abstract Task StopTraceEvents(CancellationToken cancellationToken);
 
 		public abstract string TraceFileName { get; }
+
+		public abstract int? SessionId { get; }
 	}
 }

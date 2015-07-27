@@ -24,8 +24,9 @@
 		<Style x:Key="CellTextblockLeftAlign">
 			<Setter Property="TextBlock.HorizontalAlignment" Value="Left" />
 		</Style>
-		<Style x:Key="EditingCellTextblockLeftAlign" BasedOn="{StaticResource CellTextBoxStyleReadOnly}">
-			<Setter Property="TextBlock.HorizontalAlignment" Value="Left" />
+		<Style x:Key="EditingCellTextBox" BasedOn="{StaticResource CellTextBoxStyleReadOnly}">
+			<Setter Property="TextBox.HorizontalAlignment" Value="Stretch" />
+			<Setter Property="TextBox.TextAlignment" Value="Left" />
 		</Style>
 
 		<Style x:Key="DefaultDataGridRowHeight">

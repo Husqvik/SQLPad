@@ -40,7 +40,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private string _userCommandSqlId;
 		private int _userCommandChildNumber;
 		private OracleTransaction _userTransaction;
-		private int _userSessionId;
+		private int? _userSessionId;
 		private string _userTransactionId;
 		private string _userTraceFileName = String.Empty;
 		private IsolationLevel _userTransactionIsolationLevel;
@@ -56,9 +56,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override IDatabaseModel DatabaseModel => _databaseModel;
 
-	    public override string TraceFileName => _userTraceFileName;
+		public override string TraceFileName => _userTraceFileName;
 
-	    public OracleConnectionAdapter(OracleDatabaseModel databaseModel)
+		public override int? SessionId => _userSessionId;
+
+		public OracleConnectionAdapter(OracleDatabaseModel databaseModel)
 		{
 			_databaseModel = databaseModel;
 			_connectionString = _databaseModel.ConnectionString;
@@ -267,7 +269,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private void PreInitialize()
 		{
 			if (_isExecuting)
+			{
 				throw new InvalidOperationException("Another statement is executing right now. ");
+			}
 
 			DisposeCommandAndReader();
 		}
@@ -504,7 +508,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				try
 				{
 					_userTraceFileName = (string)await command.ExecuteScalarAsynchronous(cancellationToken);
-					Trace.WriteLine($"Session ID {_userSessionId} trace file name is {_userTraceFileName}. ");
+					Trace.WriteLine($"Session ID {_userSessionId.Value} trace file name is {_userTraceFileName}. ");
 				}
 				catch (Exception e)
 				{
@@ -586,7 +590,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 					if (executionModel.GatherExecutionStatistics)
 					{
-						_executionStatisticsDataProvider = new SessionExecutionStatisticsDataProvider(_databaseModel.StatisticsKeys, _userSessionId);
+						_executionStatisticsDataProvider = new SessionExecutionStatisticsDataProvider(_databaseModel.StatisticsKeys, _userSessionId.Value);
 						await _databaseModel.UpdateModelAsync(cancellationToken, true, _executionStatisticsDataProvider.SessionBeginExecutionStatisticsDataProvider);
 					}
 
@@ -759,7 +763,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				{
 					command.BindByName = true;
 					command.CommandText = OracleDatabaseCommands.SelectExecutionPlanIdentifiersCommandText;
-					command.AddSimpleParameter("SID", _userSessionId);
+					command.AddSimpleParameter("SID", _userSessionId.Value);
 
 					try
 					{

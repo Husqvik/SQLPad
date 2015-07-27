@@ -2,7 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 
-namespace SqlPad
+namespace SqlPad.DataExport
 {
 	public interface IDataExporter
 	{

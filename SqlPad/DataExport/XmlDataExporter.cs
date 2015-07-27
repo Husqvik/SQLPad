@@ -10,7 +10,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Xml;
 
-namespace SqlPad
+namespace SqlPad.DataExport
 {
 	public class XmlDataExporter : IDataExporter
 	{

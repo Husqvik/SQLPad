@@ -112,9 +112,9 @@
       <DependentUpon>StatementExecutionHistory.xaml</DependentUpon>
     </Compile>
     <Compile Include="StatusInfoModel.cs" />
-    <Compile Include="TsvDataExporter.cs" />
-    <Compile Include="DataExportHelper.cs" />
-    <Compile Include="IDataExporter.cs" />
+    <Compile Include="DataExport\TsvDataExporter.cs" />
+    <Compile Include="DataExport\DataExportHelper.cs" />
+    <Compile Include="DataExport\IDataExporter.cs" />
     <Compile Include="IHelpProvider.cs" />
     <Compile Include="CompilationErrorArgs.cs" />
     <Compile Include="ComplexTypeViewer.xaml.cs">
@@ -124,14 +124,14 @@
     <Compile Include="Configuration.cs">
       <DependentUpon>Configuration.xsd</DependentUpon>
     </Compile>
-    <Compile Include="HtmlDataExporter.cs" />
-    <Compile Include="SqlUpdateDataExporter.cs" />
-    <Compile Include="SqlInsertDataExporter.cs" />
+    <Compile Include="DataExport\HtmlDataExporter.cs" />
+    <Compile Include="DataExport\SqlUpdateDataExporter.cs" />
+    <Compile Include="DataExport\SqlInsertDataExporter.cs" />
     <Compile Include="SearchTextBox.cs" />
     <Compile Include="WorkDocument.cs" />
-    <Compile Include="XmlDataExporter.cs" />
-    <Compile Include="JsonDataExporter.cs" />
-    <Compile Include="CsvDataExporter.cs" />
+    <Compile Include="DataExport\XmlDataExporter.cs" />
+    <Compile Include="DataExport\JsonDataExporter.cs" />
+    <Compile Include="DataExport\CsvDataExporter.cs" />
     <Compile Include="DataSpaceConverter.cs" />
     <Compile Include="DragDrop\DragDropHelper.cs" />
     <Compile Include="DragDrop\DraggedAdorner.cs" />

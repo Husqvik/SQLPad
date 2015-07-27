@@ -18,6 +18,7 @@ namespace SqlPad.Oracle.DebugTrace
 		public static readonly DependencyProperty IsTracingProperty = DependencyProperty.Register(nameof(IsTracing), typeof(bool), typeof(OracleTraceViewer), new FrameworkPropertyMetadata(false));
 		public static readonly DependencyProperty TraceFileNameProperty = DependencyProperty.Register(nameof(TraceFileName), typeof(string), typeof(OracleTraceViewer), new FrameworkPropertyMetadata(String.Empty));
 		public static readonly DependencyProperty TraceIdentifierProperty = DependencyProperty.Register(nameof(TraceIdentifier), typeof(string), typeof(OracleTraceViewer), new FrameworkPropertyMetadata(String.Empty));
+		public static readonly DependencyProperty SessionIdProperty = DependencyProperty.Register(nameof(SessionId), typeof(int?), typeof(OracleTraceViewer), new FrameworkPropertyMetadata());
 
 		[Bindable(true)]
 		public bool IsTracing
@@ -38,6 +39,13 @@ namespace SqlPad.Oracle.DebugTrace
 		{
 			get { return (string)GetValue(TraceIdentifierProperty); }
 			set { SetValue(TraceIdentifierProperty, value); }
+		}
+
+		[Bindable(true)]
+		public int? SessionId
+		{
+			get { return (int)GetValue(SessionIdProperty); }
+			set { SetValue(SessionIdProperty, value); }
 		}
 
 		private readonly OracleConnectionAdapterBase _connectionAdapter;
@@ -62,7 +70,7 @@ namespace SqlPad.Oracle.DebugTrace
 
 		private void ComponentLoadedHandler(object sender, RoutedEventArgs e)
 		{
-			UpdateTraceFileName();
+			UpdateSessionIdAndTraceFileName();
 		}
 
 		private void SelectItemCommandExecutedHandler(object sender, ExecutedRoutedEventArgs e)
@@ -106,11 +114,13 @@ namespace SqlPad.Oracle.DebugTrace
 				Messages.ShowError(e.Message);
 			}
 
-			UpdateTraceFileName();
+			UpdateSessionIdAndTraceFileName();
 		}
 
-		private void UpdateTraceFileName()
+		private void UpdateSessionIdAndTraceFileName()
 		{
+			SessionId = _connectionAdapter.SessionId;
+
 			if (String.IsNullOrEmpty(_connectionAdapter.TraceFileName))
 			{
 				return;

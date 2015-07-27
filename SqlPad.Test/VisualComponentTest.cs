@@ -10,6 +10,7 @@ using ICSharpCode.AvalonEdit;
 using NUnit.Framework;
 using Shouldly;
 using SqlPad.Commands;
+using SqlPad.DataExport;
 
 namespace SqlPad.Test
 {

@@ -7,6 +7,7 @@
 			 xmlns:commands="clr-namespace:SqlPad.Commands"
 			 xmlns:globalization="clr-namespace:System.Globalization;assembly=mscorlib"
 			 xmlns:componentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+			 xmlns:dataExport="clr-namespace:SqlPad.DataExport"
 			 mc:Ignorable="d" 
 			 d:DesignHeight="140" d:DesignWidth="384"
 			 MouseMove="OutputViewerMouseMoveHandler"
@@ -32,13 +33,13 @@
 
 		<RoutedCommand x:Key="GenerateCSharpQueryClassCommand"/>
 
-		<sqlPad:CsvDataExporter x:Key="CsvDataExporter" />
-		<sqlPad:TsvDataExporter x:Key="TsvDataExporter" />
-		<sqlPad:HtmlDataExporter x:Key="HtmlDataExporter" />
-		<sqlPad:JsonDataExporter x:Key="JsonDataExporter" />
-		<sqlPad:SqlInsertDataExporter x:Key="SqlInsertDataExporter" />
-		<sqlPad:SqlUpdateDataExporter x:Key="SqlUpdateDataExporter" />
-		<sqlPad:XmlDataExporter x:Key="XmlDataExporter" />
+		<dataExport:CsvDataExporter x:Key="CsvDataExporter" />
+		<dataExport:TsvDataExporter x:Key="TsvDataExporter" />
+		<dataExport:HtmlDataExporter x:Key="HtmlDataExporter" />
+		<dataExport:JsonDataExporter x:Key="JsonDataExporter" />
+		<dataExport:SqlInsertDataExporter x:Key="SqlInsertDataExporter" />
+		<dataExport:SqlUpdateDataExporter x:Key="SqlUpdateDataExporter" />
+		<dataExport:XmlDataExporter x:Key="XmlDataExporter" />
 	</UserControl.Resources>
 
 	<DockPanel LastChildFill="True">

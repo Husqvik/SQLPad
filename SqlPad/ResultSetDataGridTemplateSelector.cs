@@ -30,7 +30,7 @@ namespace SqlPad
 			ColumnHeaderClickBubbleCancelation.Setters.Add(new EventSetter(ButtonBase.ClickEvent, new RoutedEventHandler((s, args) => args.Handled = true)));
 
 			var textBoxFactory = new FrameworkElementFactory(typeof (TextBox));
-			textBoxFactory.SetValue(FrameworkElement.StyleProperty, Application.Current.Resources["EditingCellTextblockLeftAlign"]);
+			textBoxFactory.SetValue(FrameworkElement.StyleProperty, Application.Current.Resources["EditingCellTextBox"]);
 			textBoxFactory.SetBinding(TextBox.TextProperty, new Binding("Value") {Converter = CellValueConverter.Instance});
 			EditingTemplate.VisualTree = textBoxFactory;
 		}
@@ -165,7 +165,7 @@ namespace SqlPad
 					Binding = new Binding("ColumnHeader.Name"),
 					HeaderStyle = ColumnHeaderClickBubbleCancelation,
 					ElementStyle = (Style)Application.Current.Resources["CellTextblockLeftAlign"],
-					EditingElementStyle = (Style)Application.Current.Resources["EditingCellTextblockLeftAlign"]
+					EditingElementStyle = (Style)Application.Current.Resources["EditingCellTextBox"]
 				};
 
 			referenceDataGrid.Columns.Add(columnNameTemplate);

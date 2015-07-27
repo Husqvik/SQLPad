@@ -1,4 +1,4 @@
-namespace SqlPad
+namespace SqlPad.DataExport
 {
 	public class TsvDataExporter : CsvDataExporter
 	{

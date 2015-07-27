@@ -26,17 +26,19 @@ namespace SqlPad.Oracle.Test
 
 		private int _generatedRowCount;
 
-		public override bool CanFetch => true;
+		public override bool CanFetch { get; } = true;
 
-		public override bool IsExecuting => false;
+		public override bool IsExecuting { get; } = false;
 
 		public override bool EnableDatabaseOutput { get; set; }
 
 		public override string Identifier { get; set; }
 
-		public override IDatabaseModel DatabaseModel => OracleTestDatabaseModel.Instance;
+		public override IDatabaseModel DatabaseModel { get; } = OracleTestDatabaseModel.Instance;
 
-		public override string TraceFileName => "OracleTestTraceFile.trc";
+		public override string TraceFileName { get; } = "OracleTestTraceFile.trc";
+
+		public override int? SessionId { get; } = 1;
 
 		public override Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
@@ -94,11 +96,11 @@ namespace SqlPad.Oracle.Test
 			return Task.FromResult(resultRow);
 		}
 
-		public override bool HasActiveTransaction => false;
+		public override bool HasActiveTransaction { get; } = false;
 
-		public override Task CommitTransaction() { return Task.FromResult(0); }
+		public override Task CommitTransaction() => Task.FromResult(0);
 
-		public override Task RollbackTransaction() { return Task.FromResult(0); }
+		public override Task RollbackTransaction() => Task.FromResult(0);
 
 		public override Task<ExecutionStatisticsPlanItemCollection> GetCursorExecutionStatisticsAsync(CancellationToken cancellationToken)
 		{

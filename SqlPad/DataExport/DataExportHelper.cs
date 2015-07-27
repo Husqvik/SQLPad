@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace SqlPad
+namespace SqlPad.DataExport
 {
 	internal static class DataExportHelper
 	{

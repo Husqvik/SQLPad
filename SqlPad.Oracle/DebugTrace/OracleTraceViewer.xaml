@@ -113,14 +113,26 @@
 				<TextBlock.Style>
 					<Style>
 						<Style.Triggers>
+							<DataTrigger Binding="{Binding SessionId}" Value="{x:Null}">
+								<Setter Property="TextBlock.Visibility" Value="Collapsed" />
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</TextBlock.Style>
+				<Run Text="Session ID: "/><Run Text="{Binding SessionId}" />
+			</TextBlock>
+			
+			<TextBlock>
+				<TextBlock.Style>
+					<Style>
+						<Style.Triggers>
 							<DataTrigger Binding="{Binding TraceFileName}" Value="">
 								<Setter Property="TextBlock.Visibility" Value="Collapsed" />
 							</DataTrigger>
 						</Style.Triggers>
 					</Style>
 				</TextBlock.Style>
-				<Run Text="Trace file:"/>
-				<Hyperlink Click="TraceFileNameHyperlinkClickHandler"><Run Text="{Binding TraceFileName}"/></Hyperlink>
+				<Run Text="Trace file: " /><Hyperlink Click="TraceFileNameHyperlinkClickHandler"><Run Text="{Binding TraceFileName}" /></Hyperlink>
 			</TextBlock>
 		</StackPanel>
 
