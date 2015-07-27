@@ -1,4 +1,4 @@
-SQLPad 0.3.0.57
+SQLPad 0.3.0.58
 ===============
 
 SQLPad is an experimental SQL editor focused to quick and comfortable work.
@@ -281,6 +281,7 @@ SQLPad screenshots
 ![SQLPad overview 1](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/Overview1.png)
 ![SQLPad overview 2](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/Overview2.png)
 ![SQLPad overview 3](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/Overview3.png)
+![SQLPad overview 4](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/Overview4.png)
 #####Tooltips
 ![Table tooltip detail](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/TableTooltip.png)
 ![Column tooltip detail](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/ColumnTooltip.png)

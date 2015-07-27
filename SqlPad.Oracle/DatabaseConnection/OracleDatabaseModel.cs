@@ -35,6 +35,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private readonly string _connectionStringName;
 		private readonly OracleConnectionStringBuilder _oracleConnectionString;
 		private bool _isInitialized;
+		private bool _isDisposed;
 		private bool _isRefreshing;
 		private bool _cacheLoaded;
 		private Task _backgroundTask;
@@ -471,6 +472,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override void Dispose()
 		{
+			_isDisposed = true;
+
 			_refreshTimer.Stop();
 			_refreshTimer.Dispose();
 
@@ -845,9 +848,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 			{
 				Trace.WriteLine($"Database model initialization failed: {e}");
 
-			    InitializationFailed?.Invoke(this, new DatabaseModelConnectionErrorArgs(e));
+				InitializationFailed?.Invoke(this, new DatabaseModelConnectionErrorArgs(e));
 
-			    return;
+				return;
 			}
 			
 			_isInitialized = true;
@@ -855,6 +858,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 			RaiseEvent(Initialized);
 
 			RefreshIfNeeded();
+
+			if (_isDisposed)
+			{
+				return;
+			}
 
 			SetRefreshTimerInterval();
 			_refreshTimer.Elapsed += RefreshTimerElapsedHandler;

@@ -111,6 +111,11 @@ namespace SqlPad.Oracle.DebugTrace
 
 		private void UpdateTraceFileName()
 		{
+			if (String.IsNullOrEmpty(_connectionAdapter.TraceFileName))
+			{
+				return;
+			}
+
 			TraceFileName = String.IsNullOrWhiteSpace(OracleConfiguration.Configuration.RemoteTraceDirectory)
 				? _connectionAdapter.TraceFileName
 				: Path.Combine(OracleConfiguration.Configuration.RemoteTraceDirectory, new FileInfo(_connectionAdapter.TraceFileName).Name);
