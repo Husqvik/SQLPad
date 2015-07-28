@@ -37,12 +37,20 @@ namespace SqlPad
 		{
 			get
 			{
-				if (SnippetCollectionInternal.Count == 0)
+				EnsureSnippetsLoaded();
+
+				return SnippetCollectionInternal.AsReadOnly();
+			}
+		}
+
+		private static void EnsureSnippetsLoaded()
+		{
+			lock (SnippetCollectionInternal)
+			{
+				if (SnippetCollectionInternal.Count == 0 || CodeGenerationItemCollectionInternal.Count == 0)
 				{
 					ReloadSnippets();
 				}
-
-				return SnippetCollectionInternal.AsReadOnly();
 			}
 		}
 
@@ -50,10 +58,7 @@ namespace SqlPad
 		{
 			get
 			{
-				if (CodeGenerationItemCollectionInternal.Count == 0)
-				{
-					ReloadSnippets();
-				}
+				EnsureSnippetsLoaded();
 
 				return CodeGenerationItemCollectionInternal.AsReadOnly();
 			}
