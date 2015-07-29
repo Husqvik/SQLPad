@@ -14,6 +14,8 @@ namespace SqlPad
 		string ToXml();
 		
 		string ToJson();
+
+		object RawValue { get; }
 	}
 
 	public interface ILargeValue : IValue

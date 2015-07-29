@@ -424,7 +424,12 @@ WHERE
 
 		    public bool IsNull => false;
 
-		    public string ToSqlLiteral()
+			public object RawValue
+			{
+				get { throw new NotImplementedException(); }
+			}
+
+			public string ToSqlLiteral()
 			{
 				return "TO_CLOB('</root>')";
 			}

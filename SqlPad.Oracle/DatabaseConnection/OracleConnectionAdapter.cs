@@ -437,7 +437,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 						var oracleDate = reader.GetOracleDate(i);
 						value = oracleDate.IsNull
 							? new OracleDateTime()
-							: new OracleDateTime(oracleDate.Year, oracleDate.Month, oracleDate.Day, oracleDate.Hour, oracleDate.Minute, oracleDate.Second);
+							: new OracleDateTime(oracleDate);
 						break;
 					case "Char":
 					case "NChar":

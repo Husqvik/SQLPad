@@ -27,7 +27,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 		public bool IsEditable => false;
 
 	    public abstract string DataTypeName { get; }
-		
+
+		public abstract object RawValue { get; }
+
 		public abstract bool IsNull { get; }
 
 		public abstract string ToSqlLiteral();
@@ -126,7 +128,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override int PreviewLength { get; }
 
-	    protected override string GetValue()
+		public override object RawValue => _xmlType;
+
+		protected override string GetValue()
 		{
 			return _xmlType.Value;
 		}
@@ -154,10 +158,13 @@ namespace SqlPad.Oracle.DatabaseConnection
 	public class OracleSimpleValue : ILargeTextValue
 	{
 	    public OracleSimpleValue(object value)
-		{
+	    {
+		    RawValue = value;
 			Preview = Convert.ToString(value);
 			IsNull = value == DBNull.Value;
 		}
+
+		public object RawValue { get; }
 
 		public bool IsNull { get; }
 
@@ -216,7 +223,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 	    public override long Length => _clob.Length;
 
-	    public override bool IsNull => _clob.IsNull || _clob.IsEmpty;
+		public override object RawValue => _clob;
+
+		public override bool IsNull => _clob.IsNull || _clob.IsEmpty;
 
 	    public override string ToSqlLiteral()
 		{
@@ -277,7 +286,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 	    public bool IsNull => _blob.IsNull || _blob.IsEmpty;
 
-	    public string ToSqlLiteral()
+		public object RawValue => _blob;
+
+		public string ToSqlLiteral()
 		{
 			return IsNull
 				? TerminalValues.Null
@@ -369,6 +380,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 				_dateTime = new OracleDateTime(timeStamp.Year, timeStamp.Month, timeStamp.Day, timeStamp.Hour, timeStamp.Minute, timeStamp.Second);
 			}
 		}
+
+		public object RawValue => _value;
 
 		public bool IsNull => _value.IsNull;
 
@@ -467,9 +480,16 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public bool IsBeforeCrist { get; }
 
+		public object RawValue { get; }
+
 		public OracleDateTime()
 		{
 			IsNull = true;
+		}
+
+		public OracleDateTime(OracleDate oracleDate) : this(oracleDate.Year, oracleDate.Month, oracleDate.Day, oracleDate.Hour, oracleDate.Minute, oracleDate.Second)
+		{
+			RawValue = oracleDate;
 		}
 
 		public OracleDateTime(int year, int month, int day, int hour, int minute, int second)
@@ -500,6 +520,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 				_dateTime = new OracleDateTime(timeStamp.Year, timeStamp.Month, timeStamp.Day, timeStamp.Hour, timeStamp.Minute, timeStamp.Second);
 			}
 		}
+
+		public object RawValue => _value;
 
 		public bool IsNull => _value.IsNull;
 
@@ -546,6 +568,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 				_dateTime = new OracleDateTime(timeStamp.Year, timeStamp.Month, timeStamp.Day, timeStamp.Hour, timeStamp.Minute, timeStamp.Second);
 			}
 		}
+
+		public object RawValue => _value;
 
 		public bool IsNull => _value.IsNull;
 
@@ -598,6 +622,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 				Value = _oracleBinary.Value;
 			}
 		}
+
+		public object RawValue => _oracleBinary;
 
 		public string DataTypeName => TerminalValues.Raw;
 
@@ -687,6 +713,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return value;
 		}
 
+		public object RawValue => _oracleDecimal;
+
 		public bool IsNull => _oracleDecimal.IsNull;
 
 	    public string ToSqlLiteral()
@@ -739,13 +767,13 @@ namespace SqlPad.Oracle.DatabaseConnection
 	{
 		private const int BufferSize = 8192;
 		private readonly OracleDataReader _reader;
-	    private readonly int _columnIndex;
+		private readonly int _columnIndex;
 
 		public string DataTypeName => "LONG RAW";
 
-	    public bool IsEditable => false;
+		public bool IsEditable => false;
 
-	    public bool IsNull { get; }
+		public bool IsNull { get; }
 
 		public string ToSqlLiteral()
 		{
@@ -766,13 +794,16 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public long Length => Value.Length;
 
-	    public byte[] Value { get; }
+		public byte[] Value { get; }
 
-	    public OracleLongRawValue(OracleBinary binary)
+		public OracleLongRawValue(OracleBinary binary)
 		{
+			RawValue = binary;
 			Value = binary.IsNull ? new byte[0] : binary.Value;
 			IsNull = binary.IsNull;
 		}
+
+		public object RawValue { get; }
 
 		public byte[] GetChunk(int bytes)
 		{
@@ -806,13 +837,15 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			for (var i = 0; i < buffers.Count; i++)
 			{
-				Array.Copy(buffers[i], 0L, result, i * BufferSize, BufferSize);
+				Array.Copy(buffers[i], 0L, result, i*BufferSize, BufferSize);
 				buffers[i] = null;
 			}
 
 			return result;
 		}
 
-		public void Prefetch() { }
+		public void Prefetch()
+		{
+		}
 	}
 }

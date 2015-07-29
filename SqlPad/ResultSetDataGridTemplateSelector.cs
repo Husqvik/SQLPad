@@ -194,7 +194,7 @@ namespace SqlPad
 		private static void ReferenceDataGridOnMouseDoubleClickHandler(object sender, MouseButtonEventArgs args)
 		{
 			var dataGrid = (DataGrid)sender;
-			if (dataGrid.CurrentItem == null)
+			if (dataGrid.CurrentItem == null || dataGrid.CurrentColumn is DataGridTextColumn)
 			{
 				return;
 			}

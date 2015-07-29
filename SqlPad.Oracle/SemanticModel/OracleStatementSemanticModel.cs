@@ -2986,13 +2986,17 @@ namespace SqlPad.Oracle.SemanticModel
 					BindVariables =
 						_keyDataTypes.Select(
 							(t, i) =>
-							new BindVariableModel(
-								new BindVariableConfiguration
-								{
-									Name = $"KEY{i}",
-									DataType = t,
-									Value = keys[i]
-								})
+							{
+								var keyValue = keys[i];
+								var providerValue = keyValue as IValue;
+								return new BindVariableModel(
+									new BindVariableConfiguration
+									{
+										Name = $"KEY{i}",
+										DataType = t,
+										Value = providerValue == null ? keyValue : providerValue.RawValue
+									});
+							}
 							).ToArray()
 				};
 		}

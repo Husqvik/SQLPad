@@ -407,7 +407,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public bool IsNull => Array == null;
 
-	    public string ToSqlLiteral()
+		public object RawValue
+		{
+			get { throw new NotImplementedException(); }
+		}
+
+		public string ToSqlLiteral()
 		{
 			throw new NotImplementedException();
 		}
@@ -513,6 +518,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 		public abstract string DataTypeName { get; }
 
 		public abstract bool IsNull { get; }
+
+		public object RawValue
+		{
+			get { throw new NotImplementedException(); }
+		}
 
 		public string ToSqlLiteral()
 		{
