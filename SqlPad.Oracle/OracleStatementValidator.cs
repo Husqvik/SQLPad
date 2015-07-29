@@ -28,7 +28,9 @@ namespace SqlPad.Oracle
 		public IValidationModel BuildValidationModel(IStatementSemanticModel semanticModel)
 		{
 			if (semanticModel == null)
+			{
 				throw new ArgumentNullException(nameof(semanticModel));
+			}
 
 			var oracleSemanticModel = (OracleStatementSemanticModel)semanticModel;
 

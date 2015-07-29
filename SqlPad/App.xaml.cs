@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -26,6 +27,30 @@ namespace SqlPad
 			Version = assembly.GetName().Version.ToString();
 			var buildInfo = assembly.GetCustomAttribute<AssemblyBuildInfo>();
 			VersionTimestamp = buildInfo.VersionTimestampString;
+
+			if (WorkDocumentCollection.WorkingDocuments.Count > 0)
+			{
+				AdjustThreadPool(WorkDocumentCollection.WorkingDocuments.Count);
+			}
+		}
+
+		private static void AdjustThreadPool(int requiredThreads)
+		{
+			var minSize = requiredThreads - 1;
+
+			minSize |= minSize >> 1;
+			minSize |= minSize >> 2;
+			minSize |= minSize >> 4;
+			minSize |= minSize >> 8;
+			minSize |= minSize >> 16;
+			minSize++;
+
+			minSize = Math.Max(minSize, 8);
+			minSize = Math.Min(minSize, 128);
+
+			ThreadPool.SetMinThreads(minSize, 8);
+
+			Trace.WriteLine($"Minimum of {requiredThreads} threads required to handle active documents. Thread pool minimum size adjusted to {minSize}. ");
 		}
 
 		internal static void ResultGridBeginningEditCancelTextInputHandlerImplementation(object sender, DataGridBeginningEditEventArgs e)

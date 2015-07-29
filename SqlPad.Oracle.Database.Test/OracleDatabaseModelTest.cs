@@ -164,6 +164,8 @@ WHERE
 		[Test]
 		public void TestDataTypesFetch()
 		{
+			CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+
 			var clobParameter = String.Join(" ", Enumerable.Repeat("CLOB DATA", 200));
 			var executionModel =
 				new StatementExecutionModel
@@ -226,13 +228,13 @@ WHERE
 				((OracleSimpleValue)firstRow[3]).Value.ShouldBe(String.Empty);
 				firstRow[4].ShouldBeTypeOf<OracleTimestampWithTimeZone>();
 				var timestampWithTimezoneValue = (OracleTimestampWithTimeZone)firstRow[4];
-				timestampWithTimezoneValue.ToString().ShouldBe("11/1/2014 3:16:32 PM.123456789 +02:00");
+				timestampWithTimezoneValue.ToString().ShouldBe("01/11/2014 15:16:32.123456789 +02:00");
 				timestampWithTimezoneValue.ToSqlLiteral().ShouldBe("TIMESTAMP'2014-11-1 15:16:32.123456789 +02:00'");
 				timestampWithTimezoneValue.ToXml().ShouldBe("2014-11-01T15:16:32.123");
 				timestampWithTimezoneValue.ToJson().ShouldBe("\"2014-11-01T15:16:32.123+02:00\"");
 				firstRow[5].ShouldBeTypeOf<OracleTimestamp>();
 				var timestampValue = (OracleTimestamp)firstRow[5];
-				timestampValue.ToString().ShouldBe("11/1/2014 2:16:32 PM.123456789");
+				timestampValue.ToString().ShouldBe("01/11/2014 14:16:32.123456789");
 				timestampValue.ToSqlLiteral().ShouldBe("TIMESTAMP'2014-11-1 14:16:32.123456789'");
 				timestampValue.ToXml().ShouldBe("2014-11-01T14:16:32.123");
 				timestampValue.ToJson().ShouldBe("\"2014-11-01T14:16:32.123\"");
@@ -254,7 +256,7 @@ WHERE
 				numberValue.ToSqlLiteral().ShouldBe("1.23456789012345678901234567890123456789E-125");
 				firstRow[9].ShouldBeTypeOf<OracleDateTime>();
 				var dateValue = (OracleDateTime)firstRow[9];
-				dateValue.ToString().ShouldBe("BC 1/1/4712 12:00:00 AM");
+				dateValue.ToString().ShouldBe("BC 01/01/4712 00:00:00");
 				dateValue.ToSqlLiteral().ShouldBe("TO_DATE('-4712-01-01 00:00:00', 'SYYYY-MM-DD HH24:MI:SS')");
 				dateValue.ToXml().ShouldBe("4712-01-01T00:00:00");
 				dateValue.ToJson().ShouldBe("\"4712-01-01T00:00:00\"");

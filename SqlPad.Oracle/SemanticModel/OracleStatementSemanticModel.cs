@@ -77,7 +77,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 	    public string StatementText { get; private set; }
 		
-		public bool HasDatabaseModel => _databaseModel != null;
+		public bool HasDatabaseModel => _databaseModel != null && _databaseModel.IsInitialized;
 
 	    public ICollection<OracleQueryBlock> QueryBlocks => _queryBlockNodes.Values;
 

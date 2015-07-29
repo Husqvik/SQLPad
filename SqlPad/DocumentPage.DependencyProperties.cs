@@ -147,7 +147,7 @@ namespace SqlPad
 			var documentPage = (DocumentPage)dependencyObject;
 			documentPage.DatabaseModel.CurrentSchema = newSchema;
 
-			if (documentPage.DatabaseModel.IsInitialized)
+			if (!documentPage._isParsing)
 			{
 				documentPage.ReParse();
 			}

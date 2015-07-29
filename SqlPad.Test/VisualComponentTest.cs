@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text;
@@ -283,7 +284,7 @@ WHERE
 
 			var result = GetExportContent(resultGrid, new CsvDataExporter());
 
-			const string expectedResult = "\"DUMMY1\";\"DUMMY_WITH_UNDERSCORES\"\r\n\"Value \"\"1\"\" '2' <3>\";\"16.8.2014 22:25:34\"\r\n\"\"\"2.\"\"Value\";\"16.8.2014 00:00:00\"\r\n";
+			const string expectedResult = "\"DUMMY1\";\"DUMMY_WITH_UNDERSCORES\"\r\n\"Value \"\"1\"\" '2' <3>\";\"08/16/2014 22:25:34\"\r\n\"\"\"2.\"\"Value\";\"08/16/2014 00:00:00\"\r\n";
 			result.ShouldBe(expectedResult);
 		}
 
@@ -294,7 +295,7 @@ WHERE
 
 			var result = GetExportContent(resultGrid, new TsvDataExporter());
 
-			const string expectedResult = "\"DUMMY1\"\t\"DUMMY_WITH_UNDERSCORES\"\r\n\"Value \"\"1\"\" '2' <3>\"\t\"16.8.2014 22:25:34\"\r\n\"\"\"2.\"\"Value\"\t\"16.8.2014 00:00:00\"\r\n";
+			const string expectedResult = "\"DUMMY1\"\t\"DUMMY_WITH_UNDERSCORES\"\r\n\"Value \"\"1\"\" '2' <3>\"\t\"08/16/2014 22:25:34\"\r\n\"\"\"2.\"\"Value\"\t\"08/16/2014 00:00:00\"\r\n";
 			result.ShouldBe(expectedResult);
 		}
 
@@ -305,7 +306,7 @@ WHERE
 
 			var result = GetExportContent(resultGrid, new JsonDataExporter());
 
-			const string expectedResult = "[\r\n  {\r\n    \"DUMMY1\": \"Value \\\"1\\\" '2' <3>\",\r\n    \"DUMMY_WITH_UNDERSCORES\": \"16.8.2014 22:25:34\"\r\n  },\r\n  {\r\n    \"DUMMY1\": \"\\\"2.\\\"Value\",\r\n    \"DUMMY_WITH_UNDERSCORES\": \"16.8.2014 00:00:00\"\r\n  }\r\n]";
+			const string expectedResult = "[\r\n  {\r\n    \"DUMMY1\": \"Value \\\"1\\\" '2' <3>\",\r\n    \"DUMMY_WITH_UNDERSCORES\": \"08/16/2014 22:25:34\"\r\n  },\r\n  {\r\n    \"DUMMY1\": \"\\\"2.\\\"Value\",\r\n    \"DUMMY_WITH_UNDERSCORES\": \"08/16/2014 00:00:00\"\r\n  }\r\n]";
 			result.ShouldBe(expectedResult);
 		}
 
@@ -316,7 +317,7 @@ WHERE
 
 			var result = GetExportContent(resultGrid, new XmlDataExporter());
 
-			const string expectedResult = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<data>\r\n  <row>\r\n    <DUMMY1>Value \"1\" '2' &lt;3&gt;</DUMMY1>\r\n    <DUMMY_WITH_UNDERSCORES>16.8.2014 22:25:34</DUMMY_WITH_UNDERSCORES>\r\n  </row>\r\n  <row>\r\n    <DUMMY1>\"2.\"Value</DUMMY1>\r\n    <DUMMY_WITH_UNDERSCORES>16.8.2014 00:00:00</DUMMY_WITH_UNDERSCORES>\r\n  </row>\r\n</data>";
+			const string expectedResult = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<data>\r\n  <row>\r\n    <DUMMY1>Value \"1\" '2' &lt;3&gt;</DUMMY1>\r\n    <DUMMY_WITH_UNDERSCORES>08/16/2014 22:25:34</DUMMY_WITH_UNDERSCORES>\r\n  </row>\r\n  <row>\r\n    <DUMMY1>\"2.\"Value</DUMMY1>\r\n    <DUMMY_WITH_UNDERSCORES>08/16/2014 00:00:00</DUMMY_WITH_UNDERSCORES>\r\n  </row>\r\n</data>";
 			result.ShouldBe(expectedResult);
 		}
 
@@ -327,7 +328,7 @@ WHERE
 
 			var result = GetExportContent(resultGrid, new SqlInsertDataExporter());
 
-			const string expectedResult = "INSERT INTO MY_TABLE (DUMMY1, DUMMY_WITH_UNDERSCORES) VALUES ('Value \"1\" ''2'' <3>', '16.8.2014 22:25:34');\r\nINSERT INTO MY_TABLE (DUMMY1, DUMMY_WITH_UNDERSCORES) VALUES ('\"2.\"Value', '16.8.2014 00:00:00');\r\n";
+			const string expectedResult = "INSERT INTO MY_TABLE (DUMMY1, DUMMY_WITH_UNDERSCORES) VALUES ('Value \"1\" ''2'' <3>', '08/16/2014 22:25:34');\r\nINSERT INTO MY_TABLE (DUMMY1, DUMMY_WITH_UNDERSCORES) VALUES ('\"2.\"Value', '08/16/2014 00:00:00');\r\n";
 			result.ShouldBe(expectedResult);
 		}
 
@@ -338,7 +339,7 @@ WHERE
 
 			var result = GetExportContent(resultGrid, new SqlUpdateDataExporter());
 
-			const string expectedResult = "UPDATE MY_TABLE SET DUMMY1 = 'Value \"1\" ''2'' <3>', DUMMY_WITH_UNDERSCORES = '16.8.2014 22:25:34';\r\nUPDATE MY_TABLE SET DUMMY1 = '\"2.\"Value', DUMMY_WITH_UNDERSCORES = '16.8.2014 00:00:00';\r\n";
+			const string expectedResult = "UPDATE MY_TABLE SET DUMMY1 = 'Value \"1\" ''2'' <3>', DUMMY_WITH_UNDERSCORES = '08/16/2014 22:25:34';\r\nUPDATE MY_TABLE SET DUMMY1 = '\"2.\"Value', DUMMY_WITH_UNDERSCORES = '08/16/2014 00:00:00';\r\n";
 			result.ShouldBe(expectedResult);
 		}
 
@@ -349,7 +350,7 @@ WHERE
 
 			var result = GetExportContent(resultGrid, new HtmlDataExporter());
 
-			const string expectedResult = "<!DOCTYPE html><html><head><title></title></head><body><table border=\"1\" style=\"border-collapse:collapse\"><tr><th>DUMMY1</th><th>DUMMY_WITH_UNDERSCORES</th><tr><tr><td>Value \"1\" '2' &lt;3&gt;</td><td>16.8.2014 22:25:34</td><tr><tr><td>\"2.\"Value</td><td>16.8.2014 00:00:00</td><tr><table>";
+			const string expectedResult = "<!DOCTYPE html><html><head><title></title></head><body><table border=\"1\" style=\"border-collapse:collapse\"><tr><th>DUMMY1</th><th>DUMMY_WITH_UNDERSCORES</th><tr><tr><td>Value \"1\" '2' &lt;3&gt;</td><td>08/16/2014 22:25:34</td><tr><tr><td>\"2.\"Value</td><td>08/16/2014 00:00:00</td><tr><table>";
 			result.ShouldBe(expectedResult);
 		}
 
@@ -357,6 +358,7 @@ WHERE
 		{
 			var tempFileName = Path.GetTempFileName();
 			var connectionConfiguration = ConfigurationProvider.GetConnectionCofiguration(ConfigurationProvider.ConnectionStrings[0].Name);
+			CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
 			dataExporter.ExportToFile(tempFileName, resultGrid, connectionConfiguration.InfrastructureFactory.DataExportConverter);
 
 			var result = File.ReadAllText(tempFileName);

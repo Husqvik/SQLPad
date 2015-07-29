@@ -36,8 +36,10 @@ namespace SqlPad.Oracle
 					foldingContext.OpenScope(TerminalValues.LeftParenthesis);
 				}
 
-				var isSelect = String.Equals(token.UpperInvariantValue, TerminalValues.Select);
-				if (isSelect && (existsPrecedingParenthesis || String.IsNullOrEmpty(precedingToken.Value) || String.Equals(precedingToken.Value, TerminalValues.Semicolon)))
+				var isSubqueryStartingSelect = String.Equals(token.UpperInvariantValue, TerminalValues.Select) &&
+				                               (existsPrecedingParenthesis || String.IsNullOrEmpty(precedingToken.Value) || String.Equals(precedingToken.Value, TerminalValues.Semicolon));
+				var isSubqueryStartingWith = String.Equals(token.UpperInvariantValue, TerminalValues.With) && (String.IsNullOrEmpty(precedingToken.Value) || String.Equals(precedingToken.Value, TerminalValues.Semicolon));
+				if (isSubqueryStartingSelect || isSubqueryStartingWith)
 				{
 					foldingContext.AddFolding(FoldingSectionPlaceholderSubquery, StackKeySubquery, token.Index);
 				}

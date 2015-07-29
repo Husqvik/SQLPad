@@ -73,6 +73,11 @@ namespace SqlPad.Oracle
 			{
 				referenceContainers.Add(currentQueryBlock);
 				referenceContainers.AddRange(currentQueryBlock.Columns);
+
+				if (currentQueryBlock.OuterCorrelatedQueryBlock != null)
+				{
+					referenceContainers.Add(currentQueryBlock.OuterCorrelatedQueryBlock);
+				}
 			}
 
 			return referenceContainers;
@@ -472,7 +477,7 @@ namespace SqlPad.Oracle
 				});
 		}
 
-		private IEnumerable<ICodeCompletionItem> GenerateSelectListItems(IEnumerable<OracleReferenceContainer> referenceContainers, int cursorPosition, OracleDatabaseModelBase databaseModel, OracleCodeCompletionType completionType, bool forcedInvokation)
+		private IEnumerable<ICodeCompletionItem> GenerateSelectListItems(ICollection<OracleReferenceContainer> referenceContainers, int cursorPosition, OracleDatabaseModelBase databaseModel, OracleCodeCompletionType completionType, bool forcedInvokation)
 		{
 			var currentNode = completionType.EffectiveTerminal;
 			
@@ -491,7 +496,7 @@ namespace SqlPad.Oracle
 			var schemaName = completionType.ReferenceIdentifier.SchemaIdentifierOriginalValue;
 
 			var functionReference = programReferences.SingleOrDefault(f => f.FunctionIdentifierNode == currentNode);
-			var addParameterList = functionReference == null || functionReference.ParameterListNode == null;
+			var addParameterList = functionReference?.ParameterListNode == null;
 
 			var tableReferenceSource = (ICollection<OracleObjectWithColumnsReference>)referenceContainers
 				.SelectMany(c => c.ObjectReferences)

@@ -2095,6 +2095,14 @@ SELECT * FROM ALL";
 			items[0].StatementNode.ShouldNotBe(null);
 		}
 
+		[Test(Description = @"")]
+		public void TestCorrelatedSubqueryColumnSuggestion()
+		{
+			const string statement = @"SELECT * FROM SELECTION WHERE NOT EXISTS (SELECT NULL FROM RESPONDENTBUCKET WHERE RESPONDENTBUCKET_ID = SELECTION.R)";
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 115).ToArray();
+			items.Length.ShouldBeGreaterThan(0);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)

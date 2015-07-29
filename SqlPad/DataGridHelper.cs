@@ -104,7 +104,7 @@ namespace SqlPad
 						Content = contentContainer,
 						HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
 						VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-						MaxHeight = dockPanel.ActualHeight - headersPresenter.ActualHeight
+						MaxHeight = dockPanel.ActualHeight - headersPresenter.ActualHeight - SystemParameters.HorizontalScrollBarHeight
 					};
 			}
 

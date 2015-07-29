@@ -82,10 +82,7 @@ namespace SqlPad
 			return true;
 		}
 
-		internal DocumentPage ActiveDocument
-		{
-			get { return ((TabItem)DocumentTabControl.SelectedItem).Content as DocumentPage; }
-		}
+		internal DocumentPage ActiveDocument => ((TabItem)DocumentTabControl.SelectedItem).Content as DocumentPage;
 
 		internal IEnumerable<DocumentPage> AllDocuments
 		{
@@ -153,7 +150,7 @@ namespace SqlPad
 		private void TabControlSelectionChangedHandler(object sender, SelectionChangedEventArgs e)
 		{
 			var tabItem = e.AddedItems.Count == 0 ? null : e.AddedItems[0] as TabItem;
-			var document = tabItem == null ? null : tabItem.Content as DocumentPage;
+			var document = tabItem?.Content as DocumentPage;
 
 			if (document != null)
 			{
