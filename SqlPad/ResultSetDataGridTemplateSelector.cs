@@ -164,7 +164,8 @@ namespace SqlPad
 					Header = "Column name",
 					Binding = new Binding("ColumnHeader.Name"),
 					HeaderStyle = ColumnHeaderClickBubbleCancelation,
-					ElementStyle = (Style)Application.Current.Resources["CellTextblockLeftAlign"],
+					ElementStyle = (Style)Application.Current.Resources["SingleRecordColumnName"],
+					CellStyle = (Style)Application.Current.Resources["SingleRecordCell"],
 					EditingElementStyle = (Style)Application.Current.Resources["EditingCellTextBox"]
 				};
 
