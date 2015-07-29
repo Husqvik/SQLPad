@@ -28,7 +28,8 @@ namespace SqlPad
 			var textBoxFactory = new FrameworkElementFactory(typeof(TextBox));
 			textBoxFactory.SetValue(TextBoxBase.IsReadOnlyProperty, true);
 			textBoxFactory.SetValue(TextBoxBase.IsReadOnlyCaretVisibleProperty, true);
-			textBoxFactory.SetBinding(TextBox.TextProperty, new Binding($"[{columnHeader.ColumnIndex}]") { Converter = CellValueConverter.Instance });
+			var valueBinding = new Binding($"[{columnHeader.ColumnIndex}]") { Converter = CellValueConverter.Instance };
+			textBoxFactory.SetBinding(TextBox.TextProperty, valueBinding);
 			var editingDataTemplate = new DataTemplate(typeof(DependencyObject)) { VisualTree = textBoxFactory };
 
 			var columnTemplate =
@@ -36,7 +37,8 @@ namespace SqlPad
 				{
 					Header = columnHeader,
 					CellTemplateSelector = new ResultSetDataGridTemplateSelector(statementValidator, connectionAdapter, columnHeader),
-					CellEditingTemplate = editingDataTemplate
+					CellEditingTemplate = editingDataTemplate,
+					ClipboardContentBinding = valueBinding
 				};
 
 			if (columnHeader.DataType.In(typeof(Decimal), typeof(Int16), typeof(Int32), typeof(Int64), typeof(Byte)))

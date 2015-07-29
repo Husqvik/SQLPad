@@ -8,14 +8,16 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace SqlPad
 {
 	internal class ResultSetDataGridTemplateSelector : DataTemplateSelector
 	{
-		public static readonly Style ColumnHeaderClickBubbleCancelation = new Style();
 		private static readonly DataTemplate EditingTemplate = new DataTemplate(typeof(TextBox));
+		protected const string ValueProperty = nameof(CustomTypeAttributeValue.Value);
+		internal static readonly Style ColumnHeaderClickBubbleCancelation = new Style();
 
 		private readonly int _columnIndex;
 		private readonly bool _hasReferenceConstraint;
@@ -31,7 +33,7 @@ namespace SqlPad
 
 			var textBoxFactory = new FrameworkElementFactory(typeof (TextBox));
 			textBoxFactory.SetValue(FrameworkElement.StyleProperty, Application.Current.Resources["EditingCellTextBox"]);
-			textBoxFactory.SetBinding(TextBox.TextProperty, new Binding("Value") {Converter = CellValueConverter.Instance});
+			textBoxFactory.SetBinding(TextBox.TextProperty, new Binding(ValueProperty) {Converter = CellValueConverter.Instance});
 			EditingTemplate.VisualTree = textBoxFactory;
 		}
 
@@ -157,6 +159,7 @@ namespace SqlPad
 
 			referenceDataGrid.BeginningEdit += App.ResultGridBeginningEditCancelTextInputHandlerImplementation;
 			referenceDataGrid.Sorting += (sender, args) => args.Handled = args.Column.DisplayIndex != 0;
+			referenceDataGrid.MouseDoubleClick += ReferenceDataGridOnMouseDoubleClickHandler;
 
 			var columnNameTemplate =
 				new DataGridTextColumn
@@ -174,10 +177,11 @@ namespace SqlPad
 			var columnHyperlinkValueTemplate =
 				new DataGridTemplateColumn
 				{
-					Header = "Value",
+					Header = ValueProperty,
 					HeaderStyle = ColumnHeaderClickBubbleCancelation,
 					CellTemplateSelector = new SingleRowDataTemplateSelector(_statementValidator, _connectionAdapter),
-					CellEditingTemplate = EditingTemplate
+					CellEditingTemplate = EditingTemplate,
+					ClipboardContentBinding = new Binding(ValueProperty) { Converter = CellValueConverter.Instance }
 				};
 
 			referenceDataGrid.Columns.Add(columnHyperlinkValueTemplate);
@@ -186,12 +190,28 @@ namespace SqlPad
 			container.Children.Add(textBlock);
 			container.Children.Add(referenceDataGrid);
 		}
+
+		private static void ReferenceDataGridOnMouseDoubleClickHandler(object sender, MouseButtonEventArgs args)
+		{
+			var dataGrid = (DataGrid)sender;
+			if (dataGrid.CurrentItem == null)
+			{
+				return;
+			}
+
+			var customTypeValue = (CustomTypeAttributeValue)dataGrid.CurrentItem;
+			var largeValue = customTypeValue.Value as ILargeValue;
+			if (largeValue != null)
+			{
+				new LargeValueEditor(customTypeValue.ColumnHeader.Name, largeValue) { Owner = Window.GetWindow(dataGrid) }.ShowDialog();
+			}
+		}
 	}
 
 	internal class SingleRowDataTemplateSelector : ResultSetDataGridTemplateSelector
 	{
 		public SingleRowDataTemplateSelector(IStatementValidator statementValidator, IConnectionAdapter connectionAdapter)
-			: base(statementValidator, connectionAdapter, "Value")
+			: base(statementValidator, connectionAdapter, ValueProperty)
 		{
 			var textBlockFactory = TextDataTemplate.VisualTree;
 			textBlockFactory.SetValue(FrameworkElement.HorizontalAlignmentProperty, HorizontalAlignment.Left);
