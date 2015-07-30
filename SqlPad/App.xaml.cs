@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
@@ -88,6 +89,11 @@ namespace SqlPad
 				Messages.ShowError(e.Message);
 				return false;
 			}
+		}
+
+		internal void ClickBubblingCancelHandler(object sender, RoutedEventArgs args)
+		{
+			args.Handled = true;
 		}
 
 		internal static void ShowExecutionHistory(string providerName)

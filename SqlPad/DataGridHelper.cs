@@ -5,11 +5,14 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace SqlPad
 {
 	internal class DataGridHelper
 	{
+		public static readonly Thickness DefaultTextBlockMargin = new Thickness(2, 0, 2, 0);
+
 		public static void InitializeDataGridColumns(DataGrid dataGrid, IEnumerable<ColumnHeader> columnHeaders, IStatementValidator statementValidator, IConnectionAdapter connectionAdapter)
 		{
 			dataGrid.Columns.Clear();
@@ -89,6 +92,11 @@ namespace SqlPad
 			}
 		}
 
+		public static TextBlock CreateErrorText(string text)
+		{
+			return new TextBlock { Text = text, Background = Brushes.Red, Margin = DefaultTextBlockMargin };
+		}
+
 		public static FrameworkElement ConfigureAndWrapUsingScrollViewerIfNeeded(DataGridCell cell, FrameworkElement contentContainer)
 		{
 			var row = cell.FindParent<DataGridRow>();
@@ -104,7 +112,7 @@ namespace SqlPad
 						Content = contentContainer,
 						HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
 						VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-						MaxHeight = dockPanel.ActualHeight - headersPresenter.ActualHeight - SystemParameters.HorizontalScrollBarHeight
+						MaxHeight = dockPanel.ActualHeight - headersPresenter.ActualHeight - SystemParameters.HorizontalScrollBarHeight - 4
 					};
 			}
 

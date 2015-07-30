@@ -5,11 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
 
 namespace SqlPad
 {
@@ -17,7 +15,6 @@ namespace SqlPad
 	{
 		private static readonly DataTemplate EditingTemplate = new DataTemplate(typeof(TextBox));
 		protected const string ValueProperty = nameof(CustomTypeAttributeValue.Value);
-		internal static readonly Style ColumnHeaderClickBubbleCancelation = new Style();
 
 		private readonly int _columnIndex;
 		private readonly bool _hasReferenceConstraint;
@@ -29,11 +26,9 @@ namespace SqlPad
 
 		static ResultSetDataGridTemplateSelector()
 		{
-			ColumnHeaderClickBubbleCancelation.Setters.Add(new EventSetter(ButtonBase.ClickEvent, new RoutedEventHandler((s, args) => args.Handled = true)));
-
 			var textBoxFactory = new FrameworkElementFactory(typeof (TextBox));
 			textBoxFactory.SetValue(FrameworkElement.StyleProperty, Application.Current.Resources["EditingCellTextBox"]);
-			textBoxFactory.SetBinding(TextBox.TextProperty, new Binding(ValueProperty) {Converter = CellValueConverter.Instance});
+			textBoxFactory.SetBinding(TextBox.TextProperty, new Binding(ValueProperty) { Converter = CellValueConverter.Instance });
 			EditingTemplate.VisualTree = textBoxFactory;
 		}
 
@@ -108,10 +103,18 @@ namespace SqlPad
 
 			var stackPanel = new StackPanel();
 			var index = 0;
-			var references = GetReferenceDataSources(row).ToArray();
-			foreach (var executionModel in BuildExecutionModels(row))
+
+			try
 			{
-				await BuildParentRecordDataGrid(stackPanel, references[index++].ObjectName, executionModel);
+				var references = GetReferenceDataSources(row).ToArray();
+				foreach (var executionModel in BuildExecutionModels(row))
+				{
+					await BuildParentRecordDataGrid(stackPanel, references[index++].ObjectName, executionModel);
+				}
+			}
+			catch (Exception exception)
+			{
+				stackPanel.Children.Add(DataGridHelper.CreateErrorText(exception.Message));
 			}
 
 			cell.Content = DataGridHelper.ConfigureAndWrapUsingScrollViewerIfNeeded(cell, stackPanel);
@@ -119,19 +122,9 @@ namespace SqlPad
 
 		private async Task BuildParentRecordDataGrid(Panel container, string objectName, StatementExecutionModel executionModel)
 		{
-			StatementExecutionResult executionResult;
-
-			try
-			{
-				var cancellationToken = CancellationToken.None;
-				executionResult = await _connectionAdapter.ExecuteChildStatementAsync(executionModel, cancellationToken);
-				await _statementValidator.ApplyReferenceConstraintsAsync(executionResult, _connectionAdapter.DatabaseModel, cancellationToken);
-			}
-			catch (Exception e)
-			{
-				container.Children.Add(new TextBlock { Text = e.Message, Background = Brushes.Red });
-				return;
-			}
+			var cancellationToken = CancellationToken.None;
+			var executionResult = await _connectionAdapter.ExecuteChildStatementAsync(executionModel, cancellationToken);
+			await _statementValidator.ApplyReferenceConstraintsAsync(executionResult, _connectionAdapter.DatabaseModel, cancellationToken);
 
 			if (executionResult.InitialResultSet.Count == 0)
 			{
@@ -166,7 +159,7 @@ namespace SqlPad
 				{
 					Header = "Column name",
 					Binding = new Binding("ColumnHeader.Name"),
-					HeaderStyle = ColumnHeaderClickBubbleCancelation,
+					HeaderStyle = (Style)Application.Current.Resources["ColumnHeaderClickBubbleCancelation"],
 					ElementStyle = (Style)Application.Current.Resources["SingleRecordColumnName"],
 					CellStyle = (Style)Application.Current.Resources["SingleRecordCell"],
 					EditingElementStyle = (Style)Application.Current.Resources["EditingCellTextBox"]
@@ -178,7 +171,7 @@ namespace SqlPad
 				new DataGridTemplateColumn
 				{
 					Header = ValueProperty,
-					HeaderStyle = ColumnHeaderClickBubbleCancelation,
+					HeaderStyle = (Style)Application.Current.Resources["ColumnHeaderClickBubbleCancelation"],
 					CellTemplateSelector = new SingleRowDataTemplateSelector(_statementValidator, _connectionAdapter),
 					CellEditingTemplate = EditingTemplate,
 					ClipboardContentBinding = new Binding(ValueProperty) { Converter = CellValueConverter.Instance }
@@ -186,7 +179,7 @@ namespace SqlPad
 
 			referenceDataGrid.Columns.Add(columnHyperlinkValueTemplate);
 
-			var textBlock = new TextBlock { Text = $"Source: {objectName}", Margin = new Thickness(2, 0, 2, 0), HorizontalAlignment = HorizontalAlignment.Left };
+			var textBlock = new TextBlock { Text = $"Source: {objectName}", Margin = DataGridHelper.DefaultTextBlockMargin, HorizontalAlignment = HorizontalAlignment.Left };
 			container.Children.Add(textBlock);
 			container.Children.Add(referenceDataGrid);
 		}

@@ -387,14 +387,14 @@ namespace SqlPad
 
 				foreach (var columnTemplate in childRecordDataGrid.Columns)
 				{
-					columnTemplate.HeaderStyle = ResultSetDataGridTemplateSelector.ColumnHeaderClickBubbleCancelation;
+					columnTemplate.HeaderStyle = (Style)Application.Current.Resources["ColumnHeaderClickBubbleCancelation"];
 				}
 
 				element = childRecordDataGrid;
 			}
-			catch (Exception e)
+			catch (Exception exception)
 			{
-				element = new TextBlock { Text = e.Message, Background = Brushes.Red };
+				element = DataGridHelper.CreateErrorText(exception.Message);
 			}
 
 			cell.Content = DataGridHelper.ConfigureAndWrapUsingScrollViewerIfNeeded(cell, element);
@@ -469,7 +469,12 @@ namespace SqlPad
 
 		private void ResultGridMouseDoubleClickHandler(object sender, MouseButtonEventArgs e)
 		{
-			DataGridHelper.ShowLargeValueEditor((DataGrid)sender);
+			var senderDataGrid = (DataGrid)sender;
+			var originalDataGrid = ((Visual)e.OriginalSource).FindParent<DataGrid>();
+			if (Equals(originalDataGrid, senderDataGrid))
+			{
+				DataGridHelper.ShowLargeValueEditor(senderDataGrid);
+			}
 		}
 
 		private void ResultGridSelectedCellsChangedHandler(object sender, SelectedCellsChangedEventArgs e)

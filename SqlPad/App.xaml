@@ -42,6 +42,10 @@
 			<Setter Property="TextBox.VerticalAlignment" Value="Center" />
 		</Style>
 
+		<Style x:Key="ColumnHeaderClickBubbleCancelation">
+			<EventSetter Event="ButtonBase.Click" Handler="ClickBubblingCancelHandler" />
+		</Style>
+
 		<Style x:Key="DefaultDataGridRowHeight">
 			<Style.Setters>
 				<Setter Property="DataGridRow.Height" Value="21"/>
