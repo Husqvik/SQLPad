@@ -16,7 +16,7 @@ namespace SqlPad.Oracle.Test
 		[Test(Description = @"")]
 		public void TestInitializationWithNullStatement()
 		{
-			var exception = Assert.Throws<ArgumentNullException>(() => new OracleStatementSemanticModel(null, null, null));
+			var exception = Assert.Throws<ArgumentNullException>(() => OracleStatementSemanticModel.Build(null, null, null));
 			exception.ParamName.ShouldBe("statement");
 		}
 
@@ -24,22 +24,16 @@ namespace SqlPad.Oracle.Test
 		public void TestInitializationWithNullDatabaseModel()
 		{
 			var statement = (OracleStatement)Parser.Parse("SELECT NULL FROM DUAL").Single();
-			var exception = Assert.Throws<ArgumentNullException>(() => new OracleStatementSemanticModel(null, statement, null));
+			var exception = Assert.Throws<ArgumentNullException>(() => OracleStatementSemanticModel.Build(null, statement, null));
 			exception.ParamName.ShouldBe("databaseModel");
 		}
 
 		[Test(Description = @"")]
-		public void TestInitializationSimpleModel()
+		public void TestUnitializedDatabaseModel()
 		{
 			var statement = (OracleStatement)Parser.Parse("SELECT NULL FROM DUAL").Single();
-			var semanticModel = new OracleStatementSemanticModel(null, statement);
+			var semanticModel = OracleStatementSemanticModel.Build(null, statement, new OracleTestDatabaseModel(false));
 			semanticModel.HasDatabaseModel.ShouldBe(false);
-		}
-
-		[Test(Description = @"")]
-		public void TestInitializationWithStatementWithoutRootNode()
-		{
-			Assert.DoesNotThrow(() => new OracleStatementSemanticModel(null, new OracleStatement(), TestFixture.DatabaseModel));
 		}
 
 		[Test(Description = @"")]
@@ -57,7 +51,7 @@ FROM
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.HasDatabaseModel.ShouldBe(true);
 			semanticModel.QueryBlocks.ShouldNotBe(null);
@@ -87,7 +81,7 @@ FROM
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.ShouldNotBe(null);
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
@@ -106,7 +100,7 @@ FROM
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.ShouldNotBe(null);
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
@@ -125,7 +119,7 @@ FROM
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.ShouldNotBe(null);
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
@@ -153,7 +147,7 @@ FROM
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.ShouldNotBe(null);
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
@@ -184,7 +178,7 @@ FROM
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.ShouldNotBe(null);
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
@@ -207,7 +201,7 @@ FROM
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 			var queryBlocks = semanticModel.QueryBlocks.ToArray();
 			queryBlocks.Length.ShouldBe(2);
 
@@ -260,7 +254,7 @@ FROM
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 			var queryBlocks = semanticModel.QueryBlocks.ToArray();
 			queryBlocks.Length.ShouldBe(2);
 
@@ -297,7 +291,7 @@ FROM
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.ShouldNotBe(null);
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
@@ -321,7 +315,7 @@ FROM
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.ShouldNotBe(null);
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
@@ -341,7 +335,7 @@ FROM
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.ShouldNotBe(null);
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
@@ -361,7 +355,7 @@ FROM
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.ShouldNotBe(null);
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
@@ -381,7 +375,7 @@ FROM
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.ShouldNotBe(null);
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
@@ -402,7 +396,7 @@ FROM
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.ShouldNotBe(null);
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
@@ -425,7 +419,7 @@ FROM
 
 			var databaseModel = new OracleTestDatabaseModel { CurrentDatabaseDomainNameInternal = null };
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, databaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, databaseModel);
 			semanticModel.StatementText.ShouldBe(query1);
 		}
 
@@ -435,7 +429,7 @@ FROM
 			const string query1 = @"SELECT SQL_CHILD_NUMBER, , PREV_CHILD_NUMBER FROM V$SESSION";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 		}
@@ -446,7 +440,7 @@ FROM
 			const string query1 = @"SELECT * FROM XMLTABLE ('/root' PASSING XMLTYPE ('<root>value</root>') COLUMNS VALUE V";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 		}
@@ -457,7 +451,7 @@ FROM
 			const string query1 = @"INSERT INTO HUSQVIK.SELECTION(NAME) VALUES ('Dummy selection')";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.InsertTargets.Count.ShouldBe(1);
 			semanticModel.MainObjectReferenceContainer.MainObjectReference.ShouldBe(null);
@@ -473,7 +467,7 @@ FROM
 			const string query1 = @"UPDATE SELECTION SET NAME = 'Dummy selection' WHERE SELECTION_ID = 0";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.MainObjectReferenceContainer.MainObjectReference.ShouldNotBe(null);
 			semanticModel.MainObjectReferenceContainer.MainObjectReference.SchemaObject.ShouldNotBe(null);
@@ -486,7 +480,7 @@ FROM
 			const string query1 = @"DELETE SELECTION WHERE SELECTION_ID = 0";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.MainObjectReferenceContainer.MainObjectReference.ShouldNotBe(null);
 			semanticModel.MainObjectReferenceContainer.MainObjectReference.SchemaObject.ShouldNotBe(null);
@@ -499,7 +493,7 @@ FROM
 			const string query1 = @"UPDATE (SELECT * FROM SELECTION) SET NAME = 'Dummy selection' WHERE SELECTION_ID = 0";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.MainObjectReferenceContainer.MainObjectReference.ShouldNotBe(null);
 			semanticModel.MainObjectReferenceContainer.MainObjectReference.SchemaObject.ShouldBe(null);
@@ -513,7 +507,7 @@ FROM
 			const string query1 = @"INSERT INTO";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.MainObjectReferenceContainer.MainObjectReference.ShouldBe(null);
 		}
@@ -524,7 +518,7 @@ FROM
 			const string query1 = @"INSERT INTO SELECTION(SESSIONTIMEZONE) SELECT * FROM SELECTION";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.MainObjectReferenceContainer.MainObjectReference.ShouldBe(null);
 			semanticModel.InsertTargets.Count.ShouldBe(1);
@@ -540,7 +534,7 @@ FROM
 			const string query1 = @"INSERT INTO SELECTION (SELECTION_ID, NAME, RESPONDENTBUCKET_ID) VALUES (SQLPAD_FUNCTION, XMLTYPE(), TEST_SEQ.NEXTVAL)";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.InsertTargets.Count.ShouldBe(1);
 			var insertTarget = semanticModel.InsertTargets.First();
@@ -558,7 +552,7 @@ FROM
 			const string query1 = @"SELECT 1 + SYS.DBMS_RANDOM.VALUE + 1 FROM DUAL";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.ShouldNotBe(null);
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
@@ -583,7 +577,7 @@ FROM
 			const string query1 = @"SELECT HUSQVIK.SELECTION.SELECTION_ID, SELECTION.NAME, RESPONDENTBUCKET.TARGETGROUP_ID, RESPONDENTBUCKET.NAME FROM HUSQVIK.SELECTION LEFT JOIN RESPONDENTBUCKET ON SELECTION.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID, SYS.DUAL";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var redundantTerminals = semanticModel.RedundantSymbolGroups.SelectMany(g => g).OrderBy(t => t.SourcePosition.IndexStart).ToArray();
 			redundantTerminals.Length.ShouldBe(8);
@@ -611,7 +605,7 @@ FROM
 			const string query1 = @"UPDATE SELECTION SET NAME = SQLPAD_FUNCTION() WHERE SELECTION_ID = 0";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.MainObjectReferenceContainer.MainObjectReference.ShouldNotBe(null);
 			semanticModel.MainObjectReferenceContainer.ProgramReferences.Count.ShouldBe(1);
@@ -625,7 +619,7 @@ FROM
 			const string query1 = @"SELECT UNIQUE 123.456, '123.456', N'123.456', 123., 1.2E+1, DATE'2014-10-03', TIMESTAMP'2014-10-03 23:15:43.777' FROM DUAL";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 			var queryBlock = semanticModel.QueryBlocks.First();
@@ -649,7 +643,7 @@ FROM
 			const string query1 = @"SELECT CONSTANT1, CONSTANT2 FROM (SELECT DISTINCT 123.456 CONSTANT1, 654.321 AS CONSTANT2 FROM DUAL)";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.Count.ShouldBe(2);
 			var queryBlock = semanticModel.QueryBlocks.First();
@@ -669,7 +663,7 @@ FROM
 			const string query1 = @"SELECT 1 + 1, 1.1 + 1.1, 'x' || 'y', DATE'2014-10-04' + 1, TIMESTAMP'2014-10-04 20:21:13' + INTERVAL '1' HOUR FROM DUAL";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 			var queryBlock = semanticModel.QueryBlocks.First();
@@ -688,7 +682,7 @@ FROM
 			const string query1 = @"SELECT TEST_SEQ.NEXTVAL@SQLPAD.HUSQVIK.COM@HQINSTANCE, SQLPAD_FUNCTION@SQLPAD.HUSQVIK.COM@HQINSTANCE FROM DUAL@SQLPAD.HUSQVIK.COM@HQINSTANCE";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 			var queryBlock = semanticModel.QueryBlocks.First();
@@ -706,7 +700,7 @@ FROM
 			const string query1 = @"SELECT C1 FROM (SELECT 1 C1, 1 + 2 C2, DUMMY C3 FROM DUAL)";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var redundantTerminals = semanticModel.RedundantSymbolGroups.SelectMany(g => g).OrderBy(t => t.SourcePosition.IndexStart).ToArray();
 			redundantTerminals.Length.ShouldBe(8);
@@ -733,7 +727,7 @@ SEARCH DEPTH FIRST BY DUMMY SET SEQ#
 SELECT * FROM DUAL";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(1);
 			var terminalGroup = semanticModel.RedundantSymbolGroups.Single();
@@ -750,7 +744,7 @@ SELECT * FROM DUAL";
 			const string query1 = @"WITH CTE AS (SELECT DUMMY DUMMY1, 2 DUMMY2 FROM DUAL) SELECT * FROM CTE";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
@@ -772,7 +766,7 @@ CTE_DUMMY AS (
 SELECT * FROM DUAL";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(2);
 			var terminalGroups = semanticModel.RedundantSymbolGroups.ToArray();
@@ -794,7 +788,7 @@ SELECT * FROM DUAL";
 			const string query1 = @"SELECT 1 FROM (SELECT 1 C1, 1 C2, DUMMY C3 FROM DUAL)";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var redundantTerminals = semanticModel.RedundantSymbolGroups.SelectMany(g => g).OrderBy(t => t.SourcePosition.IndexStart).ToArray();
 			redundantTerminals.Length.ShouldBe(6);
@@ -812,7 +806,7 @@ SELECT * FROM DUAL";
 			const string query1 = @"SELECT C2 FROM (SELECT 1 C1, 2 C2 FROM DUAL)";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var redundantTerminals = semanticModel.RedundantSymbolGroups.SelectMany(g => g).OrderBy(t => t.SourcePosition.IndexStart).ToArray();
 			redundantTerminals.Length.ShouldBe(3);
@@ -827,7 +821,7 @@ SELECT * FROM DUAL";
 			const string query1 = @"WITH CTE AS (SELECT VAL FROM (SELECT 1 VAL FROM DUAL)) SELECT 1 OUTPUT_COLUMN, VAL FROM (SELECT VAL FROM CTE)";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
@@ -838,7 +832,7 @@ SELECT * FROM DUAL";
 			const string query1 = @"SELECT * FROM (SELECT 1 C1, 2 C2 FROM DUAL)";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var redundantTerminals = semanticModel.RedundantSymbolGroups.SelectMany(g => g).OrderBy(t => t.SourcePosition.IndexStart).ToArray();
 			redundantTerminals.Length.ShouldBe(0);
@@ -850,7 +844,7 @@ SELECT * FROM DUAL";
 			const string query1 = @"SELECT DUMMY, HUSQVIK.SQLPAD_FUNCTION FROM DUAL";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var redundantTerminals = semanticModel.RedundantSymbolGroups.SelectMany(g => g).OrderBy(t => t.SourcePosition.IndexStart).ToArray();
 			redundantTerminals.Length.ShouldBe(2);
@@ -865,7 +859,7 @@ SELECT * FROM DUAL";
 			const string query1 = @"SELECT T.ORA_ROWSCN, T.ROWID FROM ""CaseSensitiveTable"" T";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var redundantTerminals = semanticModel.RedundantSymbolGroups.SelectMany(g => g).OrderBy(t => t.SourcePosition.IndexStart).ToArray();
 			redundantTerminals.Length.ShouldBe(4);
@@ -883,7 +877,7 @@ SELECT * FROM DUAL";
 			const string query1 = @"SELECT DUMMY, DUMMY FROM DUAL UNION SELECT DUMMY, DUMMY FROM DUAL";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var redundantTerminals = semanticModel.RedundantSymbolGroups.SelectMany(g => g).OrderBy(t => t.SourcePosition.IndexStart).ToArray();
 			redundantTerminals.Length.ShouldBe(0);
@@ -895,7 +889,7 @@ SELECT * FROM DUAL";
 			const string query1 = @"SELECT (SELECT 1 FROM DUAL D WHERE DUMMY = SYS.DUAL.DUMMY) VAL FROM SYS.DUAL";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var redundantTerminals = semanticModel.RedundantSymbolGroups.SelectMany(g => g).OrderBy(t => t.SourcePosition.IndexStart).ToArray();
 			redundantTerminals.Length.ShouldBe(2);
@@ -907,7 +901,7 @@ SELECT * FROM DUAL";
 			const string query1 = @"SELECT COUNT(*) FROM (SELECT DISTINCT X, Y FROM COORDINATES)";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var redundantTerminals = semanticModel.RedundantSymbolGroups.SelectMany(g => g).OrderBy(t => t.SourcePosition.IndexStart).ToArray();
 			redundantTerminals.Length.ShouldBe(0);
@@ -919,7 +913,7 @@ SELECT * FROM DUAL";
 			const string query1 = @"SELECT DUMMY FROM (SELECT DUAL.*, SELECTION.* FROM DUAL, SELECTION)";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var redundantTerminals = semanticModel.RedundantSymbolGroups.SelectMany(g => g).OrderBy(t => t.SourcePosition.IndexStart).ToArray();
 			redundantTerminals.Length.ShouldBe(4);
@@ -931,7 +925,7 @@ SELECT * FROM DUAL";
 			const string query1 = @"SELECT DUMMY FROM (SELECT DUAL.*, HUSQVIK.SELECTION.NAME FROM DUAL, HUSQVIK.SELECTION)";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(2);
 			semanticModel.RedundantSymbolGroups.SelectMany(g => g).Count().ShouldBe(8);
@@ -943,7 +937,7 @@ SELECT * FROM DUAL";
 			const string query1 = @"SELECT DUAL.DUMMY DUMMY, DUMMY DUMMY FROM DUAL";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var terminalGroups = semanticModel.RedundantSymbolGroups.Where(g => g.RedundancyType == RedundancyType.RedundantColumnAlias).ToArray();
 			terminalGroups.Length.ShouldBe(2);
@@ -962,7 +956,7 @@ SELECT * FROM DUAL";
 			const string query1 = @"SELECT DUMMY FROM DUAL DUAL, SYS.DUAL DUAL";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var terminalGroups = semanticModel.RedundantSymbolGroups.Where(g => g.RedundancyType == RedundancyType.RedundantObjectAlias).ToArray();
 			terminalGroups.Length.ShouldBe(2);
@@ -981,7 +975,7 @@ SELECT * FROM DUAL";
 			const string query1 = @"WITH GENERATOR(C1, C2, C3, C4) AS (SELECT 1, DUAL.*, 3, DUMMY FROM DUAL) SELECT C1, C2, C3, C4 FROM GENERATOR";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var columns = semanticModel.MainQueryBlock.Columns.ToList();
 			columns.Count.ShouldBe(4);
@@ -1006,7 +1000,7 @@ SELECT * FROM DUAL";
 			const string query1 = @"SELECT SUM(COUNT(*) OVER (ORDER BY NULL) / COUNT(*) OVER (ORDER BY NULL) FROM DUAL";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.ShouldNotBe(null);
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
@@ -1021,7 +1015,7 @@ SELECT * FROM DUAL";
 			const string query1 = @"SELECT * FROM DUAL@""SQLSERVERDB.STOCKHOLM.CINT.COM""";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 		}
@@ -1032,7 +1026,7 @@ SELECT * FROM DUAL";
 			const string query1 = @"SELECT * FROM SELECTION WHERE SELECTIONNAME IN (SELECT * FROM DUAL)";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var redundantTerminals = semanticModel.RedundantSymbolGroups.SelectMany(g => g).OrderBy(t => t.SourcePosition.IndexStart).ToArray();
 			redundantTerminals.Length.ShouldBe(0);
@@ -1049,7 +1043,7 @@ SELECT * FROM DUAL";
 SELECT * FROM CTE";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var redundantTerminals = semanticModel.RedundantSymbolGroups.SelectMany(g => g).OrderBy(t => t.SourcePosition.IndexStart).ToArray();
 			redundantTerminals.Length.ShouldBe(0);
@@ -1061,7 +1055,7 @@ SELECT * FROM CTE";
 			const string query1 = @"WITH CTE AS (SELECT 1 C1 FROM DUAL), CTE AS (SELECT 1 C2 FROM DUAL) SELECT * FROM CTE";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var redundantTerminals = semanticModel.RedundantSymbolGroups.SelectMany(g => g).OrderBy(t => t.SourcePosition.IndexStart).ToArray();
 			redundantTerminals.Length.ShouldBe(10);
@@ -1073,7 +1067,7 @@ SELECT * FROM CTE";
 			const string query1 = @"SELECT * FROM HUSQVIK.SELECTION@HQ_PDB_LOOPBACK";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var objectReferences = semanticModel.QueryBlocks.Single().ObjectReferences.ToArray();
 			objectReferences.Length.ShouldBe(1);
@@ -1087,7 +1081,7 @@ SELECT * FROM CTE";
 			const string query1 = @"SELECT * FROM DUAL, DUAL@""HQ_PDB@LOOPBACK""";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var objectReferences = semanticModel.QueryBlocks.Single().ObjectReferences.ToArray();
 			objectReferences.Length.ShouldBe(2);
@@ -1099,7 +1093,7 @@ SELECT * FROM CTE";
 			const string query1 = @"SELECT DATE q'2014-10-04' FROM DUAL";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 		}
@@ -1110,7 +1104,7 @@ SELECT * FROM CTE";
 			const string query1 = @"SELECT TIMESTAMP q'2014-10-04' FROM DUAL";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 		}
@@ -1131,7 +1125,7 @@ MODEL
     )";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.Count.ShouldBe(2);
 		}
@@ -1145,9 +1139,7 @@ MODEL
 END;";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
-
-
+			Assert.DoesNotThrow(() => OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel));
 		}
 
 		[Test(Description = @"")]
@@ -1156,7 +1148,7 @@ END;";
 			const string query1 = @"SELECT * FROM (SELECT * FROM DUAL) MODEL DIMENSION BY (0 C1) MEASURES (0 C2, , 0 C3) RULES (C2[ANY] = 0)";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.Count.ShouldBe(2);
 		}
@@ -1167,7 +1159,7 @@ END;";
 			const string query1 = @"UPDATE HUSQVIK.";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 			semanticModel.MainQueryBlock.ShouldBe(null);
 		}
 
@@ -1177,7 +1169,7 @@ END;";
 			const string query1 = @"WITH SOURCE_DATA AS (SELECT DUMMY FROM DUAL) (SELECT DUMMY FROM SOURCE_DATA)";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 			semanticModel.QueryBlocks.Count.ShouldBe(2);
 		}
 
@@ -1187,7 +1179,7 @@ END;";
 			const string query1 = @"SELECT SQLPAD.SQLPAD_PROCEDURE() FROM DUAL";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var programReferences = semanticModel.QueryBlocks.Single().AllProgramReferences.ToArray();
 			programReferences.Length.ShouldBe(1);
@@ -1201,7 +1193,7 @@ END;";
 			const string query1 = @"SELECT NULL FROM DUAL ORDER BY COUNT(*)";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var programReferences = semanticModel.QueryBlocks.Single().AllProgramReferences.ToArray();
 			programReferences.Length.ShouldBe(1);
@@ -1222,7 +1214,7 @@ END;";
 			const string query1 = @"SELECT LISTAGG(ROWNUM, ', ') WITHIN GROUP (ORDER BY ROWNUM) FROM DUAL";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var programReferences = semanticModel.QueryBlocks.Single().AllProgramReferences.ToArray();
 			programReferences.Length.ShouldBe(1);
@@ -1243,7 +1235,7 @@ END;";
 			const string query1 = @"SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR(NULL, NULL, 'ALLSTATS LAST ADVANCED')) T1, TABLE(SYS.ODCIRAWLIST(HEXTORAW('ABCDEF'), HEXTORAW('A12345'), HEXTORAW('F98765'))) T2";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var queryBlock = semanticModel.QueryBlocks.Single();
 			var objectReferences = queryBlock.ObjectReferences.ToArray();
@@ -1304,7 +1296,7 @@ END;";
 			const string query1 = @"SELECT COLUMN_VALUE FROM TABLE(SQLPAD.PIPELINED_FUNCTION(SYSDATE, SYSDATE))";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var queryBlock = semanticModel.QueryBlocks.Single();
 			queryBlock.ObjectReferences.Count.ShouldBe(1);
@@ -1328,7 +1320,7 @@ END;";
 			const string query1 = @"SELECT * FROM XMLTABLE('for $i in $RSS_DATA/rss/channel/item return $i' PASSING HTTPURITYPE('http://servis.idnes.cz/rss.asp?c=zpravodaj').GETXML() AS RSS_DATA COLUMNS SEQ# FOR ORDINALITY, TITLE VARCHAR2(4000) PATH 'title', DESCRIPTION CLOB PATH 'description') T";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var queryBlock = semanticModel.QueryBlocks.Single();
 			var objectReferences = queryBlock.ObjectReferences.ToArray();
@@ -1358,7 +1350,7 @@ END;";
 			const string query1 = @"WITH SOURCE_DATA AS (SELECT DUMMY FROM DUAL) SELECT NULL FROM (SELECT DUMMY FROM SOURCE_DATA)";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.Count.ShouldBe(3);
 
@@ -1376,7 +1368,7 @@ END;";
 			const string query1 = @"SELECT * FROM XMLTABLE('for $i in $RSS_DATA/rss/channel/item return $i' PASSING HTTPURITYPE('http://servis.idnes.cz/rss.asp?c=zpravodaj').GETXML() AS RSS_DATA)";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var queryBlock = semanticModel.QueryBlocks.Single();
 			var columns = queryBlock.Columns.ToArray();
@@ -1424,7 +1416,7 @@ FROM
 AS T";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var queryBlock = semanticModel.QueryBlocks.Single();
 			var objectReferences = queryBlock.ObjectReferences.ToArray();
@@ -1477,7 +1469,7 @@ MODEL
 	)";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var queryBlock = semanticModel.QueryBlocks.Single();
 			var objectReferences = queryBlock.ObjectReferences.ToArray();
@@ -1520,7 +1512,7 @@ MODEL
     )";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.Count.ShouldBe(2);
 			var outerQueryBlock = semanticModel.QueryBlocks.OrderBy(qb => qb.RootNode.Level).First();
@@ -1577,7 +1569,7 @@ MODEL
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.Count.ShouldBe(2);
 			var outerQueryBlock = semanticModel.QueryBlocks.OrderBy(qb => qb.RootNode.Level).First();
@@ -1600,7 +1592,7 @@ MODEL
 			const string query1 = @"WITH GENERATOR(VAL) AS (SELECT 1 FROM DUAL UNION ALL SELECT VAL + 1 FROM GENERATOR WHERE VAL <= 10) SELECT VAL FROM	GENERATOR";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.Count.ShouldBe(3);
 			var queryBlocks = semanticModel.QueryBlocks.OrderBy(qb => qb.RootNode.SourcePosition.IndexStart).ToArray();
@@ -1628,7 +1620,7 @@ MODEL
 			const string query1 = @"UPDATE HUSQVIK.SELECTION SET SELECTION.PROJECT_ID = HUSQVIK.SELECTION.PROJECT_ID WHERE 1 = 0";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var mainObjectReference = semanticModel.MainObjectReferenceContainer.MainObjectReference;
 			mainObjectReference.ShouldNotBe(null);
@@ -1654,7 +1646,7 @@ SELECT F1(ROWNUM) RESULT1, COUNT(ROWNUM), F2(ROWNUM), T.* FROM (
 ) T";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.Count.ShouldBe(3);
 			var queryBlocks = semanticModel.QueryBlocks.OrderBy(qb => qb.RootNode.SourcePosition.IndexStart).ToArray();
@@ -1700,7 +1692,7 @@ FROM
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var queryBlock = semanticModel.MainQueryBlock;
 			queryBlock.ShouldNotBe(null);
@@ -1734,7 +1726,7 @@ FROM
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var queryBlock = semanticModel.MainQueryBlock;
 			queryBlock.ShouldNotBe(null);
@@ -1752,7 +1744,7 @@ FROM
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var queryBlock = semanticModel.MainQueryBlock;
 			queryBlock.ShouldNotBe(null);
@@ -1784,7 +1776,7 @@ SELECT * FROM CTE";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 
 			var queryBlock = semanticModel.MainQueryBlock;
@@ -1811,7 +1803,7 @@ SELECT * FROM CTE";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var queryBlock = semanticModel.MainQueryBlock;
 			queryBlock.ShouldNotBe(null);
@@ -1837,7 +1829,7 @@ SELECT * FROM CTE";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.InsertTargets.Count.ShouldBe(1);
 			var insertTarget = semanticModel.InsertTargets.Single();
@@ -1855,7 +1847,7 @@ SELECT * FROM CTE";
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(sqlText, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(sqlText, statement, TestFixture.DatabaseModel);
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 			var queryBlock = semanticModel.MainQueryBlock;
 
@@ -1897,7 +1889,7 @@ LOG ERRORS INTO ERRORLOG ('Statement identifier') REJECT LIMIT UNLIMITED";
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(sqlText, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(sqlText, statement, TestFixture.DatabaseModel);
 			semanticModel.MainObjectReferenceContainer.ObjectReferences.Count.ShouldBe(3);
 			var objectReferences = semanticModel.MainObjectReferenceContainer.ObjectReferences.ToArray();
 			objectReferences[0].SchemaObject.ShouldNotBe(null);
@@ -1968,7 +1960,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(sqlText, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(sqlText, statement, TestFixture.DatabaseModel);
 			semanticModel.InsertTargets.Count.ShouldBe(4);
 			var insertTargets = semanticModel.InsertTargets.ToArray();
 			insertTargets[0].ObjectReferences.Count.ShouldBe(2);
@@ -1989,7 +1981,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 
@@ -2014,7 +2006,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 
@@ -2039,7 +2031,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.Count.ShouldBe(3);
 
@@ -2061,7 +2053,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.Count.ShouldBe(3);
 
@@ -2105,7 +2097,7 @@ FROM ((
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 		}
@@ -2140,7 +2132,7 @@ FROM (
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.Count.ShouldBe(2);
 
@@ -2191,7 +2183,7 @@ FROM (
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.Count.ShouldBe(2);
 
@@ -2215,7 +2207,7 @@ FROM (
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.MainQueryBlock.ColumnReferences.Count.ShouldBe(1);
 			semanticModel.MainQueryBlock.ColumnReferences[0].ColumnNodeObjectReferences.Count.ShouldBe(1);
@@ -2229,7 +2221,7 @@ FROM (
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.MainQueryBlock.Columns.Count.ShouldBe(1);
 			semanticModel.MainQueryBlock.Columns[0].ColumnReferences.Count.ShouldBe(1);
@@ -2264,7 +2256,7 @@ FROM (
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.Count.ShouldBe(3);
 
@@ -2289,7 +2281,7 @@ FROM (
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
@@ -2308,7 +2300,7 @@ FROM
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var columnIdentifier = statement.AllTerminals.Single(t => t.Token.Value == "NAME");
 			var columnReference = semanticModel.GetColumnReference(columnIdentifier);
@@ -2323,7 +2315,7 @@ FROM
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var columns = semanticModel.MainQueryBlock.Columns;
 			columns.Count.ShouldBe(2);
@@ -2343,7 +2335,7 @@ FROM
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var columns = semanticModel.MainQueryBlock.Columns;
 			columns.Count.ShouldBe(3);
@@ -2371,7 +2363,7 @@ FROM
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var columnHeaders =
 				new[]
@@ -2416,7 +2408,7 @@ FROM
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = new OracleStatementSemanticModel(query1, statement, TestFixture.DatabaseModel);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var columnHeaders = new[] { new ColumnHeader { Name = "VAL" } };
 

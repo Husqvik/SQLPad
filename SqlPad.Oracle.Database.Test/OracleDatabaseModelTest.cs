@@ -382,7 +382,9 @@ WHERE
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 				var validator = new OracleStatementValidator();
-				var validationModel = validator.BuildValidationModel(validator.BuildSemanticModel(testQuery, statement, databaseModel));
+				var task = validator.BuildSemanticModelAsync(testQuery, statement, databaseModel, CancellationToken.None);
+				task.Wait();
+				var validationModel = validator.BuildValidationModel(task.Result);
 				validationModel.SemanticErrors.Count().ShouldBe(0);
 			}
 		}

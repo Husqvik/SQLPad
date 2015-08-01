@@ -10,6 +10,8 @@ namespace SqlPad
 	{
 		IStatementSemanticModel BuildSemanticModel(string statementText, StatementBase statementBase, IDatabaseModel databaseModel);
 
+		Task<IStatementSemanticModel> BuildSemanticModelAsync(string statementText, StatementBase statementBase, IDatabaseModel databaseModel, CancellationToken cancellationToken);
+
 		IValidationModel BuildValidationModel(IStatementSemanticModel semanticModel);
 
 		Task<ICollection<IReferenceDataSource>> ApplyReferenceConstraintsAsync(StatementExecutionResult executionResult, IDatabaseModel databaseModel, CancellationToken cancellationToken);

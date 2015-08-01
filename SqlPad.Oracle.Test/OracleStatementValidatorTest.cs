@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using NUnit.Framework;
 using Shouldly;
 using SqlPad.Oracle.DatabaseConnection;
@@ -17,7 +18,10 @@ namespace SqlPad.Oracle.Test
 
 		private OracleValidationModel BuildValidationModel(string statementText, StatementBase statement, OracleDatabaseModelBase databaseModel = null)
 		{
-			return (OracleValidationModel)_statementValidator.BuildValidationModel(_statementValidator.BuildSemanticModel(statementText, statement, databaseModel ?? TestFixture.DatabaseModel));
+			var task = _statementValidator.BuildSemanticModelAsync(statementText, statement, databaseModel ?? TestFixture.DatabaseModel, CancellationToken.None);
+			task.Wait();
+
+			return (OracleValidationModel)_statementValidator.BuildValidationModel(task.Result);
 		}
 
 		[Test(Description = @"")]

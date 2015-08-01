@@ -41,7 +41,7 @@ namespace SqlPad
 
 		public void UpdateStatements(string statementText)
 		{
-			UpdateStatementsInternal(statementText, () => _parser.Parse(statementText), BuildValidationModels);
+			UpdateStatementsInternal(statementText, () => _parser.Parse(statementText), (statements, text) => statements.ToDictionary(s => s, s => _validator.BuildValidationModel(_validator.BuildSemanticModel(text, s, _databaseModel))));
 		}
 
 		public async Task UpdateStatementsAsync(string statementText, CancellationToken cancellationToken)
@@ -49,8 +49,8 @@ namespace SqlPad
 			try
 			{
 				await _parser.ParseAsync(statementText, cancellationToken)
-					.ContinueWith(t => new { Statements = t.Result, ValidationModels = BuildValidationModels(t.Result, statementText) }, cancellationToken)
-					.ContinueWith(t => UpdateStatementsInternal(statementText, () => t.Result.Statements, (c, text) => t.Result.ValidationModels), cancellationToken);
+					.ContinueWith(async t => new { Statements = t.Result, ValidationModels = await BuildValidationModelsAsync(t.Result, statementText, cancellationToken) }, cancellationToken)
+					.ContinueWith(t => UpdateStatementsInternal(statementText, () => t.Result.Result.Statements, delegate { return t.Result.Result.ValidationModels; }), cancellationToken);
 			}
 			catch (OperationCanceledException)
 			{
@@ -63,9 +63,17 @@ namespace SqlPad
 			}
 		}
 
-		private IDictionary<StatementBase, IValidationModel> BuildValidationModels(StatementCollection statements, string statementText)
+		private async Task<IDictionary<StatementBase, IValidationModel>> BuildValidationModelsAsync(StatementCollection statements, string statementText, CancellationToken cancellationToken)
 		{
-			return new ReadOnlyDictionary<StatementBase, IValidationModel>(statements.ToDictionary(s => s, s => _validator.BuildValidationModel(_validator.BuildSemanticModel(statementText, s, _databaseModel))));
+			var dictionary = new Dictionary<StatementBase, IValidationModel>();
+			foreach (var statement in statements)
+			{
+				var semanticModel = await _validator.BuildSemanticModelAsync(statementText, statement, _databaseModel, cancellationToken);
+				var validationModel = _validator.BuildValidationModel(semanticModel);
+				dictionary.Add(statement, validationModel);
+			}
+
+			return new ReadOnlyDictionary<StatementBase, IValidationModel>(dictionary);
 		}
 
 		private void UpdateStatementsInternal(string statementText, Func<StatementCollection> parseFunction, Func<StatementCollection, string, IDictionary<StatementBase, IValidationModel>> buildValidationModelFunction)

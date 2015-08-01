@@ -503,9 +503,12 @@ namespace SqlPad.Oracle.Test
 			Instance = new OracleTestDatabaseModel { CurrentSchema = InitialSchema };
 		}
 
-		public OracleTestDatabaseModel()
+		public OracleTestDatabaseModel(bool isInitialized = true)
 		{
-			AllObjects = new Dictionary<OracleObjectIdentifier, OracleSchemaObject>(AllObjectDictionary);
+			IsInitialized = isInitialized;
+			AllObjects = isInitialized
+				? new Dictionary<OracleObjectIdentifier, OracleSchemaObject>(AllObjectDictionary)
+				: new Dictionary<OracleObjectIdentifier, OracleSchemaObject>();
 		}
 
 		private static void AddConstraints()
@@ -981,9 +984,9 @@ TABLESPACE ""TBS_HQ_PDB""";
 
 	    public override string CurrentSchema { get; set; }
 		
-		public override bool IsInitialized => true;
+		public override bool IsInitialized { get; }
 
-	    public override bool IsMetadataAvailable => true;
+	    public override bool IsMetadataAvailable { get; } = true;
 
 	    public override ICollection<string> Schemas => SchemasInternal;
 
@@ -1217,7 +1220,7 @@ TABLESPACE ""TBS_HQ_PDB""";
 			return Task.FromResult((IReadOnlyList<string>)remoteColumns.AsReadOnly());
 		}
 
-		public override bool HasDbaPrivilege => false;
+		public override bool HasDbaPrivilege { get; } = false;
 
 	    public override string DatabaseDomainName => CurrentDatabaseDomainNameInternal;
 

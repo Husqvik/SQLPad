@@ -244,5 +244,10 @@ namespace SqlPad.Oracle
 		{
 			return !String.Equals(node.Id, NonTerminals.NestedQuery);
 		}
+
+		public static bool BreakAtExpression(StatementGrammarNode node)
+		{
+			return !String.Equals(node.Id, NonTerminals.Expression);
+		}
 	}
 }

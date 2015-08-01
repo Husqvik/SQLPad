@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.DataDictionary;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
@@ -55,6 +57,7 @@ namespace SqlPad.Oracle.SemanticModel
 		private readonly HashSet<OracleQueryBlock> _unreferencedQueryBlocks = new HashSet<OracleQueryBlock>();
 		
 		private OracleQueryBlock _mainQueryBlock;
+		private CancellationToken _cancellationToken = CancellationToken.None;
 
 		public OracleDatabaseModelBase DatabaseModel
 		{
@@ -112,39 +115,35 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public IEnumerable<OracleLiteral> Literals => _literals;
 
-	    public OracleStatementSemanticModel(string statementText, OracleStatement statement) : this(statement, null)
+		public static OracleStatementSemanticModel Build(string statementText, OracleStatement statement, OracleDatabaseModelBase databaseModel)
 		{
-			StatementText = statementText;
+			return new OracleStatementSemanticModel(statementText, statement, databaseModel).Build(CancellationToken.None);
 		}
 
-		public OracleStatementSemanticModel(string statementText, OracleStatement statement, OracleDatabaseModelBase databaseModel)
-			: this(statement, databaseModel)
+		public static Task<OracleStatementSemanticModel> BuildAsync(string statementText, OracleStatement statement, OracleDatabaseModelBase databaseModel, CancellationToken cancellationToken)
 		{
-		    if (databaseModel == null)
-		    {
-		        throw new ArgumentNullException(nameof(databaseModel));
-		    }
-
-			StatementText = statementText;
+			return Task.Factory.StartNew(
+				() => new OracleStatementSemanticModel(statementText, statement, databaseModel).Build(cancellationToken), cancellationToken);
 		}
 
-		private OracleStatementSemanticModel(OracleStatement statement, OracleDatabaseModelBase databaseModel)
+		private OracleStatementSemanticModel(string statementText, OracleStatement statement, OracleDatabaseModelBase databaseModel)
 		{
-		    if (statement == null)
-		    {
-		        throw new ArgumentNullException(nameof(statement));
-		    }
+			if (statement == null)
+			{
+				throw new ArgumentNullException(nameof(statement));
+			}
 
+			if (databaseModel == null)
+			{
+				throw new ArgumentNullException(nameof(databaseModel));
+			}
+
+			StatementText = statementText;
 			Statement = statement;
 			_databaseModel = databaseModel;
 
 			MainObjectReferenceContainer = new OracleMainObjectReferenceContainer(this);
 			_referenceBuilder = new OracleReferenceBuilder(this);
-
-			if (statement.RootNode == null)
-				return;
-
-			Build();
 		}
 
 		private void Initialize()
@@ -344,8 +343,10 @@ namespace SqlPad.Oracle.SemanticModel
 			return subquery?.GetDescendants(NonTerminals.QueryBlock).First();
 		}
 
-		private void Build()
+		private OracleStatementSemanticModel Build(CancellationToken cancellationToken)
 		{
+			_cancellationToken = cancellationToken;
+
 			Initialize();
 
 			foreach (var queryBlock in _queryBlockNodes.Values)
@@ -374,6 +375,8 @@ namespace SqlPad.Oracle.SemanticModel
 			BuildDmlModel();
 			
 			ResolveRedundantTerminals();
+
+			return this;
 		}
 
 		private void FindObjectReferences(OracleQueryBlock queryBlock)
@@ -1646,6 +1649,8 @@ namespace SqlPad.Oracle.SemanticModel
 		{
 			foreach (var queryBlock in _queryBlockNodes.Values)
 			{
+				_cancellationToken.ThrowIfCancellationRequested();
+
 				ResolveOrderByReferences(queryBlock);
 
 				ResolveFunctionReferences(queryBlock.AllProgramReferences);
@@ -2464,6 +2469,8 @@ namespace SqlPad.Oracle.SemanticModel
 				
 				foreach (var columnExpression in columnExpressions)
 				{
+					_cancellationToken.ThrowIfCancellationRequested();
+
 					var columnAliasNode = columnExpression.LastTerminalNode != null && String.Equals(columnExpression.LastTerminalNode.Id, Terminals.ColumnAlias)
 						? columnExpression.LastTerminalNode
 						: null;
@@ -2528,20 +2535,20 @@ namespace SqlPad.Oracle.SemanticModel
 			{
 				var rootNode = String.Equals(identifierNode.Id, Terminals.NegationOrNull)
 					? identifierNode.GetAncestor(NonTerminals.Condition)
-					: identifierNode.GetAncestor(NonTerminals.AnalyticFunctionCall)
-					  ?? identifierNode.GetAncestor(NonTerminals.AggregateFunctionCall)
-					  ?? identifierNode.GetAncestor(NonTerminals.ExtractFunction)
-					  ?? identifierNode.GetAncestor(NonTerminals.CastOrXmlCastFunction)
-					  ?? identifierNode.GetAncestor(NonTerminals.XmlElementClause)
-					  //?? identifierNode.GetAncestor(NonTerminals.XmlAggregateClause)
-					  ?? identifierNode.GetAncestor(NonTerminals.XmlSimpleFunctionClause)
-					  ?? identifierNode.GetAncestor(NonTerminals.XmlParseFunction)
-					  ?? identifierNode.GetAncestor(NonTerminals.XmlQueryClause)
-					  ?? identifierNode.GetAncestor(NonTerminals.XmlRootFunction)
-					  ?? identifierNode.GetAncestor(NonTerminals.XmlSerializeFunction)
-					  ?? identifierNode.GetAncestor(NonTerminals.JsonQueryClause)
-					  ?? identifierNode.GetAncestor(NonTerminals.JsonExistsClause)
-					  ?? identifierNode.GetAncestor(NonTerminals.JsonValueClause);
+					: identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.AnalyticFunctionCall)
+					  ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.AggregateFunctionCall)
+					  ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.ExtractFunction)
+					  ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.CastOrXmlCastFunction)
+					  ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.XmlElementClause)
+					  //?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.XmlAggregateClause)
+					  ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.XmlSimpleFunctionClause)
+					  ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.XmlParseFunction)
+					  ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.XmlQueryClause)
+					  ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.XmlRootFunction)
+					  ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.XmlSerializeFunction)
+					  ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.JsonQueryClause)
+					  ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.JsonExistsClause)
+					  ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.JsonValueClause);
 
 				StatementGrammarNode analyticClauseNode = null;
 				switch (rootNode.Id)

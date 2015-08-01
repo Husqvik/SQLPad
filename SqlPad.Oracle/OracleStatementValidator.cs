@@ -22,7 +22,12 @@ namespace SqlPad.Oracle
 
 		public IStatementSemanticModel BuildSemanticModel(string statementText, StatementBase statementBase, IDatabaseModel databaseModel)
 		{
-			return new OracleStatementSemanticModel(statementText, (OracleStatement)statementBase, (OracleDatabaseModelBase)databaseModel);
+			return OracleStatementSemanticModel.Build(statementText, (OracleStatement)statementBase, (OracleDatabaseModelBase)databaseModel);
+		}
+
+		public async Task<IStatementSemanticModel> BuildSemanticModelAsync(string statementText, StatementBase statementBase, IDatabaseModel databaseModel, CancellationToken cancellationToken)
+		{
+			return await OracleStatementSemanticModel.BuildAsync(statementText, (OracleStatement)statementBase, (OracleDatabaseModelBase)databaseModel, cancellationToken);
 		}
 
 		public IValidationModel BuildValidationModel(IStatementSemanticModel semanticModel)
@@ -191,7 +196,7 @@ namespace SqlPad.Oracle
 			if (semanticModel == null || executionResult.Statement.IsPartialStatement)
 			{
 				var statements = await OracleSqlParser.Instance.ParseAsync(executionResult.Statement.StatementText, cancellationToken);
-				semanticModel = (OracleStatementSemanticModel)BuildSemanticModel(executionResult.Statement.StatementText, statements[0], databaseModel);
+				semanticModel = (OracleStatementSemanticModel)await BuildSemanticModelAsync(executionResult.Statement.StatementText, statements[0], databaseModel, cancellationToken);
 			}
 
 			return semanticModel.ApplyReferenceConstraints(executionResult.ColumnHeaders);
