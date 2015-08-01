@@ -7563,7 +7563,7 @@
           <NonTerminal Id="PivotForClause" />
           <NonTerminal Id="UnpivotInClause" />
           <Terminal Id="RightParenthesis" />
-          <!--<Terminal Id="ObjectAlias" IsOptional="true" />-->
+          <Terminal Id="ObjectAlias" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>

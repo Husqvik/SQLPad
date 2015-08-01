@@ -2166,6 +2166,68 @@ FROM (
 		}
 
 		[Test(Description = @"")]
+		public void TestUnpivotTableColumnReference()
+		{
+			const string query1 =
+@"SELECT STATUS, SUPPLY_CHANNEL_PRINT, SELECTION_COUNT, INVITES_COUNT, EXTERNAL_COUNT, REUSE_COUNT, NONE_COUNT, DIRECT_COUNT
+FROM (
+	SELECT 1 STATUS, 37 INVITES_COUNT, 0 EXTERNAL_COUNT, 0 REUSE_COUNT, 0 NONE_COUNT, 0 DIRECT_COUNT FROM DUAL UNION ALL
+	SELECT 2, 1665171, 82, 853, 96, 93 FROM DUAL UNION ALL
+	SELECT 5, 9000, 0, 0, 0, 0 FROM DUAL UNION ALL
+	SELECT 3, 729779, 1200, 39385, 2525, 788 FROM DUAL UNION ALL
+	SELECT 0, 10876, 0, 0, 0, 0 FROM DUAL) SOURCE_DATA
+	UNPIVOT INCLUDE NULLS (
+		SELECTION_COUNT 
+		FOR SUPPLY_CHANNEL_PRINT IN (
+			UNDEFINED_COUNT AS 'Undefined',
+			INVITES_COUNT AS 'Invite',
+			EXTERNAL_COUNT AS 'External',
+			REUSE_COUNT AS 'Reuse',
+			NONE_COUNT AS 'None',
+			DIRECT_COUNT AS 'Direct')
+	) UNPIVOT_TABLE";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.Count.ShouldBe(6);
+
+			var columnReferences = semanticModel.MainQueryBlock.AllColumnReferences.ToList();
+			columnReferences.Count.ShouldBe(14);
+
+			columnReferences
+				.ForEach(c =>
+				{
+					var index = columnReferences.IndexOf(c);
+					var expectedReferenceCount = index < 3 || index >= 9 ? 1 : 0;
+					c.ColumnNodeColumnReferences.Count.ShouldBe(expectedReferenceCount);
+
+					if (index < 8)
+					{
+						c.SelectListColumn.ShouldNotBe(null);
+					}
+					else
+					{
+						c.SelectListColumn.ShouldBe(null);
+					}
+				});
+
+			semanticModel.MainQueryBlock.Columns.Count.ShouldBe(8);
+			semanticModel.MainQueryBlock.Columns[1].NormalizedName.ShouldBe("\"SUPPLY_CHANNEL_PRINT\"");
+			semanticModel.MainQueryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe("VARCHAR2(9)");
+
+			semanticModel.MainQueryBlock.ObjectReferences.Count.ShouldBe(1);
+			var unpivotTableReference = (OraclePivotTableReference)semanticModel.MainQueryBlock.ObjectReferences.Single();
+			unpivotTableReference.FullyQualifiedObjectName.Name.ShouldBe("UNPIVOT_TABLE");
+			unpivotTableReference.SourceReference.Type.ShouldBe(ReferenceType.InlineView);
+			unpivotTableReference.SourceReference.FullyQualifiedObjectName.Name.ShouldBe("SOURCE_DATA");
+			
+			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
 		public void TestModelBuildWithPivotedInlineViewWithAsterisk()
 		{
 			const string query1 =

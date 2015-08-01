@@ -41,16 +41,18 @@ namespace SqlPad
 
 		public void UpdateStatements(string statementText)
 		{
-			UpdateStatementsInternal(statementText, () => _parser.Parse(statementText), (statements, text) => statements.ToDictionary(s => s, s => _validator.BuildValidationModel(_validator.BuildSemanticModel(text, s, _databaseModel))));
+			var statements = _parser.Parse(statementText);
+			var validationModels = statements.ToDictionary(s => s, s => _validator.BuildValidationModel(_validator.BuildSemanticModel(statementText, s, _databaseModel)));
+			UpdateStatementsInternal(statementText, statements, validationModels);
 		}
 
 		public async Task UpdateStatementsAsync(string statementText, CancellationToken cancellationToken)
 		{
 			try
 			{
-				await _parser.ParseAsync(statementText, cancellationToken)
-					.ContinueWith(async t => new { Statements = t.Result, ValidationModels = await BuildValidationModelsAsync(t.Result, statementText, cancellationToken) }, cancellationToken)
-					.ContinueWith(t => UpdateStatementsInternal(statementText, () => t.Result.Result.Statements, delegate { return t.Result.Result.ValidationModels; }), cancellationToken);
+				var statements = await _parser.ParseAsync(statementText, cancellationToken);
+				var validationModels =  await BuildValidationModelsAsync(statements, statementText, cancellationToken);
+				UpdateStatementsInternal(statementText, statements, validationModels);
 			}
 			catch (OperationCanceledException)
 			{
@@ -76,11 +78,8 @@ namespace SqlPad
 			return new ReadOnlyDictionary<StatementBase, IValidationModel>(dictionary);
 		}
 
-		private void UpdateStatementsInternal(string statementText, Func<StatementCollection> parseFunction, Func<StatementCollection, string, IDictionary<StatementBase, IValidationModel>> buildValidationModelFunction)
+		private void UpdateStatementsInternal(string statementText, StatementCollection statements, IDictionary<StatementBase, IValidationModel> validationModels)
 		{
-			var statements = parseFunction();
-			var validationModels = buildValidationModelFunction(statements, statementText);
-
 			lock (_lockObject)
 			{
 				Statements = statements;

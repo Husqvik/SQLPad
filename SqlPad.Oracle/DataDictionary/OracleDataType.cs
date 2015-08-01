@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using SqlPad.Oracle.DatabaseConnection;
 using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
@@ -25,9 +26,66 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public bool IsPrimitive => !FullyQualifiedName.HasOwner;
 
-	    public static OracleDataType CreateTimestampDataType(int precision)
+		public static OracleDataType CreateTimestampDataType(int precision)
 		{
 			return new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, TerminalValues.Timestamp), Precision = precision };
+		}
+
+		public static IReadOnlyList<OracleDataType> FromUnpivotColumnSelectorValues(IEnumerable<StatementGrammarNode> nodes)
+		{
+			var dataTypes = new List<OracleDataType>();
+
+			var definitionIndex = 0;
+			foreach (var node in nodes)
+			{
+				if (!String.Equals(node.Id, OracleGrammarDescription.NonTerminals.StringOrNumberLiteralOrParenthesisEnclosedStringOrIntegerLiteralList))
+				{
+					throw new ArgumentException($"All nodes must have ID of {nameof(OracleGrammarDescription.NonTerminals.StringOrNumberLiteralOrParenthesisEnclosedStringOrIntegerLiteralList)}", nameof(nodes));
+				}
+
+				var literals = node.GetDescendants(OracleGrammarDescription.Terminals.StringLiteral, OracleGrammarDescription.Terminals.NumberLiteral);
+
+				var typeIndex = 0;
+				foreach (var literal in literals)
+				{
+					var newDataType = String.Equals(literal.Id, OracleGrammarDescription.Terminals.StringLiteral)
+						? new OracleDataType
+						{
+							FullyQualifiedName = OracleObjectIdentifier.Create(null, TerminalValues.Varchar2),
+							Length = literal.Token.Value.ToPlainString().Length
+						}
+						: NumberType;
+
+					if (definitionIndex == 0)
+					{
+						dataTypes.Add(newDataType);
+					}
+					else
+					{
+						if (dataTypes.Count < typeIndex + 1)
+						{
+							return null;
+						}
+
+						var storedDataType = dataTypes[typeIndex];
+						if (storedDataType.FullyQualifiedName != newDataType.FullyQualifiedName)
+						{
+							return null;
+						}
+
+						if (newDataType.Length > storedDataType.Length)
+						{
+							storedDataType.Length = newDataType.Length;
+						}
+					}
+
+					typeIndex++;
+				}
+
+				definitionIndex++;
+			}
+
+			return dataTypes.AsReadOnly();
 		}
 
 		public static string ResolveFullTypeName(OracleDataType dataType, int? characterSize = null)

@@ -529,7 +529,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private void ResolvePivotClause(OracleDataObjectReference objectReference)
 		{
-			var pivotClause = objectReference.RootNode.GetDescendantsWithinSameQueryBlock(NonTerminals.PivotClause).SingleOrDefault();
+			var pivotClause = objectReference.RootNode.GetDescendantsWithinSameQueryBlock(NonTerminals.PivotClause, NonTerminals.UnpivotClause).SingleOrDefault();
 			if (pivotClause == null)
 			{
 				return;
@@ -540,8 +540,9 @@ namespace SqlPad.Oracle.SemanticModel
 				{
 					AliasNode = pivotClause[Terminals.ObjectAlias]
 				};
-			
-			var pivotClauseIdentifiers = GetIdentifiers(pivotClause, Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.User);
+
+			var identifierSourceNode = String.Equals(pivotClause.Id, NonTerminals.PivotClause) ? pivotClause : pivotClause[NonTerminals.UnpivotInClause];
+			var pivotClauseIdentifiers = GetIdentifiers(identifierSourceNode, Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.User);
 			ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(pivotTableReference.Owner, pivotTableReference.SourceReferenceContainer, pivotClauseIdentifiers, StatementPlacement.PivotClause, null);
 
 			var pivotExpressions = pivotClause[NonTerminals.PivotAliasedAggregationFunctionList];
