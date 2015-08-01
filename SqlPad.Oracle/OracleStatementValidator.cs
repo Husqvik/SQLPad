@@ -123,6 +123,22 @@ namespace SqlPad.Oracle
 							}
 						}
 
+						var unmatchedUnpivotDatatypeNodes = Enumerable.Empty<StatementGrammarNode>();
+						if (pivotTableCollectionReference.AreUnpivotColumnSelectorValuesValid == false)
+						{
+							unmatchedUnpivotDatatypeNodes = pivotTableCollectionReference.UnpivotColumnSelectorValues;
+						}
+
+						if (pivotTableCollectionReference.AreUnpivotColumnSourceDataTypesMatched == false)
+						{
+							unmatchedUnpivotDatatypeNodes = unmatchedUnpivotDatatypeNodes.Concat(pivotTableCollectionReference.UnpivotColumnSources);
+						}
+
+						foreach (var selectorValue in unmatchedUnpivotDatatypeNodes)
+						{
+							validationModel.InvalidNonTerminals[selectorValue] = new InvalidNodeValidationData(OracleSemanticErrorType.ExpressionMustHaveSameDatatypeAsCorrespondingExpression) { Node = selectorValue };
+						}
+
 						break;
 
 					case ReferenceType.JsonTable:

@@ -2228,6 +2228,27 @@ FROM (
 		}
 
 		[Test(Description = @"")]
+		public void TestModelBuildWhenTypingUnpivotClause()
+		{
+			const string query1 =
+@"SELECT
+	*
+FROM (
+	SELECT 0 VAL1, 0 VAL2 FROM DUAL)
+	UNPIVOT INCLUDE NULLS (
+		VAL 
+	FOR PLACEHOLDER IN (
+		VAL1 AS 0,
+		VAL2 AS )
+	)";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
+
+			Assert.DoesNotThrow(() => OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel));
+		}
+
+		[Test(Description = @"")]
 		public void TestModelBuildWithPivotedInlineViewWithAsterisk()
 		{
 			const string query1 =

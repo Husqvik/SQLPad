@@ -2265,6 +2265,86 @@ FROM (
 		}
 
 		[Test(Description = @"")]
+		public void TestUnpivotInValueDataTypeMismatch()
+		{
+			const string sqlText =
+@"SELECT
+	*
+FROM (
+	SELECT 0 VAL1, 0 VAL2 FROM DUAL)
+	UNPIVOT INCLUDE NULLS (
+		VAL 
+	FOR PLACEHOLDER IN (
+		VAL1 AS 0,
+		VAL2 AS '0')
+	)";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			validationModel.InvalidNonTerminals.Count.ShouldBe(2);
+			var nodeValidities = validationModel.InvalidNonTerminals.Values.ToArray();
+			nodeValidities[0].Node.FirstTerminalNode.Id.ShouldBe(Terminals.NumberLiteral);
+			nodeValidities[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ExpressionMustHaveSameDatatypeAsCorrespondingExpression);
+			nodeValidities[1].Node.FirstTerminalNode.Id.ShouldBe(Terminals.StringLiteral);
+			nodeValidities[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ExpressionMustHaveSameDatatypeAsCorrespondingExpression);
+		}
+
+		[Test(Description = @"")]
+		public void TestModelBuildWithNonexistingUnpivotColumnReference()
+		{
+			const string sqlText =
+@"SELECT
+	*
+FROM (
+	SELECT 0 VAL1, 0 VAL2 FROM DUAL)
+	UNPIVOT INCLUDE NULLS (
+		VAL 
+	FOR PLACEHOLDER IN (
+		UNDEFINED AS 0,
+		VAL2 AS 0)
+	)";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			Assert.DoesNotThrow(() => BuildValidationModel(sqlText, statement));
+		}
+
+		[Test(Description = @"")]
+		public void TestUnpivotInColumnDataTypeMismatch()
+		{
+			const string sqlText =
+@"SELECT
+	*
+FROM (
+	SELECT 0 VAL1, '0' VAL2 FROM DUAL)
+	UNPIVOT INCLUDE NULLS (
+		VAL 
+	FOR PLACEHOLDER IN (
+		VAL1 AS 0,
+		VAL2 AS 1)
+	)";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			validationModel.InvalidNonTerminals.Count.ShouldBe(2);
+			var nodeValidities = validationModel.InvalidNonTerminals.Values.ToArray();
+			nodeValidities[0].Node.FirstTerminalNode.Token.Value.ShouldBe("VAL1");
+			nodeValidities[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ExpressionMustHaveSameDatatypeAsCorrespondingExpression);
+			nodeValidities[1].Node.FirstTerminalNode.Token.Value.ShouldBe("VAL2");
+			nodeValidities[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ExpressionMustHaveSameDatatypeAsCorrespondingExpression);
+        }
+
+		[Test(Description = @"")]
 		public void TestCursorParameter()
 		{
 			const string sqlText = @"SELECT * FROM TABLE(SQLPAD.CURSOR_FUNCTION(CURSOR(SELECT * FROM SELECTION WHERE ROWNUM <= 5)))";

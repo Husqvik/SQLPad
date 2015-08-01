@@ -14,6 +14,7 @@ namespace SqlPad.Oracle.SemanticModel
 		private IReadOnlyList<OracleColumn> _columns;
 
 		private readonly List<string> _columnNameExtensions = new List<string>();
+		private bool? _areUnpivotColumnSourceDataTypesMatched;
 
 		public StatementGrammarNode PivotClause { get; }
 		
@@ -24,6 +25,14 @@ namespace SqlPad.Oracle.SemanticModel
 		public IReadOnlyList<StatementGrammarNode> AggregateFunctions { get; private set; }
 
 		public IReadOnlyList<StatementGrammarNode> UnpivotColumnSelectorValues { get; private set; }
+
+		public IReadOnlyList<StatementGrammarNode> UnpivotColumnSources { get; private set; }
+
+		public bool? AreUnpivotColumnSelectorValuesValid { get; private set; }
+
+		public bool? AreUnpivotColumnSourceDataTypesMatched => _areUnpivotColumnSourceDataTypesMatched ?? (_areUnpivotColumnSourceDataTypesMatched = ResolveUnpivotColumnSourceDataTypesMatching());
+
+		public override IReadOnlyList<OracleColumn> Columns => _columns ?? ResolvePivotClauseColumns();
 
 		public OraclePivotTableReference(OracleStatementSemanticModel semanticModel, OracleDataObjectReference sourceReference, StatementGrammarNode pivotClause)
 			: base(ReferenceType.PivotTable)
@@ -60,9 +69,66 @@ namespace SqlPad.Oracle.SemanticModel
 			AggregateFunctions = aggregateExpressions.AsReadOnly();
 		}
 
-		public override IReadOnlyList<OracleColumn> Columns => _columns ?? ResolvePivotClauseColumns();
+		private bool? ResolveUnpivotColumnSourceDataTypesMatching()
+		{
+			if (UnpivotColumnSources == null)
+			{
+				return null;
+			}
 
-	    private IReadOnlyList<OracleColumn> ResolvePivotClauseColumns()
+			var columnNodeReferences = SourceReferenceContainer.ColumnReferences.ToDictionary(c => c.ColumnNode);
+			var referenceDataTypes = new List<OracleDataType>();
+			var sourceIndex = 0;
+			foreach (var unpivotColumnSource in UnpivotColumnSources)
+			{
+				var identifiers = unpivotColumnSource.GetDescendants(Terminals.Identifier);
+				var typeIndex = 0;
+				foreach (var identifier in identifiers)
+				{
+					OracleColumnReference columnReference;
+					if (!columnNodeReferences.TryGetValue(identifier, out columnReference) || columnReference.ColumnDescription == null)
+					{
+						return null;
+					}
+
+					var dataType = columnReference.ColumnDescription.DataType;
+					if (sourceIndex == 0)
+					{
+						referenceDataTypes.Add(dataType);
+					}
+					else
+					{
+						if (typeIndex >= referenceDataTypes.Count)
+						{
+							return false;
+						}
+
+						var referenceType = referenceDataTypes[typeIndex];
+						if (String.IsNullOrEmpty(referenceType.FullyQualifiedName.Name))
+						{
+							referenceDataTypes[typeIndex] = dataType;
+						}
+						else if (!String.IsNullOrEmpty(dataType.FullyQualifiedName.Name) && referenceType.FullyQualifiedName != dataType.FullyQualifiedName)
+						{
+							return false;
+						}
+					}
+
+					typeIndex++;
+				}
+
+				if (typeIndex != referenceDataTypes.Count)
+				{
+					return false;
+				}
+
+				sourceIndex++;
+			}
+
+			return true;
+		}
+
+		private IReadOnlyList<OracleColumn> ResolvePivotClauseColumns()
 		{
 			var columns = new List<OracleColumn>();
 
@@ -85,18 +151,22 @@ namespace SqlPad.Oracle.SemanticModel
 						break;
 
 					case NonTerminals.UnpivotClause:
+						var unpivotColumnSources = new List<StatementGrammarNode>();
 						var unpivotedColumns = new HashSet<string>();
 						var unpivotColumnSelectorValues = new List<StatementGrammarNode>();
 						var columnTransformations = PivotClause[NonTerminals.UnpivotInClause].GetDescendants(NonTerminals.UnpivotValueToColumnTransformationList);
 						foreach (var columnTransformation in columnTransformations)
 						{
 							unpivotedColumns.AddRange(columnTransformation.GetDescendants(Terminals.Identifier).Select(t => t.Token.Value.ToQuotedIdentifier()));
-							unpivotColumnSelectorValues.Add(columnTransformation[NonTerminals.UnpivotValueSelector, NonTerminals.StringOrNumberLiteralOrParenthesisEnclosedStringOrIntegerLiteralList]);
+							unpivotColumnSelectorValues.AddIfNotNull(columnTransformation[NonTerminals.UnpivotValueSelector, NonTerminals.StringOrNumberLiteralOrParenthesisEnclosedStringOrIntegerLiteralList]);
+							unpivotColumnSources.AddIfNotNull(columnTransformation[NonTerminals.IdentifierOrParenthesisEnclosedIdentifierList]);
 						}
 
 						var unpivotColumnDataTypes = OracleDataType.FromUnpivotColumnSelectorValues(unpivotColumnSelectorValues);
+						AreUnpivotColumnSelectorValuesValid = unpivotColumnDataTypes != null;
 
 						UnpivotColumnSelectorValues = unpivotColumnSelectorValues.AsReadOnly();
+						UnpivotColumnSources = unpivotColumnSources.AsReadOnly();
 
 						columns.AddRange(SourceReference.Columns
 							.Where(c => !unpivotedColumns.Contains(c.Name))

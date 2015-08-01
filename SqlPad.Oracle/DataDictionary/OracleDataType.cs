@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using SqlPad.Oracle.DatabaseConnection;
+using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
+using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
 namespace SqlPad.Oracle.DataDictionary
@@ -38,17 +40,17 @@ namespace SqlPad.Oracle.DataDictionary
 			var definitionIndex = 0;
 			foreach (var node in nodes)
 			{
-				if (!String.Equals(node.Id, OracleGrammarDescription.NonTerminals.StringOrNumberLiteralOrParenthesisEnclosedStringOrIntegerLiteralList))
+				if (!String.Equals(node.Id, NonTerminals.StringOrNumberLiteralOrParenthesisEnclosedStringOrIntegerLiteralList))
 				{
-					throw new ArgumentException($"All nodes must have ID of {nameof(OracleGrammarDescription.NonTerminals.StringOrNumberLiteralOrParenthesisEnclosedStringOrIntegerLiteralList)}", nameof(nodes));
+					throw new ArgumentException($"All nodes must have ID of {nameof(NonTerminals.StringOrNumberLiteralOrParenthesisEnclosedStringOrIntegerLiteralList)}", nameof(nodes));
 				}
 
-				var literals = node.GetDescendants(OracleGrammarDescription.Terminals.StringLiteral, OracleGrammarDescription.Terminals.NumberLiteral);
+				var literals = node.GetDescendants(Terminals.StringLiteral, Terminals.NumberLiteral);
 
 				var typeIndex = 0;
 				foreach (var literal in literals)
 				{
-					var newDataType = String.Equals(literal.Id, OracleGrammarDescription.Terminals.StringLiteral)
+					var newDataType = String.Equals(literal.Id, Terminals.StringLiteral)
 						? new OracleDataType
 						{
 							FullyQualifiedName = OracleObjectIdentifier.Create(null, TerminalValues.Varchar2),
@@ -62,7 +64,7 @@ namespace SqlPad.Oracle.DataDictionary
 					}
 					else
 					{
-						if (dataTypes.Count < typeIndex + 1)
+						if (dataTypes.Count <= typeIndex)
 						{
 							return null;
 						}
@@ -80,6 +82,11 @@ namespace SqlPad.Oracle.DataDictionary
 					}
 
 					typeIndex++;
+				}
+
+				if (typeIndex != dataTypes.Count)
+				{
+					return null;
 				}
 
 				definitionIndex++;

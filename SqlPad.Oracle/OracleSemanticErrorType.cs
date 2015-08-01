@@ -35,6 +35,7 @@ namespace SqlPad.Oracle
 		public const string DatetimeOrIntervalPrecisionIsOutOfRange = "Datetime/interval precision is out of range";
 		public const string ZeroLengthColumnsNotAllowed = "Zero-length columns are not allowed";
 		public const string UnsupportedInConnectedDatabaseVersion = "Unsupported in connected database version";
+		public const string ExpressionMustHaveSameDatatypeAsCorrespondingExpression = "Expression must have same datatype as corresponding expression";
 	}
 
 	public static class OracleSemanticErrorTooltipText
