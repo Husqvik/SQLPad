@@ -54,6 +54,7 @@
 
 		<Style x:Key="ResultSetDataGrid">
 			<Setter Property="DataGrid.EnableColumnVirtualization" Value="True" />
+			<Setter Property="DataGrid.EnableRowVirtualization" Value="True" />
 			<Setter Property="VirtualizingStackPanel.VirtualizationMode" Value="Recycling" />
 			<Setter Property="DataGrid.AutoGenerateColumns" Value="False" />
 			<Setter Property="DataGrid.CanUserSortColumns" Value="False" />

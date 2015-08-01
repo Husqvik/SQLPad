@@ -128,7 +128,7 @@
 					</StackPanel>
 
 					<DataGrid x:Name="ResultGrid" Style="{StaticResource ResultSetDataGrid}"
-							  ItemsSource="{Binding ResultRowItems}"
+							  ItemsSource="{Binding ResultRowItems, IsAsync=True}"
 							  MaxColumnWidth="{Binding ElementName=ResultGrid, Path=ActualWidth}"
 							  HeadersVisibility="None"
 							  BeginningEdit="ResultGridBeginningEditCancelTextInputHandler"
