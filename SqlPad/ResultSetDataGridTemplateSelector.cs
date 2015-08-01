@@ -90,7 +90,7 @@ namespace SqlPad
 			return new DataTemplate(typeof(DependencyObject)) { VisualTree = textBlockFactory };
 		}
 
-		private async void CellHyperlinkClickHandler(object sender, RoutedEventArgs args)
+		private void CellHyperlinkClickHandler(object sender, RoutedEventArgs args)
 		{
 			var hyperlink = sender as Hyperlink;
 			if (hyperlink == null)
@@ -99,30 +99,26 @@ namespace SqlPad
 			}
 
 			var cell = (DataGridCell)hyperlink.Tag;
-			var row = cell.FindParent<DataGridRow>();
+			var row = cell.FindParentVisual<DataGridRow>();
 
-			var stackPanel = new StackPanel();
-			var index = 0;
-
-			try
-			{
-				var references = GetReferenceDataSources(row).ToArray();
-				foreach (var executionModel in BuildExecutionModels(row))
-				{
-					await BuildParentRecordDataGrid(stackPanel, references[index++].ObjectName, executionModel);
-				}
-			}
-			catch (Exception exception)
-			{
-				stackPanel.Children.Add(DataGridHelper.CreateErrorText(exception.Message));
-			}
-
-			cell.Content = DataGridHelper.ConfigureAndWrapUsingScrollViewerIfNeeded(cell, stackPanel);
+			DataGridHelper.BuildDataGridCellContent(cell, t => BuildParentRecordDataGrids(row, t));
 		}
 
-		private async Task BuildParentRecordDataGrid(Panel container, string objectName, StatementExecutionModel executionModel)
+		private async Task<FrameworkElement> BuildParentRecordDataGrids(DataGridRow row, CancellationToken cancellationToken)
 		{
-			var cancellationToken = CancellationToken.None;
+			var references = GetReferenceDataSources(row).ToArray();
+			var stackPanel = new StackPanel();
+			var index = 0;
+			foreach (var executionModel in BuildExecutionModels(row))
+			{
+				await BuildParentRecordDataGrid(stackPanel, references[index++].ObjectName, executionModel, cancellationToken);
+			}
+
+			return stackPanel;
+		}
+
+		private async Task BuildParentRecordDataGrid(Panel container, string objectName, StatementExecutionModel executionModel, CancellationToken cancellationToken)
+		{
 			var executionResult = await _connectionAdapter.ExecuteChildStatementAsync(executionModel, cancellationToken);
 			await _statementValidator.ApplyReferenceConstraintsAsync(executionResult, _connectionAdapter.DatabaseModel, cancellationToken);
 

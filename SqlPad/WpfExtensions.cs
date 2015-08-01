@@ -1,15 +1,18 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Diagnostics;
+using System.Text.RegularExpressions;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace SqlPad
 {
 	public static class WpfExtensions
 	{
-		public static T FindParent<T>(this Visual child) where T : Visual
-        {
+		public static T FindParentVisual<T>(this Visual child) where T : Visual
+		{
 			var parent = (Visual)VisualTreeHelper.GetParent(child);
 			if (parent == null)
 			{
@@ -17,17 +20,17 @@ namespace SqlPad
 			}
 
 			var typedParent = parent as T;
-			return typedParent ?? FindParent<T>(parent);
+			return typedParent ?? FindParentVisual<T>(parent);
 		}
 
-		public static T FindVisualChild<T>(this Visual parent) where T : Visual
+		public static T FindChildVisual<T>(this Visual parent) where T : Visual
 		{
 			var child = default(T);
 			var numVisuals = VisualTreeHelper.GetChildrenCount(parent);
 			for (var i = 0; i < numVisuals; i++)
 			{
 				var v = (Visual)VisualTreeHelper.GetChild(parent, i);
-				child = v as T ?? FindVisualChild<T>(v);
+				child = v as T ?? FindChildVisual<T>(v);
 				
 				if (child != null)
 				{
@@ -36,6 +39,17 @@ namespace SqlPad
 			}
 
 			return child;
+		}
+
+		public static void CancelOnEscape(this CancellationTokenSource cancellationTokenSource, Key key)
+		{
+			if (key != Key.Escape)
+			{
+				return;
+			}
+
+			Trace.WriteLine("Action is about to cancel. ");
+			cancellationTokenSource.Cancel();
 		}
 
 		public static T AsPopupChild<T>(this T control) where T : Control

@@ -41,7 +41,7 @@ namespace SqlPad
 			var collectionValue = item as ICollectionValue;
 			var complexType = item as IComplexType;
 
-			var complexTypeViewer = WpfExtensions.FindParent<ComplexTypeViewer>(container);
+			var complexTypeViewer = WpfExtensions.FindParentVisual<ComplexTypeViewer>(container);
 			var templateName = String.Format("PrimitiveValueType{0}Template", IsEditing ? "Editing" : null);
 
 			return (DataTemplate)complexTypeViewer.Resources[templateName];

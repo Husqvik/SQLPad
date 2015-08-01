@@ -176,6 +176,10 @@ namespace SqlPad
 			File.WriteAllText(Path.Combine(ConfigurationProvider.FolderNameErrorLog, $"Error_{DateTime.UtcNow.Ticks}.log"), logBuilder.ToString());
 		}
 
-		public App() { }
+		public App()
+		{
+			//var splashScreen = new SplashScreen("ResourceName");
+			//splashScreen.Show(true, true);
+		}
 	}
 }

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -56,8 +58,8 @@ namespace SqlPad
 		public static bool CanBeRecycled(UIElement uiElement)
 		{
 			var row = (DataGridRow)uiElement;
-			var cellPresenter = row.FindVisualChild<DataGridCellsPresenter>();
-			var columnCount = ((object[])row.DataContext).Length;
+			var cellPresenter = row.FindChildVisual<DataGridCellsPresenter>();
+			var columnCount = cellPresenter.ItemContainerGenerator.Items.Count;
 			for (var index = 0; index < columnCount; index++)
 			{
 				var cell = (DataGridCell)cellPresenter.ItemContainerGenerator.ContainerFromIndex(index);
@@ -92,19 +94,55 @@ namespace SqlPad
 			}
 		}
 
-		public static TextBlock CreateErrorText(string text)
+		public static async void BuildDataGridCellContent(DataGridCell cell, Func<CancellationToken, Task<FrameworkElement>> getContentFunction)
 		{
-			return new TextBlock { Text = text, Background = Brushes.Red, Margin = DefaultTextBlockMargin };
+			var originalContent = cell.Content;
+
+			using (var cancellationTokenSource = new CancellationTokenSource())
+			{
+				FrameworkElement element;
+
+				KeyEventHandler keyDownHandler = (sender, args) => cancellationTokenSource.CancelOnEscape(args.Key);
+
+				try
+				{
+					cell.KeyDown += keyDownHandler;
+					cell.Content = CreateTextBlock("Loading... ");
+					element = await getContentFunction(cancellationTokenSource.Token);
+				}
+				catch (OperationCanceledException)
+				{
+					cell.Content = originalContent;
+					return;
+				}
+				catch (Exception exception)
+				{
+					var textBlock = CreateTextBlock(exception.Message);
+					textBlock.Background = Brushes.Red;
+					element = textBlock;
+				}
+				finally
+				{
+					cell.KeyDown -= keyDownHandler;
+				}
+
+				cell.Content = ConfigureAndWrapUsingScrollViewerIfNeeded(cell, originalContent, element);
+			}
 		}
 
-		public static FrameworkElement ConfigureAndWrapUsingScrollViewerIfNeeded(DataGridCell cell, FrameworkElement contentContainer)
+		private static TextBlock CreateTextBlock(string text)
 		{
-			var row = cell.FindParent<DataGridRow>();
-			var dataGrid = row.FindParent<DataGrid>();
+			return new TextBlock { Text = text, TextAlignment = TextAlignment.Left, VerticalAlignment = VerticalAlignment.Center, Margin = DefaultTextBlockMargin };
+		}
+
+		private static FrameworkElement ConfigureAndWrapUsingScrollViewerIfNeeded(Visual cell, object originalContent, FrameworkElement contentContainer)
+		{
+			var row = cell.FindParentVisual<DataGridRow>();
+			var dataGrid = row.FindParentVisual<DataGrid>();
 			var dockPanel = dataGrid.Parent as DockPanel;
 			if (dockPanel != null)
 			{
-				var headersPresenter = dataGrid.FindVisualChild<DataGridColumnHeadersPresenter>();
+				var headersPresenter = dataGrid.FindChildVisual<DataGridColumnHeadersPresenter>();
 
 				contentContainer =
 					new ScrollViewer
@@ -118,7 +156,7 @@ namespace SqlPad
 
 			row.Height = Double.NaN;
 
-			contentContainer.Tag = cell.Content;
+			contentContainer.Tag = originalContent;
 			contentContainer.KeyDown += ContentContainerKeyDownHandler;
 			return contentContainer;
 		}
@@ -133,7 +171,7 @@ namespace SqlPad
 			var element = (FrameworkElement)sender;
 			var cell = (DataGridCell)element.Parent;
 			cell.Content = element.Tag;
-			//var row = cell.FindParent<DataGridRow>();
+			//var row = cell.FindParentVisual<DataGridRow>();
 			//row.Height = 21;
 
 			keyEventArgs.Handled = true;

@@ -15,10 +15,8 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Threading;
 using Microsoft.Win32;
 using SqlPad.DataExport;
-using SqlPad.FindReplace;
 using Timer = System.Timers.Timer;
 
 namespace SqlPad
@@ -351,53 +349,45 @@ namespace SqlPad
 			}
 		}
 
-		private async void CellHyperlinkExpandChildRecordsClickHandler(object sender, RoutedEventArgs args)
+		private void CellHyperlinkExpandChildRecordsClickHandler(object sender, RoutedEventArgs args)
 		{
 			var hyperlink = (Hyperlink)sender;
 			var dataSource = (IReferenceDataSource)hyperlink.DataContext;
 			var cell = (DataGridCell)hyperlink.Tag;
-			var row = cell.FindParent<DataGridRow>();
+			var row = cell.FindParentVisual<DataGridRow>();
 			var currentRowValues = (object[])row.DataContext;
 			var keyValues = dataSource.ColumnHeaders.Select(h => currentRowValues[h.ColumnIndex]).ToArray();
 
+			DataGridHelper.BuildDataGridCellContent(cell, t => BuildChildRecordDataGrid(dataSource, keyValues, t));
+		}
+
+		private async Task<FrameworkElement> BuildChildRecordDataGrid(IReferenceDataSource dataSource, object[] keyValues, CancellationToken cancellationToken)
+		{
 			var executionModel = dataSource.CreateExecutionModel(keyValues);
+			var executionResult = await _connectionAdapter.ExecuteChildStatementAsync(executionModel, cancellationToken);
+			var childReferenceDataSources = await _statementValidator.ApplyReferenceConstraintsAsync(executionResult, _connectionAdapter.DatabaseModel, cancellationToken);
 
-			FrameworkElement element;
-
-			try
-			{
-				var cancellationToken = CancellationToken.None;
-				var executionResult = await _connectionAdapter.ExecuteChildStatementAsync(executionModel, cancellationToken);
-				var childReferenceDataSources = await _statementValidator.ApplyReferenceConstraintsAsync(executionResult, _connectionAdapter.DatabaseModel, cancellationToken);
-
-				var childRecordDataGrid =
-					new DataGrid
-					{
-						RowHeaderWidth = 0,
-						Style = (Style)Application.Current.Resources["ResultSetDataGrid"],
-						ItemsSource = new ObservableCollection<object[]>(executionResult.InitialResultSet)
-					};
-
-				childRecordDataGrid.AddHandler(VirtualizingStackPanel.CleanUpVirtualizedItemEvent, (CleanUpVirtualizedItemEventHandler)CleanUpVirtualizedItemHandler);
-				childRecordDataGrid.BeginningEdit += App.ResultGridBeginningEditCancelTextInputHandlerImplementation;
-				childRecordDataGrid.MouseDoubleClick += ResultGridMouseDoubleClickHandler;
-
-				DataGridHelper.InitializeDataGridColumns(childRecordDataGrid, executionResult.ColumnHeaders, _statementValidator, _connectionAdapter);
-				AddChildReferenceColumns(childRecordDataGrid, childReferenceDataSources);
-
-				foreach (var columnTemplate in childRecordDataGrid.Columns)
+			var childRecordDataGrid =
+				new DataGrid
 				{
-					columnTemplate.HeaderStyle = (Style)Application.Current.Resources["ColumnHeaderClickBubbleCancelation"];
-				}
+					RowHeaderWidth = 0,
+					Style = (Style)Application.Current.Resources["ResultSetDataGrid"],
+					ItemsSource = new ObservableCollection<object[]>(executionResult.InitialResultSet)
+				};
 
-				element = childRecordDataGrid;
-			}
-			catch (Exception exception)
+			childRecordDataGrid.AddHandler(VirtualizingStackPanel.CleanUpVirtualizedItemEvent, (CleanUpVirtualizedItemEventHandler)CleanUpVirtualizedItemHandler);
+			childRecordDataGrid.BeginningEdit += App.ResultGridBeginningEditCancelTextInputHandlerImplementation;
+			childRecordDataGrid.MouseDoubleClick += ResultGridMouseDoubleClickHandler;
+
+			DataGridHelper.InitializeDataGridColumns(childRecordDataGrid, executionResult.ColumnHeaders, _statementValidator, _connectionAdapter);
+			AddChildReferenceColumns(childRecordDataGrid, childReferenceDataSources);
+
+			foreach (var columnTemplate in childRecordDataGrid.Columns)
 			{
-				element = DataGridHelper.CreateErrorText(exception.Message);
+				columnTemplate.HeaderStyle = (Style)Application.Current.Resources["ColumnHeaderClickBubbleCancelation"];
 			}
 
-			cell.Content = DataGridHelper.ConfigureAndWrapUsingScrollViewerIfNeeded(cell, element);
+			return childRecordDataGrid;
 		}
 
 		private void NotifyExecutionCanceled()
@@ -470,7 +460,7 @@ namespace SqlPad
 		private void ResultGridMouseDoubleClickHandler(object sender, MouseButtonEventArgs e)
 		{
 			var senderDataGrid = (DataGrid)sender;
-			var originalDataGrid = ((Visual)e.OriginalSource).FindParent<DataGrid>();
+			var originalDataGrid = ((Visual)e.OriginalSource).FindParentVisual<DataGrid>();
 			if (Equals(originalDataGrid, senderDataGrid))
 			{
 				DataGridHelper.ShowLargeValueEditor(senderDataGrid);
