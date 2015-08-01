@@ -622,7 +622,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 							ExecutedSuccessfully = true,
 							ColumnHeaders = GetColumnHeadersFromReader(dataReader),
 							InitialResultSet = await FetchRecordsFromReader(dataReader, executionModel.InitialFetchRowCount, false).EnumerateAsync(cancellationToken),
-							CompilationErrors = _userCommandHasCompilationErrors ? await RetrieveCompilationErrors(executionModel.Statement, cancellationToken) : new CompilationError[0]
+							CompilationErrors = _userCommandHasCompilationErrors ? await RetrieveCompilationErrors(executionModel.ValidationModel.Statement, cancellationToken) : new CompilationError[0]
 						};
 				}
 			}

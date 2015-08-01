@@ -283,7 +283,7 @@ namespace SqlPad
 
 			if (_executionResult.CompilationErrors.Count > 0)
 			{
-				var lineOffset = _documentPage.Editor.GetLineNumberByOffset(executionModel.Statement.SourcePosition.IndexStart);
+				var lineOffset = _documentPage.Editor.GetLineNumberByOffset(executionModel.ValidationModel.Statement.SourcePosition.IndexStart);
 				foreach (var error in _executionResult.CompilationErrors)
 				{
 					error.Line += lineOffset;

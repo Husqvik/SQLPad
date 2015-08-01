@@ -17,7 +17,7 @@ namespace SqlPad
 
 		public string StatementText { get; set; }
 
-		public StatementBase Statement { get; set; }
+		public IValidationModel ValidationModel { get; set; }
 
 		public IReadOnlyList<BindVariableModel> BindVariables { get; set; }
 
@@ -26,6 +26,8 @@ namespace SqlPad
 		public bool EnableDebug { get; set; }
 		
 		public int InitialFetchRowCount { get; set; }
+
+		public bool IsPartialStatement { get; set; }
 	}
 
 	public struct StatementExecutionResult

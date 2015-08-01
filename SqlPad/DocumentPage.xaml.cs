@@ -782,9 +782,10 @@ namespace SqlPad
 			var selectionEnd = Editor.SelectionStart + Editor.SelectionLength;
 			var selectionStart = Editor.SelectionStart;
 			var isOnlyStatement = true;
-			foreach (var statement in _sqlDocumentRepository.Statements)
+			foreach (var validationModel in _sqlDocumentRepository.ValidationModels.Values)
 			{
-				if (Editor.SelectionStart > statement.RootNode.SourcePosition.IndexEnd + 1)
+				var statement = validationModel.Statement;
+                if (Editor.SelectionStart > statement.RootNode.SourcePosition.IndexEnd + 1)
 				{
 					continue;
 				}
@@ -806,14 +807,16 @@ namespace SqlPad
 					break;
 				}
 
-				selectionStart = selectionStart > statement.SourcePosition.IndexStart
+				var selectionStartAfterStatementStart = selectionStart > statement.SourcePosition.IndexStart;
+				selectionStart = selectionStartAfterStatementStart
 					? selectionStart
 					: statement.SourcePosition.IndexStart;
-				var statementIndexEnd = selectionEnd > statement.RootNode.SourcePosition.IndexEnd + 1
+				var selectionEndBeforeStatementEnd = selectionEnd > statement.RootNode.SourcePosition.IndexEnd + 1;
+				var statementIndexEnd = selectionEndBeforeStatementEnd
 					? statement.RootNode.SourcePosition.IndexEnd + 1
 					: selectionEnd;
-				var statementText = Editor.Text.Substring(selectionStart, statementIndexEnd - selectionStart);
 
+				var statementText = Editor.Text.Substring(selectionStart, statementIndexEnd - selectionStart);
 				if (statementText.Trim().Length == 0)
 				{
 					continue;
@@ -825,7 +828,8 @@ namespace SqlPad
 				executionModels.Add(
 					new StatementExecutionModel
 					{
-						Statement = statement,
+						ValidationModel = validationModel,
+						IsPartialStatement = selectionStartAfterStatementStart || selectionEndBeforeStatementEnd,
 						//GatherExecutionStatistics = gatherExecutionStatistics,
 						StatementText = statementText,
 						BindVariables = bindVariableModels.ToArray()
@@ -1136,7 +1140,7 @@ namespace SqlPad
 				return;
 			}
 
-			var statements = new List<StatementBase>(BuildStatementExecutionModel(false).Select(m => m.Statement));
+			var statements = new List<StatementBase>(BuildStatementExecutionModel(false).Select(m => m.ValidationModel.Statement));
 			if (statements.All(s => s.BindVariables.Count == 0))
 			{
 				BindVariables = new BindVariableModel[0];

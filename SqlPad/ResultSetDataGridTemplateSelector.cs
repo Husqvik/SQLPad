@@ -61,14 +61,14 @@ namespace SqlPad
 				: HyperlinkDataTemplate;
 		}
 
-		protected virtual IEnumerable<StatementExecutionModel> BuildExecutionModels(DataGridRow row)
+		protected virtual IEnumerable<StatementExecutionModel> BuildExecutionModels(DataGridCell cell)
 		{
-			var currentRowValues = (object[])row.DataContext;
+			var currentRowValues = (object[])cell.DataContext;
 			return _columnHeader.ParentReferenceDataSources
 				.Select(s => s.CreateExecutionModel(new [] { currentRowValues[_columnIndex] }));
 		}
 
-		protected virtual IReadOnlyCollection<IReferenceDataSource> GetReferenceDataSources(DataGridRow row) => _columnHeader.ParentReferenceDataSources;
+		protected virtual IReadOnlyCollection<IReferenceDataSource> GetReferenceDataSources(DataGridCell cell) => _columnHeader.ParentReferenceDataSources;
 
 		private static DataTemplate CreateTextDataTemplate(string bindingPath)
 		{
@@ -92,24 +92,16 @@ namespace SqlPad
 
 		private void CellHyperlinkClickHandler(object sender, RoutedEventArgs args)
 		{
-			var hyperlink = sender as Hyperlink;
-			if (hyperlink == null)
-			{
-				return;
-			}
-
-			var cell = (DataGridCell)hyperlink.Tag;
-			var row = cell.FindParentVisual<DataGridRow>();
-
-			DataGridHelper.BuildDataGridCellContent(cell, t => BuildParentRecordDataGrids(row, t));
+			var cell = (DataGridCell)(sender as Hyperlink)?.Tag;
+			DataGridHelper.BuildDataGridCellContent(cell, t => BuildParentRecordDataGrids(cell, t));
 		}
 
-		private async Task<FrameworkElement> BuildParentRecordDataGrids(DataGridRow row, CancellationToken cancellationToken)
+		private async Task<FrameworkElement> BuildParentRecordDataGrids(DataGridCell cell, CancellationToken cancellationToken)
 		{
-			var references = GetReferenceDataSources(row).ToArray();
+			var references = GetReferenceDataSources(cell).ToArray();
 			var stackPanel = new StackPanel();
 			var index = 0;
-			foreach (var executionModel in BuildExecutionModels(row))
+			foreach (var executionModel in BuildExecutionModels(cell))
 			{
 				await BuildParentRecordDataGrid(stackPanel, references[index++].ObjectName, executionModel, cancellationToken);
 			}
@@ -209,16 +201,16 @@ namespace SqlPad
 			textBlockFactory.SetValue(FrameworkElement.HorizontalAlignmentProperty, HorizontalAlignment.Left);
 		}
 
-		protected override IEnumerable<StatementExecutionModel> BuildExecutionModels(DataGridRow row)
+		protected override IEnumerable<StatementExecutionModel> BuildExecutionModels(DataGridCell cell)
 		{
-			var customTypeAttributeValue = (CustomTypeAttributeValue)row.DataContext;
+			var customTypeAttributeValue = (CustomTypeAttributeValue)cell.DataContext;
 			return customTypeAttributeValue.ColumnHeader.ParentReferenceDataSources
 				.Select(s => s.CreateExecutionModel(new [] { customTypeAttributeValue.Value }));
 		}
 
-		protected override IReadOnlyCollection<IReferenceDataSource> GetReferenceDataSources(DataGridRow row)
+		protected override IReadOnlyCollection<IReferenceDataSource> GetReferenceDataSources(DataGridCell cell)
 		{
-			var customTypeAttributeValue = (CustomTypeAttributeValue)row.DataContext;
+			var customTypeAttributeValue = (CustomTypeAttributeValue)cell.DataContext;
 			return customTypeAttributeValue.ColumnHeader.ParentReferenceDataSources;
 		}
 

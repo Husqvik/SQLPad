@@ -187,9 +187,13 @@ namespace SqlPad.Oracle
 
 		public async Task<ICollection<IReferenceDataSource>> ApplyReferenceConstraintsAsync(StatementExecutionResult executionResult, IDatabaseModel databaseModel, CancellationToken cancellationToken)
 		{
-			// TODO: Optimize - check if executed text differs from statement text to skip parsing
-			var statements = await OracleSqlParser.Instance.ParseAsync(executionResult.Statement.StatementText, cancellationToken);
-			var semanticModel = (OracleStatementSemanticModel)BuildSemanticModel(executionResult.Statement.StatementText, statements[0], databaseModel);
+			var semanticModel = (OracleStatementSemanticModel)executionResult.Statement.ValidationModel?.SemanticModel;
+			if (semanticModel == null || executionResult.Statement.IsPartialStatement)
+			{
+				var statements = await OracleSqlParser.Instance.ParseAsync(executionResult.Statement.StatementText, cancellationToken);
+				semanticModel = (OracleStatementSemanticModel)BuildSemanticModel(executionResult.Statement.StatementText, statements[0], databaseModel);
+			}
+
 			return semanticModel.ApplyReferenceConstraints(executionResult.ColumnHeaders);
 		}
 
