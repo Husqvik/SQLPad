@@ -2283,6 +2283,34 @@ FROM (
 		}
 
 		[Test(Description = @"")]
+		public void TestPivotXmlTableReference()
+		{
+			const string query1 =
+@"SELECT
+	*
+FROM (
+	SELECT STATUS ""Long test column name STATUS"", SUPPLYCHANNEL ""Long test column SUPPLYCHANNEL"" FROM SELECTION
+	)
+	PIVOT XML (
+		COUNT(*) AS COUNT
+		FOR (""Long test column name STATUS"", ""Long test column SUPPLYCHANNEL"")
+		IN (ANY, ANY)
+	)";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.Count.ShouldBe(2);
+
+			semanticModel.MainQueryBlock.Columns.Count.ShouldBe(2);
+			semanticModel.MainQueryBlock.Columns[0].IsAsterisk.ShouldBe(true);
+			semanticModel.MainQueryBlock.Columns[1].NormalizedName.ShouldBe("\"Long test column name STAT_XML\"");
+			semanticModel.MainQueryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe("SYS.XMLTYPE");
+		}
+
+		[Test(Description = @"")]
 		public void TestOrderBySelectListReferenceWithMultipleSourceTableReferences()
 		{
 			const string query1 = @"SELECT T1.DUMMY FROM DUAL T1, DUAL T2 ORDER BY DUMMY";

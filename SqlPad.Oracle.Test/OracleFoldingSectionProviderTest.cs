@@ -196,5 +196,23 @@ END;";
 			foldingSections[1].IsNested.ShouldBe(true);
 			foldingSections[1].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderPlSqlBlock);
 		}
-    }
+
+		[Test(Description = @"")]
+		public void TestInvalidPlSqlBodyFoldingSection()
+		{
+			const string statement =
+@"DECLARE
+BEGIN
+END:";
+
+			var tokens = ((ITokenReader)OracleTokenReader.Create(statement)).GetTokens();
+
+			var foldingSections = _provider.GetFoldingSections(tokens).ToArray();
+			foldingSections.Length.ShouldBe(1);
+			foldingSections[0].FoldingStart.ShouldBe(9);
+			foldingSections[0].FoldingEnd.ShouldBe(20);
+			foldingSections[0].IsNested.ShouldBe(false);
+			foldingSections[0].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderPlSqlBlock);
+		}
+	}
 }

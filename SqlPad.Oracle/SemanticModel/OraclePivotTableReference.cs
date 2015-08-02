@@ -146,7 +146,30 @@ namespace SqlPad.Oracle.SemanticModel
 							.Select(c => c.Clone());
 
 						columns.AddRange(sourceColumns);
-						columns.AddRange(ResolvePivotColumns());
+
+						var withXmlTransformation = PivotClause[Terminals.Xml] != null;
+						if (withXmlTransformation)
+						{
+							var xmlColumnName = String.Join("_", groupingColumns.Select(c => c.Trim('"')));
+							if (xmlColumnName.Length > 26)
+							{
+								xmlColumnName = xmlColumnName.Substring(0, 26);
+							}
+
+							var xmlColumn =
+								new OracleColumn
+								{
+									Name = $"\"{xmlColumnName}_XML\"",
+									DataType = OracleDataType.XmlType,
+									Nullable = true
+								};
+
+							columns.Add(xmlColumn);
+						}
+						else
+						{
+							columns.AddRange(ResolvePivotColumns());
+						}
 
 						break;
 

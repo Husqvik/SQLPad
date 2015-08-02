@@ -146,7 +146,7 @@ namespace SqlPad.Oracle
 			public bool TryFinishFoldingSection(string placeholder, string stackKey, OracleToken token, out FoldingSection foldingSection)
 			{
 				var foldingSectionStack = GetFoldingStack(stackKey);
-				var sectionExists = IsScopeValid(placeholder, foldingSectionStack);
+				var sectionExists = !Equals(token, OracleToken.Empty) && IsScopeValid(placeholder, foldingSectionStack);
 				if (sectionExists)
 				{
 					foldingSection = foldingSectionStack.Pop();
