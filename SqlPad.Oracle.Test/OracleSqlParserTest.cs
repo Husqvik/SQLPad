@@ -51,7 +51,8 @@ namespace SqlPad.Oracle.Test
 			
 			result.ShouldNotBe(null);
 			result.Count.ShouldBe(1);
-			var statement = result.Single();
+			var statement = (OracleStatement)result.Single();
+			statement.IsPlSql.ShouldBe(false);
 			statement.RootNode.AllChildNodes.ToList()
 				.ForEach(n => n.Statement.ShouldBe(statement));
 
@@ -2585,8 +2586,9 @@ BEGIN
 	END LOOP;
 END;";
 
-				var statement = Parser.Parse(statement1).Single().Validate();
+				var statement = (OracleStatement)Parser.Parse(statement1).Single().Validate();
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				statement.IsPlSql.ShouldBe(true);
 			}
 
 			[Test(Description = @"")]
@@ -2599,11 +2601,12 @@ BEGIN NULL; END;
 /
 ";
 
-				var statements = Parser.Parse(statement1).ToList();
+				var statements = Parser.Parse(statement1).Cast<OracleStatement>().ToList();
 				statements.ForEach(s =>
 				{
 					s.Validate();
 					s.ParseStatus.ShouldBe(ParseStatus.Success);
+					s.IsPlSql.ShouldBe(true);
 				});
 			}
 
@@ -2663,8 +2666,9 @@ BEGIN
 	EXECUTE IMMEDIATE 'SELECT :P1, :P2 FROM DUAL' USING DATE_FROM, DATE_TO;
 END;";
 
-				var statement = Parser.Parse(statement1).Single().Validate();
+				var statement = (OracleStatement)Parser.Parse(statement1).Single().Validate();
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				statement.IsPlSql.ShouldBe(true);
 			}
 
 			[Test(Description = @"")]
@@ -2683,8 +2687,9 @@ END;";
 				const string statement1 =
 @"CREATE OR REPLACE NONEDITIONABLE PROCEDURE TEST_PROCEDURE AUTHID DEFINER ACCESSIBLE BY (TYPE HUSQVIK.TEST_TYPE, TEST_FUNCTION) IS EXTERNAL;";
 
-				var statement = Parser.Parse(statement1).Single().Validate();
+				var statement = (OracleStatement)Parser.Parse(statement1).Single().Validate();
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				statement.IsPlSql.ShouldBe(true);
 			}
 
 			[Test(Description = @"")]
@@ -2706,8 +2711,9 @@ END;";
 	no_sal EXCEPTION; 
 END emp_mgmt;";
 
-				var statement = Parser.Parse(statement1).Single().Validate();
+				var statement = (OracleStatement)Parser.Parse(statement1).Single().Validate();
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				statement.IsPlSql.ShouldBe(true);
 			}
 
 			[Test(Description = @"")]
@@ -2747,8 +2753,9 @@ EXCEPTION
 		RAISE;
 END test_package_body;";
 
-				var statement = Parser.Parse(statement1).Single().Validate();
+				var statement = (OracleStatement)Parser.Parse(statement1).Single().Validate();
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				statement.IsPlSql.ShouldBe(true);
 			}
 
 			[Test(Description = @"")]

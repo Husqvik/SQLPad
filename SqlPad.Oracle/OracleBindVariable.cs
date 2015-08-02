@@ -8,6 +8,7 @@ namespace SqlPad.Oracle
 	public static class OracleBindVariable
 	{
 		public const string DataTypeUnicodeClob = "NCLOB";
+		public const string DataTypeRefCursor = "REF CURSOR";
 
 		public static readonly ReadOnlyDictionary<string, Type> DataTypes =
 			new ReadOnlyDictionary<string, Type>(
@@ -21,7 +22,8 @@ namespace SqlPad.Oracle
 					{ DataTypeUnicodeClob, typeof (string) },
 					{ TerminalValues.Number, typeof (string) },
 					{ TerminalValues.NVarchar2, typeof (string) },
-					{ TerminalValues.Varchar2, typeof (string) }
+					{ TerminalValues.Varchar2, typeof (string) },
+					{ DataTypeRefCursor, typeof (string) }
 				});
 	}
 }

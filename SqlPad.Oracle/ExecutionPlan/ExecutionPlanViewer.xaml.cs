@@ -16,12 +16,12 @@ namespace SqlPad.Oracle.ExecutionPlan
 {
 	public partial class ExecutionPlanViewer : IExecutionPlanViewer
 	{
-		public static readonly DependencyProperty TotalExecutionsProperty = DependencyProperty.Register(nameof(TotalExecutions), typeof(int), typeof(ExecutionPlanViewer), new FrameworkPropertyMetadata());
+		public static readonly DependencyProperty TotalExecutionsProperty = DependencyProperty.Register(nameof(TotalExecutions), typeof(int?), typeof(ExecutionPlanViewer), new FrameworkPropertyMetadata());
 		public static readonly DependencyProperty TextExecutionPlanProperty = DependencyProperty.Register(nameof(TextExecutionPlan), typeof(string), typeof(ExecutionPlanViewer), new FrameworkPropertyMetadata());
 
-		public int TotalExecutions
+		public int? TotalExecutions
 		{
-			get { return (int)GetValue(TotalExecutionsProperty); }
+			get { return (int?)GetValue(TotalExecutionsProperty); }
 			private set { SetValue(TotalExecutionsProperty, value); }
 		}
 
@@ -44,7 +44,8 @@ namespace SqlPad.Oracle.ExecutionPlan
 
 		public async Task ShowActualAsync(IConnectionAdapter connectionAdapter, CancellationToken cancellationToken)
 		{
-			TextExecutionPlan = null;
+			ResetView();
+
 			ExecutionStatisticsPlanItemCollection itemCollection = null;
 			
 			try
@@ -63,12 +64,21 @@ namespace SqlPad.Oracle.ExecutionPlan
 			
 			SetRootItem(itemCollection.RootItem);
 			TextExecutionPlan = itemCollection.PlanText;
-			TotalExecutions = itemCollection.RootItem.Executions;
+
+			if (itemCollection.RootItem == null)
+			{
+				TabPlainText.IsSelected = true;
+			}
+			else
+			{
+				TotalExecutions = itemCollection.RootItem.Executions;
+			}
 		}
 
 		public async Task ExplainAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
-			TextExecutionPlan = null;
+			ResetView();
+
 			var itemCollection = await _databaseModel.ExplainPlanAsync(executionModel, cancellationToken);
 
 			if (itemCollection != null)
@@ -78,20 +88,24 @@ namespace SqlPad.Oracle.ExecutionPlan
 			}
 		}
 
+		private void ResetView()
+		{
+			TotalExecutions = null;
+			TextExecutionPlan = null;
+			TreeView.Items.Clear();
+		}
+
 		private void SetRootItem(ExecutionPlanItem rootItem)
 		{
-			if (rootItem == null)
+			if (rootItem != null)
 			{
-				return;
+				TreeView.Items.Add(rootItem);
 			}
-			
-			Viewer.Items.Clear();
-			Viewer.Items.Add(rootItem);
 		}
 
 		private void SaveContentAsPng(string fileName)
 		{
-			var content = (TreeViewItem)(Viewer.ItemContainerGenerator.ContainerFromItem(Viewer.Items[0]));
+			var content = (TreeViewItem)(TreeView.ItemContainerGenerator.ContainerFromItem(TreeView.Items[0]));
 			var presentationSource = PresentationSource.FromVisual(content);
 			var dpiX = 96.0 * presentationSource.CompositionTarget.TransformToDevice.M11;
 			var dpiY = 96.0 * presentationSource.CompositionTarget.TransformToDevice.M22;
@@ -121,7 +135,7 @@ namespace SqlPad.Oracle.ExecutionPlan
 
 		private void SaveAsPngCanExecuteHandler(object sender, CanExecuteRoutedEventArgs e)
 		{
-			e.CanExecute = Viewer.HasItems;
+			e.CanExecute = TreeView.HasItems;
 		}
 
 		private void SaveAsPngCanExecutedHandler(object sender, ExecutedRoutedEventArgs e)

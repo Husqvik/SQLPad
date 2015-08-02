@@ -19,6 +19,8 @@ namespace SqlPad
 
 		public IValidationModel ValidationModel { get; set; }
 
+		public StatementBase Statement => ValidationModel?.Statement;
+
 		public IReadOnlyList<BindVariableModel> BindVariables { get; set; }
 
 		public bool GatherExecutionStatistics { get; set; }
@@ -47,6 +49,8 @@ namespace SqlPad
 		public string DatabaseOutput { get; set; }
 
 		public IReadOnlyList<CompilationError> CompilationErrors { get; set; }
+
+		public ICollection<string> ResultIdentifiers { get; set; }
 	}
 
 	[DebuggerDisplay("SessionExecutionStatisticsRecord (Name={Name}; Value={Value})")]

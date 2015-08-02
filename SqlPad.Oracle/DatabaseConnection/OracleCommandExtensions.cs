@@ -56,6 +56,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 				case TerminalValues.Varchar2:
 					parameter.OracleDbType = OracleDbType.Varchar2;
 					break;
+				case OracleBindVariable.DataTypeRefCursor:
+					parameter.OracleDbType = OracleDbType.RefCursor;
+					break;
 			}
 
 			command.Parameters.Add(parameter);

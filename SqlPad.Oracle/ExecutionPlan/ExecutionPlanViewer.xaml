@@ -507,15 +507,21 @@
 
 	<TabControl>
 		<TabItem Header="Tree" x:Name="TabTreeView">
+			<TabItem.Style>
+				<Style>
+					<Style.Triggers>
+						<DataTrigger Binding="{Binding ElementName=TreeView, Path=Items.Count}" Value="0">
+							<Setter Property="TabItem.Visibility" Value="Collapsed" />
+						</DataTrigger>
+					</Style.Triggers>
+				</Style>
+			</TabItem.Style>
 			<DockPanel LastChildFill="True">
 				<GroupBox Header="Options" DockPanel.Dock="Top" Padding="2,2,2,2">
 					<GroupBox.Style>
 						<Style>
-							<Style.Setters>
-								<Setter Property="GroupBox.Visibility" Value="Visible" />
-							</Style.Setters>
 							<Style.Triggers>
-								<DataTrigger Binding="{Binding TextExecutionPlan}" Value="{x:Null}">
+								<DataTrigger Binding="{Binding TotalExecutions}" Value="{x:Null}">
 									<Setter Property="GroupBox.Visibility" Value="Collapsed" />
 								</DataTrigger>
 							</Style.Triggers>
@@ -533,7 +539,7 @@
 						</RadioButton>
 					</StackPanel>
 				</GroupBox>
-				<TreeView x:Name="Viewer" ItemTemplateSelector="{StaticResource PlanItemTemplateSelector}">
+				<TreeView x:Name="TreeView" ItemTemplateSelector="{StaticResource PlanItemTemplateSelector}">
 					<TreeView.Resources>
 						<RoutedCommand x:Key="CommandSaveContentAsPng"/>
 					</TreeView.Resources>
@@ -550,7 +556,7 @@
 				</TreeView>
 			</DockPanel>
 		</TabItem>
-		<TabItem Header="Plain text" Visibility="{Binding TextExecutionPlan, Converter={StaticResource ObjectToVisibilityConverter}}">
+		<TabItem x:Name="TabPlainText" Header="Plain text" Visibility="{Binding TextExecutionPlan, Converter={StaticResource ObjectToVisibilityConverter}}">
 			<TextBox Text="{Binding TextExecutionPlan}" FontFamily="Consolas" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsReadOnly="True" IsReadOnlyCaretVisible="True" />
 		</TabItem>
 	</TabControl>

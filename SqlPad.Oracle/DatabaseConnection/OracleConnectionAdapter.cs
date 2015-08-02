@@ -29,6 +29,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private readonly ConnectionStringSettings _connectionString;
 		private readonly List<OracleTraceEvent> _activeTraceEvents = new List<OracleTraceEvent>();
 		private readonly List<OracleDataReader> _childReaders = new List<OracleDataReader>();
+		private readonly Dictionary<string, int?> _refCursorParameterReaderMapping = new Dictionary<string, int?>();
 
 		private bool _isExecuting;
 		private bool _databaseOutputEnabled;
@@ -321,10 +322,13 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private void DisposeCommandAndReader()
 		{
-		    _userDataReader?.Dispose();
+			_userDataReader?.Dispose();
+			_userDataReader = null;
 
-		    _childReaders.ForEach(r => r.Dispose());
+			_childReaders.ForEach(r => r.Dispose());
 			_childReaders.Clear();
+
+			_refCursorParameterReaderMapping.Clear();
 		}
 
 		private static bool CanFetchFromReader(IDataReader reader)
@@ -594,7 +598,28 @@ namespace SqlPad.Oracle.DatabaseConnection
 						await _databaseModel.UpdateModelAsync(cancellationToken, true, _executionStatisticsDataProvider.SessionBeginExecutionStatisticsDataProvider);
 					}
 
-					var dataReader = await userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
+					OracleDataReader dataReader = null;
+					int recordsAffected;
+					var isPlSql = ((OracleStatement)executionModel.Statement)?.IsPlSql ?? false;
+					if (!executionModel.IsPartialStatement && isPlSql)
+					{
+						recordsAffected = await userCommand.ExecuteNonQueryAsynchronous(cancellationToken);
+						AcquireImplicitRefCursors(userCommand, ref dataReader);
+					}
+					else
+					{
+						dataReader = await userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
+						recordsAffected = dataReader.RecordsAffected;
+					}
+
+					var exception = await ResolveExecutionPlanIdentifiersAndTransactionStatus(cancellationToken);
+					if (exception != null)
+					{
+						await SafeResolveTransactionStatus(cancellationToken);
+					}
+
+					UpdateBindVariables(executionModel, userCommand, ref dataReader);
+
 					if (isMain)
 					{
 						_userDataReader = dataReader;
@@ -605,24 +630,17 @@ namespace SqlPad.Oracle.DatabaseConnection
 						_childReaders.Add(dataReader);
 					}
 
-					var exception = await ResolveExecutionPlanIdentifiersAndTransactionStatus(cancellationToken);
-					if (exception != null)
-					{
-						await SafeResolveTransactionStatus(cancellationToken);
-					}
-
-					UpdateBindVariables(executionModel, userCommand);
-
 					return
 						new StatementExecutionResult
 						{
 							Statement = executionModel,
-							AffectedRowCount = dataReader.RecordsAffected,
+							AffectedRowCount = recordsAffected,
 							DatabaseOutput = await RetrieveDatabaseOutput(cancellationToken),
 							ExecutedSuccessfully = true,
 							ColumnHeaders = GetColumnHeadersFromReader(dataReader),
 							InitialResultSet = await FetchRecordsFromReader(dataReader, executionModel.InitialFetchRowCount, false).EnumerateAsync(cancellationToken),
-							CompilationErrors = _userCommandHasCompilationErrors ? await RetrieveCompilationErrors(executionModel.ValidationModel.Statement, cancellationToken) : new CompilationError[0]
+							CompilationErrors = _userCommandHasCompilationErrors ? await RetrieveCompilationErrors(executionModel.ValidationModel.Statement, cancellationToken) : new CompilationError[0],
+							ResultIdentifiers = _refCursorParameterReaderMapping.Keys
 						};
 				}
 			}
@@ -678,7 +696,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 		}
 
-		private static void UpdateBindVariables(StatementExecutionModel executionModel, OracleCommand userCommand)
+		private void UpdateBindVariables(StatementExecutionModel executionModel, OracleCommand userCommand, ref OracleDataReader defaultReader)
 		{
 			var bindVariableModels = executionModel.BindVariables.ToDictionary(v => v.Name, v => v);
 			foreach (OracleParameter parameter in userCommand.Parameters)
@@ -708,8 +726,46 @@ namespace SqlPad.Oracle.DatabaseConnection
 					value = oracleTimeStamp.IsNull ? (DateTime?)null : oracleTimeStamp.Value;
 				}
 
-				bindVariableModels[parameter.ParameterName].Value = value;
+				var refCursor = parameter.Value as OracleRefCursor;
+				if (refCursor != null)
+				{
+					AcquireRefCursor(refCursor, parameter.ParameterName, ref defaultReader);
+				}
+				else
+				{
+					bindVariableModels[parameter.ParameterName].Value = value;
+				}
 			}
+		}
+
+		private void AcquireImplicitRefCursors(OracleCommand userCommand, ref OracleDataReader defaultReader)
+		{
+			if (userCommand.ImplicitRefCursors == null)
+			{
+				return;
+			}
+
+			for (var i = 0; i < userCommand.ImplicitRefCursors.Length; i++)
+			{
+				AcquireRefCursor(userCommand.ImplicitRefCursors[i], $"Implicit cursor {i + 1}", ref defaultReader);
+			}
+		}
+
+		private void AcquireRefCursor(OracleRefCursor refCursor, string cursorName, ref OracleDataReader defaultReader)
+		{
+			var reader = refCursor.GetDataReader();
+			int? childReaderIndex = null;
+			if (defaultReader == null)
+			{
+				defaultReader = reader;
+			}
+			else
+			{
+				_childReaders.Add(reader);
+				childReaderIndex = _childReaders.Count;
+			}
+
+			_refCursorParameterReaderMapping.Add(cursorName, childReaderIndex);
 		}
 
 		internal static IReadOnlyList<ColumnHeader> GetColumnHeadersFromReader(IDataRecord reader)

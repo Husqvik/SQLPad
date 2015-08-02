@@ -23,7 +23,7 @@ namespace SqlPad.Oracle
 
 		public override ICollection<BindVariableConfiguration> BindVariables => _bindVariables ?? (_bindVariables = BuildBindVariableCollection());
 
-	    public override bool IsDataManipulation
+		public override bool IsDataManipulation
 		{
 			get
 			{
@@ -31,6 +31,8 @@ namespace SqlPad.Oracle
 				return statement != null && statement.ChildNodes.Count == 1 && statement[0].Id.In(NonTerminals.InsertStatement, NonTerminals.UpdateStatement, NonTerminals.DeleteStatement, NonTerminals.MergeStatement);
 			}
 		}
+
+		public bool IsPlSql => !String.Equals(RootNode.Id, NonTerminals.StandaloneStatement);
 
 		private ICollection<BindVariableConfiguration> BuildBindVariableCollection()
 		{
