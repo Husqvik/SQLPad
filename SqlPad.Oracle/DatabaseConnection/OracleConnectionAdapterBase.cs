@@ -25,7 +25,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public abstract Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken);
 
-		public abstract Task<IReadOnlyList<object[]>> FetchRecordsAsync(int rowCount, CancellationToken cancellationToken);
+		public abstract Task<IReadOnlyList<object[]>> FetchRecordsAsync(ResultInfo resultInfo, int rowCount, CancellationToken cancellationToken);
 
 		public abstract bool HasActiveTransaction { get; }
 

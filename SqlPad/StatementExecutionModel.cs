@@ -42,15 +42,14 @@ namespace SqlPad
 
 		public bool ExecutedSuccessfully { get; set; }
 
-		public IReadOnlyList<ColumnHeader> ColumnHeaders { get; set; }
-
+		// TODO: Remove when multiple results fully supported
 		public IReadOnlyList<object[]> InitialResultSet { get; set; }
 		
 		public string DatabaseOutput { get; set; }
 
 		public IReadOnlyList<CompilationError> CompilationErrors { get; set; }
 
-		public ICollection<string> ResultIdentifiers { get; set; }
+		public IReadOnlyDictionary<ResultInfo, IReadOnlyList<ColumnHeader>> ResultInfoColumnHeaders { get; set; }
 	}
 
 	[DebuggerDisplay("SessionExecutionStatisticsRecord (Name={Name}; Value={Value})")]

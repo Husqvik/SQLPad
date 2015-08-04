@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -55,7 +56,7 @@ namespace SqlPad
 
 		Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken);
 
-		Task<IReadOnlyList<object[]>> FetchRecordsAsync(int rowCount, CancellationToken cancellationToken);
+		Task<IReadOnlyList<object[]>> FetchRecordsAsync(ResultInfo resultInfo, int rowCount, CancellationToken cancellationToken);
 
 		bool HasActiveTransaction { get; }
 
@@ -106,5 +107,43 @@ namespace SqlPad
 			
 			Exception = exception;
 		}
+	}
+
+	[DebuggerDisplay("ResultInfo (ResultIdentifier={ResultIdentifier}; Type={Type})")]
+	public struct ResultInfo
+	{
+		public readonly string ResultIdentifier;
+		public readonly ResultIdentifierType Type;
+
+		public ResultInfo(string resultIdentifier, ResultIdentifierType type)
+		{
+			ResultIdentifier = resultIdentifier;
+			Type = type;
+		}
+
+		public override bool Equals(object obj)
+		{
+			if (ReferenceEquals(null, obj)) return false;
+			return obj is ResultInfo && Equals((ResultInfo)obj);
+		}
+
+		public override int GetHashCode()
+		{
+			unchecked
+			{
+				return ((ResultIdentifier?.GetHashCode() ?? 0) * 397) ^ Type.GetHashCode();
+			}
+		}
+
+		private bool Equals(ResultInfo other)
+		{
+			return string.Equals(ResultIdentifier, other.ResultIdentifier) && Type == other.Type;
+		}
+	}
+
+	public enum ResultIdentifierType
+	{
+		SystemGenerated,
+		UserDefined
 	}
 }

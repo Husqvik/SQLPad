@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
@@ -392,7 +393,11 @@ WHERE
 			var executionResult =
 				new StatementExecutionResult
 				{
-					ColumnHeaders = columnHeaders,
+					ResultInfoColumnHeaders =
+						new Dictionary<ResultInfo, IReadOnlyList<ColumnHeader>>
+						{
+							{ new ResultInfo(), columnHeaders  }
+						},
 					InitialResultSet = dataRows
 				};
 

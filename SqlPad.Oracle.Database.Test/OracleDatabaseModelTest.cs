@@ -122,11 +122,13 @@ WHERE
 			var result = taskStatement.Result;
 			result.ExecutedSuccessfully.ShouldBe(true);
 			result.AffectedRowCount.ShouldBe(-1);
+			result.ResultInfoColumnHeaders.Count.ShouldBe(1);
+			var resultInfoColumnHeaders = result.ResultInfoColumnHeaders.First();
 
 			connectionAdapter.CanFetch.ShouldBe(false);
 
-			var columnHeaders = result.ColumnHeaders.ToArray();
-			columnHeaders.Length.ShouldBe(1);
+			var columnHeaders = resultInfoColumnHeaders.Value;
+			columnHeaders.Count.ShouldBe(1);
 			columnHeaders[0].DataType.ShouldBe(typeof(string));
 			columnHeaders[0].DatabaseDataType.ShouldBe("Varchar2");
 			columnHeaders[0].Name.ShouldBe("DUMMY");
@@ -136,7 +138,8 @@ WHERE
 			rows[0].Length.ShouldBe(1);
 			rows[0][0].ToString().ShouldBe("X");
 
-			var task = connectionAdapter.FetchRecordsAsync(1, CancellationToken.None);
+			var resultInfo = resultInfoColumnHeaders.Key;
+			var task = connectionAdapter.FetchRecordsAsync(resultInfo, 1, CancellationToken.None);
 			task.Wait();
 			task.Result.Any().ShouldBe(false);
 
@@ -186,17 +189,18 @@ WHERE
 				
 				result.ExecutedSuccessfully.ShouldBe(true);
 
-				result.ColumnHeaders.Count.ShouldBe(10);
-				result.ColumnHeaders[0].DatabaseDataType.ShouldBe("Blob");
-				result.ColumnHeaders[1].DatabaseDataType.ShouldBe("Clob");
-				result.ColumnHeaders[2].DatabaseDataType.ShouldBe("NClob");
-				result.ColumnHeaders[3].DatabaseDataType.ShouldBe("Long");
-				result.ColumnHeaders[4].DatabaseDataType.ShouldBe("TimeStampTZ");
-				result.ColumnHeaders[5].DatabaseDataType.ShouldBe("TimeStamp");
-				result.ColumnHeaders[6].DatabaseDataType.ShouldBe("Decimal");
-				result.ColumnHeaders[7].DatabaseDataType.ShouldBe("XmlType");
-				result.ColumnHeaders[8].DatabaseDataType.ShouldBe("Decimal");
-				result.ColumnHeaders[9].DatabaseDataType.ShouldBe("Date");
+				var columnHeaders = result.ResultInfoColumnHeaders[OracleConnectionAdapter.MainResultInfo];
+				columnHeaders.Count.ShouldBe(10);
+				columnHeaders[0].DatabaseDataType.ShouldBe("Blob");
+				columnHeaders[1].DatabaseDataType.ShouldBe("Clob");
+				columnHeaders[2].DatabaseDataType.ShouldBe("NClob");
+				columnHeaders[3].DatabaseDataType.ShouldBe("Long");
+				columnHeaders[4].DatabaseDataType.ShouldBe("TimeStampTZ");
+				columnHeaders[5].DatabaseDataType.ShouldBe("TimeStamp");
+				columnHeaders[6].DatabaseDataType.ShouldBe("Decimal");
+				columnHeaders[7].DatabaseDataType.ShouldBe("XmlType");
+				columnHeaders[8].DatabaseDataType.ShouldBe("Decimal");
+				columnHeaders[9].DatabaseDataType.ShouldBe("Date");
 
 				result.InitialResultSet.Count.ShouldBe(1);
 				var firstRow = result.InitialResultSet[0];
@@ -285,14 +289,15 @@ WHERE
 
 				result.ExecutedSuccessfully.ShouldBe(true);
 
-				result.ColumnHeaders.Count.ShouldBe(7);
-				result.ColumnHeaders[0].DatabaseDataType.ShouldBe("Blob");
-				result.ColumnHeaders[1].DatabaseDataType.ShouldBe("Clob");
-				result.ColumnHeaders[2].DatabaseDataType.ShouldBe("TimeStampTZ");
-				result.ColumnHeaders[3].DatabaseDataType.ShouldBe("TimeStamp");
-				result.ColumnHeaders[4].DatabaseDataType.ShouldBe("Date");
-				result.ColumnHeaders[5].DatabaseDataType.ShouldBe("Decimal");
-				result.ColumnHeaders[6].DatabaseDataType.ShouldBe("XmlType");
+				var columnHeaders = result.ResultInfoColumnHeaders[OracleConnectionAdapter.MainResultInfo];
+				columnHeaders.Count.ShouldBe(7);
+				columnHeaders[0].DatabaseDataType.ShouldBe("Blob");
+				columnHeaders[1].DatabaseDataType.ShouldBe("Clob");
+				columnHeaders[2].DatabaseDataType.ShouldBe("TimeStampTZ");
+				columnHeaders[3].DatabaseDataType.ShouldBe("TimeStamp");
+				columnHeaders[4].DatabaseDataType.ShouldBe("Date");
+				columnHeaders[5].DatabaseDataType.ShouldBe("Decimal");
+				columnHeaders[6].DatabaseDataType.ShouldBe("XmlType");
 
 				result.InitialResultSet.Count.ShouldBe(1);
 				var firstRow = result.InitialResultSet[0];

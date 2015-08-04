@@ -42,18 +42,24 @@ namespace SqlPad.Test
 				var executionResult =
 					new StatementExecutionResult
 					{
-						ColumnHeaders =
-							new[]
+						ResultInfoColumnHeaders =
+							new Dictionary<ResultInfo, IReadOnlyList<ColumnHeader>>
 							{
-								new ColumnHeader { ColumnIndex = 0, Name = "TestColumn1", DataType = typeof(int) },
-								new ColumnHeader { ColumnIndex = 1, Name = "TestColumn2", DataType = typeof(string) }
+								{
+									new ResultInfo(),
+									new[]
+									{
+										new ColumnHeader { ColumnIndex = 0, Name = "TestColumn1", DataType = typeof (int) },
+										new ColumnHeader { ColumnIndex = 1, Name = "TestColumn2", DataType = typeof (string) }
+									}
+								}
 							},
 						Statement =
 							new StatementExecutionModel
 							{
 								StatementText = "SELECT @testBindVariable1 TestColumn1, @testBindVariable2 TestColumn2",
 								BindVariables =
-									new []
+									new[]
 									{
 										new BindVariableModel(new BindVariableConfiguration { Name = "testBindVariable1", DataType = "INT", DataTypes = readOnlyDataTypes }),
 										new BindVariableModel(new BindVariableConfiguration { Name = "testBindVariable2", DataType = "VARCHAR", DataTypes = readOnlyDataTypes })

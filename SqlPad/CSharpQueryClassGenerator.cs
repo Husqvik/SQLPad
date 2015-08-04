@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace SqlPad
@@ -98,7 +99,8 @@ public class Query
 			}
 
 			index = 0;
-			foreach (var column in executionResult.ColumnHeaders)
+			var columnHeaders = executionResult.ResultInfoColumnHeaders.Values.First();
+			foreach (var column in columnHeaders)
 			{
 				index++;
 
@@ -119,7 +121,7 @@ public class Query
 				columnMapBuilder.Append(column.Name);
 				columnMapBuilder.Append(")])");
 
-				if (index < executionResult.ColumnHeaders.Count)
+				if (index < columnHeaders.Count)
 				{
 					columnMapBuilder.AppendLine(",");
 				}

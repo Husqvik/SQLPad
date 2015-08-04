@@ -121,7 +121,8 @@ namespace SqlPad
 			}
 
 			var firstRow = executionResult.InitialResultSet[0];
-			var columnValues = executionResult.ColumnHeaders.Select(
+			var columnHeaders = executionResult.ResultInfoColumnHeaders.Values.Single();
+			var columnValues = columnHeaders.Select(
 				(t, i) => new CustomTypeAttributeValue
 				{
 					ColumnHeader = t,

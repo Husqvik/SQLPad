@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Configuration;
 using System.Data;
 using System.Diagnostics;
@@ -23,13 +24,13 @@ namespace SqlPad.Oracle.DatabaseConnection
 	public class OracleConnectionAdapter : OracleConnectionAdapterBase
 	{
 		private const string ModuleNameSqlPadDatabaseModelBase = "Database model";
+		internal static readonly ResultInfo MainResultInfo = new ResultInfo("MainResultIdentifier", ResultIdentifierType.SystemGenerated);
 
 		private static int _counter;
 
 		private readonly ConnectionStringSettings _connectionString;
 		private readonly List<OracleTraceEvent> _activeTraceEvents = new List<OracleTraceEvent>();
-		private readonly List<OracleDataReader> _childReaders = new List<OracleDataReader>();
-		private readonly Dictionary<string, int?> _refCursorParameterReaderMapping = new Dictionary<string, int?>();
+		private readonly Dictionary<ResultInfo, OracleDataReader> _dataReaders = new Dictionary<ResultInfo, OracleDataReader>();
 
 		private bool _isExecuting;
 		private bool _databaseOutputEnabled;
@@ -37,7 +38,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private string _currentSchema;
 		private string _identifier;
 		private OracleConnection _userConnection;
-		private OracleDataReader _userDataReader;
 		private string _userCommandSqlId;
 		private int _userCommandChildNumber;
 		private OracleTransaction _userTransaction;
@@ -210,14 +210,25 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			DisposeUserTransaction();
 
-			DisposeCommandAndReader();
+			DisposeDataReaders();
 
 			DisposeUserConnection();
 
 			_databaseModel.RemoveConnectionAdapter(this);
 		}
 
-		public override bool CanFetch => CanFetchFromReader(_userDataReader) && !_isExecuting;
+		private OracleDataReader TempMainReader
+		{
+			get
+			{
+				OracleDataReader reader;
+				return _dataReaders.TryGetValue(MainResultInfo, out reader)
+					? reader
+					: null;
+			}
+		}
+
+		public override bool CanFetch => CanFetchFromReader(TempMainReader) && !_isExecuting;
 
 	    public override bool IsExecuting => _isExecuting;
 
@@ -229,9 +240,15 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return _executionStatisticsDataProvider.ExecutionStatistics;
 		}
 
-		public override Task<IReadOnlyList<object[]>> FetchRecordsAsync(int rowCount, CancellationToken cancellationToken)
+		public override Task<IReadOnlyList<object[]>> FetchRecordsAsync(ResultInfo resultInfo, int rowCount, CancellationToken cancellationToken)
 		{
-			return FetchRecordsFromReader(_userDataReader, rowCount, false).EnumerateAsync(cancellationToken);
+			OracleDataReader reader;
+			if (_dataReaders.TryGetValue(resultInfo, out reader))
+			{
+				return FetchRecordsFromReader(reader, rowCount, false).EnumerateAsync(cancellationToken);
+			}
+
+			throw new ArgumentException($"Result '{resultInfo.ResultIdentifier}' ({resultInfo.Type}) does not exist. ");
 		}
 
 		public override bool HasActiveTransaction => !String.IsNullOrEmpty(_userTransactionId);
@@ -274,7 +291,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				throw new InvalidOperationException("Another statement is executing right now. ");
 			}
 
-			DisposeCommandAndReader();
+			DisposeDataReaders();
 		}
 
 		private async Task ExecuteUserTransactionAction(Func<OracleTransaction, Task> action)
@@ -320,15 +337,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_userConnection.Dispose();
 		}
 
-		private void DisposeCommandAndReader()
+		private void DisposeDataReaders()
 		{
-			_userDataReader?.Dispose();
-			_userDataReader = null;
-
-			_childReaders.ForEach(r => r.Dispose());
-			_childReaders.Clear();
-
-			_refCursorParameterReaderMapping.Clear();
+			_dataReaders.Values.ForEach(r => r.Dispose());
+			_dataReaders.Clear();
 		}
 
 		private static bool CanFetchFromReader(IDataReader reader)
@@ -560,7 +572,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			OracleGlobalization.SetThreadInfo(info);
 		}
 
-		private async Task<StatementExecutionResult> ExecuteUserStatementAsync(StatementExecutionModel executionModel, bool isMain, CancellationToken cancellationToken)
+		private async Task<StatementExecutionResult> ExecuteUserStatementAsync(StatementExecutionModel executionModel, bool isUserStatement, CancellationToken cancellationToken)
 		{
 			_isExecuting = true;
 			
@@ -598,18 +610,19 @@ namespace SqlPad.Oracle.DatabaseConnection
 						await _databaseModel.UpdateModelAsync(cancellationToken, true, _executionStatisticsDataProvider.SessionBeginExecutionStatisticsDataProvider);
 					}
 
-					OracleDataReader dataReader = null;
 					int recordsAffected;
 					var isPlSql = ((OracleStatement)executionModel.Statement)?.IsPlSql ?? false;
 					if (!executionModel.IsPartialStatement && isPlSql)
 					{
+						//Task.Factory.StartNew(() => TestDebug(userCommand, cancellationToken), cancellationToken).Wait(cancellationToken);
 						recordsAffected = await userCommand.ExecuteNonQueryAsynchronous(cancellationToken);
-						AcquireImplicitRefCursors(userCommand, ref dataReader);
+						AcquireImplicitRefCursors(userCommand);
 					}
 					else
 					{
-						dataReader = await userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
+						var dataReader = await userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
 						recordsAffected = dataReader.RecordsAffected;
+						_dataReaders.Add(new ResultInfo(isUserStatement ? MainResultInfo.ResultIdentifier : "ReferenceConstrantResult", ResultIdentifierType.SystemGenerated), dataReader);
 					}
 
 					var exception = await ResolveExecutionPlanIdentifiersAndTransactionStatus(cancellationToken);
@@ -618,17 +631,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 						await SafeResolveTransactionStatus(cancellationToken);
 					}
 
-					UpdateBindVariables(executionModel, userCommand, ref dataReader);
+					UpdateBindVariables(executionModel, userCommand);
 
-					if (isMain)
-					{
-						_userDataReader = dataReader;
-						//Task.Factory.StartNew(() => TestDebug(userCommand, cancellationToken), cancellationToken).Wait(cancellationToken);
-					}
-					else
-					{
-						_childReaders.Add(dataReader);
-					}
+					var resultInfoColumnHeaders = _dataReaders.ToDictionary(kvp => kvp.Key, kvp => GetColumnHeadersFromReader(kvp.Value));
 
 					return
 						new StatementExecutionResult
@@ -637,10 +642,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 							AffectedRowCount = recordsAffected,
 							DatabaseOutput = await RetrieveDatabaseOutput(cancellationToken),
 							ExecutedSuccessfully = true,
-							ColumnHeaders = GetColumnHeadersFromReader(dataReader),
-							InitialResultSet = await FetchRecordsFromReader(dataReader, executionModel.InitialFetchRowCount, false).EnumerateAsync(cancellationToken),
+							InitialResultSet = await FetchRecordsFromReader(TempMainReader, executionModel.InitialFetchRowCount, false).EnumerateAsync(cancellationToken),
 							CompilationErrors = _userCommandHasCompilationErrors ? await RetrieveCompilationErrors(executionModel.ValidationModel.Statement, cancellationToken) : new CompilationError[0],
-							ResultIdentifiers = _refCursorParameterReaderMapping.Keys
+							ResultInfoColumnHeaders = new ReadOnlyDictionary<ResultInfo, IReadOnlyList<ColumnHeader>>(resultInfoColumnHeaders)
 						};
 				}
 			}
@@ -677,7 +681,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private void TestDebug(OracleCommand userCommand, CancellationToken cancellationToken)
 		{
-			var debuggedAction = new Task(async () => _userDataReader = await userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken));
+			var debuggedAction = new Task(async () =>
+			{
+				var dataReader = await userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
+			});
 
 			using (var debuggerSession = new OracleDebuggerSession(_userConnection, debuggedAction))
 			{
@@ -696,7 +703,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 		}
 
-		private void UpdateBindVariables(StatementExecutionModel executionModel, OracleCommand userCommand, ref OracleDataReader defaultReader)
+		private void UpdateBindVariables(StatementExecutionModel executionModel, OracleCommand userCommand)
 		{
 			var bindVariableModels = executionModel.BindVariables.ToDictionary(v => v.Name, v => v);
 			foreach (OracleParameter parameter in userCommand.Parameters)
@@ -729,7 +736,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				var refCursor = parameter.Value as OracleRefCursor;
 				if (refCursor != null)
 				{
-					AcquireRefCursor(refCursor, parameter.ParameterName, ref defaultReader);
+					AcquireRefCursor(refCursor, parameter.ParameterName);
 				}
 				else
 				{
@@ -738,7 +745,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 		}
 
-		private void AcquireImplicitRefCursors(OracleCommand userCommand, ref OracleDataReader defaultReader)
+		private void AcquireImplicitRefCursors(OracleCommand userCommand)
 		{
 			if (userCommand.ImplicitRefCursors == null)
 			{
@@ -747,25 +754,22 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			for (var i = 0; i < userCommand.ImplicitRefCursors.Length; i++)
 			{
-				AcquireRefCursor(userCommand.ImplicitRefCursors[i], $"Implicit cursor {i + 1}", ref defaultReader);
+				AcquireRefCursor(userCommand.ImplicitRefCursors[i], $"Implicit cursor {i + 1}");
 			}
 		}
 
-		private void AcquireRefCursor(OracleRefCursor refCursor, string cursorName, ref OracleDataReader defaultReader)
+		private void AcquireRefCursor(OracleRefCursor refCursor, string cursorName)
 		{
 			var reader = refCursor.GetDataReader();
-			int? childReaderIndex = null;
-			if (defaultReader == null)
+			var resultInfo = new ResultInfo(cursorName, ResultIdentifierType.UserDefined);
+			
+			// TODO: Remove when multiple results fully supported
+			if (_dataReaders.Count == 0)
 			{
-				defaultReader = reader;
-			}
-			else
-			{
-				_childReaders.Add(reader);
-				childReaderIndex = _childReaders.Count;
+				resultInfo = MainResultInfo;
 			}
 
-			_refCursorParameterReaderMapping.Add(cursorName, childReaderIndex);
+			_dataReaders.Add(resultInfo, reader);
 		}
 
 		internal static IReadOnlyList<ColumnHeader> GetColumnHeadersFromReader(IDataRecord reader)

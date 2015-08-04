@@ -32,8 +32,7 @@ namespace SqlPad
 		private readonly ObservableCollection<object[]> _resultRows = new ObservableCollection<object[]>();
 		private readonly SessionExecutionStatisticsCollection _sessionExecutionStatistics = new SessionExecutionStatisticsCollection();
 		private readonly ObservableCollection<CompilationError> _compilationErrors = new ObservableCollection<CompilationError>();
-	    private readonly DatabaseProviderConfiguration _providerConfiguration;
-		private readonly DocumentPage _documentPage;
+		private readonly DatabaseProviderConfiguration _providerConfiguration;
 		private readonly IConnectionAdapter _connectionAdapter;
 		private readonly IStatementValidator _statementValidator;
 
@@ -69,7 +68,7 @@ namespace SqlPad
 			private set
 			{
 				_isRunning = value;
-				_documentPage.NotifyExecutionEvent();
+				DocumentPage.NotifyExecutionEvent();
 			}
 		}
 
@@ -81,6 +80,8 @@ namespace SqlPad
 
 		public IReadOnlyList<CompilationError> CompilationErrors => _compilationErrors;
 
+		public DocumentPage DocumentPage { get; }
+
 		public OutputViewer(DocumentPage documentPage)
 		{
 			InitializeComponent();
@@ -91,18 +92,18 @@ namespace SqlPad
 
 			Initialize();
 
-			_documentPage = documentPage;
+			DocumentPage = documentPage;
 
-			_providerConfiguration = WorkDocumentCollection.GetProviderConfiguration(_documentPage.CurrentConnection.ProviderName);
+			_providerConfiguration = WorkDocumentCollection.GetProviderConfiguration(DocumentPage.CurrentConnection.ProviderName);
 
-			_connectionAdapter = _documentPage.DatabaseModel.CreateConnectionAdapter();
+			_connectionAdapter = DocumentPage.DatabaseModel.CreateConnectionAdapter();
 
-			_statementValidator = _documentPage.InfrastructureFactory.CreateStatementValidator();
+			_statementValidator = DocumentPage.InfrastructureFactory.CreateStatementValidator();
 
-			ExecutionPlanViewer = _documentPage.InfrastructureFactory.CreateExecutionPlanViewer(_documentPage.DatabaseModel);
+			ExecutionPlanViewer = DocumentPage.InfrastructureFactory.CreateExecutionPlanViewer(DocumentPage.DatabaseModel);
 			TabExecutionPlan.Content = ExecutionPlanViewer.Control;
 
-			TraceViewer = _documentPage.InfrastructureFactory.CreateTraceViewer(_connectionAdapter);
+			TraceViewer = DocumentPage.InfrastructureFactory.CreateTraceViewer(_connectionAdapter);
 			TabTrace.Content = TraceViewer.Control;
 		}
 
@@ -113,7 +114,8 @@ namespace SqlPad
 
 		private void DisplayResult()
 		{
-			DataGridHelper.InitializeDataGridColumns(ResultGrid, _executionResult.ColumnHeaders, _statementValidator, _connectionAdapter);
+			var columnHeaders = _executionResult.ResultInfoColumnHeaders.Values.First();
+			DataGridHelper.InitializeDataGridColumns(ResultGrid, columnHeaders, _statementValidator, _connectionAdapter);
 
 			StatusInfo.ResultGridAvailable = true;
 			_resultRows.Clear();
@@ -283,7 +285,7 @@ namespace SqlPad
 
 			if (_executionResult.CompilationErrors.Count > 0)
 			{
-				var lineOffset = _documentPage.Editor.GetLineNumberByOffset(executionModel.ValidationModel.Statement.SourcePosition.IndexStart);
+				var lineOffset = DocumentPage.Editor.GetLineNumberByOffset(executionModel.ValidationModel.Statement.SourcePosition.IndexStart);
 				foreach (var error in _executionResult.CompilationErrors)
 				{
 					error.Line += lineOffset;
@@ -293,7 +295,7 @@ namespace SqlPad
 				ShowCompilationErrors();
 			}
 
-			if (_executionResult.ColumnHeaders.Count == 0)
+			if (_executionResult.ResultInfoColumnHeaders.Count == 0)
 			{
 				if (_executionResult.AffectedRowCount == -1)
 				{
@@ -309,7 +311,7 @@ namespace SqlPad
 
 			_hasExecutionResult = true;
 
-			var childReferenceDataSources = await _statementValidator.ApplyReferenceConstraintsAsync(_executionResult, _documentPage.DatabaseModel, _statementExecutionCancellationTokenSource.Token);
+			var childReferenceDataSources = await _statementValidator.ApplyReferenceConstraintsAsync(_executionResult, DocumentPage.DatabaseModel, _statementExecutionCancellationTokenSource.Token);
 
 			DisplayResult();
 
@@ -379,7 +381,8 @@ namespace SqlPad
 			childRecordDataGrid.BeginningEdit += App.ResultGridBeginningEditCancelTextInputHandlerImplementation;
 			childRecordDataGrid.MouseDoubleClick += ResultGridMouseDoubleClickHandler;
 
-			DataGridHelper.InitializeDataGridColumns(childRecordDataGrid, executionResult.ColumnHeaders, _statementValidator, _connectionAdapter);
+			var columnHeaders = executionResult.ResultInfoColumnHeaders.Values.Single();
+			DataGridHelper.InitializeDataGridColumns(childRecordDataGrid, columnHeaders, _statementValidator, _connectionAdapter);
 			AddChildReferenceColumns(childRecordDataGrid, childReferenceDataSources);
 
 			foreach (var columnTemplate in childRecordDataGrid.Columns)
@@ -433,14 +436,14 @@ namespace SqlPad
 				return;
 			}
 
-			App.SafeActionWithUserError(() => dataExporter.ExportToFile(dialog.FileName, ResultGrid, _documentPage.InfrastructureFactory.DataExportConverter));
+			App.SafeActionWithUserError(() => dataExporter.ExportToFile(dialog.FileName, ResultGrid, DocumentPage.InfrastructureFactory.DataExportConverter));
 		}
 
 		private void ExportDataClipboardHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			var dataExporter = (IDataExporter)args.Parameter;
 
-			App.SafeActionWithUserError(() => dataExporter.ExportToClipboard(ResultGrid, _documentPage.InfrastructureFactory.DataExportConverter));
+			App.SafeActionWithUserError(() => dataExporter.ExportToClipboard(ResultGrid, DocumentPage.InfrastructureFactory.DataExportConverter));
 		}
 
 		private void GenerateCSharpQuery(object sender, ExecutedRoutedEventArgs args)
@@ -650,7 +653,10 @@ namespace SqlPad
 		{
 			Task<IReadOnlyList<object[]>> innerTask = null;
 			var batchSize = StatementExecutionModel.DefaultRowBatchSize - _resultRows.Count % StatementExecutionModel.DefaultRowBatchSize;
-			var exception = await App.SafeActionAsync(() => innerTask = _connectionAdapter.FetchRecordsAsync(batchSize, _statementExecutionCancellationTokenSource.Token));
+
+			// TODO: Remove when multiple results fully supported
+			var resultInfo = _executionResult.ResultInfoColumnHeaders.Keys.First();
+			var exception = await App.SafeActionAsync(() => innerTask = _connectionAdapter.FetchRecordsAsync(resultInfo, batchSize, _statementExecutionCancellationTokenSource.Token));
 
 			if (exception != null)
 			{
@@ -729,7 +735,7 @@ namespace SqlPad
 
 			IsBusy = false;
 
-			_documentPage.Editor.Focus();
+			DocumentPage.Editor.Focus();
 		}
 
 		private void WriteDatabaseOutput(string output)
@@ -793,8 +799,8 @@ namespace SqlPad
 				return;
 			}
 			
-			DataGridTabHeaderPopupTextBox.FontFamily = _documentPage.Editor.FontFamily;
-			DataGridTabHeaderPopupTextBox.FontSize = _documentPage.Editor.FontSize;
+			DataGridTabHeaderPopupTextBox.FontFamily = DocumentPage.Editor.FontFamily;
+			DataGridTabHeaderPopupTextBox.FontSize = DocumentPage.Editor.FontSize;
 			DataGridTabHeaderPopup.IsOpen = true;
 		}
 

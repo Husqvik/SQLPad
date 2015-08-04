@@ -42,7 +42,7 @@ namespace SqlPad.Oracle.Test
 
 		public override Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
-			var fetchTask = FetchRecordsAsync(1, cancellationToken);
+			var fetchTask = FetchRecordsAsync(new ResultInfo(), 1, cancellationToken);
 			fetchTask.Wait(cancellationToken);
 
 			var result =
@@ -50,10 +50,18 @@ namespace SqlPad.Oracle.Test
 				{
 					Statement = executionModel,
 					ExecutedSuccessfully = true,
-					ColumnHeaders = ColumnHeaders,
 					InitialResultSet = fetchTask.Result,
-					CompilationErrors = new CompilationError[0],
-					DatabaseOutput = "Test database output"
+					CompilationErrors =
+						new[]
+						{
+							new CompilationError { Code = 942, Column = 999, Line = 999, Message = "table or view does not exist", ObjectName = "TEST_OBJECT", ObjectType = "TEST_TYPE", Severity = "WARNING", Statement = executionModel.Statement }
+						},
+					DatabaseOutput = "Test database output",
+					ResultInfoColumnHeaders =
+						new Dictionary<ResultInfo, IReadOnlyList<ColumnHeader>>
+						{
+							{ OracleConnectionAdapter.MainResultInfo, ColumnHeaders }
+						}
 				};
 
 			return Task.FromResult(result);
@@ -90,9 +98,9 @@ namespace SqlPad.Oracle.Test
 			return Task.FromResult(statistics);
 		}
 
-		public override Task<IReadOnlyList<object[]>> FetchRecordsAsync(int rowCount, CancellationToken cancellationToken)
+		public override Task<IReadOnlyList<object[]>> FetchRecordsAsync(ResultInfo resultInfo, int rowCount, CancellationToken cancellationToken)
 		{
-			IReadOnlyList<object[]> resultRow = new List<object[]> { new object[] { "Dummy Value " + ++_generatedRowCount } };
+			IReadOnlyList<object[]> resultRow = new List<object[]> { new object[] { $"Dummy Value {++_generatedRowCount}" } };
 			return Task.FromResult(resultRow);
 		}
 
