@@ -42,9 +42,6 @@ namespace SqlPad
 
 		public bool ExecutedSuccessfully { get; set; }
 
-		// TODO: Remove when multiple results fully supported
-		public IReadOnlyList<object[]> InitialResultSet { get; set; }
-		
 		public string DatabaseOutput { get; set; }
 
 		public IReadOnlyList<CompilationError> CompilationErrors { get; set; }

@@ -123,23 +123,26 @@ WHERE
 			result.ExecutedSuccessfully.ShouldBe(true);
 			result.AffectedRowCount.ShouldBe(-1);
 			result.ResultInfoColumnHeaders.Count.ShouldBe(1);
-			var resultInfoColumnHeaders = result.ResultInfoColumnHeaders.First();
 
-			connectionAdapter.CanFetch.ShouldBe(false);
+			connectionAdapter.CanFetch.ShouldBe(true);
 
-			var columnHeaders = resultInfoColumnHeaders.Value;
+			var columnHeaders = result.ResultInfoColumnHeaders[OracleConnectionAdapter.MainResultInfo];
 			columnHeaders.Count.ShouldBe(1);
 			columnHeaders[0].DataType.ShouldBe(typeof(string));
 			columnHeaders[0].DatabaseDataType.ShouldBe("Varchar2");
 			columnHeaders[0].Name.ShouldBe("DUMMY");
 
-			var rows = result.InitialResultSet.ToArray();
-			rows.Length.ShouldBe(1);
+			var fetchRecordsTask = connectionAdapter.FetchRecordsAsync(OracleConnectionAdapter.MainResultInfo, StatementExecutionModel.DefaultRowBatchSize, CancellationToken.None);
+			fetchRecordsTask.Wait();
+
+			connectionAdapter.CanFetch.ShouldBe(false);
+
+			var rows = fetchRecordsTask.Result;
+			rows.Count.ShouldBe(1);
 			rows[0].Length.ShouldBe(1);
 			rows[0][0].ToString().ShouldBe("X");
 
-			var resultInfo = resultInfoColumnHeaders.Key;
-			var task = connectionAdapter.FetchRecordsAsync(resultInfo, 1, CancellationToken.None);
+			var task = connectionAdapter.FetchRecordsAsync(OracleConnectionAdapter.MainResultInfo, 1, CancellationToken.None);
 			task.Wait();
 			task.Result.Any().ShouldBe(false);
 
@@ -202,8 +205,11 @@ WHERE
 				columnHeaders[8].DatabaseDataType.ShouldBe("Decimal");
 				columnHeaders[9].DatabaseDataType.ShouldBe("Date");
 
-				result.InitialResultSet.Count.ShouldBe(1);
-				var firstRow = result.InitialResultSet[0];
+				var fetchRecordsTask = connectionAdapter.FetchRecordsAsync(OracleConnectionAdapter.MainResultInfo, StatementExecutionModel.DefaultRowBatchSize, CancellationToken.None);
+				fetchRecordsTask.Wait();
+				var resultSet = fetchRecordsTask.Result;
+				resultSet.Count.ShouldBe(1);
+				var firstRow = resultSet[0];
 				firstRow[0].ShouldBeTypeOf<OracleBlobValue>();
 				var blobValue = (OracleBlobValue)firstRow[0];
 				blobValue.Length.ShouldBe(4);
@@ -299,8 +305,11 @@ WHERE
 				columnHeaders[5].DatabaseDataType.ShouldBe("Decimal");
 				columnHeaders[6].DatabaseDataType.ShouldBe("XmlType");
 
-				result.InitialResultSet.Count.ShouldBe(1);
-				var firstRow = result.InitialResultSet[0];
+				var fetchRecordsTask = connectionAdapter.FetchRecordsAsync(OracleConnectionAdapter.MainResultInfo, StatementExecutionModel.DefaultRowBatchSize, CancellationToken.None);
+				fetchRecordsTask.Wait();
+				var resultSet = fetchRecordsTask.Result;
+				resultSet.Count.ShouldBe(1);
+				var firstRow = resultSet[0];
 				firstRow[0].ShouldBeTypeOf<OracleBlobValue>();
 				var blobValue = (OracleBlobValue)firstRow[0];
 				blobValue.Length.ShouldBe(0);

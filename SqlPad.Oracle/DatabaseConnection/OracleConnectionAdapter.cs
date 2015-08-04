@@ -31,6 +31,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private readonly ConnectionStringSettings _connectionString;
 		private readonly List<OracleTraceEvent> _activeTraceEvents = new List<OracleTraceEvent>();
 		private readonly Dictionary<ResultInfo, OracleDataReader> _dataReaders = new Dictionary<ResultInfo, OracleDataReader>();
+		private readonly Dictionary<ResultInfo, IReadOnlyList<ColumnHeader>> _resultInfoColumnHeaders = new Dictionary<ResultInfo, IReadOnlyList<ColumnHeader>>();
 
 		private bool _isExecuting;
 		private bool _databaseOutputEnabled;
@@ -339,6 +340,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private void DisposeDataReaders()
 		{
+			_resultInfoColumnHeaders.Clear();
 			_dataReaders.Values.ForEach(r => r.Dispose());
 			_dataReaders.Clear();
 		}
@@ -622,7 +624,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 					{
 						var dataReader = await userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
 						recordsAffected = dataReader.RecordsAffected;
-						_dataReaders.Add(new ResultInfo(isUserStatement ? MainResultInfo.ResultIdentifier : "ReferenceConstrantResult", ResultIdentifierType.SystemGenerated), dataReader);
+						var resultInfo = new ResultInfo(isUserStatement ? MainResultInfo.ResultIdentifier : $"ReferenceConstrantResult{dataReader.GetHashCode()}", ResultIdentifierType.SystemGenerated);
+						_dataReaders.Add(resultInfo, dataReader);
+						_resultInfoColumnHeaders.Add(resultInfo, GetColumnHeadersFromReader(dataReader));
 					}
 
 					var exception = await ResolveExecutionPlanIdentifiersAndTransactionStatus(cancellationToken);
@@ -633,8 +637,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 					UpdateBindVariables(executionModel, userCommand);
 
-					var resultInfoColumnHeaders = _dataReaders.ToDictionary(kvp => kvp.Key, kvp => GetColumnHeadersFromReader(kvp.Value));
-
 					return
 						new StatementExecutionResult
 						{
@@ -642,9 +644,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 							AffectedRowCount = recordsAffected,
 							DatabaseOutput = await RetrieveDatabaseOutput(cancellationToken),
 							ExecutedSuccessfully = true,
-							InitialResultSet = await FetchRecordsFromReader(TempMainReader, executionModel.InitialFetchRowCount, false).EnumerateAsync(cancellationToken),
 							CompilationErrors = _userCommandHasCompilationErrors ? await RetrieveCompilationErrors(executionModel.ValidationModel.Statement, cancellationToken) : new CompilationError[0],
-							ResultInfoColumnHeaders = new ReadOnlyDictionary<ResultInfo, IReadOnlyList<ColumnHeader>>(resultInfoColumnHeaders)
+							ResultInfoColumnHeaders = new ReadOnlyDictionary<ResultInfo, IReadOnlyList<ColumnHeader>>(_resultInfoColumnHeaders)
 						};
 				}
 			}
@@ -770,6 +771,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 
 			_dataReaders.Add(resultInfo, reader);
+			_resultInfoColumnHeaders.Add(resultInfo, GetColumnHeadersFromReader(reader));
 		}
 
 		internal static IReadOnlyList<ColumnHeader> GetColumnHeadersFromReader(IDataRecord reader)

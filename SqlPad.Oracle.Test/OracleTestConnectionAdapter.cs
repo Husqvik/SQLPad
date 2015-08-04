@@ -42,15 +42,11 @@ namespace SqlPad.Oracle.Test
 
 		public override Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
-			var fetchTask = FetchRecordsAsync(new ResultInfo(), 1, cancellationToken);
-			fetchTask.Wait(cancellationToken);
-
 			var result =
 				new StatementExecutionResult
 				{
 					Statement = executionModel,
 					ExecutedSuccessfully = true,
-					InitialResultSet = fetchTask.Result,
 					CompilationErrors =
 						new[]
 						{

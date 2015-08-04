@@ -114,14 +114,16 @@ namespace SqlPad
 			var executionResult = await _connectionAdapter.ExecuteChildStatementAsync(executionModel, cancellationToken);
 			await _statementValidator.ApplyReferenceConstraintsAsync(executionResult, _connectionAdapter.DatabaseModel, cancellationToken);
 
-			if (executionResult.InitialResultSet.Count == 0)
+			var resultInfo = executionResult.ResultInfoColumnHeaders.Keys.Last();
+			var resultSet = await _connectionAdapter.FetchRecordsAsync(resultInfo, StatementExecutionModel.DefaultRowBatchSize, cancellationToken);
+			if (resultSet.Count == 0)
 			{
 				container.Children.Add(new TextBlock { Text = "Record not found. " });
 				return;
 			}
 
-			var firstRow = executionResult.InitialResultSet[0];
-			var columnHeaders = executionResult.ResultInfoColumnHeaders.Values.Single();
+			var firstRow = resultSet[0];
+			var columnHeaders = executionResult.ResultInfoColumnHeaders.Values.Last();
 			var columnValues = columnHeaders.Select(
 				(t, i) => new CustomTypeAttributeValue
 				{

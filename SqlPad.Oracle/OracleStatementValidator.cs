@@ -215,7 +215,7 @@ namespace SqlPad.Oracle
 				semanticModel = (OracleStatementSemanticModel)await BuildSemanticModelAsync(executionResult.Statement.StatementText, statements[0], databaseModel, cancellationToken);
 			}
 
-			var columnHeaders = executionResult.ResultInfoColumnHeaders[OracleConnectionAdapter.MainResultInfo];
+			var columnHeaders = executionResult.ResultInfoColumnHeaders.Values.Last();
 			return semanticModel.ApplyReferenceConstraints(columnHeaders);
 		}
 

@@ -112,15 +112,13 @@ namespace SqlPad
 			e.Accepted = ShowAllSessionExecutionStatistics || ((SessionExecutionStatisticsRecord)e.Item).Value != 0;
 		}
 
-		private void DisplayResult()
+		private void InitializeResultGridColumns()
 		{
 			var columnHeaders = _executionResult.ResultInfoColumnHeaders.Values.First();
 			DataGridHelper.InitializeDataGridColumns(ResultGrid, columnHeaders, _statementValidator, _connectionAdapter);
 
 			StatusInfo.ResultGridAvailable = true;
 			_resultRows.Clear();
-
-			AppendRows(_executionResult.InitialResultSet);
 		}
 
 		public void Cancel()
@@ -313,7 +311,9 @@ namespace SqlPad
 
 			var childReferenceDataSources = await _statementValidator.ApplyReferenceConstraintsAsync(_executionResult, DocumentPage.DatabaseModel, _statementExecutionCancellationTokenSource.Token);
 
-			DisplayResult();
+			InitializeResultGridColumns();
+
+			await FetchNextRows();
 
 			AddChildReferenceColumns(ResultGrid, childReferenceDataSources);
 		}
@@ -368,20 +368,22 @@ namespace SqlPad
 			var executionModel = dataSource.CreateExecutionModel(keyValues);
 			var executionResult = await _connectionAdapter.ExecuteChildStatementAsync(executionModel, cancellationToken);
 			var childReferenceDataSources = await _statementValidator.ApplyReferenceConstraintsAsync(executionResult, _connectionAdapter.DatabaseModel, cancellationToken);
+			var resultInfo = executionResult.ResultInfoColumnHeaders.Keys.Last();
+            var resultSet = await _connectionAdapter.FetchRecordsAsync(resultInfo, StatementExecutionModel.DefaultRowBatchSize, cancellationToken);
 
 			var childRecordDataGrid =
 				new DataGrid
 				{
 					RowHeaderWidth = 0,
 					Style = (Style)Application.Current.Resources["ResultSetDataGrid"],
-					ItemsSource = new ObservableCollection<object[]>(executionResult.InitialResultSet)
+					ItemsSource = new ObservableCollection<object[]>(resultSet)
 				};
 
 			childRecordDataGrid.AddHandler(VirtualizingStackPanel.CleanUpVirtualizedItemEvent, (CleanUpVirtualizedItemEventHandler)CleanUpVirtualizedItemHandler);
 			childRecordDataGrid.BeginningEdit += App.ResultGridBeginningEditCancelTextInputHandlerImplementation;
 			childRecordDataGrid.MouseDoubleClick += ResultGridMouseDoubleClickHandler;
 
-			var columnHeaders = executionResult.ResultInfoColumnHeaders.Values.Single();
+			var columnHeaders = executionResult.ResultInfoColumnHeaders.Values.Last();
 			DataGridHelper.InitializeDataGridColumns(childRecordDataGrid, columnHeaders, _statementValidator, _connectionAdapter);
 			AddChildReferenceColumns(childRecordDataGrid, childReferenceDataSources);
 

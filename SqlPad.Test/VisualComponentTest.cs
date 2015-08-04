@@ -398,11 +398,10 @@ WHERE
 						{
 							{ new ResultInfo(), columnHeaders  }
 						},
-					InitialResultSet = dataRows
 				};
 
 			typeof(OutputViewer).GetField("_executionResult", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(outputViewer, executionResult);
-			typeof(OutputViewer).GetMethod("DisplayResult", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(outputViewer, null);
+			typeof(OutputViewer).GetMethod("InitializeResultGridColumns", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(outputViewer, null);
 
 			outputViewer.ResultGrid.ItemsSource = dataRows;
 			
