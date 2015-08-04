@@ -277,12 +277,12 @@ WHERE
 		public void TestNullDataTypesFetch()
 		{
 			var executionModel =
-					new StatementExecutionModel
-					{
-						StatementText = "SELECT EMPTY_BLOB(), EMPTY_CLOB(), CAST(NULL AS TIMESTAMP WITH TIME ZONE), CAST(NULL AS TIMESTAMP), CAST(NULL AS DATE), CAST(NULL AS DECIMAL), NVL2(XMLTYPE('<root/>'), null, XMLTYPE('<root/>')) FROM DUAL",
-						BindVariables = new BindVariableModel[0],
-						GatherExecutionStatistics = true
-					};
+				new StatementExecutionModel
+				{
+					StatementText = "SELECT EMPTY_BLOB(), EMPTY_CLOB(), CAST(NULL AS TIMESTAMP WITH TIME ZONE), CAST(NULL AS TIMESTAMP), CAST(NULL AS DATE), CAST(NULL AS DECIMAL), NVL2(XMLTYPE('<root/>'), null, XMLTYPE('<root/>')) FROM DUAL",
+					BindVariables = new BindVariableModel[0],
+					GatherExecutionStatistics = true
+				};
 
 			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
 			{
@@ -337,7 +337,46 @@ WHERE
 
 			}
 		}
-		#endif
+#endif
+
+		[Test]
+		public void TestPlSqlExecution()
+		{
+			var executionModel =
+				new StatementExecutionModel
+				{
+					StatementText =
+@"DECLARE
+	C SYS_REFCURSOR;
+BEGIN
+	OPEN C FOR SELECT * FROM SYS.DUAL;
+	DBMS_SQL.RETURN_RESULT(C);
+END;",
+					BindVariables = new BindVariableModel[0],
+				};
+
+			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			{
+				databaseModel.Initialize().Wait();
+
+				var connectionAdapter = databaseModel.CreateConnectionAdapter();
+				var task = connectionAdapter.ExecuteStatementAsync(executionModel, CancellationToken.None);
+				task.Wait();
+				var result = task.Result;
+
+				result.ExecutedSuccessfully.ShouldBe(true);
+
+				var columnHeaders = result.ResultInfoColumnHeaders[OracleConnectionAdapter.MainResultInfo];
+				columnHeaders.Count.ShouldBe(1);
+
+				var fetchRecordsTask = connectionAdapter.FetchRecordsAsync(OracleConnectionAdapter.MainResultInfo, StatementExecutionModel.DefaultRowBatchSize, CancellationToken.None);
+				fetchRecordsTask.Wait();
+				var resultSet = fetchRecordsTask.Result;
+				resultSet.Count.ShouldBe(1);
+				var rowData = resultSet[0];
+				rowData[0].ToString().ShouldBe("X");
+			}
+		}
 
 		[Test]
 		public void TestColumnDetailDataProvider()

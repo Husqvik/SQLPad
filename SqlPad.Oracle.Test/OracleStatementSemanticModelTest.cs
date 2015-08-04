@@ -58,12 +58,12 @@ FROM
 			semanticModel.QueryBlocks.Count.ShouldBe(3);
 
 			var queryBlocks = semanticModel.QueryBlocks.ToArray();
-			queryBlocks[0].Alias.ShouldBe("CTE2");
-			queryBlocks[0].NormalizedAlias.ShouldBe("\"CTE2\"");
+			queryBlocks[0].Alias.ShouldBe("CTE1");
+			queryBlocks[0].NormalizedAlias.ShouldBe("\"CTE1\"");
 			queryBlocks[0].ObjectReferences.Count.ShouldBe(1);
 			queryBlocks[0].Columns.Count.ShouldBe(3);
-			queryBlocks[1].Alias.ShouldBe("CTE1");
-			queryBlocks[1].NormalizedAlias.ShouldBe("\"CTE1\"");
+			queryBlocks[1].Alias.ShouldBe("CTE2");
+			queryBlocks[1].NormalizedAlias.ShouldBe("\"CTE2\"");
 			queryBlocks[1].ObjectReferences.Count.ShouldBe(1);
 			queryBlocks[1].Columns.Count.ShouldBe(3);
 			queryBlocks[2].Alias.ShouldBe(null);
@@ -770,16 +770,16 @@ SELECT * FROM DUAL";
 
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(2);
 			var terminalGroups = semanticModel.RedundantSymbolGroups.ToArray();
-			terminalGroups[0].Count.ShouldBe(9);
-			terminalGroups[0][0].Token.Value.ShouldBe(",");
-			terminalGroups[0][0].Token.Index.ShouldBe(184);
-			terminalGroups[0][8].Token.Value.ShouldBe(")");
-			terminalGroups[0][8].Token.Index.ShouldBe(224);
-			terminalGroups[1].Count.ShouldBe(40);
-			terminalGroups[1][0].Token.Value.ShouldBe("CTE1");
-			terminalGroups[1][0].Token.Index.ShouldBe(5);
-			terminalGroups[1][39].Token.Value.ShouldBe(",");
-			terminalGroups[1][39].Token.Index.ShouldBe(184);
+			terminalGroups[0].Count.ShouldBe(40);
+			terminalGroups[0][0].Token.Value.ShouldBe("CTE1");
+			terminalGroups[0][0].Token.Index.ShouldBe(5);
+			terminalGroups[0][39].Token.Value.ShouldBe(",");
+			terminalGroups[0][39].Token.Index.ShouldBe(184);
+			terminalGroups[1].Count.ShouldBe(9);
+			terminalGroups[1][0].Token.Value.ShouldBe(",");
+			terminalGroups[1][0].Token.Index.ShouldBe(184);
+			terminalGroups[1][8].Token.Value.ShouldBe(")");
+			terminalGroups[1][8].Token.Index.ShouldBe(224);
 		}
 
 		[Test(Description = @"")]
@@ -837,6 +837,42 @@ SELECT * FROM DUAL";
 			var redundantTerminals = semanticModel.RedundantSymbolGroups.SelectMany(g => g).OrderBy(t => t.SourcePosition.IndexStart).ToArray();
 			redundantTerminals.Length.ShouldBe(0);
 		}
+
+		[Test(Description = @""), Ignore]
+		public void TestUnusedColumnRedundantTerminalsWithCommonTableExpression()
+		{
+			const string query1 =
+@"WITH sampleData(c1, c2) AS (
+	SELECT 0, 0 FROM DUAL
+	UNION ALL
+	SELECT c1 + 1, 0 FROM sampleData WHERE c1 <= 3
+)
+SELECT NULL FROM sampleData";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestCommonTableExpressionNameColumnReferenceFromAnotherCommonTableExpression()
+		{
+			const string query1 =
+@"WITH t1 (c) AS (SELECT 0 FROM DUAL),
+t2 AS (SELECT c FROM t1)
+SELECT c FROM t2";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.Count.ShouldBe(3);
+			var queryBlock = semanticModel.QueryBlocks.Single(qb => qb.Alias =="t2");
+			queryBlock.Columns.Count.ShouldBe(1);
+			queryBlock.Columns[0].ColumnReferences.Count.ShouldBe(1);
+			queryBlock.Columns[0].ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			queryBlock.Columns[0].ColumnReferences[0].ValidObjectReference.ShouldNotBe(null);
+        }
 
 		[Test(Description = @"")]
 		public void TestRedundantTerminalsWithSchemaQualifiedFunction()

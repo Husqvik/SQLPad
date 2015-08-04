@@ -266,7 +266,7 @@ namespace SqlPad.Oracle.SemanticModel
 				.ThenByDescending(qb => qb.RootNode.Level));
 
 			var commonTableExpressions = normalQueryBlocks
-				.SelectMany(qb => qb.CommonTableExpressions.OrderByDescending(cte => cte.RootNode.Level))
+				.SelectMany(qb => qb.CommonTableExpressions.OrderBy(cte => cte.RootNode.SourcePosition.IndexStart))
 				.ToArray();
 
 			foreach (var commonTableExpression in commonTableExpressions)
@@ -648,12 +648,8 @@ namespace SqlPad.Oracle.SemanticModel
 		{
 			var subqueryComponentNode = queryBlock.RootNode.GetAncestor(NonTerminals.CommonTableExpression);
 			queryBlock.RecursiveCycleClause = subqueryComponentNode[NonTerminals.SubqueryFactoringCycleClause];
-			if (queryBlock.RecursiveCycleClause == null)
-			{
-				return;
-			}
 
-			var identifierListNode = queryBlock.RecursiveCycleClause[NonTerminals.IdentifierList];
+			var identifierListNode = queryBlock.RecursiveCycleClause?[NonTerminals.IdentifierList];
 			if (identifierListNode == null)
 			{
 				return;
