@@ -65,6 +65,12 @@
 			<Setter Property="DataGrid.HorizontalGridLinesBrush" Value="LightGray" />
 			<Setter Property="DataGrid.VerticalGridLinesBrush" Value="LightGray" />
 			<Setter Property="DataGrid.RowStyle" Value="{StaticResource DefaultDataGridRowHeight}" />
+			<Setter Property="DataGrid.HeadersVisibility" Value="Column" />
+			<Style.Triggers>
+				<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Columns.Count}" Value="0">
+					<Setter Property="DataGrid.HeadersVisibility" Value="None" />
+				</DataTrigger>
+			</Style.Triggers>
 		</Style>
 
 		<TextDecoration x:Key="WaveErrorUnderline">

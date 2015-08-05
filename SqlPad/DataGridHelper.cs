@@ -24,8 +24,6 @@ namespace SqlPad
 				var columnTemplate = CreateDataGridTemplateColumn(columnHeader, statementValidator, connectionAdapter);
 				dataGrid.Columns.Add(columnTemplate);
 			}
-
-			dataGrid.HeadersVisibility = DataGridHeadersVisibility.Column;
 		}
 
 		public static DataGridColumn CreateDataGridTemplateColumn(ColumnHeader columnHeader, IStatementValidator statementValidator = null, IConnectionAdapter connectionAdapter = null)

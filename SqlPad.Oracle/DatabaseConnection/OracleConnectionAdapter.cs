@@ -625,8 +625,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 						var dataReader = await userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
 						recordsAffected = dataReader.RecordsAffected;
 						var resultInfo = new ResultInfo(isUserStatement ? MainResultInfo.ResultIdentifier : $"ReferenceConstrantResult{dataReader.GetHashCode()}", ResultIdentifierType.SystemGenerated);
-						_dataReaders.Add(resultInfo, dataReader);
-						_resultInfoColumnHeaders.Add(resultInfo, GetColumnHeadersFromReader(dataReader));
+						var columnHeaders = GetColumnHeadersFromReader(dataReader);
+						if (columnHeaders.Count > 0)
+						{
+							_dataReaders.Add(resultInfo, dataReader);
+							_resultInfoColumnHeaders.Add(resultInfo, columnHeaders);
+						}
 					}
 
 					var exception = await ResolveExecutionPlanIdentifiersAndTransactionStatus(cancellationToken);

@@ -151,7 +151,7 @@ namespace SqlPad
 
 			LastStatementText = String.Empty;
 
-			ResultGrid.HeadersVisibility = DataGridHeadersVisibility.None;
+			ResultGrid.Columns.Clear();
 
 			_previousSelectedTab = TabControlResult.SelectedItem;
 
