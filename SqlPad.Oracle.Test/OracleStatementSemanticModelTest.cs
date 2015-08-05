@@ -838,7 +838,7 @@ SELECT * FROM DUAL";
 			redundantTerminals.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @""), Ignore]
+		[Test(Description = @"")]
 		public void TestUnusedColumnRedundantTerminalsWithCommonTableExpression()
 		{
 			const string query1 =

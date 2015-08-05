@@ -49,7 +49,6 @@ namespace SqlPad.Oracle.SemanticModel
 		private readonly OracleDatabaseModelBase _databaseModel;
 		private readonly OracleReferenceBuilder _referenceBuilder;
 		private readonly Dictionary<OracleSelectListColumn, List<OracleDataObjectReference>> _asteriskTableReferences = new Dictionary<OracleSelectListColumn, List<OracleDataObjectReference>>();
-		private readonly Dictionary<OracleQueryBlock, IList<string>> _commonTableExpressionExplicitColumnNames = new Dictionary<OracleQueryBlock, IList<string>>();
 		private readonly Dictionary<OracleQueryBlock, List<StatementGrammarNode>> _queryBlockTerminals = new Dictionary<OracleQueryBlock, List<StatementGrammarNode>>();
 		private readonly Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>> _accessibleQueryBlockRoot = new Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>>();
 		private readonly Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementGrammarNode, string>>> _objectReferenceCteRootNodes = new Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementGrammarNode, string>>>();
@@ -1078,9 +1077,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private void ApplyExplicitCommonTableExpressionColumnNames(OracleQueryBlock queryBlock)
 		{
-			IList<string> columnNames;
-			if (queryBlock.Type != QueryBlockType.CommonTableExpression ||
-				!_commonTableExpressionExplicitColumnNames.TryGetValue(queryBlock, out columnNames))
+			if (queryBlock.Type != QueryBlockType.CommonTableExpression || queryBlock.ExplicitColumnNames == null)
 			{
 				return;
 			}
@@ -1088,15 +1085,13 @@ namespace SqlPad.Oracle.SemanticModel
 			var columnIndex = 0;
 			foreach (var column in queryBlock.Columns.Where(c => !c.IsAsterisk))
 			{
-				if (columnNames.Count == columnIndex)
+				if (queryBlock.ExplicitColumnNames.Count == columnIndex)
 				{
 					break;
 				}
 
-				column.ExplicitNormalizedName = columnNames[columnIndex++];
+				column.ExplicitNormalizedName = queryBlock.ExplicitColumnNames[columnIndex++];
 			}
-
-			_commonTableExpressionExplicitColumnNames.Remove(queryBlock);
 		}
 
 		private void ResolveRedundantTerminals()
@@ -1152,18 +1147,20 @@ namespace SqlPad.Oracle.SemanticModel
 						break;
 					}
 
-					var initialPrecedingQueryBlock = queryBlock.AllPrecedingConcatenatedQueryBlocks.LastOrDefault();
-					if (initialPrecedingQueryBlock != null)
+					if (!String.IsNullOrEmpty(column.ExplicitNormalizedName))
 					{
-						var initialQueryBlockColumn = initialPrecedingQueryBlock.Columns
-							.Where(c => c.HasExplicitDefinition)
-							.Skip(redundantColumns - 1)
-							.FirstOrDefault();
+						continue;
+					}
 
-						if (initialQueryBlockColumn != null && (initialQueryBlockColumn.IsReferenced || initialPrecedingQueryBlock == MainQueryBlock))
-						{
-							continue;
-						}
+					var initialPrecedingQueryBlock = queryBlock.AllPrecedingConcatenatedQueryBlocks.LastOrDefault();
+					var initialQueryBlockColumn = initialPrecedingQueryBlock?.Columns
+						.Where(c => c.HasExplicitDefinition)
+						.Skip(redundantColumns - 1)
+						.FirstOrDefault();
+
+					if (initialQueryBlockColumn != null && (initialQueryBlockColumn.IsReferenced || initialPrecedingQueryBlock == MainQueryBlock))
+					{
+						continue;
 					}
 
 					var terminalGroup = new List<StatementGrammarNode>(column.RootNode.Terminals);
@@ -2432,11 +2429,11 @@ namespace SqlPad.Oracle.SemanticModel
 				queryBlock.ExplicitColumnNameList = queryBlock.AliasNode.ParentNode[NonTerminals.ParenthesisEnclosedIdentifierList];
 				if (queryBlock.ExplicitColumnNameList != null)
 				{
-					var commonTableExpressionExplicitColumnNameList = new List<string>(
+					var explicitColumnNameList = new List<string>(
 						queryBlock.ExplicitColumnNameList.GetDescendants(Terminals.Identifier)
 							.Select(t => t.Token.Value.ToQuotedIdentifier()));
 
-					_commonTableExpressionExplicitColumnNames.Add(queryBlock, commonTableExpressionExplicitColumnNameList);
+					queryBlock.ExplicitColumnNames = explicitColumnNameList.AsReadOnly();
 				}
 			}
 
