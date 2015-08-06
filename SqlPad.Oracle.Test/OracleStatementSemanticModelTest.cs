@@ -446,6 +446,21 @@ FROM
 		}
 
 		[Test(Description = @"")]
+		public void TestModelBuildWhileTypingRecursiveCommonTableExpression()
+		{
+			const string query1 =
+@"WITH sampleData(c1, c2) AS (
+	SELECT 0, 0 FROM DUAL
+	UNION ALL
+	SELECT 0, , FROM sampleData WHERE c2 = 0
+)
+SELECT * FROM sampleData";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			Assert.DoesNotThrow(() => OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel));
+		}
+
+		[Test(Description = @"")]
 		public void TestSimpleInsertValuesStatementModelBuild()
 		{
 			const string query1 = @"INSERT INTO HUSQVIK.SELECTION(NAME) VALUES ('Dummy selection')";

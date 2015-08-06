@@ -105,7 +105,7 @@ namespace SqlPad.Oracle.SemanticModel
 					CharacterSize = columnDescription == null ? Int32.MinValue : columnDescription.CharacterSize
 				};
 
-			if (columnDescription == null)
+			if (columnDescription == null && RootNode.TerminalCount > 0)
 			{
 				var expressionNode = RootNode[0];
 				if (!String.Equals(expressionNode.Id, NonTerminals.Expression))
