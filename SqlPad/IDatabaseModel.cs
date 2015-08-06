@@ -41,8 +41,8 @@ namespace SqlPad
 	public interface IConnectionAdapter : IDisposable
 	{
 		IDatabaseModel DatabaseModel { get; }
-		
-		bool CanFetch { get; }
+
+		bool CanFetch(ResultInfo resultInfo);
 
 		bool IsExecuting { get; }
 

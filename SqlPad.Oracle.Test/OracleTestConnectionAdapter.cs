@@ -26,7 +26,10 @@ namespace SqlPad.Oracle.Test
 
 		private int _generatedRowCount;
 
-		public override bool CanFetch { get; } = true;
+		public override bool CanFetch(ResultInfo resultInfo)
+		{
+			return true;
+		}
 
 		public override bool IsExecuting { get; } = false;
 

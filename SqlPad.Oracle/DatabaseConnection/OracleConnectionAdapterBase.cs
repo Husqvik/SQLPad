@@ -11,7 +11,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public virtual void Dispose() { }
 
-		public abstract bool CanFetch { get; }
+		public abstract bool CanFetch(ResultInfo resultInfo);
 
 		public abstract bool IsExecuting { get; }
 

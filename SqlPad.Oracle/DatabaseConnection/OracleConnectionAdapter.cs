@@ -218,22 +218,15 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_databaseModel.RemoveConnectionAdapter(this);
 		}
 
-		private OracleDataReader TempMainReader
+		public override bool CanFetch(ResultInfo resultInfo)
 		{
-			get
-			{
-				OracleDataReader reader;
-				return _dataReaders.TryGetValue(MainResultInfo, out reader)
-					? reader
-					: null;
-			}
+			OracleDataReader reader;
+			return !_isExecuting && _dataReaders.TryGetValue(resultInfo, out reader) && CanFetchFromReader(reader);
 		}
 
-		public override bool CanFetch => CanFetchFromReader(TempMainReader) && !_isExecuting;
+		public override bool IsExecuting => _isExecuting;
 
-	    public override bool IsExecuting => _isExecuting;
-
-	    public override bool EnableDatabaseOutput { get; set; }
+		public override bool EnableDatabaseOutput { get; set; }
 
 		public override async Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken)
 		{

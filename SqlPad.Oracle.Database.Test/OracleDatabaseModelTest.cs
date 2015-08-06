@@ -124,7 +124,7 @@ WHERE
 			result.AffectedRowCount.ShouldBe(-1);
 			result.ResultInfoColumnHeaders.Count.ShouldBe(1);
 
-			connectionAdapter.CanFetch.ShouldBe(true);
+			connectionAdapter.CanFetch(OracleConnectionAdapter.MainResultInfo).ShouldBe(true);
 
 			var columnHeaders = result.ResultInfoColumnHeaders[OracleConnectionAdapter.MainResultInfo];
 			columnHeaders.Count.ShouldBe(1);
@@ -135,7 +135,7 @@ WHERE
 			var fetchRecordsTask = connectionAdapter.FetchRecordsAsync(OracleConnectionAdapter.MainResultInfo, StatementExecutionModel.DefaultRowBatchSize, CancellationToken.None);
 			fetchRecordsTask.Wait();
 
-			connectionAdapter.CanFetch.ShouldBe(false);
+			connectionAdapter.CanFetch(OracleConnectionAdapter.MainResultInfo).ShouldBe(false);
 
 			var rows = fetchRecordsTask.Result;
 			rows.Count.ShouldBe(1);
@@ -362,8 +362,8 @@ WHERE
 				result.ResultInfoColumnHeaders.Count.ShouldBe(0);
 				result.AffectedRowCount.ShouldBe(0);
 				result.CompilationErrors.Count.ShouldBe(0);
-				connectionAdapter.CanFetch.ShouldBe(false);
-            }
+				connectionAdapter.CanFetch(OracleConnectionAdapter.MainResultInfo).ShouldBe(false);
+			}
 		}
 
 		[Test]

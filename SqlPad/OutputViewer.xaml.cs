@@ -623,7 +623,8 @@ namespace SqlPad
 
 		private async Task FetchAllRows()
 		{
-			while (_connectionAdapter.CanFetch && !IsCancellationRequested)
+			var resultInfo = _executionResult.ResultInfoColumnHeaders.Keys.First();
+			while (_connectionAdapter.CanFetch(resultInfo) && !IsCancellationRequested)
 			{
 				await FetchNextRows();
 			}
@@ -648,7 +649,13 @@ namespace SqlPad
 
 		private bool CanFetchNextRows()
 		{
-			return _hasExecutionResult && !IsBusy && _connectionAdapter.CanFetch && !_connectionAdapter.IsExecuting;
+			if (!_hasExecutionResult)
+			{
+				return false;
+			}
+
+			var resultInfo = _executionResult.ResultInfoColumnHeaders.Keys.First();
+			return _hasExecutionResult && !IsBusy && _connectionAdapter.CanFetch(resultInfo) && !_connectionAdapter.IsExecuting;
 		}
 
 		private async Task FetchNextRows()
@@ -678,7 +685,8 @@ namespace SqlPad
 		private void AppendRows(IEnumerable<object[]> rows)
 		{
 			_resultRows.AddRange(rows);
-			StatusInfo.MoreRowsAvailable = _connectionAdapter.CanFetch;
+			var resultInfo = _executionResult.ResultInfoColumnHeaders.Keys.First();
+			StatusInfo.MoreRowsAvailable = _connectionAdapter.CanFetch(resultInfo);
 		}
 
 		private async Task<ActionResult> SafeTimedActionAsync(Func<Task> action)
