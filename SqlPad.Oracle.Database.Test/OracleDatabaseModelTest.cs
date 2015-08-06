@@ -340,6 +340,33 @@ WHERE
 #endif
 
 		[Test]
+		public void TestDmlExecution()
+		{
+			var executionModel =
+				new StatementExecutionModel
+				{
+					StatementText = $"DELETE {ExplainPlanTableName}",
+					BindVariables = new BindVariableModel[0],
+				};
+
+			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			{
+				databaseModel.Initialize().Wait();
+
+				var connectionAdapter = databaseModel.CreateConnectionAdapter();
+				var task = connectionAdapter.ExecuteStatementAsync(executionModel, CancellationToken.None);
+				task.Wait();
+				var result = task.Result;
+
+				result.ExecutedSuccessfully.ShouldBe(true);
+				result.ResultInfoColumnHeaders.Count.ShouldBe(0);
+				result.AffectedRowCount.ShouldBe(0);
+				result.CompilationErrors.Count.ShouldBe(0);
+				connectionAdapter.CanFetch.ShouldBe(false);
+            }
+		}
+
+		[Test]
 		public void TestPlSqlExecution()
 		{
 			var executionModel =
