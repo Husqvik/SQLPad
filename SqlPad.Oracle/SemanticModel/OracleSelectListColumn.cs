@@ -108,7 +108,7 @@ namespace SqlPad.Oracle.SemanticModel
 			if (columnDescription == null && RootNode.TerminalCount > 0)
 			{
 				var expressionNode = RootNode[0];
-				if (!String.Equals(expressionNode.Id, NonTerminals.Expression))
+				if (String.Equals(expressionNode.Id, NonTerminals.AliasedExpression))
 				{
 					expressionNode = expressionNode[0];
 				}
@@ -156,14 +156,9 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private static bool TryResolveDataTypeFromExpression(StatementGrammarNode expressionNode, OracleColumn column)
 		{
-			if (expressionNode == null || expressionNode.TerminalCount == 0)
+			if (expressionNode == null || expressionNode.TerminalCount == 0 || !String.Equals(expressionNode.Id, NonTerminals.Expression))
 			{
 				return false;
-			}
-
-			if (!String.Equals(expressionNode.Id, NonTerminals.Expression))
-			{
-				throw new ArgumentException("Node ID must be 'Expression'. ", nameof(expressionNode));
 			}
 
 			StatementGrammarNode analyzedNode;

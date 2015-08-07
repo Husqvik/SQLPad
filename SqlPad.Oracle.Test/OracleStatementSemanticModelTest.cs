@@ -461,6 +461,15 @@ SELECT * FROM sampleData";
 		}
 
 		[Test(Description = @"")]
+		public void TestModelBuildWhileTypingInlineSubquerySelectList()
+		{
+			const string query1 = @"SELECT * FROM (SELECT HUSQVIK. FROM DUAL)";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			Assert.DoesNotThrow(() => OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel));
+		}
+
+		[Test(Description = @"")]
 		public void TestSimpleInsertValuesStatementModelBuild()
 		{
 			const string query1 = @"INSERT INTO HUSQVIK.SELECTION(NAME) VALUES ('Dummy selection')";
