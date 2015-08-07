@@ -1951,12 +1951,12 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public OracleProgramReference GetProgramReference(StatementGrammarNode identifer)
 		{
-			return AllReferenceContainers.SelectMany(c => c.ProgramReferences).FilterRecursiveReferences().SingleOrDefault(c => c.FunctionIdentifierNode == identifer);
+			return AllReferenceContainers.SelectMany(c => c.ProgramReferences).SingleOrDefault(c => c.FunctionIdentifierNode == identifer);
 		}
 
 		public OracleTypeReference GetTypeReference(StatementGrammarNode typeIdentifer)
 		{
-			return AllReferenceContainers.SelectMany(c => c.TypeReferences).FilterRecursiveReferences().SingleOrDefault(c => c.ObjectNode == typeIdentifer);
+			return AllReferenceContainers.SelectMany(c => c.TypeReferences).SingleOrDefault(c => c.ObjectNode == typeIdentifer);
 		}
 
 		public OracleSequenceReference GetSequenceReference(StatementGrammarNode sequenceIdentifer)

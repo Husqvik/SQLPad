@@ -1003,6 +1003,41 @@ FROM (
 			toolTip.Control.DataContext.ShouldBe("P: NUMBER");
 		}
 
+		[Test(Description = @""), STAThread]
+		public void TestProgramTooltipInRecursiveAnchorQueryBlock()
+		{
+			const string query =
+@"WITH sampleData(c) AS (
+	SELECT ROUND(0, 0) FROM DUAL UNION ALL
+	SELECT c FROM sampleData
+)
+SELECT * FROM sampleData";
+
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 33);
+			toolTip.Control.ShouldBeTypeOf<ToolTipProgram>();
+			var metadata = (OracleProgramMetadata)toolTip.Control.DataContext;
+			metadata.Identifier.FullyQualifiedIdentifier.ShouldBe("SYS.STANDARD.ROUND");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestTypeTooltipInRecursiveAnchorQueryBlock()
+		{
+			const string query =
+@"WITH sampleData(c) AS (
+	SELECT XMLTYPE('<root/>') FROM DUAL UNION ALL
+	SELECT c FROM sampleData
+)
+SELECT * FROM sampleData";
+
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 33);
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("\"PUBLIC\".XMLTYPE (Synonym) => SYS.XMLTYPE (Object Type)");
+		}
+
 		private static string GetTextFromTextBlock(TextBlock textBlock)
 		{
 			var inlines = textBlock.Inlines.Select(GetTextFromInline);
