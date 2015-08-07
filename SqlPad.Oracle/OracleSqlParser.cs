@@ -462,7 +462,9 @@ namespace SqlPad.Oracle
 
 					result = newResult;
 
-					if (!TerminatorIds.Contains(result.Nodes[result.Nodes.Count - 1].LastTerminalNode.Id) && tokenBuffer.Count > result.Nodes.Sum(n => n.TerminalCount))
+					var lastTerminal = result.Nodes[result.Nodes.Count - 1].LastTerminalNode;
+					if (lastTerminal == null ||
+					    !TerminatorIds.Contains(lastTerminal.Id) && tokenBuffer.Count > result.Nodes.Sum(n => n.TerminalCount))
 					{
 						result.Status = ParseStatus.SequenceNotFound;
 					}
@@ -510,7 +512,7 @@ namespace SqlPad.Oracle
 				}
 
 				var lastNode = result.Nodes.LastOrDefault();
-				if (lastNode != null && lastNode.FirstTerminalNode != null && TerminatorIds.Contains(lastNode.FirstTerminalNode.Id))
+				if (lastNode?.FirstTerminalNode != null && TerminatorIds.Contains(lastNode.FirstTerminalNode.Id))
 				{
 					context.Statement.TerminatorNode = lastNode.FirstTerminalNode;
 					result.Nodes.Remove(lastNode);

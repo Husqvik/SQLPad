@@ -6247,6 +6247,15 @@ PURGE REPEAT INTERVAL '5' DAY";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
+				[Test(Description = @"")]
+				public void TestAlterTableAddConstraintWhileTyping()
+				{
+					const string statement1 = @"ALTER TABLE pracovnici ADD CONSTRAINT fk_pracovnici_zarizenia REF";
+
+					var statement = Parser.Parse(statement1).Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
+				}
+
 				/*[Test(Description = @"")]
 				public void TestAlterTableAlterXmlSchemaAllowAnySchema()
 				{
