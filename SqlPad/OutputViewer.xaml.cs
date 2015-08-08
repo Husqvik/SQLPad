@@ -153,7 +153,7 @@ namespace SqlPad
 			ResultViewTabHeaderPopup.PlacementTarget = (UIElement)tabItem.Header;
 		}
 
-		public void Cancel()
+		public void CancelUserAction()
 		{
 			var cancellationTokenSource = _statementExecutionCancellationTokenSource;
 			if (cancellationTokenSource != null && !cancellationTokenSource.IsCancellationRequested)
@@ -162,15 +162,19 @@ namespace SqlPad
 			}
 		}
 
-		private void Initialize()
+		private void InitializeCommon()
 		{
 			_previousSelectedTab = (TabItem)TabControlResult.SelectedItem;
 			SelectDefaultTabIfNeeded();
 
 			_compilationErrors.Clear();
 			_sessionExecutionStatistics.Clear();
-			TabCompilationErrors.Visibility = Visibility.Collapsed;
-			TabStatistics.Visibility = Visibility.Collapsed;
+		}
+
+		private void Initialize()
+		{
+			InitializeCommon();
+
 			TabExecutionPlan.Visibility = Visibility.Collapsed;
 
 			StatusInfo.ResultGridAvailable = false;
@@ -207,12 +211,6 @@ namespace SqlPad
 			TabControlResult.SelectedItem = TabExecutionPlan;
 		}
 
-		private void ShowCompilationErrors()
-		{
-			TabCompilationErrors.Visibility = Visibility.Visible;
-			TabControlResult.SelectedItem = TabCompilationErrors;
-		}
-
 		public Task ExecuteExplainPlanAsync(StatementExecutionModel executionModel)
 		{
 			return ExecuteUsingCancellationToken(t => ExecuteExplainPlanAsyncInternal(executionModel));
@@ -220,9 +218,7 @@ namespace SqlPad
 
 		private async Task ExecuteExplainPlanAsyncInternal(StatementExecutionModel executionModel)
 		{
-			SelectDefaultTabIfNeeded();
-
-			TabStatistics.Visibility = Visibility.Collapsed;
+			InitializeCommon();
 
 			var actionResult = await SafeTimedActionAsync(() => ExecutionPlanViewer.ExplainAsync(executionModel, _statementExecutionCancellationTokenSource.Token));
 
@@ -299,7 +295,6 @@ namespace SqlPad
 			if (ExecutionResult.Statement.GatherExecutionStatistics)
 			{
 				await ExecutionPlanViewer.ShowActualAsync(ConnectionAdapter, _statementExecutionCancellationTokenSource.Token);
-				TabStatistics.Visibility = Visibility.Visible;
 				TabExecutionPlan.Visibility = Visibility.Visible;
 				_sessionExecutionStatistics.MergeWith(await ConnectionAdapter.GetExecutionStatisticsAsync(_statementExecutionCancellationTokenSource.Token));
 				SelectPreviousTab();
@@ -319,7 +314,7 @@ namespace SqlPad
 					_compilationErrors.Add(error);
 				}
 
-				ShowCompilationErrors();
+				TabControlResult.SelectedItem = TabCompilationErrors;
 			}
 
 			if (ExecutionResult.ResultInfoColumnHeaders.Count == 0)

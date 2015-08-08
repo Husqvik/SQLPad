@@ -667,7 +667,7 @@ namespace SqlPad
 		private void CancelUserActionHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			Trace.WriteLine("Action is about to cancel. ");
-			ActiveOutputViewer.Cancel();
+			ActiveOutputViewer.CancelUserAction();
 		}
 
 		private void ShowTokenCommandExecutionHandler(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
