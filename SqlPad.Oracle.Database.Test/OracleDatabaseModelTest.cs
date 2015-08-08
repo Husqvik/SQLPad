@@ -112,37 +112,41 @@ WHERE
 				new StatementExecutionModel
 				{
 					StatementText = "SELECT /*+ gather_plan_statistics */ * FROM DUAL WHERE DUMMY = :1",
-					BindVariables = new[] { new BindVariableModel(new BindVariableConfiguration { Name = "1", Value = "X" }) },
-					GatherExecutionStatistics = true
+					BindVariables = new[] { new BindVariableModel(new BindVariableConfiguration { Name = "1", Value = "X" }) }
 				};
 
 			var connectionAdapter = (OracleConnectionAdapter)databaseModel.CreateConnectionAdapter();
-			var taskStatement = connectionAdapter.ExecuteStatementAsync(executionModel, CancellationToken.None);
+			var batchExecutionModel = new StatementBatchExecutionModel { Statements = new [] { executionModel }, GatherExecutionStatistics = true };
+			var taskStatement = connectionAdapter.ExecuteStatementAsync(batchExecutionModel, CancellationToken.None);
 			taskStatement.Wait();
-			var result = taskStatement.Result;
+			taskStatement.Result.StatementResults.Count.ShouldBe(1);
+			taskStatement.Result.ExecutionModel.ShouldBe(batchExecutionModel);
+			var result = taskStatement.Result.StatementResults[0];
+			result.StatementModel.ShouldBe(executionModel);
 			result.ExecutedSuccessfully.ShouldBe(true);
 			result.AffectedRowCount.ShouldBe(-1);
 			result.ResultInfoColumnHeaders.Count.ShouldBe(1);
+			var resultInfo = result.ResultInfoColumnHeaders.Keys.First();
 
-			connectionAdapter.CanFetch(OracleConnectionAdapter.MainResultInfo).ShouldBe(true);
+			connectionAdapter.CanFetch(resultInfo).ShouldBe(true);
 
-			var columnHeaders = result.ResultInfoColumnHeaders[OracleConnectionAdapter.MainResultInfo];
+			var columnHeaders = result.ResultInfoColumnHeaders[resultInfo];
 			columnHeaders.Count.ShouldBe(1);
 			columnHeaders[0].DataType.ShouldBe(typeof(string));
 			columnHeaders[0].DatabaseDataType.ShouldBe("Varchar2");
 			columnHeaders[0].Name.ShouldBe("DUMMY");
 
-			var fetchRecordsTask = connectionAdapter.FetchRecordsAsync(OracleConnectionAdapter.MainResultInfo, StatementExecutionModel.DefaultRowBatchSize, CancellationToken.None);
+			var fetchRecordsTask = connectionAdapter.FetchRecordsAsync(resultInfo, StatementExecutionModel.DefaultRowBatchSize, CancellationToken.None);
 			fetchRecordsTask.Wait();
 
-			connectionAdapter.CanFetch(OracleConnectionAdapter.MainResultInfo).ShouldBe(false);
+			connectionAdapter.CanFetch(resultInfo).ShouldBe(false);
 
 			var rows = fetchRecordsTask.Result;
 			rows.Count.ShouldBe(1);
 			rows[0].Length.ShouldBe(1);
 			rows[0][0].ToString().ShouldBe("X");
 
-			var task = connectionAdapter.FetchRecordsAsync(OracleConnectionAdapter.MainResultInfo, 1, CancellationToken.None);
+			var task = connectionAdapter.FetchRecordsAsync(resultInfo, 1, CancellationToken.None);
 			task.Wait();
 			task.Result.Any().ShouldBe(false);
 
@@ -177,8 +181,7 @@ WHERE
 				new StatementExecutionModel
 				{
 					StatementText = "SELECT TO_BLOB(RAWTOHEX('BLOB')), TO_CLOB('" + clobParameter + "'), TO_NCLOB('NCLOB DATA'), DATA_DEFAULT, TIMESTAMP'2014-11-01 14:16:32.123456789 CET' AT TIME ZONE '02:00', TIMESTAMP'2014-11-01 14:16:32.123456789', 0.1234567890123456789012345678901234567891, XMLTYPE('<root/>'), 1.23456789012345678901234567890123456789E-125, DATE'-4712-01-01' FROM ALL_TAB_COLS WHERE OWNER = 'SYS' AND TABLE_NAME = 'DUAL'",
-					BindVariables = new BindVariableModel[0],
-					GatherExecutionStatistics = true
+					BindVariables = new BindVariableModel[0]
 				};
 
 			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
@@ -186,13 +189,15 @@ WHERE
 				databaseModel.Initialize().Wait();
 
 				var connectionAdapter = databaseModel.CreateConnectionAdapter();
-				var task = connectionAdapter.ExecuteStatementAsync(executionModel, CancellationToken.None);
+				var task = connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel }, GatherExecutionStatistics = true }, CancellationToken.None);
 				task.Wait();
-				var result = task.Result;
-				
-				result.ExecutedSuccessfully.ShouldBe(true);
+				task.Result.StatementResults.Count.ShouldBe(1);
+				var result = task.Result.StatementResults[0];
 
-				var columnHeaders = result.ResultInfoColumnHeaders[OracleConnectionAdapter.MainResultInfo];
+				result.ExecutedSuccessfully.ShouldBe(true);
+				var resultInfo = result.ResultInfoColumnHeaders.Keys.First();
+
+				var columnHeaders = result.ResultInfoColumnHeaders[resultInfo];
 				columnHeaders.Count.ShouldBe(10);
 				columnHeaders[0].DatabaseDataType.ShouldBe("Blob");
 				columnHeaders[1].DatabaseDataType.ShouldBe("Clob");
@@ -205,7 +210,7 @@ WHERE
 				columnHeaders[8].DatabaseDataType.ShouldBe("Decimal");
 				columnHeaders[9].DatabaseDataType.ShouldBe("Date");
 
-				var fetchRecordsTask = connectionAdapter.FetchRecordsAsync(OracleConnectionAdapter.MainResultInfo, StatementExecutionModel.DefaultRowBatchSize, CancellationToken.None);
+				var fetchRecordsTask = connectionAdapter.FetchRecordsAsync(resultInfo, StatementExecutionModel.DefaultRowBatchSize, CancellationToken.None);
 				fetchRecordsTask.Wait();
 				var resultSet = fetchRecordsTask.Result;
 				resultSet.Count.ShouldBe(1);
@@ -280,8 +285,7 @@ WHERE
 				new StatementExecutionModel
 				{
 					StatementText = "SELECT EMPTY_BLOB(), EMPTY_CLOB(), CAST(NULL AS TIMESTAMP WITH TIME ZONE), CAST(NULL AS TIMESTAMP), CAST(NULL AS DATE), CAST(NULL AS DECIMAL), NVL2(XMLTYPE('<root/>'), null, XMLTYPE('<root/>')) FROM DUAL",
-					BindVariables = new BindVariableModel[0],
-					GatherExecutionStatistics = true
+					BindVariables = new BindVariableModel[0]
 				};
 
 			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
@@ -289,13 +293,15 @@ WHERE
 				databaseModel.Initialize().Wait();
 
 				var connectionAdapter = databaseModel.CreateConnectionAdapter();
-				var task = connectionAdapter.ExecuteStatementAsync(executionModel, CancellationToken.None);
+				var task = connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel }, GatherExecutionStatistics = true }, CancellationToken.None);
 				task.Wait();
-				var result = task.Result;
+				task.Result.StatementResults.Count.ShouldBe(1);
+				var result = task.Result.StatementResults[0];
 
 				result.ExecutedSuccessfully.ShouldBe(true);
+				var resultInfo = result.ResultInfoColumnHeaders.Keys.First();
 
-				var columnHeaders = result.ResultInfoColumnHeaders[OracleConnectionAdapter.MainResultInfo];
+				var columnHeaders = result.ResultInfoColumnHeaders[resultInfo];
 				columnHeaders.Count.ShouldBe(7);
 				columnHeaders[0].DatabaseDataType.ShouldBe("Blob");
 				columnHeaders[1].DatabaseDataType.ShouldBe("Clob");
@@ -305,7 +311,7 @@ WHERE
 				columnHeaders[5].DatabaseDataType.ShouldBe("Decimal");
 				columnHeaders[6].DatabaseDataType.ShouldBe("XmlType");
 
-				var fetchRecordsTask = connectionAdapter.FetchRecordsAsync(OracleConnectionAdapter.MainResultInfo, StatementExecutionModel.DefaultRowBatchSize, CancellationToken.None);
+				var fetchRecordsTask = connectionAdapter.FetchRecordsAsync(resultInfo, StatementExecutionModel.DefaultRowBatchSize, CancellationToken.None);
 				fetchRecordsTask.Wait();
 				var resultSet = fetchRecordsTask.Result;
 				resultSet.Count.ShouldBe(1);
@@ -354,15 +360,15 @@ WHERE
 				databaseModel.Initialize().Wait();
 
 				var connectionAdapter = databaseModel.CreateConnectionAdapter();
-				var task = connectionAdapter.ExecuteStatementAsync(executionModel, CancellationToken.None);
+				var task = connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel } }, CancellationToken.None);
 				task.Wait();
-				var result = task.Result;
+				task.Result.StatementResults.Count.ShouldBe(1);
+				var result = task.Result.StatementResults[0];
 
 				result.ExecutedSuccessfully.ShouldBe(true);
 				result.ResultInfoColumnHeaders.Count.ShouldBe(0);
 				result.AffectedRowCount.ShouldBe(0);
 				result.CompilationErrors.Count.ShouldBe(0);
-				connectionAdapter.CanFetch(OracleConnectionAdapter.MainResultInfo).ShouldBe(false);
 			}
 		}
 
@@ -387,16 +393,18 @@ END;",
 				databaseModel.Initialize().Wait();
 
 				var connectionAdapter = databaseModel.CreateConnectionAdapter();
-				var task = connectionAdapter.ExecuteStatementAsync(executionModel, CancellationToken.None);
+				var task = connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel } }, CancellationToken.None);
 				task.Wait();
-				var result = task.Result;
+				task.Result.StatementResults.Count.ShouldBe(1);
+				var result = task.Result.StatementResults[0];
 
 				result.ExecutedSuccessfully.ShouldBe(true);
+				var resultInfo = result.ResultInfoColumnHeaders.Keys.First();
 
-				var columnHeaders = result.ResultInfoColumnHeaders[OracleConnectionAdapter.MainResultInfo];
+				var columnHeaders = result.ResultInfoColumnHeaders[resultInfo];
 				columnHeaders.Count.ShouldBe(1);
 
-				var fetchRecordsTask = connectionAdapter.FetchRecordsAsync(OracleConnectionAdapter.MainResultInfo, StatementExecutionModel.DefaultRowBatchSize, CancellationToken.None);
+				var fetchRecordsTask = connectionAdapter.FetchRecordsAsync(resultInfo, StatementExecutionModel.DefaultRowBatchSize, CancellationToken.None);
 				fetchRecordsTask.Wait();
 				var resultSet = fetchRecordsTask.Result;
 				resultSet.Count.ShouldBe(1);
@@ -736,7 +744,7 @@ WHERE
 					};
 
 				var connectionAdapter = (OracleConnectionAdapter)databaseModel.CreateConnectionAdapter();
-				var task = connectionAdapter.ExecuteStatementAsync(executionModel, CancellationToken.None);
+				var task = connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel } }, CancellationToken.None);
 				task.Wait();
 
 				taskStatistics = connectionAdapter.GetCursorExecutionStatisticsAsync(CancellationToken.None);

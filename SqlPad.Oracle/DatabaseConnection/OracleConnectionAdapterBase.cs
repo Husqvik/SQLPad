@@ -19,7 +19,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public abstract string Identifier { get; set; }
 
-		public abstract Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
+		public abstract Task<StatementExecutionBatchResult> ExecuteStatementAsync(StatementBatchExecutionModel executionModel, CancellationToken cancellationToken);
 
 		public abstract Task<StatementExecutionResult> ExecuteChildStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
 

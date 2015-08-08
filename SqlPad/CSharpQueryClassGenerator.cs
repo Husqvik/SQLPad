@@ -65,11 +65,11 @@ public class Query
 			var parameterBuilder = new StringBuilder();
 
 			var index = 0;
-			if (executionResult.Statement.BindVariables.Count > 0)
+			if (executionResult.StatementModel.BindVariables.Count > 0)
 			{
 				parameterBuilder.AppendLine();
 
-				foreach (var bindVariable in executionResult.Statement.BindVariables)
+				foreach (var bindVariable in executionResult.StatementModel.BindVariables)
 				{
 					index++;
 
@@ -77,7 +77,7 @@ public class Query
 					bindVariableBuilder.Append(" ");
 					bindVariableBuilder.Append(bindVariable.Name);
 
-					if (index < executionResult.Statement.BindVariables.Count)
+					if (index < executionResult.StatementModel.BindVariables.Count)
 					{
 						bindVariableBuilder.Append(", ");
 					}
@@ -133,7 +133,7 @@ public class Query
 				resultRowPropertyBuilder.AppendLine(" { get; set; }");
 			}
 
-			var statementText = executionResult.Statement.StatementText.Replace("\"", "\"\"");
+			var statementText = executionResult.StatementModel.StatementText.Replace("\"", "\"\"");
 			var queryClass = String.Format(ExportClassTemplate, statementText, bindVariableBuilder, parameterBuilder, columnMapBuilder);
 
 			writer.WriteLine(queryClass);

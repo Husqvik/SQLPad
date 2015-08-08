@@ -208,11 +208,11 @@ namespace SqlPad.Oracle
 
 		public async Task<ICollection<IReferenceDataSource>> ApplyReferenceConstraintsAsync(StatementExecutionResult executionResult, IDatabaseModel databaseModel, CancellationToken cancellationToken)
 		{
-			var semanticModel = (OracleStatementSemanticModel)executionResult.Statement.ValidationModel?.SemanticModel;
-			if (semanticModel == null || executionResult.Statement.IsPartialStatement)
+			var semanticModel = (OracleStatementSemanticModel)executionResult.StatementModel.ValidationModel?.SemanticModel;
+			if (semanticModel == null || executionResult.StatementModel.IsPartialStatement)
 			{
-				var statements = await OracleSqlParser.Instance.ParseAsync(executionResult.Statement.StatementText, cancellationToken);
-				semanticModel = (OracleStatementSemanticModel)await BuildSemanticModelAsync(executionResult.Statement.StatementText, statements[0], databaseModel, cancellationToken);
+				var statements = await OracleSqlParser.Instance.ParseAsync(executionResult.StatementModel.StatementText, cancellationToken);
+				semanticModel = (OracleStatementSemanticModel)await BuildSemanticModelAsync(executionResult.StatementModel.StatementText, statements[0], databaseModel, cancellationToken);
 			}
 
 			var columnHeaders = executionResult.ResultInfoColumnHeaders.Values.Last();

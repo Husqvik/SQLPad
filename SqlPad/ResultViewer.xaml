@@ -51,6 +51,27 @@
 				</Style>
 			</TextBox.Style>
 		</sqlPad:SearchTextBox>-->
+		
+		<Popup x:Name="ResultViewTabHeaderPopup" Placement="Top" MouseLeave="DataGridTabHeaderPopupMouseLeaveHandler">
+			<Popup.Style>
+				<Style>
+					<Style.Triggers>
+						<DataTrigger Binding="{Binding StatementText}" Value="">
+							<Setter Property="Popup.Visibility" Value="Collapsed" />
+						</DataTrigger>
+					</Style.Triggers>
+				</Style>
+			</Popup.Style>
+			<ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+				<TextBox x:Name="DataGridTabHeaderPopupTextBox"
+						 Text="{Binding StatementText, Mode=OneTime}"
+						 IsReadOnly="True"
+						 IsReadOnlyCaretVisible="True"
+						 Background="{StaticResource PopupBackgroundBrush}"
+						 BorderBrush="{StaticResource PopupBorderBrush}"
+						 BorderThickness="1" />
+			</ScrollViewer>
+		</Popup>
 
 		<StackPanel DockPanel.Dock="Bottom" Visibility="{Binding SelectedCellInfoVisibility}" Orientation="Horizontal"
 		            HorizontalAlignment="Right">

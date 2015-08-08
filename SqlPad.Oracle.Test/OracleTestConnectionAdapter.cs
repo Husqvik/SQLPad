@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SqlPad.Oracle.DatabaseConnection;
@@ -43,32 +44,42 @@ namespace SqlPad.Oracle.Test
 
 		public override int? SessionId { get; } = 1;
 
-		public override Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
+		public override Task<StatementExecutionBatchResult> ExecuteStatementAsync(StatementBatchExecutionModel executionModel, CancellationToken cancellationToken)
 		{
 			var result =
-				new StatementExecutionResult
+				new StatementExecutionBatchResult
 				{
-					Statement = executionModel,
-					ExecutedSuccessfully = true,
-					CompilationErrors =
-						new[]
-						{
-							new CompilationError { Code = 942, Column = 999, Line = 999, Message = "table or view does not exist", ObjectName = "TEST_OBJECT", ObjectType = "TEST_TYPE", Severity = "WARNING", Statement = executionModel.Statement }
-						},
+					ExecutionModel = executionModel,
 					DatabaseOutput = "Test database output",
-					ResultInfoColumnHeaders =
-						new Dictionary<ResultInfo, IReadOnlyList<ColumnHeader>>
-						{
-							{ OracleConnectionAdapter.MainResultInfo, ColumnHeaders }
-						}
+					StatementResults = executionModel.Statements.Select(BuildStatementExecutionResult).ToArray()
 				};
 
 			return Task.FromResult(result);
 		}
 
+		private static StatementExecutionResult BuildStatementExecutionResult(StatementExecutionModel statement)
+		{
+			return
+				new StatementExecutionResult
+				{
+					StatementModel = statement,
+					ExecutedSuccessfully = true,
+					CompilationErrors =
+						new[]
+						{
+							new CompilationError { Code = 942, Column = 999, Line = 999, Message = "table or view does not exist", ObjectName = "TEST_OBJECT", ObjectType = "TEST_TYPE", Severity = "WARNING", Statement = statement.Statement }
+						},
+					ResultInfoColumnHeaders =
+						new Dictionary<ResultInfo, IReadOnlyList<ColumnHeader>>
+						{
+							{ new ResultInfo(null, null, ResultIdentifierType.UserDefined), ColumnHeaders }
+						}
+				};
+		}
+
 		public override Task<StatementExecutionResult> ExecuteChildStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
-			return ExecuteStatementAsync(executionModel, cancellationToken);
+			return Task.FromResult(BuildStatementExecutionResult(executionModel));
 		}
 
 		public override Task ActivateTraceEvents(IEnumerable<OracleTraceEvent> traceEvents, string traceIdentifier, CancellationToken cancellationToken)

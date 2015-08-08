@@ -54,7 +54,7 @@ namespace SqlPad.Test
 									}
 								}
 							},
-						Statement =
+						StatementModel =
 							new StatementExecutionModel
 							{
 								StatementText = "SELECT @testBindVariable1 TestColumn1, @testBindVariable2 TestColumn2",

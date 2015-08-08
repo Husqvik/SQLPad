@@ -6,14 +6,18 @@ using System.Linq;
 
 namespace SqlPad
 {
+	public class StatementBatchExecutionModel
+	{
+		public bool GatherExecutionStatistics { get; set; }
+		
+		public bool EnableDebug { get; set; }
+
+		public IReadOnlyList<StatementExecutionModel> Statements { get; set; }
+	}
+
 	public class StatementExecutionModel
 	{
 		public const int DefaultRowBatchSize = 100;
-		
-		public StatementExecutionModel()
-		{
-			InitialFetchRowCount = DefaultRowBatchSize;
-		}
 
 		public string StatementText { get; set; }
 
@@ -23,26 +27,31 @@ namespace SqlPad
 
 		public IReadOnlyList<BindVariableModel> BindVariables { get; set; }
 
-		public bool GatherExecutionStatistics { get; set; }
-		
-		public bool EnableDebug { get; set; }
-		
-		public int InitialFetchRowCount { get; set; }
-
 		public bool IsPartialStatement { get; set; }
+	}
+
+	public struct StatementExecutionBatchResult
+	{
+		public static readonly StatementExecutionBatchResult Empty = new StatementExecutionBatchResult { StatementResults = new StatementExecutionResult[0] };
+
+		public StatementBatchExecutionModel ExecutionModel { get; set; }
+
+		public IReadOnlyList<StatementExecutionResult> StatementResults { get; set; }
+
+		public string DatabaseOutput { get; set; }
 	}
 
 	public struct StatementExecutionResult
 	{
 		public static readonly StatementExecutionResult Empty = new StatementExecutionResult { AffectedRowCount = -1 };
 
-		public StatementExecutionModel Statement { get; set; }
-		
+		public StatementExecutionModel StatementModel { get; set; }
+
 		public int AffectedRowCount { get; set; }
 
-		public bool ExecutedSuccessfully { get; set; }
+		public bool Executed { get; set; }
 
-		public string DatabaseOutput { get; set; }
+		public bool ExecutedSuccessfully { get; set; }
 
 		public IReadOnlyList<CompilationError> CompilationErrors { get; set; }
 

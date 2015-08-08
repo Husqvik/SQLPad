@@ -50,7 +50,7 @@ namespace SqlPad
 
 		string Identifier { get; set; }
 
-		Task<StatementExecutionResult> ExecuteStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
+		Task<StatementExecutionBatchResult> ExecuteStatementAsync(StatementBatchExecutionModel executionModel, CancellationToken cancellationToken);
 
 		Task<StatementExecutionResult> ExecuteChildStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
 
@@ -112,12 +112,14 @@ namespace SqlPad
 	[DebuggerDisplay("ResultInfo (ResultIdentifier={ResultIdentifier}; Type={Type})")]
 	public struct ResultInfo
 	{
+		public readonly string Title;
 		public readonly string ResultIdentifier;
 		public readonly ResultIdentifierType Type;
 
-		public ResultInfo(string resultIdentifier, ResultIdentifierType type)
+		public ResultInfo(string resultIdentifier, string title, ResultIdentifierType type)
 		{
 			ResultIdentifier = resultIdentifier;
+			Title = title;
 			Type = type;
 		}
 

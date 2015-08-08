@@ -737,9 +737,11 @@ namespace SqlPad
 		private void CanExecuteDatabaseCommandHandler(object sender, CanExecuteRoutedEventArgs args)
 		{
 			if (!DatabaseModel.IsInitialized || ActiveOutputViewer.IsBusy || _sqlDocumentRepository.StatementText != Editor.Text)
+			{
 				return;
+			}
 
-			args.CanExecute = BuildStatementExecutionModel(false).Count > 0;
+			args.CanExecute = BuildStatementExecutionModel().Count > 0;
 		}
 
 		private void ExecuteDatabaseCommandWithActualExecutionPlanHandler(object sender, ExecutedRoutedEventArgs args)
@@ -767,15 +769,18 @@ namespace SqlPad
 				}
 			}
 
-			var executionModels = BuildStatementExecutionModel(gatherExecutionStatistics);
+			var executionModels = BuildStatementExecutionModel();
+			var executionModel =
+				new StatementBatchExecutionModel
+				{
+					Statements = executionModels,
+					GatherExecutionStatistics = gatherExecutionStatistics
+				};
 
-			foreach (var executionModel in executionModels)
-			{
-				await ActiveOutputViewer.ExecuteDatabaseCommandAsync(executionModel);
-			}
+			await ActiveOutputViewer.ExecuteDatabaseCommandAsync(executionModel);
 		}
 
-		private IReadOnlyList<StatementExecutionModel> BuildStatementExecutionModel(bool gatherExecutionStatistics)
+		private IReadOnlyList<StatementExecutionModel> BuildStatementExecutionModel()
 		{
 			var executionModels = new List<StatementExecutionModel>();
 
@@ -785,7 +790,7 @@ namespace SqlPad
 			foreach (var validationModel in _sqlDocumentRepository.ValidationModels.Values)
 			{
 				var statement = validationModel.Statement;
-                if (Editor.SelectionStart > statement.RootNode.SourcePosition.IndexEnd + 1)
+				if (Editor.SelectionStart > statement.RootNode.SourcePosition.IndexEnd + 1)
 				{
 					continue;
 				}
@@ -811,10 +816,10 @@ namespace SqlPad
 				selectionStart = selectionStartAfterStatementStart
 					? selectionStart
 					: statement.SourcePosition.IndexStart;
-				var selectionEndBeforeStatementEnd = selectionEnd > statement.RootNode.SourcePosition.IndexEnd + 1;
+				var selectionEndBeforeStatementEnd = selectionEnd < statement.RootNode.SourcePosition.IndexEnd + 1;
 				var statementIndexEnd = selectionEndBeforeStatementEnd
-					? statement.RootNode.SourcePosition.IndexEnd + 1
-					: selectionEnd;
+					? selectionEnd
+					: statement.RootNode.SourcePosition.IndexEnd + 1;
 
 				var statementText = Editor.Text.Substring(selectionStart, statementIndexEnd - selectionStart);
 				if (statementText.Trim().Length == 0)
@@ -830,15 +835,9 @@ namespace SqlPad
 					{
 						ValidationModel = validationModel,
 						IsPartialStatement = selectionStartAfterStatementStart || selectionEndBeforeStatementEnd,
-						//GatherExecutionStatistics = gatherExecutionStatistics,
 						StatementText = statementText,
 						BindVariables = bindVariableModels.ToArray()
 					});
-			}
-
-			if (executionModels.Count > 0)
-			{
-				executionModels.Last().GatherExecutionStatistics = gatherExecutionStatistics;
 			}
 
 			return executionModels;
@@ -1140,7 +1139,7 @@ namespace SqlPad
 				return;
 			}
 
-			var statements = new List<StatementBase>(BuildStatementExecutionModel(false).Select(m => m.ValidationModel.Statement));
+			var statements = new List<StatementBase>(BuildStatementExecutionModel().Select(m => m.ValidationModel.Statement));
 			if (statements.All(s => s.BindVariables.Count == 0))
 			{
 				BindVariables = new BindVariableModel[0];
@@ -1862,7 +1861,7 @@ namespace SqlPad
 
 		private async void ExecuteExplainPlanCommandHandler(object sender, ExecutedRoutedEventArgs args)
 		{
-			var executionModels = BuildStatementExecutionModel(false);
+			var executionModels = BuildStatementExecutionModel();
 			if (executionModels.Count > 1)
 			{
 				Messages.ShowInformation("Multiple statements are not supported. ");

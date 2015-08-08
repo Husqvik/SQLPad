@@ -94,14 +94,18 @@ namespace SqlPad
 		private readonly ResultInfo _resultInfo;
 		private readonly ObservableCollection<object[]> _resultRows = new ObservableCollection<object[]>();
 		private readonly IEnumerable<ColumnHeader> _columnHeaders;
+		private readonly StatementExecutionResult _executionResult;
 
 		private bool _isSelectingCells;
 
 		public IReadOnlyList<object[]> ResultRowItems => _resultRows;
 
-		public ResultViewer(OutputViewer outputViewer, ResultInfo resultInfo, IEnumerable<ColumnHeader> columnHeaders)
+		public string StatementText => _executionResult.StatementModel.StatementText;
+
+		public ResultViewer(OutputViewer outputViewer, StatementExecutionResult executionResult, ResultInfo resultInfo, IEnumerable<ColumnHeader> columnHeaders)
 		{
 			_outputViewer = outputViewer;
+			_executionResult = executionResult;
 			_resultInfo = resultInfo;
 			_columnHeaders = columnHeaders;
 
@@ -115,7 +119,7 @@ namespace SqlPad
 
 		private async Task ApplyReferenceConstraints(CancellationToken cancellationToken)
 		{
-			var childReferenceDataSources = await _outputViewer.StatementValidator.ApplyReferenceConstraintsAsync(_outputViewer.ExecutionResult, _outputViewer.ConnectionAdapter.DatabaseModel, cancellationToken);
+			var childReferenceDataSources = await _outputViewer.StatementValidator.ApplyReferenceConstraintsAsync(_executionResult, _outputViewer.ConnectionAdapter.DatabaseModel, cancellationToken);
 
 			DataGridHelper.InitializeDataGridColumns(ResultGrid, _columnHeaders, _outputViewer.StatementValidator, _outputViewer.ConnectionAdapter);
 
@@ -144,7 +148,7 @@ namespace SqlPad
 
 			using (var writer = File.CreateText(dialog.FileName))
 			{
-				CSharpQueryClassGenerator.Generate(_outputViewer.ExecutionResult, writer);
+				CSharpQueryClassGenerator.Generate(_executionResult, writer);
 			}
 		}
 
@@ -444,6 +448,11 @@ namespace SqlPad
 			}
 
 			SelectedCellInfoVisibility = Visibility.Visible;
+		}
+
+		private void DataGridTabHeaderPopupMouseLeaveHandler(object sender, MouseEventArgs e)
+		{
+			ResultViewTabHeaderPopup.IsOpen = false;
 		}
 	}
 }
