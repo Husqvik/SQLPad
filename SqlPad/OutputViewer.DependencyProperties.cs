@@ -15,6 +15,7 @@ namespace SqlPad
 		public static readonly DependencyProperty TitleProperty = DependencyProperty.Register(nameof(Title), typeof(string), typeof(OutputViewer), new FrameworkPropertyMetadata(TitlePropertyChangedCallbackHandler));
 		public static readonly DependencyProperty DatabaseOutputProperty = DependencyProperty.Register(nameof(DatabaseOutput), typeof(string), typeof(OutputViewer), new FrameworkPropertyMetadata(String.Empty));
 		public static readonly DependencyProperty LastStatementTextProperty = DependencyProperty.Register(nameof(LastStatementText), typeof(string), typeof(OutputViewer), new FrameworkPropertyMetadata(String.Empty));
+		public static readonly DependencyProperty ActiveResultViewerProperty = DependencyProperty.Register(nameof(ActiveResultViewer), typeof(ResultViewer), typeof(OutputViewer), new FrameworkPropertyMetadata());
 
 		public static readonly DependencyProperty IsDebuggerControlEnabledProperty = DependencyProperty.Register(nameof(IsDebuggerControlEnabled), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
 		public static readonly DependencyProperty IsTransactionControlEnabledProperty = DependencyProperty.Register(nameof(IsTransactionControlEnabled), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(true));
@@ -31,6 +32,13 @@ namespace SqlPad
 		#endregion
 
 		#region dependency property accessors
+		[Bindable(true)]
+		public ResultViewer ActiveResultViewer
+		{
+			get { return (ResultViewer)GetValue(ActiveResultViewerProperty); }
+			set { SetValue(ActiveResultViewerProperty, value); }
+		}
+
 		[Bindable(true)]
 		public bool ShowAllSessionExecutionStatistics
 		{
@@ -159,7 +167,7 @@ namespace SqlPad
 
 		private static void TitlePropertyChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
 		{
-			((OutputViewer)dependencyObject)._connectionAdapter.Identifier = (string)args.NewValue;
+			((OutputViewer)dependencyObject).ConnectionAdapter.Identifier = (string)args.NewValue;
 		}
 		#endregion
 	}

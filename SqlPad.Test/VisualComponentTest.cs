@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
@@ -390,22 +389,15 @@ WHERE
 					//new object[] {"\"><?,.;:{}[]%$#@!~^&*()_+-§' ,5", new DateTime(2015, 5, 30) }
 				};
 
-			var executionResult =
-				new StatementExecutionResult
+			var resultViewer =
+				new ResultViewer(outputViewer, new ResultInfo(null, ResultIdentifierType.UserDefined), columnHeaders)
 				{
-					ResultInfoColumnHeaders =
-						new Dictionary<ResultInfo, IReadOnlyList<ColumnHeader>>
-						{
-							{ new ResultInfo(), columnHeaders  }
-						},
+					ResultGrid = { ItemsSource = dataRows }
 				};
 
-			typeof(OutputViewer).GetField("_executionResult", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(outputViewer, executionResult);
-			typeof(OutputViewer).GetMethod("InitializeResultGridColumns", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(outputViewer, null);
+			DataGridHelper.InitializeDataGridColumns(resultViewer.ResultGrid, columnHeaders, outputViewer.StatementValidator, outputViewer.ConnectionAdapter);
 
-			outputViewer.ResultGrid.ItemsSource = dataRows;
-			
-			return outputViewer.ResultGrid;
+			return resultViewer.ResultGrid;
 		}
 
 		[Test, STAThread]

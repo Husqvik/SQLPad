@@ -99,7 +99,7 @@ public class Query
 			}
 
 			index = 0;
-			var columnHeaders = executionResult.ResultInfoColumnHeaders.Values.First();
+			var columnHeaders = executionResult.ResultInfoColumnHeaders.Values.First(); // TODO: Handle all readers
 			foreach (var column in columnHeaders)
 			{
 				index++;

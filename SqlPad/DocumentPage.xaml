@@ -393,12 +393,12 @@
 						<Run Text="{Binding ElementName=OutputViewerList, Mode=OneWay, Path=SelectedItem.(sqlPad:OutputViewer.StatusInfo).AffectedRowCount}" />
 						<Run Text=" row(s) affected " />
 					</TextBlock>
-					<TextBlock Text="Command executed successfully " Visibility="{Binding ElementName=OutputViewerList, Path=SelectedItem.(sqlPad:OutputViewer.StatusInfo).DdlStatementExecutedSuccessfully, Mode=OneWay, Converter={StaticResource ObjectToVisibilityConverter}}" />
+					<TextBlock Text="Command executed successfully " Visibility="{Binding ElementName=OutputViewerList, Path=SelectedItem.(sqlPad:OutputViewer.StatusInfo).StatementExecutedSuccessfully, Mode=OneWay, Converter={StaticResource ObjectToVisibilityConverter}}" />
 					<TextBlock Visibility="{Binding ElementName=OutputViewerList, Path=SelectedItem.(sqlPad:OutputViewer.StatusInfo).ResultGridAvailable, Mode=OneWay, Converter={StaticResource ObjectToVisibilityConverter}}">
 						<Run Text="Row " />
-						<Run Text="{Binding ElementName=OutputViewerList, Path=SelectedItem.(sqlPad:OutputViewer.StatusInfo).SelectedRowIndex, Mode=OneWay}" />
+						<Run Text="{Binding ElementName=OutputViewerList, Path=SelectedItem.(sqlPad:OutputViewer.ActiveResultViewer).SelectedRowIndex, Mode=OneWay}" />
 						<Run Text=" of " />
-						<Run Text="{Binding ElementName=OutputViewerList, Path=SelectedItem.(sqlPad:OutputViewer.ResultRowItems).Count, Mode=OneWay}" />
+						<Run Text="{Binding ElementName=OutputViewerList, Path=SelectedItem.(sqlPad:OutputViewer.ActiveResultViewer).ResultRowItems.Count, Mode=OneWay}" />
 					</TextBlock>
 					<TextBlock Text=" (more rows exist)" Visibility="{Binding ElementName=OutputViewerList, Path=SelectedItem.(sqlPad:OutputViewer.StatusInfo).MoreRowsAvailable, Mode=OneWay, Converter={StaticResource ObjectToVisibilityConverter}}" />
 				</StackPanel>

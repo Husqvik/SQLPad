@@ -108,6 +108,9 @@
     <Compile Include="IDebuggerSession.cs" />
     <Compile Include="OutputViewer.DependencyProperties.cs" />
     <Compile Include="ResultSetDataGridTemplateSelector.cs" />
+    <Compile Include="ResultViewer.xaml.cs">
+      <DependentUpon>ResultViewer.xaml</DependentUpon>
+    </Compile>
     <Compile Include="StatementExecutionHistory.xaml.cs">
       <DependentUpon>StatementExecutionHistory.xaml</DependentUpon>
     </Compile>
@@ -237,6 +240,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="FunctionOverloadList.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ResultViewer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

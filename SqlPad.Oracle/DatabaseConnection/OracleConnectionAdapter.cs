@@ -24,7 +24,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 	public class OracleConnectionAdapter : OracleConnectionAdapterBase
 	{
 		private const string ModuleNameSqlPadDatabaseModelBase = "Database model";
-		internal static readonly ResultInfo MainResultInfo = new ResultInfo("MainResultIdentifier", ResultIdentifierType.SystemGenerated);
+		internal static readonly ResultInfo MainResultInfo = new ResultInfo("_Result set", ResultIdentifierType.UserDefined);
 
 		private static int _counter;
 
@@ -270,12 +270,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			PreInitialize();
 
-			return ExecuteUserStatementAsync(executionModel, true, cancellationToken);
+			return ExecuteUserStatementAsync(executionModel, false, cancellationToken);
 		}
 
 		public override Task<StatementExecutionResult> ExecuteChildStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
-			return ExecuteUserStatementAsync(executionModel, false, cancellationToken);
+			return ExecuteUserStatementAsync(executionModel, true, cancellationToken);
 		}
 
 		private void PreInitialize()
@@ -567,7 +567,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			OracleGlobalization.SetThreadInfo(info);
 		}
 
-		private async Task<StatementExecutionResult> ExecuteUserStatementAsync(StatementExecutionModel executionModel, bool isUserStatement, CancellationToken cancellationToken)
+		private async Task<StatementExecutionResult> ExecuteUserStatementAsync(StatementExecutionModel executionModel, bool isReferenceConstraintNavigation, CancellationToken cancellationToken)
 		{
 			_isExecuting = true;
 			
@@ -606,6 +606,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					}
 
 					int recordsAffected;
+					var resultInfoColumnHeaders = _resultInfoColumnHeaders;
 					var isPlSql = ((OracleStatement)executionModel.Statement)?.IsPlSql ?? false;
 					if (!executionModel.IsPartialStatement && isPlSql)
 					{
@@ -617,12 +618,21 @@ namespace SqlPad.Oracle.DatabaseConnection
 					{
 						var dataReader = await userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
 						recordsAffected = dataReader.RecordsAffected;
-						var resultInfo = new ResultInfo(isUserStatement ? MainResultInfo.ResultIdentifier : $"ReferenceConstrantResult{dataReader.GetHashCode()}", ResultIdentifierType.SystemGenerated);
+						var resultInfo = isReferenceConstraintNavigation
+							? new ResultInfo($"ReferenceConstrantResult{dataReader.GetHashCode()}", ResultIdentifierType.SystemGenerated)
+							: MainResultInfo;
+
 						var columnHeaders = GetColumnHeadersFromReader(dataReader);
 						if (columnHeaders.Count > 0)
 						{
 							_dataReaders.Add(resultInfo, dataReader);
-							_resultInfoColumnHeaders.Add(resultInfo, columnHeaders);
+
+							if (isReferenceConstraintNavigation)
+							{
+								resultInfoColumnHeaders = new Dictionary<ResultInfo, IReadOnlyList<ColumnHeader>>();
+							}
+
+							resultInfoColumnHeaders.Add(resultInfo, columnHeaders);
 						}
 					}
 
@@ -642,7 +652,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 							DatabaseOutput = await RetrieveDatabaseOutput(cancellationToken),
 							ExecutedSuccessfully = true,
 							CompilationErrors = _userCommandHasCompilationErrors ? await RetrieveCompilationErrors(executionModel.ValidationModel.Statement, cancellationToken) : new CompilationError[0],
-							ResultInfoColumnHeaders = new ReadOnlyDictionary<ResultInfo, IReadOnlyList<ColumnHeader>>(_resultInfoColumnHeaders)
+							ResultInfoColumnHeaders = new ReadOnlyDictionary<ResultInfo, IReadOnlyList<ColumnHeader>>(resultInfoColumnHeaders)
 						};
 				}
 			}
@@ -760,12 +770,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			var reader = refCursor.GetDataReader();
 			var resultInfo = new ResultInfo(cursorName, ResultIdentifierType.UserDefined);
-			
-			// TODO: Remove when multiple results fully supported
-			if (_dataReaders.Count == 0)
-			{
-				resultInfo = MainResultInfo;
-			}
 
 			_dataReaders.Add(resultInfo, reader);
 			_resultInfoColumnHeaders.Add(resultInfo, GetColumnHeadersFromReader(reader));

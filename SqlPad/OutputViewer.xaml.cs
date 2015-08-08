@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -15,8 +13,6 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using Microsoft.Win32;
-using SqlPad.DataExport;
 using Timer = System.Timers.Timer;
 
 namespace SqlPad
@@ -29,21 +25,20 @@ namespace SqlPad
 		private readonly Timer _timerExecutionMonitor = new Timer(100);
 		private readonly Stopwatch _stopWatch = new Stopwatch();
 		private readonly StringBuilder _databaseOutputBuilder = new StringBuilder();
-		private readonly ObservableCollection<object[]> _resultRows = new ObservableCollection<object[]>();
 		private readonly SessionExecutionStatisticsCollection _sessionExecutionStatistics = new SessionExecutionStatisticsCollection();
 		private readonly ObservableCollection<CompilationError> _compilationErrors = new ObservableCollection<CompilationError>();
 		private readonly DatabaseProviderConfiguration _providerConfiguration;
-		private readonly IConnectionAdapter _connectionAdapter;
-		private readonly IStatementValidator _statementValidator;
 
 		private bool _isRunning;
-		private bool _isSelectingCells;
-		private bool _hasExecutionResult;
 		private object _previousSelectedTab;
-		private StatementExecutionResult _executionResult;
+
 		private CancellationTokenSource _statementExecutionCancellationTokenSource;
 
 		public event EventHandler<CompilationErrorArgs> CompilationError;
+
+		public IConnectionAdapter ConnectionAdapter { get; }
+
+		public IStatementValidator StatementValidator { get; }
 
 		public IExecutionPlanViewer ExecutionPlanViewer { get; }
 		
@@ -72,15 +67,15 @@ namespace SqlPad
 			}
 		}
 
-		internal EventHandler<DataGridBeginningEditEventArgs> ResultGridBeginningEditCancelTextInputHandler => App.ResultGridBeginningEditCancelTextInputHandlerImplementation;
-
-		public IReadOnlyList<object[]> ResultRowItems => _resultRows;
-
 		public IReadOnlyList<SessionExecutionStatisticsRecord> SessionExecutionStatistics => _sessionExecutionStatistics;
 
 		public IReadOnlyList<CompilationError> CompilationErrors => _compilationErrors;
 
 		public DocumentPage DocumentPage { get; }
+
+		internal StatementExecutionResult ExecutionResult { get; private set; }
+
+		private EventHandler<DataGridBeginningEditEventArgs> ResultGridBeginningEditCancelTextInputHandler => App.ResultGridBeginningEditCancelTextInputHandlerImplementation;
 
 		public OutputViewer(DocumentPage documentPage)
 		{
@@ -96,14 +91,14 @@ namespace SqlPad
 
 			_providerConfiguration = WorkDocumentCollection.GetProviderConfiguration(DocumentPage.CurrentConnection.ProviderName);
 
-			_connectionAdapter = DocumentPage.DatabaseModel.CreateConnectionAdapter();
+			ConnectionAdapter = DocumentPage.DatabaseModel.CreateConnectionAdapter();
 
-			_statementValidator = DocumentPage.InfrastructureFactory.CreateStatementValidator();
+			StatementValidator = DocumentPage.InfrastructureFactory.CreateStatementValidator();
 
 			ExecutionPlanViewer = DocumentPage.InfrastructureFactory.CreateExecutionPlanViewer(DocumentPage.DatabaseModel);
 			TabExecutionPlan.Content = ExecutionPlanViewer.Control;
 
-			TraceViewer = DocumentPage.InfrastructureFactory.CreateTraceViewer(_connectionAdapter);
+			TraceViewer = DocumentPage.InfrastructureFactory.CreateTraceViewer(ConnectionAdapter);
 			TabTrace.Content = TraceViewer.Control;
 		}
 
@@ -112,13 +107,50 @@ namespace SqlPad
 			e.Accepted = ShowAllSessionExecutionStatistics || ((SessionExecutionStatisticsRecord)e.Item).Value != 0;
 		}
 
-		private void InitializeResultGridColumns()
+		private void InitializeResultViewers()
 		{
-			var columnHeaders = _executionResult.ResultInfoColumnHeaders.Values.First();
-			DataGridHelper.InitializeDataGridColumns(ResultGrid, columnHeaders, _statementValidator, _connectionAdapter);
+			var tabControlIndex = 0;
+			foreach (var resultInfoColumnHeaders in ExecutionResult.ResultInfoColumnHeaders.Where(r => r.Key.Type == ResultIdentifierType.UserDefined))
+			{
+				var resultViewer = new ResultViewer(this, resultInfoColumnHeaders.Key, resultInfoColumnHeaders.Value);
+				var header = new HeaderedContentControl { Content = new AccessText { Text = resultInfoColumnHeaders.Key.ResultIdentifier } };
+				var tabItem =
+					new TabItem
+					{
+						Header = header,
+						Content = resultViewer
+					};
+
+				header.MouseEnter += DataGridTabHeaderMouseEnterHandler;
+
+				tabItem.AddHandler(Selector.SelectedEvent, (RoutedEventHandler)ResultTabSelectedHandler);
+
+				if (ActiveResultViewer == null)
+				{
+					ActiveResultViewer = resultViewer;
+				}
+
+				TabControlResult.Items.Insert(tabControlIndex++, tabItem);
+			}
 
 			StatusInfo.ResultGridAvailable = true;
-			_resultRows.Clear();
+		}
+
+		private void RemoveResultViewers()
+		{
+			foreach (var item in TabControlResult.Items.Cast<TabItem>().Where(i => i.Content is ResultViewer).ToArray())
+			{
+				TabControlResult.Items.Remove(item);
+			}
+
+			ActiveResultViewer = null;
+		}
+
+		private void ResultTabSelectedHandler(object sender, RoutedEventArgs args)
+		{
+			var tabItem = (TabItem)sender;
+			ActiveResultViewer = (ResultViewer)tabItem.Content;
+			ResultViewTabHeaderPopup.PlacementTarget = (UIElement)tabItem.Header;
 		}
 
 		public void Cancel()
@@ -132,9 +164,9 @@ namespace SqlPad
 
 		private void Initialize()
 		{
-			_hasExecutionResult = false;
+			_previousSelectedTab = (TabItem)TabControlResult.SelectedItem;
+			SelectDefaultTabIfNeeded();
 
-			_resultRows.Clear();
 			_compilationErrors.Clear();
 			_sessionExecutionStatistics.Clear();
 			TabCompilationErrors.Visibility = Visibility.Collapsed;
@@ -143,26 +175,19 @@ namespace SqlPad
 
 			StatusInfo.ResultGridAvailable = false;
 			StatusInfo.MoreRowsAvailable = false;
-			StatusInfo.DdlStatementExecutedSuccessfully = false;
+			StatusInfo.StatementExecutedSuccessfully = false;
 			StatusInfo.AffectedRowCount = -1;
-			StatusInfo.SelectedRowIndex = 0;
 			
 			WriteDatabaseOutput(String.Empty);
 
 			LastStatementText = String.Empty;
-
-			ResultGrid.Columns.Clear();
-
-			_previousSelectedTab = TabControlResult.SelectedItem;
-
-			SelectDefaultTabIfNeeded();
 		}
 
 		private void SelectDefaultTabIfNeeded()
 		{
-			if (!IsTabAlwaysVisible(TabControlResult.SelectedItem))
+			if (TabControlResult.SelectedItem == null || TabControlResult.SelectedItem.In(TabExecutionPlan, TabStatistics, TabCompilationErrors))
 			{
-				TabControlResult.SelectedItem = TabResultSet;
+				TabDatabaseOutput.IsSelected = true;
 			}
 		}
 
@@ -190,7 +215,7 @@ namespace SqlPad
 
 		public Task ExecuteExplainPlanAsync(StatementExecutionModel executionModel)
 		{
-			return ExecuteUsingCancellationToken(() => ExecuteExplainPlanAsyncInternal(executionModel));
+			return ExecuteUsingCancellationToken(t => ExecuteExplainPlanAsyncInternal(executionModel));
 		}
 
 		private async Task ExecuteExplainPlanAsyncInternal(StatementExecutionModel executionModel)
@@ -222,19 +247,19 @@ namespace SqlPad
 
 		public Task ExecuteDatabaseCommandAsync(StatementExecutionModel executionModel)
 		{
-			return ExecuteUsingCancellationToken(() => ExecuteDatabaseCommandAsyncInternal(executionModel));
+			return ExecuteUsingCancellationToken(t => ExecuteDatabaseCommandAsyncInternal(executionModel));
 		}
 
 		private async Task ExecuteDatabaseCommandAsyncInternal(StatementExecutionModel executionModel)
 		{
 			Initialize();
 
-			_connectionAdapter.EnableDatabaseOutput = EnableDatabaseOutput;
+			ConnectionAdapter.EnableDatabaseOutput = EnableDatabaseOutput;
 
 			var executedAt = DateTime.Now;
 
 			Task<StatementExecutionResult> innerTask = null;
-			var actionResult = await SafeTimedActionAsync(() => innerTask = _connectionAdapter.ExecuteStatementAsync(executionModel, _statementExecutionCancellationTokenSource.Token));
+			var actionResult = await SafeTimedActionAsync(() => innerTask = ConnectionAdapter.ExecuteStatementAsync(executionModel, _statementExecutionCancellationTokenSource.Token));
 
 			if (!actionResult.IsSuccessful)
 			{
@@ -254,37 +279,41 @@ namespace SqlPad
 				Trace.WriteLine($"Executes statement not stored in the execution history. The maximum allowed size is {MaxHistoryEntrySize} characters while the statement has {executionHistoryRecord.StatementText.Length} characters.");
 			}
 
-			_executionResult = innerTask.Result;
+			ExecutionResult = innerTask.Result;
 
-			if (!_executionResult.ExecutedSuccessfully)
+			if (!ExecutionResult.ExecutedSuccessfully)
 			{
 				NotifyExecutionCanceled();
 				return;
 			}
 
-			TransactionControlVisibity = _connectionAdapter.HasActiveTransaction ? Visibility.Visible : Visibility.Collapsed;
+			RemoveResultViewers();
+
+			TransactionControlVisibity = ConnectionAdapter.HasActiveTransaction ? Visibility.Visible : Visibility.Collapsed;
 
 			UpdateTimerMessage(actionResult.Elapsed, false);
 			
-			WriteDatabaseOutput(_executionResult.DatabaseOutput);
+			WriteDatabaseOutput(ExecutionResult.DatabaseOutput);
 
-			if (_executionResult.Statement.GatherExecutionStatistics)
+			var keepPreviousSelectedTab = false;
+			if (ExecutionResult.Statement.GatherExecutionStatistics)
 			{
-				await ExecutionPlanViewer.ShowActualAsync(_connectionAdapter, _statementExecutionCancellationTokenSource.Token);
+				await ExecutionPlanViewer.ShowActualAsync(ConnectionAdapter, _statementExecutionCancellationTokenSource.Token);
 				TabStatistics.Visibility = Visibility.Visible;
 				TabExecutionPlan.Visibility = Visibility.Visible;
-				_sessionExecutionStatistics.MergeWith(await _connectionAdapter.GetExecutionStatisticsAsync(_statementExecutionCancellationTokenSource.Token));
+				_sessionExecutionStatistics.MergeWith(await ConnectionAdapter.GetExecutionStatisticsAsync(_statementExecutionCancellationTokenSource.Token));
 				SelectPreviousTab();
+				keepPreviousSelectedTab = _previousSelectedTab.In(TabExecutionPlan, TabStatistics);
 			}
 			else if (IsPreviousTabAlwaysVisible)
 			{
 				SelectPreviousTab();
 			}
 
-			if (_executionResult.CompilationErrors.Count > 0)
+			if (ExecutionResult.CompilationErrors.Count > 0)
 			{
 				var lineOffset = DocumentPage.Editor.GetLineNumberByOffset(executionModel.ValidationModel.Statement.SourcePosition.IndexStart);
-				foreach (var error in _executionResult.CompilationErrors)
+				foreach (var error in ExecutionResult.CompilationErrors)
 				{
 					error.Line += lineOffset;
 					_compilationErrors.Add(error);
@@ -293,29 +322,26 @@ namespace SqlPad
 				ShowCompilationErrors();
 			}
 
-			if (_executionResult.ResultInfoColumnHeaders.Count == 0)
+			if (ExecutionResult.ResultInfoColumnHeaders.Count == 0)
 			{
-				if (_executionResult.AffectedRowCount == -1)
+				if (ExecutionResult.AffectedRowCount == -1)
 				{
-					StatusInfo.DdlStatementExecutedSuccessfully = true;
+					StatusInfo.StatementExecutedSuccessfully = true;
 				}
 				else
 				{
-					StatusInfo.AffectedRowCount = _executionResult.AffectedRowCount;
+					StatusInfo.AffectedRowCount = ExecutionResult.AffectedRowCount;
 				}
 
 				return;
 			}
 
-			_hasExecutionResult = true;
+			InitializeResultViewers();
 
-			var childReferenceDataSources = await _statementValidator.ApplyReferenceConstraintsAsync(_executionResult, DocumentPage.DatabaseModel, _statementExecutionCancellationTokenSource.Token);
-
-			InitializeResultGridColumns();
-
-			await FetchNextRows();
-
-			AddChildReferenceColumns(ResultGrid, childReferenceDataSources);
+			if (!keepPreviousSelectedTab)
+			{
+				TabControlResult.SelectedIndex = 0;
+			}
 		}
 
 		private void AddChildReferenceColumns(DataGrid dataGrid, IEnumerable<IReferenceDataSource> childReferenceDataSources)
@@ -366,10 +392,10 @@ namespace SqlPad
 		private async Task<FrameworkElement> BuildChildRecordDataGrid(IReferenceDataSource dataSource, object[] keyValues, CancellationToken cancellationToken)
 		{
 			var executionModel = dataSource.CreateExecutionModel(keyValues);
-			var executionResult = await _connectionAdapter.ExecuteChildStatementAsync(executionModel, cancellationToken);
-			var childReferenceDataSources = await _statementValidator.ApplyReferenceConstraintsAsync(executionResult, _connectionAdapter.DatabaseModel, cancellationToken);
+			var executionResult = await ConnectionAdapter.ExecuteChildStatementAsync(executionModel, cancellationToken);
+			var childReferenceDataSources = await StatementValidator.ApplyReferenceConstraintsAsync(executionResult, ConnectionAdapter.DatabaseModel, cancellationToken);
 			var resultInfo = executionResult.ResultInfoColumnHeaders.Keys.Last();
-            var resultSet = await _connectionAdapter.FetchRecordsAsync(resultInfo, StatementExecutionModel.DefaultRowBatchSize, cancellationToken);
+            var resultSet = await ConnectionAdapter.FetchRecordsAsync(resultInfo, StatementExecutionModel.DefaultRowBatchSize, cancellationToken);
 
 			var childRecordDataGrid =
 				new DataGrid
@@ -384,7 +410,7 @@ namespace SqlPad
 			childRecordDataGrid.MouseDoubleClick += ResultGridMouseDoubleClickHandler;
 
 			var columnHeaders = executionResult.ResultInfoColumnHeaders.Values.Last();
-			DataGridHelper.InitializeDataGridColumns(childRecordDataGrid, columnHeaders, _statementValidator, _connectionAdapter);
+			DataGridHelper.InitializeDataGridColumns(childRecordDataGrid, columnHeaders, StatementValidator, ConnectionAdapter);
 			AddChildReferenceColumns(childRecordDataGrid, childReferenceDataSources);
 
 			foreach (var columnTemplate in childRecordDataGrid.Columns)
@@ -400,13 +426,13 @@ namespace SqlPad
 			StatusInfo.ExecutionTimerMessage = "Canceled";
 		}
 
-		private async Task ExecuteUsingCancellationToken(Func<Task> function)
+		internal async Task ExecuteUsingCancellationToken(Func<CancellationToken, Task> function)
 		{
 			IsBusy = true;
 
 			using (_statementExecutionCancellationTokenSource = new CancellationTokenSource())
 			{
-				await function();
+				await function(_statementExecutionCancellationTokenSource.Token);
 
 				_statementExecutionCancellationTokenSource = null;
 			}
@@ -419,49 +445,6 @@ namespace SqlPad
 			e.Handled = true;
 		}
 
-		private void CanExportDataHandler(object sender, CanExecuteRoutedEventArgs args)
-		{
-			args.CanExecute = ResultGrid.Items.Count > 0;
-		}
-
-		private void CanGenerateCSharpQueryClassHandler(object sender, CanExecuteRoutedEventArgs args)
-		{
-			args.CanExecute = ResultGrid.Columns.Count > 0;
-		}
-
-		private void ExportDataFileHandler(object sender, ExecutedRoutedEventArgs args)
-		{
-			var dataExporter = (IDataExporter)args.Parameter;
-			var dialog = new SaveFileDialog { Filter = dataExporter.FileNameFilter, OverwritePrompt = true };
-			if (dialog.ShowDialog() != true)
-			{
-				return;
-			}
-
-			App.SafeActionWithUserError(() => dataExporter.ExportToFile(dialog.FileName, ResultGrid, DocumentPage.InfrastructureFactory.DataExportConverter));
-		}
-
-		private void ExportDataClipboardHandler(object sender, ExecutedRoutedEventArgs args)
-		{
-			var dataExporter = (IDataExporter)args.Parameter;
-
-			App.SafeActionWithUserError(() => dataExporter.ExportToClipboard(ResultGrid, DocumentPage.InfrastructureFactory.DataExportConverter));
-		}
-
-		private void GenerateCSharpQuery(object sender, ExecutedRoutedEventArgs args)
-		{
-			var dialog = new SaveFileDialog { Filter = "C# files (*.cs)|*.cs|All files (*.*)|*", OverwritePrompt = true };
-			if (dialog.ShowDialog() != true)
-			{
-				return;
-			}
-
-			using (var writer = File.CreateText(dialog.FileName))
-			{
-				CSharpQueryClassGenerator.Generate(_executionResult, writer);
-			}
-		}
-
 		private void ResultGridMouseDoubleClickHandler(object sender, MouseButtonEventArgs e)
 		{
 			var senderDataGrid = (DataGrid)sender;
@@ -472,162 +455,9 @@ namespace SqlPad
 			}
 		}
 
-		private void ResultGridSelectedCellsChangedHandler(object sender, SelectedCellsChangedEventArgs e)
-		{
-			if (_isSelectingCells)
-			{
-				return;
-			}
-
-			StatusInfo.SelectedRowIndex = ResultGrid.CurrentCell.Item == null
-				? 0
-				: ResultGrid.Items.IndexOf(ResultGrid.CurrentCell.Item) + 1;
-
-			CalculateSelectedCellStatistics();
-		}
-
-		private void CalculateSelectedCellStatistics()
-		{
-			if (ResultGrid.SelectedCells.Count <= 1)
-			{
-				SelectedCellInfoVisibility = Visibility.Collapsed;
-				return;
-			}
-
-			var sum = 0m;
-			var min = Decimal.MaxValue;
-			var max = Decimal.MinValue;
-			var count = 0;
-			var hasOnlyNumericValues = true;
-			foreach (var selectedCell in ResultGrid.SelectedCells)
-			{
-				var columnHeader = selectedCell.Column.Header as ColumnHeader;
-				if (columnHeader == null)
-				{
-					return;
-				}
-
-				var rowValues = (object[])selectedCell.Item;
-				var cellValue = rowValues[columnHeader.ColumnIndex];
-				var stringValue = cellValue.ToString();
-				if (String.IsNullOrEmpty(stringValue))
-				{
-					continue;
-				}
-
-				if (hasOnlyNumericValues)
-				{
-					try
-					{
-						var numericValue = Convert.ToDecimal(stringValue, CultureInfo.CurrentCulture);
-						sum += numericValue;
-
-						if (numericValue > max)
-						{
-							max = numericValue;
-						}
-
-						if (numericValue < min)
-						{
-							min = numericValue;
-						}
-					}
-					catch
-					{
-						hasOnlyNumericValues = false;
-					}
-				}
-
-				count++;
-			}
-
-			SelectedCellValueCount = count;
-
-			if (count > 0)
-			{
-				SelectedCellSum = sum;
-				SelectedCellMin = min;
-				SelectedCellMax = max;
-				SelectedCellAverage = sum / count;
-
-				SelectedCellNumericInfoVisibility = hasOnlyNumericValues ? Visibility.Visible : Visibility.Collapsed;
-			}
-			else
-			{
-				SelectedCellNumericInfoVisibility = Visibility.Collapsed;
-			}
-
-			SelectedCellInfoVisibility = Visibility.Visible;
-		}
-
-		private void ColumnHeaderMouseClickHandler(object sender, RoutedEventArgs e)
-		{
-			var header = e.OriginalSource as DataGridColumnHeader;
-			if (header == null)
-			{
-				return;
-			}
-
-			var clearCurrentCells = Keyboard.Modifiers != ModifierKeys.Shift;
-			if (clearCurrentCells)
-			{
-				ResultGrid.SelectedCells.Clear();
-			}
-
-			_isSelectingCells = true;
-
-			var selectedCells = new HashSet<DataGridCellInfo>(ResultGrid.SelectedCells);
-			foreach (object[] rowItems in ResultGrid.Items)
-			{
-				var cell = new DataGridCellInfo(rowItems, header.Column);
-				//if (!ResultGrid.SelectedCells.Contains(cell))
-				if (clearCurrentCells || !selectedCells.Contains(cell))
-				{
-					ResultGrid.SelectedCells.Add(cell);
-				}
-			}
-
-			_isSelectingCells = false;
-
-			StatusInfo.SelectedRowIndex = ResultGrid.SelectedCells.Count;
-
-			CalculateSelectedCellStatistics();
-
-			ResultGrid.Focus();
-		}
-
 		private bool IsTabAlwaysVisible(object tabItem)
 		{
-			return TabControlResult.Items.IndexOf(tabItem).In(0, 2);
-		}
-
-		private async void ResultGridScrollChangedHandler(object sender, ScrollChangedEventArgs e)
-		{
-			if (e.VerticalOffset + e.ViewportHeight != e.ExtentHeight)
-			{
-				return;
-			}
-
-			if (!CanFetchNextRows())
-			{
-				return;
-			}
-
-			await ExecuteUsingCancellationToken(FetchNextRows);
-		}
-
-		private async void FetchAllRowsHandler(object sender, ExecutedRoutedEventArgs args)
-		{
-			await ExecuteUsingCancellationToken(FetchAllRows);
-		}
-
-		private async Task FetchAllRows()
-		{
-			var resultInfo = _executionResult.ResultInfoColumnHeaders.Keys.First();
-			while (_connectionAdapter.CanFetch(resultInfo) && !IsCancellationRequested)
-			{
-				await FetchNextRows();
-			}
+			return ((TabItem)tabItem).Content is ResultViewer || tabItem.In(TabDatabaseOutput, TabTrace);
 		}
 
 		private void ErrorListMouseDoubleClickHandler(object sender, MouseButtonEventArgs e)
@@ -641,52 +471,12 @@ namespace SqlPad
 			CompilationError(this, new CompilationErrorArgs(errorUnderCursor));
 		}
 
-		private void CanFetchAllRowsHandler(object sender, CanExecuteRoutedEventArgs canExecuteRoutedEventArgs)
+		internal async Task UpdateExecutionStatisticsIfEnabled()
 		{
-			canExecuteRoutedEventArgs.CanExecute = CanFetchNextRows();
-			canExecuteRoutedEventArgs.ContinueRouting = canExecuteRoutedEventArgs.CanExecute;
-		}
-
-		private bool CanFetchNextRows()
-		{
-			if (!_hasExecutionResult)
+			if (ExecutionResult.Statement.GatherExecutionStatistics)
 			{
-				return false;
+				_sessionExecutionStatistics.MergeWith(await ConnectionAdapter.GetExecutionStatisticsAsync(_statementExecutionCancellationTokenSource.Token));
 			}
-
-			var resultInfo = _executionResult.ResultInfoColumnHeaders.Keys.First();
-			return _hasExecutionResult && !IsBusy && _connectionAdapter.CanFetch(resultInfo) && !_connectionAdapter.IsExecuting;
-		}
-
-		private async Task FetchNextRows()
-		{
-			Task<IReadOnlyList<object[]>> innerTask = null;
-			var batchSize = StatementExecutionModel.DefaultRowBatchSize - _resultRows.Count % StatementExecutionModel.DefaultRowBatchSize;
-
-			// TODO: Remove when multiple results fully supported
-			var resultInfo = _executionResult.ResultInfoColumnHeaders.Keys.First();
-			var exception = await App.SafeActionAsync(() => innerTask = _connectionAdapter.FetchRecordsAsync(resultInfo, batchSize, _statementExecutionCancellationTokenSource.Token));
-
-			if (exception != null)
-			{
-				Messages.ShowError(exception.Message);
-			}
-			else
-			{
-				AppendRows(innerTask.Result);
-
-				if (_executionResult.Statement.GatherExecutionStatistics)
-				{
-					_sessionExecutionStatistics.MergeWith(await _connectionAdapter.GetExecutionStatisticsAsync(_statementExecutionCancellationTokenSource.Token));
-				}
-			}
-		}
-
-		private void AppendRows(IEnumerable<object[]> rows)
-		{
-			_resultRows.AddRange(rows);
-			var resultInfo = _executionResult.ResultInfoColumnHeaders.Keys.First();
-			StatusInfo.MoreRowsAvailable = _connectionAdapter.CanFetch(resultInfo);
 		}
 
 		private async Task<ActionResult> SafeTimedActionAsync(Func<Task> action)
@@ -710,17 +500,17 @@ namespace SqlPad
 			Application.Current.Deactivated -= ApplicationDeactivatedHandler;
 			_timerExecutionMonitor.Stop();
 			_timerExecutionMonitor.Dispose();
-			_connectionAdapter.Dispose();
+			ConnectionAdapter.Dispose();
 		}
 
 		private async void ButtonCommitTransactionClickHandler(object sender, RoutedEventArgs e)
 		{
-			await ExecuteTransactionOperation(_connectionAdapter.CommitTransaction);
+			await ExecuteTransactionOperation(ConnectionAdapter.CommitTransaction);
 		}
 
 		private async void ButtonRollbackTransactionClickHandler(object sender, RoutedEventArgs e)
 		{
-			await ExecuteTransactionOperation(_connectionAdapter.RollbackTransaction);
+			await ExecuteTransactionOperation(ConnectionAdapter.RollbackTransaction);
 		}
 
 		private async Task ExecuteTransactionOperation(Func<Task> transactionOperation)
@@ -811,21 +601,29 @@ namespace SqlPad
 			
 			DataGridTabHeaderPopupTextBox.FontFamily = DocumentPage.Editor.FontFamily;
 			DataGridTabHeaderPopupTextBox.FontSize = DocumentPage.Editor.FontSize;
-			DataGridTabHeaderPopup.IsOpen = true;
+			ResultViewTabHeaderPopup.IsOpen = true;
 		}
 
 		private void OutputViewerMouseMoveHandler(object sender, MouseEventArgs e)
 		{
-			if (!DataGridTabHeaderPopup.IsOpen)
+			if (!ResultViewTabHeaderPopup.IsOpen)
 			{
 				return;
 			}
 
-			var position = e.GetPosition(DataGridTabHeaderPopup.Child);
-
-			if (position.Y < 0 || position.Y > DataGridTabHeaderPopup.Child.RenderSize.Height + DataGridTabHeader.RenderSize.Height || position.X < 0 || position.X > DataGridTabHeaderPopup.Child.RenderSize.Width)
+			var selectedItem = (TabItem)TabControlResult.SelectedItem;
+			var isResultViewer = selectedItem.Content is ResultViewer;
+			if (!isResultViewer)
 			{
-				DataGridTabHeaderPopup.IsOpen = false;
+				ResultViewTabHeaderPopup.IsOpen = false;
+				return;
+			}
+
+			var resultViewTabHeader = (HeaderedContentControl)selectedItem.Header;
+			var position = e.GetPosition(ResultViewTabHeaderPopup.Child);
+			if (position.Y < 0 || position.Y > ResultViewTabHeaderPopup.Child.RenderSize.Height + resultViewTabHeader.RenderSize.Height || position.X < 0 || position.X > ResultViewTabHeaderPopup.Child.RenderSize.Width)
+			{
+				ResultViewTabHeaderPopup.IsOpen = false;
 			}
 		}
 
@@ -836,12 +634,12 @@ namespace SqlPad
 
 		private void ApplicationDeactivatedHandler(object sender, EventArgs eventArgs)
 		{
-			DataGridTabHeaderPopup.IsOpen = false;
+			ResultViewTabHeaderPopup.IsOpen = false;
 		}
 
 		private void DataGridTabHeaderPopupMouseLeaveHandler(object sender, MouseEventArgs e)
 		{
-			DataGridTabHeaderPopup.IsOpen = false;
+			ResultViewTabHeaderPopup.IsOpen = false;
 		}
 
 		private void ButtonDebuggerContinueClickHandler(object sender, RoutedEventArgs e)

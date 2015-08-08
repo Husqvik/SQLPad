@@ -4,18 +4,11 @@ namespace SqlPad
 {
 	public class StatusInfoModel : ModelBase
 	{
-		private int _selectedRowIndex;
 		private int _affectedRowCount = -1;
 		private string _executionTimerMessage;
 		private bool _moreRowsAvailable;
 		private bool _resultGridAvailable;
-		private bool _ddlStatementExecutedSuccessfully;
-
-		public int SelectedRowIndex
-		{
-			get { return _selectedRowIndex; }
-			set { UpdateValueAndRaisePropertyChanged(ref _selectedRowIndex, value); }
-		}
+		private bool _statementExecutedSuccessfully;
 
 		public bool ResultGridAvailable
 		{
@@ -29,12 +22,12 @@ namespace SqlPad
 			}
 		}
 
-		public bool DdlStatementExecutedSuccessfully
+		public bool StatementExecutedSuccessfully
 		{
-			get { return _ddlStatementExecutedSuccessfully; }
+			get { return _statementExecutedSuccessfully; }
 			set
 			{
-				if (UpdateValueAndRaisePropertyChanged(ref _ddlStatementExecutedSuccessfully, value))
+				if (UpdateValueAndRaisePropertyChanged(ref _statementExecutedSuccessfully, value))
 				{
 					RaisePropertyChanged(nameof(StatementExecutionInfoSeparatorVisibility));
 				}
@@ -69,7 +62,7 @@ namespace SqlPad
 		public Visibility AffectedRowCountVisibility => _affectedRowCount == -1 ? Visibility.Collapsed : Visibility.Visible;
 
 	    public Visibility StatementExecutionInfoSeparatorVisibility =>
-	        !_resultGridAvailable && (AffectedRowCountVisibility == Visibility.Collapsed && !_ddlStatementExecutedSuccessfully)
+	        !_resultGridAvailable && (AffectedRowCountVisibility == Visibility.Collapsed && !_statementExecutedSuccessfully)
 	            ? Visibility.Collapsed
 	            : Visibility.Visible;
 	}
