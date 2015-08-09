@@ -390,7 +390,7 @@ WHERE
 				};
 
 			var resultViewer =
-				new ResultViewer(outputViewer, StatementExecutionResult.Empty, new ResultInfo(null, null, ResultIdentifierType.UserDefined), columnHeaders)
+				new ResultViewer(outputViewer, null, new ResultInfo(null, null, ResultIdentifierType.UserDefined), columnHeaders)
 				{
 					ResultGrid = { ItemsSource = dataRows }
 				};

@@ -259,18 +259,24 @@ namespace SqlPad
 
 			if (!actionResult.IsSuccessful)
 			{
+				var executionException = actionResult.Exception as StatementExecutionException;
+				if (executionException != null)
+				{
+					UpdateExecutionLog(executionException.BatchResult.StatementResults);
+				}
+
 				Messages.ShowError(actionResult.Exception.Message);
 				return;
 			}
 
 			_executionResult = innerTask.Result;
 
-			UpdateExecutionLog();
+			UpdateExecutionLog(_executionResult.StatementResults);
 
 			UpdateHistoryEntries();
 
-			var lastStatementResult = _executionResult.StatementResults.Last();
-			if (!lastStatementResult.ExecutedSuccessfully)
+			var lastStatementResult = _executionResult.StatementResults.LastOrDefault();
+			if (lastStatementResult == null || !lastStatementResult.ExecutedSuccessfully)
 			{
 				NotifyExecutionCanceled();
 				return;
@@ -350,17 +356,33 @@ namespace SqlPad
 			}
 		}
 
-		private void UpdateExecutionLog()
+		private void UpdateExecutionLog(IEnumerable<StatementExecutionResult> statementResults)
 		{
-			foreach (var executionResult in _executionResult.StatementResults)
+			foreach (var executionResult in statementResults)
 			{
-				var message = $"Statement executed successfully ({executionResult.Duration.ToPrettyString()}). ";
-				if (executionResult.AffectedRowCount != -1)
+				_executionLogBuilder.Append(executionResult.ExecutedAt.ToString("yyyy-MM-dd HH:mm:ss.fff"));
+				_executionLogBuilder.Append(" - ");
+				if (executionResult.ExecutedSuccessfully)
 				{
-					message = $"{message}{executionResult.AffectedRowCount} row(s) affected. ";
+					_executionLogBuilder.Append("Statement executed successfully (");
+					_executionLogBuilder.Append(executionResult.Duration.ToPrettyString());
+					_executionLogBuilder.Append("). ");
+
+					if (executionResult.AffectedRowCount != -1)
+					{
+						_executionLogBuilder.Append(executionResult.AffectedRowCount);
+						_executionLogBuilder.Append(" row(s) affected. ");
+					}
+				}
+				else
+				{
+					_executionLogBuilder.Append("Statement execution failed (");
+					_executionLogBuilder.Append(executionResult.Duration.ToPrettyString());
+					_executionLogBuilder.Append("): ");
+					_executionLogBuilder.Append(executionResult.Exception.Message);
 				}
 
-				_executionLogBuilder.AppendLine($"{executionResult.ExecutedAt.ToString("yyyy-MM-dd HH:mm:ss.fff")} - {message}");
+				_executionLogBuilder.AppendLine();
 			}
 
 			ExecutionLog = _executionLogBuilder.ToString();

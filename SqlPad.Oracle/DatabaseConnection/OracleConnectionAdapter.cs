@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Configuration;
 using System.Data;
 using System.Diagnostics;
@@ -569,9 +568,18 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private async Task<StatementExecutionBatchResult> ExecuteUserStatementAsync(StatementBatchExecutionModel executionModel, bool isReferenceConstraintNavigation, CancellationToken cancellationToken)
 		{
+			if (executionModel.Statements == null || executionModel.Statements.Count == 0)
+			{
+				throw new ArgumentException("An execution batch must contain at least one statement. ", nameof(executionModel));
+			}
+
 			_isExecuting = true;
-			
 			_userCommandHasCompilationErrors = false;
+
+			var batchResult = new StatementExecutionBatchResult { ExecutionModel = executionModel };
+
+			var statementResults = new List<StatementExecutionResult>();
+			StatementExecutionResult currentStatementResult = null;
 
 			try
 			{
@@ -599,9 +607,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 						await _databaseModel.UpdateModelAsync(cancellationToken, true, _executionStatisticsDataProvider.SessionBeginExecutionStatisticsDataProvider);
 					}
 
-					var results = new List<StatementExecutionResult>();
 					foreach (var statement in executionModel.Statements)
 					{
+						currentStatementResult = new StatementExecutionResult { StatementModel = statement };
+						statementResults.Add(currentStatementResult);
+
 						userCommand.Parameters.Clear();
 						userCommand.CommandText = statement.StatementText.Replace("\r\n", "\n");
 
@@ -610,28 +620,25 @@ namespace SqlPad.Oracle.DatabaseConnection
 							userCommand.AddSimpleParameter(variable.Name, variable.Value, variable.DataType);
 						}
 
-						int recordsAffected;
-						DateTime timestamp;
-						TimeSpan duration;
 						var resultInfoColumnHeaders = new Dictionary<ResultInfo, IReadOnlyList<ColumnHeader>>();
 						var isPlSql = ((OracleStatement)statement.Statement)?.IsPlSql ?? false;
 						if (!statement.IsPartialStatement && isPlSql)
 						{
-							timestamp = DateTime.Now;
+							currentStatementResult.ExecutedAt = DateTime.Now;
 							//Task.Factory.StartNew(() => TestDebug(userCommand, cancellationToken), cancellationToken).Wait(cancellationToken);
-							recordsAffected = await userCommand.ExecuteNonQueryAsynchronous(cancellationToken);
-							duration = DateTime.Now - timestamp;
+							currentStatementResult.AffectedRowCount = await userCommand.ExecuteNonQueryAsynchronous(cancellationToken);
+							currentStatementResult.Duration = DateTime.Now - currentStatementResult.ExecutedAt;
 							resultInfoColumnHeaders.AddRange(AcquireImplicitRefCursors(userCommand));
 						}
 						else
 						{
-							timestamp = DateTime.Now;
+							currentStatementResult.ExecutedAt = DateTime.Now;
 							var dataReader = await userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
-							duration = DateTime.Now - timestamp;
-							recordsAffected = dataReader.RecordsAffected;
+							currentStatementResult.Duration = DateTime.Now - currentStatementResult.ExecutedAt;
+							currentStatementResult.AffectedRowCount = dataReader.RecordsAffected;
 							var resultInfo = isReferenceConstraintNavigation
 								? new ResultInfo($"ReferenceConstrantResult{dataReader.GetHashCode()}", null, ResultIdentifierType.SystemGenerated)
-								: new ResultInfo($"MainResult{dataReader.GetHashCode()}", $"Result set {results.Count + 1}", ResultIdentifierType.UserDefined);
+								: new ResultInfo($"MainResult{dataReader.GetHashCode()}", $"Result set {statementResults.Count + 1}", ResultIdentifierType.UserDefined);
 
 							var columnHeaders = GetColumnHeadersFromReader(dataReader);
 							if (columnHeaders.Count > 0)
@@ -641,42 +648,37 @@ namespace SqlPad.Oracle.DatabaseConnection
 							}
 						}
 
+						resultInfoColumnHeaders.AddRange(UpdateBindVariables(statement, userCommand));
+
+						currentStatementResult.ResultInfoColumnHeaders = resultInfoColumnHeaders.AsReadOnly();
+						currentStatementResult.CompilationErrors = _userCommandHasCompilationErrors
+							? await RetrieveCompilationErrors(statement.ValidationModel.Statement, cancellationToken)
+							: new CompilationError[0];
+
 						var exception = await ResolveExecutionPlanIdentifiersAndTransactionStatus(cancellationToken);
 						if (exception != null)
 						{
 							await SafeResolveTransactionStatus(cancellationToken);
 						}
 
-						resultInfoColumnHeaders.AddRange(UpdateBindVariables(statement, userCommand));
-
-						var result =
-							new StatementExecutionResult
-							{
-								StatementModel = statement,
-								ExecutedAt = timestamp,
-								Duration = duration,
-								AffectedRowCount = recordsAffected,
-								ExecutedSuccessfully = true,
-								CompilationErrors = _userCommandHasCompilationErrors ? await RetrieveCompilationErrors(statement.ValidationModel.Statement, cancellationToken) : new CompilationError[0],
-								ResultInfoColumnHeaders = new ReadOnlyDictionary<ResultInfo, IReadOnlyList<ColumnHeader>>(resultInfoColumnHeaders)
-							};
-
-						results.Add(result);
-
 						_resultInfoColumnHeaders.AddRange(resultInfoColumnHeaders);
 					}
 
-					return
-						new StatementExecutionBatchResult
-						{
-							ExecutionModel = executionModel,
-							StatementResults = results.AsReadOnly(),
-							DatabaseOutput = await RetrieveDatabaseOutput(cancellationToken),
-						};
+					batchResult.StatementResults = statementResults.AsReadOnly();
+					batchResult.DatabaseOutput = await RetrieveDatabaseOutput(cancellationToken);
+                    return batchResult;
 				}
 			}
 			catch (OracleException exception)
 			{
+				if (currentStatementResult != null)
+				{
+					currentStatementResult.Exception = exception;
+				}
+
+				batchResult.StatementResults = statementResults.AsReadOnly();
+				var executionException = new StatementExecutionException(batchResult, exception);
+
 				var errorCode = (OracleErrorCode)exception.Number;
 				if (errorCode.In(OracleErrorCode.EndOfFileOnCommunicationChannel, OracleErrorCode.NotConnectedToOracle))
 				{
@@ -691,11 +693,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 					_databaseModel.Disconnect(exception);
 
-					throw;
+					throw executionException;
 				}
 				else if (errorCode != OracleErrorCode.UserInvokedCancellation)
 				{
-					throw;
+					throw executionException;
 				}
 			}
 			finally
@@ -703,7 +705,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				_isExecuting = false;
 			}
 
-			return StatementExecutionBatchResult.Empty;
+			return batchResult;
 		}
 
 		private void TestDebug(OracleCommand userCommand, CancellationToken cancellationToken)

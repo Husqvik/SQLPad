@@ -41,17 +41,15 @@ namespace SqlPad
 		public string DatabaseOutput { get; set; }
 	}
 
-	public struct StatementExecutionResult
+	public class StatementExecutionResult
 	{
-		public static readonly StatementExecutionResult Empty = new StatementExecutionResult { AffectedRowCount = -1 };
-
 		public StatementExecutionModel StatementModel { get; set; }
 
 		public int AffectedRowCount { get; set; }
 
-		public bool Executed { get; set; }
+		public Exception Exception { get; set; }
 
-		public bool ExecutedSuccessfully { get; set; }
+		public bool ExecutedSuccessfully => Exception == null;
 
 		public DateTime ExecutedAt { get; set; }
 
@@ -60,6 +58,16 @@ namespace SqlPad
 		public IReadOnlyList<CompilationError> CompilationErrors { get; set; }
 
 		public IReadOnlyDictionary<ResultInfo, IReadOnlyList<ColumnHeader>> ResultInfoColumnHeaders { get; set; }
+	}
+
+	public class StatementExecutionException : Exception
+	{
+		public StatementExecutionBatchResult BatchResult { get; }
+
+		public StatementExecutionException(StatementExecutionBatchResult batchResult, Exception inner) : base(inner.Message, inner)
+		{
+			BatchResult = batchResult;
+		}
 	}
 
 	[DebuggerDisplay("SessionExecutionStatisticsRecord (Name={Name}; Value={Value})")]
