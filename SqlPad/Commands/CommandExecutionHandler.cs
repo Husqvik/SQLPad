@@ -13,14 +13,14 @@ namespace SqlPad.Commands
 		
 		public InputGestureCollection DefaultGestures { get; set; }
 		
-		public Action<CommandExecutionContext> ExecutionHandler { get; set; }
+		public Action<ActionExecutionContext> ExecutionHandler { get; set; }
 		
-		public Func<CommandExecutionContext, CancellationToken, Task> ExecutionHandlerAsync { get; set; }
+		public Func<ActionExecutionContext, CancellationToken, Task> ExecutionHandlerAsync { get; set; }
 
-		public Func<CommandExecutionContext, CommandCanExecuteResult> CanExecuteHandler { get; set; }
+		public Func<ActionExecutionContext, CommandCanExecuteResult> CanExecuteHandler { get; set; }
 	}
 
-	public class CommandExecutionContext
+	public class ActionExecutionContext
 	{
 		private readonly List<TextSegment> _segmentsToReplace = new List<TextSegment>();
 
@@ -46,7 +46,7 @@ namespace SqlPad.Commands
 				throw new InvalidOperationException("Settings provider is mandatory. ");
 		}
 
-		public CommandExecutionContext(string statementText, int caretOffset, int selectionStart, int selectionLength, SqlDocumentRepository documentRepository)
+		public ActionExecutionContext(string statementText, int caretOffset, int selectionStart, int selectionLength, SqlDocumentRepository documentRepository)
 		{
 			StatementText = statementText;
 			SelectionStart = selectionStart;
@@ -56,18 +56,18 @@ namespace SqlPad.Commands
 			DocumentRepository = documentRepository;
 		}
 
-		public static CommandExecutionContext Create(TextEditor editor, SqlDocumentRepository documentRepository)
+		public static ActionExecutionContext Create(TextEditor editor, SqlDocumentRepository documentRepository)
 		{
-			return new CommandExecutionContext(editor.Text, editor.CaretOffset, editor.SelectionStart, editor.SelectionLength, documentRepository)
+			return new ActionExecutionContext(editor.Text, editor.CaretOffset, editor.SelectionStart, editor.SelectionLength, documentRepository)
 			{
 				SelectionStart = editor.SelectionStart,
 				SelectionLength = editor.SelectionLength,
 			};
 		}
 
-		public CommandExecutionContext Clone()
+		public ActionExecutionContext Clone()
 		{
-			return (CommandExecutionContext)MemberwiseClone();
+			return (ActionExecutionContext)MemberwiseClone();
 		}
 	}
 

@@ -20,7 +20,7 @@ namespace SqlPad.Oracle.Commands
 		private SourcePosition _sourcePosition;
 		public const string Title = "Expand";
 
-		private ExpandAsteriskCommand(CommandExecutionContext executionContext)
+		private ExpandAsteriskCommand(ActionExecutionContext executionContext)
 			: base(executionContext)
 		{
 		}

@@ -13,7 +13,7 @@ namespace SqlPad.Oracle.Commands
 		private readonly StatementGrammarNode _currentNode;
 		private readonly OracleStatementSemanticModel _semanticModel;
 		private readonly OracleQueryBlock _queryBlock;
-		private readonly CommandExecutionContext _executionContext;
+		private readonly ActionExecutionContext _executionContext;
 
 		public static readonly CommandExecutionHandler FindUsages = new CommandExecutionHandler
 		{
@@ -22,7 +22,7 @@ namespace SqlPad.Oracle.Commands
 			ExecutionHandler = ExecutionHandlerImplementation
 		};
 
-		private static void ExecutionHandlerImplementation(CommandExecutionContext executionContext)
+		private static void ExecutionHandlerImplementation(ActionExecutionContext executionContext)
 		{
 			var commandInstance = new FindUsagesCommand(executionContext);
 			if (commandInstance.CanExecute())
@@ -31,7 +31,7 @@ namespace SqlPad.Oracle.Commands
 			}
 		}
 
-		private FindUsagesCommand(CommandExecutionContext executionContext)
+		private FindUsagesCommand(ActionExecutionContext executionContext)
 		{
 			if (executionContext.DocumentRepository == null || executionContext.DocumentRepository.StatementText != executionContext.StatementText)
 				return;

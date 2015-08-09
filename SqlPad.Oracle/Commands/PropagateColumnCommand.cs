@@ -11,7 +11,7 @@ namespace SqlPad.Oracle.Commands
 		public const string Title = "Propagate";
 		private OracleSelectListColumn _selectListColumn;
 
-		private PropagateColumnCommand(CommandExecutionContext executionContext)
+		private PropagateColumnCommand(ActionExecutionContext executionContext)
 			: base(executionContext)
 		{
 		}

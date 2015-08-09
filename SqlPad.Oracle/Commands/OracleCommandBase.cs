@@ -12,7 +12,7 @@ namespace SqlPad.Oracle.Commands
 	{
 		protected static readonly ICollection<CommandExecutionHandler> EmptyHandlerCollection = new CommandExecutionHandler[0];
 
-		protected readonly CommandExecutionContext ExecutionContext;
+		protected readonly ActionExecutionContext ExecutionContext;
 
 		protected StatementGrammarNode CurrentNode { get; private set; }
 		
@@ -22,7 +22,7 @@ namespace SqlPad.Oracle.Commands
 
 		protected virtual Func<StatementGrammarNode, bool> CurrentNodeFilterFunction { get { return null; } }
 
-		protected OracleCommandBase(CommandExecutionContext executionContext)
+		protected OracleCommandBase(ActionExecutionContext executionContext)
 		{
 			if (executionContext == null)
 				throw new ArgumentNullException(nameof(executionContext));
@@ -70,7 +70,7 @@ namespace SqlPad.Oracle.Commands
 			};			
 		}
 
-		private static Action<CommandExecutionContext> CreateExecutionHandler<TCommand>() where TCommand : OracleCommandBase
+		private static Action<ActionExecutionContext> CreateExecutionHandler<TCommand>() where TCommand : OracleCommandBase
 		{
 			return context =>
 			       {
@@ -82,7 +82,7 @@ namespace SqlPad.Oracle.Commands
 			       };
 		}
 
-		private static Func<CommandExecutionContext, CancellationToken, Task> CreateAsynchronousExecutionHandler<TCommand>() where TCommand : OracleCommandBase
+		private static Func<ActionExecutionContext, CancellationToken, Task> CreateAsynchronousExecutionHandler<TCommand>() where TCommand : OracleCommandBase
 		{
 			return (context, cancellationToken) =>
 			{
@@ -104,7 +104,7 @@ namespace SqlPad.Oracle.Commands
 			};
 		}
 
-		private static TCommand CreateCommandInstance<TCommand>(CommandExecutionContext executionContext)
+		private static TCommand CreateCommandInstance<TCommand>(ActionExecutionContext executionContext)
 		{
 			var constructorInfo = typeof(TCommand).GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance)[0];
 			return (TCommand)constructorInfo.Invoke(new object[] { executionContext });

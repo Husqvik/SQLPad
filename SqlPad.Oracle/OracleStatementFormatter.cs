@@ -170,9 +170,9 @@ namespace SqlPad.Oracle
 
 		private abstract class StatementFormatterBase
 		{
-			protected readonly CommandExecutionContext ExecutionContext;
+			protected readonly ActionExecutionContext ExecutionContext;
 
-			protected StatementFormatterBase(CommandExecutionContext executionContext)
+			protected StatementFormatterBase(ActionExecutionContext executionContext)
 			{
 				ExecutionContext = executionContext;
 			}
@@ -193,7 +193,7 @@ namespace SqlPad.Oracle
 
 		private class SingleLineStatementFormatter : StatementFormatterBase
 		{
-			public SingleLineStatementFormatter(CommandExecutionContext executionContext)
+			public SingleLineStatementFormatter(ActionExecutionContext executionContext)
 				: base(executionContext)
 			{
 			}
@@ -250,7 +250,7 @@ namespace SqlPad.Oracle
 
 		private class StandardStatementFormatter : StatementFormatterBase
 		{
-			public StandardStatementFormatter(CommandExecutionContext executionContext) :base(executionContext)
+			public StandardStatementFormatter(ActionExecutionContext executionContext) :base(executionContext)
 			{
 			}
 

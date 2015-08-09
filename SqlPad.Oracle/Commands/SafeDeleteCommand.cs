@@ -17,7 +17,7 @@ namespace SqlPad.Oracle.Commands
 			ExecutionHandler = ExecutionHandlerImplementation
 		};
 
-		private static void ExecutionHandlerImplementation(CommandExecutionContext executionContext)
+		private static void ExecutionHandlerImplementation(ActionExecutionContext executionContext)
 		{
 			if (executionContext.DocumentRepository == null)
 				return;

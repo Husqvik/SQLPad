@@ -24,17 +24,17 @@ namespace SqlPad.Commands
 					};
 		}
 
-		public static void ExecuteEditCommand(SqlDocumentRepository documentRepository, SqlTextEditor editor, Action<CommandExecutionContext> executionHandler)
+		public static void ExecuteEditCommand(SqlDocumentRepository documentRepository, SqlTextEditor editor, Action<ActionExecutionContext> executionHandler)
 		{
 			if (documentRepository.StatementText != editor.Text)
 				return;
 
-			var executionContext = CommandExecutionContext.Create(editor, documentRepository);
+			var executionContext = ActionExecutionContext.Create(editor, documentRepository);
 			executionHandler(executionContext);
 			UpdateDocument(editor, executionContext);
 		}
 
-		public static void UpdateDocument(SqlTextEditor editor, CommandExecutionContext executionContext)
+		public static void UpdateDocument(SqlTextEditor editor, ActionExecutionContext executionContext)
 		{
 			var caretOffset = editor.CaretOffset;
 			var selectionLength = editor.SelectionLength;

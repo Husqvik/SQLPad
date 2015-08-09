@@ -50,7 +50,7 @@ namespace SqlPad.Oracle.Commands
 			return commands.AsReadOnly();
 		}
 
-		private BindVariableLiteralConversionCommand(CommandExecutionContext executionContext, BindVariableConfiguration bindVariable, bool allOccurences)
+		private BindVariableLiteralConversionCommand(ActionExecutionContext executionContext, BindVariableConfiguration bindVariable, bool allOccurences)
 			: base(executionContext)
 		{
 			_bindVariable = bindVariable;

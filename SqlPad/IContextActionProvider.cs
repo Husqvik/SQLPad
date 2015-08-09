@@ -6,15 +6,15 @@ namespace SqlPad
 {
 	public interface IContextActionProvider
 	{
-		ICollection<ContextAction> GetContextActions(SqlDocumentRepository sqlDocumentRepository, CommandExecutionContext executionContext);
+		ICollection<ContextAction> GetContextActions(SqlDocumentRepository sqlDocumentRepository, ActionExecutionContext executionContext);
 
-		ICollection<ContextAction> GetAvailableRefactorings(SqlDocumentRepository sqlDocumentRepository, CommandExecutionContext executionContext);
+		ICollection<ContextAction> GetAvailableRefactorings(SqlDocumentRepository sqlDocumentRepository, ActionExecutionContext executionContext);
 	}
 
 	[DebuggerDisplay("ContextAction (Name={Name})")]
 	public class ContextAction
 	{
-		public ContextAction(string name, CommandExecutionHandler executionHandler, CommandExecutionContext executionContext, bool isLongOperation = false)
+		public ContextAction(string name, CommandExecutionHandler executionHandler, ActionExecutionContext executionContext, bool isLongOperation = false)
 		{
 			Name = name;
 			ExecutionHandler = executionHandler;
@@ -28,6 +28,6 @@ namespace SqlPad
 
 		public CommandExecutionHandler ExecutionHandler { get; private set; }
 
-		public CommandExecutionContext ExecutionContext { get; private set; }
+		public ActionExecutionContext ExecutionContext { get; private set; }
 	}
 }

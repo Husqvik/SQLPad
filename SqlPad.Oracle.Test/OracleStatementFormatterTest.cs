@@ -54,7 +54,7 @@ ORDER BY
 	SELECTION_ID;";
 
 			_documentRepository.UpdateStatements(sourceFormat);
-			var executionContext = new CommandExecutionContext(sourceFormat, 0, 0, 0, _documentRepository);
+			var executionContext = new ActionExecutionContext(sourceFormat, 0, 0, 0, _documentRepository);
 			Formatter.SingleLineExecutionHandler.ExecutionHandler(executionContext);
 
 			const string expectedFormat = "SELECT SELECTION.NAME, COUNT (*) OVER (PARTITION BY NAME ORDER BY RESPONDENTBUCKET_ID, SELECTION_ID) DUMMY_COUNT, MAX (RESPONDENTBUCKET_ID) KEEP (DENSE_RANK FIRST ORDER BY PROJECT_ID, SELECTION_ID) FROM SELECTION LEFT JOIN RESPONDENTBUCKET ON SELECTION.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID LEFT JOIN TARGETGROUP ON RESPONDENTBUCKET.TARGETGROUP_ID = TARGETGROUP.TARGETGROUP_ID ORDER BY NAME, SELECTION_ID";
@@ -79,7 +79,7 @@ FROM
 ;";
 
 			_documentRepository.UpdateStatements(sourceFormat);
-			var executionContext = new CommandExecutionContext(sourceFormat, 0, 0, sourceFormat.Length, _documentRepository);
+			var executionContext = new ActionExecutionContext(sourceFormat, 0, 0, sourceFormat.Length, _documentRepository);
 			Formatter.SingleLineExecutionHandler.ExecutionHandler(executionContext);
 
 			executionContext.SegmentsToReplace.Count.ShouldBe(2);
@@ -107,7 +107,7 @@ FROM
 			AssertFormattedResult(executionContext, expectedFormat);
 		}
 
-		private static void AssertFormattedResult(CommandExecutionContext executionContext, string expectedFormat)
+		private static void AssertFormattedResult(ActionExecutionContext executionContext, string expectedFormat)
 		{
 			executionContext.SegmentsToReplace.Count.ShouldBe(1);
 			var formattedSegment = executionContext.SegmentsToReplace.First();
@@ -115,10 +115,10 @@ FROM
 			formattedSegment.IndextStart.ShouldBe(0);
 		}
 
-		private CommandExecutionContext ExecuteFormatCommand(string sourceFormat, int selectionStart = 0, int selectionLength = 0)
+		private ActionExecutionContext ExecuteFormatCommand(string sourceFormat, int selectionStart = 0, int selectionLength = 0)
 		{
 			_documentRepository.UpdateStatements(sourceFormat);
-			var executionContext = new CommandExecutionContext(sourceFormat, 0, selectionStart, selectionLength, _documentRepository);
+			var executionContext = new ActionExecutionContext(sourceFormat, 0, selectionStart, selectionLength, _documentRepository);
 			Formatter.ExecutionHandler.ExecutionHandler(executionContext);
 			return executionContext;
 		}

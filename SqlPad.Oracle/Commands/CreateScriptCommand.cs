@@ -19,7 +19,7 @@ namespace SqlPad.Oracle.Commands
 		
 		public const string Title = "Create Script";
 
-		private CreateScriptCommand(CommandExecutionContext executionContext)
+		private CreateScriptCommand(ActionExecutionContext executionContext)
 			: base(executionContext)
 		{
 		}

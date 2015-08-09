@@ -14,7 +14,7 @@ namespace SqlPad.Oracle.Commands
 
 		private CommandSettingsModel _settingsModel;
 
-		private AddCreateTableAsCommand(CommandExecutionContext executionContext)
+		private AddCreateTableAsCommand(ActionExecutionContext executionContext)
 			: base(executionContext)
 		{
 		}

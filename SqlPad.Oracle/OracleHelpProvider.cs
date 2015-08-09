@@ -61,7 +61,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		public void ShowHelp(CommandExecutionContext executionContext)
+		public void ShowHelp(ActionExecutionContext executionContext)
 		{
 			var statement = executionContext.DocumentRepository.Statements.GetStatementAtPosition(executionContext.CaretOffset);
 			if (statement == null)

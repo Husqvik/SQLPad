@@ -8,7 +8,7 @@ namespace SqlPad.Oracle.Commands
 {
 	internal class ModifyCaseCommand
 	{
-		private readonly CommandExecutionContext _executionContext;
+		private readonly ActionExecutionContext _executionContext;
 		private readonly Func<string, string> _changeCaseFunction;
 
 		public static readonly CommandExecutionHandler MakeUpperCase = new CommandExecutionHandler
@@ -25,17 +25,17 @@ namespace SqlPad.Oracle.Commands
 			ExecutionHandler = MakeLowerCaseHandler
 		};
 
-		private static void MakeLowerCaseHandler(CommandExecutionContext executionContext)
+		private static void MakeLowerCaseHandler(ActionExecutionContext executionContext)
 		{
 			new ModifyCaseCommand(executionContext, s => s.ToLower()).ModifyCase();
 		}
 
-		private static void MakeUpperCaseHandler(CommandExecutionContext executionContext)
+		private static void MakeUpperCaseHandler(ActionExecutionContext executionContext)
 		{
 			new ModifyCaseCommand(executionContext, s => s.ToUpper()).ModifyCase();
 		}
 
-		private ModifyCaseCommand(CommandExecutionContext executionContext, Func<string, string> changeCaseFunction)
+		private ModifyCaseCommand(ActionExecutionContext executionContext, Func<string, string> changeCaseFunction)
 		{
 			_changeCaseFunction = changeCaseFunction;
 			_executionContext = executionContext;

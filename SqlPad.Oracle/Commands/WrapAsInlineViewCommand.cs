@@ -12,7 +12,7 @@ namespace SqlPad.Oracle.Commands
 		public const string Title = "Wrap as inline view";
 		private OracleDataObjectReference _dataObjectReference;
 
-		private WrapAsInlineViewCommand(CommandExecutionContext executionContext)
+		private WrapAsInlineViewCommand(ActionExecutionContext executionContext)
 			: base(executionContext)
 		{
 		}

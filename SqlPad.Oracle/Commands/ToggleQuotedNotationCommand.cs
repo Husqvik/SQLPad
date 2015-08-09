@@ -10,7 +10,7 @@ namespace SqlPad.Oracle.Commands
 	{
 		public const string Title = "Toggle quoted notation";
 
-		private ToggleQuotedNotationCommand(CommandExecutionContext executionContext)
+		private ToggleQuotedNotationCommand(ActionExecutionContext executionContext)
 			: base(executionContext)
 		{
 		}

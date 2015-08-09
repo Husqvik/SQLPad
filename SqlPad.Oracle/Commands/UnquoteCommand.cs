@@ -14,7 +14,7 @@ namespace SqlPad.Oracle.Commands
 		private IReadOnlyList<OracleSelectListColumn> _unquotableColumns;
 		private IReadOnlyList<OracleDataObjectReference> _unquotableObjects;
 
-		private UnquoteCommand(CommandExecutionContext executionContext)
+		private UnquoteCommand(ActionExecutionContext executionContext)
 			: base(executionContext)
 		{
 		}

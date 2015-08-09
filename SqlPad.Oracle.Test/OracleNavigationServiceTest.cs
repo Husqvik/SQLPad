@@ -11,10 +11,10 @@ namespace SqlPad.Oracle.Test
 		private readonly OracleNavigationService _navigationService = new OracleNavigationService();
 		private readonly SqlDocumentRepository _documentRepository = TestFixture.CreateDocumentRepository();
 
-		private CommandExecutionContext CreateExecutionContext(string statementText, int currentPosition)
+		private ActionExecutionContext CreateExecutionContext(string statementText, int currentPosition)
 		{
 			_documentRepository.UpdateStatements(statementText);
-			return new CommandExecutionContext(statementText, currentPosition, currentPosition, currentPosition, _documentRepository);
+			return new ActionExecutionContext(statementText, currentPosition, currentPosition, currentPosition, _documentRepository);
 		}
 
 		[Test(Description = @""), STAThread]
@@ -82,7 +82,7 @@ namespace SqlPad.Oracle.Test
 			documentRepository.UpdateStatements(query);
 
 			const int caretOffset = 13;
-			var executionContext = new CommandExecutionContext(query, caretOffset, caretOffset, caretOffset, documentRepository);
+			var executionContext = new ActionExecutionContext(query, caretOffset, caretOffset, caretOffset, documentRepository);
 			var targetIndex = _navigationService.NavigateToDefinition(executionContext);
 			targetIndex.ShouldBe(null);
 		}

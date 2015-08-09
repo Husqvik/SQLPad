@@ -17,16 +17,16 @@ namespace SqlPad.Oracle
 		internal ICollection<ContextAction> GetContextActions(OracleDatabaseModelBase databaseModel, string statementText, int cursorPosition)
 		{
 			var documentStore = new SqlDocumentRepository(OracleSqlParser.Instance, new OracleStatementValidator(), databaseModel, statementText);
-			var executionContext = new CommandExecutionContext(statementText, cursorPosition, cursorPosition, 0, documentStore);
+			var executionContext = new ActionExecutionContext(statementText, cursorPosition, cursorPosition, 0, documentStore);
 			return GetContextActions(documentStore, executionContext);
 		}
 
-		public ICollection<ContextAction> GetAvailableRefactorings(SqlDocumentRepository sqlDocumentRepository, CommandExecutionContext executionContext)
+		public ICollection<ContextAction> GetAvailableRefactorings(SqlDocumentRepository sqlDocumentRepository, ActionExecutionContext executionContext)
 		{
 			throw new NotImplementedException();
 		}
 
-		public ICollection<ContextAction> GetContextActions(SqlDocumentRepository sqlDocumentRepository, CommandExecutionContext executionContext)
+		public ICollection<ContextAction> GetContextActions(SqlDocumentRepository sqlDocumentRepository, ActionExecutionContext executionContext)
 		{
 			if (sqlDocumentRepository?.Statements == null || executionContext.StatementText != sqlDocumentRepository.StatementText)
 				return EmptyCollection;
@@ -149,7 +149,7 @@ namespace SqlPad.Oracle
 			return actionList.AsReadOnly();
 		}
 
-		private static CommandExecutionContext CloneContextWithUseDefaultSettingsOption(CommandExecutionContext executionContext)
+		private static ActionExecutionContext CloneContextWithUseDefaultSettingsOption(ActionExecutionContext executionContext)
 		{
 			var contextWithUseDefaultSettingsOption = executionContext.Clone();
 			contextWithUseDefaultSettingsOption.SettingsProvider = new EditDialog(new CommandSettingsModel { UseDefaultSettings = () => !Keyboard.IsKeyDown(Key.LeftShift) });

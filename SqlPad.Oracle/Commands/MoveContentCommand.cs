@@ -10,7 +10,7 @@ namespace SqlPad.Oracle.Commands
 	public class MoveContentCommand
 	{
 		private readonly Direction _direction;
-		private readonly CommandExecutionContext _executionContext;
+		private readonly ActionExecutionContext _executionContext;
 
 		public static readonly CommandExecutionHandler MoveContentUp = new CommandExecutionHandler
 		{
@@ -26,17 +26,17 @@ namespace SqlPad.Oracle.Commands
 			ExecutionHandler = MoveContentDownHandler
 		};
 
-		private static void MoveContentUpHandler(CommandExecutionContext executionContext)
+		private static void MoveContentUpHandler(ActionExecutionContext executionContext)
 		{
 			new MoveContentCommand(executionContext, Direction.Up).MoveContent();
 		}
 
-		private static void MoveContentDownHandler(CommandExecutionContext executionContext)
+		private static void MoveContentDownHandler(ActionExecutionContext executionContext)
 		{
 			new MoveContentCommand(executionContext, Direction.Down).MoveContent();
 		}
 
-		private MoveContentCommand(CommandExecutionContext executionContext, Direction direction)
+		private MoveContentCommand(ActionExecutionContext executionContext, Direction direction)
 		{
 			_executionContext = executionContext;
 			_direction = direction;

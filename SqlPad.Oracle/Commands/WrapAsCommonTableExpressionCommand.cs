@@ -12,7 +12,7 @@ namespace SqlPad.Oracle.Commands
 	{
 		public const string Title = "Wrap as common table expression";
 
-		private WrapAsCommonTableExpressionCommand(CommandExecutionContext executionContext)
+		private WrapAsCommonTableExpressionCommand(ActionExecutionContext executionContext)
 			: base(executionContext)
 		{
 		}

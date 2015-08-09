@@ -4,6 +4,6 @@ namespace SqlPad
 {
 	public interface IHelpProvider
 	{
-		void ShowHelp(CommandExecutionContext executionContext);
+		void ShowHelp(ActionExecutionContext executionContext);
 	}
 }

@@ -10,7 +10,7 @@ namespace SqlPad.Oracle.Commands
 	{
 		public const string Title = "Convert to expression";
 
-		private ConvertOrderByNumberColumnReferencesCommand(CommandExecutionContext executionContext)
+		private ConvertOrderByNumberColumnReferencesCommand(ActionExecutionContext executionContext)
 			: base(executionContext)
 		{
 		}

@@ -17,7 +17,7 @@ namespace SqlPad.Oracle.Commands
 		private HashSet<string> _existingColumns;
 		private OracleInsertTarget _insertTarget;
 
-		private AddInsertIntoColumnListCommand(CommandExecutionContext executionContext)
+		private AddInsertIntoColumnListCommand(ActionExecutionContext executionContext)
 			: base(executionContext)
 		{
 		}

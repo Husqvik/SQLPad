@@ -41,7 +41,7 @@ namespace SqlPad.Oracle.Commands
 			return commands.AsReadOnly();
 		}
 
-		private ResolveAmbiguousColumnCommand(CommandExecutionContext executionContext, string resolvedName)
+		private ResolveAmbiguousColumnCommand(ActionExecutionContext executionContext, string resolvedName)
 			: base(executionContext)
 		{	
 			_resolvedName = resolvedName;

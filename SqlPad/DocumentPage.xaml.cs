@@ -690,14 +690,14 @@ namespace SqlPad
 
 		private void NavigateToQueryBlockRoot(object sender, ExecutedRoutedEventArgs args)
 		{
-			var executionContext = CommandExecutionContext.Create(Editor, _sqlDocumentRepository);
+			var executionContext = ActionExecutionContext.Create(Editor, _sqlDocumentRepository);
 			var queryBlockRootIndex = _navigationService.NavigateToQueryBlockRoot(executionContext);
 			NavigateToOffset(queryBlockRootIndex);
 		}
 		
 		private void NavigateToDefinition(object sender, ExecutedRoutedEventArgs args)
 		{
-			var executionContext = CommandExecutionContext.Create(Editor, _sqlDocumentRepository);
+			var executionContext = ActionExecutionContext.Create(Editor, _sqlDocumentRepository);
 			var queryBlockRootIndex = _navigationService.NavigateToDefinition(executionContext);
 			NavigateToOffset(queryBlockRootIndex);
 		}
@@ -904,7 +904,7 @@ namespace SqlPad
 
 		private void FindUsages(object sender, ExecutedRoutedEventArgs args)
 		{
-			var executionContext = CommandExecutionContext.Create(Editor, _sqlDocumentRepository);
+			var executionContext = ActionExecutionContext.Create(Editor, _sqlDocumentRepository);
 			_navigationService.FindUsages(executionContext);
 			AddHighlightSegments(executionContext.SegmentsToReplace);
 		}
@@ -1744,7 +1744,7 @@ namespace SqlPad
 					.Select(ci => CreateContextMenuItemFromCodeSnippet(ci, c)));
 		}
 
-		private MenuItem CreateContextMenuItemFromCodeSnippet(ICodeSnippet codeSnippet, CommandExecutionContext executionContext)
+		private MenuItem CreateContextMenuItemFromCodeSnippet(ICodeSnippet codeSnippet, ActionExecutionContext executionContext)
 		{
 			var textSegment =
 				new TextSegment
@@ -1762,11 +1762,11 @@ namespace SqlPad
 			return BuildContextMenuItem(new ContextAction(codeSnippet.Name, executionHandler, executionContext));
 		}
 
-		private bool PopulateContextMenuItems(Func<CommandExecutionContext, IEnumerable<MenuItem>> buildMenuItemFunction)
+		private bool PopulateContextMenuItems(Func<ActionExecutionContext, IEnumerable<MenuItem>> buildMenuItemFunction)
 		{
 			_contextActionMenu.Items.Clear();
 
-			var executionContext = CommandExecutionContext.Create(Editor, _sqlDocumentRepository);
+			var executionContext = ActionExecutionContext.Create(Editor, _sqlDocumentRepository);
 			foreach (var menuItem in buildMenuItemFunction(executionContext))
 			{
 				_contextActionMenu.Items.Add(menuItem);
@@ -1932,14 +1932,14 @@ namespace SqlPad
 
 		private void ShowHelpHandler(object sender, ExecutedRoutedEventArgs e)
 		{
-			var executionContext = CommandExecutionContext.Create(Editor, _sqlDocumentRepository);
+			var executionContext = ActionExecutionContext.Create(Editor, _sqlDocumentRepository);
 			_createHelpProvider.ShowHelp(executionContext);
 		}
 
 		private void BindVariableEditorGotFocusHandler(object sender, RoutedEventArgs e)
 		{
 			var bindVariable = (BindVariableModel)((FrameworkElement)sender).Tag;
-			var executionContext = CommandExecutionContext.Create(Editor, _sqlDocumentRepository);
+			var executionContext = ActionExecutionContext.Create(Editor, _sqlDocumentRepository);
 			executionContext.CaretOffset = bindVariable.BindVariable.Nodes[0].SourcePosition.IndexStart;
 			_navigationService.DisplayBindVariableUsages(executionContext);
 			AddHighlightSegments(executionContext.SegmentsToReplace);

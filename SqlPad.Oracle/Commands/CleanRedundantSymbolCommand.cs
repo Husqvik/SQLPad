@@ -12,7 +12,7 @@ namespace SqlPad.Oracle.Commands
 
 		private IReadOnlyCollection<RedundantTerminalGroup> _terminalGroupsToRemove;
 
-		private CleanRedundantSymbolCommand(CommandExecutionContext executionContext)
+		private CleanRedundantSymbolCommand(ActionExecutionContext executionContext)
 			: base(executionContext)
 		{
 		}

@@ -9,7 +9,7 @@ namespace SqlPad.Oracle
 {
 	public class OracleNavigationService : INavigationService
 	{
-		public int? NavigateToQueryBlockRoot(CommandExecutionContext executionContext)
+		public int? NavigateToQueryBlockRoot(ActionExecutionContext executionContext)
 		{
 			var documentRepository = executionContext.DocumentRepository;
 			var statement = documentRepository.Statements.GetStatementAtPosition(executionContext.CaretOffset);
@@ -21,7 +21,7 @@ namespace SqlPad.Oracle
 			return queryBlock?.RootNode.SourcePosition.IndexStart;
 		}
 
-		public int? NavigateToDefinition(CommandExecutionContext executionContext)
+		public int? NavigateToDefinition(ActionExecutionContext executionContext)
 		{
 			var documentRepository = executionContext.DocumentRepository;
 			var terminal = documentRepository.Statements.GetTerminalAtPosition(executionContext.CaretOffset, n => !n.Id.IsZeroOffsetTerminalId());
@@ -49,12 +49,12 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		public void FindUsages(CommandExecutionContext executionContext)
+		public void FindUsages(ActionExecutionContext executionContext)
 		{
 			FindUsagesCommand.FindUsages.ExecutionHandler(executionContext);
 		}
 
-		public void DisplayBindVariableUsages(CommandExecutionContext executionContext)
+		public void DisplayBindVariableUsages(ActionExecutionContext executionContext)
 		{
 			var terminal = executionContext.DocumentRepository.Statements.GetTerminalAtPosition(executionContext.CaretOffset);
 			if (terminal == null || !String.Equals(terminal.Id, Terminals.BindVariableIdentifier))

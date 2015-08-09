@@ -13,7 +13,7 @@ namespace SqlPad.Oracle.Commands
 	{
 		public const string Title = "Toggle fully qualified references";
 
-		private ToggleFullyQualifiedReferencesCommand(CommandExecutionContext executionContext)
+		private ToggleFullyQualifiedReferencesCommand(ActionExecutionContext executionContext)
 			: base(executionContext)
 		{
 		}

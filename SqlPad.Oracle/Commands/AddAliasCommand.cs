@@ -13,7 +13,7 @@ namespace SqlPad.Oracle.Commands
 		private OracleDataObjectReference _currentObjectReference;
 		private OracleColumnReference _currentColumnReference;
 
-		private AddAliasCommand(CommandExecutionContext executionContext)
+		private AddAliasCommand(ActionExecutionContext executionContext)
 			: base(executionContext)
 		{
 		}
@@ -101,9 +101,9 @@ namespace SqlPad.Oracle.Commands
 
 	internal class AliasCommandHelper
 	{
-		private readonly CommandExecutionContext _executionContext;
+		private readonly ActionExecutionContext _executionContext;
 
-		public AliasCommandHelper(CommandExecutionContext executionContext)
+		public AliasCommandHelper(ActionExecutionContext executionContext)
 		{
 			_executionContext = executionContext;
 		}

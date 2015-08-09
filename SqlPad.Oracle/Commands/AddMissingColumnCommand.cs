@@ -13,7 +13,7 @@ namespace SqlPad.Oracle.Commands
 		
 		public const string Title = "Add missing column";
 
-		private AddMissingColumnCommand(CommandExecutionContext executionContext)
+		private AddMissingColumnCommand(ActionExecutionContext executionContext)
 			: base(executionContext)
 		{
 		}

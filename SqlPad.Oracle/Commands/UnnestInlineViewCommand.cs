@@ -13,7 +13,7 @@ namespace SqlPad.Oracle.Commands
 
 		public const string Title = "Unnest";
 
-		private UnnestInlineViewCommand(CommandExecutionContext executionContext)
+		private UnnestInlineViewCommand(ActionExecutionContext executionContext)
 			: base(executionContext)
 		{
 			_parentQueryBlock = SemanticModel == null

@@ -16,7 +16,7 @@ namespace SqlPad.Oracle.Commands
 		private IList<StatementGrammarNode> _selectedTerminals;
 		private TextSegment _addedTextSegment = TextSegment.Empty;
 
-		private AddToGroupByCommand(CommandExecutionContext executionContext)
+		private AddToGroupByCommand(ActionExecutionContext executionContext)
 			: base(executionContext)
 		{
 		}

@@ -113,10 +113,10 @@ WHERE
 			public CommandSettingsModel Settings { get; private set; }
 		}
 
-		private CommandExecutionContext CreateExecutionContext()
+		private ActionExecutionContext CreateExecutionContext()
 		{
 			_documentRepository.UpdateStatements(_editor.Text);
-			return CommandExecutionContext.Create(_editor, _documentRepository);
+			return ActionExecutionContext.Create(_editor, _documentRepository);
 		}
 
 		private bool CanExecuteCommand(CommandExecutionHandler executionHandler)
@@ -132,7 +132,7 @@ WHERE
 			ExecuteCommand(executionHandler, executionContext);
 		}
 
-		private void ExecuteCommand(CommandExecutionHandler executionHandler, CommandExecutionContext executionContext)
+		private void ExecuteCommand(CommandExecutionHandler executionHandler, ActionExecutionContext executionContext)
 		{
 			executionHandler.ExecutionHandler(executionContext);
 			GenericCommandHandler.UpdateDocument(_editor, executionContext);
@@ -385,7 +385,7 @@ FROM
 		private List<TextSegment> FindUsagesOrdered(string statementText, int currentPosition)
 		{
 			_documentRepository.UpdateStatements(statementText);
-			var executionContext = new CommandExecutionContext(statementText, currentPosition, currentPosition, 0, _documentRepository);
+			var executionContext = new ActionExecutionContext(statementText, currentPosition, currentPosition, 0, _documentRepository);
 			FindUsagesCommand.FindUsages.ExecutionHandler(executionContext);
 			return executionContext.SegmentsToReplace.OrderBy(s => s.IndextStart).ToList();
 		}

@@ -65,7 +65,7 @@ namespace SqlPad.Oracle.Commands
 				   currentTerminal.RootNode.Id == NonTerminals.PlSqlBlockStatement;
 		}
 
-		private LiteralBindVariableConversionCommand(CommandExecutionContext executionContext, IReadOnlyList<StatementGrammarNode> literalTerminals, string requiredPrecedingTerminalId)
+		private LiteralBindVariableConversionCommand(ActionExecutionContext executionContext, IReadOnlyList<StatementGrammarNode> literalTerminals, string requiredPrecedingTerminalId)
 			: base(executionContext)
 		{
 			_literalTerminals = literalTerminals;
