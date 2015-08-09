@@ -14,6 +14,7 @@ namespace SqlPad
 		public static readonly DependencyProperty EnableChildReferenceDataSourcesProperty = DependencyProperty.Register(nameof(EnableChildReferenceDataSources), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
 		public static readonly DependencyProperty TitleProperty = DependencyProperty.Register(nameof(Title), typeof(string), typeof(OutputViewer), new FrameworkPropertyMetadata(TitlePropertyChangedCallbackHandler));
 		public static readonly DependencyProperty DatabaseOutputProperty = DependencyProperty.Register(nameof(DatabaseOutput), typeof(string), typeof(OutputViewer), new FrameworkPropertyMetadata(String.Empty));
+		public static readonly DependencyProperty ExecutionLogProperty = DependencyProperty.Register(nameof(ExecutionLog), typeof(string), typeof(OutputViewer), new FrameworkPropertyMetadata(String.Empty));
 		public static readonly DependencyProperty ActiveResultViewerProperty = DependencyProperty.Register(nameof(ActiveResultViewer), typeof(ResultViewer), typeof(OutputViewer), new FrameworkPropertyMetadata());
 
 		public static readonly DependencyProperty IsDebuggerControlEnabledProperty = DependencyProperty.Register(nameof(IsDebuggerControlEnabled), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
@@ -90,6 +91,13 @@ namespace SqlPad
 		{
 			get { return (string)GetValue(DatabaseOutputProperty); }
 			private set { SetValue(DatabaseOutputProperty, value); }
+		}
+
+		[Bindable(true)]
+		public string ExecutionLog
+		{
+			get { return (string)GetValue(ExecutionLogProperty); }
+			private set { SetValue(ExecutionLogProperty, value); }
 		}
 
 		[Bindable(true)]

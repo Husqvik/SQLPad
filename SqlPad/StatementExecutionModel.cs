@@ -53,6 +53,10 @@ namespace SqlPad
 
 		public bool ExecutedSuccessfully { get; set; }
 
+		public DateTime ExecutedAt { get; set; }
+
+		public TimeSpan Duration { get; set; }
+
 		public IReadOnlyList<CompilationError> CompilationErrors { get; set; }
 
 		public IReadOnlyDictionary<ResultInfo, IReadOnlyList<ColumnHeader>> ResultInfoColumnHeaders { get; set; }

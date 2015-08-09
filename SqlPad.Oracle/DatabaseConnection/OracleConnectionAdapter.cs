@@ -593,8 +593,13 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 					userCommand.InitialLONGFetchSize = OracleDatabaseModel.InitialLongFetchSize;
 
-					var results = new List<StatementExecutionResult>();
+					if (executionModel.GatherExecutionStatistics)
+					{
+						_executionStatisticsDataProvider = new SessionExecutionStatisticsDataProvider(_databaseModel.StatisticsKeys, _userSessionId.Value);
+						await _databaseModel.UpdateModelAsync(cancellationToken, true, _executionStatisticsDataProvider.SessionBeginExecutionStatisticsDataProvider);
+					}
 
+					var results = new List<StatementExecutionResult>();
 					foreach (var statement in executionModel.Statements)
 					{
 						userCommand.Parameters.Clear();
@@ -605,24 +610,24 @@ namespace SqlPad.Oracle.DatabaseConnection
 							userCommand.AddSimpleParameter(variable.Name, variable.Value, variable.DataType);
 						}
 
-						if (executionModel.GatherExecutionStatistics)
-						{
-							_executionStatisticsDataProvider = new SessionExecutionStatisticsDataProvider(_databaseModel.StatisticsKeys, _userSessionId.Value);
-							await _databaseModel.UpdateModelAsync(cancellationToken, true, _executionStatisticsDataProvider.SessionBeginExecutionStatisticsDataProvider);
-						}
-
 						int recordsAffected;
+						DateTime timestamp;
+						TimeSpan duration;
 						var resultInfoColumnHeaders = new Dictionary<ResultInfo, IReadOnlyList<ColumnHeader>>();
 						var isPlSql = ((OracleStatement)statement.Statement)?.IsPlSql ?? false;
 						if (!statement.IsPartialStatement && isPlSql)
 						{
+							timestamp = DateTime.Now;
 							//Task.Factory.StartNew(() => TestDebug(userCommand, cancellationToken), cancellationToken).Wait(cancellationToken);
 							recordsAffected = await userCommand.ExecuteNonQueryAsynchronous(cancellationToken);
+							duration = DateTime.Now - timestamp;
 							resultInfoColumnHeaders.AddRange(AcquireImplicitRefCursors(userCommand));
 						}
 						else
 						{
+							timestamp = DateTime.Now;
 							var dataReader = await userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
+							duration = DateTime.Now - timestamp;
 							recordsAffected = dataReader.RecordsAffected;
 							var resultInfo = isReferenceConstraintNavigation
 								? new ResultInfo($"ReferenceConstrantResult{dataReader.GetHashCode()}", null, ResultIdentifierType.SystemGenerated)
@@ -648,6 +653,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 							new StatementExecutionResult
 							{
 								StatementModel = statement,
+								ExecutedAt = timestamp,
+								Duration = duration,
 								AffectedRowCount = recordsAffected,
 								ExecutedSuccessfully = true,
 								CompilationErrors = _userCommandHasCompilationErrors ? await RetrieveCompilationErrors(statement.ValidationModel.Statement, cancellationToken) : new CompilationError[0],

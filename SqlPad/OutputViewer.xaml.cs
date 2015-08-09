@@ -28,6 +28,7 @@ namespace SqlPad
 		private readonly SessionExecutionStatisticsCollection _sessionExecutionStatistics = new SessionExecutionStatisticsCollection();
 		private readonly ObservableCollection<CompilationError> _compilationErrors = new ObservableCollection<CompilationError>();
 		private readonly DatabaseProviderConfiguration _providerConfiguration;
+		private readonly StringBuilder _executionLogBuilder = new StringBuilder();
 
 		private bool _isRunning;
 		private object _previousSelectedTab;
@@ -107,7 +108,7 @@ namespace SqlPad
 			e.Accepted = ShowAllSessionExecutionStatistics || ((SessionExecutionStatisticsRecord)e.Item).Value != 0;
 		}
 
-		private void InitializeResultViewers()
+		private int InitializeResultViewers()
 		{
 			var tabControlIndex = 0;
 			foreach (var executionResult in _executionResult.StatementResults)
@@ -134,9 +135,9 @@ namespace SqlPad
 
 					TabControlResult.Items.Insert(tabControlIndex++, tabItem);
 				}
-
-				StatusInfo.ResultGridAvailable = true;
 			}
+
+			return tabControlIndex;
 		}
 
 		private void RemoveResultViewers()
@@ -192,7 +193,7 @@ namespace SqlPad
 		{
 			if (TabControlResult.SelectedItem == null || TabControlResult.SelectedItem.In(TabExecutionPlan, TabStatistics, TabCompilationErrors))
 			{
-				TabDatabaseOutput.IsSelected = true;
+				TabExecutionLog.IsSelected = true;
 			}
 		}
 
@@ -253,8 +254,6 @@ namespace SqlPad
 
 			ConnectionAdapter.EnableDatabaseOutput = EnableDatabaseOutput;
 
-			var executedAt = DateTime.Now;
-
 			Task<StatementExecutionBatchResult> innerTask = null;
 			var actionResult = await SafeTimedActionAsync(() => innerTask = ConnectionAdapter.ExecuteStatementAsync(executionModel, _statementExecutionCancellationTokenSource.Token));
 
@@ -265,23 +264,12 @@ namespace SqlPad
 			}
 
 			_executionResult = innerTask.Result;
-			var lastStatementResult = StatementExecutionResult.Empty;
-			foreach (var statementResult in _executionResult.StatementResults)
-			{
-				var executionHistoryRecord = new StatementExecutionHistoryEntry(statementResult.StatementModel.StatementText, executedAt);
 
-				if (executionHistoryRecord.StatementText.Length <= MaxHistoryEntrySize)
-				{
-					_providerConfiguration.AddStatementExecution(executionHistoryRecord);
-				}
-				else
-				{
-					Trace.WriteLine($"Executes statement not stored in the execution history. The maximum allowed size is {MaxHistoryEntrySize} characters while the statement has {executionHistoryRecord.StatementText.Length} characters.");
-				}
+			UpdateExecutionLog();
 
-				lastStatementResult = statementResult;
-			}
+			UpdateHistoryEntries();
 
+			var lastStatementResult = _executionResult.StatementResults.Last();
 			if (!lastStatementResult.ExecutedSuccessfully)
 			{
 				NotifyExecutionCanceled();
@@ -322,7 +310,17 @@ namespace SqlPad
 				TabControlResult.SelectedItem = TabCompilationErrors;
 			}
 
-			if (lastStatementResult.ResultInfoColumnHeaders.Count == 0)
+			var resultViewerCount = InitializeResultViewers();
+			if (resultViewerCount > 0)
+			{
+				StatusInfo.ResultGridAvailable = true;
+
+				if (!keepPreviousSelectedTab)
+				{
+					TabControlResult.SelectedIndex = 0;
+				}
+			}
+			else
 			{
 				if (lastStatementResult.AffectedRowCount == -1)
 				{
@@ -332,16 +330,40 @@ namespace SqlPad
 				{
 					StatusInfo.AffectedRowCount = lastStatementResult.AffectedRowCount;
 				}
-
-				return;
 			}
+		}
 
-			InitializeResultViewers();
-
-			if (!keepPreviousSelectedTab)
+		private void UpdateHistoryEntries()
+		{
+			foreach (var statementResult in _executionResult.StatementResults)
 			{
-				TabControlResult.SelectedIndex = 0;
+				var executionHistoryRecord = new StatementExecutionHistoryEntry(statementResult.StatementModel.StatementText, statementResult.ExecutedAt);
+
+				if (executionHistoryRecord.StatementText.Length <= MaxHistoryEntrySize)
+				{
+					_providerConfiguration.AddStatementExecution(executionHistoryRecord);
+				}
+				else
+				{
+					Trace.WriteLine($"Executes statement not stored in the execution history. The maximum allowed size is {MaxHistoryEntrySize} characters while the statement has {executionHistoryRecord.StatementText.Length} characters.");
+				}
 			}
+		}
+
+		private void UpdateExecutionLog()
+		{
+			foreach (var executionResult in _executionResult.StatementResults)
+			{
+				var message = $"Statement executed successfully ({executionResult.Duration.ToPrettyString()}). ";
+				if (executionResult.AffectedRowCount != -1)
+				{
+					message = $"{message}{executionResult.AffectedRowCount} row(s) affected. ";
+				}
+
+				_executionLogBuilder.AppendLine($"{executionResult.ExecutedAt.ToString("yyyy-MM-dd HH:mm:ss.fff")} - {message}");
+			}
+
+			ExecutionLog = _executionLogBuilder.ToString();
 		}
 
 		private void AddChildReferenceColumns(DataGrid dataGrid, IEnumerable<IReferenceDataSource> childReferenceDataSources)
@@ -457,7 +479,7 @@ namespace SqlPad
 
 		private bool IsTabAlwaysVisible(object tabItem)
 		{
-			return ((TabItem)tabItem).Content is ResultViewer || tabItem.In(TabDatabaseOutput, TabTrace);
+			return ((TabItem)tabItem).Content is ResultViewer || tabItem.In(TabExecutionLog, TabDatabaseOutput, TabTrace);
 		}
 
 		private void ErrorListMouseDoubleClickHandler(object sender, MouseButtonEventArgs e)
@@ -555,19 +577,7 @@ namespace SqlPad
 
 		private void UpdateTimerMessage(TimeSpan timeSpan, bool isCanceling)
 		{
-			string formattedValue;
-			if (timeSpan.TotalMilliseconds < 1000)
-			{
-				formattedValue = $"{(int)timeSpan.TotalMilliseconds} ms";
-			}
-			else if (timeSpan.TotalMilliseconds < 60000)
-			{
-				formattedValue = $"{Math.Round(timeSpan.TotalMilliseconds / 1000, 2)} s";
-			}
-			else
-			{
-				formattedValue = $"{(int)timeSpan.TotalMinutes:00}:{timeSpan.Seconds:00}";
-			}
+			var formattedValue = timeSpan.ToPrettyString();
 
 			if (isCanceling)
 			{
@@ -632,6 +642,12 @@ namespace SqlPad
 			{
 				viewer.ResultViewTabHeaderPopup.IsOpen = false;
 			}
+		}
+
+		private void ClearExecutionLogHandler(object sender, RoutedEventArgs e)
+		{
+			_executionLogBuilder.Clear();
+			ExecutionLog = String.Empty;
 		}
 
 		private void ButtonDebuggerContinueClickHandler(object sender, RoutedEventArgs e)

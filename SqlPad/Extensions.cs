@@ -96,6 +96,21 @@ namespace SqlPad
 				() => (IReadOnlyList<T>)new List<T>(source.TakeWhile(i => !cancellationToken.IsCancellationRequested)).AsReadOnly(),
 				cancellationToken);
 		}
+
+		public static string ToPrettyString(this TimeSpan timeSpan)
+		{
+			if (timeSpan.TotalMilliseconds < 1000)
+			{
+				return $"{(int)timeSpan.TotalMilliseconds} ms";
+			}
+
+			if (timeSpan.TotalMilliseconds < 60000)
+			{
+				return $"{Math.Round(timeSpan.TotalMilliseconds / 1000, 2)} s";
+			}
+
+			return $"{(int)timeSpan.TotalMinutes:00}:{timeSpan.Seconds:00}";
+		}
 	}
 
 	public class StaticResourceBindingExtension : StaticResourceExtension

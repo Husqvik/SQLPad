@@ -63,6 +63,7 @@ namespace SqlPad.Oracle.Test
 				new StatementExecutionResult
 				{
 					StatementModel = statement,
+					ExecutedAt = DateTime.Now,
 					ExecutedSuccessfully = true,
 					CompilationErrors =
 						new[]

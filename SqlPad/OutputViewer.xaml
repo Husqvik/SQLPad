@@ -42,6 +42,13 @@
 		</StackPanel>
 		
 		<TabControl x:Name="TabControlResult" GiveFeedback="TabControlResultGiveFeedbackHandler">
+			<TabItem Header="_Log" x:Name="TabExecutionLog">
+				<DockPanel>
+					<Button Content="_Clear" DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="2" Width="50" Click="ClearExecutionLogHandler" />
+					<sqlPad:ScrollingTextBox Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType=sqlPad:OutputViewer}, Path=ExecutionLog, Mode=OneWay}" FontFamily="Consolas" IsReadOnly="True" IsReadOnlyCaretVisible="True" />
+				</DockPanel>
+			</TabItem>
+
 			<TabItem Header="_Output" x:Name="TabDatabaseOutput">
 				<DockPanel>
 					<StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
