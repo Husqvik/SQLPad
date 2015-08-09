@@ -224,7 +224,7 @@ namespace SqlPad
 				return false;
 
 			SelectNewTabItem();
-			DocumentTabControl.Items.Remove(document.TabItem);
+			DocumentTabControl.RemoveTabItemWithoutBindingError(document.TabItem);
 
 			document.SaveWorkingDocument();
 			WorkDocumentCollection.CloseDocument(document.WorkDocument);

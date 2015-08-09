@@ -98,6 +98,8 @@ namespace SqlPad
 
 		private bool _isSelectingCells;
 
+		public TabItem TabItem { get; }
+
 		public IReadOnlyList<object[]> ResultRowItems => _resultRows;
 
 		public string StatementText => _executionResult.StatementModel.StatementText;
@@ -110,6 +112,23 @@ namespace SqlPad
 			_columnHeaders = columnHeaders;
 
 			InitializeComponent();
+
+			var header = new HeaderedContentControl { Content = new AccessText { Text = resultInfo.Title } };
+			TabItem =
+				new TabItem
+				{
+					Header = header,
+					Content = this
+				};
+
+			header.MouseEnter += DataGridTabHeaderMouseEnterHandler;
+		}
+
+		private void DataGridTabHeaderMouseEnterHandler(object sender, MouseEventArgs args)
+		{
+			DataGridTabHeaderPopupTextBox.FontFamily = _outputViewer.DocumentPage.Editor.FontFamily;
+			DataGridTabHeaderPopupTextBox.FontSize = _outputViewer.DocumentPage.Editor.FontSize;
+			ResultViewTabHeaderPopup.IsOpen = true;
 		}
 
 		private async void InitializedHandler(object sender, EventArgs e)

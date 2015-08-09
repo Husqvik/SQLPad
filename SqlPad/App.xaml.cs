@@ -91,7 +91,7 @@ namespace SqlPad
 			}
 		}
 
-		internal void ClickBubblingCancelHandler(object sender, RoutedEventArgs args)
+		internal void ClickBubblingCancellationHandler(object sender, RoutedEventArgs args)
 		{
 			args.Handled = true;
 		}

@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using ICSharpCode.AvalonEdit;
 using NUnit.Framework;
 using Shouldly;
 using SqlPad.Commands;
@@ -19,7 +18,6 @@ namespace SqlPad.Test
 	public class VisualComponentTest
 	{
 		private App _app;
-		private static TextEditor _editor;
 
 		[TestFixtureSetUp]
 		public void FixtureSetup()
@@ -34,24 +32,26 @@ namespace SqlPad.Test
 			VisualTestRunner.RunTest("SqlPad.Test.VisualComponentTest, SqlPad.Test", "TestBasicSqlPadBehavior");
 		}
 
-		private static SqlTextEditor GetEditor()
+		private static SqlTextEditor Editor => DocumentPage.Editor;
+
+		private static DocumentPage DocumentPage
 		{
-			var mainWindow = (MainWindow)Application.Current.MainWindow;
-			var page = (DocumentPage)((TabItem)mainWindow.DocumentTabControl.SelectedItem).Content;
-			return page.Editor;
+			get
+			{
+				var mainWindow = (MainWindow)Application.Current.MainWindow;
+				return (DocumentPage)((TabItem)mainWindow.DocumentTabControl.SelectedItem).Content;
+			}
 		}
 
 		private static void TestBasicSqlPadBehavior(VisualTestContext context)
 		{
-			_editor = GetEditor();
-
 			try
 			{
 				AssertBasicSqlPadBehavior();
 			}
 			finally
 			{
-				_editor.IsModified = false;
+				Editor.IsModified = false;
 			}
 		}
 
@@ -107,19 +107,42 @@ FROM
 WHERE
 	LNNVL(1 <> 1);";
 
-			_editor.Document.Insert(0, statementText);
-			_editor.CaretOffset = 50;
+			Editor.Document.Insert(0, statementText);
+			Editor.CaretOffset = 50;
 
 			VisualTestRunner.Wait(0.1);
 
-			_editor.CaretOffset = 111;
+			Editor.CaretOffset = 111;
 
-			GenericCommands.FindUsages.Execute(null, _editor.TextArea);
-			GenericCommands.ExecuteDatabaseCommandWithActualExecutionPlan.Execute(null, _editor.TextArea);
-			GenericCommands.ListContextActions.Execute(null, _editor.TextArea);
-			GenericCommands.ListCodeGenerationItems.Execute(null, _editor.TextArea);
+			GenericCommands.FindUsages.Execute(null, Editor.TextArea);
+			GenericCommands.ExecuteDatabaseCommandWithActualExecutionPlan.Execute(null, Editor.TextArea);
+			GenericCommands.ListContextActions.Execute(null, Editor.TextArea);
+			GenericCommands.ListCodeGenerationItems.Execute(null, Editor.TextArea);
 
 			VisualTestRunner.Wait(0.2);
+
+			DocumentPage.BindVariables.Count.ShouldBe(1);
+			DocumentPage.Schemas.Count.ShouldBeGreaterThan(0);
+			DocumentPage.IsDirty.ShouldBe(true);
+			DocumentPage.DatabaseModel.ShouldNotBe(null);
+			DocumentPage.ConnectionStatus.ShouldBe(ConnectionStatus.Connected);
+			DocumentPage.CurrentConnection.ShouldNotBe(null);
+			DocumentPage.ConnectionErrorMessage.ShouldBe(String.Empty);
+			//DocumentPage.CurrentSchema.Length.ShouldBeGreaterThan(0);
+
+			DocumentPage.OutputViewers.Count.ShouldBe(1);
+			var outputViewer = DocumentPage.OutputViewers[0];
+			outputViewer.DatabaseOutput.ShouldBe($"Test database output{Environment.NewLine}");
+			outputViewer.CompilationErrors.Count.ShouldBe(1);
+			outputViewer.ExecutionLog.Length.ShouldBe(87);
+			outputViewer.ExecutionLog.ShouldContain("Statement executed successfully");
+			outputViewer.IsBusy.ShouldBe(false);
+			outputViewer.TransactionControlVisibity.ShouldBe(Visibility.Collapsed);
+			outputViewer.SessionExecutionStatistics.Count.ShouldBeGreaterThan(0);
+			outputViewer.ActiveResultViewer.ShouldNotBe(null);
+
+			var statusInfo = outputViewer.StatusInfo;
+			statusInfo.ResultGridAvailable.ShouldBe(true);
 
 			TestPairCharacterInsertion();
 
@@ -138,143 +161,143 @@ WHERE
 
 		private static void TestPairCharacterInsertionBeforeExistingText()
 		{
-			_editor.Clear();
+			Editor.Clear();
 			EnterText("Existing text");
-			_editor.CaretOffset = 0;
+			Editor.CaretOffset = 0;
 
 			EnterText("'");
-			_editor.Text.ShouldBe("'Existing text");
-			_editor.CaretOffset.ShouldBe(1);
+			Editor.Text.ShouldBe("'Existing text");
+			Editor.CaretOffset.ShouldBe(1);
 
-			_editor.CaretOffset = 10;
+			Editor.CaretOffset = 10;
 			EnterText("\"");
-			_editor.Text.ShouldBe("'Existing \"text");
-			_editor.CaretOffset.ShouldBe(11);
+			Editor.Text.ShouldBe("'Existing \"text");
+			Editor.CaretOffset.ShouldBe(11);
 		}
 
 		private static void TestPairCharacterInsertion()
 		{
-			_editor.Clear();
+			Editor.Clear();
 			
 			EnterText("(");
-			_editor.Text.ShouldBe("()");
-			_editor.CaretOffset.ShouldBe(1);
+			Editor.Text.ShouldBe("()");
+			Editor.CaretOffset.ShouldBe(1);
 
-			_editor.CaretOffset = 2;
+			Editor.CaretOffset = 2;
 			EnterText("'");
-			_editor.Text.ShouldBe("()''");
-			_editor.CaretOffset.ShouldBe(3);
+			Editor.Text.ShouldBe("()''");
+			Editor.CaretOffset.ShouldBe(3);
 
-			_editor.CaretOffset = 4;
+			Editor.CaretOffset = 4;
 			EnterText("\"");
-			_editor.Text.ShouldBe("()''\"\"");
-			_editor.CaretOffset.ShouldBe(5);
+			Editor.Text.ShouldBe("()''\"\"");
+			Editor.CaretOffset.ShouldBe(5);
 		}
 
 		private static void TestPairCharacterInsertionWhenNextCharacterIsThePairCharacter()
 		{
-			_editor.Clear();
+			Editor.Clear();
 
 			EnterText("()");
-			_editor.CaretOffset = 1;
+			Editor.CaretOffset = 1;
 			EnterText(")");
-			_editor.Text.ShouldBe("()");
-			_editor.CaretOffset.ShouldBe(2);
+			Editor.Text.ShouldBe("()");
+			Editor.CaretOffset.ShouldBe(2);
 
 			EnterText("''");
-			_editor.CaretOffset = 3;
+			Editor.CaretOffset = 3;
 			EnterText("'");
-			_editor.Text.ShouldBe("()''");
-			_editor.CaretOffset.ShouldBe(4);
+			Editor.Text.ShouldBe("()''");
+			Editor.CaretOffset.ShouldBe(4);
 
 			EnterText("\"\"");
-			_editor.CaretOffset = 5;
+			Editor.CaretOffset = 5;
 			EnterText("\"");
-			_editor.Text.ShouldBe("()''\"\"");
-			_editor.CaretOffset.ShouldBe(6);
+			Editor.Text.ShouldBe("()''\"\"");
+			Editor.CaretOffset.ShouldBe(6);
 		}
 
 		private static void TestPairCharacterInsertionAfterAlreadyEnteredPair()
 		{
-			_editor.Clear();
+			Editor.Clear();
 
 			EnterText("''");
-			_editor.CaretOffset = 2;
+			Editor.CaretOffset = 2;
 			EnterText("'");
-			_editor.Text.ShouldBe("'''");
-			_editor.CaretOffset.ShouldBe(3);
+			Editor.Text.ShouldBe("'''");
+			Editor.CaretOffset.ShouldBe(3);
 
-			_editor.Clear();
+			Editor.Clear();
 
 			EnterText("\"\"");
-			_editor.CaretOffset = 2;
+			Editor.CaretOffset = 2;
 			EnterText("\"");
-			_editor.Text.ShouldBe("\"\"\"");
-			_editor.CaretOffset.ShouldBe(3);
+			Editor.Text.ShouldBe("\"\"\"");
+			Editor.CaretOffset.ShouldBe(3);
 
-			_editor.Clear();
+			Editor.Clear();
 
 			EnterText("()");
-			_editor.CaretOffset = 2;
+			Editor.CaretOffset = 2;
 			EnterText("(");
-			_editor.Text.ShouldBe("()()");
-			_editor.CaretOffset.ShouldBe(3);
+			Editor.Text.ShouldBe("()()");
+			Editor.CaretOffset.ShouldBe(3);
 		}
 
 		private static void TestParenthesisCharacterInsertionWithinExistingParenthesis()
 		{
-			_editor.Clear();
+			Editor.Clear();
 
 			EnterText("()");
-			_editor.CaretOffset = 1;
+			Editor.CaretOffset = 1;
 			EnterText("(");
-			_editor.Text.ShouldBe("(()");
-			_editor.CaretOffset.ShouldBe(2);
+			Editor.Text.ShouldBe("(()");
+			Editor.CaretOffset.ShouldBe(2);
 
-			_editor.Clear();
+			Editor.Clear();
 
 			EnterText("(SELECT)");
-			_editor.CaretOffset = 1;
+			Editor.CaretOffset = 1;
 			EnterText("(");
-			_editor.Text.ShouldBe("((SELECT)");
-			_editor.CaretOffset.ShouldBe(2);
+			Editor.Text.ShouldBe("((SELECT)");
+			Editor.CaretOffset.ShouldBe(2);
 		}
 
 		private static void TestPairCharacterDeletionWithCursorBetweenEmptyPair()
 		{
-			_editor.Clear();
+			Editor.Clear();
 
 			EnterText("()");
-			_editor.CaretOffset = 1;
+			Editor.CaretOffset = 1;
 
 			PressBackspace();
 
-			_editor.Text.ShouldBe(String.Empty);
-			_editor.CaretOffset.ShouldBe(0);
+			Editor.Text.ShouldBe(String.Empty);
+			Editor.CaretOffset.ShouldBe(0);
 		}
 
 		private static void EnterText(string text)
 		{
-			_editor.TextArea.RaiseEvent(
+			Editor.TextArea.RaiseEvent(
 				new TextCompositionEventArgs(
 					InputManager.Current.PrimaryKeyboardDevice,
-					new TextComposition(InputManager.Current, _editor.TextArea, text)) { RoutedEvent = TextCompositionManager.TextInputEvent }
+					new TextComposition(InputManager.Current, Editor.TextArea, text)) { RoutedEvent = TextCompositionManager.TextInputEvent }
 				);
 		}
 
 		private static void PressBackspace()
 		{
 			var keyEventArgs =
-				new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(_editor), 0, Key.Back)
+				new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(Editor), 0, Key.Back)
 				{
 					RoutedEvent = Keyboard.PreviewKeyDownEvent
 				};
 
-			_editor.TextArea.RaiseEvent(keyEventArgs);
+			Editor.TextArea.RaiseEvent(keyEventArgs);
 
 			keyEventArgs.RoutedEvent = Keyboard.KeyDownEvent;
 			
-			_editor.TextArea.RaiseEvent(keyEventArgs);
+			Editor.TextArea.RaiseEvent(keyEventArgs);
 		}
 
 		[Test, STAThread]

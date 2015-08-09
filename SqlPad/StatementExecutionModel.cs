@@ -135,6 +135,8 @@ namespace SqlPad
 	[DebuggerDisplay("CompilationError (Object={Owner + \".\" + ObjectName}; ObjectType={ObjectType}; Severity={Severity}; Line={Line}; Column={Column}; Message={Message})")]
 	public class CompilationError
 	{
+		public static readonly CompilationError[] EmptyArray = new CompilationError[0];
+
 		public string Owner { get; set; }
 
 		public string ObjectName { get; set; }

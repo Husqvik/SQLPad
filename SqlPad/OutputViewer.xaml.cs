@@ -116,24 +116,14 @@ namespace SqlPad
 				foreach (var resultInfoColumnHeaders in executionResult.ResultInfoColumnHeaders.Where(r => r.Key.Type == ResultIdentifierType.UserDefined))
 				{
 					var resultViewer = new ResultViewer(this, executionResult, resultInfoColumnHeaders.Key, resultInfoColumnHeaders.Value);
-					var header = new HeaderedContentControl { Content = new AccessText { Text = resultInfoColumnHeaders.Key.Title } };
-					var tabItem =
-						new TabItem
-						{
-							Header = header,
-							Content = resultViewer
-						};
-
-					header.MouseEnter += (sender, args) => DataGridTabHeaderMouseEnterHandler(resultViewer);
-
-					tabItem.AddHandler(Selector.SelectedEvent, (RoutedEventHandler)ResultTabSelectedHandler);
+					resultViewer.TabItem.AddHandler(Selector.SelectedEvent, (RoutedEventHandler)ResultTabSelectedHandler);
 
 					if (ActiveResultViewer == null)
 					{
 						ActiveResultViewer = resultViewer;
 					}
 
-					TabControlResult.Items.Insert(tabControlIndex++, tabItem);
+					TabControlResult.Items.Insert(tabControlIndex++, resultViewer.TabItem);
 				}
 			}
 
@@ -144,7 +134,7 @@ namespace SqlPad
 		{
 			foreach (var item in TabControlResult.Items.Cast<TabItem>().Where(i => i.Content is ResultViewer).ToArray())
 			{
-				TabControlResult.Items.Remove(item);
+				TabControlResult.RemoveTabItemWithoutBindingError(item);
 			}
 
 			ActiveResultViewer = null;
@@ -623,13 +613,6 @@ namespace SqlPad
 			var searchedWords = TextSearchHelper.GetSearchedWords(SearchPhraseTextBox.Text);
 			Dispatcher.BeginInvoke(DispatcherPriority.Render, new Action(() => ResultGrid.HighlightTextItems(TextSearchHelper.GetRegexPattern(searchedWords))));
 		}*/
-
-		private void DataGridTabHeaderMouseEnterHandler(ResultViewer resultViewer)
-		{
-			resultViewer.DataGridTabHeaderPopupTextBox.FontFamily = DocumentPage.Editor.FontFamily;
-			resultViewer.DataGridTabHeaderPopupTextBox.FontSize = DocumentPage.Editor.FontSize;
-			resultViewer.ResultViewTabHeaderPopup.IsOpen = true;
-		}
 
 		private void OutputViewerMouseMoveHandler(object sender, MouseEventArgs e)
 		{

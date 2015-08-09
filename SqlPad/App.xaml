@@ -43,7 +43,7 @@
 		</Style>
 
 		<Style x:Key="ColumnHeaderClickBubbleCancelation">
-			<EventSetter Event="ButtonBase.Click" Handler="ClickBubblingCancelHandler" />
+			<EventSetter Event="ButtonBase.Click" Handler="ClickBubblingCancellationHandler" />
 		</Style>
 
 		<Style x:Key="DefaultDataGridRowHeight">
@@ -129,59 +129,58 @@
 			</TextDecoration.Pen>
 		</TextDecoration>
 
-		<ControlTemplate x:Key="TabItemControlTemplate" TargetType="{x:Type TabItem}">
+		<ControlTemplate x:Key="TabItemControlTemplate" TargetType="TabItem">
 			<Grid x:Name="templateRoot" SnapsToDevicePixels="True">
 				<Border x:Name="mainBorder" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1,1,1,0" Background="{TemplateBinding Background}" Margin="0">
 					<Border x:Name="innerBorder" BorderBrush="#FFACACAC" BorderThickness="1,1,1,0" Margin="-1" Opacity="0"/>
 				</Border>
-				<ContentPresenter x:Name="contentPresenter" ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" ContentStringFormat="{TemplateBinding HeaderStringFormat}" ContentSource="Header" Focusable="False" HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ItemsControl}}}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ItemsControl}}}"/>
+				<ContentPresenter x:Name="contentPresenter"
+								  ContentTemplate="{TemplateBinding HeaderTemplate}"
+								  Content="{TemplateBinding Header}" ContentStringFormat="{TemplateBinding HeaderStringFormat}"
+								  ContentSource="Header" Focusable="False"
+								  HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ItemsControl}}}"
+								  Margin="{TemplateBinding Padding}" RecognizesAccessKey="True"
+								  SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+								  VerticalAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ItemsControl}}}" />
 			</Grid>
 			<ControlTemplate.Triggers>
-				<MultiDataTrigger>
-					<MultiDataTrigger.Conditions>
-						<Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="true"/>
-						<Condition Binding="{Binding TabStripPlacement, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type TabControl}}}" Value="Top"/>
-					</MultiDataTrigger.Conditions>
-					<Setter Property="BorderBrush" TargetName="mainBorder" Value="#FF7EB4EA"/>
-					<Setter Property="BorderThickness" TargetName="innerBorder" Value="1,1,1,0"/>
-					<Setter Property="BorderThickness" TargetName="mainBorder" Value="1,1,1,0"/>
-				</MultiDataTrigger>
-				<MultiDataTrigger>
-					<MultiDataTrigger.Conditions>
-						<Condition Binding="{Binding IsEnabled, RelativeSource={RelativeSource Self}}" Value="false"/>
-						<Condition Binding="{Binding TabStripPlacement, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type TabControl}}}" Value="Top"/>
-					</MultiDataTrigger.Conditions>
-					<Setter Property="Opacity" TargetName="contentPresenter" Value="0.56"/>
-					<Setter Property="BorderBrush" TargetName="mainBorder" Value="#FFD9D9D9"/>
-					<Setter Property="BorderThickness" TargetName="innerBorder" Value="1,1,1,0"/>
-					<Setter Property="BorderThickness" TargetName="mainBorder" Value="1,1,1,0"/>
-				</MultiDataTrigger>
-				<MultiDataTrigger>
-					<MultiDataTrigger.Conditions>
-						<Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="false"/>
-						<Condition Binding="{Binding TabStripPlacement, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type TabControl}}}" Value="Top"/>
-					</MultiDataTrigger.Conditions>
-					<Setter Property="BorderThickness" TargetName="innerBorder" Value="1,1,1,0"/>
-					<Setter Property="BorderThickness" TargetName="mainBorder" Value="1,1,1,0"/>
-				</MultiDataTrigger>
-				<MultiDataTrigger>
-					<MultiDataTrigger.Conditions>
-						<Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="true"/>
-						<Condition Binding="{Binding TabStripPlacement, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type TabControl}}}" Value="Top"/>
-					</MultiDataTrigger.Conditions>
-					<Setter Property="Panel.ZIndex" Value="1"/>
-					<Setter Property="Margin" Value="-2,-2,-2,0"/>
-					<Setter Property="Opacity" TargetName="innerBorder" Value="1"/>
-					<Setter Property="BorderThickness" TargetName="innerBorder" Value="1,1,1,0"/>
-					<Setter Property="BorderThickness" TargetName="mainBorder" Value="1,1,1,0"/>
-				</MultiDataTrigger>
+				<DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="true">
+					<DataTrigger.Setters>
+						<Setter Property="BorderBrush" TargetName="mainBorder" Value="#FF7EB4EA" />
+						<Setter Property="BorderThickness" TargetName="innerBorder" Value="1,1,1,0" />
+						<Setter Property="BorderThickness" TargetName="mainBorder" Value="1,1,1,0" />
+					</DataTrigger.Setters>
+				</DataTrigger>
+				<DataTrigger Binding="{Binding IsEnabled, RelativeSource={RelativeSource Self}}" Value="false">
+					<DataTrigger.Setters>
+						<Setter Property="Opacity" TargetName="contentPresenter" Value="0.56" />
+						<Setter Property="BorderBrush" TargetName="mainBorder" Value="#FFD9D9D9" />
+						<Setter Property="BorderThickness" TargetName="innerBorder" Value="1,1,1,0" />
+						<Setter Property="BorderThickness" TargetName="mainBorder" Value="1,1,1,0" />
+					</DataTrigger.Setters>
+				</DataTrigger>
+				<DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="false">
+					<DataTrigger.Setters>
+						<Setter Property="BorderThickness" TargetName="innerBorder" Value="1,1,1,0" />
+						<Setter Property="BorderThickness" TargetName="mainBorder" Value="1,1,1,0" />
+					</DataTrigger.Setters>
+				</DataTrigger>
+				<DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="true">
+					<DataTrigger.Setters>
+						<Setter Property="Panel.ZIndex" Value="1" />
+						<Setter Property="Margin" Value="-2,-2,-2,0" />
+						<Setter Property="Opacity" TargetName="innerBorder" Value="1" />
+						<Setter Property="BorderThickness" TargetName="innerBorder" Value="1,1,1,0" />
+						<Setter Property="BorderThickness" TargetName="mainBorder" Value="1,1,1,0" />
+					</DataTrigger.Setters>
+				</DataTrigger>
 			</ControlTemplate.Triggers>
 		</ControlTemplate>
 
-		<Style x:Key="SearchTextBoxStyle" TargetType="{x:Type sqlPad:SearchTextBox}">
-			<Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}"/>
-			<Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"/>
-			<Setter Property="BorderBrush" Value="{DynamicResource {ComponentResourceKey ResourceId=ControlNormalBorderKey, TypeInTargetAssembly={x:Type themes:ResourceKeys}}}"/>
+		<Style x:Key="SearchTextBoxStyle" TargetType="sqlPad:SearchTextBox">
+			<Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}" />
+			<Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource {ComponentResourceKey ResourceId=ControlNormalBorderKey, TypeInTargetAssembly=themes:ResourceKeys}}" />
 			<Setter Property="BorderThickness" Value="1"/>
 			<Setter Property="Padding" Value="3"/>
 			<Setter Property="AllowDrop" Value="True"/>
@@ -197,27 +196,24 @@
 			</Setter>
 			<Setter Property="Template">
 				<Setter.Value>
-					<ControlTemplate TargetType="{x:Type sqlPad:SearchTextBox}">
+					<ControlTemplate TargetType="sqlPad:SearchTextBox">
 						<Grid>
-							<Border x:Name="Border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="0"/>
-							<ScrollViewer x:Name="PART_ContentHost" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
-							<ContentPresenter x:Name="PART_WatermarkHost" ContentTemplate="{TemplateBinding WatermarkTemplate}" Content="{TemplateBinding Watermark}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" IsHitTestVisible="False" Margin="{TemplateBinding Padding}" Visibility="Collapsed" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+							<Border x:Name="Border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="0" />
+							<ScrollViewer x:Name="PART_ContentHost" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+							<ContentPresenter x:Name="PART_WatermarkHost" ContentTemplate="{TemplateBinding WatermarkTemplate}" Content="{TemplateBinding Watermark}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" IsHitTestVisible="False" Margin="{TemplateBinding Padding}" Visibility="Collapsed" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
 						</Grid>
 						<ControlTemplate.Triggers>
-							<MultiTrigger>
-								<MultiTrigger.Conditions>
-									<Condition Property="Text" Value=""/>
-								</MultiTrigger.Conditions>
-								<Setter Property="Visibility" TargetName="PART_WatermarkHost" Value="Visible"/>
-							</MultiTrigger>
+							<Trigger Property="Text" Value="">
+								<Setter Property="Visibility" TargetName="PART_WatermarkHost" Value="Visible" />
+							</Trigger>
 							<Trigger Property="IsMouseOver" Value="True">
-								<Setter Property="BorderBrush" TargetName="Border" Value="{DynamicResource {ComponentResourceKey ResourceId=ControlMouseOverBorderKey, TypeInTargetAssembly={x:Type themes:ResourceKeys}}}"/>
+								<Setter Property="BorderBrush" TargetName="Border" Value="{DynamicResource {ComponentResourceKey ResourceId=ControlMouseOverBorderKey, TypeInTargetAssembly={x:Type themes:ResourceKeys}}}" />
 							</Trigger>
 							<Trigger Property="IsKeyboardFocusWithin" Value="True">
-								<Setter Property="BorderBrush" TargetName="Border" Value="{DynamicResource {ComponentResourceKey ResourceId=ControlSelectedBorderKey, TypeInTargetAssembly={x:Type themes:ResourceKeys}}}"/>
+								<Setter Property="BorderBrush" TargetName="Border" Value="{DynamicResource {ComponentResourceKey ResourceId=ControlSelectedBorderKey, TypeInTargetAssembly={x:Type themes:ResourceKeys}}}" />
 							</Trigger>
 							<Trigger Property="IsEnabled" Value="False">
-								<Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+								<Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
 							</Trigger>
 						</ControlTemplate.Triggers>
 					</ControlTemplate>

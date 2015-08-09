@@ -577,7 +577,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_userCommandHasCompilationErrors = false;
 
 			var batchResult = new StatementExecutionBatchResult { ExecutionModel = executionModel };
-
 			var statementResults = new List<StatementExecutionResult>();
 			StatementExecutionResult currentStatementResult = null;
 
@@ -638,7 +637,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 							currentStatementResult.AffectedRowCount = dataReader.RecordsAffected;
 							var resultInfo = isReferenceConstraintNavigation
 								? new ResultInfo($"ReferenceConstrantResult{dataReader.GetHashCode()}", null, ResultIdentifierType.SystemGenerated)
-								: new ResultInfo($"MainResult{dataReader.GetHashCode()}", $"Result set {statementResults.Count + 1}", ResultIdentifierType.UserDefined);
+								: new ResultInfo($"MainResult{dataReader.GetHashCode()}", $"Result set {_resultInfoColumnHeaders.Count + 1}", ResultIdentifierType.UserDefined);
 
 							var columnHeaders = GetColumnHeadersFromReader(dataReader);
 							if (columnHeaders.Count > 0)
@@ -653,7 +652,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 						currentStatementResult.ResultInfoColumnHeaders = resultInfoColumnHeaders.AsReadOnly();
 						currentStatementResult.CompilationErrors = _userCommandHasCompilationErrors
 							? await RetrieveCompilationErrors(statement.ValidationModel.Statement, cancellationToken)
-							: new CompilationError[0];
+							: CompilationError.EmptyArray;
 
 						var exception = await ResolveExecutionPlanIdentifiersAndTransactionStatus(cancellationToken);
 						if (exception != null)
@@ -666,7 +665,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 					batchResult.StatementResults = statementResults.AsReadOnly();
 					batchResult.DatabaseOutput = await RetrieveDatabaseOutput(cancellationToken);
-                    return batchResult;
+					return batchResult;
 				}
 			}
 			catch (OracleException exception)

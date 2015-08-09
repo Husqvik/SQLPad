@@ -41,6 +41,12 @@ namespace SqlPad
 			return child;
 		}
 
+		public static void RemoveTabItemWithoutBindingError(this TabControl tabControl, TabItem item)
+		{
+			item.Template = null;
+			tabControl.Items.Remove(item);
+		}
+
 		public static void CancelOnEscape(this CancellationTokenSource cancellationTokenSource, Key key)
 		{
 			if (key != Key.Escape)

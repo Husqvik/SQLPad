@@ -73,7 +73,7 @@ namespace SqlPad.Oracle.Test
 					ResultInfoColumnHeaders =
 						new Dictionary<ResultInfo, IReadOnlyList<ColumnHeader>>
 						{
-							{ new ResultInfo(null, null, ResultIdentifierType.UserDefined), ColumnHeaders }
+							{ new ResultInfo(null, "Test result set", ResultIdentifierType.UserDefined), ColumnHeaders }
 						}
 				};
 		}
