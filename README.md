@@ -1,4 +1,4 @@
-SQLPad 0.3.0.88
+SQLPad 0.3.0.89
 ===============
 
 SQLPad is an experimental SQL editor focused to quick and comfortable work.
@@ -228,6 +228,7 @@ NullPlaceholder - data grid NULL value representation
 		<StartupScript>
 			-- Enter optional script to execute when database connection is established.
 		</StartupScript>
+		<RemoteTraceDirectory>\\coresrv01\c$\Oracle\diag\rdbms\orcl\orcl\trace</RemoteTraceDirectory>
 	</OracleConfiguration>
 
 TargetTable - table name used for EXPLAIN PLAN function; table is not created automatically and must be created manually using script:

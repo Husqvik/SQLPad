@@ -155,6 +155,7 @@ WHERE
 
 			var planItemCollection = displayCursorTask.Result;
 			planItemCollection.PlanText.ShouldNotBe(null);
+			planItemCollection.PlanText.ShouldNotBe(String.Empty);
 
 			Trace.WriteLine($"Display cursor output: {Environment.NewLine}{planItemCollection.PlanText}{Environment.NewLine}");
 
@@ -168,6 +169,10 @@ WHERE
 
 			var statistics = String.Join(Environment.NewLine, statisticsRecords.Select(r => $"{r.Name.PadRight(40)}: {r.Value}"));
 			Trace.WriteLine($"Execution statistics output: {Environment.NewLine}{statistics}{Environment.NewLine}");
+
+			connectionAdapter.TraceFileName.ShouldNotBe(null);
+			connectionAdapter.TraceFileName.ShouldNotBe(String.Empty);
+			connectionAdapter.SessionId.ShouldNotBe(null);
 		}
 
 		#if !ORACLE_MANAGED_DATA_ACCESS_CLIENT

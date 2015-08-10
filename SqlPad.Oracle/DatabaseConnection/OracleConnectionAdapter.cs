@@ -485,6 +485,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 				command.CommandText = OracleDatabaseCommands.SelectCurrentSessionId;
 				_userSessionId = Convert.ToInt32(await command.ExecuteScalarAsynchronous(cancellationToken));
 
+				await RetrieveTraceFileName(cancellationToken);
+
 				var startupScript = OracleConfiguration.Configuration.StartupScript;
 				if (String.IsNullOrWhiteSpace(startupScript))
 				{
@@ -506,8 +508,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 						Trace.WriteLine($"Startup script command '{command.CommandText}' failed: {e}");
 					}
 				}
-
-				await RetrieveTraceFileName(cancellationToken);
 			}
 		}
 
