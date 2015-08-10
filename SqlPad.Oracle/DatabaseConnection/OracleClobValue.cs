@@ -456,10 +456,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public bool IsNull { get; }
 
-		public OracleRowId(OracleString oracleDate)
+		public OracleRowId(OracleString oracleString)
 		{
-			RawValue = oracleDate;
-			IsNull = oracleDate.IsNull;
+			RawValue = oracleString;
+			IsNull = oracleString.IsNull;
 		}
 
 		public string ToSqlLiteral()
@@ -482,6 +482,23 @@ namespace SqlPad.Oracle.DatabaseConnection
 		}
 
 		public object RawValue { get; }
+
+		public override string ToString()
+		{
+			var rowIdString = RawValue.ToString();
+			var objectId = DecodeBase64Hex(rowIdString.Substring(0, 6).PadLeft(8, 'A'));
+			var fileNumber = DecodeBase64Hex(rowIdString.Substring(6, 3).PadLeft(4, 'A'));
+			var blockNumber = DecodeBase64Hex(rowIdString.Substring(9, 6).PadLeft(8, 'A'));
+			var offset = DecodeBase64Hex(rowIdString.Substring(15, 3).PadLeft(4, 'A'));
+			return $"{rowIdString} (OBJ={objectId}; FIL={fileNumber}; BLK={blockNumber}; OFF={offset})";
+		}
+
+		private static int DecodeBase64Hex(string base64Bytes)
+		{
+			var binaryData = Convert.FromBase64String(base64Bytes);
+			var hexData = binaryData.ToHexString();
+			return Int32.Parse(hexData, NumberStyles.AllowHexSpecifier);
+		}
 	}
 
 	public class OracleDateTime : IValue

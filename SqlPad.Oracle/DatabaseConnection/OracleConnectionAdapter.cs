@@ -350,12 +350,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 
 			var fieldTypes = new string[reader.FieldCount];
-			//var internalTypes = reader.GetInternalDataTypes();
+			var internalTypes = reader.GetInternalDataTypes();
 			for (var i = 0; i < reader.FieldCount; i++)
 			{
 				var fieldType = reader.GetDataTypeName(i);
-				//fieldTypes[i] = internalTypes[i] == OracleRowId.InternalCode ? OracleRowId.TypeName : fieldType;
-				fieldTypes[i] = fieldType;
+				fieldTypes[i] = internalTypes[i] == OracleRowId.InternalCode ? OracleRowId.TypeName : fieldType;
 			}
 
 			for (var i = 0; i < rowCount; i++)
@@ -458,6 +457,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 					case "NVarchar":
 					case "NVarchar2":
 						value = new OracleSimpleValue(reader.GetValue(i));
+						break;
+					case OracleRowId.TypeName:
+						value = new OracleRowId(reader.GetOracleString(i));
 						break;
 					default:
 						value = reader.GetValue(i);

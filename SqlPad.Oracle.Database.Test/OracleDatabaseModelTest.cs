@@ -175,7 +175,42 @@ WHERE
 			connectionAdapter.SessionId.ShouldNotBe(null);
 		}
 
-		#if !ORACLE_MANAGED_DATA_ACCESS_CLIENT
+		[Test]
+		public void TestRowIdFetch()
+		{
+			var executionModel =
+				new StatementExecutionModel
+				{
+					StatementText = "SELECT CHARTOROWID('AAAACOAABAAAAR5AAC') FROM DUAL",
+					BindVariables = new BindVariableModel[0]
+				};
+
+			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			{
+				databaseModel.Initialize().Wait();
+
+				var connectionAdapter = databaseModel.CreateConnectionAdapter();
+				var task = connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel } }, CancellationToken.None);
+				task.Wait();
+				task.Result.StatementResults.Count.ShouldBe(1);
+				var result = task.Result.StatementResults[0];
+
+				result.ExecutedSuccessfully.ShouldBe(true);
+				var resultInfo = result.ResultInfoColumnHeaders.Keys.First();
+
+				var fetchRecordsTask = connectionAdapter.FetchRecordsAsync(resultInfo, StatementExecutionModel.DefaultRowBatchSize, CancellationToken.None);
+				fetchRecordsTask.Wait();
+				var resultSet = fetchRecordsTask.Result;
+				resultSet.Count.ShouldBe(1);
+				var firstRow = resultSet[0];
+				firstRow[0].ShouldBeTypeOf<OracleRowId>();
+				var rowIdValue = (OracleRowId)firstRow[0];
+				rowIdValue.RawValue.ToString().ShouldBe("AAAACOAABAAAAR5AAC");
+				rowIdValue.ToString().ShouldBe("AAAACOAABAAAAR5AAC (OBJ=142; FIL=1; BLK=1145; OFF=2)");
+			}
+		}
+
+#if !ORACLE_MANAGED_DATA_ACCESS_CLIENT
 		[Test]
 		public void TestDataTypesFetch()
 		{
