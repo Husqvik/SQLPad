@@ -24,7 +24,7 @@ namespace SqlPad
 		private static readonly SolidColorBrush RedundantBrush = new SolidColorBrush(Color.FromArgb(168, Colors.Black.R, Colors.Black.G, Colors.Black.B));
 
 		private readonly Stack<ICollection<TextSegment>> _highlightSegments = new Stack<ICollection<TextSegment>>();
-		private readonly List<StatementGrammarNode> _highlightParenthesis = new List<StatementGrammarNode>();
+		private readonly List<StatementGrammarNode> _correspondingTerminals = new List<StatementGrammarNode>();
 		private readonly HashSet<StatementGrammarNode> _redundantTerminals = new HashSet<StatementGrammarNode>();
 		private readonly Dictionary<DocumentLine, ICollection<StatementGrammarNode>> _lineTerminals = new Dictionary<DocumentLine, ICollection<StatementGrammarNode>>();
 		private readonly Dictionary<DocumentLine, ICollection<StatementGrammarNode>> _lineNodesWithSemanticErrorsOrInvalidGrammar = new Dictionary<DocumentLine, ICollection<StatementGrammarNode>>();
@@ -37,7 +37,7 @@ namespace SqlPad
 		private StatementCollection _statements;
 		private IDictionary<StatementBase, IValidationModel> _validationModels;
 
-		public IList<StatementGrammarNode> HighlightParenthesis => _highlightParenthesis.AsReadOnly();
+		public IReadOnlyCollection<StatementGrammarNode> CorrespondingTerminals => _correspondingTerminals.AsReadOnly();
 
 	    public IEnumerable<TextSegment> HighlightSegments { get { return _highlightSegments.SelectMany(c => c); } }
 
@@ -82,10 +82,10 @@ namespace SqlPad
 			_lineComments.Clear();
 		}
 
-		public void SetHighlightParenthesis(IEnumerable<StatementGrammarNode> parenthesisNodes)
+		public void SetCorrespondingTerminals(IEnumerable<StatementGrammarNode> correspondingTerminals)
 		{
-			_highlightParenthesis.Clear();
-			_highlightParenthesis.AddRange(parenthesisNodes);
+			_correspondingTerminals.Clear();
+			_correspondingTerminals.AddRange(correspondingTerminals);
 		}
 
 		public void AddHighlightSegments(ICollection<TextSegment> highlightSegments)
@@ -285,7 +285,7 @@ namespace SqlPad
 				var colorStartOffset = Math.Max(line.Offset, statement.SourcePosition.IndexStart);
 				var colorEndOffset = Math.Min(line.EndOffset, statement.SourcePosition.IndexEnd + 1);
 
-				SetActiveParenthesisBrush(line);
+				SetCorrespondingTerminalsBrush(line);
 				SetHighlightedSegmentBrush(line);
 
 				ChangeLinePart(
@@ -322,7 +322,7 @@ namespace SqlPad
 				SetHighlightedSegmentBrush(line);
 			}
 
-			SetActiveParenthesisBrush(line);
+			SetCorrespondingTerminalsBrush(line);
 		}
 
 		private void SetHighlightedSegmentBrush(ISegment line)
@@ -335,11 +335,11 @@ namespace SqlPad
 			}
 		}
 
-		private void SetActiveParenthesisBrush(ISegment line)
+		private void SetCorrespondingTerminalsBrush(ISegment line)
 		{
-			foreach (var parenthesisNode in _highlightParenthesis)
+			foreach (var parenthesisNode in _correspondingTerminals)
 			{
-				ProcessNodeAtLine(line, parenthesisNode.SourcePosition, element => element.BackgroundBrush = Brushes.CornflowerBlue);
+				ProcessNodeAtLine(line, parenthesisNode.SourcePosition, element => element.BackgroundBrush = Brushes.Yellow);
 			}
 		}
 
@@ -347,7 +347,9 @@ namespace SqlPad
 		{
 			ICollection<TNode> nodes;
 			if (!lineNodeDictionary.TryGetValue(line, out nodes))
+			{
 				return;
+			}
 			
 			foreach (var node in nodes)
 			{
@@ -359,7 +361,9 @@ namespace SqlPad
 		{
 			if (line.Offset > nodePosition.IndexEnd + 1 ||
 			    line.EndOffset < nodePosition.IndexStart)
+			{
 				return;
+			}
 
 			var errorColorStartOffset = Math.Max(line.Offset, nodePosition.IndexStart);
 			var errorColorEndOffset = Math.Min(line.EndOffset, nodePosition.IndexEnd + 1);

@@ -157,9 +157,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 	public class OracleSimpleValue : ILargeTextValue
 	{
-	    public OracleSimpleValue(object value)
-	    {
-		    RawValue = value;
+		public OracleSimpleValue(object value)
+		{
+			RawValue = value;
 			Preview = Convert.ToString(value);
 			IsNull = value == DBNull.Value;
 		}
@@ -447,6 +447,41 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var miliSecondsExtension = nanoseconds == 0 ? null : $".{Math.Round(nanoseconds / 1E+6m).ToString("000")}";
 			return $"\"{dateTime.Value.ToString("yyyy-MM-ddTHH:mm:ss")}{miliSecondsExtension}{(String.IsNullOrEmpty(timeZone) ? null : timeZone.Trim())}\"";
 		}
+	}
+
+	public class OracleRowId : IValue
+	{
+		public const int InternalCode = 104;
+		public const string TypeName = TerminalValues.RowIdDataType;
+
+		public bool IsNull { get; }
+
+		public OracleRowId(OracleString oracleDate)
+		{
+			RawValue = oracleDate;
+			IsNull = oracleDate.IsNull;
+		}
+
+		public string ToSqlLiteral()
+		{
+			return IsNull
+				? TerminalValues.Null
+				: $"'{RawValue}'";
+		}
+
+		public string ToXml()
+		{
+			return RawValue.ToString();
+		}
+
+		public string ToJson()
+		{
+			return IsNull
+				? "null"
+				: $"\"{RawValue}\"";
+		}
+
+		public object RawValue { get; }
 	}
 
 	public class OracleDateTime : IValue

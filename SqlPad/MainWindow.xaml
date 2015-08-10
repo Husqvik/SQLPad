@@ -24,7 +24,7 @@
 				</Style>
 			</ContextMenu.ItemContainerStyle>
 			<ContextMenu.ItemTemplate>
-				<DataTemplate>
+				<DataTemplate DataType="local:RecentFileItem">
 					<Grid Margin="-26,0,-40,0">
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition Width="26" />
@@ -37,11 +37,11 @@
 			</ContextMenu.ItemTemplate>
 		</ContextMenu>
 
-		<DataTemplate x:Key="TabItemDragTemplate">
+		<DataTemplate x:Key="TabItemDragTemplate" DataType="TabItem">
 			<Border BorderBrush="Black"
 			        BorderThickness="2"
 			        Background="{Binding Path=Background}">
-				<TextBlock Margin="5" Text="{Binding Path=Header.Content}" />
+				<TextBlock Margin="5" Text="{Binding Path=Header.(ContentControl.Content)}" />
 			</Border>
 		</DataTemplate>
 

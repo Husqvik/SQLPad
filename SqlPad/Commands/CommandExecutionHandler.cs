@@ -58,11 +58,12 @@ namespace SqlPad.Commands
 
 		public static ActionExecutionContext Create(TextEditor editor, SqlDocumentRepository documentRepository)
 		{
-			return new ActionExecutionContext(editor.Text, editor.CaretOffset, editor.SelectionStart, editor.SelectionLength, documentRepository)
-			{
-				SelectionStart = editor.SelectionStart,
-				SelectionLength = editor.SelectionLength,
-			};
+			return
+				new ActionExecutionContext(editor.Text, editor.CaretOffset, editor.SelectionStart, editor.SelectionLength, documentRepository)
+				{
+					SelectionStart = editor.SelectionStart,
+					SelectionLength = editor.SelectionLength,
+				};
 		}
 
 		public ActionExecutionContext Clone()

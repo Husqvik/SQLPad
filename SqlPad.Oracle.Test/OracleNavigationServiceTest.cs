@@ -1,7 +1,8 @@
-﻿using System;
+﻿using System.Linq;
 using NUnit.Framework;
 using Shouldly;
 using SqlPad.Commands;
+using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle.Test
 {
@@ -17,7 +18,7 @@ namespace SqlPad.Oracle.Test
 			return new ActionExecutionContext(statementText, currentPosition, currentPosition, currentPosition, _documentRepository);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test(Description = @"")]
 		public void TestNavigateToQueryBlockRootInInnerQuery()
 		{
 			const string query = "SELECT P.NAME, P.PROJECT_ID FROM (SELECT PROJECT.NAME, PROJECT.PROJECT_ID FROM PROJECT) P";
@@ -26,7 +27,7 @@ namespace SqlPad.Oracle.Test
 			targetIndex.ShouldBe(0);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test(Description = @"")]
 		public void TestNavigateToQueryBlockRootInOuterQuery()
 		{
 			const string query = "SELECT P.NAME, P.PROJECT_ID FROM (SELECT PROJECT.NAME, PROJECT.PROJECT_ID FROM PROJECT) P";
@@ -35,7 +36,7 @@ namespace SqlPad.Oracle.Test
 			targetIndex.ShouldBe(34);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test(Description = @"")]
 		public void TestNavigateToQueryBlockRootAtFreeSpace()
 		{
 			const string query = "SELECT P.NAME, P.PROJECT_ID FROM (SELECT PROJECT.NAME, PROJECT.PROJECT_ID FROM\t\r\n PROJECT) P";
@@ -44,7 +45,7 @@ namespace SqlPad.Oracle.Test
 			targetIndex.ShouldBe(34);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test(Description = @"")]
 		public void TestNavigateToQueryBlockRootOutsideStatement()
 		{
 			const string query = "SELECT P.NAME, P.PROJECT_ID FROM (SELECT PROJECT.NAME, PROJECT.PROJECT_ID FROM PROJECT) P ";
@@ -53,7 +54,7 @@ namespace SqlPad.Oracle.Test
 			targetIndex.ShouldBe(null);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test(Description = @"")]
 		public void TestNavigateToColumnDefinition()
 		{
 			const string query = "SELECT P.NAME, P.PROJECT_ID FROM (SELECT PROJECT.NAME, PROJECT.PROJECT_ID FROM PROJECT) P";
@@ -62,7 +63,7 @@ namespace SqlPad.Oracle.Test
 			targetIndex.ShouldBe(49);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test(Description = @"")]
 		public void TestNavigateToColumnDefinitionInAsteriskClause()
 		{
 			const string query = "SELECT P.PROJECT_ID, P.NAME FROM (SELECT * FROM PROJECT) P";
@@ -71,7 +72,7 @@ namespace SqlPad.Oracle.Test
 			targetIndex.ShouldBe(41);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test(Description = @"")]
 		public void TestNavigateToColumnDefinitionWhenDatabaseModelNotLoaded()
 		{
 			const string query = "SELECT P.PROJECT_ID, P.NAME FROM (SELECT * FROM PROJECT) P";
@@ -87,7 +88,7 @@ namespace SqlPad.Oracle.Test
 			targetIndex.ShouldBe(null);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test(Description = @"")]
 		public void TestNavigateToColumnDefinitionWithCommonTableExpressionExplicitColumnNames()
 		{
 			const string query = "WITH GENERATOR(VAL) AS (SELECT 1 FROM DUAL UNION ALL SELECT VAL + 1 FROM GENERATOR WHERE VAL <= 10) SELECT VAL FROM GENERATOR";
@@ -96,7 +97,7 @@ namespace SqlPad.Oracle.Test
 			targetIndex.ShouldBe(60);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test(Description = @"")]
 		public void TestNavigateToObjectDefinition()
 		{
 			const string query = "SELECT P.NAME, P.PROJECT_ID FROM (SELECT PROJECT.NAME, PROJECT.PROJECT_ID FROM PROJECT) P";
@@ -105,7 +106,7 @@ namespace SqlPad.Oracle.Test
 			targetIndex.ShouldBe(88);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test(Description = @"")]
 		public void TestNavigateToAliasedObjectDefinition()
 		{
 			const string query = "SELECT P.NAME, PP.PROJECT_ID FROM PROJECT P, PROJECT PP";
@@ -114,7 +115,7 @@ namespace SqlPad.Oracle.Test
 			targetIndex.ShouldBe(42);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test(Description = @"")]
 		public void TestNavigateToCommonTableExpressionDefinition()
 		{
 			const string query = @"WITH CTE AS (SELECT RESPONDENTBUCKET_ID, SELECTION_ID, PROJECT_ID, NAME FROM SELECTION)
@@ -122,6 +123,46 @@ SELECT CTE.RESPONDENTBUCKET_ID, CTE.SELECTION_ID, CTE.PROJECT_ID, CTE.NAME FROM 
 
 			var targetIndex = _navigationService.NavigateToDefinition(CreateExecutionContext(query, 155));
 			targetIndex.ShouldBe(5);
+		}
+
+		[Test(Description = @"")]
+		public void TestDisplayBindVariableUsages()
+		{
+			const string query = "SELECT :B FROM DUAL; SELECT :B FROM DUAL";
+
+			var context = CreateExecutionContext(query, 8);
+			_navigationService.DisplayBindVariableUsages(context);
+			context.SegmentsToReplace.Count.ShouldBe(2);
+			context.SegmentsToReplace[0].DisplayOptions.ShouldBe(DisplayOptions.Usage);
+			context.SegmentsToReplace[0].IndextStart.ShouldBe(8);
+			context.SegmentsToReplace[0].Length.ShouldBe(1);
+			context.SegmentsToReplace[0].Text.ShouldBe(null);
+			context.SegmentsToReplace[1].DisplayOptions.ShouldBe(DisplayOptions.Usage);
+			context.SegmentsToReplace[1].IndextStart.ShouldBe(29);
+			context.SegmentsToReplace[1].Length.ShouldBe(1);
+			context.SegmentsToReplace[1].Text.ShouldBe(null);
+		}
+
+		[Test(Description = @"")]
+		public void TestFindCorrespondingTerminals()
+		{
+			const string query = "SELECT CASE WHEN 1 = 1 THEN 1 END DUAL";
+
+			var context = CreateExecutionContext(query, 8);
+			var correspondingTerminals = _navigationService.FindCorrespondingTerminals(context).ToArray();
+			correspondingTerminals.Length.ShouldBe(2);
+			correspondingTerminals[0].Id.ShouldBe(Terminals.Case);
+			correspondingTerminals[1].Id.ShouldBe(Terminals.End);
+		}
+
+		[Test(Description = @"")]
+		public void TestFindCorrespondingTerminalsWithMissingCorrespondingTerminal()
+		{
+			const string query = "SELECT CASE WHEN 1 = 1 THEN 1 DUAL";
+
+			var context = CreateExecutionContext(query, 8);
+			var correspondingTerminals = _navigationService.FindCorrespondingTerminals(context).ToArray();
+			correspondingTerminals.Length.ShouldBe(0);
 		}
 	}
 }

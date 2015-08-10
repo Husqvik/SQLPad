@@ -36,7 +36,7 @@ namespace SqlPad.FindReplace
 
 		private void TabMainOnSelectionChanged(object sender, SelectionChangedEventArgs selectionChangedEventArgs)
 		{
-			Dialog.Title = Dialog.tabMain.SelectedIndex == 0 ? "Find" : "Find And Replace";
+			Dialog.Title = Dialog.tabMain.SelectedIndex == 0 ? "Find" : "Find/Replace";
 		}
 
 		public FindReplaceManager()

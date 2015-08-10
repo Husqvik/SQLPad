@@ -10,9 +10,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
 using Timer = System.Timers.Timer;
 
 namespace SqlPad
@@ -378,83 +376,6 @@ namespace SqlPad
 			ExecutionLog = _executionLogBuilder.ToString();
 		}
 
-		private void AddChildReferenceColumns(DataGrid dataGrid, IEnumerable<IReferenceDataSource> childReferenceDataSources)
-		{
-			if (!EnableChildReferenceDataSources)
-			{
-				return;
-			}
-
-			foreach (var childReferenceDataSource in childReferenceDataSources)
-			{
-				var textBlockFactory = new FrameworkElementFactory(typeof(TextBlock));
-				var hyperlinkFactory = new FrameworkElementFactory(typeof(Hyperlink));
-				var runFactory = new FrameworkElementFactory(typeof(Run));
-				runFactory.SetValue(Run.TextProperty, "Show child records");
-				hyperlinkFactory.AppendChild(runFactory);
-				hyperlinkFactory.AddHandler(Hyperlink.ClickEvent, (RoutedEventHandler)CellHyperlinkExpandChildRecordsClickHandler);
-				hyperlinkFactory.SetBinding(FrameworkContentElement.TagProperty, new Binding { RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(DataGridCell), 1) });
-				hyperlinkFactory.SetValue(FrameworkContentElement.DataContextProperty, childReferenceDataSource);
-				textBlockFactory.AppendChild(hyperlinkFactory);
-
-				var cellTemplate = new DataTemplate(typeof(DependencyObject)) { VisualTree = textBlockFactory };
-
-				var columnTemplate =
-					new DataGridTemplateColumn
-					{
-						Header = new TextBlock { Text = $"{childReferenceDataSource.ObjectName} ({childReferenceDataSource.ConstraintName})" },
-						IsReadOnly = true,
-						CellTemplate = cellTemplate
-					};
-
-				dataGrid.Columns.Add(columnTemplate);
-			}
-		}
-
-		private void CellHyperlinkExpandChildRecordsClickHandler(object sender, RoutedEventArgs args)
-		{
-			var hyperlink = (Hyperlink)sender;
-			var dataSource = (IReferenceDataSource)hyperlink.DataContext;
-			var cell = (DataGridCell)hyperlink.Tag;
-			var row = cell.FindParentVisual<DataGridRow>();
-			var currentRowValues = (object[])row.DataContext;
-			var keyValues = dataSource.ColumnHeaders.Select(h => currentRowValues[h.ColumnIndex]).ToArray();
-
-			DataGridHelper.BuildDataGridCellContent(cell, t => BuildChildRecordDataGrid(dataSource, keyValues, t));
-		}
-
-		private async Task<FrameworkElement> BuildChildRecordDataGrid(IReferenceDataSource dataSource, object[] keyValues, CancellationToken cancellationToken)
-		{
-			var executionModel = dataSource.CreateExecutionModel(keyValues);
-			var executionResult = await ConnectionAdapter.ExecuteChildStatementAsync(executionModel, cancellationToken);
-			var childReferenceDataSources = await StatementValidator.ApplyReferenceConstraintsAsync(executionResult, ConnectionAdapter.DatabaseModel, cancellationToken);
-			var resultInfo = executionResult.ResultInfoColumnHeaders.Keys.Last();
-            var resultSet = await ConnectionAdapter.FetchRecordsAsync(resultInfo, StatementExecutionModel.DefaultRowBatchSize, cancellationToken);
-
-			var childRecordDataGrid =
-				new DataGrid
-				{
-					RowHeaderWidth = 0,
-					Style = (Style)Application.Current.Resources["ResultSetDataGrid"],
-					ItemsSource = new ObservableCollection<object[]>(resultSet)
-				};
-
-			childRecordDataGrid.AddHandler(VirtualizingStackPanel.CleanUpVirtualizedItemEvent, (CleanUpVirtualizedItemEventHandler)CleanUpVirtualizedItemHandler);
-			childRecordDataGrid.BeginningEdit += App.ResultGridBeginningEditCancelTextInputHandlerImplementation;
-			childRecordDataGrid.MouseDoubleClick += ResultGridMouseDoubleClickHandler;
-
-			var columnHeaders = executionResult.ResultInfoColumnHeaders.Values.Last();
-			DataGridHelper.InitializeDataGridColumns(childRecordDataGrid, columnHeaders, StatementValidator, ConnectionAdapter);
-			AddChildReferenceColumns(childRecordDataGrid, childReferenceDataSources);
-
-			foreach (var columnTemplate in childRecordDataGrid.Columns)
-			{
-				columnTemplate.HeaderStyle = (Style)Application.Current.Resources["ColumnHeaderClickBubbleCancelation"];
-			}
-
-			return childRecordDataGrid;
-		}
-
 		private void NotifyExecutionCanceled()
 		{
 			StatusInfo.ExecutionTimerMessage = "Canceled";
@@ -477,16 +398,6 @@ namespace SqlPad
 		private void TabControlResultGiveFeedbackHandler(object sender, GiveFeedbackEventArgs e)
 		{
 			e.Handled = true;
-		}
-
-		private void ResultGridMouseDoubleClickHandler(object sender, MouseButtonEventArgs e)
-		{
-			var senderDataGrid = (DataGrid)sender;
-			var originalDataGrid = ((Visual)e.OriginalSource).FindParentVisual<DataGrid>();
-			if (Equals(originalDataGrid, senderDataGrid))
-			{
-				DataGridHelper.ShowLargeValueEditor(senderDataGrid);
-			}
 		}
 
 		private bool IsTabAlwaysVisible(object tabItem)
@@ -634,11 +545,6 @@ namespace SqlPad
 			{
 				resultViewer.ResultViewTabHeaderPopup.IsOpen = false;
 			}
-		}
-
-		private void CleanUpVirtualizedItemHandler(object sender, CleanUpVirtualizedItemEventArgs e)
-		{
-			e.Cancel = DataGridHelper.CanBeRecycled(e.UIElement);
 		}
 
 		private void ApplicationDeactivatedHandler(object sender, EventArgs eventArgs)

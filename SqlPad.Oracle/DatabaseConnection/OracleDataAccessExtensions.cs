@@ -1,6 +1,9 @@
 using System;
+using System.Collections;
 using System.Data;
 using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 #if ORACLE_MANAGED_DATA_ACCESS_CLIENT
@@ -13,8 +16,10 @@ using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
 namespace SqlPad.Oracle.DatabaseConnection
 {
-	public static class OracleCommandExtensions
+	public static class OracleDataAccessExtensions
 	{
+		private static readonly FieldInfo FieldReaderInternalTypes = typeof(OracleDataReader).GetField("m_oraType", BindingFlags.Instance | BindingFlags.NonPublic);
+
 		internal static OracleCommand AddSimpleParameter(this OracleCommand command, string parameterName, object value, string databaseType = null, int? size = null)
 		{
 			var parameter = command.CreateParameter();
@@ -64,6 +69,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 			command.Parameters.Add(parameter);
 
 			return command;
+		}
+
+		public static int[] GetInternalDataTypes(this OracleDataReader reader)
+		{
+			return ((IEnumerable)FieldReaderInternalTypes.GetValue(reader)).Cast<int>().ToArray();
 		}
 
 		public static Task<bool> ReadAsynchronous(this OracleDataReader reader, CancellationToken cancellationToken)

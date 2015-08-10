@@ -431,7 +431,12 @@ namespace SqlPad
 					EnableDatabaseOutput = WorkDocument.EnableDatabaseOutput,
 					KeepDatabaseOutputHistory = WorkDocument.KeepDatabaseOutputHistory
 				};
-			
+
+			if (ActiveOutputViewer != null)
+			{
+				outputViewer.EnableChildReferenceDataSources = ActiveOutputViewer.EnableChildReferenceDataSources;
+			}
+
 			outputViewer.CompilationError += CompilationErrorHandler;
 			_outputViewers.Add(outputViewer);
 
@@ -1033,7 +1038,7 @@ namespace SqlPad
 
 			CloseToolTipWhenNotOpenByShortCutOrCaretChange();
 
-			var parenthesisNodes = new List<StatementGrammarNode>();
+			var correspondingTerminals = new List<StatementGrammarNode>();
 
 			if (!_isParsing)
 			{
@@ -1062,8 +1067,8 @@ namespace SqlPad
 						var otherParenthesisTerminal = childNodes[index];
 						if (otherParenthesisTerminal.Token != null && otherParenthesisTerminal.Token.Value == otherParenthesis)
 						{
-							parenthesisNodes.Add(parenthesisTerminal);
-							parenthesisNodes.Add(otherParenthesisTerminal);
+							correspondingTerminals.Add(parenthesisTerminal);
+							correspondingTerminals.Add(otherParenthesisTerminal);
 
 							var scrollOffset = Editor.TextArea.TextView.ScrollOffset;
 							var position = Editor.TextArea.TextView.GetPosition(new Point(scrollOffset.X, scrollOffset.Y));
@@ -1103,12 +1108,17 @@ namespace SqlPad
 						}
 					}
 				}
+				else
+				{
+					var executionContext = ActionExecutionContext.Create(Editor, _sqlDocumentRepository);
+					correspondingTerminals.AddRange(_navigationService.FindCorrespondingTerminals(executionContext));
+				}
 			}
 
-			var oldParenthesisNodes = _colorizingTransformer.HighlightParenthesis.ToArray();
-			_colorizingTransformer.SetHighlightParenthesis(parenthesisNodes);
+			var oldCorrespondingTerminals = _colorizingTransformer.CorrespondingTerminals.ToArray();
+			_colorizingTransformer.SetCorrespondingTerminals(correspondingTerminals);
 
-			RedrawNodes(oldParenthesisNodes.Concat(parenthesisNodes));
+			RedrawNodes(oldCorrespondingTerminals.Concat(correspondingTerminals));
 		}
 
 		private static string GetOppositeParenthesisOrBracket(string parenthesisOrBracket)

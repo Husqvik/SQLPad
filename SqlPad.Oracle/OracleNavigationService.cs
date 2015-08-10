@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using SqlPad.Commands;
 using SqlPad.Oracle.Commands;
 using SqlPad.Oracle.SemanticModel;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
+using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
 namespace SqlPad.Oracle
 {
@@ -47,6 +49,37 @@ namespace SqlPad.Oracle
 				default:
 					throw new NotSupportedException($"Terminal '{terminal.Id}' is not supported. ");
 			}
+		}
+
+		public IReadOnlyCollection<StatementGrammarNode> FindCorrespondingTerminals(ActionExecutionContext executionContext)
+		{
+			var terminal = executionContext.DocumentRepository.Statements.GetTerminalAtPosition(executionContext.CaretOffset);
+			if (terminal == null)
+			{
+				return StatementGrammarNode.EmptyArray;
+			}
+
+			var terminals = new List<StatementGrammarNode>();
+
+			switch (terminal.Id)
+			{
+				case Terminals.Case:
+				case Terminals.End:
+					if (String.Equals(terminal.ParentNode.Id, NonTerminals.CaseExpression))
+					{
+						var correspondingTerminalId = String.Equals(terminal.Id, Terminals.Case) ? Terminals.End : Terminals.Case;
+						var correspondingTerminal = terminal.ParentNode[correspondingTerminalId];
+						if (correspondingTerminal != null)
+						{
+							terminals.Add(terminal);
+							terminals.Add(correspondingTerminal);
+						}
+					}
+
+					break;
+			}
+
+			return terminals.AsReadOnly();
 		}
 
 		public void FindUsages(ActionExecutionContext executionContext)

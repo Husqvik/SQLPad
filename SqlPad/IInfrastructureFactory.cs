@@ -1,4 +1,5 @@
-﻿using System.Configuration;
+﻿using System.Collections.Generic;
+using System.Configuration;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
@@ -59,6 +60,8 @@ namespace SqlPad
 		int? NavigateToQueryBlockRoot(ActionExecutionContext executionContext);
 
 		int? NavigateToDefinition(ActionExecutionContext executionContext);
+
+		IReadOnlyCollection<StatementGrammarNode> FindCorrespondingTerminals(ActionExecutionContext executionContext);
 
 		void FindUsages(ActionExecutionContext executionContext);
 

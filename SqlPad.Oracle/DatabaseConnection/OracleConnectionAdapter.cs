@@ -350,9 +350,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 
 			var fieldTypes = new string[reader.FieldCount];
+			//var internalTypes = reader.GetInternalDataTypes();
 			for (var i = 0; i < reader.FieldCount; i++)
 			{
 				var fieldType = reader.GetDataTypeName(i);
+				//fieldTypes[i] = internalTypes[i] == OracleRowId.InternalCode ? OracleRowId.TypeName : fieldType;
 				fieldTypes[i] = fieldType;
 			}
 
