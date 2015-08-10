@@ -245,6 +245,8 @@ namespace SqlPad
 			Task<StatementExecutionBatchResult> innerTask = null;
 			var actionResult = await SafeTimedActionAsync(() => innerTask = ConnectionAdapter.ExecuteStatementAsync(executionModel, _statementExecutionCancellationTokenSource.Token));
 
+			HasActiveTransaction = ConnectionAdapter.HasActiveTransaction;
+
 			if (!actionResult.IsSuccessful)
 			{
 				var executionException = actionResult.Exception as StatementExecutionException;
@@ -271,8 +273,6 @@ namespace SqlPad
 			}
 
 			RemoveResultViewers();
-
-			TransactionControlVisibity = ConnectionAdapter.HasActiveTransaction ? Visibility.Visible : Visibility.Collapsed;
 
 			UpdateTimerMessage(actionResult.Elapsed, false);
 			
@@ -469,7 +469,7 @@ namespace SqlPad
 
 			if (result.IsSuccessful)
 			{
-				TransactionControlVisibity = Visibility.Collapsed;
+				HasActiveTransaction = false;
 			}
 			else
 			{

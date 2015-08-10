@@ -19,7 +19,17 @@
 			<ToggleButton Content="_FK" ToolTip="Enable/disable foreign key children data access" Margin="2" IsChecked="{Binding RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType=sqlPad:OutputViewer}, Path=EnableChildReferenceDataSources}" Background="Transparent" />
 		</StackPanel>
 
-		<StackPanel Visibility="{Binding TransactionControlVisibity}" IsEnabled="{Binding IsTransactionControlEnabled}" Orientation="Horizontal" DockPanel.Dock="Top">
+		<StackPanel IsEnabled="{Binding IsTransactionControlEnabled}" Orientation="Horizontal" DockPanel.Dock="Top">
+			<StackPanel.Style>
+				<Style>
+					<Style.Triggers>
+						<DataTrigger Binding="{Binding HasActiveTransaction}" Value="False">
+							<Setter Property="StackPanel.Visibility" Value="Collapsed" />
+						</DataTrigger>
+					</Style.Triggers>
+				</Style>
+			</StackPanel.Style>
+			
 			<Button Content="_Commit" Padding="6,1,6,1" Margin="0,2,2,2" Click="ButtonCommitTransactionClickHandler" />
 			<Button Content="_Rollback" Padding="6,1,6,1" Margin="0,2,0,2" Click="ButtonRollbackTransactionClickHandler" />
 		</StackPanel>

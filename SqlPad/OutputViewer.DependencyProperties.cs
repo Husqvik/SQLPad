@@ -19,7 +19,7 @@ namespace SqlPad
 
 		public static readonly DependencyProperty IsDebuggerControlEnabledProperty = DependencyProperty.Register(nameof(IsDebuggerControlEnabled), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
 		public static readonly DependencyProperty IsTransactionControlEnabledProperty = DependencyProperty.Register(nameof(IsTransactionControlEnabled), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(true));
-		public static readonly DependencyProperty TransactionControlVisibityProperty = DependencyProperty.Register(nameof(TransactionControlVisibity), typeof(Visibility), typeof(OutputViewer), new FrameworkPropertyMetadata(Visibility.Collapsed));
+		public static readonly DependencyProperty HasActiveTransactionProperty = DependencyProperty.Register(nameof(HasActiveTransaction), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
 		#endregion
 
 		#region dependency property accessors
@@ -45,10 +45,10 @@ namespace SqlPad
 		}
 
 		[Bindable(true)]
-		public Visibility TransactionControlVisibity
+		public bool HasActiveTransaction
 		{
-			get { return (Visibility)GetValue(TransactionControlVisibityProperty); }
-			private set { SetValue(TransactionControlVisibityProperty, value); }
+			get { return (bool)GetValue(HasActiveTransactionProperty); }
+			private set { SetValue(HasActiveTransactionProperty, value); }
 		}
 
 		[Bindable(true)]

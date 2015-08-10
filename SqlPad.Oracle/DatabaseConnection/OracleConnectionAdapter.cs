@@ -656,12 +656,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 							? await RetrieveCompilationErrors(statement.ValidationModel.Statement, cancellationToken)
 							: CompilationError.EmptyArray;
 
-						var exception = await ResolveExecutionPlanIdentifiersAndTransactionStatus(cancellationToken);
-						if (exception != null)
-						{
-							await SafeResolveTransactionStatus(cancellationToken);
-						}
-
 						_resultInfoColumnHeaders.AddRange(resultInfoColumnHeaders);
 					}
 
@@ -703,7 +697,21 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 			finally
 			{
-				_isExecuting = false;
+				try
+				{
+					if (_userConnection.State == ConnectionState.Open)
+					{
+						var exception = await ResolveExecutionPlanIdentifiersAndTransactionStatus(cancellationToken);
+						if (exception != null)
+						{
+							await SafeResolveTransactionStatus(cancellationToken);
+						}
+					}
+				}
+				finally
+				{
+					_isExecuting = false;
+				}
 			}
 
 			return batchResult;

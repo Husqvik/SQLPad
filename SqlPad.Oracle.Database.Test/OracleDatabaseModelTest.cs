@@ -156,7 +156,7 @@ WHERE
 			var planItemCollection = displayCursorTask.Result;
 			planItemCollection.PlanText.ShouldNotBe(null);
 
-			Trace.WriteLine("Display cursor output: " + Environment.NewLine + planItemCollection.PlanText + Environment.NewLine);
+			Trace.WriteLine($"Display cursor output: {Environment.NewLine}{planItemCollection.PlanText}{Environment.NewLine}");
 
 			planItemCollection.PlanText.Length.ShouldBeGreaterThan(100);
 
@@ -167,7 +167,7 @@ WHERE
 			statisticsRecords.Length.ShouldBeGreaterThan(0);
 
 			var statistics = String.Join(Environment.NewLine, statisticsRecords.Select(r => $"{r.Name.PadRight(40)}: {r.Value}"));
-			Trace.WriteLine("Execution statistics output: " + Environment.NewLine + statistics + Environment.NewLine);
+			Trace.WriteLine($"Execution statistics output: {Environment.NewLine}{statistics}{Environment.NewLine}");
 		}
 
 		#if !ORACLE_MANAGED_DATA_ACCESS_CLIENT

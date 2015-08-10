@@ -137,7 +137,7 @@ WHERE
 			outputViewer.ExecutionLog.Length.ShouldBe(87);
 			outputViewer.ExecutionLog.ShouldContain("Statement executed successfully");
 			outputViewer.IsBusy.ShouldBe(false);
-			outputViewer.TransactionControlVisibity.ShouldBe(Visibility.Collapsed);
+			outputViewer.HasActiveTransaction.ShouldBe(false);
 			outputViewer.SessionExecutionStatistics.Count.ShouldBeGreaterThan(0);
 			outputViewer.ActiveResultViewer.ShouldNotBe(null);
 
