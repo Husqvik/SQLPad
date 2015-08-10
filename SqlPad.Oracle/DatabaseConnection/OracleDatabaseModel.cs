@@ -878,7 +878,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private void UpdateSchemas(IEnumerable<OracleSchema> schemas)
 		{
 			var allSchemas = schemas.ToDictionary(s => s.Name);
-			_schemas = new HashSet<string>(allSchemas.Values.Select(s => s.Name.Trim('"')));
+			_schemas = allSchemas.Values.Select(s => s.Name.Trim('"')).ToHashSet();
 			allSchemas.Add(SchemaPublic, OracleSchema.Public);
 			_allSchemas = new ReadOnlyDictionary<string, OracleSchema>(allSchemas);
 		}

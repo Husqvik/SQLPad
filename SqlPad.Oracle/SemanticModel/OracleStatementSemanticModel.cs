@@ -259,10 +259,11 @@ namespace SqlPad.Oracle.SemanticModel
 				queryBlockNodes[kvp.Key].AttachedFunctions.AddRange(kvp.Value);
 			}
 
-			var normalQueryBlocks = new HashSet<OracleQueryBlock>(queryBlockNodes.Values
+			var normalQueryBlocks = queryBlockNodes.Values
 				.Where(qb => qb.Type != QueryBlockType.CommonTableExpression || qb.Parent == null)
 				.OrderBy(qb => qb.Type)
-				.ThenByDescending(qb => qb.RootNode.Level));
+				.ThenByDescending(qb => qb.RootNode.Level)
+				.ToHashSet();
 
 			var commonTableExpressions = normalQueryBlocks
 				.SelectMany(qb => qb.CommonTableExpressions.OrderBy(cte => cte.RootNode.SourcePosition.IndexStart))

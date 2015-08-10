@@ -91,6 +91,11 @@ namespace SqlPad
 			return new string(characters);
 		}
 
+		public static HashSet<T> ToHashSet<T>(this IEnumerable<T> source)
+		{
+			return new HashSet<T>(source);
+		}
+
 		public static Task<IReadOnlyList<T>> EnumerateAsync<T>(this IEnumerable<T> source, CancellationToken cancellationToken)
 		{
 			return Task.Factory.StartNew(

@@ -362,7 +362,7 @@ namespace SqlPad
 
 			_isSelectingCells = true;
 
-			var selectedCells = new HashSet<DataGridCellInfo>(ResultGrid.SelectedCells);
+			var selectedCells = ResultGrid.SelectedCells.ToHashSet();
 			foreach (object[] rowItems in ResultGrid.Items)
 			{
 				var cell = new DataGridCellInfo(rowItems, header.Column);

@@ -1096,7 +1096,7 @@ namespace SqlPad.Oracle
 
 		public NodeValidationData(IEnumerable<OracleObjectWithColumnsReference> objectReferences = null)
 		{
-			_objectReferences = new HashSet<OracleObjectWithColumnsReference>(objectReferences ?? Enumerable.Empty<OracleObjectWithColumnsReference>());
+			_objectReferences = (objectReferences ?? Enumerable.Empty<OracleObjectWithColumnsReference>()).ToHashSet();
 		}
 
 		public bool IsRecognized { get; set; }

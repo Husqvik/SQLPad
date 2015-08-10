@@ -215,7 +215,7 @@ namespace SqlPad.Oracle.DataDictionary
 			_databaseLinks = new ReadOnlyDictionary<OracleObjectIdentifier, OracleDatabaseLink>(databaseLinks);
 			_nonSchemaFunctionMetadata = new List<OracleProgramMetadata>(nonSchemaFunctionMetadata);
 			_nonSchemaFunctionMetadataLookup = _nonSchemaFunctionMetadata.ToLookup(m => m.Identifier);
-			_characterSets = new HashSet<string>(characterSets);
+			_characterSets = characterSets.ToHashSet();
 			_statisticsKeys = new ReadOnlyDictionary<int, string>(statisticsKeys);
 			_systemParameters = new ReadOnlyDictionary<string, string>(systemParameters);
 

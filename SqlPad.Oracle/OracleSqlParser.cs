@@ -119,8 +119,8 @@ namespace SqlPad.Oracle
 
 			AvailableNonTerminals = oracleGrammar.StartSymbols.Select(s => CreateInitialNonTerminal(s.Id)).ToArray();
 
-			TerminatorIds = new HashSet<string>(oracleGrammar.Terminators.Select(t => t.Id));
-			TerminatorValues = new HashSet<string>(TerminatorIds.Select(id => Terminals[id].Value));
+			TerminatorIds = oracleGrammar.Terminators.Select(t => t.Id).ToHashSet();
+			TerminatorValues = TerminatorIds.Select(id => Terminals[id].Value).ToHashSet();
 		}
 
 		private OracleSqlParser() { }

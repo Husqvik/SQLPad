@@ -832,8 +832,12 @@ namespace SqlPad
 					continue;
 				}
 
-				var bindVariableModels = BindVariables
-					.Where(c => c.BindVariable.Nodes.Any(n => n.SourcePosition.IndexStart >= selectionStart && n.SourcePosition.IndexEnd + 1 <= statementIndexEnd));
+				var bindVariables = statement.BindVariables
+					.Where(bv => bv.Nodes.Any(n => n.SourcePosition.IndexStart >= selectionStart && n.SourcePosition.IndexEnd + 1 <= statementIndexEnd))
+					.Select(bv => bv.Name)
+					.ToHashSet();
+
+				var bindVariableModels = BindVariables.Where(m => bindVariables.Contains(m.Name));
 
 				executionModels.Add(
 					new StatementExecutionModel

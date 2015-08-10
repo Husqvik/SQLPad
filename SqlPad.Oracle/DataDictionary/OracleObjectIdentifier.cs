@@ -50,7 +50,7 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public static ICollection<OracleObjectIdentifier> GetUniqueReferences(ICollection<OracleObjectIdentifier> identifiers)
 		{
-			var sourceIdentifiers = new HashSet<OracleObjectIdentifier>(identifiers);
+			var sourceIdentifiers = identifiers.ToHashSet();
 			var uniqueIdentifiers = new HashSet<OracleObjectIdentifier>();
 
 			var references = identifiers.Where(i => !String.IsNullOrEmpty(i.NormalizedName))
