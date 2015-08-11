@@ -114,6 +114,7 @@ namespace SqlPad
 	{
 		private static readonly BinaryFormatter Formatter = new BinaryFormatter();
 		private byte[] _internalValue;
+		private object _value;
 
 		public string Name { get; set; }
 		
@@ -123,12 +124,19 @@ namespace SqlPad
 		{
 			get
 			{
+				if (_value != null)
+				{
+					return _value;
+				}
+
 				if (_internalValue == null)
+				{
 					return null;
+				}
 
 				using (var stream = new MemoryStream(_internalValue))
 				{
-					return Formatter.Deserialize(stream);
+					return _value = Formatter.Deserialize(stream);
 				}
 			}
 			set
@@ -138,6 +146,13 @@ namespace SqlPad
 					_internalValue = null;
 					return;
 				}
+
+				if (Equals(_value, value))
+				{
+					return;
+				}
+
+				_value = value;
 
 				using (var stream = new MemoryStream())
 				{

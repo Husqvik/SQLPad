@@ -737,7 +737,7 @@ namespace SqlPad
 				return;
 			}
 
-			args.CanExecute = BuildStatementExecutionModel().Count > 0;
+			args.CanExecute = BuildStatementExecutionModel(false).Count > 0;
 		}
 
 		private void ExecuteDatabaseCommandWithActualExecutionPlanHandler(object sender, ExecutedRoutedEventArgs args)
@@ -765,7 +765,7 @@ namespace SqlPad
 				}
 			}
 
-			var executionModels = BuildStatementExecutionModel();
+			var executionModels = BuildStatementExecutionModel(true);
 			var executionModel =
 				new StatementBatchExecutionModel
 				{
@@ -776,7 +776,7 @@ namespace SqlPad
 			await ActiveOutputViewer.ExecuteDatabaseCommandAsync(executionModel);
 		}
 
-		private IReadOnlyList<StatementExecutionModel> BuildStatementExecutionModel()
+		private IReadOnlyList<StatementExecutionModel> BuildStatementExecutionModel(bool includeStatementText)
 		{
 			var executionModels = new List<StatementExecutionModel>();
 
@@ -817,10 +817,14 @@ namespace SqlPad
 					? selectionEnd
 					: statement.RootNode.SourcePosition.IndexEnd + 1;
 
-				var statementText = Editor.Text.Substring(selectionStart, statementIndexEnd - selectionStart);
-				if (statementText.Trim().Length == 0)
+				string statementText = null;
+				if (includeStatementText)
 				{
-					continue;
+					statementText = Editor.Text.Substring(selectionStart, statementIndexEnd - selectionStart);
+					if (statementText.Trim().Length == 0)
+					{
+						continue;
+					}
 				}
 
 				var bindVariables = statement.BindVariables
@@ -1168,7 +1172,7 @@ namespace SqlPad
 				return;
 			}
 
-			var statements = new List<StatementBase>(BuildStatementExecutionModel().Select(m => m.ValidationModel.Statement));
+			var statements = new List<StatementBase>(BuildStatementExecutionModel(false).Select(m => m.ValidationModel.Statement));
 			if (statements.All(s => s.BindVariables.Count == 0))
 			{
 				BindVariables = new BindVariableModel[0];
@@ -1897,7 +1901,7 @@ namespace SqlPad
 
 		private async void ExecuteExplainPlanCommandHandler(object sender, ExecutedRoutedEventArgs args)
 		{
-			var executionModels = BuildStatementExecutionModel();
+			var executionModels = BuildStatementExecutionModel(true);
 			if (executionModels.Count > 1)
 			{
 				Messages.ShowInformation("Multiple statements are not supported. ");

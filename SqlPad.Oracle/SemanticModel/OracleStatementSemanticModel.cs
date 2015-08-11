@@ -965,7 +965,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private List<OracleSelectListColumn> GatherSqlModelColumns(ICollection<OracleDataObjectReference> objectReferences, StatementGrammarNode parenthesisEnclosedAliasedExpressionList)
 		{
-			var measureColumns = new List<OracleSelectListColumn>();
+			var columns = new List<OracleSelectListColumn>();
 
 			foreach (var aliasedExpression in parenthesisEnclosedAliasedExpressionList.GetDescendants(NonTerminals.AliasedExpression))
 			{
@@ -990,10 +990,10 @@ namespace SqlPad.Oracle.SemanticModel
 
 				sqlModelColumn.ObjectReferences.AddRange(objectReferences);
 				ResolveSqlModelReferences(sqlModelColumn, GetIdentifiers(aliasedExpression).ToArray());
-				measureColumns.Add(sqlModelColumn);
+				columns.Add(sqlModelColumn);
 			}
 
-			return measureColumns;
+			return columns;
 		}
 
 		private static IEnumerable<StatementGrammarNode> GetIdentifiers(StatementGrammarNode nonTerminal, params string[] nodeIds)
