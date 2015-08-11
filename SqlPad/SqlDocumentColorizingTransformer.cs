@@ -11,16 +11,19 @@ namespace SqlPad
 	{
 		private readonly object _lockObject = new object();
 
-		private static readonly SolidColorBrush ErrorBrush = new SolidColorBrush(Colors.Red);
-		private static readonly SolidColorBrush HighlightUsageBrush = new SolidColorBrush(Colors.Turquoise);
-		private static readonly SolidColorBrush HighlightDefinitionBrush = new SolidColorBrush(Colors.SandyBrown);
-		private static readonly SolidColorBrush KeywordBrush = new SolidColorBrush(Colors.Blue);
-		private static readonly SolidColorBrush LiteralBrush = new SolidColorBrush(Colors.SaddleBrown/*Color.FromRgb(214, 157, 133)*/);
-		private static readonly SolidColorBrush AliasBrush = new SolidColorBrush(Colors.MidnightBlue);
-		private static readonly SolidColorBrush CommentBrush = new SolidColorBrush(Colors.Green);
-		private static readonly SolidColorBrush ProgramBrush = new SolidColorBrush(Colors.Magenta);
-		private static readonly SolidColorBrush ValidStatementBackgroundBrush = new SolidColorBrush(Color.FromArgb(32, Colors.LightGreen.R, Colors.LightGreen.G, Colors.LightGreen.B));
+		private static readonly SolidColorBrush ErrorBrush = Brushes.Red;
+		private static readonly SolidColorBrush HighlightUsageBrush = Brushes.Turquoise;
+		private static readonly SolidColorBrush HighlightDefinitionBrush = Brushes.SandyBrown;
+		private static readonly SolidColorBrush KeywordBrush = Brushes.Blue;
+		private static readonly SolidColorBrush LiteralBrush = Brushes.SaddleBrown;
+		private static readonly SolidColorBrush AliasBrush = Brushes.MidnightBlue;
+		private static readonly SolidColorBrush CommentBrush = Brushes.Green;
+		private static readonly SolidColorBrush ProgramBrush = Brushes.Magenta;
+		private static readonly SolidColorBrush CorrespondingTerminalBrush = Brushes.Yellow;
+		private static readonly SolidColorBrush ValidStatementBackgroundBrush = new SolidColorBrush(Color.FromArgb(24, Colors.LightGreen.R, Colors.LightGreen.G, Colors.LightGreen.B));
+		private static readonly SolidColorBrush ValidActiveStatementBackgroundBrush = new SolidColorBrush(Color.FromArgb(64, Colors.LightGreen.R, Colors.LightGreen.G, Colors.LightGreen.B));
 		private static readonly SolidColorBrush InvalidStatementBackgroundBrush = new SolidColorBrush(Color.FromArgb(32, Colors.PaleVioletRed.R, Colors.PaleVioletRed.G, Colors.PaleVioletRed.B));
+		private static readonly SolidColorBrush InvalidActiveStatementBackgroundBrush = new SolidColorBrush(Color.FromArgb(64, Colors.PaleVioletRed.R, Colors.PaleVioletRed.G, Colors.PaleVioletRed.B));
 		private static readonly SolidColorBrush RedundantBrush = new SolidColorBrush(Color.FromArgb(168, Colors.Black.R, Colors.Black.G, Colors.Black.B));
 
 		private readonly Stack<ICollection<TextSegment>> _highlightSegments = new Stack<ICollection<TextSegment>>();
@@ -37,9 +40,11 @@ namespace SqlPad
 		private StatementCollection _statements;
 		private IDictionary<StatementBase, IValidationModel> _validationModels;
 
+		public StatementBase ActiveStatement { get; private set; }
+
 		public IReadOnlyCollection<StatementGrammarNode> CorrespondingTerminals => _correspondingTerminals.AsReadOnly();
 
-	    public IEnumerable<TextSegment> HighlightSegments { get { return _highlightSegments.SelectMany(c => c); } }
+		public IEnumerable<TextSegment> HighlightSegments => _highlightSegments.SelectMany(c => c);
 
 		public void SetParser(ISqlParser parser)
 		{
@@ -54,10 +59,19 @@ namespace SqlPad
 			}
 		}
 
+		public bool SetActiveStatement(StatementBase activeStatement)
+		{
+			var isSameStatement = ActiveStatement == activeStatement;
+			ActiveStatement = activeStatement;
+			return !isSameStatement;
+		}
+
 		public void SetDocumentRepository(SqlDocumentRepository documentRepository)
 		{
 			if (documentRepository == null)
+			{
 				return;
+			}
 
 			EnsureParserSet();
 
@@ -113,7 +127,9 @@ namespace SqlPad
 			lock (_lockObject)
 			{
 				if (_statements == null)
+				{
 					return;
+				}
 
 				BuildLineNodeIndexes(context);
 
@@ -280,7 +296,15 @@ namespace SqlPad
 			var statementsAtLine = _statements.Where(s => s.SourcePosition.IndexStart <= line.EndOffset && s.SourcePosition.IndexEnd >= line.Offset);
 			foreach (var statement in statementsAtLine)
 			{
-				var backgroundColor = statement.ParseStatus == ParseStatus.Success ? ValidStatementBackgroundBrush : InvalidStatementBackgroundBrush;
+				Brush backgroundBrush;
+				if (statement == ActiveStatement)
+				{
+					backgroundBrush = statement.ParseStatus == ParseStatus.Success ? ValidActiveStatementBackgroundBrush : InvalidActiveStatementBackgroundBrush;
+				}
+				else
+				{
+					backgroundBrush = statement.ParseStatus == ParseStatus.Success ? ValidStatementBackgroundBrush : InvalidStatementBackgroundBrush;
+				}
 
 				var colorStartOffset = Math.Max(line.Offset, statement.SourcePosition.IndexStart);
 				var colorEndOffset = Math.Min(line.EndOffset, statement.SourcePosition.IndexEnd + 1);
@@ -293,7 +317,7 @@ namespace SqlPad
 					colorEndOffset,
 					element =>
 					{
-						element.BackgroundBrush = backgroundColor;
+						element.BackgroundBrush = backgroundBrush;
 
 						//ProcessNodeAtLine(line, semanticError.Node.SourcePosition,
 						//	element => element.TextRunProperties.SetTextDecorations(Resources.BoxedText));
@@ -339,7 +363,7 @@ namespace SqlPad
 		{
 			foreach (var parenthesisNode in _correspondingTerminals)
 			{
-				ProcessNodeAtLine(line, parenthesisNode.SourcePosition, element => element.BackgroundBrush = Brushes.Yellow);
+				ProcessNodeAtLine(line, parenthesisNode.SourcePosition, element => element.BackgroundBrush = CorrespondingTerminalBrush);
 			}
 		}
 

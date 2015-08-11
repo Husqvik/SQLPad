@@ -173,7 +173,9 @@ namespace SqlPad
 			StatusInfo.MoreRowsAvailable = false;
 			StatusInfo.StatementExecutedSuccessfully = false;
 			StatusInfo.AffectedRowCount = -1;
-			
+
+			RemoveResultViewers();
+
 			WriteDatabaseOutput(String.Empty);
 		}
 
@@ -238,6 +240,9 @@ namespace SqlPad
 
 		private async Task ExecuteDatabaseCommandAsyncInternal(StatementBatchExecutionModel executionModel)
 		{
+			//var caretOffset = DocumentPage.Editor.CaretOffset;
+			//var text = DocumentPage.Editor.Text;
+
 			Initialize();
 
 			ConnectionAdapter.EnableDatabaseOutput = EnableDatabaseOutput;
@@ -253,6 +258,12 @@ namespace SqlPad
 				if (executionException != null)
 				{
 					UpdateExecutionLog(executionException.BatchResult.StatementResults);
+
+					/*if (caretOffset == DocumentPage.Editor.CaretOffset && String.Equals(text, DocumentPage.Editor.Text))
+					{
+						var newCaretPosition = executionException.BatchResult.StatementResults.First(r => !r.ExecutedSuccessfully).StatementModel.Statement.SourcePosition.IndexStart;
+						DocumentPage.Editor.NavigateToOffset(newCaretPosition);
+					}*/
 				}
 
 				Messages.ShowError(actionResult.Exception.Message);
@@ -271,8 +282,6 @@ namespace SqlPad
 				NotifyExecutionCanceled();
 				return;
 			}
-
-			RemoveResultViewers();
 
 			UpdateTimerMessage(actionResult.Elapsed, false);
 			

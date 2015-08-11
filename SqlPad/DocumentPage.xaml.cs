@@ -82,27 +82,27 @@ namespace SqlPad
 		
 		internal ContextMenu TabItemContextMenu => ((ContentControl)TabItem.Header).ContextMenu;
 
-	    internal static bool IsParsingSynchronous { get; set; }
+		internal static bool IsParsingSynchronous { get; set; }
 
 		public bool IsBusy { get { return _outputViewers.Any(v => v.IsBusy); } }
 
 		internal bool IsSelectedPage => Equals(((TabItem)App.MainWindow.DocumentTabControl.SelectedItem).Content);
 
-	    public TextEditorAdapter EditorAdapter { get; private set; }
+		public TextEditorAdapter EditorAdapter { get; private set; }
 
 		public WorkDocument WorkDocument { get; }
 
 		public bool IsDirty => !String.Equals(Editor.Text, _originalWorkDocumentContent);
 
-	    public IDatabaseModel DatabaseModel { get; private set; }
+		public IDatabaseModel DatabaseModel { get; private set; }
 
 		public IReadOnlyList<OutputViewer> OutputViewers => _outputViewers;
 
-	    public IReadOnlyList<string> Schemas => _schemas;
+		public IReadOnlyList<string> Schemas => _schemas;
 
-	    private OutputViewer ActiveOutputViewer => (OutputViewer)OutputViewerList.SelectedItem;
+		private OutputViewer ActiveOutputViewer => (OutputViewer)OutputViewerList.SelectedItem;
 
-	    public DocumentPage(WorkDocument workDocument = null)
+		public DocumentPage(WorkDocument workDocument = null)
 		{
 			InitializeComponent();
 
@@ -697,23 +697,14 @@ namespace SqlPad
 		{
 			var executionContext = ActionExecutionContext.Create(Editor, _sqlDocumentRepository);
 			var queryBlockRootIndex = _navigationService.NavigateToQueryBlockRoot(executionContext);
-			NavigateToOffset(queryBlockRootIndex);
+			Editor.NavigateToOffset(queryBlockRootIndex);
 		}
 		
 		private void NavigateToDefinition(object sender, ExecutedRoutedEventArgs args)
 		{
 			var executionContext = ActionExecutionContext.Create(Editor, _sqlDocumentRepository);
 			var queryBlockRootIndex = _navigationService.NavigateToDefinition(executionContext);
-			NavigateToOffset(queryBlockRootIndex);
-		}
-
-		private void NavigateToOffset(int? offset)
-		{
-			if (offset == null)
-				return;
-			
-			Editor.CaretOffset = offset.Value;
-			Editor.ScrollToCaret();
+			Editor.NavigateToOffset(queryBlockRootIndex);
 		}
 
 		private void RefreshDatabaseModel(object sender, ExecutedRoutedEventArgs args)
@@ -1042,16 +1033,22 @@ namespace SqlPad
 
 			CloseToolTipWhenNotOpenByShortCutOrCaretChange();
 
+			if (_sqlDocumentRepository.Statements == null)
+			{
+				return;
+			}
+
 			var correspondingTerminals = new List<StatementGrammarNode>();
 
 			if (!_isParsing)
 			{
 				ShowHideBindVariableList();
 
-				var parenthesisTerminal = _sqlDocumentRepository.Statements == null
-					? null
-					: _sqlDocumentRepository.ExecuteStatementAction(s => s.GetTerminalAtPosition(Editor.CaretOffset, n => n.Token.Value.In("(", ")", "[", "]", "{", "}")));
+				var activeStatement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
+				HighlightActiveStatement(activeStatement);
 
+				var terminal = activeStatement?.GetTerminalAtPosition(Editor.CaretOffset);
+				var parenthesisTerminal = terminal != null && terminal.Token.Value.In("(", ")", "[", "]", "{", "}") ? terminal : null;
 				if (parenthesisTerminal != null)
 				{
 					var childNodes = parenthesisTerminal.ParentNode.ChildNodes;
@@ -1123,6 +1120,24 @@ namespace SqlPad
 			_colorizingTransformer.SetCorrespondingTerminals(correspondingTerminals);
 
 			RedrawNodes(oldCorrespondingTerminals.Concat(correspondingTerminals));
+		}
+
+		private void HighlightActiveStatement(StatementBase newActiveStatement)
+		{
+			var previousActiveStatement = _colorizingTransformer.ActiveStatement;
+			if (!_colorizingTransformer.SetActiveStatement(newActiveStatement))
+			{
+				return;
+			}
+
+			if (previousActiveStatement?.ParseStatus == ParseStatus.SequenceNotFound || newActiveStatement?.ParseStatus == ParseStatus.SequenceNotFound)
+			{
+				Editor.TextArea.TextView.Redraw();
+			}
+			else
+			{
+				RedrawNodes(previousActiveStatement?.RootNode, newActiveStatement?.RootNode);
+			}
 		}
 
 		private static string GetOppositeParenthesisOrBracket(string parenthesisOrBracket)
@@ -1217,6 +1232,11 @@ namespace SqlPad
 			}
 
 			return models.AsReadOnly();
+		}
+
+		private void RedrawNodes(params StatementGrammarNode[] nodes)
+		{
+			RedrawNodes(nodes.Where(n => n != null));
 		}
 
 		private void RedrawNodes(IEnumerable<StatementGrammarNode> nodes)
@@ -1528,6 +1548,8 @@ namespace SqlPad
 			{
 				return;
 			}
+
+			_colorizingTransformer.SetActiveStatement(_sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset));
 
 			Editor.TextArea.TextView.Redraw();
 

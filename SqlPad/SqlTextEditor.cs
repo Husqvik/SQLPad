@@ -91,6 +91,17 @@ namespace SqlPad
 			Document.EndUpdate();
 		}
 
+		public void NavigateToOffset(int? offset)
+		{
+			if (offset == null)
+			{
+				return;
+			}
+
+			CaretOffset = offset.Value;
+			ScrollToCaret();
+		}
+
 		public void ScrollToCaret()
 		{
 			var location = Document.GetLocation(CaretOffset);

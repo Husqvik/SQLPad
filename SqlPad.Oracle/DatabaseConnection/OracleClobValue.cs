@@ -496,8 +496,14 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private static int DecodeBase64Hex(string base64Bytes)
 		{
 			var binaryData = Convert.FromBase64String(base64Bytes);
-			var hexData = binaryData.ToHexString();
-			return Int32.Parse(hexData, NumberStyles.AllowHexSpecifier);
+			var result = 0;
+
+			foreach (var b in binaryData)
+			{
+				result = result * 256 + b;
+			}
+
+			return result;
 		}
 	}
 
