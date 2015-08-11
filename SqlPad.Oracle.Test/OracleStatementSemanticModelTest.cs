@@ -1647,6 +1647,34 @@ MODEL
 		}
 
 		[Test(Description = @"")]
+		public void TestSqlModelOutputColumnTypeDefinedByCast()
+		{
+			const string query1 =
+@"SELECT
+	M_1
+FROM
+	DUAL
+	MODEL
+		DIMENSION BY (0 AS KEY)
+		MEASURES (
+			CAST(NULL AS VARCHAR2(4000)) AS M_1
+		)
+		RULES UPDATE (
+			M_1[ANY] = 'x'
+		)";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.Count.ShouldBe(1);
+			var queryBlock = semanticModel.MainQueryBlock;
+			queryBlock.Columns.Count.ShouldBe(1);
+			queryBlock.Columns[0].NormalizedName.ShouldBe("\"M_1\"");
+			queryBlock.Columns[0].ColumnDescription.FullTypeName.ShouldBe("VARCHAR2(4000)");
+		}
+
+		[Test(Description = @"")]
 		public void TestRecursiveCommonTableExpression()
 		{
 			const string query1 = @"WITH GENERATOR(VAL) AS (SELECT 1 FROM DUAL UNION ALL SELECT VAL + 1 FROM GENERATOR WHERE VAL <= 10) SELECT VAL FROM	GENERATOR";

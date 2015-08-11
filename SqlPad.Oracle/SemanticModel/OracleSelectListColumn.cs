@@ -102,7 +102,7 @@ namespace SqlPad.Oracle.SemanticModel
 					Name = NormalizedName,
 					Nullable = columnDescription == null || columnDescription.Nullable,
 					DataType = columnDescription == null ? OracleDataType.Empty : columnDescription.DataType,
-					CharacterSize = columnDescription == null ? Int32.MinValue : columnDescription.CharacterSize
+					CharacterSize = columnDescription?.CharacterSize
 				};
 
 			if (columnDescription == null && RootNode.TerminalCount > 0)
