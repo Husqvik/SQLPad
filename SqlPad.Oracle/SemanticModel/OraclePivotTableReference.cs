@@ -32,6 +32,8 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public bool? AreUnpivotColumnSourceDataTypesMatched => _areUnpivotColumnSourceDataTypesMatched ?? (_areUnpivotColumnSourceDataTypesMatched = ResolveUnpivotColumnSourceDataTypesMatching());
 
+		public override IEnumerable<OracleDataObjectReference> IncludeInnerReferences => base.IncludeInnerReferences.Concat(Enumerable.Repeat(SourceReference, 1));
+
 		public override IReadOnlyList<OracleColumn> Columns => _columns ?? ResolvePivotClauseColumns();
 
 		public OraclePivotTableReference(OracleStatementSemanticModel semanticModel, OracleDataObjectReference sourceReference, StatementGrammarNode pivotClause)
@@ -46,6 +48,9 @@ namespace SqlPad.Oracle.SemanticModel
 			SourceReference = sourceReference;
 
 			RootNode = sourceReference.RootNode;
+			var innerTableReferenceRootNode = sourceReference.RootNode.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBlock, NonTerminals.InnerTableReference, NonTerminals.InnerSpecialTableReference).Last();
+			sourceReference.RootNode = innerTableReferenceRootNode;
+
 			Owner = sourceReference.Owner;
 			Owner.ObjectReferences.Remove(sourceReference);
 			Owner.ObjectReferences.Add(this);

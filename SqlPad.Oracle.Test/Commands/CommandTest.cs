@@ -102,15 +102,12 @@ WHERE
 
 			public bool GetSettings()
 			{
-				if (GetSettingsCalled != null)
-				{
-					GetSettingsCalled(this, EventArgs.Empty);
-				}
+				GetSettingsCalled?.Invoke(this, EventArgs.Empty);
 
 				return _isValueValid;
 			}
 
-			public CommandSettingsModel Settings { get; private set; }
+			public CommandSettingsModel Settings { get; }
 		}
 
 		private ActionExecutionContext CreateExecutionContext()
@@ -148,6 +145,27 @@ WHERE
 			ExecuteCommand(OracleCommands.AddAlias, new TestCommandSettings(new CommandSettingsModel { Value = "S"} ));
 
 			_editor.Text.ShouldBe(@"SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME FROM SELECTION S");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestAddObjectAliasWithExistingModelClause()
+		{
+			_editor.Text =
+@"SELECT
+	*
+FROM
+	DUAL
+	MODEL
+		DIMENSION BY (0 AS KEY)
+		MEASURES (
+			CAST(NULL AS VARCHAR2(4000)) AS M_1
+		)
+		RULES UPDATE (
+			M_1[ANY] = 'x'
+		)";
+			_editor.CaretOffset = 19;
+
+			CanExecuteCommand(OracleCommands.AddAlias).ShouldBe(true);
 		}
 
 		[Test(Description = @""), STAThread]
@@ -255,6 +273,74 @@ FROM
 			ExecuteCommand(OracleCommands.WrapAsInlineView, new TestCommandSettings(new CommandSettingsModel { Value = "IV" } ));
 
 			_editor.Text.ShouldBe(@"SELECT IV.RESPONDENTBUCKET_ID, IV.SELECTION_ID, IV.PROJECT_ID, IV.NAME FROM (SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM SELECTION S) IV");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestWrapAsInlineViewCommandWithExistingModelClause()
+		{
+			_editor.Text =
+@"SELECT
+	*
+FROM
+	DUAL
+	MODEL
+		DIMENSION BY (0 AS KEY)
+		MEASURES (
+			CAST(NULL AS VARCHAR2(4000)) AS M_1
+		)
+		RULES UPDATE (
+			M_1[ANY] = 'x'
+		)";
+			_editor.CaretOffset = 19;
+
+			CanExecuteCommand(OracleCommands.WrapAsInlineView).ShouldBe(true);
+			ExecuteCommand(OracleCommands.WrapAsInlineView, new TestCommandSettings(new CommandSettingsModel()));
+
+			const string expectedResult =
+@"SELECT
+	*
+FROM
+	(SELECT DUMMY FROM DUAL) DUAL
+	MODEL
+		DIMENSION BY (0 AS KEY)
+		MEASURES (
+			CAST(NULL AS VARCHAR2(4000)) AS M_1
+		)
+		RULES UPDATE (
+			M_1[ANY] = 'x'
+		)";
+			_editor.Text.ShouldBe(expectedResult);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestWrapAsInlineViewCommandWithExistingPivotClause()
+		{
+			_editor.Text =
+@"SELECT
+	*
+FROM
+	DUAL
+	PIVOT (
+		COUNT(DUMMY)
+		FOR (DUMMY)	IN ('X')
+	)";
+
+			_editor.CaretOffset = 19;
+
+			CanExecuteCommand(OracleCommands.WrapAsInlineView).ShouldBe(true);
+			ExecuteCommand(OracleCommands.WrapAsInlineView, new TestCommandSettings(new CommandSettingsModel()));
+
+			const string expectResult =
+@"SELECT
+	*
+FROM
+	(SELECT DUMMY FROM DUAL) DUAL
+	PIVOT (
+		COUNT(DUMMY)
+		FOR (DUMMY)	IN ('X')
+	)";
+
+			_editor.Text.ShouldBe(expectResult);
 		}
 
 		[Test(Description = @""), STAThread]

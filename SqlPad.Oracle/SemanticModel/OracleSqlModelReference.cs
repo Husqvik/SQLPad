@@ -19,6 +19,8 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public IReadOnlyCollection<OracleReferenceContainer> ChildContainers { get; private set; }
 
+		public override IEnumerable<OracleDataObjectReference> IncludeInnerReferences => base.IncludeInnerReferences.Concat(SourceReferenceContainer.ObjectReferences);
+
 		public OracleSqlModelReference(OracleStatementSemanticModel semanticModel, IReadOnlyList<OracleSelectListColumn> columns, IEnumerable<OracleDataObjectReference> sourceReferences)
 			: base(ReferenceType.SqlModel)
 		{

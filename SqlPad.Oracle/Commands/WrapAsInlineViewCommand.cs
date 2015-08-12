@@ -31,6 +31,7 @@ namespace SqlPad.Oracle.Commands
 			}
 
 			var dataObjectReference = CurrentQueryBlock.ObjectReferences
+				.SelectMany(o => o.IncludeInnerReferences)
 				.SingleOrDefault(r => (r.ObjectNode == CurrentNode || r.AliasNode == CurrentNode ||
 				                       (r.RootNode.FirstTerminalNode == CurrentNode && r.RootNode.FirstTerminalNode.Id.In(Terminals.XmlTable, Terminals.JsonTable, Terminals.Table))) &&
 				                      r.Columns.Count > 0);

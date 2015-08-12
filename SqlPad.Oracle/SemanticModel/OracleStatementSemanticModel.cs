@@ -77,17 +77,17 @@ namespace SqlPad.Oracle.SemanticModel
 
 		StatementBase IStatementSemanticModel.Statement => Statement;
 
-	    public string StatementText { get; private set; }
+		public string StatementText { get; private set; }
 		
 		public bool HasDatabaseModel => _databaseModel != null && _databaseModel.IsInitialized;
 
-	    public ICollection<OracleQueryBlock> QueryBlocks => _queryBlockNodes.Values;
+		public ICollection<OracleQueryBlock> QueryBlocks => _queryBlockNodes.Values;
 
-	    public ICollection<OracleInsertTarget> InsertTargets => _insertTargets;
+		public ICollection<OracleInsertTarget> InsertTargets => _insertTargets;
 
-	    public ICollection<RedundantTerminalGroup> RedundantSymbolGroups => _redundantTerminalGroups.AsReadOnly();
+		public ICollection<RedundantTerminalGroup> RedundantSymbolGroups => _redundantTerminalGroups.AsReadOnly();
 
-	    public OracleMainObjectReferenceContainer MainObjectReferenceContainer { get; private set; }
+		public OracleMainObjectReferenceContainer MainObjectReferenceContainer { get; }
 
 		public IEnumerable<OracleReferenceContainer> AllReferenceContainers
 		{
@@ -382,9 +382,9 @@ namespace SqlPad.Oracle.SemanticModel
 		private void FindObjectReferences(OracleQueryBlock queryBlock)
 		{
 			var queryBlockRoot = queryBlock.RootNode;
-			var tableReferenceNonterminals = queryBlock.FromClause == null
-				? StatementGrammarNode.EmptyArray
-				: queryBlock.FromClause.GetDescendantsWithinSameQueryBlock(NonTerminals.TableReference).Where(n => n[NonTerminals.TableReference] == null);
+			var tableReferenceNonterminals =
+				queryBlock.FromClause?.GetDescendantsWithinSameQueryBlock(NonTerminals.TableReference).Where(n => n[NonTerminals.TableReference] == null)
+				?? StatementGrammarNode.EmptyArray;
 
 			var cteReferences = ResolveAccessibleCommonTableExpressions(queryBlockRoot).ToDictionary(qb => qb.CteNode, qb => qb.CteAlias);
 			_accessibleQueryBlockRoot.Add(queryBlock, cteReferences.Keys);

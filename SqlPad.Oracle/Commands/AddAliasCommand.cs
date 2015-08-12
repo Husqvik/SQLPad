@@ -33,7 +33,7 @@ namespace SqlPad.Oracle.Commands
 			if (CurrentNode.Id == Terminals.ObjectIdentifier)
 			{
 				var objectReferences = CurrentQueryBlock.ObjectReferences
-					.Concat(CurrentQueryBlock.ObjectReferences.OfType<OraclePivotTableReference>().Select(p => p.SourceReference))
+					.SelectMany(o => o.IncludeInnerReferences)
 					.Where(o => o.ObjectNode == CurrentNode)
 					.ToArray();
 				
@@ -178,14 +178,9 @@ namespace SqlPad.Oracle.Commands
 
 		private static IEnumerable<OracleDataObjectReference> GetInlineViewObjectReferences(OracleQueryBlock queryBlock)
 		{
-			var objectReferences = (IEnumerable<OracleDataObjectReference>)queryBlock.ObjectReferences;
-			objectReferences = objectReferences.Concat(objectReferences.OfType<OraclePivotTableReference>().Select(pt => pt.SourceReference));
-			if (queryBlock.ModelReference != null)
-			{
-				objectReferences = objectReferences.Concat(queryBlock.ModelReference.SourceReferenceContainer.ObjectReferences);
-			}
-
-			return objectReferences.Where(o => o.QueryBlocks.Count == 1);
+			return queryBlock.ObjectReferences
+				.SelectMany(o => o.IncludeInnerReferences)
+				.Where(o => o.QueryBlocks.Count == 1);
 		}
 
 		private void AddColumnAliasToQueryBlock(string columnName, string alias, OracleReference objectReference)

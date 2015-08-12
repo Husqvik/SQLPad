@@ -15,14 +15,14 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public virtual ICollection<OracleQueryBlock> QueryBlocks => _queryBlocks;
 
-	    public abstract ReferenceType Type { get; }
+		public abstract ReferenceType Type { get; }
 	}
 
 	public class OraclePartitionReference : OracleReference
 	{
 		public override string Name => ObjectNode.Token.Value;
 
-	    public OraclePartitionBase Partition { get; set; }
+		public OraclePartitionBase Partition { get; set; }
 		
 		public OracleDataObjectReference DataObjectReference { get; set; }
 	}
@@ -33,7 +33,7 @@ namespace SqlPad.Oracle.SemanticModel
 		private IReadOnlyList<OracleColumn> _columns;
 		private IReadOnlyList<OracleColumn> _pseudoColumns;
 
-	    internal static readonly string RowIdNormalizedName = TerminalValues.RowIdPseudoColumn.ToQuotedIdentifier();
+		internal static readonly string RowIdNormalizedName = TerminalValues.RowIdPseudoColumn.ToQuotedIdentifier();
 
 		public static readonly OracleDataObjectReference[] EmptyArray = new OracleDataObjectReference[0];
 
@@ -52,6 +52,8 @@ namespace SqlPad.Oracle.SemanticModel
 					AliasNode == null ? OwnerNode : null,
 					Type == ReferenceType.InlineView ? null : ObjectNode, AliasNode);
 		}
+
+		public virtual IEnumerable<OracleDataObjectReference> IncludeInnerReferences => Enumerable.Repeat(this, 1);
 
 		public IReadOnlyList<OracleColumn> PseudoColumns
 		{
