@@ -181,7 +181,7 @@ WHERE
 			var executionModel =
 				new StatementExecutionModel
 				{
-					StatementText = "SELECT CHARTOROWID('AAAACOAABAAAAR5AAC') FROM DUAL",
+					StatementText = "SELECT CHARTOROWID('AAAACOAABAAAAR5AAC') SMALLFILE, CHARTOROWID('AAAXhyAAAAACAGDAAD') BIGFILE FROM DUAL",
 					BindVariables = new BindVariableModel[0]
 				};
 
@@ -204,9 +204,12 @@ WHERE
 				resultSet.Count.ShouldBe(1);
 				var firstRow = resultSet[0];
 				firstRow[0].ShouldBeTypeOf<OracleRowId>();
-				var rowIdValue = (OracleRowId)firstRow[0];
-				rowIdValue.RawValue.ToString().ShouldBe("AAAACOAABAAAAR5AAC");
-				rowIdValue.ToString().ShouldBe("AAAACOAABAAAAR5AAC (OBJ=142; FIL=1; BLK=1145; OFF=2)");
+				var smallFileRowIdValue = (OracleRowId)firstRow[0];
+				smallFileRowIdValue.RawValue.ToString().ShouldBe("AAAACOAABAAAAR5AAC");
+				smallFileRowIdValue.ToString().ShouldBe("AAAACOAABAAAAR5AAC (OBJ=142; FIL=1; BLK=1145; OFF=2)");
+				var bigFileRowIdValue = (OracleRowId)firstRow[1];
+				bigFileRowIdValue.RawValue.ToString().ShouldBe("AAAXhyAAAAACAGDAAD");
+				bigFileRowIdValue.ToString().ShouldBe("AAAXhyAAAAACAGDAAD (OBJ=96370; BLK=524675; OFF=3)");
 			}
 		}
 

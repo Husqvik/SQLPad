@@ -488,9 +488,22 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var rowIdString = RawValue.ToString();
 			var objectId = DecodeBase64Hex(rowIdString.Substring(0, 6).PadLeft(8, 'A'));
 			var fileNumber = DecodeBase64Hex(rowIdString.Substring(6, 3).PadLeft(4, 'A'));
-			var blockNumber = DecodeBase64Hex(rowIdString.Substring(9, 6).PadLeft(8, 'A'));
+
+			string filePart = null;
+			string blockSource;
+			if (fileNumber > 0)
+			{
+				filePart = $"FIL={fileNumber}; ";
+				blockSource = rowIdString.Substring(9, 6).PadLeft(8, 'A');
+			}
+			else
+			{
+				blockSource = rowIdString.Substring(6, 9).PadLeft(12, 'A');
+			}
+
+			var blockNumber = DecodeBase64Hex(blockSource);
 			var offset = DecodeBase64Hex(rowIdString.Substring(15, 3).PadLeft(4, 'A'));
-			return $"{rowIdString} (OBJ={objectId}; FIL={fileNumber}; BLK={blockNumber}; OFF={offset})";
+			return $"{rowIdString} (OBJ={objectId}; {filePart}BLK={blockNumber}; OFF={offset})";
 		}
 
 		private static int DecodeBase64Hex(string base64Bytes)

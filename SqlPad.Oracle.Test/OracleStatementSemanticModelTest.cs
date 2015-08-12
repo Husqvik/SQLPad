@@ -1191,7 +1191,7 @@ MODEL
 		}
 
 		[Test(Description = @"")]
-		public void TestModelBuildWithScalarSbuqueryAsPlSqlParameter()
+		public void TestModelBuildWithScalarSubQueryAsPlSqlParameter()
 		{
 			const string query1 =
 @"BEGIN
