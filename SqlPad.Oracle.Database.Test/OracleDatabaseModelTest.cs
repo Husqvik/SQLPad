@@ -125,7 +125,9 @@ WHERE
 			result.StatementModel.ShouldBe(executionModel);
 			result.ExecutedSuccessfully.ShouldBe(true);
 			result.AffectedRowCount.ShouldBe(-1);
-			result.ResultInfoColumnHeaders.Count.ShouldBe(1);
+			result.ExecutedAt.ShouldNotBe(null);
+			result.Duration.ShouldNotBe(null);
+            result.ResultInfoColumnHeaders.Count.ShouldBe(1);
 			var resultInfo = result.ResultInfoColumnHeaders.Keys.First();
 
 			connectionAdapter.CanFetch(resultInfo).ShouldBe(true);
@@ -210,6 +212,42 @@ WHERE
 				var bigFileRowIdValue = (OracleRowId)firstRow[1];
 				bigFileRowIdValue.RawValue.ToString().ShouldBe("AAAXhyAAAAACAGDAAD");
 				bigFileRowIdValue.ToString().ShouldBe("AAAXhyAAAAACAGDAAD (OBJ=96370; BLK=524675; OFF=3)");
+			}
+		}
+
+		[Test]
+		public void TestInvalidDatabaseStatement()
+		{
+			var executionModel =
+				new StatementExecutionModel
+				{
+					StatementText = $"SELECT NULL FROM {Guid.NewGuid().ToString("n")}",
+					BindVariables = new BindVariableModel[0]
+				};
+
+			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			{
+				databaseModel.Initialize().Wait();
+
+				var connectionAdapter = databaseModel.CreateConnectionAdapter();
+				var task = connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel } }, CancellationToken.None);
+				var taskException = Assert.Throws<AggregateException>(() => task.Wait());
+				taskException.InnerExceptions.Count.ShouldBe(1);
+				var innerException = taskException.InnerExceptions[0];
+				innerException.ShouldBeTypeOf<StatementExecutionException>();
+
+				var executionException = (StatementExecutionException) innerException;
+				executionException.BatchResult.StatementResults.Count.ShouldBe(1);
+				var result = executionException.BatchResult.StatementResults[0];
+
+				result.ExecutedSuccessfully.ShouldBe(false);
+				result.ExecutedAt.ShouldNotBe(null);
+				result.Duration.ShouldNotBe(null);
+				result.Exception.ShouldNotBe(null);
+				result.ResultInfoColumnHeaders.ShouldBe(null);
+				result.AffectedRowCount.ShouldBe(null);
+				result.CompilationErrors.ShouldBe(null);
+				result.StatementModel.ShouldBe(executionModel);
 			}
 		}
 

@@ -329,18 +329,18 @@ namespace SqlPad
 				{
 					StatusInfo.StatementExecutedSuccessfully = true;
 				}
-				else
+				else if (lastStatementResult.AffectedRowCount.HasValue)
 				{
-					StatusInfo.AffectedRowCount = lastStatementResult.AffectedRowCount;
+					StatusInfo.AffectedRowCount = lastStatementResult.AffectedRowCount.Value;
 				}
 			}
 		}
 
 		private void UpdateHistoryEntries()
 		{
-			foreach (var statementResult in _executionResult.StatementResults)
+			foreach (var statementResult in _executionResult.StatementResults.Where(r => r.ExecutedAt.HasValue))
 			{
-				var executionHistoryRecord = new StatementExecutionHistoryEntry(statementResult.StatementModel.StatementText, statementResult.ExecutedAt);
+				var executionHistoryRecord = new StatementExecutionHistoryEntry(statementResult.StatementModel.StatementText, statementResult.ExecutedAt.Value);
 
 				if (executionHistoryRecord.StatementText.Length <= MaxHistoryEntrySize)
 				{
@@ -357,12 +357,16 @@ namespace SqlPad
 		{
 			foreach (var executionResult in statementResults)
 			{
-				_executionLogBuilder.Append(executionResult.ExecutedAt.ToString("yyyy-MM-dd HH:mm:ss.fff"));
-				_executionLogBuilder.Append(" - ");
+				if (executionResult.ExecutedAt.HasValue)
+				{
+					_executionLogBuilder.Append(executionResult.ExecutedAt.Value.ToString("yyyy-MM-dd HH:mm:ss.fff"));
+					_executionLogBuilder.Append(" - ");
+				}
+
 				if (executionResult.ExecutedSuccessfully)
 				{
 					_executionLogBuilder.Append("Statement executed successfully (");
-					_executionLogBuilder.Append(executionResult.Duration.ToPrettyString());
+					_executionLogBuilder.Append(executionResult.Duration.Value.ToPrettyString());
 					_executionLogBuilder.Append("). ");
 
 					if (executionResult.AffectedRowCount != -1)
@@ -373,9 +377,16 @@ namespace SqlPad
 				}
 				else
 				{
-					_executionLogBuilder.Append("Statement execution failed (");
-					_executionLogBuilder.Append(executionResult.Duration.ToPrettyString());
-					_executionLogBuilder.Append("): ");
+					_executionLogBuilder.Append("Statement execution failed");
+
+					if (executionResult.Duration.HasValue)
+					{
+						_executionLogBuilder.Append(" (");
+						_executionLogBuilder.Append(executionResult.Duration.Value.ToPrettyString());
+						_executionLogBuilder.Append(")");
+					}
+
+					_executionLogBuilder.Append(": ");
 					_executionLogBuilder.Append(executionResult.Exception.Message);
 				}
 

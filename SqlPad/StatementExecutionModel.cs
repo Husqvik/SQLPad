@@ -45,15 +45,15 @@ namespace SqlPad
 	{
 		public StatementExecutionModel StatementModel { get; set; }
 
-		public int AffectedRowCount { get; set; }
+		public int? AffectedRowCount { get; set; }
 
 		public Exception Exception { get; set; }
 
 		public bool ExecutedSuccessfully => Exception == null;
 
-		public DateTime ExecutedAt { get; set; }
+		public DateTime? ExecutedAt { get; set; }
 
-		public TimeSpan Duration { get; set; }
+		public TimeSpan? Duration { get; set; }
 
 		public IReadOnlyList<CompilationError> CompilationErrors { get; set; }
 

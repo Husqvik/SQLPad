@@ -671,6 +671,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 				if (currentStatementResult != null)
 				{
 					currentStatementResult.Exception = exception;
+
+					if (currentStatementResult.ExecutedAt != null && currentStatementResult.Duration == null)
+					{
+						currentStatementResult.Duration = DateTime.Now - currentStatementResult.ExecutedAt;
+					}
 				}
 
 				batchResult.StatementResults = statementResults.AsReadOnly();
