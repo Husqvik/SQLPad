@@ -64,6 +64,7 @@ namespace SqlPad.Oracle.Test
 				{
 					StatementModel = statement,
 					ExecutedAt = DateTime.Now,
+					Duration = TimeSpan.FromMilliseconds(1),
 					Exception = null,
 					CompilationErrors =
 						new[]

@@ -878,7 +878,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 				var dimensionExpressionList = modelColumnClauses.ChildNodes[modelColumnClauses.ChildNodes.Count - 3];
 				var dimensionColumns = GatherSqlModelColumns(queryBlock.ObjectReferences, dimensionExpressionList);
-				var dimensionColumnObjectReference = new OracleSpecialTableReference(ReferenceType.SqlModel, dimensionColumns.Select(c => c.ColumnDescription));
+				var dimensionColumnObjectReference = new OracleSpecialTableReference(ReferenceType.SqlModel, dimensionColumns);
 				sqlModelColumns.AddRange(dimensionColumns);
 				
 				var measureParenthesisEnclosedAliasedExpressionList = modelColumnClauses.ChildNodes[modelColumnClauses.ChildNodes.Count - 1];
@@ -958,9 +958,6 @@ namespace SqlPad.Oracle.SemanticModel
 			ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(null, referenceContainer, identifiers.Where(t => t.Id.In(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level)), StatementPlacement.Model, null);
 			var grammarSpecificFunctions = identifiers.Where(t => t.Id.In(Terminals.Count, Terminals.User, NonTerminals.AggregateFunction));
 			CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, null, referenceContainer.ProgramReferences, StatementPlacement.Model, null);
-
-			ResolveColumnObjectReferences(referenceContainer.ColumnReferences, referenceContainer.ObjectReferences, OracleDataObjectReference.EmptyArray);
-			ResolveFunctionReferences(referenceContainer.ProgramReferences);
 		}
 
 		private List<OracleSelectListColumn> GatherSqlModelColumns(ICollection<OracleDataObjectReference> objectReferences, StatementGrammarNode parenthesisEnclosedAliasedExpressionList)
@@ -1498,13 +1495,10 @@ namespace SqlPad.Oracle.SemanticModel
 				if (insertTarget.ValueList == null)
 				{
 					var nestedQuery = insertIntoClause.ParentNode[NonTerminals.InsertValuesOrSubquery, NonTerminals.NestedQuery];
-					if (nestedQuery != null)
+					var queryBlock = nestedQuery?.GetDescendantsWithinSameQueryBlock(NonTerminals.QueryBlock).FirstOrDefault();
+					if (queryBlock != null)
 					{
-						var queryBlock = nestedQuery.GetDescendantsWithinSameQueryBlock(NonTerminals.QueryBlock).FirstOrDefault();
-						if (queryBlock != null)
-						{
-							insertTarget.RowSource = _queryBlockNodes[queryBlock];
-						}
+						insertTarget.RowSource = _queryBlockNodes[queryBlock];
 					}
 				}
 				else
@@ -1650,6 +1644,17 @@ namespace SqlPad.Oracle.SemanticModel
 
 				ResolveFunctionReferences(queryBlock.AllProgramReferences);
 
+				ResolvePivotTableColumnReferences(queryBlock);
+
+				if (queryBlock.ModelReference != null)
+				{
+					foreach (var referenceContainer in queryBlock.ModelReference.ChildContainers)
+					{
+						ResolveColumnObjectReferences(referenceContainer.ColumnReferences, referenceContainer.ObjectReferences, OracleDataObjectReference.EmptyArray);
+						ResolveFunctionReferences(referenceContainer.ProgramReferences);
+					}
+				}
+
 				ExposeAsteriskColumns(queryBlock);
 
 				ApplyExplicitCommonTableExpressionColumnNames(queryBlock);
@@ -1673,10 +1678,8 @@ namespace SqlPad.Oracle.SemanticModel
 				{
 					ResolveColumnObjectReferences(columnReferences.Where(c => c.Placement == StatementPlacement.TableReference), OracleDataObjectReference.EmptyArray, queryBlock.Parent.ObjectReferences);
 				}
-				
-				ResolveColumnObjectReferences(columnReferences, queryBlock.ObjectReferences, correlatedReferences);
 
-				ResolvePivotTableColumnReferences(queryBlock);
+				ResolveColumnObjectReferences(columnReferences, queryBlock.ObjectReferences, correlatedReferences);
 
 				ResolveDatabaseLinks(queryBlock);
 			}
@@ -2177,6 +2180,7 @@ namespace SqlPad.Oracle.SemanticModel
 					RootNode = columnReference.RootNode,
 					Owner = columnReference.Owner,
 					SelectListColumn = columnReference.SelectListColumn,
+					Container = columnReference.Container,
 					Placement = columnReference.Placement,
 					AnalyticClauseNode = null,
 					ParameterListNode = null,
@@ -2615,6 +2619,7 @@ namespace SqlPad.Oracle.SemanticModel
 						FunctionIdentifierNode = identifierNode,
 						RootNode = rootNode,
 						Owner = queryBlock,
+						Container = queryBlock,
 						AnalyticClauseNode = analyticClauseNode,
 						ParameterListNode = parameterList,
 						ParameterReferences = parameterNodes
@@ -2665,10 +2670,9 @@ namespace SqlPad.Oracle.SemanticModel
 								ParameterNode = n,
 								OptionalIdentifierTerminal = n.FirstTerminalNode != null && String.Equals(n.FirstTerminalNode.Id, Terminals.ParameterIdentifier) ? n.FirstTerminalNode : null
 							}).ToArray(),
-					SelectListColumn = selectListColumn
+					SelectListColumn = selectListColumn,
+					Container = container
 				};
-
-			programReference.SetContainer(container);
 
 			AddPrefixNodes(programReference, prefixNonTerminal);
 

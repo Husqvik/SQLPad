@@ -6,7 +6,6 @@ namespace SqlPad.Oracle.SemanticModel
 {
 	public abstract class OracleReference
 	{
-		private OracleReferenceContainer _container;
 		private OracleObjectIdentifier? _fullyQualifiedName;
 
 		protected OracleReference()
@@ -43,17 +42,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public OracleSelectListColumn SelectListColumn { get; set; }
 
-		public void SetContainer(OracleReferenceContainer container)
-		{
-			if (_container != null)
-			{
-				throw new InvalidOperationException("Container has been already set. ");	
-			}
-
-			_container = container;
-		}
-
-		public OracleReferenceContainer Container => SelectListColumn ?? Owner ?? _container;
+		public OracleReferenceContainer Container { get; set; }
 
 	    public StatementGrammarNode DatabaseLinkNode { get; set; }
 

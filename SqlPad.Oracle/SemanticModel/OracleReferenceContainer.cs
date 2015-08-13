@@ -42,7 +42,7 @@ namespace SqlPad.Oracle.SemanticModel
 		{
 			get
 			{
-				return ((IEnumerable<OracleReference>) TypeReferences)
+				return ((IEnumerable<OracleReference>)TypeReferences)
 					.Concat(SequenceReferences)
 					.Concat(ColumnReferences)
 					.Concat(ProgramReferences)

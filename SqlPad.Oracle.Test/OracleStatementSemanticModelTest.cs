@@ -1554,6 +1554,37 @@ MODEL
 		}
 
 		[Test(Description = @"")]
+		public void TestSqlModelDimensionReferenceDataTypeFromInlineView()
+		{
+			const string query1 =
+@"SELECT
+	DUMMY, P
+FROM
+	(SELECT DUMMY FROM DUAL)
+	MODEL
+		PARTITION BY (DUMMY P)
+		DIMENSION BY (DUMMY)
+		MEASURES (0 MEASURE)
+		RULES (
+			MEASURE[ANY] = 0
+	    )";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
+
+			var queryBlock = semanticModel.MainQueryBlock;
+			queryBlock.ModelReference.SourceReferenceContainer.ColumnReferences.Count.ShouldBe(2);
+			queryBlock.ModelReference.SourceReferenceContainer.ColumnReferences[0].ColumnDescription.FullTypeName.ShouldBe("VARCHAR2(1 BYTE)");
+			queryBlock.ModelReference.SourceReferenceContainer.ColumnReferences[1].ColumnDescription.FullTypeName.ShouldBe("VARCHAR2(1 BYTE)");
+
+			queryBlock.Columns.Count.ShouldBe(2);
+			queryBlock.Columns[0].NormalizedName.ShouldBe("\"DUMMY\"");
+			queryBlock.Columns[0].ColumnDescription.FullTypeName.ShouldBe("VARCHAR2(1 BYTE)");
+			queryBlock.Columns[1].NormalizedName.ShouldBe("\"P\"");
+			queryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe("VARCHAR2(1 BYTE)");
+		}
+
+		[Test(Description = @"")]
 		public void TestSqlModelReferenceInnerReferences()
 		{
 			const string query1 =

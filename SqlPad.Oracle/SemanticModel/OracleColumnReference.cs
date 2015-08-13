@@ -15,7 +15,7 @@ namespace SqlPad.Oracle.SemanticModel
 		{
 			ColumnNodeObjectReferences = new HashSet<OracleObjectWithColumnsReference>();
 			ColumnNodeColumnReferences = new List<OracleColumn>();
-			SetContainer(referenceContainer);
+			Container = referenceContainer;
 		}
 
 		public override string Name => _columnNode.Token.Value;

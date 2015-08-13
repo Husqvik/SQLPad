@@ -9,6 +9,7 @@ namespace SqlPad.Oracle.SemanticModel
 	public class OracleSqlModelReference : OracleDataObjectReference
 	{
 		private readonly IReadOnlyList<OracleSelectListColumn> _sqlModelColumns;
+
 		private IReadOnlyList<OracleColumn> _columns;
 
 		public OracleReferenceContainer SourceReferenceContainer { get; }
@@ -29,9 +30,9 @@ namespace SqlPad.Oracle.SemanticModel
 			SourceReferenceContainer = new OracleReferenceContainer(semanticModel);
 			foreach (var column in columns)
 			{
-				SourceReferenceContainer.ColumnReferences.AddRange(column.ColumnReferences);
-				SourceReferenceContainer.ProgramReferences.AddRange(column.ProgramReferences);
-				SourceReferenceContainer.TypeReferences.AddRange(column.TypeReferences);
+				TransferReferences(column.ColumnReferences, SourceReferenceContainer.ColumnReferences);
+				TransferReferences(column.ProgramReferences, SourceReferenceContainer.ProgramReferences);
+				TransferReferences(column.TypeReferences, SourceReferenceContainer.TypeReferences);
 			}
 			
 			SourceReferenceContainer.ObjectReferences.AddRange(sourceReferences);
@@ -39,12 +40,16 @@ namespace SqlPad.Oracle.SemanticModel
 			DimensionReferenceContainer = new OracleReferenceContainer(semanticModel);
 			MeasuresReferenceContainer = new OracleReferenceContainer(semanticModel);
 
-			ChildContainers =
-				new List<OracleReferenceContainer>
-				{
-					SourceReferenceContainer,
-					DimensionReferenceContainer, MeasuresReferenceContainer
-				}.AsReadOnly();
+			ChildContainers = new[] { SourceReferenceContainer, DimensionReferenceContainer, MeasuresReferenceContainer };
+		}
+
+		private void TransferReferences<T>(IEnumerable<T> sourceReferences, ICollection<T> targetList) where T : OracleReference
+		{
+			foreach (var sourceReference in sourceReferences)
+			{
+				targetList.Add(sourceReference);
+				sourceReference.Container = SourceReferenceContainer;
+			}
 		}
 
 		public override IReadOnlyList<OracleColumn> Columns
