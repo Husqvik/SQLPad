@@ -85,8 +85,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 			//_customTypeGenerator = OracleCustomTypeGenerator.GetCustomTypeGenerator(connectionString.Name);
 		}
 
-		private static event EventHandler InternalRefreshStarted = delegate { };
-		private static event EventHandler InternalRefreshCompleted = delegate { };
+		private static event EventHandler InternalRefreshStarted;
+		private static event EventHandler InternalRefreshCompleted;
 
 		private void InternalRefreshStartedHandler(object sender, EventArgs eventArgs)
 		{
@@ -635,8 +635,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 			if (isRefreshDone)
 			{
 				Trace.WriteLine($"{DateTime.Now} - Cache for '{_connectionStringName}' is valid until {DataDictionaryValidityTimestamp}. ");
+				RemoveActiveRefreshTask();
 				return;
 			}
+
+			RaiseEvent(InternalRefreshCompleted);
 
 			var reason = force ? "has been forced to refresh" : (_dataDictionary.Timestamp > DateTime.MinValue ? "has expired" : "does not exist or is corrupted");
 			Trace.WriteLine($"{DateTime.Now} - Cache for '{_connectionStringName}' {reason}. Cache refresh started. ");
@@ -767,7 +770,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private void TryLoadSchemaObjectMetadataFromCache()
 		{
 			if (_cacheLoaded)
+			{
 				return;
+			}
 
 			Stream stream;
 			OracleDataDictionary dataDictionary;
@@ -786,7 +791,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 					_dataDictionary = CachedDataDictionaries[_connectionStringName] = OracleDataDictionary.Deserialize(stream);
 					Trace.WriteLine($"{DateTime.Now} - Metadata for '{_connectionStringName}/{ConnectionIdentifier}' loaded from cache in {stopwatch.Elapsed}");
 					BuildSupportLookups();
-					RemoveActiveRefreshTask();
 				}
 				catch (Exception e)
 				{

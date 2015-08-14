@@ -873,16 +873,16 @@ namespace SqlPad.Oracle.SemanticModel
 				var sqlModelColumns = new List<OracleSelectListColumn>();
 				if (partitionExpressions != null)
 				{
-					sqlModelColumns.AddRange(GatherSqlModelColumns(queryBlock.ObjectReferences, partitionExpressions));
+					sqlModelColumns.AddRange(GatherSqlModelColumns(queryBlock, partitionExpressions));
 				}
 
 				var dimensionExpressionList = modelColumnClauses.ChildNodes[modelColumnClauses.ChildNodes.Count - 3];
-				var dimensionColumns = GatherSqlModelColumns(queryBlock.ObjectReferences, dimensionExpressionList);
+				var dimensionColumns = GatherSqlModelColumns(queryBlock, dimensionExpressionList);
 				var dimensionColumnObjectReference = new OracleSpecialTableReference(ReferenceType.SqlModel, dimensionColumns);
 				sqlModelColumns.AddRange(dimensionColumns);
 				
 				var measureParenthesisEnclosedAliasedExpressionList = modelColumnClauses.ChildNodes[modelColumnClauses.ChildNodes.Count - 1];
-				var measureColumns = GatherSqlModelColumns(queryBlock.ObjectReferences, measureParenthesisEnclosedAliasedExpressionList);
+				var measureColumns = GatherSqlModelColumns(queryBlock, measureParenthesisEnclosedAliasedExpressionList);
 				sqlModelColumns.AddRange(measureColumns);
 
 				queryBlock.ModelReference =
@@ -955,12 +955,13 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private void ResolveSqlModelReferences(OracleReferenceContainer referenceContainer, ICollection<StatementGrammarNode> identifiers)
 		{
-			ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(null, referenceContainer, identifiers.Where(t => t.Id.In(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level)), StatementPlacement.Model, null);
+			var selectListColumn = referenceContainer as OracleSelectListColumn;
+			ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(null, referenceContainer, identifiers.Where(t => t.Id.In(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level)), StatementPlacement.Model, selectListColumn);
 			var grammarSpecificFunctions = identifiers.Where(t => t.Id.In(Terminals.Count, Terminals.User, NonTerminals.AggregateFunction));
-			CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, null, referenceContainer.ProgramReferences, StatementPlacement.Model, null);
+			CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, null, referenceContainer.ProgramReferences, StatementPlacement.Model, selectListColumn);
 		}
 
-		private List<OracleSelectListColumn> GatherSqlModelColumns(ICollection<OracleDataObjectReference> objectReferences, StatementGrammarNode parenthesisEnclosedAliasedExpressionList)
+		private List<OracleSelectListColumn> GatherSqlModelColumns(OracleQueryBlock queryBlock, StatementGrammarNode parenthesisEnclosedAliasedExpressionList)
 		{
 			var columns = new List<OracleSelectListColumn>();
 
@@ -970,6 +971,7 @@ namespace SqlPad.Oracle.SemanticModel
 					new OracleSelectListColumn(this, null)
 					{
 						RootNode = aliasedExpression,
+						Owner = queryBlock,
 						AliasNode = aliasedExpression[NonTerminals.ColumnAsAlias, Terminals.ColumnAlias]
 					};
 
@@ -985,7 +987,7 @@ namespace SqlPad.Oracle.SemanticModel
 					}
 				}
 
-				sqlModelColumn.ObjectReferences.AddRange(objectReferences);
+				sqlModelColumn.ObjectReferences.AddRange(queryBlock.ObjectReferences);
 				ResolveSqlModelReferences(sqlModelColumn, GetIdentifiers(aliasedExpression).ToArray());
 				columns.Add(sqlModelColumn);
 			}
