@@ -9,19 +9,37 @@ using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using System.Xml;
 using ICSharpCode.AvalonEdit.Highlighting;
+using ICSharpCode.AvalonEdit.Highlighting.Xshd;
 using Microsoft.Win32;
 using MoonPdfLib.MuPdf;
+using Newtonsoft.Json.Linq;
 using SqlPad.FindReplace;
 
 namespace SqlPad
 {
 	public partial class LargeValueEditor
 	{
+		private static readonly string SyntaxHighlightingNameJavaScript;
+
 		private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 		private readonly FindReplaceManager _findReplaceManager;
 		private readonly ILargeValue _largeValue;
 		private readonly ILargeBinaryValue _largeBinaryValue;
 		private bool _isXml;
+		private bool _isJson;
+
+		static LargeValueEditor()
+		{
+			using (var stream = typeof (LargeValueEditor).Assembly.GetManifestResourceStream("SqlPad.JavaScriptSyntaxHighlight.xshd"))
+			{
+				using (XmlReader reader = new XmlTextReader(stream))
+				{
+					var jsonHighlighting = HighlightingLoader.Load(reader, HighlightingManager.Instance);
+					SyntaxHighlightingNameJavaScript = jsonHighlighting.Name;
+                    HighlightingManager.Instance.RegisterHighlighting(SyntaxHighlightingNameJavaScript, new[] { "*.js", "*.json" }, jsonHighlighting);
+				}
+			}
+		}
 
 		public LargeValueEditor(string columnName, ILargeValue largeValue)
 		{
@@ -69,11 +87,25 @@ namespace SqlPad
 						}
 					}
 
+					_isJson = true;
+					try
+					{
+						JToken.Parse(largeTextValue.Value);
+					}
+					catch (Exception)
+					{
+						_isJson = false;
+					}
+
 					TextEditor.Text = largeTextValue.Value;
 
 					if (_isXml)
 					{
 						TextEditor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("XML");
+					}
+					else if (_isJson)
+					{
+						TextEditor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition(SyntaxHighlightingNameJavaScript);
 					}
 
 					searchEditor = TextEditor;

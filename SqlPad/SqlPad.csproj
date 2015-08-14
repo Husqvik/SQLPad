@@ -78,6 +78,7 @@
   <ItemGroup>
     <Reference Include="ICSharpCode.AvalonEdit" />
     <Reference Include="MoonPdfLib" />
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL" />
     <Reference Include="protobuf-net" />
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -302,6 +303,7 @@
       <SubType>Designer</SubType>
     </None>
     <Compile Include="DocumentPage.DependencyProperties.cs" />
+    <EmbeddedResource Include="JavaScriptSyntaxHighlight.xshd" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
