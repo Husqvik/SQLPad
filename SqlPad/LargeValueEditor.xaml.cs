@@ -10,7 +10,6 @@ using System.Windows.Media.Imaging;
 using System.Xml;
 using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.Highlighting.Xshd;
-using ICSharpCode.AvalonEdit.Search;
 using Microsoft.Win32;
 using MoonPdfLib.MuPdf;
 using Newtonsoft.Json.Linq;
@@ -35,7 +34,7 @@ namespace SqlPad
 				{
 					var jsonHighlighting = HighlightingLoader.Load(reader, HighlightingManager.Instance);
 					SyntaxHighlightingNameJavaScript = jsonHighlighting.Name;
-                    HighlightingManager.Instance.RegisterHighlighting(SyntaxHighlightingNameJavaScript, new[] { "*.js", "*.json" }, jsonHighlighting);
+					HighlightingManager.Instance.RegisterHighlighting(SyntaxHighlightingNameJavaScript, new[] {"*.js", "*.json"}, jsonHighlighting);
 				}
 			}
 		}

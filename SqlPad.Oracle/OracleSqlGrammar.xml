@@ -6500,6 +6500,7 @@
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="Subquery" />
           <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ConcatenatedSubquery" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
