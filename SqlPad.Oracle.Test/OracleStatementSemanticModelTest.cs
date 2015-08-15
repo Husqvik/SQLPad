@@ -1011,6 +1011,25 @@ SELECT c FROM t2";
 		}
 
 		[Test(Description = @"")]
+		public void TestRedundantColumnAliasWithinInlineView()
+		{
+			const string query1 = @"SELECT C1 FROM (SELECT NULL C1, DUMMY DUMMY FROM DUAL)";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
+
+			var terminalGroups = semanticModel.RedundantSymbolGroups.ToArray();
+			terminalGroups.Length.ShouldBe(1);
+			terminalGroups[0].Count.ShouldBe(3);
+			terminalGroups[0][0].Token.Index.ShouldBe(30);
+			terminalGroups[0][0].Token.Value.ShouldBe(",");
+			terminalGroups[0][1].Token.Index.ShouldBe(32);
+			terminalGroups[0][1].Token.Value.ShouldBe("DUMMY");
+			terminalGroups[0][2].Token.Index.ShouldBe(38);
+			terminalGroups[0][2].Token.Value.ShouldBe("DUMMY");
+		}
+
+		[Test(Description = @"")]
 		public void TestRedundantObjectAlias()
 		{
 			const string query1 = @"SELECT DUMMY FROM DUAL DUAL, SYS.DUAL DUAL";
@@ -2514,6 +2533,23 @@ FROM (
 			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestParenthesisWrappedConcatenatedSubquery()
+		{
+			const string query1 = @"(SELECT DUMMY, DUMMY FROM DUAL) UNION ALL (SELECT DUMMY, DUMMY FROM DUAL)";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.Count.ShouldBe(2);
+			semanticModel.MainQueryBlock.PrecedingConcatenatedQueryBlock.ShouldBe(null);
+			semanticModel.MainQueryBlock.FollowingConcatenatedQueryBlock.ShouldNotBe(null);
+			semanticModel.MainQueryBlock.FollowingConcatenatedQueryBlock.PrecedingConcatenatedQueryBlock.ShouldNotBe(null);
+            semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
 
 		[Test(Description = @"")]

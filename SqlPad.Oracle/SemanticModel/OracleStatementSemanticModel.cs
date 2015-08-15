@@ -1250,7 +1250,7 @@ namespace SqlPad.Oracle.SemanticModel
 		{
 			var redundantColumnAliases = _queryBlockNodes.Values
 				.SelectMany(qb => qb.Columns)
-				.Where(c => c.IsDirectReference && c.HasExplicitAlias && String.Equals(c.NormalizedName, c.AliasNode.PrecedingTerminal.Token.Value.ToQuotedIdentifier()))
+				.Where(c => c.IsDirectReference && c.HasExplicitAlias && String.Equals(c.NormalizedName, c.AliasNode.PrecedingTerminal.Token.Value.ToQuotedIdentifier()) && !_redundantTerminals.Contains(c.AliasNode))
 				.Select(c => c.AliasNode);
 
 			foreach (var aliasNode in redundantColumnAliases)
@@ -1585,29 +1585,28 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private void ResolveConcatenatedQueryBlocks(OracleQueryBlock queryBlock)
 		{
-			if (!String.Equals(queryBlock.RootNode.ParentNode.ParentNode.Id, NonTerminals.ConcatenatedSubquery))
-				return;
-			
-			var grandGrandParent = queryBlock.RootNode.ParentNode.ParentNode.ParentNode;
-			var parentQueryBlockNode = String.Equals(grandGrandParent.Id, NonTerminals.ConcatenatedSubquery)
-				? grandGrandParent[NonTerminals.Subquery, NonTerminals.QueryBlock]
-				: grandGrandParent[NonTerminals.QueryBlock];
+			var concatenatedSubquery = queryBlock.RootNode.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBlock, NonTerminals.ConcatenatedSubquery);
+			var parentQueryBlockNode =
+				concatenatedSubquery?.ParentNode.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBlock, NonTerminals.QueryBlock)
+					.FirstOrDefault();
 
 			if (parentQueryBlockNode == null)
+			{
 				return;
+			}
 			
 			var precedingQueryBlock = _queryBlockNodes[parentQueryBlockNode];
 			precedingQueryBlock.FollowingConcatenatedQueryBlock = queryBlock;
 			queryBlock.PrecedingConcatenatedQueryBlock = precedingQueryBlock;
 
 			var setOperation = queryBlock.RootNode.ParentNode.ParentNode[0];
-			if (precedingQueryBlock.Type != QueryBlockType.CommonTableExpression || setOperation == null || setOperation.TerminalCount != 2 || setOperation[0].Id != Terminals.Union || setOperation[1].Id != Terminals.All)
+			if (precedingQueryBlock.Type != QueryBlockType.CommonTableExpression || setOperation == null || setOperation.TerminalCount != 2 || !String.Equals(setOperation[0].Id, Terminals.Union) || !String.Equals(setOperation[1].Id, Terminals.All))
 			{
 				return;
 			}
 
 			var anchorReferences = queryBlock.ObjectReferences
-				.Where(r => r.Type == ReferenceType.SchemaObject && r.OwnerNode == null && r.DatabaseLinkNode == null && r.FullyQualifiedObjectName.NormalizedName == precedingQueryBlock.NormalizedAlias)
+				.Where(r => r.Type == ReferenceType.SchemaObject && r.OwnerNode == null && r.DatabaseLinkNode == null && String.Equals(r.FullyQualifiedObjectName.NormalizedName, precedingQueryBlock.NormalizedAlias))
 				.ToArray();
 			if (anchorReferences.Length == 0)
 			{

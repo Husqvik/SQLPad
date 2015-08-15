@@ -28,7 +28,7 @@ namespace SqlPad.Oracle.Commands
 
 			var terminalGroupsToRemove = (IEnumerable<RedundantTerminalGroup>)SemanticModel.RedundantSymbolGroups;
 
-			var doGlobalClean = CurrentNode.Id.In(Terminals.Select, Terminals.Update, Terminals.Insert, Terminals.Delete);
+			var doGlobalClean = CurrentNode.Id.In(Terminals.Select, Terminals.Update, Terminals.Insert, Terminals.Delete, Terminals.Merge);
 			if (doGlobalClean)
 			{
 				if (CurrentQueryBlock != null)
