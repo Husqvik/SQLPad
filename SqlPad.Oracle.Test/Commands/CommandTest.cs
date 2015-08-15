@@ -168,6 +168,27 @@ FROM
 			CanExecuteCommand(OracleCommands.AddAlias).ShouldBe(true);
 		}
 
+
+		[Test(Description = @""), STAThread]
+		public void TestAddMissingColumnOverModelDimensionColumn()
+		{
+			_editor.Text =
+@"SELECT
+	DUMMY
+FROM
+	(SELECT DUMMY FROM DUAL)
+	MODEL
+		DIMENSION BY (DUMMY)
+		MEASURES (0 MEASURE)
+		RULES (
+			MEASURE[ANY] = 0
+	    )";
+
+			_editor.CaretOffset = 73;
+
+			CanExecuteCommand(OracleCommands.AddMissingColumn).ShouldBe(false);
+		}
+
 		[Test(Description = @""), STAThread]
 		public void TestAddColumnAliasCommand()
 		{
@@ -621,6 +642,29 @@ FROM
 			
 			var foundSegments = FindUsagesOrdered(statement, 72);
 			ValidateCommonResults2(foundSegments);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestFindColumnUsagesPassedThroughModelClause()
+		{
+			const string statement =
+@"SELECT
+	D
+FROM
+	(SELECT DUMMY FROM DUAL)
+	MODEL
+		DIMENSION BY (DUMMY D)
+		MEASURES (0 MEASURE)
+		RULES (
+			MEASURE[ANY] = 0
+	    )";
+
+			var foundSegments = FindUsagesOrdered(statement, 9);
+			foundSegments.Count.ShouldBe(4);
+			foundSegments[0].IndextStart.ShouldBe(9);
+			foundSegments[1].IndextStart.ShouldBe(27);
+			foundSegments[2].IndextStart.ShouldBe(69);
+			foundSegments[3].IndextStart.ShouldBe(75);
 		}
 
 		[Test(Description = @""), STAThread]
@@ -1424,8 +1468,8 @@ FROM
 			_editor.Text = @"SELECT NOT_EXISTING_COLUMN FROM SELECTION";
 			_editor.CaretOffset = 7;
 
-			CanExecuteCommand(OracleCommands.GenerateMissingColumns).ShouldBe(true);
-			ExecuteCommand(OracleCommands.GenerateMissingColumns);
+			CanExecuteCommand(OracleCommands.AddMissingColumn).ShouldBe(true);
+			ExecuteCommand(OracleCommands.AddMissingColumn);
 
 			_editor.Text.ShouldBe("SELECT NOT_EXISTING_COLUMN FROM SELECTION;\r\n\r\nALTER TABLE HUSQVIK.SELECTION ADD\r\n(\r\n\tNOT_EXISTING_COLUMN VARCHAR2(100) NULL\r\n);\r\n");
 			_editor.CaretOffset.ShouldBe(105);

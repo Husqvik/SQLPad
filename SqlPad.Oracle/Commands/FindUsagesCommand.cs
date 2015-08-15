@@ -180,7 +180,7 @@ namespace SqlPad.Oracle.Commands
 			}
 
 			var dataObjectReference = objectReference as OracleDataObjectReference;
-			if (dataObjectReference != null && dataObjectReference.AliasNode != null)
+			if (dataObjectReference?.AliasNode != null)
 			{
 				nodes.Add(dataObjectReference.AliasNode);
 			}
@@ -209,21 +209,60 @@ namespace SqlPad.Oracle.Commands
 				.Concat(nodes);
 		}
 
+		private bool IsValidReference(OracleColumnReference columnReference, string normalizedName, OracleObjectWithColumnsReference objectReference)
+		{
+			return
+				columnReference.ColumnNodeObjectReferences.Count == 1 &&
+				columnReference.ColumnNodeObjectReferences.First() == objectReference &&
+				String.Equals(columnReference.NormalizedName, normalizedName);
+		}
+
+		private IEnumerable<StatementGrammarNode> GetModelClauseAndPivotTableReferences(string normalizedName)
+		{
+			var nodes = new List<StatementGrammarNode>();
+			var modelClauseAndPivotTableColumnReferences = _queryBlock.AllColumnReferences
+				.Where(c => c.ColumnNodeObjectReferences.Count == 1 &&
+				            c.Placement.In(StatementPlacement.Model, StatementPlacement.PivotClause) &&
+				            String.Equals(c.SelectListColumn?.NormalizedName, normalizedName));
+
+			foreach (var columnReference in modelClauseAndPivotTableColumnReferences)
+			{
+				nodes.Add(columnReference.SelectListColumn.AliasNode);
+
+				if (!columnReference.SelectListColumn.IsDirectReference)
+				{
+					continue;
+				}
+				else if (columnReference.SelectListColumn.HasExplicitAlias)
+				{
+					nodes.Add(columnReference.ColumnNode);
+				}
+
+				var objectReference = (OracleDataObjectReference)columnReference.ColumnNodeObjectReferences.First();
+				foreach (var innerObjectReference in objectReference.IncludeInnerReferences)
+				{
+					nodes.AddRange(GetChildQueryBlockColumnReferences(innerObjectReference, columnReference));
+				}
+			}
+
+			return nodes;
+		}
+
 		private IEnumerable<StatementGrammarNode> GetColumnReferenceUsage()
 		{
 			IEnumerable<StatementGrammarNode> nodes;
 			var columnReference = _queryBlock.AllColumnReferences
-				.FirstOrDefault(c => (c.ColumnNode == _currentNode || (c.SelectListColumn != null && c.SelectListColumn.AliasNode == _currentNode)) && c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeColumnReferences.Count == 1);
+				.FirstOrDefault(c => (c.ColumnNode == _currentNode || c.SelectListColumn?.AliasNode == _currentNode) && c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeColumnReferences.Count == 1);
 
 			OracleSelectListColumn selectListColumn;
 			if (columnReference != null)
 			{
-				var objectReference = columnReference.ColumnNodeObjectReferences.Single();
-				var columnReferences = _queryBlock.AllColumnReferences.Where(c => c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeObjectReferences.Single() == objectReference && c.NormalizedName == columnReference.NormalizedName).ToArray();
+				var objectReference = columnReference.ColumnNodeObjectReferences.First();
+				var columnReferences = _queryBlock.AllColumnReferences.Where(c => IsValidReference(c, columnReference.NormalizedName, objectReference)).ToArray();
 				nodes = columnReferences.Select(c => c.ColumnNode);
 
 				bool searchChildren;
-				if (_currentNode.Id == Terminals.Identifier)
+				if (String.Equals(_currentNode.Id, Terminals.Identifier))
 				{
 					searchChildren = true;
 
@@ -255,8 +294,12 @@ namespace SqlPad.Oracle.Commands
 					nodes = searchChildren ? nodes.Concat(nodeList) : nodeList;
 				}
 
+				nodes = nodes.Concat(GetModelClauseAndPivotTableReferences(columnReference.NormalizedName));
+
 				if (searchChildren)
+				{
 					nodes = nodes.Concat(GetChildQueryBlockColumnReferences(objectReference, columnReference));
+				}
 			}
 			else
 			{
@@ -273,14 +316,17 @@ namespace SqlPad.Oracle.Commands
 		{
 			var nodes = Enumerable.Empty<StatementGrammarNode>();
 			if (objectReference.QueryBlocks.Count != 1)
+			{
 				return nodes;
+			}
 
 			var childQueryBlock = objectReference.QueryBlocks.Single();
-			var childColumn = childQueryBlock.Columns
-				.SingleOrDefault(c => c.NormalizedName == columnReference.NormalizedName);
-			
+			var childColumn = childQueryBlock.Columns.SingleOrDefault(c => String.Equals(c.NormalizedName, columnReference.NormalizedName));
+
 			if (childColumn == null)
+			{
 				return nodes;
+			}
 
 			if (childColumn.AliasNode != null)
 			{
@@ -310,7 +356,7 @@ namespace SqlPad.Oracle.Commands
 		internal static IEnumerable<StatementGrammarNode> GetParentQueryBlockReferences(OracleSelectListColumn selectListColumn)
 		{
 			var nodes = Enumerable.Empty<StatementGrammarNode>();
-			if (selectListColumn == null || selectListColumn.AliasNode == null)
+			if (selectListColumn?.AliasNode == null)
 				return nodes;
 
 			var parentQueryBlocks = selectListColumn.Owner.SemanticModel.QueryBlocks.Where(qb => qb.ObjectReferences.SelectMany(o => o.QueryBlocks).Contains(selectListColumn.Owner));

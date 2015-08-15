@@ -16,10 +16,7 @@ namespace SqlPad.Oracle.Commands
 			CommandHandlerCollection.Add(MoveContentCommand.MoveContentDown);
 		}
 
-		public ICollection<CommandExecutionHandler> CommandHandlers
-		{
-			get { return CommandHandlerCollection; }
-		}
+		public ICollection<CommandExecutionHandler> CommandHandlers => CommandHandlerCollection;
 	}
 
 	public static class OracleCommands
@@ -32,7 +29,7 @@ namespace SqlPad.Oracle.Commands
 		public static readonly CommandExecutionHandler ConvertOrderByNumberColumnReferences = OracleCommandBase.CreateStandardExecutionHandler<ConvertOrderByNumberColumnReferencesCommand>("ConvertOrderByNumberColumnReferences");
 		public static readonly CommandExecutionHandler CreateScript = OracleCommandBase.CreateStandardExecutionHandler<CreateScriptCommand>("CreateScript");
 		public static readonly CommandExecutionHandler ExpandAsterisk = OracleCommandBase.CreateStandardExecutionHandler<ExpandAsteriskCommand>("ExpandAsterisk");
-		public static readonly CommandExecutionHandler GenerateMissingColumns = OracleCommandBase.CreateStandardExecutionHandler<AddMissingColumnCommand>("GenerateMissingColumns");
+		public static readonly CommandExecutionHandler AddMissingColumn = OracleCommandBase.CreateStandardExecutionHandler<AddMissingColumnCommand>("AddMissingColumn");
 		public static readonly CommandExecutionHandler PropagateColumn = OracleCommandBase.CreateStandardExecutionHandler<PropagateColumnCommand>("PropagateColumn");
 		public static readonly CommandExecutionHandler ToggleFullyQualifiedReferences = OracleCommandBase.CreateStandardExecutionHandler<ToggleFullyQualifiedReferencesCommand>("ToggleFullyQualifiedReferences");
 		public static readonly CommandExecutionHandler ToggleQuotedNotation = OracleCommandBase.CreateStandardExecutionHandler<ToggleQuotedNotationCommand>("ToggleQuotedNotation");

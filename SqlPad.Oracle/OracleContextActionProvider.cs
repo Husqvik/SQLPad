@@ -89,9 +89,9 @@ namespace SqlPad.Oracle
 				actionList.Add(new ContextAction(ToggleFullyQualifiedReferencesCommand.Title, OracleCommands.ToggleFullyQualifiedReferences, executionContext));
 			}
 
-			if (OracleCommands.GenerateMissingColumns.CanExecuteHandler(executionContext))
+			if (OracleCommands.AddMissingColumn.CanExecuteHandler(executionContext))
 			{
-				actionList.Add(new ContextAction(AddMissingColumnCommand.Title, OracleCommands.GenerateMissingColumns, executionContext));
+				actionList.Add(new ContextAction(AddMissingColumnCommand.Title, OracleCommands.AddMissingColumn, executionContext));
 			}
 
 			canExecuteResult = OracleCommands.CreateScript.CanExecuteHandler(executionContext);

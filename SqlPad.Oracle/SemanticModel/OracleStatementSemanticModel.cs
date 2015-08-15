@@ -932,10 +932,10 @@ namespace SqlPad.Oracle.SemanticModel
 				}
 
 				queryBlock.ModelReference.DimensionReferenceContainer.ObjectReferences.Add(dimensionColumnObjectReference);
-				ResolveSqlModelReferences(queryBlock.ModelReference.DimensionReferenceContainer, ruleDimensionIdentifiers);
+				ResolveSqlModelReferences(queryBlock, queryBlock.ModelReference.DimensionReferenceContainer, ruleDimensionIdentifiers);
 
 				queryBlock.ModelReference.MeasuresReferenceContainer.ObjectReferences.Add(queryBlock.ModelReference);
-				ResolveSqlModelReferences(queryBlock.ModelReference.MeasuresReferenceContainer, ruleMeasureIdentifiers);
+				ResolveSqlModelReferences(queryBlock, queryBlock.ModelReference.MeasuresReferenceContainer, ruleMeasureIdentifiers);
 
 				queryBlock.ObjectReferences.Clear();
 				queryBlock.ObjectReferences.Add(queryBlock.ModelReference);
@@ -953,12 +953,12 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 		}
 
-		private void ResolveSqlModelReferences(OracleReferenceContainer referenceContainer, ICollection<StatementGrammarNode> identifiers)
+		private void ResolveSqlModelReferences(OracleQueryBlock queryBlock, OracleReferenceContainer referenceContainer, ICollection<StatementGrammarNode> identifiers)
 		{
 			var selectListColumn = referenceContainer as OracleSelectListColumn;
-			ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(null, referenceContainer, identifiers.Where(t => t.Id.In(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level)), StatementPlacement.Model, selectListColumn);
+			ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(queryBlock, referenceContainer, identifiers.Where(t => t.Id.In(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level)), StatementPlacement.Model, selectListColumn);
 			var grammarSpecificFunctions = identifiers.Where(t => t.Id.In(Terminals.Count, Terminals.User, NonTerminals.AggregateFunction));
-			CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, null, referenceContainer.ProgramReferences, StatementPlacement.Model, selectListColumn);
+			CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, queryBlock, referenceContainer.ProgramReferences, StatementPlacement.Model, selectListColumn);
 		}
 
 		private List<OracleSelectListColumn> GatherSqlModelColumns(OracleQueryBlock queryBlock, StatementGrammarNode parenthesisEnclosedAliasedExpressionList)
@@ -988,7 +988,7 @@ namespace SqlPad.Oracle.SemanticModel
 				}
 
 				sqlModelColumn.ObjectReferences.AddRange(queryBlock.ObjectReferences);
-				ResolveSqlModelReferences(sqlModelColumn, GetIdentifiers(aliasedExpression).ToArray());
+				ResolveSqlModelReferences(queryBlock, sqlModelColumn, GetIdentifiers(aliasedExpression).ToArray());
 				columns.Add(sqlModelColumn);
 			}
 
