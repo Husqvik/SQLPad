@@ -116,6 +116,7 @@ WHERE
 				};
 
 			var connectionAdapter = (OracleConnectionAdapter)databaseModel.CreateConnectionAdapter();
+			connectionAdapter.EnableDatabaseOutput = true;
 			var batchExecutionModel = new StatementBatchExecutionModel { Statements = new [] { executionModel }, GatherExecutionStatistics = true };
 			var taskStatement = connectionAdapter.ExecuteStatementAsync(batchExecutionModel, CancellationToken.None);
 			taskStatement.Wait();
@@ -161,7 +162,7 @@ WHERE
 
 			Trace.WriteLine($"Display cursor output: {Environment.NewLine}{planItemCollection.PlanText}{Environment.NewLine}");
 
-			planItemCollection.PlanText.Length.ShouldBeGreaterThan(100);
+			planItemCollection.PlanText.ShouldContain(executionModel.StatementText);
 
 			var taskStatistics = connectionAdapter.GetExecutionStatisticsAsync(CancellationToken.None);
 			taskStatistics.Wait();

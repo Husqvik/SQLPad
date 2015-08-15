@@ -275,7 +275,7 @@
 
 							<ItemsControl.Resources>
 								<DataTemplate x:Key="TextBoxTemplate" DataType="sqlPad:BindVariableModel">
-									<TextBox Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}" GotFocus="BindVariableEditorGotFocusHandler" LostFocus="BindVariableEditorLostFocus" Tag="{Binding}" />
+									<TextBox Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}" GotFocus="BindVariableEditorGotFocusHandler" LostFocus="BindVariableEditorLostFocus" Tag="{Binding}" Height="22" VerticalContentAlignment="Center" />
 								</DataTemplate>
 								<DataTemplate x:Key="DatePickerTemplate" DataType="sqlPad:BindVariableModel">
 									<xctk:DateTimePicker Value="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}" Format="Custom" FormatString="{Binding ElementName=BindVariableList, Path=DataContext.(sqlPad:DocumentPage.DateTimeFormat)}" GotFocus="BindVariableEditorGotFocusHandler" LostFocus="BindVariableEditorLostFocus" Tag="{Binding}" />

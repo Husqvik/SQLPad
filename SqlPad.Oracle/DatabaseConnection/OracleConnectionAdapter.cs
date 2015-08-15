@@ -662,7 +662,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 					}
 
 					batchResult.StatementResults = statementResults.AsReadOnly();
-					batchResult.DatabaseOutput = await RetrieveDatabaseOutput(cancellationToken);
 					return batchResult;
 				}
 			}
@@ -713,6 +712,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 						{
 							await SafeResolveTransactionStatus(cancellationToken);
 						}
+
+						batchResult.DatabaseOutput = await RetrieveDatabaseOutput(cancellationToken);
 					}
 				}
 				finally
