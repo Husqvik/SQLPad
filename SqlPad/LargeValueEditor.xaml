@@ -3,26 +3,19 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-		xmlns:findReplace="clr-namespace:SqlPad.FindReplace"
 		xmlns:sqlPad="clr-namespace:SqlPad"
 		xmlns:moonPdfLib="clr-namespace:MoonPdfLib;assembly=MoonPdfLib"
-		xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
 		mc:Ignorable="d"
 		d:DesignHeight="640" d:DesignWidth="320"
-        Width="Auto" Height="Auto" MinHeight="320" MinWidth="480"
+		Width="Auto" Height="Auto" MinHeight="320" MinWidth="480"
 		Loaded="LargeValueEditorLoadedHandler"
 		StateChanged="WindowStateChanged"
 		SizeToContent="WidthAndHeight"
 		WindowStartupLocation="CenterOwner" Icon="EmptyIcon.ico" ShowInTaskbar="False">
 
-	<Window.Resources>
-		<findReplace:FindReplaceManager x:Key="FindReplaceManager" />
-	</Window.Resources>
-
 	<Window.InputBindings>
 		<KeyBinding Key="Escape" Command="Close" />
 		<KeyBinding Key="F5" Command="Refresh" />
-		<KeyBinding Key="F3" Modifiers="Shift" Command="Search" CommandParameter="something" />
 		<KeyBinding Key="PageDown" Command="NextPage" />
 		<KeyBinding Key="PageUp" Command="PreviousPage" />
 	</Window.InputBindings>
@@ -32,8 +25,6 @@
 		<CommandBinding Command="Close" Executed="CloseWindowHandler" />
 		<CommandBinding Command="NextPage" Executed="NextPdfPageHandler" />
 		<CommandBinding Command="PreviousPage" Executed="PreviousPdfPageHandler" />
-		<sqlPad:StaticResourceBinding ResourceKey="FindReplaceManager" Path="FindBinding" />
-		<sqlPad:StaticResourceBinding ResourceKey="FindReplaceManager" Path="FindNextBinding" />
 	</Window.CommandBindings>
 
 	<Grid>
@@ -84,7 +75,7 @@
 						<Button x:Name="ButtonSaveRawAs" Content="Save as..." Padding="6,0,6,0" Click="SaveRawAsClickHandler" Visibility="Collapsed" />
 					</StackPanel>
 					<Grid>
-						<avalonedit:TextEditor x:Name="HexEditor" FontFamily="Consolas" IsReadOnly="True" />
+						<sqlPad:SqlTextEditor x:Name="HexEditor" FontFamily="Consolas" IsReadOnly="True" />
 						<StackPanel x:Name="LoadingNotification" VerticalAlignment="Center" Width="240" sqlPad:MarginSetter.Margin="0,8,0,8">
 							<TextBlock Text="Loading..." FontSize="16" HorizontalAlignment="Center" />
 							<ProgressBar x:Name="BinaryValueLoadingProgress" Height="24" IsIndeterminate="True" />

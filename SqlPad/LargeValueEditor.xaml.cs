@@ -10,10 +10,10 @@ using System.Windows.Media.Imaging;
 using System.Xml;
 using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.Highlighting.Xshd;
+using ICSharpCode.AvalonEdit.Search;
 using Microsoft.Win32;
 using MoonPdfLib.MuPdf;
 using Newtonsoft.Json.Linq;
-using SqlPad.FindReplace;
 
 namespace SqlPad
 {
@@ -22,7 +22,6 @@ namespace SqlPad
 		private static readonly string SyntaxHighlightingNameJavaScript;
 
 		private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-		private readonly FindReplaceManager _findReplaceManager;
 		private readonly ILargeValue _largeValue;
 		private readonly ILargeBinaryValue _largeBinaryValue;
 		private bool _isXml;
@@ -49,9 +48,6 @@ namespace SqlPad
 
 			HexEditor.TextArea.TextView.ElementGenerators.Clear();
 
-			_findReplaceManager = (FindReplaceManager)Resources["FindReplaceManager"];
-			_findReplaceManager.OwnerWindow = this;
-
 			Title = columnName;
 
 			_largeValue = largeValue;
@@ -63,7 +59,6 @@ namespace SqlPad
 			var largeTextValue = _largeValue as ILargeTextValue;
 			var collectionValue = _largeValue as ICollectionValue;
 			var complexType = _largeValue as IComplexType;
-			var searchEditor = HexEditor;
 
 			try
 			{
@@ -107,8 +102,6 @@ namespace SqlPad
 					{
 						TextEditor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition(SyntaxHighlightingNameJavaScript);
 					}
-
-					searchEditor = TextEditor;
 				}
 				else if (_largeBinaryValue != null)
 				{
@@ -133,8 +126,6 @@ namespace SqlPad
 					TabControl.SelectedItem = TabComplexType;
 					ComplexTypeViewer.ComplexType = complexType;
 				}
-
-				_findReplaceManager.CurrentEditor = new TextEditorAdapter(searchEditor);
 			}
 			catch (OperationCanceledException)
 			{
@@ -151,7 +142,9 @@ namespace SqlPad
 		private bool TryOpenPdf()
 		{
 			if (!HasPdfHeader())
+			{
 				return false;
+			}
 
 			String password = null;
 
@@ -209,13 +202,19 @@ namespace SqlPad
 			await SetEditorValue();
 
 			if (_largeBinaryValue == null || _largeBinaryValue.Value.Length == 0)
+			{
 				return;
+			}
 
 			if (TryOpenPdf())
+			{
 				return;
+			}
 
 			if (TryOpenImage())
+			{
 				return;
+			}
 
 			TryOpenMedia();
 		}
@@ -261,7 +260,9 @@ namespace SqlPad
 		private void ChangePdfPage(Action action)
 		{
 			if (_largeBinaryValue == null)
+			{
 				return;
+			}
 
 			action();
 		}

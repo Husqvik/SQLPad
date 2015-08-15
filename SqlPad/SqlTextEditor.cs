@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using ICSharpCode.AvalonEdit;
+using ICSharpCode.AvalonEdit.Search;
 
 namespace SqlPad
 {
@@ -20,17 +22,20 @@ namespace SqlPad
 
 		public int CurrentLine => (int)GetValue(CurrentLineKey.DependencyProperty);
 
-	    public int CurrentColumn => (int)GetValue(CurrentColumnKey.DependencyProperty);
+		public int CurrentColumn => (int)GetValue(CurrentColumnKey.DependencyProperty);
 
-	    public int? CurrentSelectionLength => (int?)GetValue(CurrentSelectionLengthKey.DependencyProperty);
+		public int? CurrentSelectionLength => (int?)GetValue(CurrentSelectionLengthKey.DependencyProperty);
 
-	    protected override void OnInitialized(EventArgs e)
+		protected override void OnInitialized(EventArgs e)
 		{
 			base.OnInitialized(e);
 
 			TextArea.Caret.PositionChanged += CaretPositionChangedHandler;
 			TextArea.SelectionChanged += TextAreaSelectionChangedHandler;
 			TextArea.PreviewMouseWheel += PreviewMouseWheelHandler;
+
+			var searchPanel = SearchPanel.Install(this);
+			searchPanel.Style = (Style)Application.Current.Resources["SearchPanelStyle"];
 		}
 
 		private void TextAreaSelectionChangedHandler(object sender, EventArgs eventArgs)
