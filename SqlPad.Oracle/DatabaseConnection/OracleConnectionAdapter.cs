@@ -778,6 +778,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 					value = oracleTimeStamp.IsNull ? (DateTime?)null : oracleTimeStamp.Value;
 				}
 
+				var clob = parameter.Value as OracleClob;
+				if (clob != null)
+				{
+					value = clob.IsNull ? String.Empty : clob.Value;
+				}
+
 				var refCursor = parameter.Value as OracleRefCursor;
 				if (refCursor != null)
 				{

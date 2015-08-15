@@ -52,7 +52,7 @@ namespace SqlPad.Oracle.Commands
 			foreach (var column in _unquotableColumns)
 			{
 				var unquotedColumnAlias = column.NormalizedName.Trim('"');
-				if (column.HasExplicitAlias)
+				if (column.HasExplicitAlias || String.Equals(column.NormalizedName.ToSimpleIdentifier(), unquotedColumnAlias))
 				{
 					foreach (var terminal in FindUsagesCommand.GetParentQueryBlockReferences(column))
 					{
@@ -120,9 +120,8 @@ namespace SqlPad.Oracle.Commands
 
 		private IEnumerable<OracleSelectListColumn> GetQuotedColumns(Func<OracleSelectListColumn, bool> columnFilter)
 		{
-			return CurrentQueryBlock == null
-				? Enumerable.Empty<OracleSelectListColumn>()
-				: CurrentQueryBlock.Columns.Where(c => !c.IsAsterisk && c.HasExplicitDefinition && c.AliasNode != null && IsUnquotable(c.AliasNode.Token.Value) && columnFilter(c));
+			var columns = CurrentQueryBlock?.Columns ?? Enumerable.Empty<OracleSelectListColumn>();
+			return columns.Where(c => !c.IsAsterisk && c.HasExplicitDefinition && c.AliasNode != null && IsUnquotable(c.AliasNode.Token.Value) && columnFilter(c));
 		}
 
 		private IEnumerable<OracleDataObjectReference> GetQuotedObjects(Func<OracleDataObjectReference, bool> objectFilter)

@@ -493,7 +493,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			string blockSource;
 			if (fileNumber > 0)
 			{
-				filePart = $"FIL={fileNumber}; ";
+				filePart = $"fil={fileNumber}; ";
 				blockSource = rowIdString.Substring(9, 6).PadLeft(8, 'A');
 			}
 			else
@@ -503,7 +503,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			var blockNumber = DecodeBase64Hex(blockSource);
 			var offset = DecodeBase64Hex(rowIdString.Substring(15, 3).PadLeft(4, 'A'));
-			return $"{rowIdString} (OBJ={objectId}; {filePart}BLK={blockNumber}; OFF={offset})";
+			return $"{rowIdString} (obj={objectId}; {filePart}blk={blockNumber}; off={offset})";
 		}
 
 		private static int DecodeBase64Hex(string base64Bytes)

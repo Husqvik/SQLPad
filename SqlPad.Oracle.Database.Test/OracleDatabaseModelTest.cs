@@ -208,10 +208,10 @@ WHERE
 				firstRow[0].ShouldBeTypeOf<OracleRowId>();
 				var smallFileRowIdValue = (OracleRowId)firstRow[0];
 				smallFileRowIdValue.RawValue.ToString().ShouldBe("AAAACOAABAAAAR5AAC");
-				smallFileRowIdValue.ToString().ShouldBe("AAAACOAABAAAAR5AAC (OBJ=142; FIL=1; BLK=1145; OFF=2)");
+				smallFileRowIdValue.ToString().ShouldBe("AAAACOAABAAAAR5AAC (obj=142; fil=1; blk=1145; off=2)");
 				var bigFileRowIdValue = (OracleRowId)firstRow[1];
 				bigFileRowIdValue.RawValue.ToString().ShouldBe("AAAXhyAAAAACAGDAAD");
-				bigFileRowIdValue.ToString().ShouldBe("AAAXhyAAAAACAGDAAD (OBJ=96370; BLK=524675; OFF=3)");
+				bigFileRowIdValue.ToString().ShouldBe("AAAXhyAAAAACAGDAAD (obj=96370; blk=524675; off=3)");
 			}
 		}
 

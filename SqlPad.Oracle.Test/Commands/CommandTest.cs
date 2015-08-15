@@ -1731,6 +1731,31 @@ SELECT * FROM DUAL";
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestUnquoteCommandWithRedundantColumnQuotes()
+		{
+			const string statementText =
+@"SELECT
+	""DUMMY"",
+	""DUMMY""
+FROM
+	DUAL";
+
+			_editor.Text = statementText;
+
+			CanExecuteCommand(OracleCommands.Unquote).ShouldBe(true);
+			ExecuteCommand(OracleCommands.Unquote);
+
+			const string expectedResult =
+@"SELECT
+	DUMMY,
+	DUMMY
+FROM
+	DUAL";
+
+			_editor.Text.ShouldBe(expectedResult);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestUnquoteCommandWithReservedWordCollision()
 		{
 			const string statementText = @"SELECT ""Level"" FROM DUAL";
