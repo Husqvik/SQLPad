@@ -359,12 +359,267 @@
           <NonTerminal Id="AlterResourceCost" />
         </Sequence>
         <Sequence>
+          <NonTerminal Id="AlterUser" />
+        </Sequence>
+        <Sequence>
           <NonTerminal Id="AlterSystem" />
         </Sequence>
         <!-- TODO: Add other objects -->
       </Sequences>
     </Rule>
     
+    <Rule StartingNonTerminal="AlterUser">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="User" />
+          <NonTerminal Id="AlterSingleOrMultipleUsers" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AlterSingleOrMultipleUsers">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="AlterSingleUserOptionList" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="IdentifierList" />
+          <NonTerminal Id="AlterMultipleUsersProxyClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AlterMultipleUsersProxyClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Grant" />
+          <Terminal Id="Connect" />
+          <Terminal Id="Through" />
+          <NonTerminal Id="AlterMultipleUsersProxyClauseGrantOption" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Revoke" />
+          <Terminal Id="Connect" />
+          <Terminal Id="Through" />
+          <NonTerminal Id="AlterMultipleUsersProxyClauseRevokeOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AlterMultipleUsersProxyClauseRevokeOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Enterprise" />
+          <Terminal Id="Users" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="ObjectIdentifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AlterMultipleUsersProxyClauseGrantOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Enterprise" />
+          <Terminal Id="Users" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="DatabaseUserProxyClauses" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DatabaseUserProxyClauses">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="With" />
+          <NonTerminal Id="WithRoleOption" />
+          <NonTerminal Id="AuthenticationRequired" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="AuthenticationRequired" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="WithRoleOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Role" />
+          <NonTerminal Id="RoleSpecification" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="No" />
+          <Terminal Id="Roles" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="RoleSpecification">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="All" />
+          <NonTerminal Id="ExceptRoleList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="IdentifierList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AuthenticationRequired">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Authentication" />
+          <Terminal Id="Required" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AlterSingleUserOptionList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="AlterSingleUserOption" />
+          <NonTerminal Id="AlterSingleUserOptionList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AlterSingleUserOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identified" />
+          <NonTerminal Id="CreateUserIdentificationType" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Default" />
+          <NonTerminal Id="TablespaceIdentifier" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Temporary" />
+          <NonTerminal Id="TablespaceIdentifier" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="TablespaceQuotaList" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Profile" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Default" />
+          <Terminal Id="Role" />
+          <NonTerminal Id="DefaultRoleOption" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Password" />
+          <Terminal Id="Expire" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Account" />
+          <NonTerminal Id="LockOrUnlock" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Enable" />
+          <Terminal Id="Editions" />
+          <NonTerminal Id="ForObjectTypes" IsOptional="true" />
+          <Terminal Id="Force" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ContainerDatabaseOption" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ContainerDataClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ForObjectTypes">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="For" />
+          <NonTerminal Id="IdentifierList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ContainerDataClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Set" />
+          <Terminal Id="ContainerData" />
+          <Terminal Id="MathEquals" />
+          <NonTerminal Id="SetContainerDataOption" />
+          <NonTerminal Id="ForContainerDataObject" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Add" />
+          <Terminal Id="ContainerData" />
+          <Terminal Id="MathEquals" />
+          <NonTerminal Id="ParenthesisEnclosedIdentifierList" />
+          <NonTerminal Id="ForContainerDataObject" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Remove" />
+          <Terminal Id="ContainerData" />
+          <Terminal Id="MathEquals" />
+          <NonTerminal Id="ParenthesisEnclosedIdentifierList" />
+          <NonTerminal Id="ForContainerDataObject" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ForContainerDataObject">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="For" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="SetContainerDataOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="All" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Default" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ParenthesisEnclosedIdentifierList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="DefaultRoleOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="None" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="All" />
+          <NonTerminal Id="ExceptRoleList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ExceptRoleList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ExceptRoleList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Except" />
+          <NonTerminal Id="IdentifierList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+      
     <Rule StartingNonTerminal="AlterSystem">
       <Sequences>
         <Sequence>
@@ -17932,6 +18187,14 @@
     <Terminal Id="Permanent" Value="PERMANENT" />
     <Terminal Id="Normal" Value="NORMAL" />
     <Terminal Id="Cost" Value="COST" />
+    <Terminal Id="Through" Value="THROUGH" />
+    <Terminal Id="Enterprise" Value="ENTERPRISE" />
+    <Terminal Id="Users" Value="USERS" />
+    <Terminal Id="ContainerData" Value="CONTAINER_DATA" />
+    <Terminal Id="Remove" Value="REMOVE" />
+    <Terminal Id="Roles" Value="ROLES" />
+    <Terminal Id="Authentication" Value="AUTHENTICATION" />
+    <Terminal Id="Required" Value="REQUIRED" />
     
     <!-- Alter system -->
     <Terminal Id="Datafiles" Value="DATAFILES" />

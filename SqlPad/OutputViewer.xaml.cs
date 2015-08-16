@@ -19,6 +19,7 @@ namespace SqlPad
 	public partial class OutputViewer : IDisposable
 	{
 		private const int MaxHistoryEntrySize = 8192;
+		private const string ExecutionLogTimestampFormat = "yyyy-MM-dd HH:mm:ss.fff";
 
 		private readonly Timer _timerExecutionMonitor = new Timer(100);
 		private readonly Stopwatch _stopWatch = new Stopwatch();
@@ -359,7 +360,7 @@ namespace SqlPad
 			{
 				if (executionResult.ExecutedAt.HasValue)
 				{
-					_executionLogBuilder.Append(executionResult.ExecutedAt.Value.ToString("yyyy-MM-dd HH:mm:ss.fff"));
+					_executionLogBuilder.Append(executionResult.ExecutedAt.Value.ToString(ExecutionLogTimestampFormat));
 					_executionLogBuilder.Append(" - ");
 				}
 
@@ -393,6 +394,14 @@ namespace SqlPad
 				_executionLogBuilder.AppendLine();
 			}
 
+			ExecutionLog = _executionLogBuilder.ToString();
+		}
+
+		public void AddExecutionLog(DateTime timestamp, string message)
+		{
+			_executionLogBuilder.Append(timestamp.ToString(ExecutionLogTimestampFormat));
+			_executionLogBuilder.Append(" - ");
+			_executionLogBuilder.AppendLine(message);
 			ExecutionLog = _executionLogBuilder.ToString();
 		}
 

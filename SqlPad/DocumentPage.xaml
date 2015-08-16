@@ -270,7 +270,7 @@
 					</ScrollViewer.Style>
 					
 					<StackPanel>
-						<TextBlock Text="Bind Variables: " Padding="4,2,0,4" Margin="0,0,2,0" Background="Gray" />
+						<TextBlock Text="Bind Variables" Padding="4,2,0,4" Margin="0,0,2,0" Background="Gray" />
 						<ItemsControl MinWidth="160" ItemsSource="{Binding Path=BindVariables}">
 
 							<ItemsControl.Resources>

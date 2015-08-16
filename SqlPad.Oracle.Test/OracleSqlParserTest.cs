@@ -6290,6 +6290,45 @@ PURGE REPEAT INTERVAL '5' DAY";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}*/
 			}
+
+			public class AlterUser
+			{
+				[Test(Description = @"")]
+				public void TestBasicAlterUser()
+				{
+					const string statementText = @"ALTER USER sidney IDENTIFIED BY second_2nd_pwd DEFAULT TABLESPACE example PROFILE new_profile DEFAULT ROLE ALL EXCEPT dw_manager TEMPORARY TABLESPACE tbs_grp_01 REMOVE CONTAINER_DATA = (C1, C2) FOR TEST_SCHEMA.TEST_OBJECT";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterMultipleUsersGrantConnectThroughEnterpriseUsers()
+				{
+					const string statementText = @"ALTER USER u1, u2 GRANT CONNECT THROUGH ENTERPRISE USERS";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterMultipleUsersGrantConnectThroughUserWithRoles()
+				{
+					const string statementText = @"ALTER USER u1, u2 GRANT CONNECT THROUGH proxy_user WITH ROLE ALL EXCEPT r1, r2 AUTHENTICATION REQUIRED";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+			}
 		}
 
 		public class Truncate

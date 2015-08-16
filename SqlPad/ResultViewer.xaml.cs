@@ -206,12 +206,12 @@ namespace SqlPad
 		{
 			Task<IReadOnlyList<object[]>> innerTask = null;
 			var batchSize = StatementExecutionModel.DefaultRowBatchSize - _resultRows.Count % StatementExecutionModel.DefaultRowBatchSize;
-			var exception = await App.SafeActionAsync(
-				() => innerTask = _outputViewer.ConnectionAdapter.FetchRecordsAsync(_resultInfo, batchSize, cancellationToken));
-
+			var exception = await App.SafeActionAsync(() => innerTask = _outputViewer.ConnectionAdapter.FetchRecordsAsync(_resultInfo, batchSize, cancellationToken));
 			if (exception != null)
 			{
-				Messages.ShowError(exception.Message);
+				var errorMessage = String.IsNullOrEmpty(exception.Message) ? "<error message not available>" : exception.Message;
+				_outputViewer.AddExecutionLog(DateTime.Now, $"Row retrieval failed: {errorMessage}");
+				Messages.ShowError(errorMessage);
 			}
 			else
 			{
