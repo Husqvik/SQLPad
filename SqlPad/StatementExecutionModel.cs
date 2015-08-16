@@ -30,10 +30,8 @@ namespace SqlPad
 		public bool IsPartialStatement { get; set; }
 	}
 
-	public struct StatementExecutionBatchResult
+	public class StatementExecutionBatchResult
 	{
-		public static readonly StatementExecutionBatchResult Empty = new StatementExecutionBatchResult { StatementResults = new StatementExecutionResult[0] };
-
 		public StatementBatchExecutionModel ExecutionModel { get; set; }
 
 		public IReadOnlyList<StatementExecutionResult> StatementResults { get; set; }
