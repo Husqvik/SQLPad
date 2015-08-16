@@ -6329,6 +6329,21 @@ PURGE REPEAT INTERVAL '5' DAY";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 			}
+
+			public class AlterMaterializedView
+			{
+				[Test(Description = @"")]
+				public void TestAlterMaterializedViewCompile()
+				{
+					const string statementText = @"ALTER MATERIALIZED VIEW order_data COMPILE";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+			}
 		}
 
 		public class Truncate

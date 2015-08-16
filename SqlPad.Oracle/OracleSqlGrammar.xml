@@ -362,9 +362,158 @@
           <NonTerminal Id="AlterUser" />
         </Sequence>
         <Sequence>
+          <NonTerminal Id="AlterMaterializedView" />
+        </Sequence>
+        <Sequence>
           <NonTerminal Id="AlterSystem" />
         </Sequence>
         <!-- TODO: Add other objects -->
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterMaterializedView">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Materialized" />
+          <Terminal Id="View" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="AlterMaterializedViewOptionList" IsOptional="true" />
+          <!--<NonTerminal Id="AlterIndexOrganizedTableClauses" IsOptional="true" />-->
+          <NonTerminal Id="UsingIndexPhysicalAttributesClause" IsOptional="true" />
+          <!--<NonTerminal Id="ModifyScopedTableRefConstraintOrAlterMaterializedViewRefresh" IsOptional="true" />-->
+          <NonTerminal Id="EvaluationEditionClause" IsOptional="true" />
+          <NonTerminal Id="AlterQueryRewriteClauseOrCompileOrConsiderFresh" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterQueryRewriteClauseOrCompileOrConsiderFresh">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="AlterQueryRewriteClause" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Compile" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Consider" />
+          <Terminal Id="Fresh" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AlterQueryRewriteClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="EnableOrDisable" IsOptional="true" />
+          <Terminal Id="Query" />
+          <Terminal Id="Rewrite" />
+          <NonTerminal Id="UnusableEditionClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="UsingIndexPhysicalAttributesClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Using" />
+          <Terminal Id="Index" />
+          <NonTerminal Id="PhysicalAttributesClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterMaterializedViewOptionList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="AlterMaterializedViewOption" />
+          <NonTerminal Id="AlterMaterializedViewOptionList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterMaterializedViewOption">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="PhysicalAttributesClause" />
+        </Sequence>
+        <!--<Sequence>
+          <NonTerminal Id="ModifyMaterializedViewColumnClause" />
+        </Sequence>-->
+        <Sequence>
+          <NonTerminal Id="TableCompression" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="InMemoryTableClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="LargeObjectStorageClauseList" />
+        </Sequence>
+        <!--<Sequence>
+          <NonTerminal Id="ModifyLargeObjectStorageClauseList" />
+        </Sequence><Sequence>
+          <NonTerminal Id="AlterTablePartitioning" />
+        </Sequence>-->
+        <Sequence>
+          <NonTerminal Id="ParallelClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="LoggingClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="AllocateExtentClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="DeallocateUnusedClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ShrinkClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="CacheOrNoCache" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ModifyMaterializedViewColumnClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Modify" />
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="ModifyMaterializedViewEncryptionClause" IsOptional="true" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ModifyMaterializedViewEncryptionClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ColumnDefinitionEncryptionClause" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Decrypt" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="LargeObjectStorageClauseList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="LargeObjectStorageClause" />
+          <NonTerminal Id="LargeObjectStorageClauseListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="LargeObjectStorageClauseListChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="LargeObjectStorageClauseList" />
+        </Sequence>
       </Sequences>
     </Rule>
     
@@ -1657,7 +1806,7 @@
           <NonTerminal Id="ModifyCollectionRetrieval" />
         </Sequence>
         <!--<Sequence>
-          <NonTerminal Id="ModifyLobStorageClause" />
+          <NonTerminal Id="ModifyLargeObjectStorageClause" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="AlterVarryingArrayColumnProperties" />
@@ -18195,6 +18344,9 @@
     <Terminal Id="Roles" Value="ROLES" />
     <Terminal Id="Authentication" Value="AUTHENTICATION" />
     <Terminal Id="Required" Value="REQUIRED" />
+    <Terminal Id="Consider" Value="CONSIDER" />
+    <Terminal Id="Fresh" Value="FRESH" />
+    <Terminal Id="Rewrite" Value="REWRITE" />
     
     <!-- Alter system -->
     <Terminal Id="Datafiles" Value="DATAFILES" />
