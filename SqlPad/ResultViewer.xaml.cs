@@ -14,8 +14,10 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using Microsoft.Win32;
 using SqlPad.DataExport;
+using SqlPad.FindReplace;
 
 namespace SqlPad
 {
@@ -472,6 +474,23 @@ namespace SqlPad
 		private void DataGridTabHeaderPopupMouseLeaveHandler(object sender, MouseEventArgs e)
 		{
 			ResultViewTabHeaderPopup.IsOpen = false;
+		}
+
+		private void SearchTextChangedHandler(object sender, TextChangedEventArgs e)
+		{
+			var searchedWords = TextSearchHelper.GetSearchedWords(SearchPhraseTextBox.Text);
+			Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => ResultGrid.HighlightTextItems(TextSearchHelper.GetRegexPattern(searchedWords))));
+		}
+
+		private void SearchPanelCloseClickHandler(object sender, ExecutedRoutedEventArgs e)
+		{
+			SearchPanel.Visibility = Visibility.Collapsed;
+		}
+
+		private void SearchPanelOpenClickHandler(object sender, ExecutedRoutedEventArgs e)
+		{
+			SearchPanel.Visibility = Visibility.Visible;
+			SearchPhraseTextBox.Focus();
 		}
 	}
 }

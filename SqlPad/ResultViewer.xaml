@@ -6,6 +6,7 @@
 			 xmlns:globalization="clr-namespace:System.Globalization;assembly=mscorlib"
 			 xmlns:commands="clr-namespace:SqlPad.Commands"
 			 xmlns:dataExport="clr-namespace:SqlPad.DataExport"
+			 xmlns:sqlPad="clr-namespace:SqlPad"
 			 mc:Ignorable="d"
 			 d:DesignHeight="140" d:DesignWidth="384"
 			 Initialized="InitializedHandler"
@@ -37,20 +38,29 @@
 		<dataExport:SqlInsertDataExporter x:Key="SqlInsertDataExporter" />
 		<dataExport:SqlUpdateDataExporter x:Key="SqlUpdateDataExporter" />
 		<dataExport:XmlDataExporter x:Key="XmlDataExporter" />
+
+		<RoutedCommand x:Key="OpenSearchBar" />
+		<RoutedCommand x:Key="CloseSearchBar" />
 	</UserControl.Resources>
 
+	<UserControl.InputBindings>
+		<KeyBinding Key="F" Modifiers="Control" Command="{StaticResource OpenSearchBar}" />
+		<KeyBinding Key="Escape" Command="{StaticResource CloseSearchBar}" />
+	</UserControl.InputBindings>
+	
+	<UserControl.CommandBindings>
+		<CommandBinding Command="{StaticResource OpenSearchBar}" Executed="SearchPanelOpenClickHandler" />
+		<CommandBinding Command="{StaticResource CloseSearchBar}" Executed="SearchPanelCloseClickHandler" />
+	</UserControl.CommandBindings>
+
 	<DockPanel LastChildFill="True">
-		<!--<sqlPad:SearchTextBox x:Name="SearchPhraseTextBox" Watermark="Enter search phrase" DockPanel.Dock="Top" TextChanged="SearchTextChangedHandler" MaxLength="64" Width="200" HorizontalAlignment="Left" Margin="0,0,0,2">
-			<TextBox.Style>
-				<Style TargetType="TextBox">
-					<Style.Triggers>
-						<DataTrigger Binding="{Binding ElementName=ResultGrid, Path=Items.Count}" Value="0">
-							<Setter Property="Visibility" Value="Collapsed"/>
-						</DataTrigger>
-					</Style.Triggers>
-				</Style>
-			</TextBox.Style>
-		</sqlPad:SearchTextBox>-->
+		<StackPanel x:Name="SearchPanel" Orientation="Horizontal" DockPanel.Dock="Top" Visibility="Collapsed">
+			<sqlPad:SearchTextBox x:Name="SearchPhraseTextBox" Watermark="Enter search phrase" DockPanel.Dock="Top" TextChanged="SearchTextChangedHandler" MaxLength="64" Width="200" HorizontalAlignment="Left" Margin="0,0,0,2" />
+			<Button Margin="2" Height="15" Width="15" HorizontalAlignment="Right" VerticalAlignment="Center" Command="{StaticResource CloseSearchBar}"
+					VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Focusable="False">
+				<Path Data="M 0,0 L 8,8 M 8,0 L 0,8" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" />
+			</Button>
+		</StackPanel>
 		
 		<Popup x:Name="ResultViewTabHeaderPopup" Placement="Top" MouseLeave="DataGridTabHeaderPopupMouseLeaveHandler">
 			<Popup.Style>

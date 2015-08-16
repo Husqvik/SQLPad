@@ -284,14 +284,14 @@
 
 							<ItemsControl.ItemTemplate>
 								<DataTemplate DataType="sqlPad:BindVariableModel">
-									<Grid sqlPad:MarginSetter.Margin="2,2,2,2">
+									<Grid Margin="2">
 										<Grid.ColumnDefinitions>
 											<ColumnDefinition Width="2*" />
-											<ColumnDefinition Width="100" />
+											<ColumnDefinition Width="96" />
 											<ColumnDefinition Width="3*" />
 										</Grid.ColumnDefinitions>
 										
-										<TextBlock Text="{Binding Path=Name}" VerticalAlignment="Center" />
+										<TextBlock Grid.Column="0" Text="{Binding Path=Name}" VerticalAlignment="Center" />
 										<ComboBox Grid.Column="1" ItemsSource="{Binding Path=DataTypes}" SelectedValue="{Binding Path=DataType}" />
 										<ContentControl Grid.Column="2" Content="{Binding}">
 											<ContentControl.Style>
@@ -307,7 +307,6 @@
 												</Style>
 											</ContentControl.Style>
 										</ContentControl>
-
 									</Grid>
 								</DataTemplate>
 							</ItemsControl.ItemTemplate>

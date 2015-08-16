@@ -57,7 +57,6 @@
 	</Window.Resources>
 
 	<Window.InputBindings>
-		<KeyBinding Key="F3" Modifiers="Shift" Command="Search" CommandParameter="something" />
 		<KeyBinding Key="O" Modifiers="Control" Command="Open" />
 	</Window.InputBindings>
 

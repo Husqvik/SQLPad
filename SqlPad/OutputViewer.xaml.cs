@@ -539,12 +539,6 @@ namespace SqlPad
 			public TimeSpan Elapsed { get; set; }
 		}
 
-		/*private void SearchTextChangedHandler(object sender, TextChangedEventArgs e)
-		{
-			var searchedWords = TextSearchHelper.GetSearchedWords(SearchPhraseTextBox.Text);
-			Dispatcher.BeginInvoke(DispatcherPriority.Render, new Action(() => ResultGrid.HighlightTextItems(TextSearchHelper.GetRegexPattern(searchedWords))));
-		}*/
-
 		private void OutputViewerMouseMoveHandler(object sender, MouseEventArgs e)
 		{
 			var selectedItem = (TabItem)TabControlResult.SelectedItem;
