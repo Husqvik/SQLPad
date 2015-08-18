@@ -95,7 +95,7 @@ namespace SqlPad
 
 			StatementValidator = DocumentPage.InfrastructureFactory.CreateStatementValidator();
 
-			ExecutionPlanViewer = DocumentPage.InfrastructureFactory.CreateExecutionPlanViewer(DocumentPage.DatabaseModel);
+			ExecutionPlanViewer = DocumentPage.InfrastructureFactory.CreateExecutionPlanViewer(this);
 			TabExecutionPlan.Content = ExecutionPlanViewer.Control;
 
 			TraceViewer = DocumentPage.InfrastructureFactory.CreateTraceViewer(ConnectionAdapter);
@@ -229,7 +229,9 @@ namespace SqlPad
 				}
 				else
 				{
-					Messages.ShowError(actionResult.Exception.Message);
+					var errorMessage = Messages.GetExceptionErrorMessage(actionResult.Exception);
+					AddExecutionLog(actionResult.ExecutedAt, $"Explain plain failed: {errorMessage}");
+					Messages.ShowError(errorMessage);
 				}
 			}
 		}
@@ -460,6 +462,7 @@ namespace SqlPad
 			_stopWatch.Restart();
 			_timerExecutionMonitor.Start();
 
+			actionResult.ExecutedAt = DateTime.Now;
 			actionResult.Exception = await App.SafeActionAsync(action);
 			actionResult.Elapsed = _stopWatch.Elapsed;
 
@@ -546,6 +549,8 @@ namespace SqlPad
 		    public Exception Exception { get; set; }
 
 			public TimeSpan Elapsed { get; set; }
+
+			public DateTime ExecutedAt { get; set; }
 		}
 
 		private void OutputViewerMouseMoveHandler(object sender, MouseEventArgs e)

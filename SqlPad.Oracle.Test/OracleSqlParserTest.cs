@@ -6343,6 +6343,22 @@ PURGE REPEAT INTERVAL '5' DAY";
 					var statement = result.Single();
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
+
+				[Test(Description = @"")]
+				public void TestAlterMaterializedRefreshCompleteStartWithNext()
+				{
+					const string statementText =
+@"ALTER MATERIALIZED VIEW emp_data
+	REFRESH COMPLETE
+	START WITH TRUNC(SYSDATE + 1) + 12/24
+	NEXT SYSDATE + 1";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
 			}
 		}
 

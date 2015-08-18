@@ -381,9 +381,118 @@
           <NonTerminal Id="AlterMaterializedViewOptionList" IsOptional="true" />
           <!--<NonTerminal Id="AlterIndexOrganizedTableClauses" IsOptional="true" />-->
           <NonTerminal Id="UsingIndexPhysicalAttributesClause" IsOptional="true" />
-          <!--<NonTerminal Id="ModifyScopedTableRefConstraintOrAlterMaterializedViewRefresh" IsOptional="true" />-->
+          <NonTerminal Id="ModifyScopedTableRefConstraintOrAlterMaterializedViewRefresh" IsOptional="true" />
           <NonTerminal Id="EvaluationEditionClause" IsOptional="true" />
           <NonTerminal Id="AlterQueryRewriteClauseOrCompileOrConsiderFresh" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ModifyScopedTableRefConstraintOrAlterMaterializedViewRefresh">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Modify" />
+          <Terminal Id="Scope" />
+          <Terminal Id="For" />
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="Identifier" />
+          <Terminal Id="RightParenthesis" />
+          <Terminal Id="Is" />
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="ObjectIdentifier" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Refresh" />
+          <NonTerminal Id="AlterMaterializedViewRefreshOptionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterMaterializedViewRefreshOptionList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="AlterMaterializedViewRefreshOption" />
+          <NonTerminal Id="AlterMaterializedViewRefreshOptionList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterMaterializedViewRefreshOption">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="FastOrCompleteOrForce" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="On" />
+          <NonTerminal Id="DemandOrCommit" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Start" />
+          <Terminal Id="With" />
+          <NonTerminal Id="Expression" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Next" />
+          <NonTerminal Id="Expression" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="With" />
+          <Terminal Id="Primary" />
+          <Terminal Id="Key" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Using" />
+          <NonTerminal Id="RollbackSegmentOrConstraintOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="RollbackSegmentOrConstraintOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Default" />
+          <Terminal Id="Master" />
+          <Terminal Id="Rollback" />
+          <Terminal Id="Segment" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Master" />
+          <Terminal Id="Rollback" />
+          <Terminal Id="Segment" />
+          <Terminal Id="ObjectIdentifier" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Enforced" />
+          <Terminal Id="Constraints" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Trusted" />
+          <Terminal Id="Constraints" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DemandOrCommit">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Demand" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Commit" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="FastOrCompleteOrForce">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Fast" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Complete" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Force" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -18347,6 +18456,10 @@
     <Terminal Id="Consider" Value="CONSIDER" />
     <Terminal Id="Fresh" Value="FRESH" />
     <Terminal Id="Rewrite" Value="REWRITE" />
+    <Terminal Id="Master" Value="MASTER" />
+    <Terminal Id="Enforced" Value="ENFORCED" />
+    <Terminal Id="Trusted" Value="TRUSTED" />
+    <Terminal Id="Demand" Value="DEMAND" />
     
     <!-- Alter system -->
     <Terminal Id="Datafiles" Value="DATAFILES" />

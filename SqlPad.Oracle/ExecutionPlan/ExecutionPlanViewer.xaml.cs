@@ -31,15 +31,15 @@ namespace SqlPad.Oracle.ExecutionPlan
 			private set { SetValue(TextExecutionPlanProperty, value); }
 		}
 
-		private readonly OracleDatabaseModelBase _databaseModel;
+		private readonly OutputViewer _outputViewer;
 
 		public Control Control => this;
 
-		public ExecutionPlanViewer(OracleDatabaseModelBase databaseModel)
+		public ExecutionPlanViewer(OutputViewer outputViewer)
 		{
 			InitializeComponent();
-			
-			_databaseModel = databaseModel;
+
+			_outputViewer = outputViewer;
 		}
 
 		public async Task ShowActualAsync(IConnectionAdapter connectionAdapter, CancellationToken cancellationToken)
@@ -52,9 +52,11 @@ namespace SqlPad.Oracle.ExecutionPlan
 			{
 				itemCollection = await ((OracleConnectionAdapterBase)connectionAdapter).GetCursorExecutionStatisticsAsync(cancellationToken);
 			}
-			catch (Exception e)
+			catch (Exception exception)
 			{
-				Messages.ShowError($"Execution statistics cannot be retrieved: {e.Message}");
+				var errorMessage = $"Execution statistics cannot be retrieved: {Messages.GetExceptionErrorMessage(exception)}";
+				_outputViewer.AddExecutionLog(DateTime.Now, errorMessage);
+				Messages.ShowError(errorMessage);
 			}
 
 			if (itemCollection == null)
@@ -79,7 +81,8 @@ namespace SqlPad.Oracle.ExecutionPlan
 		{
 			ResetView();
 
-			var itemCollection = await _databaseModel.ExplainPlanAsync(executionModel, cancellationToken);
+			var databaseModel = (OracleDatabaseModelBase)_outputViewer.DocumentPage.DatabaseModel;
+			var itemCollection = await databaseModel.ExplainPlanAsync(executionModel, cancellationToken);
 
 			if (itemCollection != null)
 			{

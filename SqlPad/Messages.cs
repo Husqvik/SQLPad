@@ -1,9 +1,15 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 
 namespace SqlPad
 {
 	public static class Messages
 	{
+		public static string GetExceptionErrorMessage(Exception exception)
+		{
+			return String.IsNullOrEmpty(exception.Message) ? "<error message not available>" : exception.Message;
+		}
+
 		public static MessageBoxResult ShowInformation(string errorMessage, string caption = "Information", Window owner = null)
 		{
 			return ShowMessage(errorMessage, caption, MessageBoxImage.Information, owner);

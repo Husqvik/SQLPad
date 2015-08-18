@@ -79,9 +79,9 @@ namespace SqlPad.Oracle
 			return new OracleNavigationService();
 		}
 
-		public IExecutionPlanViewer CreateExecutionPlanViewer(IDatabaseModel databaseModel)
+		public IExecutionPlanViewer CreateExecutionPlanViewer(OutputViewer outputViewer)
 		{
-			return new ExecutionPlanViewer((OracleDatabaseModelBase)databaseModel);
+			return new ExecutionPlanViewer(outputViewer);
 		}
 
 		public ITraceViewer CreateTraceViewer(IConnectionAdapter connectionAdapter)

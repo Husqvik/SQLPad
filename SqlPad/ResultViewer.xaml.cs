@@ -209,7 +209,7 @@ namespace SqlPad
 			var exception = await App.SafeActionAsync(() => innerTask = _outputViewer.ConnectionAdapter.FetchRecordsAsync(_resultInfo, batchSize, cancellationToken));
 			if (exception != null)
 			{
-				var errorMessage = String.IsNullOrEmpty(exception.Message) ? "<error message not available>" : exception.Message;
+				var errorMessage = Messages.GetExceptionErrorMessage(exception);
 				_outputViewer.AddExecutionLog(DateTime.Now, $"Row retrieval failed: {errorMessage}");
 				Messages.ShowError(errorMessage);
 			}
@@ -220,7 +220,6 @@ namespace SqlPad
 				await _outputViewer.UpdateExecutionStatisticsIfEnabled();
 			}
 		}
-
 		private void AppendRows(IEnumerable<object[]> rows)
 		{
 			_resultRows.AddRange(rows);

@@ -37,7 +37,7 @@ namespace SqlPad
 
 		INavigationService CreateNavigationService();
 
-		IExecutionPlanViewer CreateExecutionPlanViewer(IDatabaseModel databaseModel);
+		IExecutionPlanViewer CreateExecutionPlanViewer(OutputViewer outputViewer);
 		
 		ITraceViewer CreateTraceViewer(IConnectionAdapter connectionAdapter);
 

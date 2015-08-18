@@ -1123,7 +1123,7 @@ namespace SqlPad
 			var oldCorrespondingTerminals = _colorizingTransformer.CorrespondingTerminals.ToArray();
 			_colorizingTransformer.SetCorrespondingTerminals(correspondingTerminals);
 
-			RedrawNodes(oldCorrespondingTerminals.Concat(correspondingTerminals));
+			RedrawSegments(oldCorrespondingTerminals.Concat(correspondingTerminals).Select(t =>t.SourcePosition));
 		}
 
 		private void HighlightActiveStatement(StatementBase newActiveStatement)
@@ -1140,7 +1140,18 @@ namespace SqlPad
 			}
 			else
 			{
-				RedrawNodes(previousActiveStatement?.RootNode, newActiveStatement?.RootNode);
+				var segments = new List<SourcePosition>();
+				if (previousActiveStatement != null)
+				{
+					segments.Add(previousActiveStatement.SourcePosition);
+				}
+
+				if (newActiveStatement != null)
+				{
+					segments.Add(newActiveStatement.SourcePosition);
+				}
+
+				RedrawSegments(segments);
 			}
 		}
 
@@ -1238,16 +1249,11 @@ namespace SqlPad
 			return models.AsReadOnly();
 		}
 
-		private void RedrawNodes(params StatementGrammarNode[] nodes)
+		private void RedrawSegments(IEnumerable<SourcePosition> segments)
 		{
-			RedrawNodes(nodes.Where(n => n != null));
-		}
-
-		private void RedrawNodes(IEnumerable<StatementGrammarNode> nodes)
-		{
-			foreach (var node in nodes)
+			foreach (var segment in segments)
 			{
-				Editor.TextArea.TextView.Redraw(node.SourcePosition.IndexStart, node.SourcePosition.Length);
+				Editor.TextArea.TextView.Redraw(segment.IndexStart, segment.Length);
 			}
 		}
 
