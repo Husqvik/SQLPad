@@ -75,7 +75,7 @@ namespace SqlPad.Oracle.DataDictionary
 				.ToDictionary(p => p.Name);
 		}
 
-		public OracleProgramParameterMetadata ReturnParameter => Type == ProgramType.Procedure || Parameters.Count == 0 ? null : Parameters[0];
+		public OracleProgramParameterMetadata ReturnParameter => Type == ProgramType.Procedure || Parameters.Count == 0 || Parameters[0].Direction != ParameterDirection.ReturnValue ? null : Parameters[0];
 
 	    public bool IsBuiltIn { get; private set; }
 		
@@ -99,7 +99,7 @@ namespace SqlPad.Oracle.DataDictionary
 		{
 			get
 			{
-				var properMetadataMinimumArgumentCount = Parameters.Count > 0
+				var properMetadataMinimumArgumentCount = Parameters.Count > 0 && Parameters[0].Direction == ParameterDirection.ReturnValue
 					? Parameters.Count(p => !p.IsOptional && p.DataLevel == 0) - 1
 					: (int?)null;
 				return properMetadataMinimumArgumentCount > 0 && (_metadataMinimumArguments == null || properMetadataMinimumArgumentCount < _metadataMinimumArguments)
@@ -112,7 +112,7 @@ namespace SqlPad.Oracle.DataDictionary
 		{
 			get
 			{
-				return Parameters.Count > 1 && _metadataMaximumArguments != 0
+				return Parameters.Count > 1 && _metadataMaximumArguments != 0 && Parameters[0].Direction == ParameterDirection.ReturnValue
 					? Parameters.Count(p => p.DataLevel == 0) - 1
 					: (_metadataMaximumArguments ?? 0);
 			}

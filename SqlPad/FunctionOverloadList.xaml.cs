@@ -23,16 +23,7 @@ namespace SqlPad
 				foreach (var overloadDescription in value)
 				{
 					var textBlock = new TextBlock();
-
-					if (!overloadDescription.IsParameterMetadataAvailable)
-					{
-						textBlock.Inlines.Add("Parameter metadata is not available. ");
-						ViewOverloads.Items.Add(textBlock);
-						continue;
-					}
-
 					textBlock.Inlines.Add(overloadDescription.Name);
-
 					textBlock.Inlines.Add("(");
 
 					var i = 0;

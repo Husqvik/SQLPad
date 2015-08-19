@@ -18,8 +18,6 @@ namespace SqlPad
 		public int CurrentParameterIndex { get; set; }
 		
 		public string ReturnedDatatype { get; set; }
-		
-		public bool IsParameterMetadataAvailable { get; set; }
 	}
 
 	public interface ICodeCompletionItem

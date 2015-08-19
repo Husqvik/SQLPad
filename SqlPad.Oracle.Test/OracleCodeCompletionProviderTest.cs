@@ -708,7 +708,6 @@ FROM
 			items[0].Parameters.Count.ShouldBe(2);
 			items[0].CurrentParameterIndex.ShouldBe(1);
 			items[0].ReturnedDatatype.ShouldBe("NUMBER");
-			items[0].IsParameterMetadataAvailable.ShouldBe(true);
 		}
 
 		[Test(Description = @"")]
@@ -723,12 +722,10 @@ FROM
 			items[0].Parameters.Count.ShouldBe(0);
 			items[0].CurrentParameterIndex.ShouldBe(0);
 			items[0].ReturnedDatatype.ShouldBe("NUMBER");
-			items[0].IsParameterMetadataAvailable.ShouldBe(true);
 			items[1].Name.ShouldBe("SYS.DBMS_RANDOM.VALUE");
 			items[1].Parameters.Count.ShouldBe(2);
 			items[1].CurrentParameterIndex.ShouldBe(0);
 			items[1].ReturnedDatatype.ShouldBe("NUMBER");
-			items[1].IsParameterMetadataAvailable.ShouldBe(true);
 		}
 
 		[Test(Description = @"")]
@@ -743,7 +740,6 @@ FROM
 			items[0].Parameters.Count.ShouldBe(7);
 			items[0].CurrentParameterIndex.ShouldBe(0);
 			items[0].ReturnedDatatype.ShouldBe("SYS.ODCIARGDESC");
-			items[0].IsParameterMetadataAvailable.ShouldBe(true);
 		}
 
 		[Test(Description = @"")]
@@ -758,7 +754,6 @@ FROM
 			items[0].Parameters.Count.ShouldBe(1);
 			items[0].CurrentParameterIndex.ShouldBe(0);
 			items[0].ReturnedDatatype.ShouldBe("SYS.ODCIRAWLIST");
-			items[0].IsParameterMetadataAvailable.ShouldBe(true);
 		}
 
 		[Test(Description = @"")]
@@ -780,7 +775,11 @@ FROM
 			_documentRepository.UpdateStatements(query1);
 			var items = CodeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 11).ToList();
 			items.Count.ShouldBe(1);
-			items[0].IsParameterMetadataAvailable.ShouldBe(false);
+			items[0].Name.ShouldBe("MAX");
+			items[0].Parameters.Count.ShouldBe(1);
+			items[0].Parameters[0].ShouldBe("EXPR");
+			items[0].CurrentParameterIndex.ShouldBe(0);
+			items[0].ReturnedDatatype.ShouldBe(null);
 		}
 
 		[Test(Description = @"")]
@@ -794,7 +793,6 @@ SELECT F1(NULL) FROM DUAL";
 			_documentRepository.UpdateStatements(query1);
 			var items = CodeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 112).ToList();
 			items.Count.ShouldBe(1);
-			items[0].IsParameterMetadataAvailable.ShouldBe(true);
 			items[0].Parameters.Count.ShouldBe(2);
 			items[0].CurrentParameterIndex = 1;
 			items[0].Parameters[0].ShouldBe("P1: NUMBER");
@@ -809,7 +807,11 @@ SELECT F1(NULL) FROM DUAL";
 			_documentRepository.UpdateStatements(query1);
 			var items = CodeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 14).ToList();
 			items.Count.ShouldBe(1);
-			items[0].IsParameterMetadataAvailable.ShouldBe(false);
+			items[0].Name.ShouldBe("COUNT");
+			items[0].Parameters.Count.ShouldBe(1);
+			items[0].Parameters[0].ShouldBe("EXPR");
+			items[0].CurrentParameterIndex.ShouldBe(0);
+			items[0].ReturnedDatatype.ShouldBe(null);
 		}
 
 		[Test(Description = @"")]

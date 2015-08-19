@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
@@ -45,6 +47,18 @@ namespace SqlPad
 		{
 			item.Template = null;
 			tabControl.Items.Remove(item);
+		}
+
+		public static bool IsInViewport(this FrameworkElement container, FrameworkElement element)
+		{
+			if (!element.IsVisible)
+			{
+				return false;
+			}
+
+			var bounds = element.TransformToAncestor(container).TransformBounds(new Rect(0, 0, element.ActualWidth, element.ActualHeight));
+			var rect = new Rect(0, 0, container.ActualWidth, container.ActualHeight);
+			return rect.Contains(bounds.TopLeft) || rect.Contains(bounds.BottomRight);
 		}
 
 		public static void CancelOnEscape(this CancellationTokenSource cancellationTokenSource, Key key)
@@ -97,16 +111,28 @@ namespace SqlPad
 			else
 			{
 				var text = textBlock.Text;
+				var inlines = textBlock.Inlines;
 				if (regexPattern.Length == 0)
 				{
-					textBlock.Inlines.Clear();
-					textBlock.Inlines.Add(text);
+					if (inlines.Count == 1 && String.Equals((inlines.FirstInline as Run)?.Text, text))
+					{
+						return;
+					}
+
+					inlines.Clear();
+					inlines.Add(text);
 					return;
 				}
 
 				var regex = new Regex(regexPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 				var substrings = regex.Split(text);
-				textBlock.Inlines.Clear();
+				var index = 0;
+				if (substrings.Length == inlines.Count && inlines.All(i => (i as Run)?.Text.Length == substrings[index++].Length))
+				{
+					return;
+				}
+
+				inlines.Clear();
 				var contentPresenter = (ContentPresenter)textBlock.TemplatedParent;
 
 				foreach (var item in substrings)
@@ -114,12 +140,12 @@ namespace SqlPad
 					if (regex.Match(item).Success)
 					{
 						var run = new Run(item) { Background = Brushes.Yellow };
-						textBlock.Inlines.Add(run);
+						inlines.Add(run);
 						contentPresenter.Tag = DataGridHelper.TagHighlight;
 					}
 					else
 					{
-						textBlock.Inlines.Add(item);
+						inlines.Add(item);
 						contentPresenter.Tag = null;
 					}
 				}

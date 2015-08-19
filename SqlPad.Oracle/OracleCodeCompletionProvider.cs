@@ -49,21 +49,47 @@ namespace SqlPad.Oracle
 				{
 					var metadata = fo.ProgramMetadata;
 					var returnParameter = metadata.ReturnParameter;
+					var parameters = metadata.Parameters
+						.Where(p => p.Direction != ParameterDirection.ReturnValue && p.DataLevel == 0)
+						.Select(BuildParameterLabel)
+						.ToArray();
+
 					return
 						new FunctionOverloadDescription
 						{
 							Name = metadata.Identifier.FullyQualifiedIdentifier,
-							Parameters = metadata.Parameters
-								.Where(p => p.Direction != ParameterDirection.ReturnValue && p.DataLevel == 0)
-								.Select(p => $"{p.Name.ToSimpleIdentifier()}{(String.IsNullOrEmpty(p.FullDataTypeName) ? null : $": {p.FullDataTypeName}")}")
-								.ToArray(),
+							Parameters = parameters,
 							CurrentParameterIndex = fo.CurrentParameterIndex,
-							ReturnedDatatype = returnParameter?.FullDataTypeName,
-							IsParameterMetadataAvailable = !String.IsNullOrEmpty(metadata.Identifier.Owner) || metadata.Type == ProgramType.StatementFunction
+							ReturnedDatatype = returnParameter?.FullDataTypeName
 						};
 				});
 			
 			return functionOverloads.ToArray();
+		}
+
+		private static string BuildParameterLabel(OracleProgramParameterMetadata parameterMetadata)
+		{
+			string parameterName;
+			string dataType;
+			if (String.IsNullOrEmpty(parameterMetadata.Name))
+			{
+				parameterName = parameterMetadata.FullDataTypeName;
+				dataType = null;
+			}
+			else
+			{
+				parameterName = parameterMetadata.Name.ToSimpleIdentifier();
+				dataType = parameterMetadata.FullDataTypeName;
+			}
+
+			var isPartialMetadata = String.IsNullOrEmpty(parameterMetadata.FullDataTypeName) || dataType == null;
+			var parameterLabel = $"{parameterName}{(isPartialMetadata ? null : ": ")}{dataType}";
+			if (parameterMetadata.IsOptional)
+			{
+				parameterLabel = $"[{parameterLabel}]";
+			}
+
+			return parameterLabel;
 		}
 
 		private ICollection<OracleReferenceContainer> GetReferenceContainers(OracleReferenceContainer mainContainer, OracleQueryBlock currentQueryBlock)
@@ -114,7 +140,7 @@ namespace SqlPad.Oracle
 
 				if (lookupNode != null)
 				{
-					var parameterReference = programReferenceBase.ParameterReferences.FirstOrDefault(f => lookupNode.HasAncestor(f.ParameterNode));
+					var parameterReference = programReferenceBase.ParameterReferences.FirstOrDefault(f => lookupNode.HasAncestor(f.ParameterNode, true));
 					currentParameterIndex = parameterReference.ParameterNode == null
 						? programReferenceBase.ParameterReferences.Count
 						: programReferenceBase.ParameterReferences.ToList().IndexOf(parameterReference);
@@ -157,7 +183,7 @@ namespace SqlPad.Oracle
 		private static bool IsMetadataMatched(OracleProgramMetadata metadata, OracleProgramReference programReference, int currentParameterIndex)
 		{
 			var isParameterlessCompatible = currentParameterIndex == 0 && metadata.NamedParameters.Count == 0;
-			if (!isParameterlessCompatible && metadata.Parameters.Count > 0 && currentParameterIndex >= metadata.NamedParameters.Count)
+			if (!isParameterlessCompatible && metadata.Parameters.Count > 0 && metadata.Parameters[0].Direction == ParameterDirection.ReturnValue && currentParameterIndex >= metadata.NamedParameters.Count)
 			{
 				return false;
 			}

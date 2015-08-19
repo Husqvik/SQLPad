@@ -14,7 +14,6 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Threading;
 using Microsoft.Win32;
 using SqlPad.DataExport;
 using SqlPad.FindReplace;
@@ -99,6 +98,7 @@ namespace SqlPad
 		private readonly StatementExecutionResult _executionResult;
 
 		private bool _isSelectingCells;
+		private bool _searchedTextHighlightUsed;
 
 		public TabItem TabItem { get; }
 
@@ -306,7 +306,8 @@ namespace SqlPad
 		private void ResultGridMouseDoubleClickHandler(object sender, MouseButtonEventArgs e)
 		{
 			var senderDataGrid = (DataGrid)sender;
-			var originalDataGrid = ((Visual)e.OriginalSource).FindParentVisual<DataGrid>();
+			var visual = e.OriginalSource as Visual;
+			var originalDataGrid = visual?.FindParentVisual<DataGrid>();
 			if (Equals(originalDataGrid, senderDataGrid))
 			{
 				DataGridHelper.ShowLargeValueEditor(senderDataGrid);
@@ -334,6 +335,11 @@ namespace SqlPad
 
 		private async void ResultGridScrollChangedHandler(object sender, ScrollChangedEventArgs e)
 		{
+			if (_searchedTextHighlightUsed)
+			{
+				HighlightSearchedText();
+			}
+
 			if (e.VerticalOffset + e.ViewportHeight != e.ExtentHeight)
 			{
 				return;
@@ -477,10 +483,15 @@ namespace SqlPad
 
 		private void SearchTextChangedHandler(object sender, TextChangedEventArgs e)
 		{
-			var searchedWords = TextSearchHelper.GetSearchedWords(SearchPhraseTextBox.Text);
+			HighlightSearchedText();
+		}
 
-			const int batchSize = 20;
-			var rowsToHighlight = new List<DataGridRow>(batchSize);
+		private void HighlightSearchedText()
+		{
+			var searchedWords = TextSearchHelper.GetSearchedWords(SearchPhraseTextBox.Text);
+			_searchedTextHighlightUsed |= searchedWords.Length > 0;
+			var regexPattern = TextSearchHelper.GetRegexPattern(searchedWords);
+
 			foreach (var row in ResultGrid.GetDataGridRows())
 			{
 				if (row == null)
@@ -488,26 +499,12 @@ namespace SqlPad
 					break;
 				}
 
-				rowsToHighlight.Add(row);
-
-				if (rowsToHighlight.Count == batchSize)
+				if (!ResultGrid.IsInViewport(row))
 				{
-					Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action<List<DataGridRow>>(l => HighlightBatch(l, searchedWords)), rowsToHighlight);
-					rowsToHighlight = new List<DataGridRow>(20);
+					continue;
 				}
-			}
 
-			if (rowsToHighlight.Count > 0)
-			{
-				Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action<List<DataGridRow>>(l => HighlightBatch(l, searchedWords)), rowsToHighlight);
-			}
-		}
-
-		private static void HighlightBatch(IEnumerable<DependencyObject> dependencyObjects, string[] searchedWords)
-		{
-			foreach (var dependencyObject in dependencyObjects)
-			{
-				dependencyObject.HighlightTextItems(TextSearchHelper.GetRegexPattern(searchedWords));
+				row.HighlightTextItems(regexPattern);
 			}
 		}
 
@@ -521,17 +518,6 @@ namespace SqlPad
 		{
 			SearchPanel.Visibility = Visibility.Visible;
 			SearchPhraseTextBox.Focus();
-		}
-
-		private void ResultGridLoadingRowHandler(object sender, DataGridRowEventArgs e)
-		{
-			if (!SearchPanel.IsVisible)
-			{
-				return;
-			}
-
-			var searchedWords = TextSearchHelper.GetSearchedWords(SearchPhraseTextBox.Text);
-			Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => e.Row.HighlightTextItems(TextSearchHelper.GetRegexPattern(searchedWords))));
 		}
 	}
 }

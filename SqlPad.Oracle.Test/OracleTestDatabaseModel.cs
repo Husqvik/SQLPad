@@ -462,15 +462,18 @@ namespace SqlPad.Oracle.Test
 			var allFunctionMetadata = AllObjectsInternal.OfType<IFunctionCollection>().SelectMany(c => c.Functions).ToList();
 
 			var countFunctionAggregateMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(null, null, "COUNT"), false, true, false, false, false, false, 1, 1, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
+			countFunctionAggregateMetadata.AddParameter(new OracleProgramParameterMetadata(null, 1, 1, 0, ParameterDirection.Input, "EXPR", OracleObjectIdentifier.Empty, false));
 			allFunctionMetadata.Add(countFunctionAggregateMetadata);
 
 			var countFunctionAnalyticMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(null, null, "COUNT"), true, false, false, false, false, false, 1, 1, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
+			countFunctionAnalyticMetadata.AddParameter(new OracleProgramParameterMetadata(null, 1, 1, 0, ParameterDirection.Input, "EXPR", OracleObjectIdentifier.Empty, false));
 			allFunctionMetadata.Add(countFunctionAnalyticMetadata);
 
 			var maxFunctionAnalyticMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(null, null, "MAX"), true, false, false, false, false, false, 1, 1, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
 			allFunctionMetadata.Add(maxFunctionAnalyticMetadata);
 
 			var maxFunctionAggregateMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(null, null, "MAX"), false, true, false, false, false, false, 1, 1, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
+			maxFunctionAggregateMetadata.AddParameter(new OracleProgramParameterMetadata(null, 1, 1, 0, ParameterDirection.Input, "EXPR", OracleObjectIdentifier.Empty, false));
 			allFunctionMetadata.Add(maxFunctionAggregateMetadata);
 
 			var lastValueFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(null, null, "LAST_VALUE"), true, false, false, false, false, false, 1, 1, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);

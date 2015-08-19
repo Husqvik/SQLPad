@@ -606,7 +606,7 @@ SELECT * FROM CTE";
 			functionOverloadList.ViewOverloads.Items[0].ShouldBeTypeOf(typeof(TextBlock));
 
 			var itemText = GetTextFromTextBlock((TextBlock)functionOverloadList.ViewOverloads.Items[0]);
-			itemText.ShouldBe("SYS.ODCIARGDESCLIST(array of SYS.ODCIARGDESC) RETURN: SYS.ODCIARGDESCLIST");
+			itemText.ShouldBe("SYS.ODCIARGDESCLIST([array of SYS.ODCIARGDESC]) RETURN: SYS.ODCIARGDESCLIST");
 		}
 
 		[Test(Description = @""), STAThread]
@@ -621,7 +621,7 @@ SELECT * FROM CTE";
 			functionOverloadList.ViewOverloads.Items[0].ShouldBeTypeOf(typeof(TextBlock));
 
 			var itemText = GetTextFromTextBlock((TextBlock)functionOverloadList.ViewOverloads.Items[0]);
-			itemText.ShouldBe("SYS.ODCIRAWLIST(array of RAW) RETURN: SYS.ODCIRAWLIST");
+			itemText.ShouldBe("SYS.ODCIRAWLIST([array of RAW]) RETURN: SYS.ODCIRAWLIST");
 		}
 
 		[Test(Description = @""), STAThread]
@@ -636,7 +636,7 @@ SELECT * FROM CTE";
 			functionOverloadList.ViewOverloads.Items[0].ShouldBeTypeOf(typeof(TextBlock));
 
 			var itemText = GetTextFromTextBlock((TextBlock)functionOverloadList.ViewOverloads.Items[0]);
-			itemText.ShouldBe("SYS.DBMS_XPLAN.DISPLAY_CURSOR(SQL_ID: VARCHAR2, CURSOR_CHILD_NUMBER: NUMBER, FORMAT: VARCHAR2) RETURN: SYS.DBMS_XPLAN_TYPE_TABLE");
+			itemText.ShouldBe("SYS.DBMS_XPLAN.DISPLAY_CURSOR([SQL_ID: VARCHAR2], [CURSOR_CHILD_NUMBER: NUMBER], [FORMAT: VARCHAR2]) RETURN: SYS.DBMS_XPLAN_TYPE_TABLE");
 		}
 
 		[Test(Description = @""), STAThread]

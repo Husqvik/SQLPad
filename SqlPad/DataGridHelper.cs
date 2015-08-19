@@ -137,6 +137,11 @@ namespace SqlPad
 
 		public static IEnumerable<DataGridRow> GetDataGridRows(this DataGrid dataGrid)
 		{
+			if (dataGrid.ItemsSource == null)
+			{
+				yield break;
+			}
+
 			foreach (var item in dataGrid.ItemsSource)
 			{
 				yield return (DataGridRow)dataGrid.ItemContainerGenerator.ContainerFromItem(item);
