@@ -122,6 +122,7 @@
 		<DataGrid x:Name="ResultGrid" Style="{StaticResource ResultSetDataGrid}"
 		          ItemsSource="{Binding ResultRowItems, IsAsync=True}"
 		          MaxColumnWidth="{Binding ElementName=ResultGrid, Path=ActualWidth}"
+				  LoadingRow="ResultGridLoadingRowHandler"
 		          BeginningEdit="ResultGridBeginningEditCancelTextInputHandler"
 		          SelectedCellsChanged="ResultGridSelectedCellsChangedHandler"
 		          ScrollViewer.ScrollChanged="ResultGridScrollChangedHandler"

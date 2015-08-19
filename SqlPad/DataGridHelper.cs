@@ -11,8 +11,9 @@ using System.Windows.Media;
 
 namespace SqlPad
 {
-	internal class DataGridHelper
+	internal static class DataGridHelper
 	{
+		public static readonly Object TagHighlight = new Object();
 		public static readonly Thickness DefaultTextBlockMargin = new Thickness(2, 0, 2, 0);
 
 		public static void InitializeDataGridColumns(DataGrid dataGrid, IEnumerable<ColumnHeader> columnHeaders, IStatementValidator statementValidator, IConnectionAdapter connectionAdapter)
@@ -53,15 +54,21 @@ namespace SqlPad
 			return columnTemplate;
 		}
 
-		public static bool CanBeRecycled(UIElement uiElement)
+		public static bool CanBeRecycled(UIElement row)
 		{
-			var row = (DataGridRow)uiElement;
-			var cellPresenter = row.FindChildVisual<DataGridCellsPresenter>();
+			var typedRow = (DataGridRow)row;
+			var cellPresenter = typedRow.FindChildVisual<DataGridCellsPresenter>();
 			var columnCount = cellPresenter.ItemContainerGenerator.Items.Count;
 			for (var index = 0; index < columnCount; index++)
 			{
 				var cell = (DataGridCell)cellPresenter.ItemContainerGenerator.ContainerFromIndex(index);
-				if (!(cell?.Content is ContentPresenter))
+				if (cell == null)
+				{
+					return false;
+				}
+
+				var contentPresenter = cell.Content as ContentPresenter;
+				if (contentPresenter == null || contentPresenter.Tag != TagHighlight)
 				{
 					return true;
 				}
@@ -125,6 +132,14 @@ namespace SqlPad
 				}
 
 				cell.Content = ConfigureAndWrapUsingScrollViewerIfNeeded(cell, originalContent, element);
+			}
+		}
+
+		public static IEnumerable<DataGridRow> GetDataGridRows(this DataGrid dataGrid)
+		{
+			foreach (var item in dataGrid.ItemsSource)
+			{
+				yield return (DataGridRow)dataGrid.ItemContainerGenerator.ContainerFromItem(item);
 			}
 		}
 

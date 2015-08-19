@@ -107,6 +107,7 @@ namespace SqlPad
 				var regex = new Regex(regexPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 				var substrings = regex.Split(text);
 				textBlock.Inlines.Clear();
+				var contentPresenter = (ContentPresenter)textBlock.TemplatedParent;
 
 				foreach (var item in substrings)
 				{
@@ -114,10 +115,12 @@ namespace SqlPad
 					{
 						var run = new Run(item) { Background = Brushes.Yellow };
 						textBlock.Inlines.Add(run);
+						contentPresenter.Tag = DataGridHelper.TagHighlight;
 					}
 					else
 					{
 						textBlock.Inlines.Add(item);
+						contentPresenter.Tag = null;
 					}
 				}
 			}

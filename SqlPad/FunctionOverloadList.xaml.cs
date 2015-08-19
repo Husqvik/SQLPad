@@ -26,7 +26,7 @@ namespace SqlPad
 
 					if (!overloadDescription.IsParameterMetadataAvailable)
 					{
-						textBlock.Inlines.Add("Parameter metadata is not availale. ");
+						textBlock.Inlines.Add("Parameter metadata is not available. ");
 						ViewOverloads.Items.Add(textBlock);
 						continue;
 					}

@@ -478,18 +478,60 @@ namespace SqlPad
 		private void SearchTextChangedHandler(object sender, TextChangedEventArgs e)
 		{
 			var searchedWords = TextSearchHelper.GetSearchedWords(SearchPhraseTextBox.Text);
-			Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => ResultGrid.HighlightTextItems(TextSearchHelper.GetRegexPattern(searchedWords))));
+
+			const int batchSize = 20;
+			var rowsToHighlight = new List<DataGridRow>(batchSize);
+			foreach (var row in ResultGrid.GetDataGridRows())
+			{
+				if (row == null)
+				{
+					break;
+				}
+
+				rowsToHighlight.Add(row);
+
+				if (rowsToHighlight.Count == batchSize)
+				{
+					Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action<List<DataGridRow>>(l => HighlightBatch(l, searchedWords)), rowsToHighlight);
+					rowsToHighlight = new List<DataGridRow>(20);
+				}
+			}
+
+			if (rowsToHighlight.Count > 0)
+			{
+				Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action<List<DataGridRow>>(l => HighlightBatch(l, searchedWords)), rowsToHighlight);
+			}
+		}
+
+		private static void HighlightBatch(IEnumerable<DependencyObject> dependencyObjects, string[] searchedWords)
+		{
+			foreach (var dependencyObject in dependencyObjects)
+			{
+				dependencyObject.HighlightTextItems(TextSearchHelper.GetRegexPattern(searchedWords));
+			}
 		}
 
 		private void SearchPanelCloseClickHandler(object sender, ExecutedRoutedEventArgs e)
 		{
 			SearchPanel.Visibility = Visibility.Collapsed;
+			SearchPhraseTextBox.Text = String.Empty;
 		}
 
 		private void SearchPanelOpenClickHandler(object sender, ExecutedRoutedEventArgs e)
 		{
 			SearchPanel.Visibility = Visibility.Visible;
 			SearchPhraseTextBox.Focus();
+		}
+
+		private void ResultGridLoadingRowHandler(object sender, DataGridRowEventArgs e)
+		{
+			if (!SearchPanel.IsVisible)
+			{
+				return;
+			}
+
+			var searchedWords = TextSearchHelper.GetSearchedWords(SearchPhraseTextBox.Text);
+			Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => e.Row.HighlightTextItems(TextSearchHelper.GetRegexPattern(searchedWords))));
 		}
 	}
 }
