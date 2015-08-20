@@ -4975,6 +4975,10 @@
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
+          <NonTerminal Id="TrimFunction" />
+          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
           <Terminal Id="Identifier" />
           <Terminal Id="LeftBracket" />
           <NonTerminal Id="ConditionOrExpressionList" />
@@ -4986,6 +4990,50 @@
           <NonTerminal Id="PrefixedColumnReference" />
           <NonTerminal Id="MultisetOperatorClauseOrTimestampAtTimeZone" IsOptional="true" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="TrimFunction">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Trim" />
+          <NonTerminal Id="TrimParameterClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="TrimParameterClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="TrimOption" IsOptional="true" />
+          <NonTerminal Id="Expression" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="TrimOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Leading" />
+          <NonTerminal Id="Expression" IsOptional="true" />
+          <Terminal Id="From" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Trailing" />
+          <NonTerminal Id="Expression" IsOptional="true" />
+          <Terminal Id="From" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Both" />
+          <NonTerminal Id="Expression" IsOptional="true" />
+          <Terminal Id="From" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="Expression" />
+          <Terminal Id="From" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -17784,6 +17832,12 @@
     
     <!-- COLLECT function -->
     <Terminal Id="Collect" Value="COLLECT" />
+    
+    <!-- TRIM function -->
+    <Terminal Id="Trim" Value="TRIM" />
+    <Terminal Id="Leading" Value="LEADING" />
+    <Terminal Id="Trailing" Value="TRAILING" />
+    <Terminal Id="Both" Value="BOTH" />
 
     <!-- EXTRACT function -->
     <Terminal Id="Extract" Value="EXTRACT" />
