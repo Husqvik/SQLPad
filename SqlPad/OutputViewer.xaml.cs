@@ -261,6 +261,7 @@ namespace SqlPad
 				if (executionException != null)
 				{
 					UpdateExecutionLog(executionException.BatchResult.StatementResults);
+					WriteDatabaseOutput(executionException.BatchResult.DatabaseOutput);
 
 					/*if (caretOffset == DocumentPage.Editor.CaretOffset && String.Equals(text, DocumentPage.Editor.Text))
 					{
