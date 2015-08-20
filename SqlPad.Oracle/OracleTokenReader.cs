@@ -56,6 +56,7 @@ namespace SqlPad.Oracle
 			var sqlPlusTerminatorCandidate = false;
 			var candidateCharacterCode = EmptyCharacterCode;
 			char? quotingInitializer = null;
+			var quotingInitializerIndex = 0;
 
 			var specialMode = new SpecialMode();
 			var flags = new RecognizedFlags();
@@ -101,6 +102,7 @@ namespace SqlPad.Oracle
 				if (inQuotedString && quotingInitializer == null)
 				{
 					quotingInitializer = character;
+					quotingInitializerIndex = index;
 				}
 
 				if (previousFlags.OptionalParameterCandidate)
@@ -128,7 +130,7 @@ namespace SqlPad.Oracle
 				if ((specialMode.Flags & SpecialModeFlags.InString) != 0)
 				{
 					var isSimpleStringTerminator = !inQuotedString && previousFlags.StringEndCandidate && character != SingleQuoteCharacter;
-					var isQuotedStringTerminator = inQuotedString && character == SingleQuoteCharacter && IsQuotedStringClosingCharacter(quotingInitializer.Value, previousFlags.Character);
+					var isQuotedStringTerminator = inQuotedString && character == SingleQuoteCharacter && index > quotingInitializerIndex + 1 && IsQuotedStringClosingCharacter(quotingInitializer.Value, previousFlags.Character);
 
 					if (isSimpleStringTerminator || isQuotedStringTerminator)
 					{

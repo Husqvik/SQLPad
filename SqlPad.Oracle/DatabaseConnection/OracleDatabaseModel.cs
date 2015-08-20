@@ -266,7 +266,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			lock (ActiveDataModelRefresh)
 			{
-				if (ActiveDataModelRefresh.Contains(_connectionStringName))
+				if (!ActiveDataModelRefresh.Add(_connectionStringName))
 				{
 					var taskCompletionSource = new TaskCompletionSource<OracleDataDictionary>();
 					WaitingDataModelRefresh[_connectionStringName].Add(new RefreshModel { DatabaseModel = this, TaskCompletionSource = taskCompletionSource });
@@ -276,8 +276,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 					RaiseEvent(RefreshStarted);
 					return taskCompletionSource.Task;
 				}
-
-				ActiveDataModelRefresh.Add(_connectionStringName);
 			}
 
 			ExecuteActionAsync(() => LoadSchemaObjectMetadata(force));

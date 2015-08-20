@@ -28,8 +28,8 @@ namespace SqlPad.Oracle.Test
 		[Test(Description = "Tests quoted string (q'?<string>?' where ? is character used for marking start and end of the string) literal. ")]
 		public void TestQuotedStringWithMissingEndMarker()
 		{
-			var tokens = GetTokenValuesFromOracleSql("SELECT Q'|'FROM DUAL");
-			tokens.ShouldBe(new[] { "SELECT", "Q'|'", "FROM", "DUAL" });
+			var tokens = GetTokenValuesFromOracleSql("SELECT Q'|'FROM");
+			tokens.ShouldBe(new[] { "SELECT", "Q'|'FROM" });
 		}
 
 		[Test(Description = "Tests numeric literal and quoted identifiers for column name and table name. ")]
@@ -588,6 +588,17 @@ namespace SqlPad.Oracle.Test
 
 			var tokenIndexes = GetTokenIndexesFromOracleSql(testQuery);
 			tokenIndexes.ShouldBe(new[] { 0, 1 });
+		}
+
+		[Test(Description = "Tests quoted string with apostrophe as first character. ")]
+		public void TestQuotedStringWithApostropheAsFirstCharacter()
+		{
+			const string testQuery = "Q'|'Test|'";
+			var tokens = GetTokenValuesFromOracleSql(testQuery);
+			tokens.ShouldBe(new[] { "Q'|'Test|'" });
+
+			var tokenIndexes = GetTokenIndexesFromOracleSql(testQuery);
+			tokenIndexes.ShouldBe(new[] { 0 });
 		}
 
 		private string[] GetTokenValuesFromOracleSql(string sqlText, bool includeCommentBlocks = false)
