@@ -61,6 +61,7 @@ namespace SqlPad.Oracle
 					case Terminals.FirstValue:
 					case Terminals.Count:
 					case Terminals.Trim:
+					case Terminals.CharacterCode:
 					case Terminals.Variance:
 					case Terminals.StandardDeviation:
 					case Terminals.LastValue:

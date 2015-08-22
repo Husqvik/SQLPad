@@ -520,6 +520,8 @@ namespace SqlPad.Oracle
 			public const string ChainedCondition = "ChainedCondition";
 			public const string ChainedModifyColumnPropertiesOrModifyVirtualColumnPropertiesOrModifyColumnVisibility = "ChainedModifyColumnPropertiesOrModifyVirtualColumnPropertiesOrModifyColumnVisibility";
 			public const string ChainedVirtualColumnDefinitionOrColumnDefinition = "ChainedVirtualColumnDefinitionOrColumnDefinition";
+			public const string CharacterCodeFunction = "CharacterCodeFunction";
+			public const string CharacterCodeParameterClause = "CharacterCodeParameterClause";
 			public const string CharacterOrChar = "CharacterOrChar";
 			public const string CheckOrNoCheck = "CheckOrNoCheck";
 			public const string CheckpointNumber = "CheckpointNumber";

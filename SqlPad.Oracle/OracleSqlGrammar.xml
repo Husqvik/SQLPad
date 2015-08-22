@@ -4951,11 +4951,7 @@
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
-          <Terminal Id="CharacterCode" />
-          <Terminal Id="LeftParenthesis" />
-          <Terminal Id="IntegerLiteral" />
-          <NonTerminal Id="UsingNationalCharacterSet" IsOptional="true" />
-          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="CharacterCodeFunction" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -4990,6 +4986,26 @@
           <NonTerminal Id="PrefixedColumnReference" />
           <NonTerminal Id="MultisetOperatorClauseOrTimestampAtTimeZone" IsOptional="true" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="CharacterCodeFunction">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="CharacterCode" />
+          <NonTerminal Id="CharacterCodeParameterClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CharacterCodeParameterClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="Expression" />
+          <NonTerminal Id="UsingNationalCharacterSet" IsOptional="true" />
+          <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
     </Rule>
