@@ -880,8 +880,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 						{
 							if (reader.Read())
 							{
-								_userCommandSqlId = (string)reader["SQL_ID"];
-								_userCommandChildNumber = Convert.ToInt32(reader["SQL_CHILD_NUMBER"]);
+								_userCommandSqlId = OracleReaderValueConvert.ToString(reader["SQL_ID"]);
+								_userCommandChildNumber = OracleReaderValueConvert.ToInt32(reader["SQL_CHILD_NUMBER"]) ?? 0;
 								_userTransactionId = OracleReaderValueConvert.ToString(reader["TRANSACTION_ID"]);
 								_userTransactionIsolationLevel = (IsolationLevel)Convert.ToInt32(reader["TRANSACTION_ISOLATION_LEVEL"]);
 							}

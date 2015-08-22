@@ -1403,14 +1403,16 @@ namespace SqlPad
 				};
 
 			var listItems = completionWindow.CompletionList.CompletionData;
-
-			listItems.AddRange(items);
+			foreach (var item in items)
+			{
+				item.InitializeContent();
+				listItems.Add(item);
+			}
 			
 			_completionWindow = completionWindow;
 			_completionWindow.Closed += CompletionWindowClosedHadler;
 			_completionWindow.SizeChanged += CompletionWindowSizeChangedHandler;
-
-			UpdateCompletionItemHighlight();
+			_completionWindow.CompletionList.ListBox.AddHandler(ScrollViewer.ScrollChangedEvent, (RoutedEventHandler)CompletionListScrollChanged);
 
 			if (listItems.Count == 1)
 			{
@@ -1422,9 +1424,15 @@ namespace SqlPad
 			_completionWindow.Show();
 		}
 
+		private void CompletionListScrollChanged(object sender, RoutedEventArgs e)
+		{
+			UpdateCompletionItemHighlight();
+		}
+
 		private void CompletionWindowClosedHadler(object sender, EventArgs e)
 		{
 			_completionWindow.SizeChanged -= CompletionWindowSizeChangedHandler;
+			_completionWindow.CompletionList.ListBox.RemoveHandler(ScrollViewer.ScrollChangedEvent, (RoutedEventHandler)CompletionListScrollChanged);
 			_completionWindow = null;
 		}
 
@@ -1479,7 +1487,16 @@ namespace SqlPad
 
 			foreach (CompletionData item in _completionWindow.CompletionList.CompletionData)
 			{
-				item.Highlight(textToHighlight);
+				var listBoxItem = (FrameworkElement)_completionWindow.CompletionList.ListBox.ItemContainerGenerator.ContainerFromItem(item);
+				if (listBoxItem == null)
+				{
+					continue;
+				}
+
+				if (_completionWindow.CompletionList.ListBox.IsInViewport(listBoxItem))
+				{
+					item.Highlight(textToHighlight);
+				}
 			}
 		}
 

@@ -49,15 +49,18 @@ namespace SqlPad
 			Description = description;
 		}
 
+		public void InitializeContent()
+		{
+			if (Content == null)
+			{
+				Content = new TextBlock();
+			}
+		}
+
 		public void Highlight(string text)
 		{
 			var startIndex = 0;
 			var textBlock = (TextBlock)Content;
-			if (textBlock == null)
-			{
-				Content = textBlock = new TextBlock();
-			}
-
 			var inlineCount = _inlines.Count;
 			var inlineIndex = 0;
 			if (String.IsNullOrEmpty(text))
@@ -143,7 +146,7 @@ namespace SqlPad
 
 		public ImageSource Image => null;
 
-	    public string Text { get; }
+		public string Text { get; }
 
 		public object Content { get; private set; }
 
