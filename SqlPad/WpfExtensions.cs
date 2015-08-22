@@ -110,11 +110,19 @@ namespace SqlPad
 			}
 			else
 			{
-				var text = textBlock.Text;
 				var inlines = textBlock.Inlines;
+				var inlineCount = inlines.Count;
+				var firstRun = inlines.FirstInline as Run;
+				if (firstRun == null)
+				{
+					return;
+				}
+
+				var text = textBlock.Text;
+
 				if (regexPattern.Length == 0)
 				{
-					if (inlines.Count == 1 && String.Equals((inlines.FirstInline as Run)?.Text, text))
+					if (inlineCount == 1 && String.Equals(firstRun.Text, text))
 					{
 						return;
 					}
@@ -127,7 +135,7 @@ namespace SqlPad
 				var regex = new Regex(regexPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 				var substrings = regex.Split(text);
 				var index = 0;
-				if (substrings.Length == inlines.Count && inlines.All(i => (i as Run)?.Text.Length == substrings[index++].Length))
+				if (substrings.Length == inlineCount && inlines.All(i => (i as Run)?.Text.Length == substrings[index++].Length))
 				{
 					return;
 				}
