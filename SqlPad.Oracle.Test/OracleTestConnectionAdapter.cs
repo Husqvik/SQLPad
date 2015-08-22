@@ -40,6 +40,8 @@ namespace SqlPad.Oracle.Test
 
 		public override IDatabaseModel DatabaseModel { get; } = OracleTestDatabaseModel.Instance;
 
+		public override IDebuggerSession DebuggerSession { get; } = null;
+
 		public override string TraceFileName { get; } = "OracleTestTraceFile.trc";
 
 		public override int? SessionId { get; } = 1;

@@ -255,6 +255,12 @@ namespace SqlPad
 
 			HasActiveTransaction = ConnectionAdapter.HasActiveTransaction;
 
+			IsDebuggerControlVisible = ConnectionAdapter.DebuggerSession != null;
+			if (IsDebuggerControlVisible)
+			{
+				return;
+			}
+
 			if (!actionResult.IsSuccessful)
 			{
 				var executionException = actionResult.Exception as StatementExecutionException;
@@ -590,20 +596,41 @@ namespace SqlPad
 			ExecutionLog = String.Empty;
 		}
 
-		private void ButtonDebuggerContinueClickHandler(object sender, RoutedEventArgs e)
+		private async Task ExecuteDebuggerAction(Task debuggerAction)
 		{
+			IsDebuggerControlEnabled = false;
+			var exception = await App.SafeActionAsync(() => debuggerAction);
+			IsDebuggerControlEnabled = true;
+
+			if (ConnectionAdapter.DebuggerSession == null)
+			{
+				IsDebuggerControlVisible = false;
+			}
+
+			if (exception != null)
+			{
+				Messages.ShowError(exception.Message);
+			}
 		}
 
-		private void ButtonDebuggerStepIntoClickHandler(object sender, RoutedEventArgs e)
+		private async void ButtonDebuggerContinueClickHandler(object sender, RoutedEventArgs e)
 		{
+			await ExecuteDebuggerAction(ConnectionAdapter.DebuggerSession.Continue(CancellationToken.None));
 		}
 
-		private void ButtonDebuggerStepOverClickHandler(object sender, RoutedEventArgs e)
+		private async void ButtonDebuggerStepIntoClickHandler(object sender, RoutedEventArgs e)
 		{
+			await ExecuteDebuggerAction(ConnectionAdapter.DebuggerSession.StepInto(CancellationToken.None));
 		}
 
-		private void ButtonDebuggerAbortClickHandler(object sender, RoutedEventArgs e)
+		private async void ButtonDebuggerStepOverClickHandler(object sender, RoutedEventArgs e)
 		{
+			await ExecuteDebuggerAction(ConnectionAdapter.DebuggerSession.StepNextLine(CancellationToken.None));
+		}
+
+		private async void ButtonDebuggerAbortClickHandler(object sender, RoutedEventArgs e)
+		{
+			await ExecuteDebuggerAction(ConnectionAdapter.DebuggerSession.Detach(CancellationToken.None));
 		}
 	}
 }

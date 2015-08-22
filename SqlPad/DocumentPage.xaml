@@ -93,7 +93,7 @@
 				<RowDefinition Height="Auto" />
 			</Grid.RowDefinitions>
 
-			<CheckBox Content="Debug mode" VerticalAlignment="Center" IsChecked="{Binding EnableDebugMode}" Visibility="Collapsed" />
+			<CheckBox Content="_Debug mode" VerticalAlignment="Center" IsChecked="{Binding EnableDebug}" Visibility="Collapsed" />
 
 			<StackPanel Grid.Row="0" HorizontalAlignment="Right" Orientation="Horizontal" Grid.Column="2">
 				<Grid Margin="0,1,8,3">

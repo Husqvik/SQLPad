@@ -10,7 +10,7 @@ namespace SqlPad
 	{
 		#region dependency properties registration
 		public static readonly DependencyProperty ConnectionStatusProperty = DependencyProperty.Register(nameof(ConnectionStatus), typeof(ConnectionStatus), typeof(DocumentPage), new FrameworkPropertyMetadata(ConnectionStatus.Connecting));
-		public static readonly DependencyProperty EnableDebugModeProperty = DependencyProperty.Register(nameof(EnableDebugMode), typeof(bool), typeof(DocumentPage), new FrameworkPropertyMetadata(true));
+		public static readonly DependencyProperty EnableDebugProperty = DependencyProperty.Register(nameof(EnableDebug), typeof(bool), typeof(DocumentPage), new FrameworkPropertyMetadata(false));
 		public static readonly DependencyProperty IsProductionConnectionProperty = DependencyProperty.Register(nameof(IsProductionConnection), typeof(bool), typeof(DocumentPage), new FrameworkPropertyMetadata(false));
 		public static readonly DependencyProperty IsModifiedProperty = DependencyProperty.Register(nameof(IsModified), typeof(bool), typeof(DocumentPage), new FrameworkPropertyMetadata(false));
 		public static readonly DependencyProperty IsRunningProperty = DependencyProperty.Register(nameof(IsRunning), typeof(bool), typeof(DocumentPage), new FrameworkPropertyMetadata(false));
@@ -34,10 +34,10 @@ namespace SqlPad
 		}
 
 		[Bindable(true)]
-		public bool EnableDebugMode
+		public bool EnableDebug
 		{
-			get { return (bool)GetValue(EnableDebugModeProperty); }
-			set { SetValue(EnableDebugModeProperty, value); }
+			get { return (bool)GetValue(EnableDebugProperty); }
+			set { SetValue(EnableDebugProperty, value); }
 		}
 
 		[Bindable(true)]

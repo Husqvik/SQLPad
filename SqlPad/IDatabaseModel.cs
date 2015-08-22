@@ -42,6 +42,8 @@ namespace SqlPad
 	{
 		IDatabaseModel DatabaseModel { get; }
 
+		IDebuggerSession DebuggerSession { get; }
+
 		bool CanFetch(ResultInfo resultInfo);
 
 		bool IsExecuting { get; }

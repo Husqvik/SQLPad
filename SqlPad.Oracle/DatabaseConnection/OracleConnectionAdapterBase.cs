@@ -9,6 +9,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 	{
 		public abstract IDatabaseModel DatabaseModel { get; }
 
+		public abstract IDebuggerSession DebuggerSession { get; }
+
 		public virtual void Dispose() { }
 
 		public abstract bool CanFetch(ResultInfo resultInfo);

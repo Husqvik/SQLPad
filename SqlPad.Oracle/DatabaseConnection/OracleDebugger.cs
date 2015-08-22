@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System;
 using System.Data;
+using SqlPad.Oracle.DataDictionary;
 #if ORACLE_MANAGED_DATA_ACCESS_CLIENT
 using Oracle.ManagedDataAccess.Client;
 using Oracle.ManagedDataAccess.Types;
@@ -25,9 +26,13 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private OracleRuntimeInfo _runtimeInfo;
 		private string _debuggerSessionId;
 		
-		internal OracleRuntimeInfo RuntimeInfo => _runtimeInfo;
+		public event EventHandler Detached;
 
-	    public OracleDebuggerSession(OracleConnection debuggedSession, Task debuggedAction)
+		public OracleObjectIdentifier ActiveObject => OracleObjectIdentifier.Create(_runtimeInfo.SourceLocation.Owner, _runtimeInfo.SourceLocation.Name);
+
+		public int? ActiveLine => _runtimeInfo.SourceLocation.LineNumber;
+
+		public OracleDebuggerSession(OracleConnection debuggedSession, Task debuggedAction)
 		{
 			_debuggedSessionCommand = debuggedSession.CreateCommand();
 			_debuggedSessionCommand.BindByName = true;
@@ -113,7 +118,17 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return GetValueFromOracleString(_debuggerSessionCommand.Parameters["VALUE"]);
 		}
 
-		private async Task<OracleRuntimeInfo> ContinueDebugger(OracleDebugBreakFlags breakFlags, CancellationToken cancellationToken)
+		private async Task ContinueAndDetachIfTerminated(OracleDebugBreakFlags breakFlags, CancellationToken cancellationToken)
+		{
+			await Continue(breakFlags, cancellationToken);
+
+			if (_runtimeInfo.IsTerminated == true)
+			{
+				await Detach(cancellationToken);
+			}
+		}
+
+		private async Task Continue(OracleDebugBreakFlags breakFlags, CancellationToken cancellationToken)
 		{
 			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.ContinueDebugger;
 			_debuggerSessionCommand.Parameters.Clear();
@@ -122,7 +137,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			_debuggerSession.ActionName = "Continue";
 			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
-			return GetRuntimeInfo(_debuggerSessionCommand);
+			_runtimeInfo = GetRuntimeInfo(_debuggerSessionCommand);
 		}
 
 		private async Task Attach(CancellationToken cancellationToken)
@@ -203,22 +218,27 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return value.IsNull ? (int?)null : Convert.ToInt32(value.Value);
 		}
 
+		//public Task SetBreakPoint()
+		//{
+			
+		//}
+
 		public Task Continue(CancellationToken cancellationToken)
 		{
 			_debuggerSession.ActionName = "Continue";
-			return ContinueDebugger(OracleDebugBreakFlags.Exception, cancellationToken);
+			return ContinueAndDetachIfTerminated(OracleDebugBreakFlags.Exception, cancellationToken);
 		}
 
 		public Task StepNextLine(CancellationToken cancellationToken)
 		{
 			_debuggerSession.ActionName = "Step next line";
-			return ContinueDebugger(OracleDebugBreakFlags.NextLine, cancellationToken);
+			return ContinueAndDetachIfTerminated(OracleDebugBreakFlags.NextLine, cancellationToken);
 		}
 
 		public async Task StepInto(CancellationToken cancellationToken)
 		{
 			_debuggerSession.ActionName = "Step into";
-			_runtimeInfo = await ContinueDebugger(OracleDebugBreakFlags.AnyCall, cancellationToken);
+			await ContinueAndDetachIfTerminated(OracleDebugBreakFlags.AnyCall, cancellationToken);
 			_runtimeInfo.Trace();
 
 			// remove
@@ -234,7 +254,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		public Task StepOut(CancellationToken cancellationToken)
 		{
 			_debuggerSession.ActionName = "Step out";
-			return ContinueDebugger(OracleDebugBreakFlags.AnyReturn, cancellationToken);
+			return ContinueAndDetachIfTerminated(OracleDebugBreakFlags.AnyReturn, cancellationToken);
 		}
 
 		private void TerminateTargetSessionDebugMode()
@@ -251,16 +271,18 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var taskDebugOff = _debuggedAction.ContinueWith(t => TerminateTargetSessionDebugMode(), cancellationToken);
 
 			await Synchronize(cancellationToken);
-			await ContinueDebugger(OracleDebugBreakFlags.None, cancellationToken);
+			await Continue(OracleDebugBreakFlags.None, cancellationToken);
 
 			taskDebugOff.Wait(cancellationToken);
 
 			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.DetachDebugger;
 			_debuggerSessionCommand.Parameters.Clear();
 			_debuggerSession.ActionName = "Detach";
-			_debuggerSessionCommand.ExecuteNonQuery();
+			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
 
 			Trace.WriteLine("Debugger detached from target session. ");
+
+			Detached?.Invoke(this, EventArgs.Empty);
 		}
 
 		public void Dispose()

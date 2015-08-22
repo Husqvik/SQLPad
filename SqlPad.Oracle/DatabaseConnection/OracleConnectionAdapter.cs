@@ -27,6 +27,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private static int _counter;
 
 		private readonly ConnectionStringSettings _connectionString;
+		private readonly OracleDatabaseModel _databaseModel;
 		private readonly List<OracleTraceEvent> _activeTraceEvents = new List<OracleTraceEvent>();
 		private readonly Dictionary<ResultInfo, OracleDataReader> _dataReaders = new Dictionary<ResultInfo, OracleDataReader>();
 		private readonly Dictionary<ResultInfo, IReadOnlyList<ColumnHeader>> _resultInfoColumnHeaders = new Dictionary<ResultInfo, IReadOnlyList<ColumnHeader>>();
@@ -46,7 +47,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private IsolationLevel _userTransactionIsolationLevel;
 		private bool _userCommandHasCompilationErrors;
 		private SessionExecutionStatisticsDataProvider _executionStatisticsDataProvider;
-		private readonly OracleDatabaseModel _databaseModel;
+		private OracleDebuggerSession _debuggerSession;
 
 		public override string Identifier
 		{
@@ -55,6 +56,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 		}
 
 		public override IDatabaseModel DatabaseModel => _databaseModel;
+
+		public override IDebuggerSession DebuggerSession => _debuggerSession;
 
 		public override string TraceFileName => _userTraceFileName;
 
@@ -209,11 +212,19 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			DisposeUserTransaction();
 
+			DisposeDebuggerSession();
+
 			DisposeDataReaders();
 
 			DisposeUserConnection();
 
 			_databaseModel.RemoveConnectionAdapter(this);
+		}
+
+		private void DisposeDebuggerSession()
+		{
+			_debuggerSession?.Dispose();
+			_debuggerSession = null;
 		}
 
 		public override bool CanFetch(ResultInfo resultInfo)
@@ -284,6 +295,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				throw new InvalidOperationException("Another statement is executing right now. ");
 			}
 
+			DisposeDebuggerSession();
 			DisposeDataReaders();
 		}
 
@@ -628,10 +640,18 @@ namespace SqlPad.Oracle.DatabaseConnection
 						if (!statement.IsPartialStatement && isPlSql)
 						{
 							currentStatementResult.ExecutedAt = DateTime.Now;
-							//Task.Factory.StartNew(() => TestDebug(userCommand, cancellationToken), cancellationToken).Wait(cancellationToken);
-							currentStatementResult.AffectedRowCount = await userCommand.ExecuteNonQueryAsynchronous(cancellationToken);
-							currentStatementResult.Duration = DateTime.Now - currentStatementResult.ExecutedAt;
-							resultInfoColumnHeaders.AddRange(AcquireImplicitRefCursors(userCommand));
+
+							if (executionModel.EnableDebug)
+							{
+								// TODO: Add COMPILE DEBUG
+								await Task.Factory.StartNew(c => StartDebuggerSession((OracleCommand)c, cancellationToken), userCommand, cancellationToken);
+							}
+							else
+							{
+								currentStatementResult.AffectedRowCount = await userCommand.ExecuteNonQueryAsynchronous(cancellationToken);
+								currentStatementResult.Duration = DateTime.Now - currentStatementResult.ExecutedAt;
+								resultInfoColumnHeaders.AddRange(AcquireImplicitRefCursors(userCommand));
+							}
 						}
 						else
 						{
@@ -725,28 +745,24 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return batchResult;
 		}
 
-		private void TestDebug(OracleCommand userCommand, CancellationToken cancellationToken)
+		private async Task StartDebuggerSession(OracleCommand command, CancellationToken cancellationToken)
 		{
-			var debuggedAction = new Task(async () =>
-			{
-				var dataReader = await userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
-			});
-
-			using (var debuggerSession = new OracleDebuggerSession(_userConnection, debuggedAction))
-			{
-				debuggerSession.Start(cancellationToken).Wait(cancellationToken);
-
-				do
+			var debuggedAction =
+				new Task(async () =>
 				{
-					debuggerSession.StepInto(cancellationToken).Wait(cancellationToken);
-				} while (debuggerSession.RuntimeInfo.IsTerminated != true);
+					await command.ExecuteNonQueryAsynchronous(cancellationToken);
+				});
 
-				/*var isRunning = debuggerSession.IsRunning(cancellationToken);
-				isRunning.Wait(cancellationToken);
-				Trace.WriteLine("Is running:" + isRunning.Result);*/
+			_debuggerSession = new OracleDebuggerSession(_userConnection, debuggedAction);
+			_debuggerSession.Detached += DebuggerSessionDetachedHandler;
+			await _debuggerSession.Start(cancellationToken);
+		}
 
-				debuggerSession.Detach(cancellationToken).Wait(cancellationToken);
-			}
+		private void DebuggerSessionDetachedHandler(object sender, EventArgs args)
+		{
+			_debuggerSession.Detached -= DebuggerSessionDetachedHandler;
+			_debuggerSession.Dispose();
+			_debuggerSession = null;
 		}
 
 		private IEnumerable<KeyValuePair<ResultInfo, IReadOnlyList<ColumnHeader>>> UpdateBindVariables(StatementExecutionModel executionModel, OracleCommand userCommand)

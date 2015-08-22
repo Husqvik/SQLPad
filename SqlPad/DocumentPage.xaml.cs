@@ -770,7 +770,8 @@ namespace SqlPad
 				new StatementBatchExecutionModel
 				{
 					Statements = executionModels,
-					GatherExecutionStatistics = gatherExecutionStatistics
+					GatherExecutionStatistics = gatherExecutionStatistics,
+					EnableDebug = EnableDebug
 				};
 
 			await ActiveOutputViewer.ExecuteDatabaseCommandAsync(executionModel);
@@ -1438,7 +1439,10 @@ namespace SqlPad
 
 		private void CompletionWindowSizeChangedHandler(object sender, SizeChangedEventArgs e)
 		{
-			if (_completionWindow.MinWidth < _completionWindow.Width) _completionWindow.MinWidth = _completionWindow.Width;
+			if (_completionWindow.MinWidth < _completionWindow.Width)
+			{
+				_completionWindow.MinWidth = _completionWindow.Width;
+			}
 		}
 
 		public void ReParse()

@@ -34,11 +34,11 @@
 			<Button Content="_Rollback" Padding="6,1,6,1" Margin="0,2,0,2" Click="ButtonRollbackTransactionClickHandler" />
 		</StackPanel>
 
-		<StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
+		<StackPanel IsEnabled="{Binding IsDebuggerControlEnabled}" Orientation="Horizontal" DockPanel.Dock="Top">
 			<StackPanel.Style>
 				<Style>
 					<Style.Triggers>
-						<DataTrigger Binding="{Binding IsDebuggerControlEnabled}" Value="False">
+						<DataTrigger Binding="{Binding IsDebuggerControlVisible}" Value="False">
 							<Setter Property="StackPanel.Visibility" Value="Collapsed" />
 						</DataTrigger>
 					</Style.Triggers>

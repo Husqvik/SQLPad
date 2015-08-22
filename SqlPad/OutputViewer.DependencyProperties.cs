@@ -17,7 +17,8 @@ namespace SqlPad
 		public static readonly DependencyProperty ExecutionLogProperty = DependencyProperty.Register(nameof(ExecutionLog), typeof(string), typeof(OutputViewer), new FrameworkPropertyMetadata(String.Empty));
 		public static readonly DependencyProperty ActiveResultViewerProperty = DependencyProperty.Register(nameof(ActiveResultViewer), typeof(ResultViewer), typeof(OutputViewer), new FrameworkPropertyMetadata());
 
-		public static readonly DependencyProperty IsDebuggerControlEnabledProperty = DependencyProperty.Register(nameof(IsDebuggerControlEnabled), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
+		public static readonly DependencyProperty IsDebuggerControlVisibleProperty = DependencyProperty.Register(nameof(IsDebuggerControlVisible), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
+		public static readonly DependencyProperty IsDebuggerControlEnabledProperty = DependencyProperty.Register(nameof(IsDebuggerControlEnabled), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(true));
 		public static readonly DependencyProperty IsTransactionControlEnabledProperty = DependencyProperty.Register(nameof(IsTransactionControlEnabled), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(true));
 		public static readonly DependencyProperty HasActiveTransactionProperty = DependencyProperty.Register(nameof(HasActiveTransaction), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
 		#endregion
@@ -56,6 +57,13 @@ namespace SqlPad
 		{
 			get { return (bool)GetValue(IsTransactionControlEnabledProperty); }
 			private set { SetValue(IsTransactionControlEnabledProperty, value); }
+		}
+
+		[Bindable(true)]
+		public bool IsDebuggerControlVisible
+		{
+			get { return (bool)GetValue(IsDebuggerControlVisibleProperty); }
+			private set { SetValue(IsDebuggerControlVisibleProperty, value); }
 		}
 
 		[Bindable(true)]

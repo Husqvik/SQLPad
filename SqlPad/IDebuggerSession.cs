@@ -5,6 +5,8 @@ namespace SqlPad
 {
 	public interface IDebuggerSession
 	{
+		int? ActiveLine { get; }
+
 		Task Start(CancellationToken cancellationToken);
 
 		Task Continue(CancellationToken cancellationToken);
