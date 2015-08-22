@@ -13,6 +13,8 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public abstract IReadOnlyList<OracleColumn> Columns { get; }
 
+		public abstract IReadOnlyList<OracleColumn> PseudoColumns { get; }
+
 		public virtual ICollection<OracleQueryBlock> QueryBlocks => _queryBlocks;
 
 		public abstract ReferenceType Type { get; }
@@ -55,7 +57,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public virtual IEnumerable<OracleDataObjectReference> IncludeInnerReferences => Enumerable.Repeat(this, 1);
 
-		public IReadOnlyList<OracleColumn> PseudoColumns
+		public override IReadOnlyList<OracleColumn> PseudoColumns
 		{
 			get
 			{

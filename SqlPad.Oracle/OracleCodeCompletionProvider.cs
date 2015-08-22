@@ -392,7 +392,7 @@ namespace SqlPad.Oracle
 			var safeTokenValueQuotedIdentifier = node == null ? null : MakeSaveQuotedIdentifier(node.Token.Value);
 
 			var dataTypeSource = databaseModel.AllObjects.Values
-				.Where(o => (o is OracleTypeBase || o.GetTargetSchemaObject() is OracleTypeBase) &&
+				.Where(o => o.GetTargetSchemaObject() is OracleTypeBase &&
 				            !String.Equals(dateTypePart, o.Name) &&
 				            FilterSchema(o, currentSchema, owner))
 				.Select(o => new { o.Owner, o.Name });
@@ -685,7 +685,6 @@ namespace SqlPad.Oracle
 			suggestedItems = suggestedItems.Concat(rowSourceColumnItems);
 
 			var flashbackColumns = tableReferenceSource
-				.OfType<OracleDataObjectReference>()
 				.SelectMany(r => r.PseudoColumns.Select(c => new { r.FullyQualifiedObjectName, PseudoColumn = c }))
 				.Where(c => CodeCompletionSearchHelper.IsMatch(c.PseudoColumn.Name, partialName))
 				.Select(c =>
