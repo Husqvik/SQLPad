@@ -23,7 +23,8 @@ namespace SqlPad.Oracle
 					{ TerminalValues.Number, typeof (string) },
 					{ TerminalValues.NVarchar2, typeof (string) },
 					{ TerminalValues.Varchar2, typeof (string) },
-					{ DataTypeRefCursor, typeof (string) }
+					{ DataTypeRefCursor, typeof (string) },
+					{ TerminalValues.Raw, typeof (string) }
 				});
 	}
 }

@@ -18,6 +18,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 {
 	public class OracleDebuggerSession : IDebuggerSession, IDisposable
 	{
+		private const string ParameterDebugActionStatus = "DEBUG_ACTION_STATUS";
+
 		private readonly OracleCommand _debuggedSessionCommand;
 		private readonly OracleConnection _debuggerSession;
 		private readonly OracleCommand _debuggerSessionCommand;
@@ -89,7 +91,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private static void AddDebugParameters(OracleCommand command)
 		{
-			command.AddSimpleParameter("DEBUG_ACTION_STATUS", null, TerminalValues.Number);
+			command.AddSimpleParameter(ParameterDebugActionStatus, null, TerminalValues.Number);
 			command.AddSimpleParameter("BREAKPOINT", null, TerminalValues.Number);
 			command.AddSimpleParameter("INTERPRETERDEPTH", null, TerminalValues.Number);
 			command.AddSimpleParameter("LINE", null, TerminalValues.Number);
@@ -122,6 +124,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			await Continue(breakFlags, cancellationToken);
 
+			_runtimeInfo.Trace();
+
 			if (_runtimeInfo.IsTerminated == true)
 			{
 				await Detach(cancellationToken);
@@ -137,7 +141,35 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			_debuggerSession.ActionName = "Continue";
 			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
+
+			var status = (OracleDebugActionResult)GetValueFromOracleDecimal(_debuggerSessionCommand.Parameters[ParameterDebugActionStatus]);
+
 			_runtimeInfo = GetRuntimeInfo(_debuggerSessionCommand);
+		}
+
+		public async Task GetLineMap(OracleObjectIdentifier objectIdentifier, CancellationToken cancellationToken)
+		{
+			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.GetDebuggerLineMap;
+			_debuggerSessionCommand.Parameters.Clear();
+			_debuggerSessionCommand.AddSimpleParameter("OWNER", objectIdentifier.HasOwner ? objectIdentifier.NormalizedOwner.Trim('"') : null);
+			_debuggerSessionCommand.AddSimpleParameter("NAME", String.IsNullOrEmpty(objectIdentifier.Name) ? null : objectIdentifier.NormalizedName.Trim('"'));
+			var maxLineParameter = _debuggerSessionCommand.AddSimpleParameter("MAXLINE", null, TerminalValues.Number);
+			var numberOfEntryPointsParameter = _debuggerSessionCommand.AddSimpleParameter("NUMBER_OF_ENTRY_POINTS", null, TerminalValues.Number);
+			var lineMapParameter = _debuggerSessionCommand.AddSimpleParameter("LINEMAP", null, TerminalValues.Raw, 32767);
+			var resultParameter = _debuggerSessionCommand.AddSimpleParameter("RESULT", null, TerminalValues.Number);
+
+			_debuggerSession.ActionName = "Get line map";
+			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
+
+			var result = GetValueFromOracleDecimal(resultParameter);
+			if (result != 0)
+			{
+				return;
+			}
+
+			var maxLine = GetValueFromOracleDecimal(maxLineParameter);
+			var numberOfEntryPoints = GetValueFromOracleDecimal(numberOfEntryPointsParameter);
+			var lineMap = ((OracleBinary)lineMapParameter.Value).Value;
 		}
 
 		private async Task Attach(CancellationToken cancellationToken)
@@ -218,8 +250,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return value.IsNull ? (int?)null : Convert.ToInt32(value.Value);
 		}
 
-		//await SetBreakpoint(OracleObjectIdentifier.Create("HUSQVIK", "TESTPROC"), 6, cancellationToken);
-
 		public async Task SetBreakpoint(OracleObjectIdentifier objectIdentifier, int line, CancellationToken cancellationToken)
 		{
 			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.SetDebuggerBreakpoint;
@@ -236,7 +266,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var result = (OracleBreakpointFunctionResult)GetValueFromOracleDecimal(resultParameter);
 			var breakpointIdentifier = GetNullableValueFromOracleDecimal(breakpointIdentifierParameter);
 
-			Trace.WriteLine($"Break point '{breakpointIdentifier}' set ({result}). ");
+			Trace.WriteLine($"Breakpoint '{breakpointIdentifier}' set ({result}). ");
 		}
 
 		public Task Continue(CancellationToken cancellationToken)
@@ -255,7 +285,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			_debuggerSession.ActionName = "Step into";
 			await ContinueAndDetachIfTerminated(OracleDebugBreakFlags.AnyCall, cancellationToken);
-			_runtimeInfo.Trace();
 
 			// remove
 			if (_runtimeInfo.IsTerminated != true)
@@ -437,7 +466,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 	public enum OracleDebugActionResult
 	{
 		Success = 0,
-
+		ErrorCommunication = 29,
+		ErrorTimeout = 31
 	}
 
 	public enum OracleBreakpointStatus

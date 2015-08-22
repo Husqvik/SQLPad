@@ -18,6 +18,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 {
 	public static class OracleDataAccessExtensions
 	{
+		private const int MaximumValueSize = 32767;
+		private const int MaximumCharacterValueSize = 2000;
 		private static readonly FieldInfo FieldReaderInternalTypes = typeof(OracleDataReader).GetField("m_oraType", BindingFlags.Instance | BindingFlags.NonPublic);
 
 		internal static OracleParameter AddSimpleParameter(this OracleCommand command, string parameterName, object value, string databaseType = null, int? size = null)
@@ -27,15 +29,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 			parameter.Direction = ParameterDirection.InputOutput;
 			parameter.Value = Equals(value, String.Empty) ? null : value;
 
-			if (size.HasValue)
-			{
-				parameter.Size = size.Value;
-			}
-
 			switch (databaseType)
 			{
 				case TerminalValues.Char:
 					parameter.OracleDbType = OracleDbType.Char;
+					parameter.Size = MaximumCharacterValueSize;
 					break;
 				case TerminalValues.Clob:
 					parameter.OracleDbType = OracleDbType.Clob;
@@ -51,24 +49,73 @@ namespace SqlPad.Oracle.DatabaseConnection
 					break;
 				case TerminalValues.NChar:
 					parameter.OracleDbType = OracleDbType.NChar;
+					parameter.Size = MaximumCharacterValueSize;
 					break;
 				case OracleBindVariable.DataTypeUnicodeClob:
 					parameter.OracleDbType = OracleDbType.NClob;
 					break;
 				case TerminalValues.NVarchar2:
 					parameter.OracleDbType = OracleDbType.NVarchar2;
+					parameter.Size = MaximumValueSize / 2;
 					break;
 				case TerminalValues.Varchar2:
 					parameter.OracleDbType = OracleDbType.Varchar2;
+					parameter.Size = MaximumValueSize;
 					break;
 				case OracleBindVariable.DataTypeRefCursor:
 					parameter.OracleDbType = OracleDbType.RefCursor;
 					break;
+				case TerminalValues.Raw:
+					var byteArray = HexStringToByteArray((string)value);
+					parameter.Value = byteArray;
+					parameter.OracleDbType = OracleDbType.Raw;
+					parameter.Size = MaximumValueSize;
+					break;
+			}
+
+			if (size.HasValue)
+			{
+				parameter.Size = size.Value;
 			}
 
 			command.Parameters.Add(parameter);
 
 			return parameter;
+		}
+
+		private static readonly ArgumentException InvalidHexFormatException = new ArgumentException("RAW value must be entered in hexadecimal format. ");
+
+		private static byte[] HexStringToByteArray(string hexString)
+		{
+			if (string.IsNullOrEmpty(hexString))
+			{
+				return null;
+			}
+
+			var hexStringLength = hexString.Length;
+			if (hexStringLength % 2 == 1)
+			{
+				throw InvalidHexFormatException;
+			}
+
+			hexString = hexString.ToUpperInvariant();
+			var byteArray = new byte[hexStringLength / 2];
+			for (var i = 0; i < hexStringLength; i += 2)
+			{
+				var firstCharacter = hexString[i];
+				var secondCharacter = hexString[i + 1];
+				if (firstCharacter > 'F' || secondCharacter > 'F' || firstCharacter < '0' || secondCharacter < '0' ||
+					(firstCharacter > '9' && firstCharacter < 'A') || (secondCharacter > '9' && secondCharacter < 'A'))
+				{
+					throw InvalidHexFormatException;
+				}
+
+				var byteValue = (firstCharacter > 0x40 ? firstCharacter - 0x37 : firstCharacter - 0x30) << 4;
+				byteValue += secondCharacter > 0x40 ? secondCharacter - 0x37 : secondCharacter - 0x30;
+				byteArray[i / 2] = Convert.ToByte(byteValue);
+			}
+
+			return byteArray;
 		}
 
 		public static int[] GetInternalDataTypes(this OracleDataReader reader)

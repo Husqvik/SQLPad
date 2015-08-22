@@ -8,8 +8,10 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using SqlPad.Oracle.DataDictionary;
 using SqlPad.Oracle.ExecutionPlan;
 using SqlPad.Oracle.ModelDataProviders;
+using ParameterDirection = System.Data.ParameterDirection;
 #if ORACLE_MANAGED_DATA_ACCESS_CLIENT
 using Oracle.ManagedDataAccess.Client;
 using Oracle.ManagedDataAccess.Types;
@@ -725,7 +727,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			{
 				try
 				{
-					if (_userConnection.State == ConnectionState.Open)
+					if (_userConnection.State == ConnectionState.Open && !executionModel.EnableDebug)
 					{
 						var exception = await ResolveExecutionPlanIdentifiersAndTransactionStatus(cancellationToken);
 						if (exception != null)
@@ -756,6 +758,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_debuggerSession = new OracleDebuggerSession(_userConnection, debuggedAction);
 			_debuggerSession.Detached += DebuggerSessionDetachedHandler;
 			await _debuggerSession.Start(cancellationToken);
+
+			//await _debuggerSession.SetBreakpoint(OracleObjectIdentifier.Create("HUSQVIK", "TESTPROC"), 6, cancellationToken);
+			//await _debuggerSession.GetLineMap(OracleObjectIdentifier.Create("HUSQVIK", "TESTPROC"), cancellationToken);
 		}
 
 		private void DebuggerSessionDetachedHandler(object sender, EventArgs args)
@@ -793,6 +798,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 				{
 					var oracleTimeStamp = (OracleTimeStamp)parameter.Value;
 					value = oracleTimeStamp.IsNull ? (DateTime?)null : oracleTimeStamp.Value;
+				}
+
+				if (parameter.Value is OracleBinary)
+				{
+					var oracleBinary = (OracleBinary)parameter.Value;
+					value = oracleBinary.IsNull ? null : oracleBinary.Value.ToHexString();
 				}
 
 				var clob = parameter.Value as OracleClob;
