@@ -16,6 +16,12 @@ namespace SqlPad
 			return elements.Any(e => e.Equals(o));
 		}
 
+		public static IEnumerable<TItem> Distinct<TItem, TValue>(this IEnumerable<TItem> source, Func<TItem, TValue> selector)
+		{
+			var uniqueFilter = new HashSet<TValue>();
+			return source.Where(i => uniqueFilter.Add(selector(i)));
+		}
+
 		public static IEnumerable<ICodeCompletionItem> OrderItems(this IEnumerable<ICodeCompletionItem> codeCompletionItems)
 		{
 			return codeCompletionItems.OrderBy(i => i.CategoryPriority).ThenBy(i => i.Priority).ThenBy(i => i.Name);

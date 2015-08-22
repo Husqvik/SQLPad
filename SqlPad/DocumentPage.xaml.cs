@@ -1198,8 +1198,7 @@ namespace SqlPad
 
 			_currentBindVariables.Clear();
 
-			var uniqueBindVariables = new HashSet<string>();
-			foreach (var bindVariable in statements.SelectMany(s => s.BindVariables.Where(v => uniqueBindVariables.Add(v.Name))))
+			foreach (var bindVariable in statements.SelectMany(s => s.BindVariables.Distinct(v => v.Name)))
 			{
 				_currentBindVariables.Add(bindVariable.Name, bindVariable);
 			}

@@ -527,6 +527,7 @@ namespace SqlPad.Oracle
 			var tableReferenceSource = (ICollection<OracleObjectWithColumnsReference>)referenceContainers
 				.SelectMany(c => c.ObjectReferences)
 				.Where(o => !completionType.InQueryBlockFromClause || completionType.CursorPosition > o.RootNode.SourcePosition.IndexEnd)
+				.Distinct(r => r.FullyQualifiedObjectName)
 				.ToArray();
 
 			var suggestedFunctions = Enumerable.Empty<ICodeCompletionItem>();
@@ -683,14 +684,14 @@ namespace SqlPad.Oracle
 			var rowSourceColumnItems = suggestedColumns.Select(t => CreateColumnCodeCompletionItem(t.Item1, objectIdentifierNode == null ? t.Item2.ToString() : null, nodeToReplace));
 			suggestedItems = suggestedItems.Concat(rowSourceColumnItems);
 
-			var flaskbackColumns = tableReferenceSource
+			var flashbackColumns = tableReferenceSource
 				.OfType<OracleDataObjectReference>()
 				.SelectMany(r => r.PseudoColumns.Select(c => new { r.FullyQualifiedObjectName, PseudoColumn = c }))
 				.Where(c => CodeCompletionSearchHelper.IsMatch(c.PseudoColumn.Name, partialName))
 				.Select(c =>
 					CreateColumnCodeCompletionItem(GetPrettyColumnName(c.PseudoColumn.Name), objectIdentifierNode == null ? c.FullyQualifiedObjectName.ToString() : null, nodeToReplace, OracleCodeCompletionCategory.PseudoColumn));
 
-			suggestedItems = suggestedItems.Concat(flaskbackColumns);
+			suggestedItems = suggestedItems.Concat(flashbackColumns);
 
 			if (partialName == null && currentNode.IsWithinSelectClause() && currentNode.GetParentExpression().GetParentExpression() == null)
 			{

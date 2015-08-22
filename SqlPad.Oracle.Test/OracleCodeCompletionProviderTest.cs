@@ -2105,6 +2105,20 @@ SELECT * FROM ALL";
 			items.Length.ShouldBeGreaterThan(0);
 		}
 
+		[Test(Description = @"")]
+		public void TestCorrelatedSubqueryColumnSuggestionWhenSameTableInBothSubqueries()
+		{
+			const string statement = @"SELECT * FROM SELECTION WHERE EXISTS (SELECT NULL FROM SELECTION WHERE SELECTION.)";
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 81).ToArray();
+			items.Length.ShouldBe(6);
+			items[0].Name.ShouldBe("NAME");
+			items[1].Name.ShouldBe("ORA_ROWSCN");
+			items[2].Name.ShouldBe("PROJECT_ID");
+			items[3].Name.ShouldBe("RESPONDENTBUCKET_ID");
+			items[4].Name.ShouldBe("ROWID");
+			items[5].Name.ShouldBe("SELECTION_ID");
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)
