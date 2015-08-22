@@ -20,7 +20,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 	{
 		private static readonly FieldInfo FieldReaderInternalTypes = typeof(OracleDataReader).GetField("m_oraType", BindingFlags.Instance | BindingFlags.NonPublic);
 
-		internal static OracleCommand AddSimpleParameter(this OracleCommand command, string parameterName, object value, string databaseType = null, int? size = null)
+		internal static OracleParameter AddSimpleParameter(this OracleCommand command, string parameterName, object value, string databaseType = null, int? size = null)
 		{
 			var parameter = command.CreateParameter();
 			parameter.ParameterName = parameterName;
@@ -68,7 +68,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			command.Parameters.Add(parameter);
 
-			return command;
+			return parameter;
 		}
 
 		public static int[] GetInternalDataTypes(this OracleDataReader reader)

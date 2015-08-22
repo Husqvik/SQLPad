@@ -1840,7 +1840,7 @@ FROM
 			_editor.Text = statementText;
 			_editor.CaretOffset = 20;
 
-			ExecuteConvertLiteralToBindVariableCommmand(0);
+			ExecuteConvertLiteralToBindVariableCommand(0);
 
 			const string expectedResult = @"SELECT 'VALUE', :BIND_VARIABLE FROM DUAL";
 
@@ -1854,7 +1854,7 @@ FROM
 			_editor.Text = statementText;
 			_editor.CaretOffset = 15;
 
-			ExecuteConvertLiteralToBindVariableCommmand(1);
+			ExecuteConvertLiteralToBindVariableCommand(1);
 
 			const string expectedResult = @"SELECT :BIND_VARIABLE, :BIND_VARIABLE, TIMESTAMP'2014-10-04', '2014-10-04' FROM DUAL";
 
@@ -1868,7 +1868,7 @@ FROM
 			_editor.Text = statementText;
 			_editor.CaretOffset = 10;
 
-			ExecuteConvertLiteralToBindVariableCommmand(0);
+			ExecuteConvertLiteralToBindVariableCommand(0);
 
 			const string expectedResult = @"SELECT :BIND_VARIABLE, 123 FROM DUAL";
 
@@ -1886,7 +1886,7 @@ FROM
 			_editor.Text = statementText;
 			_editor.CaretOffset = 18;
 
-			ExecuteConvertLiteralToBindVariableCommmand(0);
+			ExecuteConvertLiteralToBindVariableCommand(0);
 
 			const string expectedResult = @"SELECT :BIND_VARIABLE, TIMESTAMP'2014-11-24 14:14:14' FROM DUAL";
 
@@ -1897,7 +1897,7 @@ FROM
 			configuration.BindVariablesInternal["BIND_VARIABLE"].DataType.ShouldBe("TIMESTAMP");
 		}
 
-		private void ExecuteConvertLiteralToBindVariableCommmand(int actionIndex)
+		private void ExecuteConvertLiteralToBindVariableCommand(int actionIndex)
 		{
 			var actions = new OracleContextActionProvider()
 				.GetContextActions(TestFixture.DatabaseModel, _editor.Text, _editor.CaretOffset)

@@ -12577,7 +12577,7 @@
     <Rule StartingNonTerminal="PlSqlAssignmentStatement">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="AssignmentStatementTarget" />
+          <NonTerminal Id="BindVariableExpressionOrPlSqlTarget" />
           <Terminal Id="AssignmentOperator" />
           <NonTerminal Id="PlSqlExpression" />
           <Terminal Id="Semicolon" />

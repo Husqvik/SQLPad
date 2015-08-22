@@ -2975,6 +2975,16 @@ SELECT F1(VAL), F2(VAL + 1) FROM CTE";
 				var statement = statements.Single().Validate();
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
+
+			[Test(Description = @"")]
+			public void TestBindVariableAsAssignmentTarget()
+			{
+				const string statement1 =
+@"BEGIN :TARGET := NULL; END;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
 		}
 
 		public class IsRuleValid

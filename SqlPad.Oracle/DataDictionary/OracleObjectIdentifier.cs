@@ -26,10 +26,7 @@ namespace SqlPad.Oracle.DataDictionary
 			NormalizedName = name.ToQuotedIdentifier();
 		}
 
-		public bool HasOwner
-		{
-			get { return !String.IsNullOrEmpty(Owner); }
-		}
+		public bool HasOwner => !String.IsNullOrEmpty(Owner);
 
 		public static OracleObjectIdentifier Create(string owner, string name)
 		{
@@ -38,11 +35,9 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public static OracleObjectIdentifier Create(StatementGrammarNode ownerNode, StatementGrammarNode objectNode, StatementGrammarNode aliasNode)
 		{
-			var ownerName = ownerNode == null ? null : ownerNode.Token.Value;
+			var ownerName = ownerNode?.Token.Value;
 			var tableName = aliasNode == null
-				? objectNode == null
-					? null
-					: objectNode.Token.Value
+				? objectNode?.Token.Value
 				: aliasNode.Token.Value;
 
 			return Create(ownerName, tableName);
@@ -109,7 +104,7 @@ namespace SqlPad.Oracle.DataDictionary
 		{
 			unchecked
 			{
-				return ((NormalizedOwner != null ? NormalizedOwner.GetHashCode() : 0) * 397) ^ (NormalizedName != null ? NormalizedName.GetHashCode() : 0);
+				return ((NormalizedOwner?.GetHashCode() ?? 0) * 397) ^ (NormalizedName?.GetHashCode() ?? 0);
 			}
 		}
 

@@ -22,10 +22,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private readonly OracleConnection _debuggerSession;
 		private readonly OracleCommand _debuggerSessionCommand;
 		private readonly Task _debuggedAction;
-		
+
 		private OracleRuntimeInfo _runtimeInfo;
 		private string _debuggerSessionId;
-		
+
 		public event EventHandler Detached;
 
 		public OracleObjectIdentifier ActiveObject => OracleObjectIdentifier.Create(_runtimeInfo.SourceLocation.Owner, _runtimeInfo.SourceLocation.Name);
@@ -218,10 +218,26 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return value.IsNull ? (int?)null : Convert.ToInt32(value.Value);
 		}
 
-		//public Task SetBreakPoint()
-		//{
-			
-		//}
+		//await SetBreakpoint(OracleObjectIdentifier.Create("HUSQVIK", "TESTPROC"), 6, cancellationToken);
+
+		public async Task SetBreakpoint(OracleObjectIdentifier objectIdentifier, int line, CancellationToken cancellationToken)
+		{
+			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.SetDebuggerBreakpoint;
+			_debuggerSessionCommand.Parameters.Clear();
+			_debuggerSessionCommand.AddSimpleParameter("OWNER", objectIdentifier.HasOwner ? objectIdentifier.NormalizedOwner.Trim('"') : null);
+			_debuggerSessionCommand.AddSimpleParameter("NAME", String.IsNullOrEmpty(objectIdentifier.Name) ? null : objectIdentifier.NormalizedName.Trim('"'));
+			_debuggerSessionCommand.AddSimpleParameter("LINE", line);
+			var breakpointIdentifierParameter = _debuggerSessionCommand.AddSimpleParameter("BREAKPOINT_IDENTIFIER", null, TerminalValues.Number);
+			var resultParameter = _debuggerSessionCommand.AddSimpleParameter("RESULT", null, TerminalValues.Number);
+
+			_debuggerSession.ActionName = "Set breakpoint";
+			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
+
+			var result = (OracleBreakpointFunctionResult)GetValueFromOracleDecimal(resultParameter);
+			var breakpointIdentifier = GetNullableValueFromOracleDecimal(breakpointIdentifierParameter);
+
+			Trace.WriteLine($"Break point '{breakpointIdentifier}' set ({result}). ");
+		}
 
 		public Task Continue(CancellationToken cancellationToken)
 		{
@@ -262,7 +278,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_debuggedSessionCommand.CommandText = OracleDatabaseCommands.FinalizeDebuggee;
 			_debuggedSessionCommand.Parameters.Clear();
 			_debuggedSessionCommand.ExecuteNonQuery();
-			
+
 			Trace.WriteLine("Target session debug mode terminated. ");
 		}
 
@@ -290,7 +306,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_debuggedSessionCommand.Dispose();
 			_debuggerSessionCommand.Dispose();
 			_debuggerSession.Dispose();
-			
+
 			Trace.WriteLine("Debugger disposed. ");
 		}
 	}
@@ -299,17 +315,17 @@ namespace SqlPad.Oracle.DatabaseConnection
 	internal struct OracleRuntimeInfo
 	{
 		public int? OerException { get; set; }
-		
+
 		public int? BreakpointNumber { get; set; }
-		
+
 		public int? StackDepth { get; set; }
-		
+
 		public int? InterpreterDepth { get; set; }
 
 		public OracleDebugReason Reason { get; set; }
 
 		public OracleProgramInfo SourceLocation { get; set; }
-		
+
 		public bool? IsTerminated { get; set; }
 
 		public void Trace()
@@ -324,15 +340,15 @@ namespace SqlPad.Oracle.DatabaseConnection
 		public int? LineNumber { get; set; }
 
 		public string DatabaseLink { get; set; }
-		
+
 		public string EntryPointName { get; set; }
 
 		public string Owner { get; set; }
-		
+
 		public string Name { get; set; }
 
 		public OracleDebugProgramNamespace? Namespace { get; set; }
-		
+
 		public OracleLibraryUnitType? LibraryUnitType { get; set; }
 
 		public void Trace()
@@ -346,14 +362,14 @@ namespace SqlPad.Oracle.DatabaseConnection
 		None = 0,
 		InterpreterStarting = 2,
 		Breakpoint = 3,
-		
+
 		/// <summary>
 		/// procedure entered
 		/// </summary>
 		Enter = 6,
 		Return = 7,
 		Finish = 8,
-		
+
 		/// <summary>
 		/// reached a new line
 		/// </summary>
@@ -376,7 +392,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		/// instantiation block
 		/// </summary>
 		Instantiate = 20,
-		
+
 		/// <summary>
 		/// interpeter is abortings
 		/// </summary>
@@ -397,7 +413,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		/// watched value changed
 		/// </summary>
 		Watch = 14,
-		
+
 		/// <summary>
 		/// an RPC started
 		/// </summary>
@@ -469,5 +485,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 		PackageBody = 2,
 		Trigger = 3,
 		None = 255
+	}
+
+	public enum OracleBreakpointFunctionResult
+	{
+		Success = 0,
+		ErrorIllegalLine = 12,
+		ErrorBadHandle = 16 // can't set breakpoint there
 	}
 }

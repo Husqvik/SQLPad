@@ -459,6 +459,17 @@ BEGIN
 	END LOOP;
 END;";
 
+		public const string SetDebuggerBreakpoint =
+		@"DECLARE
+	program_info dbms_debug.program_info;
+BEGIN
+	program_info.namespace := dbms_debug.namespace_pkgspec_or_toplevel;
+	program_info.owner := :owner;
+	program_info.name := :name;
+	--program_info.dblink := null;
+	:result := dbms_debug.set_breakpoint(program => program_info, line# => :line, breakpoint# => :breakpoint_identifier, fuzzy => 1, iterations => 0);
+END;";
+
 		private static string ToInValueList(params string[] values)
 		{
 			return String.Join(", ", values.Select(t => $"'{t}'"));
