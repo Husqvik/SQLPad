@@ -177,6 +177,7 @@
     <Compile Include="SemanticModel\OracleQueryBlock.cs" />
     <Compile Include="SemanticModel\OracleReference.cs" />
     <Compile Include="SemanticModel\OracleReferenceContainer.cs" />
+    <Compile Include="SemanticModel\OracleReferenceDataSource.cs" />
     <Compile Include="SemanticModel\OracleSelectListColumn.cs" />
     <Compile Include="OracleSemanticErrorType.cs" />
     <Compile Include="OracleSnippetProvider.cs" />

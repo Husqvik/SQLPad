@@ -46,6 +46,7 @@ namespace SqlPad.Oracle.SemanticModel
 		private readonly Dictionary<StatementGrammarNode, OracleQueryBlock> _queryBlockNodes = new Dictionary<StatementGrammarNode, OracleQueryBlock>();
 		private readonly List<OracleInsertTarget> _insertTargets = new List<OracleInsertTarget>();
 		private readonly List<OracleLiteral> _literals = new List<OracleLiteral>();
+		private readonly Dictionary<StatementGrammarNode, NaturalJoinDescription> _naturalJoinTableReferenceNodes = new Dictionary<StatementGrammarNode, NaturalJoinDescription>();
 		private readonly HashSet<StatementGrammarNode> _redundantTerminals = new HashSet<StatementGrammarNode>();
 		private readonly List<RedundantTerminalGroup> _redundantTerminalGroups = new List<RedundantTerminalGroup>();
 		private readonly OracleDatabaseModelBase _databaseModel;
@@ -1658,6 +1659,8 @@ namespace SqlPad.Oracle.SemanticModel
 					}
 				}
 
+				ResolveNaturalJoinColumns(queryBlock);
+
 				ExposeAsteriskColumns(queryBlock);
 
 				ApplyExplicitCommonTableExpressionColumnNames(queryBlock);
@@ -1685,6 +1688,34 @@ namespace SqlPad.Oracle.SemanticModel
 				ResolveColumnObjectReferences(columnReferences, queryBlock.ObjectReferences, correlatedReferences);
 
 				ResolveDatabaseLinks(queryBlock);
+			}
+		}
+
+		private void ResolveNaturalJoinColumns(OracleQueryBlock queryBlock)
+		{
+			var objectReferences = queryBlock.ObjectReferences.ToDictionary(o => o.RootNode);
+
+			foreach (var kvp in _naturalJoinTableReferenceNodes)
+			{
+				var joinDescription = kvp.Value;
+				if (joinDescription.Columns != null)
+				{
+					continue;
+				}
+
+				var masterReference = objectReferences[joinDescription.MasterTableReferenceNode];
+				var childReference = objectReferences[kvp.Key];
+				var columnReferenceSource = masterReference.Columns;
+				var columnsToCompare = childReference.Columns;
+				if (childReference.Columns.Count > masterReference.Columns.Count)
+				{
+					columnReferenceSource = childReference.Columns;
+					columnsToCompare = masterReference.Columns;
+				}
+
+				var columns = columnReferenceSource.Select(c => c.Name).ToHashSet();
+				columns.IntersectWith(columnsToCompare.Select(c => c.Name));
+				joinDescription.Columns = columns;
 			}
 		}
 
@@ -1757,8 +1788,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private void ExposeAsteriskColumns(OracleQueryBlock queryBlock)
 		{
-			var queryBlockAsteriskColumns = _asteriskTableReferences.Where(kvp => kvp.Key.Owner == queryBlock).ToList();
-
+			var queryBlockAsteriskColumns = _asteriskTableReferences.Where(kvp => kvp.Key.Owner == queryBlock).ToArray();
 			foreach (var asteriskTableReference in queryBlockAsteriskColumns)
 			{
 				var asteriskColumn = asteriskTableReference.Key;
@@ -1774,7 +1804,9 @@ namespace SqlPad.Oracle.SemanticModel
 						case ReferenceType.SchemaObject:
 							var dataObject = objectReference.SchemaObject.GetTargetSchemaObject() as OracleDataObject;
 							if (dataObject == null)
+							{
 								continue;
+							}
 
 							goto case ReferenceType.PivotTable;
 
@@ -1785,11 +1817,12 @@ namespace SqlPad.Oracle.SemanticModel
 						case ReferenceType.PivotTable:
 							exposedColumns = objectReference.Columns
 								.Where(c => !c.Hidden)
-								.Select(c => new OracleSelectListColumn(this, asteriskColumn)
-								{
-									IsDirectReference = true,
-									ColumnDescription = c
-								});
+								.Select(c =>
+									new OracleSelectListColumn(this, asteriskColumn)
+									{
+										IsDirectReference = true,
+										ColumnDescription = c
+									});
 							break;
 						case ReferenceType.CommonTableExpression:
 						case ReferenceType.InlineView:
@@ -1806,9 +1839,17 @@ namespace SqlPad.Oracle.SemanticModel
 							throw new NotImplementedException($"Reference '{objectReference.Type}' is not implemented yet. ");
 					}
 
+					NaturalJoinDescription naturalJoinDescription;
+					_naturalJoinTableReferenceNodes.TryGetValue(objectReference.RootNode, out naturalJoinDescription);
+
 					var exposedColumnDictionary = new Dictionary<string, OracleColumnReference>();
 					foreach (var exposedColumn in exposedColumns)
 					{
+						if (naturalJoinDescription?.Columns.Contains(exposedColumn.NormalizedName) == true)
+						{
+							continue;
+						}
+
 						exposedColumn.Owner = queryBlock;
 
 						OracleColumnReference columnReference;
@@ -2045,7 +2086,7 @@ namespace SqlPad.Oracle.SemanticModel
 				if (columnReference.Placement == StatementPlacement.Join || columnReference.Placement == StatementPlacement.TableReference)
 				{
 					effectiveAccessibleRowSourceReferences = effectiveAccessibleRowSourceReferences
-								.Where(r => r.RootNode.SourcePosition.IndexEnd < columnReference.RootNode.SourcePosition.IndexStart);
+						.Where(r => r.RootNode.SourcePosition.IndexEnd < columnReference.RootNode.SourcePosition.IndexStart);
 
 					if (columnReference.Placement == StatementPlacement.Join)
 					{
@@ -2100,7 +2141,8 @@ namespace SqlPad.Oracle.SemanticModel
 				if (columnReference.ObjectNode != null &&
 				    (rowSourceReference.FullyQualifiedObjectName == columnReference.FullyQualifiedObjectName ||
 				     (columnReference.OwnerNode == null &&
-				      rowSourceReference.Type == ReferenceType.SchemaObject && String.Equals(rowSourceReference.FullyQualifiedObjectName.NormalizedName, columnReference.FullyQualifiedObjectName.NormalizedName))))
+				      rowSourceReference.Type == ReferenceType.SchemaObject &&
+				      String.Equals(rowSourceReference.FullyQualifiedObjectName.NormalizedName, columnReference.FullyQualifiedObjectName.NormalizedName))))
 				{
 					columnReference.ObjectNodeObjectReferences.Add(rowSourceReference);
 					columnReference.IsCorrelated = correlatedRowSources;
@@ -2114,6 +2156,14 @@ namespace SqlPad.Oracle.SemanticModel
 		{
 			if (!String.IsNullOrEmpty(columnReference.FullyQualifiedObjectName.NormalizedName) &&
 				columnReference.ObjectNodeObjectReferences.Count == 0)
+			{
+				return;
+			}
+
+			NaturalJoinDescription naturalJoinDescription;
+			if (rowSourceReference.RootNode != null &&
+				_naturalJoinTableReferenceNodes.TryGetValue(rowSourceReference.RootNode, out naturalJoinDescription) &&
+				naturalJoinDescription.Columns.Contains(columnReference.NormalizedName))
 			{
 				return;
 			}
@@ -2290,13 +2340,27 @@ namespace SqlPad.Oracle.SemanticModel
 				var joinClauses = fromClause.GetPathFilterDescendants(n => !String.Equals(n.Id, NonTerminals.NestedQuery) && !String.Equals(n.Id, NonTerminals.FromClause), NonTerminals.JoinClause);
 				foreach (var joinClause in joinClauses)
 				{
+					NaturalJoinDescription naturalJoinDescription = null;
 					var joinCondition = joinClause.GetPathFilterDescendants(n => !String.Equals(n.Id, NonTerminals.JoinClause), NonTerminals.JoinColumnsOrCondition).SingleOrDefault();
+					if (String.Equals(joinClause[NonTerminals.InnerJoinClause]?.FirstTerminalNode.Id, Terminals.Natural) ||
+					    String.Equals(joinCondition?.FirstTerminalNode.Id, Terminals.Using))
+					{
+						var tableReferenceNode = joinClause[0][NonTerminals.TableReference];
+						var masterTableReferenceNode = joinClause.ParentNode[NonTerminals.TableReference];
+						_naturalJoinTableReferenceNodes.Add(tableReferenceNode, naturalJoinDescription = new NaturalJoinDescription { MasterTableReferenceNode = masterTableReferenceNode });
+					}
+
 					if (joinCondition == null)
 					{
 						continue;
 					}
 
-					var identifiers = joinCondition.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBlock, Terminals.Identifier);
+					var identifiers = joinCondition.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBlock, Terminals.Identifier).ToArray();
+					if (naturalJoinDescription != null)
+					{
+						naturalJoinDescription.Columns = identifiers.Select(i => i.Token.Value.ToQuotedIdentifier()).ToHashSet();
+					}
+
 					ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(queryBlock, queryBlock, identifiers, StatementPlacement.Join, null);
 
 					var joinCondifitionClauseGrammarSpecificFunctions = GetGrammarSpecificFunctionNodes(joinCondition);
@@ -2360,11 +2424,15 @@ namespace SqlPad.Oracle.SemanticModel
 		private void ResolveOrderByReferences(OracleQueryBlock queryBlock)
 		{
 			if (queryBlock.PrecedingConcatenatedQueryBlock != null)
+			{
 				return;
+			}
 
 			queryBlock.OrderByClause = queryBlock.RootNode.ParentNode.GetPathFilterDescendants(n => n.Id != NonTerminals.QueryBlock, NonTerminals.OrderByClause).FirstOrDefault();
 			if (queryBlock.OrderByClause == null)
+			{
 				return;
+			}
 
 			var identifiers = queryBlock.OrderByClause.GetDescendantsWithinSameQueryBlock(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level);
 			ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(queryBlock, queryBlock, identifiers, StatementPlacement.OrderBy, null);
@@ -2930,6 +2998,12 @@ namespace SqlPad.Oracle.SemanticModel
 			public StatementGrammarNode CteNode;
 			public string CteAlias;
 		}
+
+		private class NaturalJoinDescription
+		{
+			public StatementGrammarNode MasterTableReferenceNode;
+			public HashSet<string> Columns;
+		}
 	}
 
 	public enum ReferenceType
@@ -2969,80 +3043,5 @@ namespace SqlPad.Oracle.SemanticModel
 		public OracleQueryBlock RowSource { get; set; }
 
 		public OracleDataObjectReference DataObjectReference => ObjectReferences.Count == 1 ? ObjectReferences.First() : null;
-	}
-
-	public class OracleReferenceDataSource : IReferenceDataSource
-	{
-		private readonly string _statementText;
-		private readonly IReadOnlyList<string> _keyDataTypes;
-
-		public IReadOnlyList<ColumnHeader> ColumnHeaders { get; }
-
-		public string ObjectName { get; }
-
-		public string ConstraintName { get; }
-
-		public StatementExecutionModel CreateExecutionModel(object[] keys)
-		{
-			if (keys == null)
-			{
-				throw new ArgumentNullException(nameof(keys));
-			}
-
-			if (keys.Length != _keyDataTypes.Count)
-			{
-				throw new ArgumentException($"Invalid number of values - expected: {_keyDataTypes.Count}; actual: {keys.Length}", nameof(keys));
-			}
-
-			return
-				new StatementExecutionModel
-				{
-					StatementText = _statementText,
-					BindVariables =
-						_keyDataTypes.Select(
-							(t, i) =>
-							{
-								var keyValue = keys[i];
-								var providerValue = keyValue as IValue;
-								return new BindVariableModel(
-									new BindVariableConfiguration
-									{
-										Name = $"KEY{i}",
-										DataType = t,
-										Value = providerValue == null ? keyValue : providerValue.RawValue
-									});
-							}
-							).ToArray()
-				};
-		}
-
-		internal OracleReferenceDataSource(string objectName, string constraintName, string statementText, IReadOnlyList<ColumnHeader> columnHeaders, IReadOnlyList<string> keyDataTypes)
-		{
-			if (columnHeaders == null)
-			{
-				throw new ArgumentNullException(nameof(columnHeaders));
-			}
-
-			if (keyDataTypes == null)
-			{
-				throw new ArgumentNullException(nameof(keyDataTypes));
-			}
-
-			if (keyDataTypes.Count == 0)
-			{
-				throw new ArgumentException("Reference data source requires at least on key. ", nameof(keyDataTypes));
-			}
-
-			if (columnHeaders.Count != keyDataTypes.Count)
-			{
-				throw new ArgumentException($"Number of column headers ({columnHeaders.Count}) does not match the number of key data types ({keyDataTypes.Count}). ", nameof(columnHeaders));
-			}
-
-			ObjectName = objectName;
-			ConstraintName = constraintName;
-			_statementText = statementText;
-			ColumnHeaders = columnHeaders;
-			_keyDataTypes = keyDataTypes;
-		}
 	}
 }

@@ -35,15 +35,16 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public OracleDataObjectReference SelfObjectReference => _selfObjectReference ?? BuildSelfObjectReference();
 
-	    public bool HasRemoteAsteriskReferences => _hasRemoteAsteriskReferences ?? (_hasRemoteAsteriskReferences = HasRemoteAsteriskReferencesInternal(this)).Value;
+		public bool HasRemoteAsteriskReferences => _hasRemoteAsteriskReferences ?? (_hasRemoteAsteriskReferences = HasRemoteAsteriskReferencesInternal(this)).Value;
 
-	    private OracleDataObjectReference BuildSelfObjectReference()
+		private OracleDataObjectReference BuildSelfObjectReference()
 		{
-			_selfObjectReference = new OracleDataObjectReference(ReferenceType.InlineView)
-			                       {
-									   AliasNode = AliasNode,
-									   Owner = this
-			                       };
+			_selfObjectReference =
+				new OracleDataObjectReference(ReferenceType.InlineView)
+				{
+					AliasNode = AliasNode,
+					Owner = this
+				};
 
 			_selfObjectReference.QueryBlocks.Add(this);
 
@@ -52,9 +53,9 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public string Alias => AliasNode?.Token.Value;
 
-	    public string NormalizedAlias => Alias.ToQuotedIdentifier();
+		public string NormalizedAlias => Alias.ToQuotedIdentifier();
 
-	    public StatementGrammarNode AliasNode { get; set; }
+		public StatementGrammarNode AliasNode { get; set; }
 
 		public QueryBlockType Type { get; set; }
 		
@@ -94,9 +95,9 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public IList<OracleProgramMetadata> AttachedFunctions => _attachedFunctions;
 
-	    public IEnumerable<OracleProgramMetadata> AccessibleAttachedFunctions => GetAccessibleAttachedFunctions(this);
+		public IEnumerable<OracleProgramMetadata> AccessibleAttachedFunctions => GetAccessibleAttachedFunctions(this);
 
-	    private static IEnumerable<OracleProgramMetadata> GetAccessibleAttachedFunctions(OracleQueryBlock queryBlock)
+		private static IEnumerable<OracleProgramMetadata> GetAccessibleAttachedFunctions(OracleQueryBlock queryBlock)
 		{
 			var attachedFunctions = (IEnumerable<OracleProgramMetadata>)queryBlock._attachedFunctions;
 			if (queryBlock.Parent != null)

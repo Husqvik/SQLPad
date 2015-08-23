@@ -454,8 +454,8 @@ namespace SqlPad.Oracle.ModelDataProviders
 				objectIdentifier = OracleObjectIdentifier.Create(currentSchema, objectIdentifier.Name);
 			}
 
-			_owner = objectIdentifier.Owner.Trim('"');
-			_objectName = objectIdentifier.Name.Trim('"');
+			_owner = objectIdentifier.NormalizedOwner.Trim('"');
+			_objectName = objectIdentifier.NormalizedName.Trim('"');
 		}
 
 		public override void InitializeCommand(OracleCommand command)

@@ -2985,6 +2985,18 @@ SELECT F1(VAL), F2(VAL + 1) FROM CTE";
 				var statement = Parser.Parse(statement1).Single().Validate();
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
+
+			[Test(Description = @"")]
+			public void TestDynamicTypesInRecordTypeDefinition()
+			{
+				const string statement1 =
+@"CREATE OR REPLACE PACKAGE test_package AS 
+	TYPE test_type IS RECORD (c1 selection.name%type, c2 selection.selection_id%type);
+END DEPARTMENT_INFO;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
 		}
 
 		public class IsRuleValid

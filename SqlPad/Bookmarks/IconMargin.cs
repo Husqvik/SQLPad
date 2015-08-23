@@ -20,10 +20,7 @@ namespace SqlPad.Bookmarks
 
 		public SqlDocumentRepository DocumentRepository { get; set; }
 
-		protected override int VisualChildrenCount
-		{
-			get { return _visibleMarkers.Count; }
-		}
+		protected override int VisualChildrenCount => _visibleMarkers.Count;
 
 		public IconMargin(TextEditor textEditor)
 		{
@@ -62,7 +59,7 @@ namespace SqlPad.Bookmarks
 			{
 				RemoveVisualChild(marker);
 
-				var visualLine = textView.GetVisualLine(marker.Line.LineNumber);
+				var visualLine = textView.GetVisualLine(marker.Anchor.Line);
 				if (visualLine == null)
 				{
 					continue;
@@ -112,10 +109,9 @@ namespace SqlPad.Bookmarks
 			}
 
 			var offset = _textEditor.Document.GetOffset(position.Value.Line, position.Value.Column);
-			var documentLine = _textEditor.Document.GetLineByOffset(offset);
+			var anchor = _textEditor.Document.CreateAnchor(offset);
+			var breakpoint = new BreakpointMarker { Anchor = anchor };
 
-			var breakpoint = new BreakpointMarker { Line = documentLine };
-			
 			AddBreakpoint(breakpoint);
 		}
 
@@ -135,14 +131,14 @@ namespace SqlPad.Bookmarks
 		private const double BreakpointRadius = 6;
 		
 		private static readonly Size BreakpointSize = new Size(2 * BreakpointRadius, 2 * BreakpointRadius);
-		private static readonly Pen EdgePen = new Pen(Brushes.Black, 1.0) { StartLineCap = PenLineCap.Square, EndLineCap = PenLineCap.Square };
+		private static readonly Pen EdgePen = new Pen(Brushes.Red, 1.0) { StartLineCap = PenLineCap.Square, EndLineCap = PenLineCap.Square };
 
 		static BreakpointMarker()
 		{
 			EdgePen.Freeze();
 		}
 
-		public DocumentLine Line { get; set; }
+		public TextAnchor Anchor { get; set; }
 
 		protected override Size MeasureCore(Size availableSize)
 		{
@@ -160,6 +156,42 @@ namespace SqlPad.Bookmarks
 
 			var bookmarkMargin = (IconMargin)VisualParent;
 			bookmarkMargin.RemoveBreakpoint(this);
+		}
+	}
+
+	public class ExecutedCodeBackgroundRenderer : IBackgroundRenderer
+	{
+		readonly TextEditor _editor;
+
+		private static readonly Brush BackgroundBrush = Brushes.Yellow;
+		private static readonly Pen EdgePen = new Pen(BackgroundBrush, 1);
+
+		public SqlDocumentRepository DocumentRepository { get; set; }
+
+		static ExecutedCodeBackgroundRenderer()
+		{
+			EdgePen.Freeze();
+		}
+
+		public ExecutedCodeBackgroundRenderer(TextEditor e)
+		{
+			_editor = e;
+		}
+
+		public KnownLayer Layer => KnownLayer.Background;
+
+		public void Draw(TextView textView, DrawingContext drawingContext)
+		{
+			textView.EnsureVisualLines();
+
+			foreach (var rect in BackgroundGeometryBuilder.GetRectsForSegment(textView, new ICSharpCode.AvalonEdit.Document.TextSegment { StartOffset = textView.Document.GetLineByOffset(_editor.CaretOffset).Offset }))
+			{
+				drawingContext.DrawRectangle(
+					BackgroundBrush,
+					EdgePen,
+					new Rect(rect.Location, new Size(textView.ActualWidth, rect.Height))
+				);
+			}
 		}
 	}
 }

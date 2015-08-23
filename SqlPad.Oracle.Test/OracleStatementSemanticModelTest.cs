@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using Shouldly;
@@ -2388,7 +2387,7 @@ FROM (
 		}
 
 		[Test(Description = @"")]
-		public void TestModelBuildWithJoinUsingMultipleColumns()
+		public void TestAsteriskColumnReferencesWithJoinUsingMultipleColumns()
 		{
 			const string query1 = @"SELECT * FROM SELECTION T1 JOIN SELECTION T2 USING (PROJECT_ID, NAME)";
 
@@ -2400,7 +2399,7 @@ FROM (
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 
 			var columns = semanticModel.MainQueryBlock.Columns;
-			//columns.Count.ShouldBe(7);
+			columns.Count.ShouldBe(7);
 			columns[0].IsAsterisk.ShouldBe(true);
 			columns[1].NormalizedName.ShouldBe("\"RESPONDENTBUCKET_ID\"");
 			columns[1].ColumnReferences[0].ValidObjectReference.FullyQualifiedObjectName.Name.ShouldBe("T1");
@@ -2414,7 +2413,69 @@ FROM (
 			columns[5].ColumnReferences[0].ValidObjectReference.FullyQualifiedObjectName.Name.ShouldBe("T2");
 			columns[6].NormalizedName.ShouldBe("\"SELECTION_ID\"");
 			columns[6].ColumnReferences[0].ValidObjectReference.FullyQualifiedObjectName.Name.ShouldBe("T2");
+
+			var columnReferences = semanticModel.MainQueryBlock.ColumnReferences;
+			columnReferences.Count.ShouldBe(2);
+			columnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			columnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(1);
 		}
+
+		[Test(Description = @"")]
+		public void TestAsteriskColumnReferencesUsingNaturalJoin()
+		{
+			const string query1 = @"SELECT * FROM SELECTION S1 NATURAL JOIN SELECTION S2";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.Count.ShouldBe(1);
+
+			var columns = semanticModel.MainQueryBlock.Columns;
+			columns.Count.ShouldBe(5);
+			columns[0].IsAsterisk.ShouldBe(true);
+			columns[1].NormalizedName.ShouldBe("\"RESPONDENTBUCKET_ID\"");
+			columns[1].ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			columns[1].ColumnReferences[0].ValidObjectReference.FullyQualifiedObjectName.Name.ShouldBe("S1");
+			columns[2].NormalizedName.ShouldBe("\"SELECTION_ID\"");
+			columns[2].ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			columns[2].ColumnReferences[0].ValidObjectReference.FullyQualifiedObjectName.Name.ShouldBe("S1");
+			columns[3].NormalizedName.ShouldBe("\"PROJECT_ID\"");
+			columns[3].ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			columns[3].ColumnReferences[0].ValidObjectReference.FullyQualifiedObjectName.Name.ShouldBe("S1");
+			columns[4].NormalizedName.ShouldBe("\"NAME\"");
+			columns[4].ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			columns[4].ColumnReferences[0].ValidObjectReference.FullyQualifiedObjectName.Name.ShouldBe("S1");
+		}
+
+		[Test(Description = @"")]
+		public void TestDirectColumnReferenceWithJoinUsingMultipleColumns()
+		{
+			const string query1 = @"SELECT RESPONDENTBUCKET_ID, SELECTION_ID, PROJECT_ID, NAME FROM SELECTION JOIN RESPONDENTBUCKET USING (PROJECT_ID, RESPONDENTBUCKET_ID)";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.Count.ShouldBe(1);
+
+			var columns = semanticModel.MainQueryBlock.Columns;
+			columns.Count.ShouldBe(4);
+			columns[0].NormalizedName.ShouldBe("\"RESPONDENTBUCKET_ID\"");
+			columns[0].ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			columns[0].ColumnReferences[0].ValidObjectReference.FullyQualifiedObjectName.Name.ShouldBe("SELECTION");
+			columns[1].NormalizedName.ShouldBe("\"SELECTION_ID\"");
+			columns[1].ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			columns[1].ColumnReferences[0].ValidObjectReference.FullyQualifiedObjectName.Name.ShouldBe("SELECTION");
+			columns[2].NormalizedName.ShouldBe("\"PROJECT_ID\"");
+			columns[2].ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			columns[2].ColumnReferences[0].ValidObjectReference.FullyQualifiedObjectName.Name.ShouldBe("SELECTION");
+			columns[3].NormalizedName.ShouldBe("\"NAME\"");
+			columns[3].ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(2);
+			columns[3].ColumnReferences[0].ValidObjectReference.ShouldBe(null);
+        }
 
 		[Test(Description = @"")]
 		public void TestModelBuildWithPivotedInlineViewWithAsterisk()
