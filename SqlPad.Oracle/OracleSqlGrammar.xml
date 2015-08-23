@@ -547,9 +547,9 @@
         <Sequence>
           <NonTerminal Id="PhysicalAttributesClause" />
         </Sequence>
-        <!--<Sequence>
+        <Sequence>
           <NonTerminal Id="ModifyMaterializedViewColumnClause" />
-        </Sequence>-->
+        </Sequence>
         <Sequence>
           <NonTerminal Id="TableCompression" />
         </Sequence>

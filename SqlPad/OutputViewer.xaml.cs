@@ -30,6 +30,7 @@ namespace SqlPad
 		private readonly StringBuilder _executionLogBuilder = new StringBuilder();
 
 		private bool _isRunning;
+		private bool _debuggerActive;
 		private object _previousSelectedTab;
 		private CancellationTokenSource _statementExecutionCancellationTokenSource;
 		private StatementExecutionBatchResult _executionResult;
@@ -43,6 +44,21 @@ namespace SqlPad
 		public IExecutionPlanViewer ExecutionPlanViewer { get; }
 		
 		public ITraceViewer TraceViewer { get; }
+
+		public bool IsDebuggerActive
+		{
+			get { return _debuggerActive; }
+			private set
+			{
+				if (_debuggerActive == value)
+				{
+					return;
+				}
+
+				_debuggerActive = value;
+				DocumentPage.NotifyDebuggerEvent();
+			}
+		}
 
 		private bool IsCancellationRequested
 		{
@@ -246,6 +262,8 @@ namespace SqlPad
 			//var caretOffset = DocumentPage.Editor.CaretOffset;
 			//var text = DocumentPage.Editor.Text;
 
+			IsDebuggerActive = executionModel.EnableDebug;
+
 			Initialize();
 
 			ConnectionAdapter.EnableDatabaseOutput = EnableDatabaseOutput;
@@ -260,6 +278,8 @@ namespace SqlPad
 			{
 				return;
 			}
+
+			IsDebuggerActive = false;
 
 			if (!actionResult.IsSuccessful)
 			{
@@ -605,6 +625,7 @@ namespace SqlPad
 			if (ConnectionAdapter.DebuggerSession == null)
 			{
 				IsDebuggerControlVisible = false;
+				IsDebuggerActive = false;
 			}
 
 			if (exception != null)

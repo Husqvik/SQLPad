@@ -15,6 +15,7 @@ namespace SqlPad
 		public static readonly DependencyProperty IsModifiedProperty = DependencyProperty.Register(nameof(IsModified), typeof(bool), typeof(DocumentPage), new FrameworkPropertyMetadata(false));
 		public static readonly DependencyProperty IsRunningProperty = DependencyProperty.Register(nameof(IsRunning), typeof(bool), typeof(DocumentPage), new FrameworkPropertyMetadata(false));
 		public static readonly DependencyProperty ConnectionErrorMessageProperty = DependencyProperty.Register(nameof(ConnectionErrorMessage), typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(String.Empty));
+		public static readonly DependencyProperty TimedNotificationMessageProperty = DependencyProperty.Register(nameof(TimedNotificationMessage), typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(String.Empty));
 		public static readonly DependencyProperty DocumentHeaderBackgroundColorCodeProperty = DependencyProperty.Register(nameof(DocumentHeaderBackgroundColorCode), typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(DocumentHeaderBackgroundColorCodePropertyChangedCallbackHandler) { DefaultValue = WorkDocument.DefaultDocumentHeaderBackgroundColorCode });
 		public static readonly DependencyProperty DocumentHeaderProperty = DependencyProperty.Register(nameof(DocumentHeader), typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(DocumentHeaderPropertyChangedCallbackHandler));
 		public static readonly DependencyProperty DocumentHeaderToolTipProperty = DependencyProperty.Register(nameof(DocumentHeaderToolTip), typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(String.Empty));
@@ -66,6 +67,13 @@ namespace SqlPad
 		{
 			get { return (string)GetValue(ConnectionErrorMessageProperty); }
 			private set { SetValue(ConnectionErrorMessageProperty, value); }
+		}
+
+		[Bindable(true)]
+		public string TimedNotificationMessage
+		{
+			get { return (string)GetValue(TimedNotificationMessageProperty); }
+			private set { SetValue(TimedNotificationMessageProperty, value); }
 		}
 
 		[Bindable(true)]
@@ -168,7 +176,7 @@ namespace SqlPad
 
 			if (String.IsNullOrEmpty(documentPage.WorkDocument.DocumentTitle))
 			{
-				documentPage.DocumentHeader = documentPage.WorkDocument.File == null ? InitialDocumentHeader : documentPage.WorkDocument.File.Name;
+				documentPage.DocumentHeader = documentPage.WorkDocument.File?.Name ?? InitialDocumentHeader;
 			}
 			else
 			{

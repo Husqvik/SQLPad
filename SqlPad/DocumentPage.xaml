@@ -191,6 +191,18 @@
 					<RotateTransform Angle="-90" />
 				</TextBlock.LayoutTransform>
 			</TextBlock>
+
+			<TextBlock Text="{Binding TimedNotificationMessage}" DockPanel.Dock="Bottom" Foreground="White" Background="DarkRed">
+				<TextBlock.Style>
+					<Style>
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding TimedNotificationMessage}" Value="">
+								<Setter Property="TextBlock.Visibility" Value="Collapsed" />
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</TextBlock.Style>
+			</TextBlock>
 			
 			<Grid>
 				<Grid.CommandBindings>

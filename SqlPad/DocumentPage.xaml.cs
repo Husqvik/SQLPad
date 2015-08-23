@@ -14,6 +14,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
@@ -23,7 +24,6 @@ using SqlPad.Bookmarks;
 using SqlPad.Commands;
 using SqlPad.FindReplace;
 using MessageBox = System.Windows.MessageBox;
-using Timer = System.Timers.Timer;
 
 namespace SqlPad
 {
@@ -62,7 +62,8 @@ namespace SqlPad
 		
 		private string _originalWorkDocumentContent = String.Empty;
 
-		private readonly Timer _timerReParse = new Timer(100);
+		private readonly DispatcherTimer _timerReParse;
+		private readonly DispatcherTimer _timerTimedNotification;
 		private readonly List<CommandBinding> _specificCommandBindings = new List<CommandBinding>();
 		private readonly ObservableCollection<OutputViewer> _outputViewers = new ObservableCollection<OutputViewer>();
 		private readonly ObservableCollection<string> _schemas = new ObservableCollection<string>();
@@ -116,7 +117,8 @@ namespace SqlPad
 			
 			InitializeGenericCommandBindings();
 
-			_timerReParse.Elapsed += delegate { Dispatcher.Invoke(Parse); };
+			_timerReParse = new DispatcherTimer(TimeSpan.FromMilliseconds(100), DispatcherPriority.Normal, delegate { Parse(); }, Dispatcher);
+			_timerTimedNotification = new DispatcherTimer(TimeSpan.FromSeconds(5), DispatcherPriority.Normal, TimedNotificationTickHandler, Dispatcher);
 			_outputViewers.CollectionChanged += delegate { OutputViewerList.Visibility = _outputViewers.Count > 1 ? Visibility.Visible : Visibility.Collapsed; };
 
 			DateTimeFormat = ConfigurationProvider.Configuration.ResultGrid.DateFormat;
@@ -159,6 +161,12 @@ namespace SqlPad
 			InitializeTabItem();
 		}
 
+		private void TimedNotificationTickHandler(object sender, EventArgs e)
+		{
+			TimedNotificationMessage = String.Empty;
+			_timerTimedNotification.Stop();
+		}
+
 		public void InsertStatement(string statementText)
 		{
 			var insertIndex = Editor.CaretOffset;
@@ -178,6 +186,11 @@ namespace SqlPad
 		{
 			IsRunning = IsBusy;
 			App.MainWindow.NotifyTaskStatus();
+		}
+
+		internal void NotifyDebuggerEvent()
+		{
+			Editor.IsReadOnly = OutputViewers.Any(v => v.IsDebuggerActive);
 		}
 
 		private void UpdateDocumentHeaderToolTip()
@@ -854,18 +867,17 @@ namespace SqlPad
 			App.MainWindow.DocumentTabControl.SelectionChanged -= DocumentTabControlSelectionChangedHandler;
 			Application.Current.Deactivated -= ApplicationDeactivatedHandler;
 
-		    _documentFileWatcher?.Dispose();
+			_documentFileWatcher?.Dispose();
 
-		    TabItemContextMenu.CommandBindings.Clear();
+			TabItemContextMenu.CommandBindings.Clear();
 
 			_timerReParse.Stop();
-			_timerReParse.Dispose();
 
-		    _parsingCancellationTokenSource?.Dispose();
+			_parsingCancellationTokenSource?.Dispose();
 
-		    DisposeOutputViewers();
+			DisposeOutputViewers();
 
-		    DatabaseModel?.Dispose();
+			DatabaseModel?.Dispose();
 		}
 
 		private void DisposeOutputViewers()
@@ -1334,6 +1346,13 @@ namespace SqlPad
 
 		private void TextEnteringHandler(object sender, TextCompositionEventArgs e)
 		{
+			if (Editor.IsReadOnly)
+			{
+				TimedNotificationMessage = "Debugger attached. Detach debugger before any changes. ";
+				_timerTimedNotification.Start();
+				e.Handled = true;
+			}
+
 			if (NextPairCharacterExists(e.Text, ')', ')') || NextPairCharacterExists(e.Text, '\'', '\'') || NextPairCharacterExists(e.Text, '"', '"'))
 			{
 				Editor.CaretOffset++;
@@ -1352,7 +1371,9 @@ namespace SqlPad
 				Editor.Document.BeginUpdate();
 
 				if (!_multiNodeEditor.Replace(e.Text))
+				{
 					_multiNodeEditor = null;
+				}
 			}
 
 			if (e.Text.Length == 1 && _completionWindow != null && e.Text == "\t")
@@ -1515,7 +1536,7 @@ namespace SqlPad
 			{
 				_parsingCancellationTokenSource.Cancel();
 
-				if (!_timerReParse.Enabled)
+				if (!_timerReParse.IsEnabled)
 				{
 					_timerReParse.Start();
 				}
