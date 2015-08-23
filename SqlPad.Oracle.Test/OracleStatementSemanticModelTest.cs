@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using Shouldly;
@@ -2384,6 +2385,35 @@ FROM (
 			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 
 			Assert.DoesNotThrow(() => OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel));
+		}
+
+		[Test(Description = @"")]
+		public void TestModelBuildWithJoinUsingMultipleColumns()
+		{
+			const string query1 = @"SELECT * FROM SELECTION T1 JOIN SELECTION T2 USING (PROJECT_ID, NAME)";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.QueryBlocks.Count.ShouldBe(1);
+
+			var columns = semanticModel.MainQueryBlock.Columns;
+			//columns.Count.ShouldBe(7);
+			columns[0].IsAsterisk.ShouldBe(true);
+			columns[1].NormalizedName.ShouldBe("\"RESPONDENTBUCKET_ID\"");
+			columns[1].ColumnReferences[0].ValidObjectReference.FullyQualifiedObjectName.Name.ShouldBe("T1");
+			columns[2].NormalizedName.ShouldBe("\"SELECTION_ID\"");
+			columns[2].ColumnReferences[0].ValidObjectReference.FullyQualifiedObjectName.Name.ShouldBe("T1");
+			columns[3].NormalizedName.ShouldBe("\"PROJECT_ID\"");
+			columns[3].ColumnReferences[0].ValidObjectReference.FullyQualifiedObjectName.Name.ShouldBe("T1");
+			columns[4].NormalizedName.ShouldBe("\"NAME\"");
+			columns[4].ColumnReferences[0].ValidObjectReference.FullyQualifiedObjectName.Name.ShouldBe("T1");
+			columns[5].NormalizedName.ShouldBe("\"RESPONDENTBUCKET_ID\"");
+			columns[5].ColumnReferences[0].ValidObjectReference.FullyQualifiedObjectName.Name.ShouldBe("T2");
+			columns[6].NormalizedName.ShouldBe("\"SELECTION_ID\"");
+			columns[6].ColumnReferences[0].ValidObjectReference.FullyQualifiedObjectName.Name.ShouldBe("T2");
 		}
 
 		[Test(Description = @"")]

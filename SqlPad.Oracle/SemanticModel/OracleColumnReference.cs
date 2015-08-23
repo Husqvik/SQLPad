@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -20,11 +21,11 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public override string Name => _columnNode.Token.Value;
 
-	    public override string NormalizedName => _normalizedName;
+		public override string NormalizedName => _normalizedName;
 
-	    public bool ReferencesAllColumns => _columnNode.Token.Value == "*";
+		public bool ReferencesAllColumns => String.Equals(_columnNode.Token.Value, "*");
 
-	    public StatementGrammarNode ColumnNode
+		public StatementGrammarNode ColumnNode
 		{
 			get { return _columnNode; }
 			set
