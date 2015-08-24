@@ -6387,17 +6387,29 @@ PURGE REPEAT INTERVAL '5' DAY";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				/*[Test(Description = @"Undocumented")]
+				[Test(Description = @"Undocumented")]
 				public void TestAlterMaterializedViewAddConstraint()
 				{
-					const string statementText = @"ALTER MATERIALIZED VIEW TEST_MV ADD CONSTRAINT PK_TEST_MV PRIMARY KEY (ID) ADD CONSTRAINT UQ_TEST_MV_LEADING_ZEROES";
+					const string statementText = @"ALTER MATERIALIZED VIEW TEST_MV ADD CONSTRAINT PK_TEST_MV PRIMARY KEY (ID) ADD CONSTRAINT UQ_TEST_MV_LEADING_ZEROES UNIQUE (LEADING_ZEROES)";
 
 					var result = Parser.Parse(statementText);
 
 					result.Count.ShouldBe(1);
 					var statement = result.Single();
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
-				}*/
+				}
+
+				[Test(Description = @"Undocumented")]
+				public void TestAlterMaterializedViewModifyColumns()
+				{
+					const string statementText = @"ALTER MATERIALIZED VIEW TEST_MV MODIFY ID NUMBER(10) NOT NULL MODIFY NUMBER_AS_NUMBER NOT NULL MODIFY NUMBER_AS_CHAR NOT NULL";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
 
 				[Test(Description = @"")]
 				public void TestAlterMaterializedRefreshCompleteStartWithNext()

@@ -547,9 +547,9 @@
         <Sequence>
           <NonTerminal Id="PhysicalAttributesClause" />
         </Sequence>
-        <Sequence>
+        <!--<Sequence>
           <NonTerminal Id="ModifyMaterializedViewColumnClause" />
-        </Sequence>
+        </Sequence>-->
         <Sequence>
           <NonTerminal Id="TableCompression" />
         </Sequence>
@@ -581,6 +581,12 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="CacheOrNoCache" />
+        </Sequence>
+        <Sequence Comment="Not documented">
+          <NonTerminal Id="AddConstraintClause" />
+        </Sequence>
+        <Sequence Comment="Not documented">
+          <NonTerminal Id="ColumnModification" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -1820,8 +1826,7 @@
     <Rule StartingNonTerminal="ConstraintClauses">
       <Sequences>
         <Sequence>
-          <Terminal Id="Add" />
-          <NonTerminal Id="OutOfLineConstraintDefinitionListOrOutOfLineReferenceConstraint" />
+          <NonTerminal Id="AddConstraintClause" />
         </Sequence>
         <Sequence>
           <Terminal Id="Modify" />
@@ -1840,6 +1845,15 @@
           <Terminal Id="Drop" />
           <NonTerminal Id="DropConstraintClause" />
           <Terminal Id="Online" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AddConstraintClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Add" />
+          <NonTerminal Id="OutOfLineConstraintDefinitionListOrOutOfLineReferenceConstraint" />
         </Sequence>
       </Sequences>
     </Rule>

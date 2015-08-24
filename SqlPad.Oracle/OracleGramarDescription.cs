@@ -18,6 +18,7 @@ namespace SqlPad.Oracle
 			public const string AccessorList = "AccessorList";
 			public const string AccessorListChained = "AccessorListChained";
 			public const string AddColumnClause = "AddColumnClause";
+			public const string AddConstraintClause = "AddConstraintClause";
 			public const string AddPeriodClause = "AddPeriodClause";
 			public const string AddSupplementalLogList = "AddSupplementalLogList";
 			public const string AddSupplementalLogListChained = "AddSupplementalLogListChained";
@@ -741,7 +742,7 @@ namespace SqlPad.Oracle
 			public const string ModifyColumnSubstitutable = "ModifyColumnSubstitutable";
 			public const string ModifyColumnVisibility = "ModifyColumnVisibility";
 			public const string ModifyConstraintClause = "ModifyConstraintClause";
-			public const string ModifyMaterializedViewEncryptionClause = "ModifyMaterializedViewEncryptionClause";
+			public const string ModifyMaterializedViewColumnClause = "ModifyMaterializedViewColumnClause";
 			public const string ModifyOpaqueType = "ModifyOpaqueType";
 			public const string ModifyScopedTableRefConstraintOrAlterMaterializedViewRefresh = "ModifyScopedTableRefConstraintOrAlterMaterializedViewRefresh";
 			public const string ModifyVirtualColumnProperties = "ModifyVirtualColumnProperties";
