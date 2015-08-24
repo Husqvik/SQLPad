@@ -3214,6 +3214,7 @@ END DEPARTMENT_INFO;";
 						Terminals.SystemDate,
 						Terminals.Timestamp,
 						Terminals.Treat,
+						Terminals.Trim,
 						Terminals.Unique,
 						Terminals.User,
 						Terminals.Variance,
