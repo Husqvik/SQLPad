@@ -742,7 +742,7 @@ namespace SqlPad.Oracle
 			public const string ModifyColumnSubstitutable = "ModifyColumnSubstitutable";
 			public const string ModifyColumnVisibility = "ModifyColumnVisibility";
 			public const string ModifyConstraintClause = "ModifyConstraintClause";
-			public const string ModifyMaterializedViewColumnClause = "ModifyMaterializedViewColumnClause";
+			public const string ModifyMaterializedViewEncryptionClause = "ModifyMaterializedViewEncryptionClause";
 			public const string ModifyOpaqueType = "ModifyOpaqueType";
 			public const string ModifyScopedTableRefConstraintOrAlterMaterializedViewRefresh = "ModifyScopedTableRefConstraintOrAlterMaterializedViewRefresh";
 			public const string ModifyVirtualColumnProperties = "ModifyVirtualColumnProperties";
@@ -3177,7 +3177,7 @@ namespace SqlPad.Oracle
 		
 		internal static readonly ICollection<string> ReservedWordsPlSqlDeclaration = new HashSet<string> { "BEGIN", "CASE", "DECLARE", "END", "EXCEPTION", "IF", "WHEN" };
 		
-		internal static readonly ICollection<string> ReservedWordsPlSqlBody = new HashSet<string> { "BEGIN", "CASE", "DECLARE", "END", "EXCEPTION", "IF", "WHEN" };
+		internal static readonly ICollection<string> ReservedWordsPlSqlBody = new HashSet<string> { "BEGIN", "CASE", "DECLARE", "END", "EXCEPTION", "IF", "LOOP", "WHEN" };
 		
 		private static readonly HashSet<string> LiteralsInternal = new HashSet<string> { Terminals.DoubleQuotedStringLiteral, Terminals.IntegerLiteral, Terminals.NumberLiteral, Terminals.StringLiteral };
 

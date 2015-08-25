@@ -2997,6 +2997,43 @@ END DEPARTMENT_INFO;";
 				var statement = Parser.Parse(statement1).Single().Validate();
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
+
+			[Test(Description = @"")]
+			public void TestRefCursorUsingParameters()
+			{
+				const string statement1 =
+@"DECLARE
+	c1 SYS_REFCURSOR;
+	c2 SYS_REFCURSOR;
+	c3 SYS_REFCURSOR;
+	statementText VARCHAR2(4000) := 'SELECT * FROM DUAL';
+BEGIN
+	OPEN c1 FOR :statementText;
+	OPEN c2 FOR 'SELECT * FROM DUAL';
+	OPEN c3 FOR statementText;
+END;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestForLoopWithInnerIfStatement()
+			{
+				const string statement1 =
+@"BEGIN
+	FOR i IN 1..2 LOOP
+		IF 1 = 1 THEN
+			NULL;
+		ELSIF 2 = 2 THEN
+			NULL;
+		END IF;
+	END LOOP;
+END;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
 		}
 
 		public class IsRuleValid

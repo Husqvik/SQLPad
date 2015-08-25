@@ -12124,6 +12124,9 @@
         <Sequence>
           <NonTerminal Id="SelectStatement" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="BindVariableExpressionOrPlSqlTarget" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -18683,7 +18686,7 @@
     <!-- PL/SQL -->
     <Terminal Id="Bulk" Value="BULK" />
     <Terminal Id="Begin" Value="BEGIN" ReservedWord="PlSql" />
-    <Terminal Id="Loop" Value="LOOP" />
+    <Terminal Id="Loop" Value="LOOP" ReservedWord="PlSqlBody" />
     <Terminal Id="Continue" Value="CONTINUE" />
     <Terminal Id="Exit" Value="EXIT" />
     <Terminal Id="GoTo" Value="GOTO" />
