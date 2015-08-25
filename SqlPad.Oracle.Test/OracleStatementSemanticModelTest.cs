@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using Shouldly;
@@ -2772,5 +2773,24 @@ FROM
 			var childReferenceDataSources = semanticModel.ApplyReferenceConstraints(columnHeaders);
 			childReferenceDataSources.Count.ShouldBe(0);
 		}
+
+		[Test(Description = @"")]
+		public void TestMergeUsingAliasedSubquery()
+		{
+			const string query1 =
+@"MERGE INTO DUAL T1
+USING (SELECT DUMMY FROM DUAL) T2
+ON (T1.DUMMY = T2.DUMMY)
+WHEN MATCHED THEN UPDATE SET DUMMY = T2.DUMMY
+WHEN NOT MATCHED THEN INSERT VALUES (T2.DUMMY)";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
+			var columnReferences = semanticModel.MainObjectReferenceContainer.ColumnReferences.ToList();
+			columnReferences.Count.ShouldBe(5);
+			columnReferences.ForEach(c => c.ColumnNodeColumnReferences.Count.ShouldBe(1));
+        }
 	}
 }

@@ -1366,6 +1366,7 @@ namespace SqlPad.Oracle.SemanticModel
 			else if (MainQueryBlock != null)
 			{
 				mergeSourceReference = MainQueryBlock.SelfObjectReference;
+				mergeSourceReference.AliasNode = mergeSource[Terminals.ObjectAlias];
 			}
 
 			var mergeCondition = Statement.RootNode[0, 0][6];
