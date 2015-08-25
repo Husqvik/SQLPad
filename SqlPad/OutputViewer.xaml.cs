@@ -401,7 +401,7 @@ namespace SqlPad
 
 					if (executionResult.AffectedRowCount != -1)
 					{
-						_executionLogBuilder.Append(executionResult.AffectedRowCount);
+						_executionLogBuilder.Append(Convert.ToDecimal(executionResult.AffectedRowCount).ToString("N0"));
 						_executionLogBuilder.Append(" row(s) affected. ");
 					}
 				}

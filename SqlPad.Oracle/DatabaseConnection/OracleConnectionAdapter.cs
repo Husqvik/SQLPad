@@ -726,7 +726,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			{
 				try
 				{
-					if (_userConnection.State == ConnectionState.Open && !executionModel.EnableDebug)
+					if (_userConnection.State == ConnectionState.Open && !executionModel.EnableDebug && !cancellationToken.IsCancellationRequested)
 					{
 						var exception = await ResolveExecutionPlanIdentifiersAndTransactionStatus(cancellationToken);
 						if (exception != null)
@@ -865,7 +865,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private async Task<string> RetrieveDatabaseOutput(CancellationToken cancellationToken)
 		{
-			if (!_databaseOutputEnabled)
+			if (!_databaseOutputEnabled || cancellationToken.IsCancellationRequested)
 			{
 				return null;
 			}
@@ -937,6 +937,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private async Task SafeResolveTransactionStatus(CancellationToken cancellationToken)
 		{
+			if (cancellationToken.IsCancellationRequested)
+			{
+				return;
+			}
+
 			using (var command = _userConnection.CreateCommand())
 			{
 				command.CommandText = OracleDatabaseCommands.SelectLocalTransactionIdCommandText;

@@ -8,8 +8,9 @@
     <Application.Resources>
 		<sqlPad:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
 		<sqlPad:DateTimeLabelConverter x:Key="DateTimeConverter" />
+        <sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintNumericConverter" />
 
-		<SolidColorBrush x:Key="PopupBackgroundBrush" Color="#F1F2F7"/>
+        <SolidColorBrush x:Key="PopupBackgroundBrush" Color="#F1F2F7"/>
 		<SolidColorBrush x:Key="PopupBorderBrush" Color="#767676"/>
 
 		<Style x:Key="CellTextBoxStyleReadOnly">
