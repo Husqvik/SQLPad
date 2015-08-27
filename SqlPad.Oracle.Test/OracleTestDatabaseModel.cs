@@ -62,6 +62,18 @@ namespace SqlPad.Oracle.Test
 				new KeyValuePair<string, string>("SPECIAL'CONTEXT", "Special'Attribute'5")
 			}.ToLookup(r => r.Key, r => r.Value);
 
+		private static readonly IReadOnlyList<string> WeekdayNamesInternal =
+			new[]
+			{
+				"Friday",
+				"Monday",
+				"Saturday",
+				"Sunday",
+				"Thursday",
+				"Tuesday",
+				"Wednesday"
+			};
+
 		private static readonly Dictionary<int, string> StatisticsKeysInternal =
 			new Dictionary<int, string>
 			{
@@ -428,7 +440,7 @@ namespace SqlPad.Oracle.Test
 			var nvlFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("SYS", "STANDARD", "NVL"), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
 			nvlFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
 			nvlFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"B1\"", 1, 1, 0, ParameterDirection.Input, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
-			nvlFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"B2\"", 2, 1, 0, ParameterDirection.Input, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
+			nvlFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"B2\"", 2, 2, 0, ParameterDirection.Input, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
 			nvlFunctionMetadata.Owner = builtInFunctionPackage;
 			builtInFunctionPackage.Functions.Add(nvlFunctionMetadata);
 
@@ -448,6 +460,13 @@ namespace SqlPad.Oracle.Test
 			sysGuidFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Raw, OracleObjectIdentifier.Empty, false));
 			sysGuidFunctionMetadata.Owner = builtInFunctionPackage;
 			builtInFunctionPackage.Functions.Add(sysGuidFunctionMetadata);
+
+			var nextDayFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("SYS", "STANDARD", "NEXT_DAY"), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeParenthesis, true);
+			nextDayFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Date, OracleObjectIdentifier.Empty, false));
+			nextDayFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"LEFT\"", 1, 1, 0, ParameterDirection.Input, TerminalValues.Date, OracleObjectIdentifier.Empty, false));
+			nextDayFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"RIGHT\"", 2, 2, 0, ParameterDirection.Input, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
+			nextDayFunctionMetadata.Owner = builtInFunctionPackage;
+			builtInFunctionPackage.Functions.Add(nextDayFunctionMetadata);
 			#endregion
 
 			AllObjectDictionary = AllObjectsInternal.ToDictionary(o => o.FullyQualifiedName, o => o);
@@ -985,33 +1004,41 @@ TABLESPACE ""TBS_HQ_PDB""";
 
 		public override ConnectionStringSettings ConnectionString => ConnectionStringInternal;
 
-	    public override string CurrentSchema { get; set; }
+		public override string CurrentSchema { get; set; }
 		
 		public override bool IsInitialized { get; }
 
-	    public override bool IsMetadataAvailable { get; } = true;
+		public override bool IsMetadataAvailable { get; } = true;
 
-	    public override ICollection<string> Schemas => SchemasInternal;
+		public override ICollection<string> Schemas => SchemasInternal;
 
-	    public override IReadOnlyDictionary<string, OracleSchema> AllSchemas => AllSchemasInternal;
+		public override IReadOnlyDictionary<string, OracleSchema> AllSchemas => AllSchemasInternal;
 
-	    public IDictionary<OracleObjectIdentifier, OracleSchemaObject> Objects => ObjectsInternal;
+		public IDictionary<OracleObjectIdentifier, OracleSchemaObject> Objects => ObjectsInternal;
 
-	    public override IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get; }
+		public override IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get; }
 
-	    public override IDictionary<OracleObjectIdentifier, OracleDatabaseLink> DatabaseLinks { get; } = DatabaseLinksInternal.ToDictionary(l => l.FullyQualifiedName, l => l);
+		public override IDictionary<OracleObjectIdentifier, OracleDatabaseLink> DatabaseLinks { get; } = DatabaseLinksInternal.ToDictionary(l => l.FullyQualifiedName, l => l);
 
-	    public override IReadOnlyCollection<string> CharacterSets => CharacterSetsInternal;
+		public override IReadOnlyCollection<string> CharacterSets => CharacterSetsInternal;
 
-	    public override IDictionary<int, string> StatisticsKeys => StatisticsKeysInternal;
+		public override IDictionary<int, string> StatisticsKeys => StatisticsKeysInternal;
 
-	    public override IDictionary<string, string> SystemParameters { get; } = new Dictionary<string, string>(SystemParametersInternal);
+		public override IDictionary<string, string> SystemParameters { get; } = new Dictionary<string, string>(SystemParametersInternal);
 
-	    public override Version Version => TestDatabaseVersion;
+		public override Version Version => TestDatabaseVersion;
 
-	    public override ILookup<string, string> ContextData => ContextDataInternal;
+		public override Task<ILookup<string, string>> GetContextData(CancellationToken cancellationToken)
+		{
+			return Task.FromResult(ContextDataInternal);
+		}
 
-	    public override Task Refresh(bool force = false)
+		public override Task<IReadOnlyList<string>> GetWeekdayNames(CancellationToken cancellationToken)
+		{
+			return Task.FromResult(WeekdayNamesInternal);
+		}
+
+		public override Task Refresh(bool force = false)
 		{
 			RefreshStarted(this, EventArgs.Empty);
 			RefreshCompleted(this, EventArgs.Empty);

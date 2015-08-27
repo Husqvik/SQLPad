@@ -2119,6 +2119,22 @@ SELECT * FROM ALL";
 			items[5].Name.ShouldBe("SELECTION_ID");
 		}
 
+		[Test(Description = @"")]
+		public void TestNextDaySpecialParameterCompletion()
+		{
+			const string statement = @"SELECT NEXT_DAY(SYSDATE, ) FROM DUAL";
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 25).ToArray();
+			items.Length.ShouldBe(7);
+			items[0].Name.ShouldBe("Friday");
+			items[0].Text.ShouldBe("'Friday'");
+			items[1].Name.ShouldBe("Monday");
+			items[2].Name.ShouldBe("Saturday");
+			items[3].Name.ShouldBe("Sunday");
+			items[4].Name.ShouldBe("Thursday");
+			items[5].Name.ShouldBe("Tuesday");
+			items[6].Name.ShouldBe("Wednesday");
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)

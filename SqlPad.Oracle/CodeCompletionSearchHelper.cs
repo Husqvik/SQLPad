@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.DataDictionary;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
@@ -24,6 +25,7 @@ namespace SqlPad.Oracle
 				OracleDatabaseModelBase.IdentifierBuiltInProgramToTimestamp,
 				OracleDatabaseModelBase.IdentifierBuiltInProgramToTimestampWithTimeZone,
 				OracleDatabaseModelBase.IdentifierBuiltInProgramSysContext,
+				OracleDatabaseModelBase.IdentifierBuiltInProgramNextDay,
 				OracleDatabaseModelBase.IdentifierDbmsRandomString,
 				OracleDatabaseModelBase.IdentifierDbmsCryptoHash
 			};
@@ -117,13 +119,24 @@ namespace SqlPad.Oracle
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "6", "6 - DBMS_CRYPTO.HASH_SH512 - SH512", false));
 			}
 
+			var nextDayFunctionOverload = specificFunctionOverloads.FirstOrDefault(o => o.ProgramMetadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramNextDay);
+			if (nextDayFunctionOverload != null && nextDayFunctionOverload.CurrentParameterIndex == 1)
+			{
+				var task = databaseModel.GetWeekdayNames(CancellationToken.None);
+				task.Wait();
+				var namespaceItems = task.Result.Select(n => BuildParameterCompletionItem(currentNode, n, n));
+				completionItems.AddRange(namespaceItems);
+			}
+
 			var sysContextFunctionOverload = specificFunctionOverloads.FirstOrDefault(o => o.ProgramMetadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramSysContext);
 			if (sysContextFunctionOverload != null)
 			{
 				if (sysContextFunctionOverload.CurrentParameterIndex == 0 && sysContextFunctionOverload.ProgramMetadata.Parameters[sysContextFunctionOverload.CurrentParameterIndex + 1].DataType == "VARCHAR2" &&
 				    HasSingleStringLiteralParameterOrNoParameterToken(sysContextFunctionOverload))
 				{
-					var namespaces = databaseModel.ContextData.Select(d => d.Key).Concat(Enumerable.Repeat(ContextNamespaceUserEnvironment, 1)).Distinct();
+					var task = databaseModel.GetContextData(CancellationToken.None);
+					task.Wait();
+					var namespaces = task.Result.Select(d => d.Key).Concat(Enumerable.Repeat(ContextNamespaceUserEnvironment, 1)).Distinct();
 					var namespaceItems = namespaces.Select(n => BuildParameterCompletionItem(currentNode, n, n));
 					completionItems.AddRange(namespaceItems);
 				}
@@ -195,7 +208,9 @@ namespace SqlPad.Oracle
 					}
 					else if (!String.IsNullOrEmpty(contextNamespace))
 					{
-						var attributes = databaseModel.ContextData[contextNamespace.ToPlainString()];
+						var task = databaseModel.GetContextData(CancellationToken.None);
+						task.Wait();
+						var attributes = task.Result[contextNamespace.ToPlainString()];
 						var attributeItems = attributes.Select(a => BuildParameterCompletionItem(currentNode, a, a));
 						completionItems.AddRange(attributeItems);
 					}
@@ -284,7 +299,7 @@ namespace SqlPad.Oracle
 				return false;
 			}
 
-			inputPhrase = inputPhrase == null ? null : inputPhrase.Trim('"');
+			inputPhrase = inputPhrase?.Trim('"');
 			return String.IsNullOrWhiteSpace(inputPhrase) ||
 			       ResolveSearchPhrases(inputPhrase).All(p => fullyQualifiedName.ToUpperInvariant().Contains(p));
 		}

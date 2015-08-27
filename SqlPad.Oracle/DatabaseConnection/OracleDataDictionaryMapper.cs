@@ -4,6 +4,8 @@ using System.Collections.ObjectModel;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using SqlPad.Oracle.DataDictionary;
 using ParameterDirection = SqlPad.Oracle.DataDictionary.ParameterDirection;
 
@@ -166,9 +168,16 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return metadata;
 		}
 
-		public ILookup<string, string> GetContextData()
+		public Task<ILookup<string, string>> GetContextData(CancellationToken cancellationToken)
 		{
-			return _databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectContextDataCommandText, MapContextData).ToLookup(r => r.Key, r => r.Value);
+			var result = _databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectContextDataCommandText, MapContextData).ToLookup(r => r.Key, r => r.Value);
+			return Task.FromResult(result);
+		}
+
+		public Task<IReadOnlyList<string>> GetWeekdayNames(CancellationToken cancellationToken)
+		{
+			var weekdays = (IReadOnlyList<string>)_databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectWeekdayNamesCommandText, r => (string)r["WEEKDAY"]).ToArray();
+			return Task.FromResult(weekdays);
 		}
 
 		public IEnumerable<OracleSchema> GetSchemaNames()

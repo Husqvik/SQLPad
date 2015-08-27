@@ -35,6 +35,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramRound = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "ROUND");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramLevel = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "LEVEL");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramNextDay = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "NEXT_DAY");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramSysContext = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "SYS_CONTEXT");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramToChar = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "TO_CHAR");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramToDate = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "TO_DATE");
@@ -133,7 +134,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public abstract Task UpdateUserDetailsAsync(OracleSchemaModel dataModel, CancellationToken cancellationToken);
 
-		public abstract ILookup<string, string> ContextData { get; }
+		public abstract Task<ILookup<string, string>> GetContextData(CancellationToken cancellationToken);
+
+		public abstract Task<IReadOnlyList<string>> GetWeekdayNames(CancellationToken cancellationToken);
 
 		public abstract ILookup<OracleProgramIdentifier, OracleProgramMetadata> AllFunctionMetadata { get; }
 

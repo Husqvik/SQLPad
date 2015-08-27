@@ -256,13 +256,21 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override bool IsFresh => !IsRefreshNeeded;
 
-	    private bool IsRefreshNeeded => DataDictionaryValidityTimestamp < DateTime.Now;
+		private bool IsRefreshNeeded => DataDictionaryValidityTimestamp < DateTime.Now;
 
-	    private DateTime DataDictionaryValidityTimestamp => _dataDictionary.Timestamp.AddMinutes(ConfigurationProvider.Configuration.DataModel.DataModelRefreshPeriod);
+		private DateTime DataDictionaryValidityTimestamp => _dataDictionary.Timestamp.AddMinutes(ConfigurationProvider.Configuration.DataModel.DataModelRefreshPeriod);
 
-	    public override ILookup<string, string> ContextData => _dataDictionaryMapper.GetContextData();
+		public override Task<ILookup<string, string>> GetContextData(CancellationToken cancellationToken)
+		{
+			return _dataDictionaryMapper.GetContextData(cancellationToken);
+		}
 
-	    public override Task Refresh(bool force = false)
+		public override Task<IReadOnlyList<string>> GetWeekdayNames(CancellationToken cancellationToken)
+		{
+			return _dataDictionaryMapper.GetWeekdayNames(cancellationToken);
+		}
+
+		public override Task Refresh(bool force = false)
 		{
 			lock (ActiveDataModelRefresh)
 			{
