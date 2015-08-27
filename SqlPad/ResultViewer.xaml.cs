@@ -478,7 +478,12 @@ namespace SqlPad
 
 		private void DataGridTabHeaderPopupMouseLeaveHandler(object sender, MouseEventArgs e)
 		{
-			ResultViewTabHeaderPopup.IsOpen = false;
+			var child = (FrameworkElement)ResultViewTabHeaderPopup.Child;
+			var position = Mouse.GetPosition(child);
+			if (position.X < 0 || position.Y < 0 || position.X > child.ActualWidth || position.Y > child.ActualHeight)
+			{
+				ResultViewTabHeaderPopup.IsOpen = false;
+			}
 		}
 
 		private void SearchTextChangedHandler(object sender, TextChangedEventArgs e)

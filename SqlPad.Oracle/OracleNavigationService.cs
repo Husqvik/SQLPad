@@ -11,6 +11,8 @@ namespace SqlPad.Oracle
 {
 	public class OracleNavigationService : INavigationService
 	{
+		private static readonly SourcePosition[] EmptyPosition = new SourcePosition[0];
+
 		public int? NavigateToQueryBlockRoot(ActionExecutionContext executionContext)
 		{
 			var documentRepository = executionContext.DocumentRepository;
@@ -51,35 +53,46 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		public IReadOnlyCollection<StatementGrammarNode> FindCorrespondingTerminals(ActionExecutionContext executionContext)
+		public IReadOnlyCollection<SourcePosition> FindCorrespondingSegments(ActionExecutionContext executionContext)
 		{
-			var terminal = executionContext.DocumentRepository.Statements.GetTerminalAtPosition(executionContext.CaretOffset);
-			if (terminal == null)
+			var terminal = executionContext.DocumentRepository.Statements.GetTerminalAtPosition(executionContext.CaretOffset, n => !String.Equals(n.Id, Terminals.Semicolon));
+			if (terminal == null || !terminal.Id.In(Terminals.Case, Terminals.End, Terminals.If, Terminals.Loop) ||
+			    !terminal.ParentNode.Id.In(NonTerminals.CaseExpression, NonTerminals.PlSqlBasicLoopStatement, NonTerminals.PlSqlIfStatement, NonTerminals.PlSqlCaseStatement))
 			{
-				return StatementGrammarNode.EmptyArray;
+				return EmptyPosition;
 			}
 
-			var terminals = new List<StatementGrammarNode>();
+			var correlatedSegments = new List<SourcePosition>();
 
-			switch (terminal.Id)
+			var includePreviousChild = false;
+			foreach (var child in terminal.ParentNode.ChildNodes)
 			{
-				case Terminals.Case:
-				case Terminals.End:
-					if (String.Equals(terminal.ParentNode.Id, NonTerminals.CaseExpression))
+				if (child.Id.In(Terminals.Case, Terminals.End, Terminals.If, Terminals.Loop))
+				{
+					if (includePreviousChild)
 					{
-						var correspondingTerminalId = String.Equals(terminal.Id, Terminals.Case) ? Terminals.End : Terminals.Case;
-						var correspondingTerminal = terminal.ParentNode[correspondingTerminalId];
-						if (correspondingTerminal != null)
-						{
-							terminals.Add(terminal);
-							terminals.Add(correspondingTerminal);
-						}
+						var index = correlatedSegments.Count - 1;
+						correlatedSegments[index] = SourcePosition.Create(correlatedSegments[index].IndexStart, child.SourcePosition.IndexEnd);
+					}
+					else
+					{
+						correlatedSegments.Add(child.SourcePosition);
 					}
 
-					break;
+					includePreviousChild = true;
+				}
+				else
+				{
+					includePreviousChild = false;
+				}
 			}
 
-			return terminals.AsReadOnly();
+			if (correlatedSegments.Count == 1)
+			{
+				correlatedSegments.Clear();
+			}
+
+			return correlatedSegments.AsReadOnly();
 		}
 
 		public void FindUsages(ActionExecutionContext executionContext)

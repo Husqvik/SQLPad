@@ -61,7 +61,7 @@ namespace SqlPad
 
 		int? NavigateToDefinition(ActionExecutionContext executionContext);
 
-		IReadOnlyCollection<StatementGrammarNode> FindCorrespondingTerminals(ActionExecutionContext executionContext);
+		IReadOnlyCollection<SourcePosition> FindCorrespondingSegments(ActionExecutionContext executionContext);
 
 		void FindUsages(ActionExecutionContext executionContext);
 

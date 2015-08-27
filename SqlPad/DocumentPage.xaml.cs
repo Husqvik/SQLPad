@@ -1055,7 +1055,7 @@ namespace SqlPad
 				return;
 			}
 
-			var correspondingTerminals = new List<StatementGrammarNode>();
+			var correspondingSegments = new List<SourcePosition>();
 
 			if (!_isParsing)
 			{
@@ -1085,8 +1085,8 @@ namespace SqlPad
 						var otherParenthesisTerminal = childNodes[index];
 						if (otherParenthesisTerminal.Token != null && otherParenthesisTerminal.Token.Value == otherParenthesis)
 						{
-							correspondingTerminals.Add(parenthesisTerminal);
-							correspondingTerminals.Add(otherParenthesisTerminal);
+							correspondingSegments.Add(parenthesisTerminal.SourcePosition);
+							correspondingSegments.Add(otherParenthesisTerminal.SourcePosition);
 
 							var scrollOffset = Editor.TextArea.TextView.ScrollOffset;
 							var position = Editor.TextArea.TextView.GetPosition(new Point(scrollOffset.X, scrollOffset.Y));
@@ -1129,14 +1129,14 @@ namespace SqlPad
 				else
 				{
 					var executionContext = ActionExecutionContext.Create(Editor, _sqlDocumentRepository);
-					correspondingTerminals.AddRange(_navigationService.FindCorrespondingTerminals(executionContext));
+					correspondingSegments.AddRange(_navigationService.FindCorrespondingSegments(executionContext));
 				}
 			}
 
-			var oldCorrespondingTerminals = _colorizingTransformer.CorrespondingTerminals.ToArray();
-			_colorizingTransformer.SetCorrespondingTerminals(correspondingTerminals);
+			var oldCorrespondingTerminals = _colorizingTransformer.CorrespondingSegments.ToArray();
+			_colorizingTransformer.SetCorrespondingTerminals(correspondingSegments);
 
-			RedrawSegments(oldCorrespondingTerminals.Concat(correspondingTerminals).Select(t =>t.SourcePosition));
+			RedrawSegments(oldCorrespondingTerminals.Concat(correspondingSegments));
 		}
 
 		private void HighlightActiveStatement(StatementBase newActiveStatement)

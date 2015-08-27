@@ -27,7 +27,7 @@ namespace SqlPad
 		private static readonly SolidColorBrush RedundantBrush = new SolidColorBrush(Color.FromArgb(168, Colors.Black.R, Colors.Black.G, Colors.Black.B));
 
 		private readonly Stack<ICollection<TextSegment>> _highlightSegments = new Stack<ICollection<TextSegment>>();
-		private readonly List<StatementGrammarNode> _correspondingTerminals = new List<StatementGrammarNode>();
+		private readonly List<SourcePosition> _correspondingSegments = new List<SourcePosition>();
 		private readonly HashSet<StatementGrammarNode> _redundantTerminals = new HashSet<StatementGrammarNode>();
 		private readonly Dictionary<DocumentLine, ICollection<StatementGrammarNode>> _lineTerminals = new Dictionary<DocumentLine, ICollection<StatementGrammarNode>>();
 		private readonly Dictionary<DocumentLine, ICollection<StatementGrammarNode>> _lineNodesWithSemanticErrorsOrInvalidGrammar = new Dictionary<DocumentLine, ICollection<StatementGrammarNode>>();
@@ -42,7 +42,7 @@ namespace SqlPad
 
 		public StatementBase ActiveStatement { get; private set; }
 
-		public IReadOnlyCollection<StatementGrammarNode> CorrespondingTerminals => _correspondingTerminals.AsReadOnly();
+		public IReadOnlyCollection<SourcePosition> CorrespondingSegments => _correspondingSegments.AsReadOnly();
 
 		public IEnumerable<TextSegment> HighlightSegments => _highlightSegments.SelectMany(c => c);
 
@@ -96,10 +96,10 @@ namespace SqlPad
 			_lineComments.Clear();
 		}
 
-		public void SetCorrespondingTerminals(IEnumerable<StatementGrammarNode> correspondingTerminals)
+		public void SetCorrespondingTerminals(IEnumerable<SourcePosition> correspondingSegments)
 		{
-			_correspondingTerminals.Clear();
-			_correspondingTerminals.AddRange(correspondingTerminals);
+			_correspondingSegments.Clear();
+			_correspondingSegments.AddRange(correspondingSegments);
 		}
 
 		public void AddHighlightSegments(ICollection<TextSegment> highlightSegments)
@@ -361,9 +361,9 @@ namespace SqlPad
 
 		private void SetCorrespondingTerminalsBrush(ISegment line)
 		{
-			foreach (var parenthesisNode in _correspondingTerminals)
+			foreach (var segment in _correspondingSegments)
 			{
-				ProcessNodeAtLine(line, parenthesisNode.SourcePosition, element => element.BackgroundBrush = CorrespondingTerminalBrush);
+				ProcessNodeAtLine(line, segment, element => element.BackgroundBrush = CorrespondingTerminalBrush);
 			}
 		}
 

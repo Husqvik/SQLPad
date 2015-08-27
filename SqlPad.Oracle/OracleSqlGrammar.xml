@@ -5750,6 +5750,7 @@
     <Rule StartingNonTerminal="PrefixedColumnReference">
       <Sequences>
         <Sequence>
+          <Terminal Id="New" IsOptional="true" />
           <NonTerminal Id="Prefix" IsOptional="true" />
           <NonTerminal Id="ColumnReference" />
         </Sequence>
@@ -5964,7 +5965,7 @@
           <NonTerminal Id="ExpressionList" />
           <Terminal Id="RightParenthesis" />
           <NonTerminal Id="RelationalEquiOperator" />
-          <NonTerminal Id="SetQualifier" />
+          <NonTerminal Id="SetQualifier" IsOptional="true" />
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="GroupingExpressionListOrNestedQuery" />
           <Terminal Id="RightParenthesis" />

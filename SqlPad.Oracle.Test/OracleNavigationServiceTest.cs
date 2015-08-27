@@ -2,7 +2,6 @@
 using NUnit.Framework;
 using Shouldly;
 using SqlPad.Commands;
-using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle.Test
 {
@@ -144,15 +143,59 @@ SELECT CTE.RESPONDENTBUCKET_ID, CTE.SELECTION_ID, CTE.PROJECT_ID, CTE.NAME FROM 
 		}
 
 		[Test(Description = @"")]
-		public void TestFindCorrespondingTerminals()
+		public void TestFindCorrespondingSegmentsInSqlCase()
 		{
 			const string query = "SELECT CASE WHEN 1 = 1 THEN 1 END DUAL";
 
 			var context = CreateExecutionContext(query, 8);
-			var correspondingTerminals = _navigationService.FindCorrespondingTerminals(context).ToArray();
-			correspondingTerminals.Length.ShouldBe(2);
-			correspondingTerminals[0].Id.ShouldBe(Terminals.Case);
-			correspondingTerminals[1].Id.ShouldBe(Terminals.End);
+			var correspondingSegments = _navigationService.FindCorrespondingSegments(context).OrderBy(s => s.IndexStart).ToArray();
+			correspondingSegments.Length.ShouldBe(2);
+			correspondingSegments[0].IndexStart.ShouldBe(7);
+			correspondingSegments[0].Length.ShouldBe(4);
+			correspondingSegments[1].IndexStart.ShouldBe(30);
+			correspondingSegments[1].Length.ShouldBe(3);
+		}
+
+		[Test(Description = @"")]
+		public void TestFindCorrespondingSegmentsInPlSqlCase()
+		{
+			const string query = "BEGIN CASE WHEN 1 = 1 THEN NULL; END CASE x; END;";
+
+			var context = CreateExecutionContext(query, 8);
+			var correspondingSegments = _navigationService.FindCorrespondingSegments(context).OrderBy(s => s.IndexStart).ToArray();
+			correspondingSegments.Length.ShouldBe(2);
+			correspondingSegments[0].IndexStart.ShouldBe(6);
+			correspondingSegments[0].Length.ShouldBe(4);
+			correspondingSegments[1].IndexStart.ShouldBe(33);
+			correspondingSegments[1].Length.ShouldBe(8);
+		}
+
+		[Test(Description = @"")]
+		public void TestFindCorrespondingSegmentsInPlSqlIfJustBeforeSemicolon()
+		{
+			const string query = "BEGIN IF 1 = 1 THEN NULL; END IF; END;";
+
+			var context = CreateExecutionContext(query, 32);
+			var correspondingSegments = _navigationService.FindCorrespondingSegments(context).OrderBy(s => s.IndexStart).ToArray();
+			correspondingSegments.Length.ShouldBe(2);
+			correspondingSegments[0].IndexStart.ShouldBe(6);
+			correspondingSegments[0].Length.ShouldBe(2);
+			correspondingSegments[1].IndexStart.ShouldBe(26);
+			correspondingSegments[1].Length.ShouldBe(6);
+		}
+
+		[Test(Description = @"")]
+		public void TestFindCorrespondingSegmentsInPlSqlLoop()
+		{
+			const string query = "BEGIN FOR i IN 1..10 LOOP NULL; END LOOP x; END;";
+
+			var context = CreateExecutionContext(query, 21);
+			var correspondingSegments = _navigationService.FindCorrespondingSegments(context).OrderBy(s => s.IndexStart).ToArray();
+			correspondingSegments.Length.ShouldBe(2);
+			correspondingSegments[0].IndexStart.ShouldBe(21);
+			correspondingSegments[0].Length.ShouldBe(4);
+			correspondingSegments[1].IndexStart.ShouldBe(32);
+			correspondingSegments[1].Length.ShouldBe(8);
 		}
 
 		[Test(Description = @"")]
@@ -161,7 +204,7 @@ SELECT CTE.RESPONDENTBUCKET_ID, CTE.SELECTION_ID, CTE.PROJECT_ID, CTE.NAME FROM 
 			const string query = "SELECT CASE WHEN 1 = 1 THEN 1 DUAL";
 
 			var context = CreateExecutionContext(query, 8);
-			var correspondingTerminals = _navigationService.FindCorrespondingTerminals(context).ToArray();
+			var correspondingTerminals = _navigationService.FindCorrespondingSegments(context).ToArray();
 			correspondingTerminals.Length.ShouldBe(0);
 		}
 	}

@@ -2536,6 +2536,26 @@ ORDER BY symbol, tstamp";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
+		[Test(Description = @"")]
+		public void TestNewKeywordForObjectTypeConstructor()
+		{
+			const string statement1 = @"SELECT NEW HUSQVIK.TEST_TYPE(10) X FROM DUAL";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single().Validate();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+		}
+
+		[Test(Description = @"")]
+		public void TestGroupValueComparisonWithoutSetOperator()
+		{
+			const string statement1 = @"SELECT * FROM DUAL WHERE (DUMMY, DUMMY) = (SELECT DUMMY, DUMMY FROM DUAL)";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single().Validate();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+		}
+
 		public class PlSql
 		{
 			[Test(Description = @"")]
@@ -3029,6 +3049,20 @@ END;";
 			NULL;
 		END IF;
 	END LOOP;
+END;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestNewKeywordForObjectTypeConstructor()
+			{
+				const string statement1 =
+@"DECLARE
+	x TEST_TYPE;
+BEGIN
+	x := NEW TEST_TYPE(1);
 END;";
 
 				var statement = Parser.Parse(statement1).Single().Validate();
