@@ -16,6 +16,8 @@ namespace SqlPad.Oracle.Commands
 		{
 		}
 
+		protected override Func<StatementGrammarNode, bool> CurrentNodeFilterFunction { get; } = n => !String.Equals(n.Id, Terminals.Comma);
+
 		protected override CommandCanExecuteResult CanExecute()
 		{
 			if (CurrentNode == null || CurrentQueryBlock == null || !CurrentNode.IsWithinSelectClause())
@@ -74,7 +76,7 @@ namespace SqlPad.Oracle.Commands
 			foreach (var parentDataObjectReference in AliasCommandHelper.GetParentObjectReferences(queryBlock))
 			{
 				var parentQueryBlock = parentDataObjectReference.Owner;
-				if (parentQueryBlock.ModelReference != null && parentQueryBlock.ModelReference.MeasureExpressionList != null && parentQueryBlock.ModelReference.MeasureExpressionList.LastTerminalNode != null)
+				if (parentQueryBlock.ModelReference?.MeasureExpressionList?.LastTerminalNode != null)
 				{
 					ExecutionContext.SegmentsToReplace.Add(
 						new TextSegment

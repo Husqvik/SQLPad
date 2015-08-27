@@ -56,8 +56,8 @@ namespace SqlPad.Oracle
 		public IReadOnlyCollection<SourcePosition> FindCorrespondingSegments(ActionExecutionContext executionContext)
 		{
 			var terminal = executionContext.DocumentRepository.Statements.GetTerminalAtPosition(executionContext.CaretOffset, n => !String.Equals(n.Id, Terminals.Semicolon));
-			if (terminal == null || !terminal.Id.In(Terminals.Case, Terminals.End, Terminals.If, Terminals.Loop) ||
-			    !terminal.ParentNode.Id.In(NonTerminals.CaseExpression, NonTerminals.PlSqlBasicLoopStatement, NonTerminals.PlSqlIfStatement, NonTerminals.PlSqlCaseStatement))
+			if (terminal == null || !terminal.Id.In(Terminals.Case, Terminals.End, Terminals.If, Terminals.Loop, Terminals.Begin) ||
+			    !terminal.ParentNode.Id.In(NonTerminals.CaseExpression, NonTerminals.PlSqlBasicLoopStatement, NonTerminals.PlSqlIfStatement, NonTerminals.PlSqlCaseStatement, NonTerminals.ProgramEnd, NonTerminals.PackageBodyInitializeSection, NonTerminals.ProgramBody))
 			{
 				return EmptyPosition;
 			}
@@ -79,7 +79,27 @@ namespace SqlPad.Oracle
 						correlatedSegments.Add(child.SourcePosition);
 					}
 
+					if (String.Equals(terminal.ParentNode.Id, NonTerminals.ProgramEnd))
+					{
+						var begin = terminal.ParentNode.ParentNode[Terminals.Begin];
+						if (begin != null)
+						{
+							correlatedSegments.Add(begin.SourcePosition);
+						}
+					}
+
 					includePreviousChild = true;
+				}
+				else if (String.Equals(child.Id, Terminals.Begin))
+				{
+					var endTerminal = terminal.ParentNode[NonTerminals.ProgramEnd, Terminals.End];
+					if (endTerminal != null)
+					{
+						correlatedSegments.Add(child.SourcePosition);
+						correlatedSegments.Add(endTerminal.SourcePosition);
+					}
+
+					break;
 				}
 				else
 				{

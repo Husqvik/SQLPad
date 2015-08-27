@@ -199,6 +199,34 @@ SELECT CTE.RESPONDENTBUCKET_ID, CTE.SELECTION_ID, CTE.PROJECT_ID, CTE.NAME FROM 
 		}
 
 		[Test(Description = @"")]
+		public void TestFindCorrespondingSegmentsInPlSqlSubprogram()
+		{
+			const string query = "BEGIN NULL; END x;";
+
+			var context = CreateExecutionContext(query, 0);
+			var correspondingSegments = _navigationService.FindCorrespondingSegments(context).OrderBy(s => s.IndexStart).ToArray();
+			correspondingSegments.Length.ShouldBe(2);
+			correspondingSegments[0].IndexStart.ShouldBe(0);
+			correspondingSegments[0].Length.ShouldBe(5);
+			correspondingSegments[1].IndexStart.ShouldBe(12);
+			correspondingSegments[1].Length.ShouldBe(3);
+		}
+
+		[Test(Description = @"")]
+		public void TestFindCorrespondingSegmentsInPlSqlSubprogramAtEndReservedWord()
+		{
+			const string query = "BEGIN NULL; END x;";
+
+			var context = CreateExecutionContext(query, 12);
+			var correspondingSegments = _navigationService.FindCorrespondingSegments(context).OrderBy(s => s.IndexStart).ToArray();
+			correspondingSegments.Length.ShouldBe(2);
+			correspondingSegments[0].IndexStart.ShouldBe(0);
+			correspondingSegments[0].Length.ShouldBe(5);
+			correspondingSegments[1].IndexStart.ShouldBe(12);
+			correspondingSegments[1].Length.ShouldBe(3);
+		}
+
+		[Test(Description = @"")]
 		public void TestFindCorrespondingTerminalsWithMissingCorrespondingTerminal()
 		{
 			const string query = "SELECT CASE WHEN 1 = 1 THEN 1 DUAL";

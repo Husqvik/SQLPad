@@ -1967,6 +1967,16 @@ FROM
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestPropagateCommandCanBeExecutedAtCommaTerminal()
+		{
+			const string statementText = @"SELECT 1 FROM (SELECT DUMMY, DUMMY FROM DUAL)";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 27;
+
+			CanExecuteCommand(OracleCommands.PropagateColumn).ShouldBe(true);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestPropagateCommandWithQueryBlockWithModelClause()
 		{
 			const string statementText =

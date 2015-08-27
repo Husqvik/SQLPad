@@ -1064,14 +1064,13 @@ namespace SqlPad
 				var activeStatement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
 				HighlightActiveStatement(activeStatement);
 
-				var terminal = activeStatement?.GetTerminalAtPosition(Editor.CaretOffset);
-				var parenthesisTerminal = terminal != null && terminal.Token.Value.In("(", ")", "[", "]", "{", "}") ? terminal : null;
-				if (parenthesisTerminal != null)
+				var terminal = activeStatement?.GetTerminalAtPosition(Editor.CaretOffset, t => t.Type == NodeType.Terminal && t.Token.Value.In("(", ")", "[", "]", "{", "}"));
+				if (terminal != null)
 				{
-					var childNodes = parenthesisTerminal.ParentNode.ChildNodes;
-					var index = parenthesisTerminal.ParentNode.IndexOf(parenthesisTerminal);
-					var increment = parenthesisTerminal.Token.Value.In("(", "[", "{") ? 1 : -1;
-					var otherParenthesis = GetOppositeParenthesisOrBracket(parenthesisTerminal.Token.Value);
+					var childNodes = terminal.ParentNode.ChildNodes;
+					var index = terminal.ParentNode.IndexOf(terminal);
+					var increment = terminal.Token.Value.In("(", "[", "{") ? 1 : -1;
+					var otherParenthesis = GetOppositeParenthesisOrBracket(terminal.Token.Value);
 
 					while (0 <= index && index < childNodes.Count)
 					{
@@ -1085,7 +1084,7 @@ namespace SqlPad
 						var otherParenthesisTerminal = childNodes[index];
 						if (otherParenthesisTerminal.Token != null && otherParenthesisTerminal.Token.Value == otherParenthesis)
 						{
-							correspondingSegments.Add(parenthesisTerminal.SourcePosition);
+							correspondingSegments.Add(terminal.SourcePosition);
 							correspondingSegments.Add(otherParenthesisTerminal.SourcePosition);
 
 							var scrollOffset = Editor.TextArea.TextView.ScrollOffset;
