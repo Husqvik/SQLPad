@@ -9,19 +9,17 @@ namespace SqlPad.Oracle.SemanticModel
 	public class OracleSpecialTableReference : OracleDataObjectReference
 	{
 		private IReadOnlyList<OracleColumn> _columns; 
-		private readonly IEnumerable<OracleSelectListColumn> _selectListColumns; 
 
-		public OracleSpecialTableReference(ReferenceType referenceType, IEnumerable<OracleColumn> columns)
+		public StatementGrammarNode ColumnsClause { get; }
+
+		public OracleSpecialTableReference(ReferenceType referenceType, IEnumerable<OracleSelectListColumn> columns, StatementGrammarNode columnsClause)
 			: base(referenceType)
 		{
-			_columns = columns.ToArray();
+			ColumnDefinitions = columns.ToArray();
+			ColumnsClause = columnsClause;
 		}
 
-		public OracleSpecialTableReference(ReferenceType referenceType, IEnumerable<OracleSelectListColumn> columns)
-			: base(referenceType)
-		{
-			_selectListColumns = columns;
-		}
+		public IReadOnlyList<OracleSelectListColumn> ColumnDefinitions { get; }
 
 		public override string Name => AliasNode?.Token.Value;
 
@@ -30,6 +28,6 @@ namespace SqlPad.Oracle.SemanticModel
 			return OracleObjectIdentifier.Create(null, Name);
 		}
 
-		public override IReadOnlyList<OracleColumn> Columns => _columns ?? (_columns = _selectListColumns.Select(c => c.ColumnDescription).ToArray());
+		public override IReadOnlyList<OracleColumn> Columns => _columns ?? (_columns = ColumnDefinitions.Select(c => c.ColumnDescription).ToArray());
 	}
 }

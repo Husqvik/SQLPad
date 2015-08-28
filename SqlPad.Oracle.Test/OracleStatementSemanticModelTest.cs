@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using Shouldly;
@@ -737,6 +736,81 @@ SELECT * FROM sampleData";
 			redundantTerminals[5].Id.ShouldBe(Terminals.Comma);
 			redundantTerminals[6].Id.ShouldBe(Terminals.Identifier);
 			redundantTerminals[7].Id.ShouldBe(Terminals.ColumnAlias);
+		}
+
+		[Test(Description = @"")]
+		public void TestUnusedXmlTableColumnRedundantTerminals()
+		{
+			const string query1 =
+@"SELECT
+    NULL
+FROM
+    XMLTABLE('/root'
+        PASSING XMLTYPE('<root>value</root>')
+        COLUMNS
+            VALUE1 VARCHAR2(30) PATH '.',
+            VALUE2 VARCHAR2(30) PATH '.'
+    )";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.RedundantSymbolGroups.Count.ShouldBe(1);
+			var group1 = semanticModel.RedundantSymbolGroups.First();
+			group1.Count.ShouldBe(8);
+			group1[0].Id.ShouldBe(Terminals.Comma);
+			group1[1].Id.ShouldBe(Terminals.ColumnAlias);
+			group1[1].Token.Value.ShouldBe("VALUE2");
+			group1[2].Id.ShouldBe(Terminals.Varchar2);
+			group1[3].Id.ShouldBe(Terminals.LeftParenthesis);
+			group1[4].Id.ShouldBe(Terminals.IntegerLiteral);
+			group1[5].Id.ShouldBe(Terminals.RightParenthesis);
+			group1[6].Id.ShouldBe(Terminals.Path);
+			group1[7].Id.ShouldBe(Terminals.StringLiteral);
+		}
+
+		[Test(Description = @"")]
+		public void TestUnusedJsonTableColumnRedundantTerminals()
+		{
+			const string query1 =
+@"SELECT
+    VALUE2
+FROM
+    JSON_TABLE('{ key: ""value"" }', '$'
+        COLUMNS(
+            VALUE1 VARCHAR2(30) PATH '$.key',
+            VALUE2 VARCHAR2(30) PATH '$.key',
+            VALUE3 VARCHAR2(30) PATH '$.key'
+        )
+    )";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.RedundantSymbolGroups.Count.ShouldBe(2);
+			var group1 = semanticModel.RedundantSymbolGroups.Last();
+			var group2 = semanticModel.RedundantSymbolGroups.First();
+			group2.Count.ShouldBe(8);
+			group2[0].Id.ShouldBe(Terminals.Comma);
+			group2[1].Id.ShouldBe(Terminals.ColumnAlias);
+			group2[1].Token.Value.ShouldBe("VALUE3");
+			group2[2].Id.ShouldBe(Terminals.Varchar2);
+			group2[3].Id.ShouldBe(Terminals.LeftParenthesis);
+			group2[4].Id.ShouldBe(Terminals.IntegerLiteral);
+			group2[5].Id.ShouldBe(Terminals.RightParenthesis);
+			group2[6].Id.ShouldBe(Terminals.Path);
+			group2[7].Id.ShouldBe(Terminals.StringLiteral);
+
+			group1.Count.ShouldBe(8);
+			group1[0].Id.ShouldBe(Terminals.ColumnAlias);
+			group1[0].Token.Value.ShouldBe("VALUE1");
+			group1[1].Id.ShouldBe(Terminals.Varchar2);
+			group1[2].Id.ShouldBe(Terminals.LeftParenthesis);
+			group1[3].Id.ShouldBe(Terminals.IntegerLiteral);
+			group1[4].Id.ShouldBe(Terminals.RightParenthesis);
+			group1[5].Id.ShouldBe(Terminals.Path);
+			group1[6].Id.ShouldBe(Terminals.StringLiteral);
+			group1[7].Id.ShouldBe(Terminals.Comma);
 		}
 
 		[Test(Description = @"")]
@@ -1571,6 +1645,8 @@ MODEL
 			queryBlock.Columns[3].IsDirectReference.ShouldBe(true);
 			queryBlock.Columns[4].NormalizedName.ShouldBe("\"C3\"");
 			queryBlock.Columns[4].IsDirectReference.ShouldBe(true);
+
+			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
 
 		[Test(Description = @"")]
