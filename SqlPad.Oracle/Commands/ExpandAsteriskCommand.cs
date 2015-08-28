@@ -62,8 +62,7 @@ namespace SqlPad.Oracle.Commands
 
 			_settingsModel = ExecutionContext.SettingsProvider.Settings;
 
-			_settingsModel.TextInputVisibility = Visibility.Collapsed;
-			_settingsModel.BooleanOptionsVisibility = Visibility.Visible;
+			_settingsModel.IsTextInputVisible = false;
 
 			var expandedColumns = new List<ExpandedColumn>();
 			var databaseLinkReferences = new List<OracleObjectWithColumnsReference>();

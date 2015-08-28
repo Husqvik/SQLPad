@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows;
 using SqlPad.Commands;
 using SqlPad.Oracle.SemanticModel;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
@@ -46,7 +45,7 @@ namespace SqlPad.Oracle.Commands
 				}
 			}
 
-			return _insertTarget != null && _insertTarget.DataObjectReference != null;
+			return _insertTarget?.DataObjectReference != null;
 		}
 
 		private bool ExistNamedColumns()
@@ -61,8 +60,7 @@ namespace SqlPad.Oracle.Commands
 
 			_settingsModel = ExecutionContext.SettingsProvider.Settings;
 
-			_settingsModel.TextInputVisibility = Visibility.Collapsed;
-			_settingsModel.BooleanOptionsVisibility = Visibility.Visible;
+			_settingsModel.IsTextInputVisible = false;
 
 			var columnNames = FillColumnNames();
 

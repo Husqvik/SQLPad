@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
-using System.Windows;
 using SqlPad.Commands;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
@@ -47,15 +46,14 @@ namespace SqlPad.Oracle.Commands
 			_settingsModel.Heading = _settingsModel.Title;
 
 			var createTableAsAllowed = CurrentQueryBlock == SemanticModel.MainQueryBlock;
-			_settingsModel.BooleanOptionsVisibility = Visibility.Visible;
 			_settingsModel.AddBooleanOption(
-					new BooleanOption
-					{
-						OptionIdentifier = CreateSeparateStatement,
-						DescriptionContent = "Create separate statement",
-						Value = !createTableAsAllowed,
-						IsEnabled = createTableAsAllowed
-					});
+				new BooleanOption
+				{
+					OptionIdentifier = CreateSeparateStatement,
+					DescriptionContent = "Create separate statement",
+					Value = !createTableAsAllowed,
+					IsEnabled = createTableAsAllowed
+				});
 		}
 
 		protected override void Execute()

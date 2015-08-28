@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Windows;
 using System.Windows.Controls;
 
 namespace SqlPad
@@ -10,32 +9,21 @@ namespace SqlPad
 	{
 		private string _value = String.Empty;
 
-	    public CommandSettingsModel()
-		{
-			Description = String.Empty;
-			Heading = String.Empty;
-			Title = String.Empty;
-			TextInputVisibility = Visibility.Visible;
-			BooleanOptionsVisibility = Visibility.Collapsed;
-		}
-
 		public Func<bool> UseDefaultSettings { get; set; }
 
-		public string Title { get; set; }
+		public string Title { get; set; } = String.Empty;
 
-		public string Heading { get; set; }
+		public string Heading { get; set; } = String.Empty;
 
-		public string Description { get; set; }
+		public string Description { get; set; } = String.Empty;
 
-		public Visibility TextInputVisibility { get; set; }
+		public bool IsTextInputVisible { get; set; } = true;
 
 		public string Value
 		{
 			get { return _value; }
 			set { UpdateValueAndRaisePropertyChanged(ref _value, value); }
 		}
-
-		public Visibility BooleanOptionsVisibility { get; set; }
 
 		public IDictionary<string, BooleanOption> BooleanOptions { get; } = new Dictionary<string, BooleanOption>();
 
