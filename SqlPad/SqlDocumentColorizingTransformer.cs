@@ -275,7 +275,7 @@ namespace SqlPad
 					if (brush == null)
 						continue;
 
-					ProcessNodeAtLine(line, terminal.SourcePosition,
+					ProcessSegmentAtLine(line, terminal.SourcePosition,
 						element => element.TextRunProperties.SetForegroundBrush(brush));
 				}
 			}
@@ -319,10 +319,10 @@ namespace SqlPad
 					{
 						element.BackgroundBrush = backgroundBrush;
 
-						//ProcessNodeAtLine(line, semanticError.Node.SourcePosition,
+						//ProcessSegmentAtLine(line, semanticError.Node.SourcePosition,
 						//	element => element.TextRunProperties.SetTextDecorations(Resources.BoxedText));
 
-						/*ProcessNodeAtLine(line, nodeSemanticError.Key.SourcePosition,
+						/*ProcessSegmentAtLine(line, nodeSemanticError.Key.SourcePosition,
 							element =>
 							{
 								element.BackgroundBrush = Resources.OutlineBoxBrush;
@@ -353,7 +353,7 @@ namespace SqlPad
 		{
 			foreach (var highlightSegment in _highlightSegments.SelectMany(s => s))
 			{
-				ProcessNodeAtLine(line,
+				ProcessSegmentAtLine(line,
 					new SourcePosition {IndexStart = highlightSegment.IndextStart, IndexEnd = highlightSegment.IndextStart + highlightSegment.Length - 1},
 					element => element.BackgroundBrush = highlightSegment.DisplayOptions == DisplayOptions.Usage ? HighlightUsageBrush : HighlightDefinitionBrush);
 			}
@@ -363,7 +363,7 @@ namespace SqlPad
 		{
 			foreach (var segment in _correspondingSegments)
 			{
-				ProcessNodeAtLine(line, segment, element => element.BackgroundBrush = CorrespondingTerminalBrush);
+				ProcessSegmentAtLine(line, segment, element => element.BackgroundBrush = CorrespondingTerminalBrush);
 			}
 		}
 
@@ -377,20 +377,20 @@ namespace SqlPad
 			
 			foreach (var node in nodes)
 			{
-				ProcessNodeAtLine(line, node.SourcePosition, visualElementAction);
+				ProcessSegmentAtLine(line, node.SourcePosition, visualElementAction);
 			}
 		}
 
-		private void ProcessNodeAtLine(ISegment line, SourcePosition nodePosition, Action<VisualLineElement> visualElementAction)
+		private void ProcessSegmentAtLine(ISegment line, SourcePosition segment, Action<VisualLineElement> visualElementAction)
 		{
-			if (line.Offset > nodePosition.IndexEnd + 1 ||
-			    line.EndOffset < nodePosition.IndexStart)
+			if (line.Offset > segment.IndexEnd + 1 ||
+			    line.EndOffset < segment.IndexStart)
 			{
 				return;
 			}
 
-			var errorColorStartOffset = Math.Max(line.Offset, nodePosition.IndexStart);
-			var errorColorEndOffset = Math.Min(line.EndOffset, nodePosition.IndexEnd + 1);
+			var errorColorStartOffset = Math.Max(line.Offset, segment.IndexStart);
+			var errorColorEndOffset = Math.Min(line.EndOffset, segment.IndexEnd + 1);
 
 			ChangeLinePart(errorColorStartOffset, errorColorEndOffset, visualElementAction);
 		}

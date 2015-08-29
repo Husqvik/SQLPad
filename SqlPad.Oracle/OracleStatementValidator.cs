@@ -188,13 +188,13 @@ namespace SqlPad.Oracle
 
 					if (insertTarget.ColumnListNode != null)
 					{
-						validationModel.ColumnNodeValidity[insertTarget.ColumnListNode] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = insertTarget.ColumnListNode };
+						validationModel.InvalidNonTerminals[insertTarget.ColumnListNode] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = insertTarget.ColumnListNode };
 					}
 
 					var sourceDataNode = insertTarget.ValueList ?? insertTarget.RowSource.SelectList;
 					if (sourceDataNode != null)
 					{
-						validationModel.ColumnNodeValidity[sourceDataNode] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = sourceDataNode };
+						validationModel.InvalidNonTerminals[sourceDataNode] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = sourceDataNode };
 					}
 				}
 			}
@@ -472,7 +472,7 @@ namespace SqlPad.Oracle
 					{
 						var columnNode = asteriskColumn.ColumnReferences.Single().ColumnNode;
 						INodeValidationData validationData;
-						if (!validationModel.ColumnNodeValidity.TryGetValue(columnNode, out validationData) || validationData.SemanticErrorType == OracleSemanticErrorType.None)
+						if (!validationModel.ColumnNodeValidity.TryGetValue(columnNode, out validationData) || String.Equals(validationData.SemanticErrorType, OracleSemanticErrorType.None))
 						{
 							validationModel.ColumnNodeValidity[asteriskColumn.RootNode] = new SuggestionData(OracleSuggestionType.UseExplicitColumnList) { IsRecognized = true, Node = asteriskColumn.RootNode };
 						}
@@ -1120,7 +1120,8 @@ namespace SqlPad.Oracle
 
 		public StatementGrammarNode Node { get; set; }
 
-		public virtual string ToolTipText => SemanticErrorType == OracleSemanticErrorType.None
+		public virtual string ToolTipText =>
+			SemanticErrorType == OracleSemanticErrorType.None
 		    ? Node.Type == NodeType.NonTerminal
 		        ? null
 		        : Node.Id

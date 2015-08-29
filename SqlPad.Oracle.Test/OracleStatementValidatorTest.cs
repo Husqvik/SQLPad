@@ -1404,7 +1404,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
-			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var nodeValidityDictionary = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var semanticErrorNodes = nodeValidityDictionary.Values.Where(v => v.SemanticErrorType != null).ToList();
 			semanticErrorNodes.Count.ShouldBe(2);
 			semanticErrorNodes[0].Node.GetText(sqlText).ShouldBe("(RESPONDENTBUCKET_ID, NAME)");
@@ -1422,7 +1422,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
-			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var nodeValidityDictionary = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var semanticErrorNodes = nodeValidityDictionary.Values.Where(v => v.SemanticErrorType != null).ToList();
 			semanticErrorNodes.Count.ShouldBe(2);
 			semanticErrorNodes[0].Node.GetText(sqlText).ShouldBe("(RESPONDENTBUCKET_ID, NAME)");
@@ -1440,7 +1440,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
-			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var nodeValidityDictionary = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var semanticErrorNodes = nodeValidityDictionary.Values.Where(v => v.SemanticErrorType != null).ToList();
 			semanticErrorNodes.Count.ShouldBe(1);
 			semanticErrorNodes[0].Node.GetText(sqlText).ShouldBe("RESPONDENTBUCKET_ID, NAME, PROJECT_ID");
@@ -2581,6 +2581,24 @@ FROM
 			programNodeValidities[1].IsRecognized.ShouldBe(true);
 			programNodeValidities[1].Node.Id.ShouldBe(NonTerminals.OrderByClause);
 			programNodeValidities[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.OrderByNotAllowedHere);
+		}
+
+		[Test(Description = @"")]
+		public void TestColumnCountValidationInInsertWithCommonTableExpression()
+		{
+			const string sqlText =
+@"INSERT INTO DUAL (DUMMY)
+WITH CTE AS (SELECT 1 C1, 2 C2 FROM DUAL)
+SELECT C1 FROM CTE";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var programNodeValidities = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			programNodeValidities.Count.ShouldBe(0);
 		}
 	}
 }
