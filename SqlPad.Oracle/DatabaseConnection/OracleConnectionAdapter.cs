@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
@@ -27,7 +26,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private static int _counter;
 
-		private readonly ConnectionStringSettings _connectionString;
+		private readonly string _connectionString;
 		private readonly OracleDatabaseModel _databaseModel;
 		private readonly List<OracleTraceEvent> _activeTraceEvents = new List<OracleTraceEvent>();
 		private readonly Dictionary<ResultInfo, OracleDataReader> _dataReaders = new Dictionary<ResultInfo, OracleDataReader>();
@@ -67,7 +66,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 		public OracleConnectionAdapter(OracleDatabaseModel databaseModel)
 		{
 			_databaseModel = databaseModel;
-			_connectionString = _databaseModel.ConnectionString;
+			var connectionStringBuilder = new OracleConnectionStringBuilder(databaseModel.ConnectionString.ConnectionString) { Pooling = false, SelfTuning = false };
+			_connectionString = connectionStringBuilder.ConnectionString;
 
 			var identifier = Convert.ToString(Interlocked.Increment(ref _counter));
 			UpdateModuleName(identifier);
@@ -192,7 +192,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			_databaseOutputEnabled = false;
 
-			_userConnection = new OracleConnection(_connectionString.ConnectionString);
+			_userConnection = new OracleConnection(_connectionString);
 			_userConnection.InfoMessage += UserConnectionInfoMessageHandler;
 		}
 
@@ -645,6 +645,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 							if (executionModel.EnableDebug)
 							{
 								// TODO: Add COMPILE DEBUG
+								//await StartDebuggerSession(userCommand, cancellationToken);
 								await Task.Factory.StartNew(c => StartDebuggerSession((OracleCommand)c, cancellationToken), userCommand, cancellationToken);
 							}
 							else
@@ -749,10 +750,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private async Task StartDebuggerSession(OracleCommand command, CancellationToken cancellationToken)
 		{
 			var debuggedAction =
-				new Task(async () =>
+				new Task(async c =>
 				{
-					await command.ExecuteNonQueryAsynchronous(cancellationToken);
-				});
+					await ((OracleCommand)c).ExecuteNonQueryAsynchronous(cancellationToken);
+				}, command);
 
 			_debuggerSession = new OracleDebuggerSession(_userConnection, debuggedAction);
 			_debuggerSession.Detached += DebuggerSessionDetachedHandler;
@@ -890,7 +891,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private async Task<Exception> ResolveExecutionPlanIdentifiersAndTransactionStatus(CancellationToken cancellationToken)
 		{
-			using (var connection = new OracleConnection(_connectionString.ConnectionString))
+			using (var connection = new OracleConnection(_connectionString))
 			{
 				using (var command = connection.CreateCommand())
 				{
@@ -901,6 +902,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 					try
 					{
 						connection.Open();
+						connection.ModuleName = $"{_moduleName}/BackgroundConnection";
+						connection.ActionName = "Fetch execution info";
 
 						using (var reader = await command.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken))
 						{

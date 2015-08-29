@@ -134,16 +134,21 @@ namespace SqlPad
 
 		private static void UnhandledExceptionHandler(object sender, UnhandledExceptionEventArgs unhandledExceptionEventArgs)
 		{
-			CreateErrorLog(unhandledExceptionEventArgs.ExceptionObject);
+			Current.Dispatcher.Invoke(() => UnhandledExceptionHandlerInternal(unhandledExceptionEventArgs.ExceptionObject));
+		}
+
+		private static void UnhandledExceptionHandlerInternal(object exceptionObject)
+		{
+			CreateErrorLog(exceptionObject);
 
 			try
 			{
 				var mainWindow = (MainWindow)Current.MainWindow;
 				mainWindow.SaveWorkingDocuments();
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
-				Trace.WriteLine("Work area storing operation failed: " + e);
+				Trace.WriteLine("Working documents save failed: " + e);
 			}
 		}
 

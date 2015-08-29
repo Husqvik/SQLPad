@@ -26,7 +26,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 	public class OracleDatabaseModel : OracleDatabaseModelBase
 	{
 		internal const int InitialLongFetchSize = 131072;
-		private const string ModuleNameSqlPadDatabaseModelBase = "Database model";
+		private const string ModuleNameSqlPadDatabaseModelBase = "DbModel";
 		private const string OracleDataAccessRegistryPath = @"Software\Oracle\ODP.NET";
 		private const string OracleDataAccessComponents = "Oracle Data Access Components";
 
@@ -43,6 +43,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private ILookup<OracleProgramIdentifier, OracleProgramMetadata> _allFunctionMetadata = Enumerable.Empty<OracleProgramMetadata>().ToLookup(m => m.Identifier);
 		private ILookup<OracleObjectIdentifier, OracleReferenceConstraint> _uniqueConstraintReferringReferenceConstraints = Enumerable.Empty<OracleReferenceConstraint>().ToLookup(m => m.FullyQualifiedName);
 		private readonly ConnectionStringSettings _connectionString;
+		private readonly string _innerConnectionString;
 		private readonly string _moduleName;
 		private HashSet<string> _schemas = new HashSet<string>();
 		private IReadOnlyDictionary<string, OracleSchema> _allSchemas = new Dictionary<string, OracleSchema>();
@@ -63,6 +64,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private OracleDatabaseModel(ConnectionStringSettings connectionString, string identifier)
 		{
 			_connectionString = connectionString;
+			var connectionStringBuilder = new OracleConnectionStringBuilder(_connectionString.ConnectionString) { SelfTuning = false, MinPoolSize = 1, IncrPoolSize = 1 };
+			_innerConnectionString = connectionStringBuilder.ConnectionString;
+
 			ConnectionIdentifier = identifier;
 			_moduleName = $"{ModuleNameSqlPadDatabaseModelBase}/{identifier}";
 			_oracleConnectionString = new OracleConnectionStringBuilder(connectionString.ConnectionString);
@@ -386,7 +390,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		internal async Task UpdateModelAsync(CancellationToken cancellationToken, bool suppressException, params IModelDataProvider[] updaters)
 		{
-			using (var connection = new OracleConnection(_connectionString.ConnectionString))
+			using (var connection = new OracleConnection(_innerConnectionString))
 			{
 				using (var command = connection.CreateCommand())
 				{
@@ -566,7 +570,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				return;
 			}
 
-			using (var connection = new OracleConnection(_connectionString.ConnectionString))
+			using (var connection = new OracleConnection(_innerConnectionString))
 			{
 				connection.Open();
 
@@ -583,7 +587,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		internal IEnumerable<T> ExecuteReader<T>(Func<string> getCommandTextFunction, Func<OracleDataReader, T> formatFunction)
 		{
-			using (var connection = new OracleConnection(_connectionString.ConnectionString))
+			using (var connection = new OracleConnection(_innerConnectionString))
 			{
 				connection.Open();
 
@@ -593,7 +597,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					command.BindByName = true;
 					command.InitialLONGFetchSize = OracleDataDictionaryMapper.LongFetchSize;
 
-					connection.ModuleName = _moduleName;
+					connection.ModuleName = $"{_moduleName}/MetadataMapper";
 					connection.ActionName = "Fetch data dictionary metadata";
 
 					using (var task = command.ExecuteReaderAsynchronous(CommandBehavior.CloseConnection, _backgroundTaskCancellationTokenSource.Token))

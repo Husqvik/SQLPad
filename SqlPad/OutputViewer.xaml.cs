@@ -11,7 +11,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
-using Timer = System.Timers.Timer;
+using System.Windows.Threading;
 
 namespace SqlPad
 {
@@ -21,7 +21,7 @@ namespace SqlPad
 		private const int MaxHistoryEntrySize = 8192;
 		private const string ExecutionLogTimestampFormat = "yyyy-MM-dd HH:mm:ss.fff";
 
-		private readonly Timer _timerExecutionMonitor = new Timer(100);
+		private readonly DispatcherTimer _timerExecutionMonitor;
 		private readonly Stopwatch _stopWatch = new Stopwatch();
 		private readonly StringBuilder _databaseOutputBuilder = new StringBuilder();
 		private readonly SessionExecutionStatisticsCollection _sessionExecutionStatistics = new SessionExecutionStatisticsCollection();
@@ -96,8 +96,8 @@ namespace SqlPad
 		public OutputViewer(DocumentPage documentPage)
 		{
 			InitializeComponent();
-			
-			_timerExecutionMonitor.Elapsed += delegate { Dispatcher.Invoke(() => UpdateTimerMessage(_stopWatch.Elapsed, IsCancellationRequested)); };
+
+			_timerExecutionMonitor = new DispatcherTimer(TimeSpan.FromMilliseconds(100), DispatcherPriority.Normal, (sender, args) => UpdateTimerMessage(_stopWatch.Elapsed, IsCancellationRequested), Dispatcher);
 
 			Application.Current.Deactivated += ApplicationDeactivatedHandler;
 
@@ -503,7 +503,6 @@ namespace SqlPad
 		{
 			Application.Current.Deactivated -= ApplicationDeactivatedHandler;
 			_timerExecutionMonitor.Stop();
-			_timerExecutionMonitor.Dispose();
 			ConnectionAdapter.Dispose();
 		}
 
