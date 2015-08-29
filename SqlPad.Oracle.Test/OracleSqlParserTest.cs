@@ -12,8 +12,8 @@ using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 namespace SqlPad.Oracle.Test
 {
 	[TestFixture]
-    public class OracleSqlParserTest
-    {
+	public class OracleSqlParserTest
+	{
 		private static readonly OracleSqlParser Parser = OracleSqlParser.Instance;
 
 		[Test(Description = @"")]
@@ -2556,6 +2556,16 @@ ORDER BY symbol, tstamp";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
+		[Test(Description = @""), Ignore]
+		public void TestHavingWithoutGroupBy()
+		{
+			const string statement1 = @"SELECT COUNT(*) FROM DUAL HAVING COUNT(*) = 1";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single().Validate();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+		}
+
 		public class PlSql
 		{
 			[Test(Description = @"")]
@@ -3067,6 +3077,36 @@ END;";
 
 				var statement = Parser.Parse(statement1).Single().Validate();
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
+
+			public class Triggers
+			{
+				[Test(Description = @"")]
+				public void TestCreateSimpleTrigger()
+				{
+					const string statement1 =
+@"CREATE OR REPLACE TRIGGER GenerateStudentID
+  BEFORE INSERT OR UPDATE OF id, FirstName ON lecturer
+  REFERENCING new AS new_student
+  FOR EACH ROW
+DECLARE
+  testException EXCEPTION;
+BEGIN
+  SELECT 20001
+    INTO :new_student.ID
+    FROM dual;
+
+  :new_student.FirstName := :new_student.LastName;
+  :new_student.LastName := NULL;
+
+  EXCEPTION
+    WHEN NO_DATA_FOUND
+      THEN RAISE;
+END GenerateStudentID;";
+
+					var statement = Parser.Parse(statement1).Single().Validate();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
 			}
 		}
 
