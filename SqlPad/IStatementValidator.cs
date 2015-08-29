@@ -43,7 +43,6 @@ namespace SqlPad
 		UnusedColumn,
 		RedundantColumnAlias,
 		RedundantObjectAlias,
-		UnusedQueryBlock,
-		RedundantCondition
+		UnusedQueryBlock
 	}
 }

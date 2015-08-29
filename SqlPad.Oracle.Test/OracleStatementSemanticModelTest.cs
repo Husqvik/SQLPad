@@ -788,29 +788,31 @@ FROM
 			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(2);
-			var group1 = semanticModel.RedundantSymbolGroups.Last();
-			var group2 = semanticModel.RedundantSymbolGroups.First();
-			group2.Count.ShouldBe(8);
-			group2[0].Id.ShouldBe(Terminals.Comma);
-			group2[1].Id.ShouldBe(Terminals.ColumnAlias);
-			group2[1].Token.Value.ShouldBe("VALUE3");
-			group2[2].Id.ShouldBe(Terminals.Varchar2);
-			group2[3].Id.ShouldBe(Terminals.LeftParenthesis);
-			group2[4].Id.ShouldBe(Terminals.IntegerLiteral);
-			group2[5].Id.ShouldBe(Terminals.RightParenthesis);
-			group2[6].Id.ShouldBe(Terminals.Path);
-			group2[7].Id.ShouldBe(Terminals.StringLiteral);
-
+			var group1 = semanticModel.RedundantSymbolGroups.First();
+			var group2 = semanticModel.RedundantSymbolGroups.Last();
 			group1.Count.ShouldBe(8);
-			group1[0].Id.ShouldBe(Terminals.ColumnAlias);
-			group1[0].Token.Value.ShouldBe("VALUE1");
-			group1[1].Id.ShouldBe(Terminals.Varchar2);
-			group1[2].Id.ShouldBe(Terminals.LeftParenthesis);
-			group1[3].Id.ShouldBe(Terminals.IntegerLiteral);
-			group1[4].Id.ShouldBe(Terminals.RightParenthesis);
-			group1[5].Id.ShouldBe(Terminals.Path);
-			group1[6].Id.ShouldBe(Terminals.StringLiteral);
-			group1[7].Id.ShouldBe(Terminals.Comma);
+			group1[0].Id.ShouldBe(Terminals.Comma);
+			group1[1].Id.ShouldBe(Terminals.ColumnAlias);
+			group1[1].Token.Value.ShouldBe("VALUE3");
+			group1[2].Id.ShouldBe(Terminals.Varchar2);
+			group1[3].Id.ShouldBe(Terminals.LeftParenthesis);
+			group1[4].Id.ShouldBe(Terminals.IntegerLiteral);
+			group1[5].Id.ShouldBe(Terminals.RightParenthesis);
+			group1[6].Id.ShouldBe(Terminals.Path);
+			group1[7].Id.ShouldBe(Terminals.StringLiteral);
+			group1.RedundancyType.ShouldBe(RedundancyType.UnusedColumn);
+
+			group2.Count.ShouldBe(8);
+			group2[0].Id.ShouldBe(Terminals.ColumnAlias);
+			group2[0].Token.Value.ShouldBe("VALUE1");
+			group2[1].Id.ShouldBe(Terminals.Varchar2);
+			group2[2].Id.ShouldBe(Terminals.LeftParenthesis);
+			group2[3].Id.ShouldBe(Terminals.IntegerLiteral);
+			group2[4].Id.ShouldBe(Terminals.RightParenthesis);
+			group2[5].Id.ShouldBe(Terminals.Path);
+			group2[6].Id.ShouldBe(Terminals.StringLiteral);
+			group2[7].Id.ShouldBe(Terminals.Comma);
+			group2.RedundancyType.ShouldBe(RedundancyType.UnusedColumn);
 		}
 
 		[Test(Description = @"")]

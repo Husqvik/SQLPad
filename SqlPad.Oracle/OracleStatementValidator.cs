@@ -48,11 +48,7 @@ namespace SqlPad.Oracle
 				ResolveContainerValidities(validationModel, referenceContainer);
 			}
 
-			var objectReferences = oracleSemanticModel.QueryBlocks.SelectMany(qb => qb.ObjectReferences)
-				.Concat(oracleSemanticModel.MainObjectReferenceContainer.ObjectReferences)
-				.Concat(oracleSemanticModel.InsertTargets.SelectMany(t => t.ObjectReferences));
-			
-			foreach (var objectReference in objectReferences)
+			foreach (var objectReference in oracleSemanticModel.AllReferenceContainers.SelectMany(c => c.ObjectReferences))
 			{
 				switch (objectReference.Type)
 				{
@@ -63,13 +59,13 @@ namespace SqlPad.Oracle
 					case ReferenceType.TableCollection:
 						var tableCollectionReference = (OracleTableCollectionReference)objectReference;
 						var tableCollectionProgramReference = tableCollectionReference.RowSourceReference as OracleProgramReference;
-				        if (tableCollectionProgramReference?.Metadata != null &&
-				            !tableCollectionProgramReference.Metadata.ReturnParameter.DataType.In(OracleTypeCollection.OracleCollectionTypeNestedTable, OracleTypeCollection.OracleCollectionTypeVarryingArray))
-				        {
-				            validationModel.ProgramNodeValidity[tableCollectionProgramReference.FunctionIdentifierNode] = new InvalidNodeValidationData(OracleSemanticErrorType.FunctionReturningRowSetRequired) {Node = tableCollectionProgramReference.FunctionIdentifierNode};
-				        }
+						if (tableCollectionProgramReference?.Metadata != null &&
+						    !tableCollectionProgramReference.Metadata.ReturnParameter.DataType.In(OracleTypeCollection.OracleCollectionTypeNestedTable, OracleTypeCollection.OracleCollectionTypeVarryingArray))
+						{
+							validationModel.ProgramNodeValidity[tableCollectionProgramReference.FunctionIdentifierNode] = new InvalidNodeValidationData(OracleSemanticErrorType.FunctionReturningRowSetRequired) {Node = tableCollectionProgramReference.FunctionIdentifierNode};
+						}
 
-				        var tableCollectionColumnReference = tableCollectionReference.RowSourceReference as OracleColumnReference;
+						var tableCollectionColumnReference = tableCollectionReference.RowSourceReference as OracleColumnReference;
 						if (tableCollectionColumnReference != null && databaseModel != null && databaseModel.IsMetadataAvailable && tableCollectionColumnReference.ColumnDescription != null &&
 						    !tableCollectionColumnReference.ColumnDescription.DataType.IsDynamicCollection && !String.IsNullOrEmpty(tableCollectionColumnReference.ColumnDescription.DataType.FullyQualifiedName.Name))
 						{
@@ -156,6 +152,8 @@ namespace SqlPad.Oracle
 				}
 			}
 
+			ResolveSuspiciousConditions(validationModel);
+
 			var invalidIdentifiers = oracleSemanticModel.Statement.AllTerminals
 				.Select(GetInvalidIdentifierValidationData)
 				.Where(nv => nv != null);
@@ -204,6 +202,35 @@ namespace SqlPad.Oracle
 			ValidateLiterals(validationModel);
 			
 			return validationModel;
+		}
+
+		private void ResolveSuspiciousConditions(OracleValidationModel validationModel)
+		{
+			foreach (var container in validationModel.SemanticModel.AllReferenceContainers)
+			{
+				foreach (var column in container.ColumnReferences)
+				{
+					StatementGrammarNode expressionIsNullNaNOrInfiniteNode;
+					if (!column.HasExplicitDefinition || column.ReferencesAllColumns || column.ColumnDescription == null || column.ColumnDescription.Nullable || column.RootNode == null ||
+					    !String.Equals((expressionIsNullNaNOrInfiniteNode = column.RootNode.ParentNode.ParentNode).Id, NonTerminals.ExpressionIsNullNaNOrInfinite) ||
+						expressionIsNullNaNOrInfiniteNode[NonTerminals.Expression, NonTerminals.ExpressionMathOperatorChainedList] != null)
+					{
+						continue;
+					}
+
+					var nullNaNOrInfiniteNode = expressionIsNullNaNOrInfiniteNode[NonTerminals.NullNaNOrInfinite];
+					if (nullNaNOrInfiniteNode?[Terminals.Null] == null)
+					{
+						continue;
+					}
+
+					var suggestionType = expressionIsNullNaNOrInfiniteNode[Terminals.Not] == null
+						? OracleSuggestionType.ExpressionIsAlwaysFalse
+						: OracleSuggestionType.ExpressionIsAlwaysTrue;
+
+					validationModel.InvalidNonTerminals[expressionIsNullNaNOrInfiniteNode] = new SuggestionData(suggestionType) { Node = expressionIsNullNaNOrInfiniteNode };
+				}
+			}
 		}
 
 		public async Task<ICollection<IReferenceDataSource>> ApplyReferenceConstraintsAsync(StatementExecutionResult executionResult, IDatabaseModel databaseModel, CancellationToken cancellationToken)
@@ -1079,9 +1106,9 @@ namespace SqlPad.Oracle
 		{
 			get
 			{
-				return _columnNodeValidity
-					.Where(nv => nv.Value.SuggestionType != OracleSuggestionType.None)
-					.Select(nv => nv.Value);
+				return _columnNodeValidity.Concat(_invalidNonTerminals)
+					.Select(nv => nv.Value)
+					.Where(v => v.SuggestionType != OracleSuggestionType.None);
 			}
 		}
 	}

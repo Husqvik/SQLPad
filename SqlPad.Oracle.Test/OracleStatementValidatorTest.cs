@@ -2597,8 +2597,35 @@ SELECT C1 FROM CTE";
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 
-			var programNodeValidities = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
-			programNodeValidities.Count.ShouldBe(0);
+			var invalidNonTerminalValidities = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			invalidNonTerminalValidities.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestRedundantIsNotNullCondition()
+		{
+			const string sqlText = @"SELECT * FROM SELECTION WHERE SELECTION_ID + 1 IS NOT NULL AND SELECTION_ID IS NOT NULL AND PROJECT_ID IS NOT NULL OR PROJECT_ID IS NULL";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var invalidNonTerminalValidities = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			invalidNonTerminalValidities.Count.ShouldBe(3);
+			invalidNonTerminalValidities[0].SuggestionType.ShouldBe(OracleSuggestionType.ExpressionIsAlwaysTrue);
+			invalidNonTerminalValidities[0].Node.TerminalCount.ShouldBe(4);
+			invalidNonTerminalValidities[0].Node.FirstTerminalNode.Token.Value.ShouldBe("SELECTION_ID");
+			invalidNonTerminalValidities[0].Node.LastTerminalNode.Id.ShouldBe(Terminals.Null);
+			invalidNonTerminalValidities[1].SuggestionType.ShouldBe(OracleSuggestionType.ExpressionIsAlwaysTrue);
+			invalidNonTerminalValidities[1].Node.TerminalCount.ShouldBe(4);
+			invalidNonTerminalValidities[1].Node.FirstTerminalNode.Token.Value.ShouldBe("PROJECT_ID");
+			invalidNonTerminalValidities[1].Node.LastTerminalNode.Id.ShouldBe(Terminals.Null);
+			invalidNonTerminalValidities[2].SuggestionType.ShouldBe(OracleSuggestionType.ExpressionIsAlwaysFalse);
+			invalidNonTerminalValidities[2].Node.TerminalCount.ShouldBe(3);
+			invalidNonTerminalValidities[2].Node.FirstTerminalNode.Token.Value.ShouldBe("PROJECT_ID");
+			invalidNonTerminalValidities[2].Node.LastTerminalNode.Id.ShouldBe(Terminals.Null);
 		}
 	}
 }

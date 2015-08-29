@@ -5927,10 +5927,7 @@
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="Expression" />
-          <Terminal Id="Is" />
-          <Terminal Id="Not" IsOptional="true" />
-          <NonTerminal Id="NullNaNOrInfinite" />
+          <NonTerminal Id="ExpressionIsNullNaNOrInfinite" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -6019,6 +6016,17 @@
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="Condition" />
           <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ExpressionIsNullNaNOrInfinite">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="Expression" />
+          <Terminal Id="Is" />
+          <Terminal Id="Not" IsOptional="true" />
+          <NonTerminal Id="NullNaNOrInfinite" />
         </Sequence>
       </Sequences>
     </Rule>

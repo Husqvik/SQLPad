@@ -404,6 +404,7 @@ namespace SqlPad.Oracle
 			public const string ExpressionAsXmlAliasWithMandatoryAsList = "ExpressionAsXmlAliasWithMandatoryAsList";
 			public const string ExpressionAsXmlAliasWithMandatoryAsListChained = "ExpressionAsXmlAliasWithMandatoryAsListChained";
 			public const string ExpressionCommaChainedList = "ExpressionCommaChainedList";
+			public const string ExpressionIsNullNaNOrInfinite = "ExpressionIsNullNaNOrInfinite";
 			public const string ExpressionList = "ExpressionList";
 			public const string ExpressionListOrNestedQuery = "ExpressionListOrNestedQuery";
 			public const string ExpressionMathOperatorChainedList = "ExpressionMathOperatorChainedList";

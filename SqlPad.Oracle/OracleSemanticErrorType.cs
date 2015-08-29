@@ -49,5 +49,7 @@ namespace SqlPad.Oracle
 		public const string None = null;
 		public const string PotentialDatabaseLink = "Reference over database link? Use object qualifier. ";
 		public const string UseExplicitColumnList = "Use explicit column list";
+		public const string ExpressionIsAlwaysTrue = "Expression is always true";
+		public const string ExpressionIsAlwaysFalse = "Expression is always false";
 	}
 }

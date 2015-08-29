@@ -1124,53 +1124,6 @@ namespace SqlPad.Oracle.SemanticModel
 			ResolveRedundantQualifiers();
 			
 			ResolveRedundantAliases();
-
-			//ResolveRedundantConditions();
-		}
-
-		private void ResolveRedundantConditions()
-		{
-			foreach (var container in AllReferenceContainers)
-			{
-				foreach (var column in container.ColumnReferences)
-				{
-					StatementGrammarNode conditionNode;
-					if (!column.HasExplicitDefinition || column.ReferencesAllColumns || column.ColumnDescription == null || column.ColumnDescription.Nullable || column.RootNode == null ||
-					    !String.Equals((conditionNode = column.RootNode.ParentNode.ParentNode).Id, NonTerminals.Condition))
-					{
-						continue;
-					}
-
-					var nullNaNOrInfinite = conditionNode[3];
-					if (!String.Equals(nullNaNOrInfinite?.Id, NonTerminals.NullNaNOrInfinite) || !String.Equals(nullNaNOrInfinite.FirstTerminalNode?.Id, Terminals.Null))
-					{
-						continue;
-					}
-
-					var nodes = conditionNode.ChildNodes.Where(n => !String.Equals(n.Id, NonTerminals.ChainedCondition));
-					if (String.Equals(conditionNode.ParentNode.Id, NonTerminals.ChainedCondition))
-					{
-						var logicalOperator = conditionNode.ParentNode[NonTerminals.LogicalOperator];
-						if (logicalOperator == null)
-						{
-							continue;
-						}
-
-						nodes = Enumerable.Repeat(logicalOperator, 1).Concat(nodes);
-					}
-					else
-					{
-						var logicalOperator = conditionNode[NonTerminals.ChainedCondition, NonTerminals.LogicalOperator];
-						if (logicalOperator != null)
-						{
-							nodes = nodes.Concat(Enumerable.Repeat(logicalOperator, 1));
-						}
-					}
-
-					var terminalGroup = new RedundantTerminalGroup(nodes.SelectMany(n => n.Terminals), RedundancyType.RedundantCondition);
-					_redundantTerminalGroups.Add(terminalGroup);
-				}
-			}
 		}
 
 		private void ResolveRedundantCommonTableExpressions()
