@@ -68,6 +68,7 @@
 		<CommandBinding Command="commands:GenericCommands.GoToNextEdit" Executed="GoToNextEditCommandExecutedHandler" />
 		<CommandBinding Command="commands:GenericCommands.GoToPreviousEdit" Executed="GoToPreviousEditCommandExecutedHandler" />
 		<CommandBinding Command="commands:GenericCommands.ShowRecentDocuments" Executed="ShowRecentDocumentsHandler" />
+		<CommandBinding Command="commands:GenericCommands.CreateNewPage" Executed="AddNewPageHandler" />
 	</Window.CommandBindings>
 
 	<TabControl x:Name="DocumentTabControl"

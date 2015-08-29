@@ -225,7 +225,6 @@
 				                      PreviewKeyUp="EditorKeyUpHandler"
 				                      MouseMove="MouseMoveHandler">
 					<sqlPad:SqlTextEditor.CommandBindings>
-						<CommandBinding Command="commands:GenericCommands.CreateNewPage" Executed="AddNewPage" />
 						<CommandBinding Command="commands:GenericCommands.FindUsages" Executed="FindUsages" />
 						<CommandBinding Command="commands:GenericCommands.FormatStatement" Executed="FormatStatement" />
 						<CommandBinding Command="commands:GenericCommands.FormatStatementAsSingleLine" Executed="FormatStatementAsSingleLine" />

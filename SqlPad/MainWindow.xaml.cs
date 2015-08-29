@@ -431,6 +431,11 @@ namespace SqlPad
 				}
 			}
 		}
+
+		private void AddNewPageHandler(object sender, ExecutedRoutedEventArgs e)
+		{
+			AddNewDocumentPage();
+		}
 	}
 
 	internal class RecentFileItem

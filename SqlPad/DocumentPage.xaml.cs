@@ -1958,11 +1958,6 @@ namespace SqlPad
 			}
 		}
 
-		private void AddNewPage(object sender, ExecutedRoutedEventArgs e)
-		{
-			App.MainWindow.AddNewDocumentPage();
-		}
-
 		private void CompilationErrorHandler(object sender, CompilationErrorArgs e)
 		{
 			var failedStatementSourcePosition = e.CompilationError.Statement.SourcePosition;
