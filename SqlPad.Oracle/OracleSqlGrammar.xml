@@ -4155,6 +4155,7 @@
           <NonTerminal Id="WhereClause" IsOptional="true" />
           <NonTerminal Id="HierarchicalQueryClause" IsOptional="true" />
           <NonTerminal Id="GroupByClause" IsOptional="true" />
+          <NonTerminal Id="HavingClause" IsOptional="true" />
           <NonTerminal Id="ModelClause" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -7166,7 +7167,6 @@
           <Terminal Id="Group" />
           <Terminal Id="By" />
           <NonTerminal Id="GroupingClause" />
-          <NonTerminal Id="HavingClause" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>

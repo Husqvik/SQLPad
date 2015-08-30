@@ -294,14 +294,6 @@ namespace SqlPad.Oracle.Test
 			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 
 			// TODO: Precise assertions
-
-			const string query2 = @"SELECT 1 FROM DUAL HAVING 1 = 1";
-			result = Parser.Parse(query2);
-
-			result.Count.ShouldBe(1);
-			result.Single().ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
-
-			// TODO: Precise assertions
 		}
 
 		[Test(Description = @"Tests simple queries with for update clause. ")]
@@ -2556,7 +2548,7 @@ ORDER BY symbol, tstamp";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @""), Ignore]
+		[Test(Description = @"")]
 		public void TestHavingWithoutGroupBy()
 		{
 			const string statement1 = @"SELECT COUNT(*) FROM DUAL HAVING COUNT(*) = 1";
@@ -3219,6 +3211,7 @@ END GenerateStudentID;";
 						Terminals.For,
 						Terminals.Full,
 						Terminals.Group,
+						Terminals.Having,
 						Terminals.Inner,
 						Terminals.Intersect,
 						Terminals.Join,

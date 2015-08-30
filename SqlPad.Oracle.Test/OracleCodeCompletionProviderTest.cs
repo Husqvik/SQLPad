@@ -1682,14 +1682,15 @@ se";
 		{
 			const string statement = @"SELECT * FROM DUAL ";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 19, true, OracleCodeCompletionCategory.Keyword).ToList();
-			items.Count.ShouldBe(7);
+			items.Count.ShouldBe(8);
 			items[0].Name.ShouldBe("CONNECT BY");
 			items[1].Name.ShouldBe("GROUP BY");
-			items[2].Name.ShouldBe("INTERSECT");
-			items[3].Name.ShouldBe("MINUS");
-			items[4].Name.ShouldBe("ORDER BY");
-			items[5].Name.ShouldBe("UNION");
-			items[6].Name.ShouldBe("WHERE");
+			items[2].Name.ShouldBe("HAVING");
+			items[3].Name.ShouldBe("INTERSECT");
+			items[4].Name.ShouldBe("MINUS");
+			items[5].Name.ShouldBe("ORDER BY");
+			items[6].Name.ShouldBe("UNION");
+			items[7].Name.ShouldBe("WHERE");
 
 			items.ForEach(i => i.StatementNode.ShouldBe(null));
 		}

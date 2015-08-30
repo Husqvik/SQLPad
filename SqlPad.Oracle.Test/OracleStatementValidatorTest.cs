@@ -2109,6 +2109,8 @@ SELECT * FROM CTE";
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 
+			validationModel.SemanticModel.MainQueryBlock.HavingClause.ShouldNotBe(null);
+
 			var programValidityNodes = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
 			programValidityNodes.Count.ShouldBe(7);
 			programValidityNodes[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);

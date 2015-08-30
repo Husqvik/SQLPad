@@ -830,6 +830,10 @@ SELECT * FROM DUAL";
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
+			var cteQueryBlock = semanticModel.QueryBlocks.First(qb => qb.Type == QueryBlockType.CommonTableExpression);
+			cteQueryBlock.RecursiveSearchClause.ShouldNotBe(null);
+			semanticModel.MainQueryBlock.RecursiveSearchClause.ShouldBe(null);
+
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(1);
 			var terminalGroup = semanticModel.RedundantSymbolGroups.Single();
 			terminalGroup.Count.ShouldBe(32);
@@ -868,6 +872,11 @@ SELECT * FROM DUAL";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
+
+			var cteQueryBlock = semanticModel.QueryBlocks.First(qb => qb.Type == QueryBlockType.CommonTableExpression);
+			cteQueryBlock.RecursiveSearchClause.ShouldNotBe(null);
+			cteQueryBlock.RecursiveCycleClause.ShouldNotBe(null);
+			semanticModel.MainQueryBlock.RecursiveCycleClause.ShouldBe(null);
 
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(2);
 			var terminalGroups = semanticModel.RedundantSymbolGroups.ToArray();

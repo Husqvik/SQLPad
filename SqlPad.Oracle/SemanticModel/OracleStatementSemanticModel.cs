@@ -2451,29 +2451,28 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private void FindWhereGroupByHavingReferences(OracleQueryBlock queryBlock)
 		{
+			IEnumerable<StatementGrammarNode> identifiers;
 			queryBlock.WhereClause = queryBlock.RootNode[NonTerminals.WhereClause];
 			if (queryBlock.WhereClause != null)
 			{
-				var whereClauseIdentifiers = queryBlock.WhereClause.GetDescendantsWithinSameQueryBlock(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level);
-				ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(queryBlock, queryBlock, whereClauseIdentifiers, StatementPlacement.Where, null);
+				identifiers = queryBlock.WhereClause.GetDescendantsWithinSameQueryBlock(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level);
+				ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(queryBlock, queryBlock, identifiers, StatementPlacement.Where, null);
 
 				var whereClauseGrammarSpecificFunctions = GetGrammarSpecificFunctionNodes(queryBlock.WhereClause);
 				CreateGrammarSpecificFunctionReferences(whereClauseGrammarSpecificFunctions, queryBlock, queryBlock.ProgramReferences, StatementPlacement.Where, null);
 			}
 
 			queryBlock.GroupByClause = queryBlock.RootNode[NonTerminals.GroupByClause];
-			if (queryBlock.GroupByClause == null)
+			if (queryBlock.GroupByClause != null)
 			{
-				return;
+				identifiers = queryBlock.GroupByClause.GetPathFilterDescendants(n => !n.Id.In(NonTerminals.NestedQuery), Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level);
+				ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(queryBlock, queryBlock, identifiers, StatementPlacement.GroupBy, null);
+
+				var groupByClauseGrammarSpecificFunctions = GetGrammarSpecificFunctionNodes(queryBlock.GroupByClause);
+				CreateGrammarSpecificFunctionReferences(groupByClauseGrammarSpecificFunctions, queryBlock, queryBlock.ProgramReferences, StatementPlacement.GroupBy, null);
 			}
 
-			var identifiers = queryBlock.GroupByClause.GetPathFilterDescendants(n => !n.Id.In(NonTerminals.NestedQuery, NonTerminals.HavingClause), Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level);
-			ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(queryBlock, queryBlock, identifiers, StatementPlacement.GroupBy, null);
-
-			var groupByClauseGrammarSpecificFunctions = GetGrammarSpecificFunctionNodes(queryBlock.GroupByClause, n => n.Id != NonTerminals.HavingClause);
-			CreateGrammarSpecificFunctionReferences(groupByClauseGrammarSpecificFunctions, queryBlock, queryBlock.ProgramReferences, StatementPlacement.GroupBy, null);
-
-			queryBlock.HavingClause = queryBlock.GroupByClause[NonTerminals.HavingClause];
+			queryBlock.HavingClause = queryBlock.RootNode[NonTerminals.HavingClause];
 			if (queryBlock.HavingClause == null)
 			{
 				return;
