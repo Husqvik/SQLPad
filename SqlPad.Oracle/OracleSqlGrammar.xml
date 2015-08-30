@@ -4939,10 +4939,6 @@
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="BindVariableExpression" />
-          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
-        </Sequence>
-        <Sequence>
           <Terminal Id="Timestamp" />
           <Terminal Id="StringLiteral" />
           <NonTerminal Id="TimestampAtTimeZone" IsOptional="true" />
@@ -5000,6 +4996,14 @@
         <Sequence>
           <NonTerminal Id="PrefixedColumnReference" />
           <NonTerminal Id="MultisetOperatorClauseOrTimestampAtTimeZone" IsOptional="true" />
+          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="AssignmentTriggerReferenceTarget" />
+          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="BindVariableExpression" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -10794,17 +10798,178 @@
         <Sequence>
           <NonTerminal Id="SimpleDmlTrigger" />
         </Sequence>
-        <!--
         <Sequence>
           <NonTerminal Id="InsteadOfDmlTrigger" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="CompoundOfDmlTrigger" />
         </Sequence>
+        <!--
         <Sequence>
           <NonTerminal Id="SystemTrigger" />
         </Sequence>
         -->
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CompoundOfDmlTrigger">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="For" />
+          <NonTerminal Id="DmlEventClause" />
+          <NonTerminal Id="ReferencingClause" IsOptional="true" />
+          <NonTerminal Id="TriggerEditionClause" IsOptional="true" />
+          <NonTerminal Id="TriggerOrderingClause" IsOptional="true" />
+          <NonTerminal Id="EnableOrDisable" IsOptional="true" />
+          <NonTerminal Id="WhenCondition" IsOptional="true" />
+          <NonTerminal Id="CompoundTriggerBlock" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CompoundTriggerBlock">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Compound" />
+          <Terminal Id="Trigger" />
+          <NonTerminal Id="ProgramDeclareSection" IsOptional="true" />
+          <NonTerminal Id="TimingPointSectionList" />
+          <NonTerminal Id="ProgramEnd" Comment="This non-terminal cannot be inlined because of possible grammar reversion - 'END trigger_identifier;' can be parsed as variable declaration and parser accepts at least same number of terminals when attempting to revert grammar node. " />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="TimingPointSectionList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="TimingPointSection" />
+          <NonTerminal Id="TimingPointSectionList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="TimingPointSection" Scope="PlSqlBody">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="TimingPoint" />
+          <Terminal Id="Is" />
+          <Terminal Id="Begin" />
+          <NonTerminal Id="TimingPointBody" />
+          <NonTerminal Id="EndTimingPoint" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="TimingPointBody">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="PlSqlStatement"/>
+          <NonTerminal Id="PlSqlStatementOrInlinePragmaList" IsOptional="true" />
+          <NonTerminal Id="PlSqlExceptionClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="EndTimingPoint">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="End" />
+          <NonTerminal Id="TimingPoint" />
+          <Terminal Id="Semicolon" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="EachRowOrStatement">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Each" />
+          <Terminal Id="Row" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Statement" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="TimingPoint">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Before" />
+          <NonTerminal Id="EachRowOrStatement" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="After" />
+          <NonTerminal Id="EachRowOrStatement" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Instead" />
+          <Terminal Id="Of" />
+          <Terminal Id="Each" />
+          <Terminal Id="Row" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="InsteadOfDmlTrigger">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Instead" />
+          <Terminal Id="Of" />
+          <NonTerminal Id="TriggerEventTypeList" />
+          <Terminal Id="On" />
+          <NonTerminal Id="NestedTableOf" IsOptional="true" />
+          <NonTerminal Id="SchemaObject" />
+          <NonTerminal Id="ReferencingClause" IsOptional="true" />
+          <NonTerminal Id="ForEachRow" IsOptional="true" />
+          <NonTerminal Id="TriggerEditionClause" IsOptional="true" />
+          <NonTerminal Id="TriggerOrderingClause" IsOptional="true" />
+          <NonTerminal Id="EnableOrDisable" IsOptional="true" />
+          <NonTerminal Id="TriggerBody" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="NestedTableOf">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Nested" />
+          <Terminal Id="Table" />
+          <Terminal Id="Identifier" />
+          <Terminal Id="Of" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="TriggerEventTypeList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="TriggerEventType" />
+          <NonTerminal Id="TriggerEventTypeListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="TriggerEventType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Delete" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Insert" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Update" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="TriggerEventTypeListChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Or" />
+          <NonTerminal Id="TriggerEventTypeList" />
+        </Sequence>
       </Sequences>
     </Rule>
     
@@ -11407,7 +11572,7 @@
           <Terminal Id="Table" />
           <Terminal Id="Of" />
           <Terminal Id="Ref" IsOptional="true" />
-          <NonTerminal Id="DataType" />
+          <NonTerminal Id="PlSqlDataType" />
           <NonTerminal Id="NotNull" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -12615,24 +12780,11 @@
           <NonTerminal Id="PlSqlBooleanExpression" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="AssignmentTriggerReferenceTarget" />
-          <NonTerminal Id="PlSqlExpressionMathOperatorChainedList" IsOptional="true" />
-        </Sequence>
-        <Sequence>
           <NonTerminal Id="Expression" />
         </Sequence>
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="PlSqlExpressionMathOperatorChainedList">
-      <Sequences>
-        <Sequence>
-          <NonTerminal Id="MathOperator" />
-          <NonTerminal Id="PlSqlExpression" />
-        </Sequence>
-      </Sequences>
-    </Rule>
-    
     <Rule StartingNonTerminal="RowCountOrBulkRowCount">
       <Sequences>
         <Sequence>
@@ -18638,6 +18790,9 @@
     <Terminal Id="Referencing" Value="REFERENCING" />
     <Terminal Id="Old" Value="OLD" />
     <Terminal Id="Parent" Value="PARENT" />
+    <Terminal Id="Instead" Value="INSTEAD" />
+    <Terminal Id="Compound" Value="COMPOUND" />
+    <Terminal Id="Statement" Value="STATEMENT" />
     
     <!-- External table opaque format specification -->
     <Terminal Id="OracleLoader" Value="ORACLE_LOADER" />

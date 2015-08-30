@@ -251,7 +251,7 @@ WHERE
 			EnterText("()");
 			Editor.CaretOffset = 1;
 			EnterText("(");
-			Editor.Text.ShouldBe("(()");
+			Editor.Text.ShouldBe("(())");
 			Editor.CaretOffset.ShouldBe(2);
 
 			Editor.Clear();

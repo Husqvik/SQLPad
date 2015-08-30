@@ -3099,6 +3099,76 @@ END GenerateStudentID;";
 					var statement = Parser.Parse(statement1).Single().Validate();
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
+
+				[Test(Description = @"")]
+				public void TestCreateInsteadOfTrigger()
+				{
+					const string statement1 =
+@"CREATE OR REPLACE TRIGGER ioft_insert_role_perm
+INSTEAD OF INSERT
+  ON role_permission_view
+  FOR EACH ROW
+DECLARE
+  x INTEGER;
+BEGIN
+  IF x = 0 THEN
+    INSERT INTO permission_code (pcode, pcode_description, mod_user_id, mod_user_date)
+    VALUES (:NEW.pcode, 'New Code', USER, SYSDATE);
+  END IF;
+
+  IF x = 0 THEN
+    INSERT INTO dept_code (dept_code, dept_name)
+    VALUES (:NEW.dept_code, 'New Dept');
+  END IF;
+
+  INSERT INTO user_role (dept_code, pcode, mod_user_id)
+  VALUES (:NEW.dept_code, :NEW.pcode, 'Morgan');
+END ioft_insert_role_perm;";
+
+					var statement = Parser.Parse(statement1).Single().Validate();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestCreateCompoundTrigger()
+				{
+					const string statement1 =
+@"create or replace trigger check_raise_on_avg
+for update of sal on emp
+COMPOUND TRIGGER
+  Twelve_Percent        constant number:=0.12;
+  TYPE Department_Salaries_t  IS TABLE OF Emp.Sal%TYPE
+                                INDEX BY VARCHAR2(80);
+  Department_Avg_Salaries     Department_Salaries_t;
+  TYPE Sal_t             IS TABLE OF Emp.Sal%TYPE;
+  Avg_Salaries                Sal_t;
+  TYPE Deptno_t       IS TABLE OF Emp.Deptno%TYPE;
+  Department_IDs              Deptno_t;
+
+  BEFORE STATEMENT IS
+  BEGIN
+    SELECT               AVG(e.Sal), NVL(e.Deptno, -1)
+      BULK COLLECT INTO  Avg_Salaries, Department_IDs
+      FROM               Emp e
+      GROUP BY           e.Deptno;
+    FOR j IN 1..Department_IDs.COUNT() LOOP
+      Department_Avg_Salaries(Department_IDs(j)) := Avg_Salaries(j);
+    END LOOP;
+  END BEFORE STATEMENT;
+
+  AFTER EACH ROW IS
+  BEGIN
+    IF :NEW.Sal - :Old.Sal >
+      Twelve_Percent*Department_Avg_Salaries(:NEW.Deptno)
+    THEN
+      Raise_Application_Error(-20000, 'Raise too large');
+    END IF;
+  END AFTER EACH ROW;
+END Check_Raise_On_Avg;";
+
+					var statement = Parser.Parse(statement1).Single().Validate();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
 			}
 		}
 

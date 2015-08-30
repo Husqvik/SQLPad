@@ -453,7 +453,7 @@ BEGIN
 	DBMS_LOB.WRITEAPPEND(lob_loc => :output_clob, amount => 8, buffer => '<Items>' || CHR(10));
 
 	FOR i IN 1..backtrace.COUNT LOOP
-		line_content := '<Item><Owner>' || backtrace(i).owner || '</Owner>' || '<Name>' || backtrace(i).name || '</Name>' || '<Line>' || backtrace(i).line# || '</Line>' || '<DatabaseLink>' || backtrace(i).dblink || '</DatabaseLink>' || '<Namespace>' || backtrace(i).namespace || '</Namespace>' || '</Item>' || CHR(10);
+		line_content := '<Item><Owner>' || backtrace(i).owner || '</Owner>' || '<Name>' || backtrace(i).name || '</Name>' || '<Line>' || backtrace(i).line# || '</Line>' || '<DatabaseLink>' || backtrace(i).dblink || '</DatabaseLink>' || '<Namespace>' || backtrace(i).namespace || '</Namespace>' || '<LibraryUnitType>' || backtrace(i).libunittype || '</LibraryUnitType>' || '</Item>' || CHR(10);
 		DBMS_LOB.WRITEAPPEND(lob_loc => :output_clob, amount => LENGTH(line_content), buffer => line_content);
 	END LOOP;
 

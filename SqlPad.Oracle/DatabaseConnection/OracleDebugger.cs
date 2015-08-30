@@ -493,6 +493,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 		
 		[XmlElement("Namespace")]
 		public int Namespace { get; set; }
+
+		[XmlElement("LibraryUnitType")]
+		public int LibraryUnitType { get; set; }
 	}
 
 	public enum OracleDebugReason
