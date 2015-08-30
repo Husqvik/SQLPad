@@ -162,10 +162,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			DataModel.HistogramValues = histogramValues;
 		}
 
-		public override bool IsValid
-		{
-			get { return DataModel.HistogramType != null && DataModel.HistogramType != "None"; }
-		}
+		public override bool IsValid => DataModel.HistogramType != null && DataModel.HistogramType != "None";
 	}
 
 	internal class ColumnDetailInMemoryDataProvider : ModelDataProvider<ColumnDetailsModel>
@@ -200,10 +197,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			DataModel.InMemoryCompression = (string)reader["INMEMORY_COMPRESSION"];
 		}
 
-		public override bool IsValid
-		{
-			get { return InMemoryHelper.HasInMemorySupport(_oracleVersion); }
-		}
+		public override bool IsValid => InMemoryHelper.HasInMemorySupport(_oracleVersion);
 	}
 
 	internal static class InMemoryHelper
@@ -436,7 +430,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 		private readonly string _objectName;
 		private readonly StatementBase _statement;
 
-		public IReadOnlyList<CompilationError> Errors { get { return _errors.AsReadOnly(); } } 
+		public IReadOnlyList<CompilationError> Errors => _errors.AsReadOnly();
 
 		public CompilationErrorDataProvider(StatementBase statement, string currentSchema)
 			: base(null)
@@ -487,10 +481,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			}
 		}
 
-		public override bool IsValid
-		{
-			get { return !String.IsNullOrEmpty(_objectName); }
-		}
+		public override bool IsValid => !String.IsNullOrEmpty(_objectName);
 	}
 
 	internal class TableInMemorySpaceAllocationDataProvider : ModelDataProvider<TableDetailsModel>
@@ -528,15 +519,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 				 OracleReaderValueConvert.ToString(reader["POPULATE_STATUS"]));
 		}
 
-		public override bool HasScalarResult
-		{
-			get { return false; }
-		}
+		public override bool HasScalarResult => false;
 
-		public override bool IsValid
-		{
-			get { return InMemoryHelper.HasInMemorySupport(_oracleVersion); }
-		}
+		public override bool IsValid => InMemoryHelper.HasInMemorySupport(_oracleVersion);
 	}
 
 	internal class ObjectScriptDataProvider : ModelDataProvider<ModelBase>
@@ -563,7 +548,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			ScriptText = (string)value;
 		}
 
-		public override bool HasScalarResult { get { return true; } }
+		public override bool HasScalarResult { get; } = true;
 	}
 
 	internal class DisplayCursorDataProvider : ModelDataProvider<ModelBase>
@@ -610,10 +595,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			PlanText = builder.ToString();
 		}
 
-		public override bool IsValid
-		{
-			get { return _displayLastCursor || _sqlId != null; }
-		}
+		public override bool IsValid => _displayLastCursor || _sqlId != null;
 	}
 
 	internal class RemoteTableColumnDataProvider : ModelDataProvider<ModelBase>
@@ -626,10 +608,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			_commandText = $"SELECT * FROM {objectIdentifer.ToNormalizedString()}@{databaseLink} WHERE 1 = 0";
 		}
 
-		public IReadOnlyList<string> Columns
-		{
-			get { return _columns.AsReadOnly(); }
-		}
+		public IReadOnlyList<string> Columns => _columns.AsReadOnly();
 
 		public override void InitializeCommand(OracleCommand command)
 		{

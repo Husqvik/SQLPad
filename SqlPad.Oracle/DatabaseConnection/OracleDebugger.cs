@@ -2,7 +2,11 @@
 using System.Threading;
 using System.Threading.Tasks;
 using System;
+using System.Collections.Generic;
 using System.Data;
+using System.IO;
+using System.Text;
+using System.Xml.Serialization;
 using SqlPad.Oracle.DataDictionary;
 #if ORACLE_MANAGED_DATA_ACCESS_CLIENT
 using Oracle.ManagedDataAccess.Client;
@@ -19,14 +23,21 @@ namespace SqlPad.Oracle.DatabaseConnection
 	public class OracleDebuggerSession : IDebuggerSession, IDisposable
 	{
 		private const string ParameterDebugActionStatus = "DEBUG_ACTION_STATUS";
+		private const string PlSqlBlockTitle = "Anonymous PL/SQL block";
+
+		private static readonly XmlSerializer StackTraceSerializer = new XmlSerializer(typeof(OracleStackTrace));
 
 		private readonly OracleCommand _debuggedSessionCommand;
-		private readonly OracleConnection _debuggerSession;
+		private readonly OracleConnection _debuggerConnection;
 		private readonly OracleCommand _debuggerSessionCommand;
-		private readonly Task _debuggedAction;
+		private readonly OracleDatabaseModel _databaseModel;
+		private readonly OracleCommand _debuggedCommand;
+		private readonly List<StackTraceItem> _stackTrace = new List<StackTraceItem>();
+		private readonly Dictionary<string, string> _sources = new Dictionary<string, string>();
 
 		private OracleRuntimeInfo _runtimeInfo;
 		private string _debuggerSessionId;
+		private Task _debuggedAction;
 
 		public event EventHandler Detached;
 
@@ -34,14 +45,20 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public int? ActiveLine => _runtimeInfo.SourceLocation.LineNumber;
 
-		public OracleDebuggerSession(OracleConnection debuggedSession, Task debuggedAction)
+		public IReadOnlyList<StackTraceItem> StackTrace => _stackTrace;
+
+		public OracleDebuggerSession(OracleDatabaseModel databaseModel, OracleCommand debuggedCommand)
 		{
-			_debuggedSessionCommand = debuggedSession.CreateCommand();
+			_debuggedCommand = debuggedCommand;
+			_databaseModel = databaseModel;
+			var debuggedConnection = _debuggedCommand.Connection;
+			_debuggedSessionCommand = debuggedConnection.CreateCommand();
 			_debuggedSessionCommand.BindByName = true;
-			_debuggerSession = (OracleConnection)debuggedSession.Clone();
-			_debuggerSessionCommand = _debuggerSession.CreateCommand();
+			_debuggerConnection = (OracleConnection)debuggedConnection.Clone();
+			_debuggerSessionCommand = _debuggerConnection.CreateCommand();
 			_debuggerSessionCommand.BindByName = true;
-			_debuggedAction = debuggedAction;
+
+			_sources.Add(PlSqlBlockTitle, debuggedCommand.CommandText);
 		}
 
 		public async Task<bool> IsRunning(CancellationToken cancellationToken)
@@ -54,13 +71,18 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return Convert.ToBoolean(isRunning);
 		}
 
-		public async Task<string> GetStackTrace(CancellationToken cancellationToken)
+		public async Task<OracleStackTrace> GetStackTrace(CancellationToken cancellationToken)
 		{
 			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.GetDebuggerStackTrace;
 			_debuggerSessionCommand.Parameters.Clear();
 			_debuggerSessionCommand.AddSimpleParameter("OUTPUT_CLOB", null, TerminalValues.Clob);
 			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
-			return ((OracleClob)_debuggerSessionCommand.Parameters[0].Value).Value;
+			var xmlString = ((OracleClob)_debuggerSessionCommand.Parameters[0].Value).Value;
+
+			using (var reader = new StringReader(xmlString))
+			{
+				return (OracleStackTrace)StackTraceSerializer.Deserialize(reader);
+			}
 		}
 
 		public async Task Start(CancellationToken cancellationToken)
@@ -77,6 +99,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 			await Attach(cancellationToken);
 			Trace.WriteLine("Debugger attached. ");
 
+			_debuggedAction =
+				new Task(async () =>
+				{
+					await _debuggedCommand.ExecuteNonQueryAsynchronous(cancellationToken);
+				});
+
 			using (var startDebuggerTask = Synchronize(cancellationToken))
 			{
 				_debuggedAction.Start();
@@ -84,8 +112,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 				startDebuggerTask.Wait(cancellationToken);
 				Trace.WriteLine("Debugger synchronized. ");
-				_runtimeInfo = startDebuggerTask.Result;
-				_runtimeInfo.Trace();
 			}
 		}
 
@@ -124,8 +150,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			await Continue(breakFlags, cancellationToken);
 
-			_runtimeInfo.Trace();
-
 			if (_runtimeInfo.IsTerminated == true)
 			{
 				await Detach(cancellationToken);
@@ -139,12 +163,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_debuggerSessionCommand.AddSimpleParameter("BREAK_FLAGS", (int)breakFlags, TerminalValues.Number);
 			AddDebugParameters(_debuggerSessionCommand);
 
-			_debuggerSession.ActionName = "Continue";
+			_debuggerConnection.ActionName = "Continue";
 			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
 
 			var status = (OracleDebugActionResult)GetValueFromOracleDecimal(_debuggerSessionCommand.Parameters[ParameterDebugActionStatus]);
 
-			_runtimeInfo = GetRuntimeInfo(_debuggerSessionCommand);
+			await UpdateRuntimeInfo(GetRuntimeInfo(_debuggerSessionCommand), cancellationToken);
 		}
 
 		public async Task GetLineMap(OracleObjectIdentifier objectIdentifier, CancellationToken cancellationToken)
@@ -158,7 +182,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var lineMapParameter = _debuggerSessionCommand.AddSimpleParameter("LINEMAP", null, TerminalValues.Raw, 32767);
 			var resultParameter = _debuggerSessionCommand.AddSimpleParameter("RESULT", null, TerminalValues.Number);
 
-			_debuggerSession.ActionName = "Get line map";
+			_debuggerConnection.ActionName = "Get line map";
 			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
 
 			var result = GetValueFromOracleDecimal(resultParameter);
@@ -178,24 +202,83 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_debuggerSessionCommand.Parameters.Clear();
 			_debuggerSessionCommand.AddSimpleParameter("DEBUG_SESSION_ID", _debuggerSessionId);
 
-			_debuggerSession.Open();
-			_debuggerSession.ModuleName = "SQLPad PL/SQL Debugger";
-			_debuggerSession.ActionName = "Attach";
+			_debuggerConnection.Open();
+			_debuggerConnection.ModuleName = "SQLPad PL/SQL Debugger";
+			_debuggerConnection.ActionName = "Attach";
 
 			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
 		}
 
-		private async Task<OracleRuntimeInfo> Synchronize(CancellationToken cancellationToken)
+		private async Task Synchronize(CancellationToken cancellationToken)
 		{
 			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.SynchronizeDebugger;
 			_debuggerSessionCommand.Parameters.Clear();
 			AddDebugParameters(_debuggerSessionCommand);
 
-			_debuggerSession.ActionName = "Synchronize";
+			_debuggerConnection.ActionName = "Synchronize";
 
 			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
 
-			return GetRuntimeInfo(_debuggerSessionCommand);
+			await UpdateRuntimeInfo(GetRuntimeInfo(_debuggerSessionCommand), cancellationToken);
+		}
+
+		private async Task UpdateRuntimeInfo(OracleRuntimeInfo runtimeInfo, CancellationToken cancellationToken)
+		{
+			_runtimeInfo = runtimeInfo;
+			_runtimeInfo.Trace();
+
+			if (_runtimeInfo.IsTerminated == true)
+			{
+				return;
+			}
+
+			var stackTrace = await GetStackTrace(cancellationToken);
+			_stackTrace.Clear();
+
+			foreach (var item in stackTrace.Items)
+			{
+				var isAnonymousBlock = String.IsNullOrEmpty(item.Name);
+
+				var objectName = isAnonymousBlock
+					? PlSqlBlockTitle
+					: $"{_runtimeInfo.SourceLocation.Owner}.{_runtimeInfo.SourceLocation.Name}";
+
+				string programText;
+				if (!_sources.TryGetValue(objectName, out programText))
+				{
+					programText = await GetSources(item, cancellationToken);
+					_sources.Add(objectName, programText);
+				}
+
+				var stackTraceItem =
+					new StackTraceItem
+					{
+						Header = objectName,
+						ProgramText = programText,
+						Line = item.Line
+					};
+
+				_stackTrace.Add(stackTraceItem);
+			}
+		}
+
+		private async Task<string> GetSources(OracleStackTraceItem activeItem, CancellationToken cancellationToken)
+		{
+			_debuggerSessionCommand.CommandText = "SELECT TYPE, LINE, TEXT FROM DBA_SOURCE WHERE OWNER = :OWNER AND NAME = :NAME AND TYPE IN ('FUNCTION', 'JAVA SOURCE', 'LIBRARY', 'PACKAGE BODY', 'PACKAGE', 'PROCEDURE', 'TRIGGER', 'TYPE BODY', 'TYPE') ORDER BY TYPE, LINE";
+			_debuggerSessionCommand.Parameters.Clear();
+			_debuggerSessionCommand.AddSimpleParameter("OWNER", activeItem.Owner);
+			_debuggerSessionCommand.AddSimpleParameter("NAME", activeItem.Name);
+
+			using (var reader = await _debuggerSessionCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken))
+			{
+				var sourceBuilder = new StringBuilder();
+				while (reader.Read())
+				{
+					sourceBuilder.Append((string)reader["TEXT"]);
+				}
+
+				return sourceBuilder.ToString();
+			}
 		}
 
 		private static OracleRuntimeInfo GetRuntimeInfo(OracleCommand command)
@@ -260,7 +343,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var breakpointIdentifierParameter = _debuggerSessionCommand.AddSimpleParameter("BREAKPOINT_IDENTIFIER", null, TerminalValues.Number);
 			var resultParameter = _debuggerSessionCommand.AddSimpleParameter("RESULT", null, TerminalValues.Number);
 
-			_debuggerSession.ActionName = "Set breakpoint";
+			_debuggerConnection.ActionName = "Set breakpoint";
 			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
 
 			var result = (OracleBreakpointFunctionResult)GetValueFromOracleDecimal(resultParameter);
@@ -271,26 +354,27 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public Task Continue(CancellationToken cancellationToken)
 		{
-			_debuggerSession.ActionName = "Continue";
+			_debuggerConnection.ActionName = "Continue";
 			return ContinueAndDetachIfTerminated(OracleDebugBreakFlags.Exception, cancellationToken);
 		}
 
 		public Task StepNextLine(CancellationToken cancellationToken)
 		{
-			_debuggerSession.ActionName = "Step next line";
+			_debuggerConnection.ActionName = "Step next line";
 			return ContinueAndDetachIfTerminated(OracleDebugBreakFlags.NextLine, cancellationToken);
 		}
 
 		public async Task StepInto(CancellationToken cancellationToken)
 		{
-			_debuggerSession.ActionName = "Step into";
+			_debuggerConnection.ActionName = "Step into";
 			await ContinueAndDetachIfTerminated(OracleDebugBreakFlags.AnyCall, cancellationToken);
 
 			// remove
 			if (_runtimeInfo.IsTerminated != true)
 			{
 				var aValue = GetValue("A");
-				Trace.WriteLine("A = " + aValue);
+				var bValue = GetValue("B");
+				Trace.WriteLine($"A = {aValue}; B = {bValue}");
 				//Trace.WriteLine("Stack trace: \n" + await GetStackTrace(cancellationToken));
 				//Trace.WriteLine("Is running:" + await IsRunning(cancellationToken));
 			}
@@ -298,7 +382,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public Task StepOut(CancellationToken cancellationToken)
 		{
-			_debuggerSession.ActionName = "Step out";
+			_debuggerConnection.ActionName = "Step out";
 			return ContinueAndDetachIfTerminated(OracleDebugBreakFlags.AnyReturn, cancellationToken);
 		}
 
@@ -322,7 +406,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.DetachDebugger;
 			_debuggerSessionCommand.Parameters.Clear();
-			_debuggerSession.ActionName = "Detach";
+			_debuggerConnection.ActionName = "Detach";
 			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
 
 			Trace.WriteLine("Debugger detached from target session. ");
@@ -334,7 +418,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			_debuggedSessionCommand.Dispose();
 			_debuggerSessionCommand.Dispose();
-			_debuggerSession.Dispose();
+			_debuggerConnection.Dispose();
 
 			Trace.WriteLine("Debugger disposed. ");
 		}
@@ -384,6 +468,31 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			System.Diagnostics.Trace.WriteLine($"LineNumber = {LineNumber}; DatabaseLink = {DatabaseLink}; EntryPointName = {EntryPointName}; Owner = {Owner}; Name = {Name}; Namespace = {Namespace}; LibraryUnitType = {LibraryUnitType}");
 		}
+	}
+
+	[XmlRoot("Items")]
+	public class OracleStackTrace
+	{
+		[XmlElement("Item")]
+		public OracleStackTraceItem[] Items { get; set; }
+	}
+
+	public class OracleStackTraceItem
+	{
+		[XmlElement("Owner")]
+		public string Owner { get; set; }
+
+		[XmlElement("Name")]
+		public string Name { get; set; }
+
+		[XmlElement("DatabaseLink")]
+		public string DatabaseLink { get; set; }
+
+		[XmlElement("Line")]
+		public int Line { get; set; }
+		
+		[XmlElement("Namespace")]
+		public int Namespace { get; set; }
 	}
 
 	public enum OracleDebugReason

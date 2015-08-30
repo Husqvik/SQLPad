@@ -787,6 +787,12 @@ namespace SqlPad
 					EnableDebug = EnableDebug
 				};
 
+			if (EnableDebug && executionModels.Count > 1)
+			{
+				Messages.ShowInformation("Debugging of multiple statements is not supported. ");
+				return;
+			}
+
 			await ActiveOutputViewer.ExecuteDatabaseCommandAsync(executionModel);
 		}
 
@@ -1315,7 +1321,7 @@ namespace SqlPad
 			switch (text)
 			{
 				case "(":
-					pairCharacterHandled = IsNextCharacterBlank();
+					pairCharacterHandled = IsNextCharacterBlank() || IsAtValidClosingParenthesis();
 					if (pairCharacterHandled)
 					{
 						InsertPairCharacter("()");
@@ -1341,6 +1347,14 @@ namespace SqlPad
 			}
 
 			return pairCharacterHandled;
+		}
+
+		private bool IsAtValidClosingParenthesis()
+		{
+			var activeStatement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
+			var terminal = activeStatement?.GetTerminalAtPosition(Editor.CaretOffset, t => t.Type == NodeType.Terminal && String.Equals(t.Token.Value, ")"));
+			return terminal != null && terminal.SourcePosition.IndexStart == Editor.CaretOffset &&
+			       terminal.ParentNode.ChildNodes.Any(n => n.Type == NodeType.Terminal && n != terminal && String.Equals(n.Token.Value, "("));
 		}
 
 		private void TextEnteringHandler(object sender, TextCompositionEventArgs e)
@@ -1934,6 +1948,7 @@ namespace SqlPad
 			_colorizingTransformer.AddHighlightSegments(segments);
 			Editor.TextArea.TextView.Redraw();
 		}
+
 		private void ClearLastHighlight()
 		{
 			_colorizingTransformer.AddHighlightSegments(null);

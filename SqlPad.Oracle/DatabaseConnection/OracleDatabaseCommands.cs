@@ -443,21 +443,21 @@ END;";
 
 		public const string GetDebuggerStackTrace =
 @"DECLARE
-	pkgs dbms_debug.backtrace_table;
-	i NUMBER;
+	backtrace dbms_debug.backtrace_table;
 	line_content VARCHAR2(32767);
 BEGIN
-	dbms_debug.print_backtrace(pkgs);
-	i := pkgs.first();
+	dbms_debug.print_backtrace(backtrace);
 
 	DBMS_LOB.CREATETEMPORARY(lob_loc => :output_clob, cache => TRUE); 
-    DBMS_LOB.OPEN(lob_loc => :output_clob, open_mode => DBMS_LOB.LOB_READWRITE);
+	DBMS_LOB.OPEN(lob_loc => :output_clob, open_mode => DBMS_LOB.LOB_READWRITE);
+	DBMS_LOB.WRITEAPPEND(lob_loc => :output_clob, amount => 8, buffer => '<Items>' || CHR(10));
 
-	WHILE i IS NOT NULL LOOP
-		line_content := i || ': ' || NVL(pkgs(i).name, 'Anonymous PL/SQL block') || ' (' || pkgs(i).line# ||')' || CHR(10);
+	FOR i IN 1..backtrace.COUNT LOOP
+		line_content := '<Item><Owner>' || backtrace(i).owner || '</Owner>' || '<Name>' || backtrace(i).name || '</Name>' || '<Line>' || backtrace(i).line# || '</Line>' || '<DatabaseLink>' || backtrace(i).dblink || '</DatabaseLink>' || '<Namespace>' || backtrace(i).namespace || '</Namespace>' || '</Item>' || CHR(10);
 		DBMS_LOB.WRITEAPPEND(lob_loc => :output_clob, amount => LENGTH(line_content), buffer => line_content);
-		i := pkgs.next(i);
 	END LOOP;
+
+	DBMS_LOB.WRITEAPPEND(lob_loc => :output_clob, amount => 9, buffer => '</Items>' || CHR(10));
 END;";
 
 		public const string SetDebuggerBreakpoint =

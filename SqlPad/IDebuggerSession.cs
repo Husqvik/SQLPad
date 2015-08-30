@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SqlPad
@@ -6,6 +7,8 @@ namespace SqlPad
 	public interface IDebuggerSession
 	{
 		int? ActiveLine { get; }
+
+		IReadOnlyList<StackTraceItem> StackTrace { get; }
 
 		Task Start(CancellationToken cancellationToken);
 
@@ -18,5 +21,14 @@ namespace SqlPad
 		Task StepOut(CancellationToken cancellationToken);
 
 		Task Detach(CancellationToken cancellationToken);
+	}
+
+	public class StackTraceItem
+	{
+		public string Header { get; set; }
+
+		public string ProgramText { get; set; }
+
+		public int Line { get; set; }
 	}
 }
