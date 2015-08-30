@@ -1507,6 +1507,7 @@ END;";
 			columns[2].FullTypeName.ShouldBe("CLOB");
 
 			queryBlock.Columns.Count.ShouldBe(4);
+			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
 
 		[Test(Description = @"")]
@@ -1573,8 +1574,8 @@ FROM
 			NONEXISTING VARCHAR2(20) PATH '$.NonExisting' DEFAULT 'Not found' ON ERROR,
 			HAS_UPCCODE VARCHAR2(5) EXISTS PATH '$.Part.UPCCode' FALSE ON ERROR,
 			NESTED PATH '$.CorrelationIds[*]'
-         	COLUMNS (
-         		NESTED_VALUE VARCHAR2(16) PATH '$',
+			COLUMNS (
+				NESTED_VALUE VARCHAR2(16) PATH '$',
 				HAS_NESTED_VALUE VARCHAR2(5) EXISTS PATH '$' FALSE ON ERROR)
 		)
 	)
@@ -1608,6 +1609,7 @@ AS T";
 			columns[6].FullTypeName.ShouldBe("VARCHAR2(5)");
 
 			queryBlock.Columns.Count.ShouldBe(8);
+			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
 
 		[Test(Description = @"")]

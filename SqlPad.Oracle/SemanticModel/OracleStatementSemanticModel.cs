@@ -1870,9 +1870,12 @@ namespace SqlPad.Oracle.SemanticModel
 
 							goto case ReferenceType.PivotTable;
 
-						case ReferenceType.TableCollection:
 						case ReferenceType.XmlTable:
 						case ReferenceType.JsonTable:
+							var specialTableReference = (OracleSpecialTableReference)objectReference;
+							exposedColumns = ExposeUsingAsterisk(asteriskColumn, specialTableReference.ColumnDefinitions);
+							break;
+						case ReferenceType.TableCollection:
 						case ReferenceType.SqlModel:
 						case ReferenceType.PivotTable:
 							exposedColumns = objectReference.Columns
@@ -1886,14 +1889,7 @@ namespace SqlPad.Oracle.SemanticModel
 							break;
 						case ReferenceType.CommonTableExpression:
 						case ReferenceType.InlineView:
-							var columns = new List<OracleSelectListColumn>();
-							foreach (var column in objectReference.QueryBlocks.SelectMany(qb => qb.Columns).Where(c => !c.IsAsterisk))
-							{
-								column.RegisterOuterReference();
-								columns.Add(column.AsImplicit(asteriskColumn));
-							}
-
-							exposedColumns = columns;
+							exposedColumns = ExposeUsingAsterisk(asteriskColumn, objectReference.QueryBlocks.SelectMany(qb => qb.Columns).Where(c => !c.IsAsterisk));
 							break;
 						default:
 							throw new NotImplementedException($"Reference '{objectReference.Type}' is not implemented yet. ");
@@ -1932,6 +1928,15 @@ namespace SqlPad.Oracle.SemanticModel
 						queryBlock.AddSelectListColumn(exposedColumn, ++columnIndex);
 					}
 				}
+			}
+		}
+
+		private IEnumerable<OracleSelectListColumn> ExposeUsingAsterisk(OracleSelectListColumn asteriskColumn, IEnumerable<OracleSelectListColumn> columns)
+		{
+			foreach (var column in columns)
+			{
+				column.RegisterOuterReference();
+				yield return column.AsImplicit(asteriskColumn);
 			}
 		}
 
