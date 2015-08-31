@@ -466,11 +466,11 @@ namespace SqlPad.Oracle.SemanticModel
 						continue;
 					}
 
-					var objectIdentifierNode = queryTableExpression[Terminals.ObjectIdentifier];
+					var objectIdentifierNode = queryTableExpression[NonTerminals.SchemaObject, Terminals.ObjectIdentifier];
 					if (objectIdentifierNode != null)
 					{
 						ICollection<KeyValuePair<StatementGrammarNode, string>> commonTableExpressions = new Dictionary<StatementGrammarNode, string>();
-						var schemaTerminal = queryTableExpression[NonTerminals.SchemaPrefix];
+						var schemaTerminal = objectIdentifierNode.ParentNode[NonTerminals.SchemaPrefix];
 					    schemaTerminal = schemaTerminal?.ChildNodes[0];
 
 					    var tableName = objectIdentifierNode.Token.Value.ToQuotedIdentifier();
@@ -1400,7 +1400,7 @@ namespace SqlPad.Oracle.SemanticModel
 				return;
 			}
 
-			var objectIdentifier = mergeTarget[Terminals.ObjectIdentifier];
+			var objectIdentifier = mergeTarget[NonTerminals.SchemaObject, Terminals.ObjectIdentifier];
 			if (objectIdentifier == null)
 			{
 				return;
@@ -1415,11 +1415,11 @@ namespace SqlPad.Oracle.SemanticModel
 				return;
 			}
 
-			objectIdentifier = mergeSource[NonTerminals.QueryTableExpression, Terminals.ObjectIdentifier];
+			objectIdentifier = mergeSource[NonTerminals.QueryTableExpression, NonTerminals.SchemaObject, Terminals.ObjectIdentifier];
 			OracleDataObjectReference mergeSourceReference = null;
 			if (objectIdentifier != null)
 			{
-				objectReferenceAlias = objectIdentifier.ParentNode.ParentNode[Terminals.ObjectAlias];
+				objectReferenceAlias = objectIdentifier.ParentNode.ParentNode.ParentNode[Terminals.ObjectAlias];
 				mergeSourceReference = CreateDataObjectReference(mergeSource, objectIdentifier, objectReferenceAlias);
 			}
 			else if (MainQueryBlock != null)
@@ -1467,7 +1467,7 @@ namespace SqlPad.Oracle.SemanticModel
 				return;
 			}
 
-			var objectIdentifier = innerTableReference[NonTerminals.QueryTableExpression, Terminals.ObjectIdentifier];
+			var objectIdentifier = innerTableReference[NonTerminals.QueryTableExpression, NonTerminals.SchemaObject, Terminals.ObjectIdentifier];
 			if (objectIdentifier != null)
 			{
 				var objectReferenceAlias = innerTableReference.ParentNode.ChildNodes.SingleOrDefault(n => String.Equals(n.Id, Terminals.ObjectAlias));
@@ -1511,7 +1511,7 @@ namespace SqlPad.Oracle.SemanticModel
 				if (dmlTableExpressionClause != null)
 				{
 					objectReferenceAlias = dmlTableExpressionClause.ChildNodes.SingleOrDefault(n => String.Equals(n.Id, Terminals.ObjectAlias));
-					objectIdentifier = dmlTableExpressionClause[NonTerminals.QueryTableExpression, Terminals.ObjectIdentifier];
+					objectIdentifier = dmlTableExpressionClause[NonTerminals.QueryTableExpression, NonTerminals.SchemaObject, Terminals.ObjectIdentifier];
 				}
 
 				if (objectIdentifier == null)

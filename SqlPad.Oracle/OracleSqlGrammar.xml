@@ -3434,8 +3434,7 @@
     <Rule StartingNonTerminal="QualifiedObjectIdentifier">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="DatabaseLink" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -3967,8 +3966,7 @@
     <Rule StartingNonTerminal="MergeTarget">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <Terminal Id="ObjectAlias" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -5460,10 +5458,10 @@
           <Terminal Id="Identifier" />
           <NonTerminal Id="RecordType" />
         </Sequence>
-        <!--<Sequence>
+        <Sequence>
           <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="ObjectRowType" />
-        </Sequence>-->
+        </Sequence>
         <Sequence>
           <NonTerminal Id="DataType" />
         </Sequence>
@@ -6771,8 +6769,7 @@
           <NonTerminal Id="TheExpression" Comment="Obsolete" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="PartitionOrDatabaseLink" IsOptional="true" />
           <NonTerminal Id="SampleClause" IsOptional="true" />
         </Sequence>

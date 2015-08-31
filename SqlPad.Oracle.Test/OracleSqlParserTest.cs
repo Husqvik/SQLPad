@@ -483,7 +483,8 @@ namespace SqlPad.Oracle.Test
 			var terminals = result.Single().AllTerminals.ToArray();
 			terminals.Length.ShouldBe(38);
 			terminals[3].Id.ShouldBe(Terminals.ObjectIdentifier);
-			terminals[3].ParentNode.Id.ShouldBe(NonTerminals.QueryTableExpression);
+			terminals[3].ParentNode.Id.ShouldBe(NonTerminals.SchemaObject);
+			terminals[3].ParentNode.ParentNode.Id.ShouldBe(NonTerminals.QueryTableExpression);
 			terminals[3].Token.Value.ShouldBe("T1");
 			terminals[4].Id.ShouldBe(Terminals.Cross);
 			terminals[5].Id.ShouldBe(Terminals.Join);
@@ -3065,6 +3066,20 @@ END;";
 	x TEST_TYPE;
 BEGIN
 	x := NEW TEST_TYPE(1);
+END;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestTypeDefinitionBasedOnRowType()
+			{
+				const string statement1 =
+@"DECLARE
+	type test_type is table of dual%rowtype;
+BEGIN
+	NULL;
 END;";
 
 				var statement = Parser.Parse(statement1).Single().Validate();

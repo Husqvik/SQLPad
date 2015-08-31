@@ -566,7 +566,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			using (var command = _userConnection.CreateCommand())
 			{
-				command.CommandText = $"CALL DBMS_OUTPUT.{(EnableDatabaseOutput ? "ENABLE(1)" : "DISABLE()")}";
+				command.CommandText = $"CALL DBMS_OUTPUT.{(EnableDatabaseOutput ? "ENABLE(NULL)" : "DISABLE()")}";
 				await command.ExecuteNonQueryAsynchronous(cancellationToken);
 			}
 			
