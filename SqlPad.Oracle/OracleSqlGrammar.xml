@@ -111,8 +111,7 @@
         <Sequence>
           <Terminal Id="Truncate" />
           <Terminal Id="Table" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="TruncateTableMaterializedViewLogOption" IsOptional="true" />
           <NonTerminal Id="TruncateTableStorageOption" IsOptional="true" />
           <Terminal Id="Cascade" IsOptional="true" />
@@ -166,20 +165,17 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Table" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+         <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="PartitionExtensionClause" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="Index" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="PartitionExtensionClause" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="Cluster" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -255,8 +251,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Into" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -376,8 +371,7 @@
         <Sequence>
           <Terminal Id="Materialized" />
           <Terminal Id="View" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="AlterMaterializedViewOptionList" IsOptional="true" />
           <!--<NonTerminal Id="AlterIndexOrganizedTableClauses" IsOptional="true" />-->
           <NonTerminal Id="UsingIndexPhysicalAttributesClause" IsOptional="true" />
@@ -398,8 +392,7 @@
           <Terminal Id="Identifier" />
           <Terminal Id="RightParenthesis" />
           <Terminal Id="Is" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
         </Sequence>
         <Sequence>
           <Terminal Id="Refresh" />
@@ -840,8 +833,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="For" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -1296,8 +1288,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="View" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="AlterViewOption" />
         </Sequence>
       </Sequences>
@@ -1705,8 +1696,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Table" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="AlterTableOption" IsOptional="true" />
           <NonTerminal Id="AlterTableEnableDisableOptions" IsOptional="true" />
         </Sequence>
@@ -2577,8 +2567,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Package" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="AlterPackageOption" />
         </Sequence>
       </Sequences>
@@ -2625,8 +2614,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Procedure" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="AlterProgramOption" />
         </Sequence>
       </Sequences>
@@ -2636,8 +2624,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Function" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="AlterProgramOption" />
         </Sequence>
       </Sequences>
@@ -2647,8 +2634,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Library" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="AlterProgramOption" />
         </Sequence>
       </Sequences>
@@ -2893,30 +2879,25 @@
         </Sequence>
         <Sequence>
           <Terminal Id="IndexType" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
         </Sequence>
         <Sequence>
           <Terminal Id="Materialized" />
           <Terminal Id="View" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
         </Sequence>
         <Sequence>
           <Terminal Id="Mining" />
           <Terminal Id="Model" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
         </Sequence>
         <Sequence>
           <Terminal Id="Operator" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
         </Sequence>
         <Sequence>
           <Terminal Id="Table" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -2990,8 +2971,7 @@
     <Rule StartingNonTerminal="LockTableList">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="PartitionOrDatabaseLink" IsOptional="true" />
           <NonTerminal Id="CommaChainedLockTableList" IsOptional="true" />
         </Sequence>
@@ -3078,8 +3058,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Into" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="DatabaseLink" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -3155,8 +3134,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Table" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="CascadeConstraints" IsOptional="true" />
           <Terminal Id="Purge" IsOptional="true" />
         </Sequence>
@@ -3176,8 +3154,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="View" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="CascadeConstraints" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -3187,8 +3164,7 @@
       <Sequences>
         <Sequence>
           <NonTerminal Id="MaterializedViewOrSnapshot" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="PreserveTable" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -3220,8 +3196,7 @@
         <Sequence>
           <Terminal Id="Package" />
           <Terminal Id="Body" IsOptional="true" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -3230,8 +3205,7 @@
       <Sequences>
         <Sequence>
           <NonTerminal Id="SimpleSchemaObject" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -3266,8 +3240,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Index" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <Terminal Id="Online" IsOptional="true" />
           <Terminal Id="Force" IsOptional="true" />
         </Sequence>
@@ -3278,8 +3251,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Cluster" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="IncludingTables" IsOptional="true" />
        </Sequence>
       </Sequences>
@@ -3302,8 +3274,7 @@
           <Terminal Id="View" />
           <Terminal Id="Log" />
           <Terminal Id="On" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -5485,10 +5456,14 @@
           <NonTerminal Id="DataTypeVarcharSimplePrecision" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="Prefix" />
+          <NonTerminal Id="Prefix" IsOptional="true" />
           <Terminal Id="Identifier" />
           <NonTerminal Id="RecordType" />
         </Sequence>
+        <!--<Sequence>
+          <NonTerminal Id="SchemaObject" />
+          <NonTerminal Id="ObjectRowType" />
+        </Sequence>-->
         <Sequence>
           <NonTerminal Id="DataType" />
         </Sequence>
@@ -9663,14 +9638,12 @@
           <Terminal Id="ObjectIdentifier" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="SchemaPrefix" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
         </Sequence>
         <Sequence>
           <Terminal Id="Java" />
           <NonTerminal Id="SourceOrResource" />
-          <NonTerminal Id="SchemaPrefix" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -9901,8 +9874,7 @@
         </Sequence>
         <Sequence>
           <Terminal Id="Using" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
         </Sequence>
         <Sequence>
           <Terminal Id="Externally" />
@@ -10381,8 +10353,7 @@
           <Terminal Id="View" />
           <Terminal Id="Log" />
           <Terminal Id="On" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="MaterializedViewLogProperties" IsOptional="true" />
           <NonTerminal Id="ParallelClause" IsOptional="true" />
           <NonTerminal Id="TablePartitioningClauses" IsOptional="true" />
@@ -10585,8 +10556,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Cluster" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="ClusterColumnDefinitionList" />
           <Terminal Id="RightParenthesis" />
@@ -10690,8 +10660,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Procedure" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="ParenthesisEnclosedParameterDeclarationList" IsOptional="true" />
           <NonTerminal Id="CommonProgramModifier" IsOptional="true" />
           <NonTerminal Id="IsOrAs" />
@@ -10719,8 +10688,7 @@
         <Sequence>
           <Terminal Id="Package" />
           <Terminal Id="Body" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+         <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="PackageBodyDefinition" />
         </Sequence>
       </Sequences>
@@ -10786,8 +10754,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Trigger" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="TriggerTypeDefinition" />
         </Sequence>
       </Sequences>
@@ -11115,8 +11082,7 @@
         <Sequence>
           <NonTerminal Id="DmlEventTypeList" />
           <Terminal Id="On" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -11179,8 +11145,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Package" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="CommonProgramModifier" IsOptional="true" />
           <NonTerminal Id="IsOrAs" />
           <NonTerminal Id="ItemList1" />
@@ -11212,8 +11177,7 @@
     <Rule StartingNonTerminal="PlSqlFunctionSource">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="ParenthesisEnclosedParameterDeclarationList" IsOptional="true" />
           <Terminal Id="Return" />
           <NonTerminal Id="PlSqlDataTypeWithoutConstraint" />
@@ -11763,7 +11727,7 @@
           <NonTerminal Id="ObjectRowType" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="ObjectPrefix" IsOptional="true" />
+          <NonTerminal Id="Prefix" IsOptional="true" />
           <Terminal Id="Identifier" Comment="Record type or instance" />
           <NonTerminal Id="RecordType" IsOptional="true" Comment="Used with record instance" />
         </Sequence>
@@ -12186,13 +12150,11 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Trigger" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="UnitKind" IsOptional="true" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -13302,8 +13264,7 @@
           <NonTerminal Id="NoForce" IsOptional="true" />
           <NonTerminal Id="ViewEditioning" IsOptional="true" />
           <Terminal Id="View" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="CreateViewTypeClause" IsOptional="true" />
           <NonTerminal Id="ViewBequeath" IsOptional="true" />
           <NonTerminal Id="AsSubquery" />
@@ -13417,8 +13378,7 @@
         <Sequence>
           <NonTerminal Id="GlobalTemporary" IsOptional="true" />
           <Terminal Id="Table" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="CreateTableTypeClause" />
           <NonTerminal Id="AsSubquery" IsOptional="true" />
         </Sequence>
@@ -13452,8 +13412,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Of" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="ObjectTableSubstitutionClause" IsOptional="true" />
           <NonTerminal Id="ParenthesisEnclosedObjectProperties" IsOptional="true" />
           <NonTerminal Id="TemporaryTableOnCommitClause" IsOptional="true" />
@@ -13565,8 +13524,7 @@
     <Rule StartingNonTerminal="ClusteringJoin">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="AttributeClusteringJoinTableOnEquijoinConditionList" />
         </Sequence>
       </Sequences>
@@ -13576,8 +13534,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Join" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <Terminal Id="On" />
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="Condition" />
@@ -15668,8 +15625,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="References" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="ParenthesisEnclosedIdentifierList" IsOptional="true" />
           <NonTerminal Id="ConstraintOnDeleteClause" IsOptional="true" />
         </Sequence>
@@ -15734,8 +15690,7 @@
           <NonTerminal Id="IndexProperties" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="SchemaPrefix" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -15807,8 +15762,7 @@
         <Sequence>
           <Terminal Id="Exceptions" />
           <Terminal Id="Into" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -17850,8 +17804,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Sequence" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="SequenceOptions" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -17923,8 +17876,7 @@
         <Sequence>
           <NonTerminal Id="UniqueOrBitmap" IsOptional="true" />
           <Terminal Id="Index" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <Terminal Id="On" />
           <NonTerminal Id="IndexTypeClause" />
         </Sequence>
@@ -17937,8 +17889,7 @@
           <NonTerminal Id="ClusterIndexClause" />
         </Sequence>-->
         <Sequence>
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="TableIndexOrBitmapJoinIndexClause" />
         </Sequence>
       </Sequences>
@@ -18164,8 +18115,7 @@
           <NonTerminal Id="EditionableOrNonEditionable" IsOptional="true" />
           <Terminal Id="Public" IsOptional="true" />
           <Terminal Id="Synonym" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="SchemaObject" />
           <Terminal Id="For" />
           <NonTerminal Id="QualifiedObjectIdentifier" />
         </Sequence>
