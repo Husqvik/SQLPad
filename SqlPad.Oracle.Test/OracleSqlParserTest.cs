@@ -3372,6 +3372,7 @@ END Check_Raise_On_Avg;";
 						Terminals.MathPlus,
 						Terminals.Max,
 						Terminals.Min,
+						Terminals.New,
 						Terminals.Null,
 						Terminals.NumberLiteral,
 						Terminals.ObjectIdentifier,
