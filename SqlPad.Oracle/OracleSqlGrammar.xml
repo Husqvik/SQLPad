@@ -10768,11 +10768,9 @@
         <Sequence>
           <NonTerminal Id="CompoundOfDmlTrigger" />
         </Sequence>
-        <!--
         <Sequence>
           <NonTerminal Id="SystemTrigger" />
         </Sequence>
-        -->
       </Sequences>
     </Rule>
     
@@ -10782,8 +10780,9 @@
           <NonTerminal Id="SystemTriggerDdlOption" />
           <NonTerminal Id="SystemTriggerEventList" />
           <Terminal Id="On" />
-          <NonTerminal Id="SchemaObjectOrPluggableDatabase" />
-          <NonTerminal Id="TriggerOrderingClause" />
+          <NonTerminal Id="SchemaOrPluggableDatabase" />
+          <NonTerminal Id="TriggerOrderingClause" IsOptional="true" />
+          <NonTerminal Id="TriggerBody" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -10803,14 +10802,14 @@
       </Sequences>
     </Rule>
     
-    <Rule StartingNonTerminal="SchemaObjectOrPluggableDatabase">
+    <Rule StartingNonTerminal="SchemaOrPluggableDatabase">
       <Sequences>
+        <Sequence>
+          <Terminal Id="Schema" />
+        </Sequence>
         <Sequence>
           <Terminal Id="Pluggable" IsOptional="true" />
           <Terminal Id="Database" />
-        </Sequence>
-        <Sequence>
-          <NonTerminal Id="SchemaObject" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -10932,7 +10931,7 @@
           <Terminal Id="Shutdown" />
         </Sequence>
         <Sequence>
-          <Terminal Id="Logooff" />
+          <Terminal Id="Logoff" />
         </Sequence>
         <Sequence>
           <Terminal Id="Unplug" />
@@ -18917,7 +18916,7 @@
     <Terminal Id="ServerError" Value="SERVERERROR" />
     <Terminal Id="Logon" Value="LOGON" />
     <Terminal Id="Clone" Value="CLONE" />
-    <Terminal Id="Logooff" Value="LOGOOFF" />
+    <Terminal Id="Logoff" Value="LOGOFF" />
     <Terminal Id="Unplug" Value="UNPLUG" />
     
     <!-- External table opaque format specification -->

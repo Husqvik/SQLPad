@@ -3184,6 +3184,25 @@ END Check_Raise_On_Avg;";
 					var statement = Parser.Parse(statement1).Single().Validate();
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
+
+				[Test(Description = @"")]
+				public void TestCreateDdlTrigger()
+				{
+					const string statement1 =
+@"CREATE OR REPLACE TRIGGER audit_ddl_trg AFTER DDL ON SCHEMA
+BEGIN
+  IF ora_sysevent = 'TRUNCATE'
+  THEN
+    NULL;
+  ELSE
+    INSERT INTO audit_ddl(d, osuser, current_user, host, terminal, owner, type, name, sysevent)
+    VALUES(SYSDATE, sys_context('USERENV','OS_USER'), sys_context('USERENV', 'CURRENT_USER'), sys_context('USERENV', 'HOST'), sys_context('USERENV', 'TERMINAL'), ora_dict_obj_owner, ora_dict_obj_type, ora_dict_obj_name, ora_sysevent);
+  END IF;
+END;";
+
+					var statement = Parser.Parse(statement1).Single().Validate();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
 			}
 		}
 
