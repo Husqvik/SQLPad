@@ -10775,6 +10775,174 @@
         -->
       </Sequences>
     </Rule>
+    
+    <Rule StartingNonTerminal="SystemTrigger">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="SystemTriggerDdlOption" />
+          <NonTerminal Id="SystemTriggerEventList" />
+          <Terminal Id="On" />
+          <NonTerminal Id="SchemaObjectOrPluggableDatabase" />
+          <NonTerminal Id="TriggerOrderingClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="SystemTriggerDdlOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Before" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="After" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Instead" />
+          <Terminal Id="Of" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="SchemaObjectOrPluggableDatabase">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Pluggable" IsOptional="true" />
+          <Terminal Id="Database" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="SchemaObject" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="SystemTriggerEventList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="DataDefinitionLanguageEvent" />
+          <NonTerminal Id="SystemTriggerEventListChained" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="DatabaseEvent" />
+          <NonTerminal Id="SystemTriggerEventListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="SystemTriggerEventListChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Or" />
+          <NonTerminal Id="SystemTriggerEventList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="DataDefinitionLanguageEvent">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Alter" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Analyze" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Associate" />
+          <Terminal Id="Statistics" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Audit" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Comment" />
+        </Sequence>
+            <Sequence>
+          <Terminal Id="Create" />
+        </Sequence>
+            <Sequence>
+          <Terminal Id="Dissociate" />
+          <Terminal Id="Statistics" />
+        </Sequence>
+            <Sequence>
+          <Terminal Id="Drop" />
+        </Sequence>
+            <Sequence>
+          <Terminal Id="Grant" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NoAudit" />
+        </Sequence>
+            <Sequence>
+          <Terminal Id="Rename" />
+        </Sequence>
+            <Sequence>
+          <Terminal Id="Revoke" />
+        </Sequence>
+            <Sequence>
+          <Terminal Id="Truncate" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="DataDefinitionLanguage" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="DatabaseEvent">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="After" />
+          <NonTerminal Id="SystemTriggerAfterOption" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Before" />
+          <NonTerminal Id="SystemTriggerBeforeOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="SystemTriggerAfterOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Startup" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="DatabaseRoleChange" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="ServerError" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Logon" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Suspend" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Clone" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Set" />
+          <Terminal Id="Container" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="SystemTriggerBeforeOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Shutdown" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Logooff" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Unplug" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Set" />
+          <Terminal Id="Container" />
+        </Sequence>
+      </Sequences>
+    </Rule>
 
     <Rule StartingNonTerminal="CompoundOfDmlTrigger">
       <Sequences>
@@ -18740,6 +18908,17 @@
     <Terminal Id="Instead" Value="INSTEAD" />
     <Terminal Id="Compound" Value="COMPOUND" />
     <Terminal Id="Statement" Value="STATEMENT" />
+    <Terminal Id="Pluggable" Value="PLUGGABLE" />
+    <Terminal Id="Associate" Value="ASSOCIATE" />
+    <Terminal Id="Dissociate" Value="DISSOCIATE" />
+    <Terminal Id="NoAudit" Value="NOAUDIT" ReservedWord="Sql" />
+    <Terminal Id="Startup" Value="STARTUP" />
+    <Terminal Id="DatabaseRoleChange" Value="DB_ROLE_CHANGE" />
+    <Terminal Id="ServerError" Value="SERVERERROR" />
+    <Terminal Id="Logon" Value="LOGON" />
+    <Terminal Id="Clone" Value="CLONE" />
+    <Terminal Id="Logooff" Value="LOGOOFF" />
+    <Terminal Id="Unplug" Value="UNPLUG" />
     
     <!-- External table opaque format specification -->
     <Terminal Id="OracleLoader" Value="ORACLE_LOADER" />

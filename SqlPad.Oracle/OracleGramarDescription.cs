@@ -298,11 +298,13 @@ namespace SqlPad.Oracle
 			public const string CursorParameterDeclarationListChained = "CursorParameterDeclarationListChained";
 			public const string CursorSource = "CursorSource";
 			public const string CycleOrNoCycle = "CycleOrNoCycle";
+			public const string DatabaseEvent = "DatabaseEvent";
 			public const string DatabaseLink = "DatabaseLink";
 			public const string DatabaseLinkDomain = "DatabaseLinkDomain";
 			public const string DatabaseLinkInstance = "DatabaseLinkInstance";
 			public const string DatabaseLinkName = "DatabaseLinkName";
 			public const string DatabaseUserProxyClauses = "DatabaseUserProxyClauses";
+			public const string DataDefinitionLanguageEvent = "DataDefinitionLanguageEvent";
 			public const string DatafileOrTempfile = "DatafileOrTempfile";
 			public const string DatafileOrTempfileSpecification = "DatafileOrTempfileSpecification";
 			public const string DatafileSpecificationList = "DatafileSpecificationList";
@@ -1156,6 +1158,7 @@ namespace SqlPad.Oracle
 			public const string SchemaObject = "SchemaObject";
 			public const string SchemaObjectList = "SchemaObjectList";
 			public const string SchemaObjectListChained = "SchemaObjectListChained";
+			public const string SchemaObjectOrPluggableDatabase = "SchemaObjectOrPluggableDatabase";
 			public const string SchemaPrefix = "SchemaPrefix";
 			public const string SimpleCaseExpressionBranch = "SimpleCaseExpressionBranch";
 			public const string SimpleDmlTrigger = "SimpleDmlTrigger";
@@ -1226,6 +1229,11 @@ namespace SqlPad.Oracle
 			public const string SystemPrivilegeList = "SystemPrivilegeList";
 			public const string SystemPrivilegeListChained = "SystemPrivilegeListChained";
 			public const string SystemPrivilegeOrAllPrivileges = "SystemPrivilegeOrAllPrivileges";
+			public const string SystemTriggerAfterOption = "SystemTriggerAfterOption";
+			public const string SystemTriggerBeforeOption = "SystemTriggerBeforeOption";
+			public const string SystemTriggerDdlOption = "SystemTriggerDdlOption";
+			public const string SystemTriggerEventList = "SystemTriggerEventList";
+			public const string SystemTriggerEventListChained = "SystemTriggerEventListChained";
 			public const string TableCollectionExpression = "TableCollectionExpression";
 			public const string TableCollectionInnerExpression = "TableCollectionInnerExpression";
 			public const string TableCompression = "TableCompression";
