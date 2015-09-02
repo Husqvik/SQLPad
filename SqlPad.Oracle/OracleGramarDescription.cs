@@ -90,6 +90,8 @@ namespace SqlPad.Oracle
 			public const string AlterTablespaceOption = "AlterTablespaceOption";
 			public const string AlterTableStandardProperty = "AlterTableStandardProperty";
 			public const string AlterTableStandardPropertyList = "AlterTableStandardPropertyList";
+			public const string AlterTrigger = "AlterTrigger";
+			public const string AlterTriggerOption = "AlterTriggerOption";
 			public const string AlterUser = "AlterUser";
 			public const string AlterView = "AlterView";
 			public const string AlterViewOption = "AlterViewOption";

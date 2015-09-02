@@ -218,6 +218,12 @@ namespace SqlPad.Oracle
 						continue;
 					}
 
+					var objectReference = column.ValidObjectReference as OracleDataObjectReference;
+					if (objectReference?.IsOuterJoined == true)
+					{
+						continue;
+					}
+
 					var nullNaNOrInfiniteNode = expressionIsNullNaNOrInfiniteNode[NonTerminals.NullNaNOrInfinite];
 					if (nullNaNOrInfiniteNode?[Terminals.Null] == null)
 					{

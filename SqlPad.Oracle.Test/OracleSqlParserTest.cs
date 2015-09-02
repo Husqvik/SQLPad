@@ -4156,6 +4156,25 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 					terminals[1].Id.ShouldBe(Terminals.Directory);
 					terminals[2].Id.ShouldBe(Terminals.ObjectIdentifier);
 				}
+
+				[Test(Description = @"")]
+				public void TestDropTrigger()
+				{
+					const string statementText = @"DROP TRIGGER TEST_TRIGGER";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(3);
+
+					terminals[0].Id.ShouldBe(Terminals.Drop);
+					terminals[1].Id.ShouldBe(Terminals.Trigger);
+					terminals[2].Id.ShouldBe(Terminals.ObjectIdentifier);
+				}
 			}
 		}
 
@@ -5960,6 +5979,33 @@ PURGE REPEAT INTERVAL '5' DAY";
 				public void TestAlterRole()
 				{
 					const string statementText = @"ALTER ROLE dw_manager IDENTIFIED USING hr.admin CONTAINER = CURRENT";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+			}
+
+			public class AlterTrigger
+			{
+				[Test(Description = @"")]
+				public void TestAlterTriggerCompile()
+				{
+					const string statementText = @"ALTER TRIGGER trigger1 COMPILE DEBUG PLSCOPE_SETTINGS = 'IDENTIFIERS:ALL' PLSQL_CODE_TYPE=INTERPRETED PLSQL_OPTIMIZE_LEVEL=1 PLSQL_WARNINGS ='ENABLE:(5000,5001,5002)', 'DISABLE:(6000,6001)' PLSQL_CCFLAGS = 'debug:TRUE' REUSE SETTINGS";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTriggerDisable()
+				{
+					const string statementText = @"ALTER TRIGGER trigger1 DISABLE";
 
 					var result = Parser.Parse(statementText);
 

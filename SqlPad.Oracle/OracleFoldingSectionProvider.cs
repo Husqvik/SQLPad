@@ -68,7 +68,12 @@ namespace SqlPad.Oracle
 						yield return foldingSection;
 					}
 
-					var foldingEndToken = isSemicolon ? token : followingToken;
+					var foldingEndToken = isSemicolon
+						? token
+						: String.Equals(followingToken.Value, TerminalValues.Semicolon)
+							? followingToken
+							: precedingToken;
+
 					if (foldingContext.TryFinishFoldingSection(FoldingSectionPlaceholderPlSqlBlock, StackKeyPlSql, foldingEndToken, out foldingSection))
 					{
 						yield return foldingSection;

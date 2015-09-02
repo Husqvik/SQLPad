@@ -2629,5 +2629,29 @@ SELECT C1 FROM CTE";
 			invalidNonTerminalValidities[2].Node.FirstTerminalNode.Token.Value.ShouldBe("PROJECT_ID");
 			invalidNonTerminalValidities[2].Node.LastTerminalNode.Id.ShouldBe(Terminals.Null);
 		}
+
+		[Test(Description = @"")]
+		public void TestNotNullConditionInOuterJoin()
+		{
+			const string sqlText =
+@"SELECT
+	CASE WHEN C1.SELECTION_ID IS NULL THEN 1 END,
+	CASE WHEN C2.SELECTION_ID IS NULL THEN 1 END
+FROM
+	SELECTION
+	LEFT JOIN SELECTION C1 ON SELECTION.SELECTION_ID = C1.SELECTION_ID,
+	SELECTION C2
+WHERE
+	SELECTION.SELECTION_ID = C2.SELECTION_ID(+)";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var invalidNonTerminalValidities = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			invalidNonTerminalValidities.Count.ShouldBe(0);
+		}
 	}
 }

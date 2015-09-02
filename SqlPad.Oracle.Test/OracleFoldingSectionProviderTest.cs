@@ -210,9 +210,42 @@ END:";
 			var foldingSections = _provider.GetFoldingSections(tokens).ToArray();
 			foldingSections.Length.ShouldBe(1);
 			foldingSections[0].FoldingStart.ShouldBe(9);
-			foldingSections[0].FoldingEnd.ShouldBe(20);
+			foldingSections[0].FoldingEnd.ShouldBe(19);
 			foldingSections[0].IsNested.ShouldBe(false);
 			foldingSections[0].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderPlSqlBlock);
+		}
+
+		[Test(Description = @"")]
+		public void TestCompoundTriggerFoldingSection()
+		{
+			const string statement =
+@"CREATE OR REPLACE TRIGGER check_raise_on_avg
+FOR UPDATE OF sal ON emp
+COMPOUND TRIGGER
+
+  BEFORE EACH ROW IS
+  BEGIN
+    NULL;
+  END BEFORE EACH ROW;
+
+  AFTER EACH ROW IS
+  BEGIN
+    NULL;
+  END AFTER EACH ROW;
+END;";
+
+			var tokens = ((ITokenReader)OracleTokenReader.Create(statement)).GetTokens();
+
+			var foldingSections = _provider.GetFoldingSections(tokens).ToArray();
+			foldingSections.Length.ShouldBe(2);
+			foldingSections[0].FoldingStart.ShouldBe(116);
+			foldingSections[0].FoldingEnd.ShouldBe(139);
+			foldingSections[0].IsNested.ShouldBe(false);
+			foldingSections[0].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderPlSqlBlock);
+			foldingSections[1].FoldingStart.ShouldBe(183);
+			foldingSections[1].FoldingEnd.ShouldBe(206);
+			foldingSections[1].IsNested.ShouldBe(false);
+			foldingSections[1].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderPlSqlBlock);
 		}
 	}
 }

@@ -362,6 +362,9 @@
         <Sequence>
           <NonTerminal Id="AlterSystem" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="AlterTrigger" />
+        </Sequence>
         <!-- TODO: Add other objects -->
       </Sequences>
     </Rule>
@@ -1374,7 +1377,7 @@
         <Sequence>
           <Terminal Id="Rename" />
           <Terminal Id="To" />
-          <Terminal Id="Identifier" />
+          <Terminal Id="ObjectIdentifier" />
         </Sequence>
         <Sequence>
           <Terminal Id="Begin" />
@@ -2639,6 +2642,32 @@
         </Sequence>
       </Sequences>
     </Rule>
+    
+    <Rule StartingNonTerminal="AlterTrigger">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Trigger" />
+          <NonTerminal Id="SchemaObject" />
+          <NonTerminal Id="AlterTriggerOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterTriggerOption">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="EnableOrDisable" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Rename" />
+          <Terminal Id="To" />
+          <Terminal Id="ObjectIdentifier" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="AlterProgramOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
 
     <Rule StartingNonTerminal="AlterProgramOption">
       <Sequences>
@@ -3232,6 +3261,9 @@
         </Sequence>
         <Sequence>
           <Terminal Id="Directory" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Trigger" />
         </Sequence>
       </Sequences>
     </Rule>
