@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -7,6 +8,8 @@ namespace SqlPad
 	public interface IDebuggerSession
 	{
 		int? ActiveLine { get; }
+
+		event EventHandler Attached;
 
 		IReadOnlyList<StackTraceItem> StackTrace { get; }
 

@@ -188,11 +188,6 @@ namespace SqlPad
 			App.MainWindow.NotifyTaskStatus();
 		}
 
-		internal void NotifyDebuggerEvent()
-		{
-			Editor.IsReadOnly = OutputViewers.Any(v => v.IsDebuggerActive);
-		}
-
 		private void UpdateDocumentHeaderToolTip()
 		{
 			DocumentHeaderToolTip = WorkDocument.File == null

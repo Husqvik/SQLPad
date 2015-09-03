@@ -749,7 +749,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private async Task StartDebuggerSession(OracleCommand command, CancellationToken cancellationToken)
 		{
-			_debuggerSession = new OracleDebuggerSession(_databaseModel, command);
+			_debuggerSession = new OracleDebuggerSession(command);
 			_debuggerSession.Detached += DebuggerSessionDetachedHandler;
 			await _debuggerSession.Start(cancellationToken);
 

@@ -30,7 +30,6 @@ namespace SqlPad
 		private readonly StringBuilder _executionLogBuilder = new StringBuilder();
 
 		private bool _isRunning;
-		private bool _debuggerActive;
 		private object _previousSelectedTab;
 		private CancellationTokenSource _statementExecutionCancellationTokenSource;
 		private StatementExecutionBatchResult _executionResult;
@@ -44,21 +43,6 @@ namespace SqlPad
 		public IExecutionPlanViewer ExecutionPlanViewer { get; }
 		
 		public ITraceViewer TraceViewer { get; }
-
-		public bool IsDebuggerActive
-		{
-			get { return _debuggerActive; }
-			private set
-			{
-				if (_debuggerActive == value)
-				{
-					return;
-				}
-
-				_debuggerActive = value;
-				DocumentPage.NotifyDebuggerEvent();
-			}
-		}
 
 		private bool IsCancellationRequested
 		{
@@ -198,7 +182,7 @@ namespace SqlPad
 
 		private void SelectDefaultTabIfNeeded()
 		{
-			if (TabControlResult.SelectedItem == null || TabControlResult.SelectedItem.In(TabExecutionPlan, TabStatistics, TabCompilationErrors))
+			if (TabControlResult.SelectedItem == null || TabControlResult.SelectedItem.In(TabExecutionPlan, TabStatistics, TabCompilationErrors, TabDebugger))
 			{
 				TabExecutionLog.IsSelected = true;
 			}
@@ -262,8 +246,6 @@ namespace SqlPad
 			//var caretOffset = DocumentPage.Editor.CaretOffset;
 			//var text = DocumentPage.Editor.Text;
 
-			IsDebuggerActive = executionModel.EnableDebug;
-
 			Initialize();
 
 			ConnectionAdapter.EnableDatabaseOutput = EnableDatabaseOutput;
@@ -272,14 +254,6 @@ namespace SqlPad
 			var actionResult = await SafeTimedActionAsync(() => innerTask = ConnectionAdapter.ExecuteStatementAsync(executionModel, _statementExecutionCancellationTokenSource.Token));
 
 			HasActiveTransaction = ConnectionAdapter.HasActiveTransaction;
-
-			IsDebuggerControlVisible = ConnectionAdapter.DebuggerSession != null;
-			if (IsDebuggerControlVisible)
-			{
-				return;
-			}
-
-			IsDebuggerActive = false;
 
 			if (!actionResult.IsSuccessful)
 			{
@@ -301,6 +275,13 @@ namespace SqlPad
 			}
 
 			_executionResult = innerTask.Result;
+
+			if (ConnectionAdapter.DebuggerSession != null)
+			{
+				DebuggerViewer.Initialize(DocumentPage.InfrastructureFactory, ConnectionAdapter.DatabaseModel, ConnectionAdapter.DebuggerSession);
+				ConnectionAdapter.DebuggerSession.Attached += delegate { Dispatcher.Invoke(DebuggerSessionSynchronizedHandler); };
+				return;
+			}
 
 			UpdateExecutionLog(_executionResult.StatementResults);
 
@@ -366,6 +347,12 @@ namespace SqlPad
 			}
 		}
 
+		private void DebuggerSessionSynchronizedHandler()
+		{
+			IsDebuggerControlVisible = true;
+			TabControlResult.SelectedItem = TabDebugger;
+		}
+
 		private void UpdateHistoryEntries()
 		{
 			foreach (var statementResult in _executionResult.StatementResults.Where(r => r.ExecutedAt.HasValue))
@@ -378,7 +365,7 @@ namespace SqlPad
 				}
 				else
 				{
-					Trace.WriteLine($"Executes statement not stored in the execution history. The maximum allowed size is {MaxHistoryEntrySize} characters while the statement has {executionHistoryRecord.StatementText.Length} characters.");
+					Trace.WriteLine($"Executed statement not stored in the execution history. The maximum allowed size is {MaxHistoryEntrySize} characters while the statement has {executionHistoryRecord.StatementText.Length} characters.");
 				}
 			}
 		}
@@ -624,7 +611,11 @@ namespace SqlPad
 			if (ConnectionAdapter.DebuggerSession == null)
 			{
 				IsDebuggerControlVisible = false;
-				IsDebuggerActive = false;
+				SelectDefaultTabIfNeeded();
+			}
+			else
+			{
+				DebuggerViewer.DisplaySourceAsync(_statementExecutionCancellationTokenSource.Token);
 			}
 
 			if (exception != null)
@@ -635,22 +626,22 @@ namespace SqlPad
 
 		private async void ButtonDebuggerContinueClickHandler(object sender, RoutedEventArgs e)
 		{
-			await ExecuteDebuggerAction(ConnectionAdapter.DebuggerSession.Continue(CancellationToken.None));
+			await ExecuteUsingCancellationToken(t => ExecuteDebuggerAction(ConnectionAdapter.DebuggerSession.Continue(t)));
 		}
 
 		private async void ButtonDebuggerStepIntoClickHandler(object sender, RoutedEventArgs e)
 		{
-			await ExecuteDebuggerAction(ConnectionAdapter.DebuggerSession.StepInto(CancellationToken.None));
+			await ExecuteUsingCancellationToken(t => ExecuteDebuggerAction(ConnectionAdapter.DebuggerSession.StepInto(t)));
 		}
 
 		private async void ButtonDebuggerStepOverClickHandler(object sender, RoutedEventArgs e)
 		{
-			await ExecuteDebuggerAction(ConnectionAdapter.DebuggerSession.StepNextLine(CancellationToken.None));
+			await ExecuteUsingCancellationToken(t => ExecuteDebuggerAction(ConnectionAdapter.DebuggerSession.StepNextLine(t)));
 		}
 
 		private async void ButtonDebuggerAbortClickHandler(object sender, RoutedEventArgs e)
 		{
-			await ExecuteDebuggerAction(ConnectionAdapter.DebuggerSession.Detach(CancellationToken.None));
+			await ExecuteUsingCancellationToken(t => ExecuteDebuggerAction(ConnectionAdapter.DebuggerSession.Detach(t)));
 		}
 	}
 }

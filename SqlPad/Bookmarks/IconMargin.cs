@@ -161,36 +161,31 @@ namespace SqlPad.Bookmarks
 
 	public class ExecutedCodeBackgroundRenderer : IBackgroundRenderer
 	{
-		readonly TextEditor _editor;
-
 		private static readonly Brush BackgroundBrush = Brushes.Yellow;
 		private static readonly Pen EdgePen = new Pen(BackgroundBrush, 1);
 
-		public SqlDocumentRepository DocumentRepository { get; set; }
+		public int? ActiveLine { get; set; }
 
 		static ExecutedCodeBackgroundRenderer()
 		{
 			EdgePen.Freeze();
 		}
 
-		public ExecutedCodeBackgroundRenderer(TextEditor e)
-		{
-			_editor = e;
-		}
-
 		public KnownLayer Layer => KnownLayer.Background;
 
 		public void Draw(TextView textView, DrawingContext drawingContext)
 		{
-			textView.EnsureVisualLines();
-
-			foreach (var rect in BackgroundGeometryBuilder.GetRectsForSegment(textView, new ICSharpCode.AvalonEdit.Document.TextSegment { StartOffset = textView.Document.GetLineByOffset(_editor.CaretOffset).Offset }))
+			if (ActiveLine == null || ActiveLine == 0)
 			{
-				drawingContext.DrawRectangle(
-					BackgroundBrush,
-					EdgePen,
-					new Rect(rect.Location, new Size(textView.ActualWidth, rect.Height))
-				);
+				return;
+			}
+
+			textView.EnsureVisualLines();
+			var startOffset = textView.Document.GetLineByNumber(ActiveLine.Value).Offset;
+			var textSegment = new ICSharpCode.AvalonEdit.Document.TextSegment { StartOffset = startOffset };
+			foreach (var rect in BackgroundGeometryBuilder.GetRectsForSegment(textView, textSegment))
+			{
+				drawingContext.DrawRectangle(BackgroundBrush, EdgePen, new Rect(rect.Location, new Size(textView.ActualWidth, rect.Height)));
 			}
 		}
 	}

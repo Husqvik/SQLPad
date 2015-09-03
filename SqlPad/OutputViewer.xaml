@@ -156,6 +156,19 @@
 			</TabItem>
 			<TabItem Header="E_xecution plan" x:Name="TabExecutionPlan" />
 			<TabItem Header="_Trace" x:Name="TabTrace" />
+			<TabItem Header="_Debugger" x:Name="TabDebugger">
+				<TabItem.Style>
+					<Style>
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding IsDebuggerControlVisible}" Value="False">
+								<Setter Property="TabItem.Visibility" Value="Collapsed" />
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</TabItem.Style>
+
+				<sqlPad:DebuggerViewer x:Name="DebuggerViewer" />
+			</TabItem>
 		</TabControl>
 	</DockPanel>
 </UserControl>

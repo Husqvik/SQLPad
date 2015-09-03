@@ -1,4 +1,4 @@
-SQLPad 0.3.0.144
+SQLPad 0.3.0.145
 ================
 
 SQLPad is an experimental SQL editor focused to quick and comfortable work.
@@ -176,7 +176,7 @@ Convert ORDER BY number column reference
 
 Requirements
 ------------
-.NET 4.5
+Microsoft .NET 4.6
 
 [Oracle Data Access Components 12c - 32 bit](http://www.oracle.com/technetwork/topics/dotnet/downloads/net-downloads-160392.html) - unmanaged driver only (due to certain limitations of managed driver, e. g., lack of UDTs and XML types support)
 
@@ -204,7 +204,7 @@ Each connection string requires an infrastructure factory configuration record:
 		<!-- other connection configurations -->
 	</databaseConnectionConfiguration>
 
-IsProduction - indicates connection to production system using red label
+IsProduction - indicates connection to a production system using red label
 
 #####Configuration.xml
 

@@ -105,12 +105,18 @@
     <Compile Include="CellValueConverter.cs" />
     <Compile Include="CSharpQueryClassGenerator.cs" />
     <Compile Include="DataGridHelper.cs" />
+    <Compile Include="DebuggerViewer.xaml.cs">
+      <DependentUpon>DebuggerViewer.xaml</DependentUpon>
+    </Compile>
     <Compile Include="FindReplace\TextSearchHelper.cs" />
     <Compile Include="IDebuggerSession.cs" />
     <Compile Include="OutputViewer.DependencyProperties.cs" />
     <Compile Include="ResultSetDataGridTemplateSelector.cs" />
     <Compile Include="ResultViewer.xaml.cs">
       <DependentUpon>ResultViewer.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SqlEditor.xaml.cs">
+      <DependentUpon>SqlEditor.xaml</DependentUpon>
     </Compile>
     <Compile Include="StatementExecutionHistory.xaml.cs">
       <DependentUpon>StatementExecutionHistory.xaml</DependentUpon>
@@ -228,6 +234,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="DebuggerViewer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="DocumentPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -245,6 +255,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ResultViewer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SqlEditor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

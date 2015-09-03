@@ -30,7 +30,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private readonly OracleCommand _debuggedSessionCommand;
 		private readonly OracleConnection _debuggerConnection;
 		private readonly OracleCommand _debuggerSessionCommand;
-		private readonly OracleDatabaseModel _databaseModel;
 		private readonly OracleCommand _debuggedCommand;
 		private readonly List<StackTraceItem> _stackTrace = new List<StackTraceItem>();
 		private readonly Dictionary<string, string> _sources = new Dictionary<string, string>();
@@ -41,16 +40,17 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public event EventHandler Detached;
 
+		public event EventHandler Attached;
+
 		public OracleObjectIdentifier ActiveObject => OracleObjectIdentifier.Create(_runtimeInfo.SourceLocation.Owner, _runtimeInfo.SourceLocation.Name);
 
 		public int? ActiveLine => _runtimeInfo.SourceLocation.LineNumber;
 
 		public IReadOnlyList<StackTraceItem> StackTrace => _stackTrace;
 
-		public OracleDebuggerSession(OracleDatabaseModel databaseModel, OracleCommand debuggedCommand)
+		public OracleDebuggerSession(OracleCommand debuggedCommand)
 		{
 			_debuggedCommand = debuggedCommand;
-			_databaseModel = databaseModel;
 			var debuggedConnection = _debuggedCommand.Connection;
 			_debuggedSessionCommand = debuggedConnection.CreateCommand();
 			_debuggedSessionCommand.BindByName = true;
@@ -112,6 +112,17 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 				startDebuggerTask.Wait(cancellationToken);
 				Trace.WriteLine("Debugger synchronized. ");
+			}
+
+			await StepInto(cancellationToken);
+
+			if (_runtimeInfo.IsTerminated == true)
+			{
+				RaiseDetached();
+			}
+			else
+			{
+				Attached?.Invoke(this, EventArgs.Empty);
 			}
 		}
 
@@ -218,8 +229,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_debuggerConnection.ActionName = "Synchronize";
 
 			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
-
-			await UpdateRuntimeInfo(GetRuntimeInfo(_debuggerSessionCommand), cancellationToken);
 		}
 
 		private async Task UpdateRuntimeInfo(OracleRuntimeInfo runtimeInfo, CancellationToken cancellationToken)
@@ -271,7 +280,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			using (var reader = await _debuggerSessionCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken))
 			{
-				var sourceBuilder = new StringBuilder();
+				var sourceBuilder = new StringBuilder("CREATE ");
 				while (reader.Read())
 				{
 					sourceBuilder.Append((string)reader["TEXT"]);
@@ -411,6 +420,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			Trace.WriteLine("Debugger detached from target session. ");
 
+			RaiseDetached();
+		}
+
+		private void RaiseDetached()
+		{
 			Detached?.Invoke(this, EventArgs.Empty);
 		}
 
