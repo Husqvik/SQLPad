@@ -117,8 +117,11 @@ namespace SqlPad
 			
 			InitializeGenericCommandBindings();
 
-			_timerReParse = new DispatcherTimer(TimeSpan.FromMilliseconds(100), DispatcherPriority.Normal, delegate { Parse(); }, Dispatcher);
-			_timerTimedNotification = new DispatcherTimer(TimeSpan.FromSeconds(5), DispatcherPriority.Normal, TimedNotificationTickHandler, Dispatcher);
+			_timerReParse = new DispatcherTimer(DispatcherPriority.Normal, Dispatcher) { Interval = TimeSpan.FromMilliseconds(100) };
+			_timerReParse.Tick += delegate { Parse(); };
+			_timerTimedNotification = new DispatcherTimer(DispatcherPriority.Normal, Dispatcher) { Interval = TimeSpan.FromSeconds(5) };
+			_timerTimedNotification.Tick += TimedNotificationTickHandler;
+
 			_outputViewers.CollectionChanged += delegate { OutputViewerList.Visibility = _outputViewers.Count > 1 ? Visibility.Visible : Visibility.Collapsed; };
 
 			DateTimeFormat = ConfigurationProvider.Configuration.ResultGrid.DateFormat;
