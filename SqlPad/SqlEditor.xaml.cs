@@ -25,6 +25,12 @@ namespace SqlPad
 		private ICodeCompletionProvider _codeCompletionProvider;
 		private INavigationService _navigationService;
 
+		public bool ColorizeBackground
+		{
+			get { return _colorizingTransformer.ColorizeBackground; }
+			set { _colorizingTransformer.ColorizeBackground = value; }
+		}
+
 		public SqlEditor()
 		{
 			InitializeComponent();
@@ -169,14 +175,35 @@ namespace SqlPad
 			set
 			{
 				_backgroundRenderer.ActiveLine = value;
+
+				if (_backgroundRenderer.ActiveLine.HasValue)
+				{
+					CodeViewer.Editor.ScrollToLine(_backgroundRenderer.ActiveLine.Value);
+				}
+
 				CodeViewer.Editor.TextArea.TextView.Redraw();
+			}
+		}
+
+		public int? InactiveLine
+		{
+			get { return _backgroundRenderer.ActiveLine; }
+			set
+			{
+				if (_backgroundRenderer.InactiveLine == value)
+				{
+					return;
+				}
+
+				_backgroundRenderer.InactiveLine = value;
+				//CodeViewer.Editor.TextArea.TextView.Redraw();
 			}
 		}
 
 		public DebuggerTabItem(string header)
 		{
 			Header = header;
-			Content = CodeViewer = new SqlEditor();
+			Content = CodeViewer = new SqlEditor { ColorizeBackground = false };
 			CodeViewer.Editor.TextArea.TextView.BackgroundRenderers.Add(_backgroundRenderer);
 		}
 	}

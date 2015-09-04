@@ -99,22 +99,17 @@ namespace SqlPad.Oracle.DatabaseConnection
 			await Attach(cancellationToken);
 			Trace.WriteLine("Debugger attached. ");
 
-			_debuggedAction =
-				new Task(async () =>
-				{
-					await _debuggedCommand.ExecuteNonQueryAsynchronous(cancellationToken);
-				});
+			Synchronize(cancellationToken).ContinueWith(AfterSynchronized, cancellationToken, TaskContinuationOptions.OnlyOnRanToCompletion);
 
-			using (var startDebuggerTask = Synchronize(cancellationToken))
-			{
-				_debuggedAction.Start();
-				Trace.WriteLine("Debugged action started. ");
+			_debuggedAction = _debuggedCommand.ExecuteNonQueryAsynchronous(cancellationToken);
+			Trace.WriteLine("Debugged action started. ");
+		}
 
-				startDebuggerTask.Wait(cancellationToken);
-				Trace.WriteLine("Debugger synchronized. ");
-			}
+		private async void AfterSynchronized(Task synchronzationTask, object cancellationToken)
+		{
+			Trace.WriteLine("Debugger synchronized. ");
 
-			await StepInto(cancellationToken);
+			await StepInto((CancellationToken)cancellationToken);
 
 			if (_runtimeInfo.IsTerminated == true)
 			{

@@ -46,6 +46,8 @@ namespace SqlPad
 
 		public IEnumerable<TextSegment> HighlightSegments => _highlightSegments.SelectMany(c => c);
 
+		public bool ColorizeBackground { get; set; } = true;
+
 		public void SetParser(ISqlParser parser)
 		{
 			_parser = parser;
@@ -251,7 +253,9 @@ namespace SqlPad
 		protected override void ColorizeLine(DocumentLine line)
 		{
 			if (_statements == null)
+			{
 				return;
+			}
 
 			ICollection<StatementGrammarNode> lineTerminals;
 			if (_lineTerminals.TryGetValue(line, out lineTerminals))
@@ -273,7 +277,9 @@ namespace SqlPad
 						brush = ProgramBrush;
 
 					if (brush == null)
+					{
 						continue;
+					}
 
 					ProcessSegmentAtLine(line, terminal.SourcePosition,
 						element => element.TextRunProperties.SetForegroundBrush(brush));
@@ -294,6 +300,7 @@ namespace SqlPad
 				});
 
 			var statementsAtLine = _statements.Where(s => s.SourcePosition.IndexStart <= line.EndOffset && s.SourcePosition.IndexEnd >= line.Offset);
+			var colorizeBackground = ColorizeBackground;
 			foreach (var statement in statementsAtLine)
 			{
 				Brush backgroundBrush;
@@ -312,24 +319,26 @@ namespace SqlPad
 				SetCorrespondingTerminalsBrush(line);
 				SetHighlightedSegmentBrush(line);
 
-				ChangeLinePart(
-					colorStartOffset,
-					colorEndOffset,
-					element =>
-					{
-						element.BackgroundBrush = backgroundBrush;
+				if (colorizeBackground)
+				{
+					ChangeLinePart(
+						colorStartOffset,
+						colorEndOffset,
+						element =>
+						{
+							element.BackgroundBrush = backgroundBrush;
 
-						//ProcessSegmentAtLine(line, semanticError.Node.SourcePosition,
-						//	element => element.TextRunProperties.SetTextDecorations(Resources.BoxedText));
+							//ProcessSegmentAtLine(line, semanticError.Node.SourcePosition,
+							//	element => element.TextRunProperties.SetTextDecorations(Resources.BoxedText));
 
-						/*ProcessSegmentAtLine(line, nodeSemanticError.Key.SourcePosition,
+							/*ProcessSegmentAtLine(line, nodeSemanticError.Key.SourcePosition,
 							element =>
 							{
 								element.BackgroundBrush = Resources.OutlineBoxBrush;
 								var x = 1;
 							});*/
 
-						/*
+							/*
 						// This lambda gets called once for every VisualLineElement
 						// between the specified offsets.
 						var tf = element.TextRunProperties.Typeface;
@@ -341,7 +350,8 @@ namespace SqlPad
 							FontWeights.Bold,
 							tf.Stretch
 						));*/
-					});
+						});
+				}
 
 				SetHighlightedSegmentBrush(line);
 			}

@@ -1,12 +1,46 @@
 ﻿<UserControl x:Class="SqlPad.DebuggerViewer"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:sqlpad="clr-namespace:SqlPad"
-             mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300">
-    <TabControl x:Name="TabSourceViewer">
-            
-    </TabControl>
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="300"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}">
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="2*" />
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
+		</Grid.RowDefinitions>
+
+		<TabControl x:Name="TabSourceViewer" Grid.Row="0" />
+		<GridSplitter Grid.Column="0" Grid.Row="1" Height="4" HorizontalAlignment="Stretch" ShowsPreview="True" VerticalAlignment="Center" Background="DimGray" />
+		<TabControl Grid.Row="2">
+			<TabControl.Items>
+				<TabItem Header="Call stack">
+					<ListBox x:Name="StackTraceItems" ItemsSource="{Binding StackTrace}" IsSynchronizedWithCurrentItem="True">
+						<ListBox.ItemTemplate>
+							<DataTemplate>
+								<TextBlock MouseLeftButtonDown="MouseButtonDownHandler">
+									<Run Text="{Binding Header}" /><Run Text=" (line: " /><Run Text="{Binding Line}" /><Run Text=")" />
+								</TextBlock>
+							</DataTemplate>
+						</ListBox.ItemTemplate>
+					</ListBox>
+				</TabItem>
+				<TabItem Header="Watch">
+					<DataGrid ItemsSource="{Binding WatchItems}" AutoGenerateColumns="False" CanUserSortColumns="False" CanUserReorderColumns="False" CanUserResizeRows="False" SelectionMode="Single" SelectionUnit="Cell"
+							  CellEditEnding="CellEditEndingHandler"
+							  HorizontalGridLinesBrush="LightGray"
+							  VerticalGridLinesBrush="LightGray">
+						<DataGrid.Columns>
+							<DataGridTextColumn Header="Name" Binding="{Binding Name}" />
+							<DataGridTextColumn Header="Value" Binding="{Binding Value}" />
+						</DataGrid.Columns>
+					</DataGrid>
+				</TabItem>
+			</TabControl.Items>
+		</TabControl>
+	</Grid>
 </UserControl>

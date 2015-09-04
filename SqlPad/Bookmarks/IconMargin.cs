@@ -161,10 +161,13 @@ namespace SqlPad.Bookmarks
 
 	public class ExecutedCodeBackgroundRenderer : IBackgroundRenderer
 	{
-		private static readonly Brush BackgroundBrush = Brushes.Yellow;
-		private static readonly Pen EdgePen = new Pen(BackgroundBrush, 1);
+		private static readonly Brush BackgroundBrushActive = Brushes.Yellow;
+		private static readonly Brush BackgroundBrushInactive = Brushes.LightGreen;
+		private static readonly Pen EdgePen = new Pen(BackgroundBrushActive, 1);
 
 		public int? ActiveLine { get; set; }
+
+		public int? InactiveLine { get; set; }
 
 		static ExecutedCodeBackgroundRenderer()
 		{
@@ -175,17 +178,23 @@ namespace SqlPad.Bookmarks
 
 		public void Draw(TextView textView, DrawingContext drawingContext)
 		{
-			if (ActiveLine == null || ActiveLine == 0)
+			DrawLine(textView, drawingContext, ActiveLine, BackgroundBrushActive);
+			DrawLine(textView, drawingContext, InactiveLine, BackgroundBrushInactive);
+		}
+
+		private void DrawLine(TextView textView, DrawingContext drawingContext, int? line, Brush brush)
+		{
+			if (line == null)
 			{
 				return;
 			}
 
 			textView.EnsureVisualLines();
-			var startOffset = textView.Document.GetLineByNumber(ActiveLine.Value).Offset;
-			var textSegment = new ICSharpCode.AvalonEdit.Document.TextSegment { StartOffset = startOffset };
+			var startOffset = textView.Document.GetLineByNumber(line.Value).Offset;
+			var textSegment = new ICSharpCode.AvalonEdit.Document.TextSegment {StartOffset = startOffset};
 			foreach (var rect in BackgroundGeometryBuilder.GetRectsForSegment(textView, textSegment))
 			{
-				drawingContext.DrawRectangle(BackgroundBrush, EdgePen, new Rect(rect.Location, new Size(textView.ActualWidth, rect.Height)));
+				drawingContext.DrawRectangle(brush, EdgePen, new Rect(rect.Location, new Size(textView.ActualWidth, rect.Height)));
 			}
 		}
 	}

@@ -645,8 +645,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 							if (executionModel.EnableDebug)
 							{
 								// TODO: Add COMPILE DEBUG
-								//await StartDebuggerSession(userCommand, cancellationToken);
-								await Task.Factory.StartNew(c => StartDebuggerSession((OracleCommand)c, cancellationToken), userCommand, cancellationToken);
+								InitializeDebuggerSession(userCommand);
 							}
 							else
 							{
@@ -747,11 +746,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return batchResult;
 		}
 
-		private async Task StartDebuggerSession(OracleCommand command, CancellationToken cancellationToken)
+		private void InitializeDebuggerSession(OracleCommand command)
 		{
 			_debuggerSession = new OracleDebuggerSession(command);
 			_debuggerSession.Detached += DebuggerSessionDetachedHandler;
-			await _debuggerSession.Start(cancellationToken);
 
 			//await _debuggerSession.SetBreakpoint(OracleObjectIdentifier.Create("HUSQVIK", "TESTPROC"), 6, cancellationToken);
 			//await _debuggerSession.GetLineMap(OracleObjectIdentifier.Create("HUSQVIK", "TESTPROC"), cancellationToken);

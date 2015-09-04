@@ -10,9 +10,9 @@ namespace SqlPad
 {
 	public class SqlTextEditor : TextEditor
 	{
-		public static readonly DependencyPropertyKey CurrentLineKey = DependencyProperty.RegisterReadOnly("CurrentLine", typeof(int), typeof(SqlTextEditor), new UIPropertyMetadata(0));
-		public static readonly DependencyPropertyKey CurrentColumnKey = DependencyProperty.RegisterReadOnly("CurrentColumn", typeof(int), typeof(SqlTextEditor), new UIPropertyMetadata(0));
-		public static readonly DependencyPropertyKey CurrentSelectionLengthKey = DependencyProperty.RegisterReadOnly("CurrentSelectionLength", typeof(int?), typeof(SqlTextEditor), new UIPropertyMetadata(null));
+		public static readonly DependencyPropertyKey CurrentLineKey = DependencyProperty.RegisterReadOnly("CurrentLine", typeof(int), typeof(SqlTextEditor), new FrameworkPropertyMetadata(0));
+		public static readonly DependencyPropertyKey CurrentColumnKey = DependencyProperty.RegisterReadOnly("CurrentColumn", typeof(int), typeof(SqlTextEditor), new FrameworkPropertyMetadata(0));
+		public static readonly DependencyPropertyKey CurrentSelectionLengthKey = DependencyProperty.RegisterReadOnly("CurrentSelectionLength", typeof(int?), typeof(SqlTextEditor), new FrameworkPropertyMetadata(null));
 
 		private const double FontSizeMin = 8;
 		private const double FontSizeMax = 72;
