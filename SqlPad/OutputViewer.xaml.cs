@@ -617,6 +617,7 @@ namespace SqlPad
 			else
 			{
 				DebuggerViewer.DisplaySourceAsync(_statementExecutionCancellationTokenSource.Token);
+				DebuggerViewer.RefreshWatchItemsAsync(_statementExecutionCancellationTokenSource.Token);
 			}
 
 			if (exception != null)

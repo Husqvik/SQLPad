@@ -435,10 +435,13 @@ BEGIN
 END;";
 		public const string DetachDebugger = "BEGIN dbms_debug.detach_session; END;";
 		public const string DebuggerGetValue =
-@"DECLARE
-    frame NUMBER := 0;
-BEGIN
-    :result := dbms_debug.get_value(:name, frame, :value, null);
+@"BEGIN
+    :result := dbms_debug.get_value(variable_name => :name, frame# => 0, scalar_value => :value, format => null);
+END;";
+
+		public const string DebuggerSetValue =
+@"BEGIN
+    :result := dbms_debug.set_value(frame# => 0, assignment_statement => :assignment_statement);
 END;";
 
 		public const string GetDebuggerStackTrace =

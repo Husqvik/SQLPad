@@ -105,6 +105,32 @@ namespace SqlPad.Oracle.DatabaseConnection
 			Trace.WriteLine("Debugged action started. ");
 		}
 
+		public async Task<object> GetValue(string expression, CancellationToken cancellationToken)
+		{
+			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.DebuggerGetValue;
+			_debuggerSessionCommand.Parameters.Clear();
+			_debuggerSessionCommand.AddSimpleParameter("RESULT", null, TerminalValues.Number);
+			_debuggerSessionCommand.AddSimpleParameter("NAME", expression, TerminalValues.Varchar2);
+			_debuggerSessionCommand.AddSimpleParameter("VALUE", null, TerminalValues.Varchar2, 32767);
+
+			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
+
+			var result = (ValueInfoStatus)GetValueFromOracleDecimal(_debuggerSessionCommand.Parameters["RESULT"]);
+			return GetValueFromOracleString(_debuggerSessionCommand.Parameters["VALUE"]);
+		}
+
+		public async Task SetValue(string variable, string expression, CancellationToken cancellationToken)
+		{
+			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.DebuggerGetValue;
+			_debuggerSessionCommand.Parameters.Clear();
+			_debuggerSessionCommand.AddSimpleParameter("RESULT", null, TerminalValues.Number);
+			_debuggerSessionCommand.AddSimpleParameter("ASSIGNMENT_STATEMENT", $"{variable} := {expression};", TerminalValues.Varchar2);
+
+			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
+
+			var result = (ValueInfoStatus)GetValueFromOracleDecimal(_debuggerSessionCommand.Parameters["RESULT"]);
+		}
+
 		private async void AfterSynchronized(Task synchronzationTask, object cancellationToken)
 		{
 			Trace.WriteLine("Debugger synchronized. ");
@@ -137,19 +163,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 			command.AddSimpleParameter("NAME", null, TerminalValues.Varchar2, 30);
 			command.AddSimpleParameter("NAMESPACE", null, TerminalValues.Number);
 			command.AddSimpleParameter("LIBUNITTYPE", null, TerminalValues.Number);
-		}
-
-		private object GetValue(string name)
-		{
-			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.DebuggerGetValue;
-			_debuggerSessionCommand.Parameters.Clear();
-			_debuggerSessionCommand.AddSimpleParameter("RESULT", null, TerminalValues.Number);
-			_debuggerSessionCommand.AddSimpleParameter("NAME", name, TerminalValues.Varchar2);
-			_debuggerSessionCommand.AddSimpleParameter("VALUE", null, TerminalValues.Varchar2, 32767);
-
-			_debuggerSessionCommand.ExecuteNonQuery();
-
-			return GetValueFromOracleString(_debuggerSessionCommand.Parameters["VALUE"]);
 		}
 
 		private async Task ContinueAndDetachIfTerminated(OracleDebugBreakFlags breakFlags, CancellationToken cancellationToken)
@@ -376,8 +389,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 			// remove
 			if (_runtimeInfo.IsTerminated != true)
 			{
-				var aValue = GetValue("A");
-				var bValue = GetValue("B");
+				var aValue = await GetValue("A", cancellationToken);
+				var bValue = await GetValue("B", cancellationToken);
 				Trace.WriteLine($"A = {aValue}; B = {bValue}");
 				//Trace.WriteLine("Stack trace: \n" + await GetStackTrace(cancellationToken));
 				//Trace.WriteLine("Is running:" + await IsRunning(cancellationToken));
@@ -643,5 +656,18 @@ namespace SqlPad.Oracle.DatabaseConnection
 		Success = 0,
 		ErrorIllegalLine = 12,
 		ErrorBadHandle = 16 // can't set breakpoint there
+	}
+
+	public enum ValueInfoStatus
+	{
+		Success = 0,
+		ErrorBogusFrame = 1, // No such frame
+		ErrorNoDebugInfo = 2, // Debug info missing
+		ErrorNoSuchObject = 3, // No such variable/parameter
+		ErrorUnknownType = 4, // Debug info garbled
+		ErrorIndexedTable = 18, // Cannot get/set an entire collection at once
+		ErrorIllegalIndex = 19, // Illegal collection index
+		ErrorNullValue = 32, // Value is null
+		ErrorNullCollection = 40 // Collection is atomically null
 	}
 }

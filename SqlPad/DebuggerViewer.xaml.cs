@@ -97,9 +97,9 @@ namespace SqlPad
 			}
 		}
 
-		private void MouseButtonDownHandler(object sender, MouseButtonEventArgs e)
+		private void MouseButtonDownHandler(object sender, MouseButtonEventArgs args)
 		{
-			if (e.ClickCount != 2)
+			if (args.ClickCount != 2)
 			{
 				return;
 			}
@@ -110,18 +110,45 @@ namespace SqlPad
 			debuggerViewer.CodeViewer.Editor.ScrollToLine(currentItem.Line);
 		}
 
-		private void CellEditEndingHandler(object sender, DataGridCellEditEndingEventArgs e)
+		private async void CellEditEndingHandler(object sender, DataGridCellEditEndingEventArgs args)
 		{
+			if (args.EditAction == DataGridEditAction.Cancel)
+			{
+				return;
+			}
 
+			var watchItem = (WatchItem)args.Row.DataContext;
+			if (String.IsNullOrWhiteSpace(watchItem.Name))
+			{
+				watchItem.Value = null;
+				return;
+			}
+
+			try
+			{
+				watchItem.Value = await _debuggerSession.GetValue(watchItem.Name, CancellationToken.None);
+			}
+			catch (Exception exception)
+			{
+				Messages.ShowError(exception.Message);
+			}
+		}
+
+		public async void RefreshWatchItemsAsync(CancellationToken token)
+		{
+			foreach (var watchItem in WatchItems.Where(i => !String.IsNullOrWhiteSpace(i.Name)))
+			{
+				watchItem.Value = await _debuggerSession.GetValue(watchItem.Name, token);
+			}
 		}
 	}
 
 	public class WatchItem : ModelBase
 	{
-		private string _value;
+		private object _value;
 		public string Name { get; set; }
 
-		public string Value
+		public object Value
 		{
 			get { return _value; }
 			set { UpdateValueAndRaisePropertyChanged(ref _value, value); }

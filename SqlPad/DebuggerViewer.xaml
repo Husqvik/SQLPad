@@ -35,7 +35,7 @@
 							  HorizontalGridLinesBrush="LightGray"
 							  VerticalGridLinesBrush="LightGray">
 						<DataGrid.Columns>
-							<DataGridTextColumn Header="Name" Binding="{Binding Name}" />
+							<DataGridTextColumn Header="Name" Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
 							<DataGridTextColumn Header="Value" Binding="{Binding Value}" />
 						</DataGrid.Columns>
 					</DataGrid>

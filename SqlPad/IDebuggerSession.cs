@@ -24,6 +24,10 @@ namespace SqlPad
 		Task StepOut(CancellationToken cancellationToken);
 
 		Task Detach(CancellationToken cancellationToken);
+
+		Task<object> GetValue(string expression, CancellationToken cancellationToken);
+
+		Task SetValue(string variable, string expression, CancellationToken cancellationToken);
 	}
 
 	public class StackTraceItem
