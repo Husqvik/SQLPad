@@ -116,12 +116,13 @@ namespace SqlPad.Oracle.DatabaseConnection
 			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
 
 			var result = (ValueInfoStatus)GetValueFromOracleDecimal(_debuggerSessionCommand.Parameters["RESULT"]);
+			Trace.WriteLine($"Get value result: {result}");
 			return GetValueFromOracleString(_debuggerSessionCommand.Parameters["VALUE"]);
 		}
 
 		public async Task SetValue(string variable, string expression, CancellationToken cancellationToken)
 		{
-			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.DebuggerGetValue;
+			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.DebuggerSetValue;
 			_debuggerSessionCommand.Parameters.Clear();
 			_debuggerSessionCommand.AddSimpleParameter("RESULT", null, TerminalValues.Number);
 			_debuggerSessionCommand.AddSimpleParameter("ASSIGNMENT_STATEMENT", $"{variable} := {expression};", TerminalValues.Varchar2);
@@ -129,6 +130,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
 
 			var result = (ValueInfoStatus)GetValueFromOracleDecimal(_debuggerSessionCommand.Parameters["RESULT"]);
+			Trace.WriteLine($"Set value result: {result}");
 		}
 
 		private async void AfterSynchronized(Task synchronzationTask, object cancellationToken)
@@ -408,8 +410,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			await Synchronize(cancellationToken);
 			await Continue(OracleDebugBreakFlags.None, cancellationToken);
-
-			taskDebugOff.Wait(cancellationToken);
+			await taskDebugOff;
 
 			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.DetachDebugger;
 			_debuggerSessionCommand.Parameters.Clear();
@@ -605,12 +606,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 	public enum OracleLibraryUnitType
 	{
 		Cursor = 0,
-		Procedure = 0,
-		Function = 0,
-		Package = 0,
-		PackageBody = 0,
-		Trigger = 0,
-		Unknown = 0
+		Procedure = 7,
+		Function = 8,
+		Package = 9,
+		PackageBody = 11,
+		Trigger = 12,
+		Unknown = -1
 	}
 
 	[Flags]

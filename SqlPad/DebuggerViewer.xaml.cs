@@ -30,9 +30,14 @@ namespace SqlPad
 			_outputViewer = outputViewer;
 			_debuggerSession = debuggerSession;
 
-			TabSourceViewer.Items.Clear();
+			foreach (var tabItem in TabSourceViewer.Items.Cast<DebuggerTabItem>().ToArray())
+			{
+				TabSourceViewer.RemoveTabItemWithoutBindingError(tabItem);
+			}
+
 			_viewers.Clear();
 
+			WatchItems.Clear();
 			foreach (var watchItem in _outputViewer.DocumentPage.WorkDocument.WatchItems)
 			{
 				WatchItems.Add(new WatchItem { Name = watchItem });
@@ -127,13 +132,20 @@ namespace SqlPad
 				return;
 			}
 
-			_outputViewer.DocumentPage.WorkDocument.WatchItems = WatchItems.Select(i => i.Name).ToArray();
-
 			var watchItem = (WatchItem)args.Row.DataContext;
-			if (String.IsNullOrWhiteSpace(watchItem.Name))
+			if (Equals(args.Column, ColumnDebugVariableName))
 			{
-				watchItem.Value = null;
-				return;
+				_outputViewer.DocumentPage.WorkDocument.WatchItems = WatchItems.Select(i => i.Name).ToArray();
+
+				if (String.IsNullOrWhiteSpace(watchItem.Name))
+				{
+					watchItem.Value = null;
+					return;
+				}
+			}
+			else
+			{
+				await _debuggerSession.SetValue(watchItem.Name, watchItem.Value.ToString(), CancellationToken.None);
 			}
 
 			try
@@ -157,6 +169,14 @@ namespace SqlPad
 		private void DebuggerOptionsSelectionChangedHandler(object sender, SelectionChangedEventArgs e)
 		{
 			_outputViewer.DocumentPage.WorkDocument.DebuggerViewDefaultTabIndex = ((TabControl)sender).SelectedIndex;
+		}
+
+		private void WatchItemGridPreviewKeyDown(object sender, KeyEventArgs e)
+		{
+			if (WatchItemGrid.CurrentItem != null && e.Key == Key.Delete && Keyboard.Modifiers != ModifierKeys.Alt && Keyboard.Modifiers != ModifierKeys.Control && Keyboard.Modifiers != ModifierKeys.Windows)
+			{
+				WatchItems.Remove((WatchItem)WatchItemGrid.CurrentItem);
+			}
 		}
 	}
 

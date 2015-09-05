@@ -29,13 +29,16 @@
 					</ListBox>
 				</TabItem>
 				<TabItem Header="Watch">
-					<DataGrid ItemsSource="{Binding WatchItems}" AutoGenerateColumns="False" CanUserSortColumns="False" CanUserReorderColumns="False" CanUserResizeRows="False" SelectionMode="Single" SelectionUnit="Cell"
+					<DataGrid x:Name="WatchItemGrid"
+							  ItemsSource="{Binding WatchItems}"
+							  AutoGenerateColumns="False" CanUserSortColumns="False" CanUserReorderColumns="False" CanUserResizeRows="False" SelectionMode="Single" SelectionUnit="Cell" CanUserDeleteRows="True"
+							  PreviewKeyDown="WatchItemGridPreviewKeyDown"
 							  CellEditEnding="CellEditEndingHandler"
 							  HorizontalGridLinesBrush="LightGray"
 							  VerticalGridLinesBrush="LightGray">
 						<DataGrid.Columns>
-							<DataGridTextColumn Header="Name" Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
-							<DataGridTextColumn Header="Value" Binding="{Binding Value}" />
+							<DataGridTextColumn Header="Name" Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}" x:Name="ColumnDebugVariableName" />
+							<DataGridTextColumn Header="Value" Binding="{Binding Value, UpdateSourceTrigger=PropertyChanged}" />
 						</DataGrid.Columns>
 					</DataGrid>
 				</TabItem>
