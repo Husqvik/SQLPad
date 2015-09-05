@@ -10,21 +10,22 @@ namespace SqlPad.Oracle
 		public const string DataTypeUnicodeClob = "NCLOB";
 		public const string DataTypeRefCursor = "REF CURSOR";
 
-		public static readonly ReadOnlyDictionary<string, Type> DataTypes =
-			new ReadOnlyDictionary<string, Type>(
-				new Dictionary<string, Type>
+		public static readonly ReadOnlyDictionary<string, BindVariableType> DataTypes =
+			new ReadOnlyDictionary<string, BindVariableType>(
+				new Dictionary<string, BindVariableType>
 				{
-					{ TerminalValues.Char, typeof (string) },
-					{ TerminalValues.Clob, typeof (string) },
-					{ TerminalValues.Date, typeof (DateTime) },
-					{ TerminalValues.Timestamp, typeof (DateTime) },
-					{ TerminalValues.NChar, typeof (string) },
-					{ DataTypeUnicodeClob, typeof (string) },
-					{ TerminalValues.Number, typeof (string) },
-					{ TerminalValues.NVarchar2, typeof (string) },
-					{ TerminalValues.Varchar2, typeof (string) },
-					{ DataTypeRefCursor, typeof (string) },
-					{ TerminalValues.Raw, typeof (string) }
+					{ TerminalValues.Char, new BindVariableType(TerminalValues.Char, typeof(string), false) },
+					{ TerminalValues.Clob, new BindVariableType(TerminalValues.Clob, typeof(string), true) },
+					{ TerminalValues.Date, new BindVariableType(TerminalValues.Date, typeof(DateTime), false) },
+					{ TerminalValues.Timestamp, new BindVariableType(TerminalValues.Timestamp, typeof(DateTime), false) },
+					{ TerminalValues.NChar, new BindVariableType(TerminalValues.NChar, typeof(string), false) },
+					{ DataTypeUnicodeClob, new BindVariableType(DataTypeUnicodeClob, typeof(string), true) },
+					{ TerminalValues.Number, new BindVariableType(TerminalValues.Number, typeof(string), false) },
+					{ TerminalValues.NVarchar2, new BindVariableType(TerminalValues.NVarchar2, typeof(string), false) },
+					{ TerminalValues.Varchar2, new BindVariableType(TerminalValues.Varchar2, typeof(string), false) },
+					{ DataTypeRefCursor, new BindVariableType(DataTypeRefCursor, typeof(string), false) },
+					{ TerminalValues.Raw, new BindVariableType(TerminalValues.Raw, typeof(string), true) },
+					{ TerminalValues.Blob, new BindVariableType(TerminalValues.Blob, typeof(string), true) }
 				});
 	}
 }

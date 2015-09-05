@@ -49,7 +49,7 @@ namespace SqlPad
 			sqlPadConfigurationType.Add("_bindVariables", "ProviderName", "_statementExecutionHistory");
 
 			var bindVariableConfigurationType = Serializer.Add(typeof(BindVariableConfiguration), false);
-			bindVariableConfigurationType.Add("Name", "DataType", "_internalValue");
+			bindVariableConfigurationType.Add("Name", "DataType", "_internalValue", "IsFilePath");
 
 			var statementExecutionType = Serializer.Add(typeof(StatementExecutionHistoryEntry), false);
 			statementExecutionType.UseConstructor = false;

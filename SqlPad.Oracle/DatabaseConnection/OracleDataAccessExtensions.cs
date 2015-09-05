@@ -66,10 +66,13 @@ namespace SqlPad.Oracle.DatabaseConnection
 					parameter.OracleDbType = OracleDbType.RefCursor;
 					break;
 				case TerminalValues.Raw:
-					var byteArray = HexStringToByteArray((string)value);
-					parameter.Value = byteArray;
+					parameter.Value = value as byte[] ?? HexStringToByteArray((string)value);
 					parameter.OracleDbType = OracleDbType.Raw;
 					parameter.Size = MaximumValueSize;
+					break;
+				case TerminalValues.Blob:
+					parameter.Value = value as byte[] ?? HexStringToByteArray((string)value);
+					parameter.OracleDbType = OracleDbType.Blob;
 					break;
 			}
 

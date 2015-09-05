@@ -41,6 +41,7 @@ namespace SqlPad.Oracle.SemanticModel
 									new BindVariableConfiguration
 									{
 										Name = $"KEY{i}",
+										DataTypes = OracleBindVariable.DataTypes,
 										DataType = t,
 										Value = providerValue == null ? keyValue : providerValue.RawValue
 									});

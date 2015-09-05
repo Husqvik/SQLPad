@@ -48,7 +48,7 @@ namespace SqlPad.Test
 			const string bindVariableName = "Variable";
 			const string bindVariableValue = "TestValue";
 			var providerConfiguration = WorkDocumentCollection.GetProviderConfiguration(providerName);
-			providerConfiguration.SetBindVariable(new BindVariableConfiguration {DataType = bindVariableDataType, Name = bindVariableName, Value = bindVariableValue});
+			providerConfiguration.SetBindVariable(new BindVariableConfiguration { DataType = bindVariableDataType, Name = bindVariableName, Value = bindVariableValue, IsFilePath = true });
 			var statementExecutedAt = new DateTime(2015, 7, 22, 7, 53, 55);
 			const string historyEntryTag = "Test";
 			providerConfiguration.AddStatementExecution(new StatementExecutionHistoryEntry(statementText, statementExecutedAt) { Tags = historyEntryTag });
@@ -57,7 +57,7 @@ namespace SqlPad.Test
 
 			var fileInfo = new FileInfo(Path.Combine(TempDirectoryName, "WorkArea", WorkDocumentCollection.ConfigurationFileName));
 			fileInfo.Exists.ShouldBe(true);
-			fileInfo.Length.ShouldBe(381);
+			fileInfo.Length.ShouldBe(383);
 
 			WorkDocumentCollection.Configure();
 			WorkDocumentCollection.WorkingDocuments.Count.ShouldBe(1);
@@ -91,6 +91,7 @@ namespace SqlPad.Test
 			deserializedBindVariable.DataType.ShouldBe(bindVariableDataType);
 			deserializedBindVariable.Name.ShouldBe(bindVariableName);
 			deserializedBindVariable.Value.ShouldBe(bindVariableValue);
+			deserializedBindVariable.IsFilePath.ShouldBe(true);
 
 			deserializedProviderConfiguration.StatementExecutionHistory.Count.ShouldBe(1);
 			var historyEntry = deserializedProviderConfiguration.StatementExecutionHistory.Single();

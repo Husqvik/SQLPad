@@ -1254,7 +1254,8 @@ namespace SqlPad
 				var storedVariable = _providerConfiguration.GetBindVariable(bindVariable.Name);
 				if (storedVariable != null)
 				{
-					model.DataType = storedVariable.DataType;
+					model.DataType = model.BindVariable.DataTypes[storedVariable.DataType];
+					model.IsFilePath = storedVariable.IsFilePath;
 					model.Value = storedVariable.Value;
 				}
 
@@ -2032,7 +2033,7 @@ namespace SqlPad
 
 		private void BindVariableEditorGotFocusHandler(object sender, RoutedEventArgs e)
 		{
-			var bindVariable = (BindVariableModel)((FrameworkElement)sender).Tag;
+			var bindVariable = (BindVariableModel)((FrameworkElement)sender).DataContext;
 			var executionContext = ActionExecutionContext.Create(Editor, _sqlDocumentRepository);
 			executionContext.CaretOffset = bindVariable.BindVariable.Nodes[0].SourcePosition.IndexStart;
 			_navigationService.DisplayBindVariableUsages(executionContext);
@@ -2059,6 +2060,30 @@ namespace SqlPad
 		private void ShowExecutionHistoryExecutedHandler(object sender, ExecutedRoutedEventArgs e)
 		{
 			App.ShowExecutionHistory(_providerConfiguration.ProviderName);
+		}
+
+		private void BindVariableFromFileClickHandler(object sender, RoutedEventArgs e)
+		{
+			var button = (ToggleButton)sender;
+			var bindVariableModel = (BindVariableModel)button.DataContext;
+			if (button.IsChecked == true)
+			{
+				if (!File.Exists(bindVariableModel.Value.ToString()))
+				{
+					var dialog = new OpenFileDialog {Filter = "All files (*.*)|*"};
+					if (dialog.ShowDialog() != true)
+					{
+						button.IsChecked = false;
+						return;
+					}
+
+					bindVariableModel.Value = dialog.FileName;
+				}
+			}
+			else
+			{
+				bindVariableModel.Value = String.Empty;
+			}
 		}
 	}
 

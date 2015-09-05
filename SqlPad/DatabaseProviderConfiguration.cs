@@ -120,6 +120,8 @@ namespace SqlPad
 		
 		public string DataType { get; set; }
 
+		public bool IsFilePath { get; set; }
+
 		public object Value
 		{
 			get
@@ -163,8 +165,57 @@ namespace SqlPad
 			}
 		}
 
-		public ReadOnlyDictionary<string, Type> DataTypes { get; set; }
+		public ReadOnlyDictionary<string, BindVariableType> DataTypes { get; set; }
 		
 		public IReadOnlyList<StatementGrammarNode> Nodes { get; set; }
+	}
+
+	public class BindVariableType
+	{
+		public string Name { get; }
+
+		public bool HasFileSupport { get; }
+
+		public Type InputType { get; }
+
+		public BindVariableType(string name, Type inputType, bool hasFileSupport)
+		{
+			Name = name;
+			InputType = inputType;
+			HasFileSupport = hasFileSupport;
+		}
+
+		protected bool Equals(BindVariableType other)
+		{
+			return string.Equals(Name, other.Name, StringComparison.InvariantCulture) && HasFileSupport == other.HasFileSupport && InputType == other.InputType;
+		}
+
+		public override bool Equals(object obj)
+		{
+			if (ReferenceEquals(null, obj)) return false;
+			if (ReferenceEquals(this, obj)) return true;
+			return obj.GetType() == GetType() && Equals((BindVariableType)obj);
+		}
+
+		public override int GetHashCode()
+		{
+			unchecked
+			{
+				var hashCode = StringComparer.InvariantCulture.GetHashCode(Name);
+				hashCode = (hashCode * 397) ^ HasFileSupport.GetHashCode();
+				hashCode = (hashCode * 397) ^ InputType.GetHashCode();
+				return hashCode;
+			}
+		}
+
+		public static bool operator ==(BindVariableType left, BindVariableType right)
+		{
+			return Equals(left, right);
+		}
+
+		public static bool operator !=(BindVariableType left, BindVariableType right)
+		{
+			return !Equals(left, right);
+		}
 	}
 }

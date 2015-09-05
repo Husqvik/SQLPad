@@ -7,6 +7,7 @@
              xmlns:commands="clr-namespace:SqlPad.Commands"
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              xmlns:configuration="clr-namespace:System.Configuration;assembly=System.Configuration"
+             xmlns:system="clr-namespace:System;assembly=mscorlib"
              Loaded="PageLoadedHandler"
              mc:Ignorable="d"
              d:DesignHeight="320" d:DesignWidth="480" DataContext="{Binding RelativeSource={RelativeSource Self}}">
@@ -286,10 +287,27 @@
 
 							<ItemsControl.Resources>
 								<DataTemplate x:Key="TextBoxTemplate" DataType="sqlPad:BindVariableModel">
-									<TextBox Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}" GotFocus="BindVariableEditorGotFocusHandler" LostFocus="BindVariableEditorLostFocus" Tag="{Binding}" Height="22" VerticalContentAlignment="Center" />
+									<Grid>
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="*" />
+											<ColumnDefinition Width="Auto"/>
+										</Grid.ColumnDefinitions>
+										<TextBox Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}" GotFocus="BindVariableEditorGotFocusHandler" LostFocus="BindVariableEditorLostFocus" Height="22" VerticalContentAlignment="Center" />
+										<ToggleButton Content="F" IsChecked="{Binding IsFilePath}" Click="BindVariableFromFileClickHandler" Grid.Column="1" Width="18" ToolTip="Toggle to use file as data input">
+											<ToggleButton.Style>
+												<Style>
+													<Style.Triggers>
+														<DataTrigger Binding="{Binding DataType.HasFileSupport}" Value="False">
+															<Setter Property="ToggleButton.Visibility" Value="Collapsed" />
+														</DataTrigger>
+													</Style.Triggers>
+												</Style>
+											</ToggleButton.Style>
+										</ToggleButton>
+									</Grid>
 								</DataTemplate>
 								<DataTemplate x:Key="DatePickerTemplate" DataType="sqlPad:BindVariableModel">
-									<xctk:DateTimePicker Value="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}" Format="Custom" FormatString="{Binding ElementName=BindVariableList, Path=DataContext.(sqlPad:DocumentPage.DateTimeFormat)}" GotFocus="BindVariableEditorGotFocusHandler" LostFocus="BindVariableEditorLostFocus" Tag="{Binding}" />
+									<xctk:DateTimePicker Value="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}" Format="Custom" FormatString="{Binding ElementName=BindVariableList, Path=DataContext.(sqlPad:DocumentPage.DateTimeFormat)}" GotFocus="BindVariableEditorGotFocusHandler" LostFocus="BindVariableEditorLostFocus" />
 								</DataTemplate>
 							</ItemsControl.Resources>
 
@@ -303,15 +321,21 @@
 										</Grid.ColumnDefinitions>
 										
 										<TextBlock Grid.Column="0" Text="{Binding Path=Name}" VerticalAlignment="Center" />
-										<ComboBox Grid.Column="1" ItemsSource="{Binding Path=DataTypes}" SelectedValue="{Binding Path=DataType}" />
+										<ComboBox Grid.Column="1" ItemsSource="{Binding Path=DataTypes}" SelectedValue="{Binding Path=DataType}">
+											<ComboBox.ItemTemplate>
+												<DataTemplate>
+													<TextBlock Text="{Binding Name}" />
+												</DataTemplate>
+											</ComboBox.ItemTemplate>
+										</ComboBox>
 										<ContentControl Grid.Column="2" Content="{Binding}">
 											<ContentControl.Style>
 												<Style TargetType="ContentControl">
 													<Style.Triggers>
-														<DataTrigger Binding="{Binding Path=InputType}" Value="String">
+														<DataTrigger Binding="{Binding Path=DataType.InputType}" Value="{x:Type system:String}">
 															<Setter Property="ContentTemplate" Value="{StaticResource TextBoxTemplate}" />
 														</DataTrigger>
-														<DataTrigger Binding="{Binding Path=InputType}" Value="DateTime">
+														<DataTrigger Binding="{Binding Path=DataType.InputType}" Value="{x:Type system:DateTime}">
 															<Setter Property="ContentTemplate" Value="{StaticResource DatePickerTemplate}" />
 														</DataTrigger>
 													</Style.Triggers>

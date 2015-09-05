@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using SqlPad.Oracle.ExecutionPlan;
 using SqlPad.Oracle.ModelDataProviders;
-using ParameterDirection = System.Data.ParameterDirection;
 #if ORACLE_MANAGED_DATA_ACCESS_CLIENT
 using Oracle.ManagedDataAccess.Client;
 using Oracle.ManagedDataAccess.Types;
@@ -17,6 +17,9 @@ using Oracle.ManagedDataAccess.Types;
 using Oracle.DataAccess.Client;
 using Oracle.DataAccess.Types;
 #endif
+
+using ParameterDirection = System.Data.ParameterDirection;
+using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
 namespace SqlPad.Oracle.DatabaseConnection
 {
@@ -633,7 +636,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 						foreach (var variable in statement.BindVariables)
 						{
-							userCommand.AddSimpleParameter(variable.Name, variable.Value, variable.DataType);
+							var value = await GetBindVariableValue(variable, cancellationToken);
+							userCommand.AddSimpleParameter(variable.Name, value, variable.DataType.Name);
 						}
 
 						var resultInfoColumnHeaders = new Dictionary<ResultInfo, IReadOnlyList<ColumnHeader>>();
@@ -746,6 +750,32 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return batchResult;
 		}
 
+		private static async Task<object> GetBindVariableValue(BindVariableModel variable, CancellationToken cancellationToken)
+		{
+			var value = variable.Value;
+			if (!variable.IsFilePath)
+			{
+				return value;
+			}
+
+			using (var file = File.OpenRead(value.ToString()))
+			{
+				switch (variable.DataType.Name)
+				{
+					case TerminalValues.Raw:
+					case TerminalValues.Blob:
+						value = await file.ReadAllBytesAsync(cancellationToken);
+						break;
+
+					default:
+						value = await file.ReadAllTextAsync(cancellationToken);
+						break;
+				}
+			}
+
+			return value;
+		}
+
 		private void InitializeDebuggerSession(OracleCommand command)
 		{
 			_debuggerSession = new OracleDebuggerSession(command);
@@ -767,6 +797,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var bindVariableModels = executionModel.BindVariables.ToDictionary(v => v.Name, v => v);
 			foreach (OracleParameter parameter in userCommand.Parameters)
 			{
+				var bindVariableModel = bindVariableModels[parameter.ParameterName];
+
 				var value = parameter.Value;
 				if (parameter.Value is OracleDecimal)
 				{
@@ -792,16 +824,25 @@ namespace SqlPad.Oracle.DatabaseConnection
 					value = oracleTimeStamp.IsNull ? (DateTime?)null : oracleTimeStamp.Value;
 				}
 
-				if (parameter.Value is OracleBinary)
+				if (!bindVariableModel.IsFilePath)
 				{
-					var oracleBinary = (OracleBinary)parameter.Value;
-					value = oracleBinary.IsNull ? null : oracleBinary.Value.ToHexString();
-				}
+					if (parameter.Value is OracleBinary)
+					{
+						var oracleBinary = (OracleBinary)parameter.Value;
+						value = oracleBinary.IsNull ? null : oracleBinary.Value.ToHexString();
+					}
 
-				var clob = parameter.Value as OracleClob;
-				if (clob != null)
-				{
-					value = clob.IsNull ? String.Empty : clob.Value;
+					var clob = parameter.Value as OracleClob;
+					if (clob != null)
+					{
+						value = clob.IsNull ? String.Empty : clob.Value;
+					}
+
+					var blob = parameter.Value as OracleBlob;
+					if (blob != null)
+					{
+						value = blob.IsNull ? null : blob.Value.ToHexString();
+					}
 				}
 
 				var refCursor = parameter.Value as OracleRefCursor;
@@ -811,7 +852,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 				}
 				else
 				{
-					bindVariableModels[parameter.ParameterName].Value = value;
+					if (!bindVariableModel.IsFilePath)
+					{
+						bindVariableModel.Value = value;
+					}
 				}
 			}
 		}

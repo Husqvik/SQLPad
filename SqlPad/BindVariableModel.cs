@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace SqlPad
@@ -11,9 +12,15 @@ namespace SqlPad
 
 		public BindVariableConfiguration BindVariable { get; }
 
+		public bool IsFilePath
+		{
+			get { return BindVariable.IsFilePath; }
+			set { BindVariable.IsFilePath = value; }
+		}
+
 		public string Name => BindVariable.Name;
 
-		public ICollection<string> DataTypes => BindVariable.DataTypes.Keys;
+		public ICollection<BindVariableType> DataTypes => BindVariable.DataTypes.Values;
 
 		public object Value
 		{
@@ -21,25 +28,30 @@ namespace SqlPad
 			set
 			{
 				if (BindVariable.Value == value)
+				{
 					return;
+				}
 
 				BindVariable.Value = value;
 				RaisePropertyChanged(nameof(Value));
 			}
 		}
 
-		public string InputType => BindVariable.DataTypes[BindVariable.DataType].Name;
+		public Type InputType => BindVariable.DataTypes[BindVariable.DataType].InputType;
 
-		public string DataType
+		public BindVariableType DataType
 		{
-			get { return BindVariable.DataType; }
+			get { return BindVariable.DataTypes[BindVariable.DataType]; }
 			set
 			{
-				if (BindVariable.DataType == value)
+				if (BindVariable.DataType == value.Name)
+				{
 					return;
+				}
 
-				var previousInputType = BindVariable.DataTypes[BindVariable.DataType].Name;
-				BindVariable.DataType = value;
+				var previousInputType = BindVariable.DataTypes[value.Name].InputType;
+
+				BindVariable.DataType = value.Name;
 
 				if (previousInputType != InputType)
 				{

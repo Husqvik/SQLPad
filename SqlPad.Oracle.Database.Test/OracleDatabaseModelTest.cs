@@ -112,7 +112,7 @@ WHERE
 				new StatementExecutionModel
 				{
 					StatementText = "SELECT /*+ gather_plan_statistics */ * FROM DUAL WHERE DUMMY = :1",
-					BindVariables = new[] { new BindVariableModel(new BindVariableConfiguration { Name = "1", Value = "X" }) }
+					BindVariables = new[] { new BindVariableModel(new BindVariableConfiguration { Name = "1", Value = "X", DataType = "VARCHAR2", DataTypes = OracleBindVariable.DataTypes }) }
 				};
 
 			var connectionAdapter = (OracleConnectionAdapter)databaseModel.CreateConnectionAdapter();

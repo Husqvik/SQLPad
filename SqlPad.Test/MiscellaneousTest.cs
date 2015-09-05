@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text;
@@ -30,14 +29,17 @@ namespace SqlPad.Test
 			[Test]
 			public void TestCSharpQueryClassGenerator()
 			{
+				var intType = new BindVariableType("INT", typeof(int), false);
+				var varcharType = new BindVariableType("VARCHAR", typeof(string), false);
+
 				var dataTypes =
-					new Dictionary<string, Type>
+					new Dictionary<string, BindVariableType>
 					{
-						{ "INT", typeof(int) },
-						{ "VARCHAR", typeof(string) }
+						{ intType.Name, intType },
+						{ varcharType.Name, varcharType }
 					};
 
-				var readOnlyDataTypes = new ReadOnlyDictionary<string, Type>(dataTypes);
+				var readOnlyDataTypes = new ReadOnlyDictionary<string, BindVariableType>(dataTypes);
 
 				var executionResult =
 					new StatementExecutionResult
@@ -61,8 +63,8 @@ namespace SqlPad.Test
 								BindVariables =
 									new[]
 									{
-										new BindVariableModel(new BindVariableConfiguration { Name = "testBindVariable1", DataType = "INT", DataTypes = readOnlyDataTypes }),
-										new BindVariableModel(new BindVariableConfiguration { Name = "testBindVariable2", DataType = "VARCHAR", DataTypes = readOnlyDataTypes })
+										new BindVariableModel(new BindVariableConfiguration { Name = "testBindVariable1", DataType = intType.Name, DataTypes = readOnlyDataTypes }),
+										new BindVariableModel(new BindVariableConfiguration { Name = "testBindVariable2", DataType = varcharType.Name, DataTypes = readOnlyDataTypes })
 									}
 							}
 					};
@@ -91,7 +93,7 @@ public class Query
 		_connection = connection;
 	}
 
-	private IEnumerable<ResultRow> Execute(Int32 testBindVariable1, String testBindVariable2)
+	private IEnumerable<ResultRow> Execute(System.Int32 testBindVariable1, System.String testBindVariable2)
 	{
 		using (var command = _connection.CreateCommand())
 		{

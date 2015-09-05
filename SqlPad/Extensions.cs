@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -127,6 +128,21 @@ namespace SqlPad
 			}
 
 			return $"{(int)timeSpan.TotalMinutes:00}:{timeSpan.Seconds:00}";
+		}
+
+		public static async Task<byte[]> ReadAllBytesAsync(this FileStream file, CancellationToken cancellationToken)
+		{
+			var buffer = new byte[file.Length];
+			await file.ReadAsync(buffer, 0, (int)file.Length, cancellationToken);
+			return buffer;
+		}
+
+		public static async Task<string> ReadAllTextAsync(this FileStream file, CancellationToken cancellationToken)
+		{
+			using (var reader = new StreamReader(file))
+			{
+				return await reader.ReadToEndAsync();
+			}
 		}
 	}
 
