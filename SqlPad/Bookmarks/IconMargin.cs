@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -165,24 +166,33 @@ namespace SqlPad.Bookmarks
 		private static readonly Brush BackgroundBrushInactive = Brushes.LightGreen;
 		private static readonly Pen EdgePen = new Pen(BackgroundBrushActive, 1);
 
-		public int? ActiveLine { get; set; }
+		private int? _activeLine;
+		private int[] _inactiveLines = new int[0];
 
-		public int? InactiveLine { get; set; }
+		public KnownLayer Layer { get; } = KnownLayer.Background;
 
 		static ExecutedCodeBackgroundRenderer()
 		{
 			EdgePen.Freeze();
 		}
 
-		public KnownLayer Layer => KnownLayer.Background;
-
 		public void Draw(TextView textView, DrawingContext drawingContext)
 		{
-			DrawLine(textView, drawingContext, ActiveLine, BackgroundBrushActive);
-			DrawLine(textView, drawingContext, InactiveLine, BackgroundBrushInactive);
+			DrawLine(textView, drawingContext, _activeLine, BackgroundBrushActive);
+
+			foreach (var lineNumber in _inactiveLines)
+			{
+				DrawLine(textView, drawingContext, lineNumber, BackgroundBrushInactive);
+			}
 		}
 
-		private void DrawLine(TextView textView, DrawingContext drawingContext, int? line, Brush brush)
+		public void HighlightStackTraceLines(int? lineNumber, IEnumerable<int> lineNumbers)
+		{
+			_activeLine = lineNumber;
+			_inactiveLines = lineNumbers.ToArray();
+		}
+
+		private static void DrawLine(TextView textView, DrawingContext drawingContext, int? line, Brush brush)
 		{
 			if (line == null)
 			{

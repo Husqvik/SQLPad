@@ -169,35 +169,16 @@ namespace SqlPad
 
 		public SqlEditor CodeViewer { get; }
 
-		public int? ActiveLine
+		public void HighlightStackTraceLines(int? activeLineNumber, IEnumerable<int> inactiveLines)
 		{
-			get { return _backgroundRenderer.ActiveLine; }
-			set
+			_backgroundRenderer.HighlightStackTraceLines(activeLineNumber, inactiveLines);
+
+			if (activeLineNumber.HasValue)
 			{
-				_backgroundRenderer.ActiveLine = value;
-
-				if (_backgroundRenderer.ActiveLine.HasValue)
-				{
-					CodeViewer.Editor.ScrollToLine(_backgroundRenderer.ActiveLine.Value);
-				}
-
-				CodeViewer.Editor.TextArea.TextView.Redraw();
+				CodeViewer.Editor.ScrollToLine(activeLineNumber.Value);
 			}
-		}
 
-		public int? InactiveLine
-		{
-			get { return _backgroundRenderer.ActiveLine; }
-			set
-			{
-				if (_backgroundRenderer.InactiveLine == value)
-				{
-					return;
-				}
-
-				_backgroundRenderer.InactiveLine = value;
-				//CodeViewer.Editor.TextArea.TextView.Redraw();
-			}
+			CodeViewer.Editor.TextArea.TextView.Redraw();
 		}
 
 		public DebuggerTabItem(string header)

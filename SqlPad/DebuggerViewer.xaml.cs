@@ -56,30 +56,44 @@ namespace SqlPad
 			StackTrace.Clear();
 			StackTrace.AddRange(_debuggerSession.StackTrace);
 
-			var currentStackItem = _debuggerSession.StackTrace.Last();
+			var activeStackItem = _debuggerSession.StackTrace.Last();
 			DebuggerTabItem debuggerView;
-			if (!_viewers.TryGetValue(currentStackItem.Header, out debuggerView))
+			if (!_viewers.TryGetValue(activeStackItem.Header, out debuggerView))
 			{
-				debuggerView = new DebuggerTabItem(currentStackItem.Header);
+				debuggerView = new DebuggerTabItem(activeStackItem.Header);
 				debuggerView.CodeViewer.Initialize(_infrastructureFactory, _databaseModel);
 
-				await debuggerView.CodeViewer.LoadAsync(currentStackItem.ProgramText, cancellationToken);
+				await debuggerView.CodeViewer.LoadAsync(activeStackItem.ProgramText, cancellationToken);
 
-				_viewers.Add(currentStackItem.Header, debuggerView);
+				_viewers.Add(activeStackItem.Header, debuggerView);
 				TabSourceViewer.Items.Add(debuggerView);
 			}
 
 			TabSourceViewer.SelectedItem = debuggerView;
 
-			HighlightCurrentLine(currentStackItem);
+			HighlightStackTraceLines();
 		}
 
-		private void HighlightCurrentLine(StackTraceItem currentItem)
+		private void HighlightStackTraceLines()
 		{
-			foreach (var viewer in _viewers.Values)
+			var inactiveItems = _debuggerSession.StackTrace
+				.Take(_debuggerSession.StackTrace.Count - 1)
+				.ToLookup(i => i.Header, i => i.Line);
+
+			var activeStackItem = _debuggerSession.StackTrace.Last();
+
+			var activeItemHighlighted = false;
+			foreach (var group in inactiveItems)
 			{
-				//viewer.InactiveLine = isActive ? (int?)null : currentItem.Line;
-				viewer.ActiveLine = Equals(viewer, TabSourceViewer.SelectedItem) ? currentItem.Line : (int?)null;
+				var debuggerView = _viewers[group.Key];
+				var activeLineNumber = String.Equals(activeStackItem.Header, group.Key) ? activeStackItem.Line : (int?)null;
+				activeItemHighlighted |= activeLineNumber.HasValue;
+				debuggerView.HighlightStackTraceLines(activeLineNumber, group);
+			}
+
+			if (!activeItemHighlighted)
+			{
+				_viewers[activeStackItem.Header].HighlightStackTraceLines(activeStackItem.Line, Enumerable.Empty<int>());
 			}
 		}
 
@@ -91,8 +105,9 @@ namespace SqlPad
 			}
 
 			var currentItem = (StackTraceItem)StackTraceItems.SelectedItem;
-			TabSourceViewer.SelectedItem = _viewers[currentItem.Header];
-			HighlightCurrentLine(currentItem);
+			var debuggerViewer = _viewers[currentItem.Header];
+			TabSourceViewer.SelectedItem = debuggerViewer;
+			debuggerViewer.CodeViewer.Editor.ScrollToLine(currentItem.Line);
 		}
 
 		private void CellEditEndingHandler(object sender, DataGridCellEditEndingEventArgs e)
