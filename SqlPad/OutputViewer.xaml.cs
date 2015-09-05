@@ -278,7 +278,7 @@ namespace SqlPad
 
 			if (ConnectionAdapter.DebuggerSession != null)
 			{
-				DebuggerViewer.Initialize(DocumentPage.InfrastructureFactory, ConnectionAdapter.DatabaseModel, ConnectionAdapter.DebuggerSession);
+				DebuggerViewer.Initialize(this, ConnectionAdapter.DebuggerSession);
 				ConnectionAdapter.DebuggerSession.Attached += delegate { Dispatcher.Invoke(DebuggerSessionSynchronizedHandler); };
 				await ConnectionAdapter.DebuggerSession.Start(_statementExecutionCancellationTokenSource.Token);
 				return;

@@ -12,6 +12,7 @@ namespace SqlPad
 		public const string DefaultDocumentHeaderBackgroundColorCode = "#FFFFFFFF";
 		private double _fontSize;
 		private List<bool> _foldingStates;
+		private string[] _watchItems;
 
 		public WorkDocument()
 		{
@@ -22,11 +23,19 @@ namespace SqlPad
 
 		private List<bool> FoldingStatesInternal => _foldingStates ?? (_foldingStates = new List<bool>());
 
-	    public IList<bool> FoldingStates => FoldingStatesInternal.AsReadOnly();
+		public string[] WatchItems
+		{
+			get { return _watchItems ?? (_watchItems = new string[0]); }
+			set { _watchItems = value; }
+		}
 
-	    public bool IsSqlx => File != null && IsSqlxExtension(File.Extension);
+		public int DebuggerViewDefaultTabIndex { get; set; }
 
-	    public static bool IsSqlxFile(string fileName)
+		public IReadOnlyList<bool> FoldingStates => FoldingStatesInternal.AsReadOnly();
+
+		public bool IsSqlx => File != null && IsSqlxExtension(File.Extension);
+
+		public static bool IsSqlxFile(string fileName)
 		{
 			return IsSqlxExtension(new FileInfo(fileName).Extension);
 		}

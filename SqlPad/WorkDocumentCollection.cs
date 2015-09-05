@@ -38,7 +38,7 @@ namespace SqlPad
 
 			var workingDocumentType = Serializer.Add(typeof(WorkDocument), false);
 			workingDocumentType.UseConstructor = false;
-			workingDocumentType.Add("DocumentFileName", "DocumentId", "ConnectionName", "SchemaName", "CursorPosition", "SelectionStart", "SelectionLength", "IsModified", "VisualLeft", "VisualTop", "EditorGridRowHeight", "Text", "EditorGridColumnWidth", "TabIndex", "_foldingStates", "EnableDatabaseOutput", "KeepDatabaseOutputHistory", "HeaderBackgroundColorCode", "DocumentTitle", "_fontSize");
+			workingDocumentType.Add("DocumentFileName", "DocumentId", "ConnectionName", "SchemaName", "CursorPosition", "SelectionStart", "SelectionLength", "IsModified", "VisualLeft", "VisualTop", "EditorGridRowHeight", "Text", "EditorGridColumnWidth", "TabIndex", "_foldingStates", "EnableDatabaseOutput", "KeepDatabaseOutputHistory", "HeaderBackgroundColorCode", "DocumentTitle", "_fontSize", "WatchItems", "DebuggerViewDefaultTabIndex");
 
 			var windowPropertiesType = Serializer.Add(typeof(WindowProperties), false);
 			windowPropertiesType.UseConstructor = false;

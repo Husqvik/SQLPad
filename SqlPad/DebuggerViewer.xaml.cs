@@ -12,9 +12,9 @@ namespace SqlPad
 	{
 		private readonly Dictionary<string, DebuggerTabItem> _viewers = new Dictionary<string, DebuggerTabItem>();
 
-		private IInfrastructureFactory _infrastructureFactory;
-		private IDatabaseModel _databaseModel;
+		private OutputViewer _outputViewer;
 		private IDebuggerSession _debuggerSession;
+		private bool _isInitialized;
 
 		public IList<StackTraceItem> StackTrace { get; } = new ObservableCollection<StackTraceItem>();
 
@@ -25,14 +25,24 @@ namespace SqlPad
 			InitializeComponent();
 		}
 
-		public void Initialize(IInfrastructureFactory infrastructureFactory, IDatabaseModel databaseModel, IDebuggerSession debuggerSession)
+		public void Initialize(OutputViewer outputViewer, IDebuggerSession debuggerSession)
 		{
-			_databaseModel = databaseModel;
-			_infrastructureFactory = infrastructureFactory;
+			_outputViewer = outputViewer;
 			_debuggerSession = debuggerSession;
 
 			TabSourceViewer.Items.Clear();
 			_viewers.Clear();
+
+			foreach (var watchItem in _outputViewer.DocumentPage.WorkDocument.WatchItems)
+			{
+				WatchItems.Add(new WatchItem { Name = watchItem });
+			}
+
+			if (!_isInitialized)
+			{
+				TabDebuggerOptions.SelectedIndex = _outputViewer.DocumentPage.WorkDocument.DebuggerViewDefaultTabIndex;
+				_isInitialized = true;
+			}
 
 			_debuggerSession.Attached += delegate { Dispatcher.Invoke(DebuggerAttachedHandler); };
 		}
@@ -61,7 +71,7 @@ namespace SqlPad
 			if (!_viewers.TryGetValue(activeStackItem.Header, out debuggerView))
 			{
 				debuggerView = new DebuggerTabItem(activeStackItem.Header);
-				debuggerView.CodeViewer.Initialize(_infrastructureFactory, _databaseModel);
+				debuggerView.CodeViewer.Initialize(_outputViewer.DocumentPage.InfrastructureFactory, _outputViewer.ConnectionAdapter.DatabaseModel);
 
 				await debuggerView.CodeViewer.LoadAsync(activeStackItem.ProgramText, cancellationToken);
 
@@ -117,6 +127,8 @@ namespace SqlPad
 				return;
 			}
 
+			_outputViewer.DocumentPage.WorkDocument.WatchItems = WatchItems.Select(i => i.Name).ToArray();
+
 			var watchItem = (WatchItem)args.Row.DataContext;
 			if (String.IsNullOrWhiteSpace(watchItem.Name))
 			{
@@ -140,6 +152,11 @@ namespace SqlPad
 			{
 				watchItem.Value = await _debuggerSession.GetValue(watchItem.Name, token);
 			}
+		}
+
+		private void DebuggerOptionsSelectionChangedHandler(object sender, SelectionChangedEventArgs e)
+		{
+			_outputViewer.DocumentPage.WorkDocument.DebuggerViewDefaultTabIndex = ((TabControl)sender).SelectedIndex;
 		}
 	}
 

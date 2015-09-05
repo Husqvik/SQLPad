@@ -15,6 +15,8 @@ namespace SqlPad.Test
 			WorkDocumentCollection.WorkingDocuments.Count.ShouldBe(0);
 
 			const string statementText = "SELECT * FROM DUAL";
+			const string watchVariable1 = "variable1";
+			const string watchVariable2 = "variable2";
 
 			var newWorkingDocument =
 				new WorkDocument
@@ -32,7 +34,9 @@ namespace SqlPad.Test
 					TabIndex = 3,
 					EnableDatabaseOutput = true,
 					KeepDatabaseOutputHistory = true,
-					FontSize = 16
+					FontSize = 16,
+					DebuggerViewDefaultTabIndex = 1,
+					WatchItems = new[] { watchVariable1, watchVariable2 }
 				};
 
 			const int expectedActiveDocumentIndex = 666;
@@ -53,7 +57,7 @@ namespace SqlPad.Test
 
 			var fileInfo = new FileInfo(Path.Combine(TempDirectoryName, "WorkArea", WorkDocumentCollection.ConfigurationFileName));
 			fileInfo.Exists.ShouldBe(true);
-			fileInfo.Length.ShouldBe(354);
+			fileInfo.Length.ShouldBe(381);
 
 			WorkDocumentCollection.Configure();
 			WorkDocumentCollection.WorkingDocuments.Count.ShouldBe(1);
@@ -75,6 +79,10 @@ namespace SqlPad.Test
 			deserializedWorkingDocument.EnableDatabaseOutput.ShouldBe(newWorkingDocument.EnableDatabaseOutput);
 			deserializedWorkingDocument.KeepDatabaseOutputHistory.ShouldBe(newWorkingDocument.KeepDatabaseOutputHistory);
 			deserializedWorkingDocument.FontSize.ShouldBe(newWorkingDocument.FontSize);
+			deserializedWorkingDocument.DebuggerViewDefaultTabIndex.ShouldBe(newWorkingDocument.DebuggerViewDefaultTabIndex);
+			deserializedWorkingDocument.WatchItems.Length.ShouldBe(newWorkingDocument.WatchItems.Length);
+			deserializedWorkingDocument.WatchItems[0].ShouldBe(watchVariable1);
+			deserializedWorkingDocument.WatchItems[1].ShouldBe(watchVariable2);
 
 			var deserializedProviderConfiguration = WorkDocumentCollection.GetProviderConfiguration(providerName);
 			providerConfiguration.ShouldNotBeSameAs(deserializedProviderConfiguration);

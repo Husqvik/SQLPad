@@ -385,16 +385,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			_debuggerConnection.ActionName = "Step into";
 			await ContinueAndDetachIfTerminated(OracleDebugBreakFlags.AnyCall, cancellationToken);
-
-			// remove
-			if (_runtimeInfo.IsTerminated != true)
-			{
-				var aValue = await GetValue("A", cancellationToken);
-				var bValue = await GetValue("B", cancellationToken);
-				Trace.WriteLine($"A = {aValue}; B = {bValue}");
-				//Trace.WriteLine("Stack trace: \n" + await GetStackTrace(cancellationToken));
-				//Trace.WriteLine("Is running:" + await IsRunning(cancellationToken));
-			}
 		}
 
 		public Task StepOut(CancellationToken cancellationToken)
