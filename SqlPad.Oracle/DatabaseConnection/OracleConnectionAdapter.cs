@@ -649,7 +649,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 							if (executionModel.EnableDebug)
 							{
 								// TODO: Add COMPILE DEBUG
-								InitializeDebuggerSession(userCommand);
+								InitializeDebuggerSession((OracleCommand)userCommand.Clone());
 							}
 							else
 							{

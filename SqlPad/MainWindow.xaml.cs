@@ -5,11 +5,11 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Shell;
+using System.Windows.Threading;
 using Microsoft.Win32;
 using SqlPad.Commands;
 using SqlPad.FindReplace;
@@ -27,7 +27,7 @@ namespace SqlPad
 		private readonly List<TextEditorAdapter> _editorAdapters = new List<TextEditorAdapter>();
 		private readonly ContextMenu _recentDocumentsMenu;
 
-		private readonly Timer _timerWorkingDocumentSave = new Timer(60000);
+		private readonly DispatcherTimer _timerWorkingDocumentSave;
 
 		public MainWindow()
 		{
@@ -49,7 +49,7 @@ namespace SqlPad
 			_findReplaceManager.OwnerWindow = this;
 			_findReplaceManager.Editors = _editorAdapters;
 
-			_timerWorkingDocumentSave.Elapsed += delegate { Dispatcher.Invoke(SaveWorkingDocuments); };
+			_timerWorkingDocumentSave = new DispatcherTimer(TimeSpan.FromMinutes(3), DispatcherPriority.Normal, delegate { SaveWorkingDocuments(); }, Dispatcher);
 
 			Loaded += WindowLoadedHandler;
 			Closing += WindowClosingHandler;
@@ -271,6 +271,18 @@ namespace SqlPad
 
 		private void WindowClosingHandler(object sender, CancelEventArgs e)
 		{
+			var documentWithActiveTransaction = AllDocuments.FirstOrDefault(d => d.OutputViewers.Any(ov => ov.HasActiveTransaction));
+			if (documentWithActiveTransaction != null)
+			{
+				var dialogResult = MessageBox.Show("Some documents have active transaction. Do you want to continue and roll back the changes? ", "Confirmation", MessageBoxButton.OKCancel, MessageBoxImage.Question, MessageBoxResult.Cancel);
+				if (dialogResult == MessageBoxResult.Cancel)
+				{
+					e.Cancel = true;
+					documentWithActiveTransaction.TabItem.IsSelected = true;
+					return;
+				}
+			}
+
 			_timerWorkingDocumentSave.Stop();
 
 			SaveWorkingDocuments();
@@ -292,7 +304,6 @@ namespace SqlPad
 
 		private void WindowClosedHandler(object sender, EventArgs e)
 		{
-			_timerWorkingDocumentSave.Dispose();
 			ConfigurationProvider.Dispose();
 		}
 

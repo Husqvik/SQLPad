@@ -99,10 +99,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 			await Attach(cancellationToken);
 			Trace.WriteLine("Debugger attached. ");
 
-			Synchronize(cancellationToken).ContinueWith(AfterSynchronized, cancellationToken, TaskContinuationOptions.OnlyOnRanToCompletion);
+			var attachTask = Synchronize(cancellationToken).ContinueWith(AfterSynchronized, cancellationToken, TaskContinuationOptions.OnlyOnRanToCompletion);
 
 			_debuggedAction = _debuggedCommand.ExecuteNonQueryAsynchronous(cancellationToken);
 			Trace.WriteLine("Debugged action started. ");
+
+			await attachTask;
 		}
 
 		public async Task<object> GetValue(string expression, CancellationToken cancellationToken)
@@ -116,7 +118,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
 
 			var result = (ValueInfoStatus)GetValueFromOracleDecimal(_debuggerSessionCommand.Parameters["RESULT"]);
-			Trace.WriteLine($"Get value result: {result}");
+			Trace.WriteLine($"Get value '{expression}' result: {result}");
 			return GetValueFromOracleString(_debuggerSessionCommand.Parameters["VALUE"]);
 		}
 
@@ -429,6 +431,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public void Dispose()
 		{
+			_debuggedCommand.Dispose();
 			_debuggedSessionCommand.Dispose();
 			_debuggerSessionCommand.Dispose();
 			_debuggerConnection.Dispose();

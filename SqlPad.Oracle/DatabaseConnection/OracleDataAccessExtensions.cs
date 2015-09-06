@@ -86,7 +86,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return parameter;
 		}
 
-		private static readonly ArgumentException InvalidHexFormatException = new ArgumentException("RAW value must be entered in hexadecimal format. ");
+		private static readonly ArgumentException InvalidHexFormatException = new ArgumentException("Binary value must be entered in hexadecimal format. ");
 
 		private static byte[] HexStringToByteArray(string hexString)
 		{
