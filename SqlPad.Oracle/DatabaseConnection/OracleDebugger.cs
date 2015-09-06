@@ -8,6 +8,8 @@ using System.IO;
 using System.Text;
 using System.Xml.Serialization;
 using SqlPad.Oracle.DataDictionary;
+using OracleCollectionType = Oracle.DataAccess.Client.OracleCollectionType;
+using ParameterDirection = System.Data.ParameterDirection;
 #if ORACLE_MANAGED_DATA_ACCESS_CLIENT
 using Oracle.ManagedDataAccess.Client;
 using Oracle.ManagedDataAccess.Types;
@@ -112,14 +114,47 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.DebuggerGetValue;
 			_debuggerSessionCommand.Parameters.Clear();
 			_debuggerSessionCommand.AddSimpleParameter("RESULT", null, TerminalValues.Number);
-			_debuggerSessionCommand.AddSimpleParameter("NAME", expression, TerminalValues.Varchar2);
+			_debuggerSessionCommand.AddSimpleParameter("VARIABLE_NAME", expression, TerminalValues.Varchar2);
 			_debuggerSessionCommand.AddSimpleParameter("VALUE", null, TerminalValues.Varchar2, 32767);
 
 			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
 
 			var result = (ValueInfoStatus)GetValueFromOracleDecimal(_debuggerSessionCommand.Parameters["RESULT"]);
-			Trace.WriteLine($"Get value '{expression}' result: {result}");
-			return GetValueFromOracleString(_debuggerSessionCommand.Parameters["VALUE"]);
+			var value = GetValueFromOracleString(_debuggerSessionCommand.Parameters["VALUE"]);
+			Trace.WriteLine($"Get value '{expression}' result: {result}; value={value}");
+
+			if (result == ValueInfoStatus.ErrorIndexedTable)
+			{
+				var entries = await GetCollectionIndexes(OracleObjectIdentifier.Create(_runtimeInfo.SourceLocation.Owner, _runtimeInfo.SourceLocation.Name), expression, cancellationToken);
+			}
+
+			return value;
+		}
+
+		private async Task<object> GetCollectionIndexes(OracleObjectIdentifier objectIdentifier, string variable, CancellationToken cancellationToken)
+		{
+			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.GetDebuggerCollectionIndexes;
+			_debuggerSessionCommand.Parameters.Clear();
+			_debuggerSessionCommand.AddSimpleParameter("RESULT", null, TerminalValues.Number);
+			_debuggerSessionCommand.AddSimpleParameter("OWNER", objectIdentifier.HasOwner ? objectIdentifier.NormalizedOwner.Trim('"') : null);
+			_debuggerSessionCommand.AddSimpleParameter("NAME", String.IsNullOrEmpty(objectIdentifier.Name) ? null : objectIdentifier.NormalizedName.Trim('"'));
+			_debuggerSessionCommand.AddSimpleParameter("VARIABLE_NAME", variable, TerminalValues.Varchar2);
+			var entriesParameter = _debuggerSessionCommand.CreateParameter();
+			entriesParameter.Direction = ParameterDirection.Output;
+			entriesParameter.OracleDbType = OracleDbType.Decimal;
+			entriesParameter.CollectionType = OracleCollectionType.PLSQLAssociativeArray;
+			entriesParameter.ParameterName = "ENTRIES";
+			entriesParameter.Size = 32767;
+			entriesParameter.Value = new int[0];
+
+			_debuggerSessionCommand.Parameters.Add(entriesParameter);
+
+			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
+			var result = (ValueInfoStatus)GetValueFromOracleDecimal(_debuggerSessionCommand.Parameters["RESULT"]);
+			var entries = (OracleDecimal[])entriesParameter.Value;
+
+			Trace.WriteLine($"Get indexes '{variable}' result: {result}; indexes retrieved: {entries.Length}");
+			return entries;
 		}
 
 		public async Task SetValue(string variable, string expression, CancellationToken cancellationToken)

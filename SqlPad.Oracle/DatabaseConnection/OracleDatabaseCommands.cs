@@ -436,7 +436,7 @@ END;";
 		public const string DetachDebugger = "BEGIN dbms_debug.detach_session; END;";
 		public const string DebuggerGetValue =
 @"BEGIN
-    :result := dbms_debug.get_value(variable_name => :name, frame# => 0, scalar_value => :value, format => null);
+    :result := dbms_debug.get_value(variable_name => :variable_name, frame# => 0, scalar_value => :value, format => null);
 END;";
 
 		public const string DebuggerSetValue =
@@ -464,7 +464,7 @@ BEGIN
 END;";
 
 		public const string SetDebuggerBreakpoint =
-		@"DECLARE
+@"DECLARE
 	program_info dbms_debug.program_info;
 BEGIN
 	program_info.namespace := dbms_debug.namespace_pkgspec_or_toplevel;
@@ -475,7 +475,7 @@ BEGIN
 END;";
 
 		public const string GetDebuggerLineMap =
-		@"DECLARE
+@"DECLARE
 	program_info dbms_debug.program_info;
 BEGIN
 	program_info.namespace := dbms_debug.namespace_pkgspec_or_toplevel;
@@ -483,6 +483,30 @@ BEGIN
 	program_info.name := :name;
 	--program_info.dblink := null;
 	:result := dbms_debug.get_line_map(program => program_info, maxline => :maxline, number_of_entry_points => :number_of_entry_points, linemap => :linemap);
+END;";
+
+		public const string GetDebuggerCollectionIndexes =
+@"DECLARE
+	program_info dbms_debug.program_info;
+	entries dbms_debug.index_table;
+	
+	TYPE index_table_type IS TABLE OF NUMBER INDEX BY BINARY_INTEGER;
+	index_table index_table_type;
+	i BINARY_INTEGER := 0;
+BEGIN
+	program_info.namespace := dbms_debug.namespace_pkgspec_or_toplevel;
+	program_info.owner := :owner;
+	program_info.name := :name;
+	--program_info.dblink := null;
+	:result := dbms_debug.get_indexes(varname => :variable_name, frame# => 0, handle => program_info, entries => entries);
+
+	LOOP
+		i := entries.NEXT(i);
+		exit when i is null;
+		index_table(i) := entries(i);
+	END LOOP;
+
+	:entries := index_table;
 END;";
 
 		private static string ToInValueList(params string[] values)
