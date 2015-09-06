@@ -2107,6 +2107,13 @@ SELECT * FROM ALL";
 		}
 
 		[Test(Description = @"")]
+		public void TestSuggestionInUpdateSubquery()
+		{
+			const string statement = @"UPDATE (SELECT DUAL.DUMMY FROM DUAL JOIN DUAL TARGET ON D)";
+			Assert.DoesNotThrow(() => CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 57));
+		}
+
+		[Test(Description = @"")]
 		public void TestCorrelatedSubqueryColumnSuggestionWhenSameTableInBothSubqueries()
 		{
 			const string statement = @"SELECT * FROM SELECTION WHERE EXISTS (SELECT NULL FROM SELECTION WHERE SELECTION.)";

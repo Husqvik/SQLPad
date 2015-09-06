@@ -13,8 +13,9 @@ namespace SqlPad
 		private readonly List<StatementGrammarNode> _childNodes = new List<StatementGrammarNode>();
 		private IReadOnlyList<StatementGrammarNode> _terminals;
 		private List<StatementCommentNode> _commentNodes;
+		private int _terminalCount;
 
-		public int TerminalCount { get; private set; }
+		public int TerminalCount => _terminalCount;
 
 		public StatementGrammarNode this[params int[] descendantIndexes]
 		{
@@ -58,19 +59,23 @@ namespace SqlPad
 		{
 			Type = type;
 
-			if (Type != NodeType.Terminal)
+			if (type != NodeType.Terminal)
+			{
 				return;
+			}
 
 			if (token == null)
+			{
 				throw new ArgumentNullException(nameof(token));
+			}
 
 			IsGrammarValid = true;
 			FirstTerminalNode = this;
 			LastTerminalNode = this;
-			TerminalCount = 1;
+			_terminalCount = 1;
 		}
 
-		public NodeType Type { get; }
+		public readonly NodeType Type;
 
 		public StatementGrammarNode RootNode => GetRootNode();
 
@@ -136,9 +141,9 @@ namespace SqlPad
 
 		public IReadOnlyList<StatementGrammarNode> ChildNodes => _childNodes.AsReadOnly();
 
-	    public ICollection<StatementCommentNode> Comments => _commentNodes ?? (_commentNodes = new List<StatementCommentNode>());
+		public ICollection<StatementCommentNode> Comments => _commentNodes ?? (_commentNodes = new List<StatementCommentNode>());
 
-	    public bool IsRequiredIncludingParent
+		public bool IsRequiredIncludingParent
 		{
 			get
 			{
@@ -183,9 +188,9 @@ namespace SqlPad
 
 		public IReadOnlyList<StatementGrammarNode> Terminals => _terminals ?? GatherTerminals();
 
-	    private IReadOnlyList<StatementGrammarNode> GatherTerminals()
+		private IReadOnlyList<StatementGrammarNode> GatherTerminals()
 		{
-			var statementGrammarNodes = new StatementGrammarNode[TerminalCount];
+			var statementGrammarNodes = new StatementGrammarNode[_terminalCount];
 			var offset = 0;
 
 			GatherNodeTerminals(this, statementGrammarNodes, ref offset);
@@ -215,7 +220,7 @@ namespace SqlPad
 
 		public IEnumerable<StatementGrammarNode> AllChildNodes => GetChildNodes();
 
-	    private IEnumerable<StatementGrammarNode> GetChildNodes(Func<StatementGrammarNode, bool> filter = null)
+		private IEnumerable<StatementGrammarNode> GetChildNodes(Func<StatementGrammarNode, bool> filter = null)
 		{
 			return Type == NodeType.Terminal
 				? Enumerable.Empty<StatementGrammarNode>()
@@ -226,7 +231,7 @@ namespace SqlPad
 		public override string ToString()
 		{
 			var terminalValue = Type == NodeType.NonTerminal || Token == null ? String.Empty : $"; TokenValue={Token.Value}";
-			return $"StatementGrammarNode (Id={Id}; Type={Type}; IsRequired={IsRequired}; IsGrammarValid={IsGrammarValid}; Level={Level}; TerminalCount={TerminalCount}; SourcePosition=({SourcePosition.IndexStart}-{SourcePosition.IndexEnd}){terminalValue})";
+			return $"StatementGrammarNode (Id={Id}; Type={Type}; IsRequired={IsRequired}; IsGrammarValid={IsGrammarValid}; Level={Level}; TerminalCount={_terminalCount}; SourcePosition=({SourcePosition.IndexStart}-{SourcePosition.IndexEnd}){terminalValue})";
 		}
 		#endregion
 
@@ -252,13 +257,13 @@ namespace SqlPad
 				{
 					FirstTerminalNode = FirstTerminalNode ?? node;
 					LastTerminalNode = node;
-					TerminalCount++;
+					_terminalCount++;
 				}
 				else
 				{
 					FirstTerminalNode = FirstTerminalNode ?? node.FirstTerminalNode;
 					LastTerminalNode = node.LastTerminalNode;
-					TerminalCount += node.TerminalCount;
+					_terminalCount += node._terminalCount;
 				}
 
 				_childNodes.Add(node);
@@ -476,39 +481,63 @@ namespace SqlPad
 				
 				_childNodes.RemoveAt(index);
 				LastTerminalNode = _childNodes[index - 1].LastTerminalNode;
-				TerminalCount--;
+				_terminalCount--;
 				return 1;
 			}
 
 			var removedTerminalCount = node.RemoveLastChildNodeIfOptional();
 			if (removedTerminalCount == 0 && !node.IsRequired)
 			{
-				removedTerminalCount = node.TerminalCount;
+				removedTerminalCount = node._terminalCount;
 				_childNodes.RemoveAt(index);
 				LastTerminalNode = _childNodes[index - 1].LastTerminalNode;
 			}
 
-			TerminalCount -= removedTerminalCount;
+			_terminalCount -= removedTerminalCount;
 			return removedTerminalCount;
 		}
 
 		public StatementGrammarNode Clone()
 		{
-			var clonedNode = new StatementGrammarNode(Type, Statement, Token)
-			                 {
-				                 Id = Id,
-				                 IsRequired = IsRequired,
-				                 Level = Level,
-				                 IsGrammarValid = IsGrammarValid,
-								 IsReservedWord = IsReservedWord
-			                 };
+			var clonedNode =
+				new StatementGrammarNode(Type, Statement, Token)
+				{
+					Id = Id,
+					IsRequired = IsRequired,
+					Level = Level,
+					IsGrammarValid = IsGrammarValid,
+					IsReservedWord = IsReservedWord
+				};
 
 			if (Type == NodeType.NonTerminal)
 			{
-				clonedNode.AddChildNodes(_childNodes.Select(n => n.Clone()));
+				clonedNode.AddChildNodes(CreateChildNodeClones());
 			}
 
 			return clonedNode;
+		}
+
+		private IEnumerable<StatementGrammarNode> CreateChildNodeClones()
+		{
+			foreach (var node in _childNodes)
+			{
+				yield return node.Clone();
+			}
+		}
+
+		public static IEnumerable<StatementGrammarNode> GetAllChainedClausesByPath(StatementGrammarNode initialialSearchedClause, Func<StatementGrammarNode, StatementGrammarNode> getChainedRootFunction, params string[] chainNonTerminalIds)
+		{
+			while (initialialSearchedClause != null)
+			{
+				yield return initialialSearchedClause;
+
+				if (getChainedRootFunction != null)
+				{
+					initialialSearchedClause = getChainedRootFunction(initialialSearchedClause);
+				}
+
+				initialialSearchedClause = initialialSearchedClause[chainNonTerminalIds];
+			}
 		}
 	}
 }

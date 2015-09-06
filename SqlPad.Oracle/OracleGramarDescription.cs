@@ -429,6 +429,7 @@ namespace SqlPad.Oracle
 			public const string ExpressionOrNestedQueryOrDefaultValue = "ExpressionOrNestedQueryOrDefaultValue";
 			public const string ExpressionOrOrDefaultValueList = "ExpressionOrOrDefaultValueList";
 			public const string ExpressionOrOrDefaultValueListChained = "ExpressionOrOrDefaultValueListChained";
+			public const string ExpressionOrParenthesisEnclosedExpressionListWithMandatoryExpressions = "ExpressionOrParenthesisEnclosedExpressionListWithMandatoryExpressions";
 			public const string ExpressionOrUnlimitedOrDefault = "ExpressionOrUnlimitedOrDefault";
 			public const string ExtentManagementClause = "ExtentManagementClause";
 			public const string ExternalSpecificationOrPrecisionAndScale = "ExternalSpecificationOrPrecisionAndScale";

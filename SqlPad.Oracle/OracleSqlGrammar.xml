@@ -5950,7 +5950,7 @@
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="Expression" />
+          <NonTerminal Id="ExpressionOrParenthesisEnclosedExpressionListWithMandatoryExpressions" />
           <Terminal Id="Not" IsOptional="true" />
           <Terminal Id="In" />
           <Terminal Id="LeftParenthesis" />
@@ -5968,9 +5968,7 @@
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
         <Sequence>
-          <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="ExpressionList" />
-          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ParenthesisEnclosedExpressionListWithMandatoryExpressions" />
           <NonTerminal Id="RelationalEquiOperator" />
           <NonTerminal Id="SetQualifier" IsOptional="true" />
           <Terminal Id="LeftParenthesis" />
@@ -6026,6 +6024,17 @@
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="Condition" />
           <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ExpressionOrParenthesisEnclosedExpressionListWithMandatoryExpressions">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="Expression" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ParenthesisEnclosedExpressionListWithMandatoryExpressions" />
         </Sequence>
       </Sequences>
     </Rule>

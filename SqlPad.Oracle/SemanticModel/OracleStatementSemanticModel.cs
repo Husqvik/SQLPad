@@ -1165,6 +1165,13 @@ namespace SqlPad.Oracle.SemanticModel
 		{
 			foreach (var queryBlock in _queryBlockNodes.Values)
 			{
+				var nestedQuery = queryBlock.RootNode.GetAncestor(NonTerminals.NestedQuery);
+				if (String.Equals(nestedQuery.ParentNode.Id, NonTerminals.ExpressionListOrNestedQuery) ||
+					String.Equals(nestedQuery.ParentNode.Id, NonTerminals.GroupingExpressionListOrNestedQuery))
+				{
+					continue;
+				}
+
 				foreach (var objectReference in queryBlock.ObjectReferences.OfType<OracleSpecialTableReference>())
 				{
 					var hasReferencedColumn = false;
@@ -1466,22 +1473,23 @@ namespace SqlPad.Oracle.SemanticModel
 		private void ResolveMainObjectReferenceUpdateOrDelete()
 		{
 			var rootNode = Statement.RootNode[0, 0];
-		    var tableReferenceNode = rootNode?[NonTerminals.TableReference];
-		    var innerTableReference = tableReferenceNode?.GetDescendantsWithinSameQueryBlock(NonTerminals.InnerTableReference).SingleOrDefault();
-			if (innerTableReference == null)
+			var tableReferenceNode = rootNode?[NonTerminals.TableReference];
+			var queryTableExpression = tableReferenceNode?.GetDescendantsWithinSameQueryBlock(NonTerminals.QueryTableExpression).SingleOrDefault();
+			if (queryTableExpression == null)
 			{
 				return;
 			}
 
-			var objectIdentifier = innerTableReference[NonTerminals.QueryTableExpression, NonTerminals.SchemaObject, Terminals.ObjectIdentifier];
+			var objectIdentifier = queryTableExpression[NonTerminals.SchemaObject, Terminals.ObjectIdentifier];
 			if (objectIdentifier != null)
 			{
-				var objectReferenceAlias = innerTableReference.ParentNode.ChildNodes.SingleOrDefault(n => String.Equals(n.Id, Terminals.ObjectAlias));
+				var objectReferenceAlias = tableReferenceNode[Terminals.ObjectAlias];
 				MainObjectReferenceContainer.MainObjectReference = CreateDataObjectReference(tableReferenceNode, objectIdentifier, objectReferenceAlias);
 			}
 			else if (MainQueryBlock != null)
 			{
 				MainObjectReferenceContainer.MainObjectReference = MainQueryBlock.SelfObjectReference;
+				MainObjectReferenceContainer.MainObjectReference.RootNode = tableReferenceNode;
 			}
 
 			if (!String.Equals(rootNode.FirstTerminalNode.Id, Terminals.Update))
@@ -2430,7 +2438,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private void FindJoinColumnReferences(OracleQueryBlock queryBlock)
 		{
-			var fromClauses = GetAllChainedClausesByPath(queryBlock.RootNode[NonTerminals.FromClause], null, NonTerminals.FromClauseChained, NonTerminals.FromClause);
+			var fromClauses = StatementGrammarNode.GetAllChainedClausesByPath(queryBlock.RootNode[NonTerminals.FromClause], null, NonTerminals.FromClauseChained, NonTerminals.FromClause);
 			foreach (var fromClause in fromClauses)
 			{
 				var joinClauses = fromClause.GetPathFilterDescendants(n => !String.Equals(n.Id, NonTerminals.NestedQuery) && !String.Equals(n.Id, NonTerminals.FromClause), NonTerminals.JoinClause);
@@ -2490,21 +2498,6 @@ namespace SqlPad.Oracle.SemanticModel
 					var joinCondifitionClauseGrammarSpecificFunctions = GetGrammarSpecificFunctionNodes(joinCondition);
 					CreateGrammarSpecificFunctionReferences(joinCondifitionClauseGrammarSpecificFunctions, queryBlock, queryBlock.ProgramReferences, StatementPlacement.Join, null);
 				}
-			}
-		}
-
-		private IEnumerable<StatementGrammarNode> GetAllChainedClausesByPath(StatementGrammarNode initialialSearchedClause, Func<StatementGrammarNode, StatementGrammarNode> getChainedRootFunction, params string[] chainNonTerminalIds)
-		{
-			while (initialialSearchedClause != null)
-			{
-				yield return initialialSearchedClause;
-
-				if (getChainedRootFunction != null)
-				{
-					initialialSearchedClause = getChainedRootFunction(initialialSearchedClause);
-				}
-
-				initialialSearchedClause = initialialSearchedClause[chainNonTerminalIds];
 			}
 		}
 
@@ -2639,12 +2632,13 @@ namespace SqlPad.Oracle.SemanticModel
 			if (String.Equals(queryBlock.SelectList.FirstTerminalNode.Id, Terminals.Asterisk))
 			{
 				var asteriskNode = queryBlock.SelectList.ChildNodes[0];
-				var column = new OracleSelectListColumn(this, null)
-				{
-					RootNode = asteriskNode,
-					Owner = queryBlock,
-					IsAsterisk = true
-				};
+				var column =
+					new OracleSelectListColumn(this, null)
+					{
+						RootNode = asteriskNode,
+						Owner = queryBlock,
+						IsAsterisk = true
+					};
 
 				column.ColumnReferences.Add(CreateColumnReference(column, queryBlock, column, StatementPlacement.SelectList, asteriskNode, null));
 
@@ -2654,7 +2648,7 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 			else
 			{
-				var columnExpressions = GetAllChainedClausesByPath(queryBlock.SelectList[NonTerminals.AliasedExpressionOrAllTableColumns], n => n.ParentNode, NonTerminals.SelectExpressionExpressionChainedList, NonTerminals.AliasedExpressionOrAllTableColumns);
+				var columnExpressions = StatementGrammarNode.GetAllChainedClausesByPath(queryBlock.SelectList[NonTerminals.AliasedExpressionOrAllTableColumns], n => n.ParentNode, NonTerminals.SelectExpressionExpressionChainedList, NonTerminals.AliasedExpressionOrAllTableColumns);
 				var columnExpressionsIdentifierLookup = _queryBlockTerminals[queryBlock]
 					.Where(t => t.SourcePosition.IndexStart >= queryBlock.SelectList.SourcePosition.IndexStart && t.SourcePosition.IndexEnd <= queryBlock.SelectList.SourcePosition.IndexEnd &&
 					            (StandardIdentifierIds.Contains(t.Id) || t.ParentNode.Id.In(NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, NonTerminals.WithinGroupAggregationFunction, NonTerminals.DataType)))

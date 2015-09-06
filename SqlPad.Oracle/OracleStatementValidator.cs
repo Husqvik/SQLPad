@@ -576,6 +576,33 @@ namespace SqlPad.Oracle
 							new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnIndex) {Node = invalidColumnIndexReference.Terminal};
 					}
 				}
+
+				var nestedQuery = queryBlock.RootNode.GetAncestor(NonTerminals.NestedQuery);
+				if (String.Equals(nestedQuery.ParentNode.Id, NonTerminals.ExpressionListOrNestedQuery) ||
+					String.Equals(nestedQuery.ParentNode.Id, NonTerminals.GroupingExpressionListOrNestedQuery))
+				{
+					var expressionListSourceNode = nestedQuery.ParentNode.ParentNode[0];
+					var expressionList = expressionListSourceNode[NonTerminals.ExpressionList]
+					                     ?? expressionListSourceNode[NonTerminals.ParenthesisEnclosedExpressionListWithMandatoryExpressions, NonTerminals.ExpressionList];
+
+					var queryBlockColumnCount = queryBlock.Columns.Count - queryBlock.AsteriskColumns.Count;
+					if (expressionList != null)
+					{
+						var expressionCount = StatementGrammarNode.GetAllChainedClausesByPath(expressionList, null, NonTerminals.ExpressionCommaChainedList, NonTerminals.ExpressionList).Count();
+						if (expressionCount != queryBlockColumnCount)
+						{
+							validationModel.InvalidNonTerminals[expressionList] =
+								new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = expressionList };
+							validationModel.InvalidNonTerminals[queryBlock.SelectList] =
+								new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = queryBlock.SelectList };
+						}
+					}
+					else if (expressionListSourceNode[NonTerminals.Expression] != null && queryBlockColumnCount > 1)
+					{
+						validationModel.InvalidNonTerminals[queryBlock.SelectList] =
+							new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = queryBlock.SelectList };
+					}
+				}
 			}
 		}
 

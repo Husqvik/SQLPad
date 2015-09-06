@@ -2559,6 +2559,16 @@ ORDER BY symbol, tstamp";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
+		[Test(Description = @"")]
+		public void TestMultiSetInClause()
+		{
+			const string statement1 = @"SELECT * FROM DUAL WHERE (DUMMY, DUAL.DUMMY) IN (SELECT DUAL.DUMMY, DUMMY FROM DUAL)";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single().Validate();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+		}
+
 		public class PlSql
 		{
 			[Test(Description = @"")]

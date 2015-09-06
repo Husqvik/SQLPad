@@ -2604,6 +2604,42 @@ SELECT C1 FROM CTE";
 		}
 
 		[Test(Description = @"")]
+		public void TestColumnCountValidationInMultisetInClause()
+		{
+			const string sqlText = @"SELECT * FROM DUAL WHERE (DUMMY, DUMMY) IN (SELECT DUMMY, DUMMY, DUMMY FROM DUAL)";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var invalidNonTerminalValidities = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			invalidNonTerminalValidities.Count.ShouldBe(2);
+			invalidNonTerminalValidities[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnCount);
+			invalidNonTerminalValidities[0].Node.Id.ShouldBe(NonTerminals.ExpressionList);
+			invalidNonTerminalValidities[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnCount);
+			invalidNonTerminalValidities[1].Node.Id.ShouldBe(NonTerminals.SelectList);
+		}
+
+		[Test(Description = @"")]
+		public void TestColumnCountValidationInSimpleInClause()
+		{
+			const string sqlText = @"SELECT * FROM DUAL WHERE DUMMY IN (SELECT DUMMY, DUMMY FROM DUAL)";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var invalidNonTerminalValidities = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			invalidNonTerminalValidities.Count.ShouldBe(1);
+			invalidNonTerminalValidities[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnCount);
+			invalidNonTerminalValidities[0].Node.Id.ShouldBe(NonTerminals.SelectList);
+		}
+
+		[Test(Description = @"")]
 		public void TestRedundantIsNotNullCondition()
 		{
 			const string sqlText = @"SELECT * FROM SELECTION WHERE SELECTION_ID + 1 IS NOT NULL AND SELECTION_ID IS NOT NULL AND PROJECT_ID IS NOT NULL OR PROJECT_ID IS NULL";

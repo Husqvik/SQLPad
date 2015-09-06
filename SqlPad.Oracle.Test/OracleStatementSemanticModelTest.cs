@@ -937,6 +937,17 @@ SELECT * FROM DUAL";
 		}
 
 		[Test(Description = @"")]
+		public void TestUnusedColumnRedundantTerminalsWhenInMultisetInClause()
+		{
+			const string query1 = @"SELECT * FROM DUAL WHERE (DUMMY, DUMMY) IN (SELECT DUMMY, DUMMY FROM DUAL)";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
 		public void TestUnusedColumnRedundantTerminalsWithAsteriskReference()
 		{
 			const string query1 = @"SELECT * FROM (SELECT 1 C1, 2 C2 FROM DUAL)";
@@ -1272,6 +1283,15 @@ SELECT * FROM CTE";
 			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
+		}
+
+		[Test(Description = @"")]
+		public void TestModelBuildWhenTypingUpdateSubqueryStatement()
+		{
+			const string query1 = @"UPDATE (S)";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			Assert.DoesNotThrow(() => OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel));
 		}
 
 		[Test(Description = @"")]

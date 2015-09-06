@@ -299,7 +299,7 @@ namespace SqlPad
 			WorkDocumentCollection.SetApplicationWindowProperties(this);
 			WorkDocumentCollection.Save();
 
-			Trace.WriteLine("Working document collection saved. ");
+			Trace.WriteLine($"{DateTime.Now} - Working document collection saved. ");
 		}
 
 		private void WindowClosedHandler(object sender, EventArgs e)
