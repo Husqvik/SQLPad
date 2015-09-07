@@ -2068,7 +2068,7 @@ namespace SqlPad
 			var bindVariableModel = (BindVariableModel)button.DataContext;
 			if (button.IsChecked == true)
 			{
-				if (!File.Exists(bindVariableModel.Value.ToString()))
+				if (!File.Exists(Convert.ToString(bindVariableModel.Value)))
 				{
 					var dialog = new OpenFileDialog {Filter = "All files (*.*)|*"};
 					if (dialog.ShowDialog() != true)
