@@ -79,6 +79,21 @@ namespace SqlPad
 			var effectiveIndex = _currentIndex <= 0 ? 0 : --_currentIndex;
 			return DocumentCursorPositions[effectiveIndex];
 		}
+
+		public static DocumentCursorPosition GetPreviousDocumentEdit()
+		{
+			var currentDocument = DocumentCursorPositions[_currentIndex];
+			for (var i = DocumentCursorPositions.Count - 2; i >= 0; i--)
+			{
+				var precedingDocument = DocumentCursorPositions[i];
+				if (precedingDocument.Document != currentDocument.Document)
+				{
+					return precedingDocument;
+				}
+			}
+
+			return null;
+		}
 	}
 
 	[DebuggerDisplay("DocumentCursorPosition (DocumentIdentifier={Document.Identifier}, CursorPosition={CursorPosition})")]

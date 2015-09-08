@@ -28,9 +28,9 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private bool IsFrozen => _namedColumns != null;
 
-	    public ILookup<string, OracleSelectListColumn> NamedColumns
+		public ILookup<string, OracleSelectListColumn> NamedColumns
 		{
-			get { return _namedColumns ?? (_namedColumns = _columns.Concat(_attachedColumns).ToLookup(c => c.NormalizedName)); }
+			get { return _namedColumns ?? (_namedColumns = _columns.ToLookup(c => c.NormalizedName)); }
 		}
 
 		public OracleDataObjectReference SelfObjectReference => _selfObjectReference ?? BuildSelfObjectReference();
@@ -110,13 +110,13 @@ namespace SqlPad.Oracle.SemanticModel
 		
 		public IReadOnlyList<OracleQueryBlock> CommonTableExpressions => _commonTableExpressions;
 
-	    public IReadOnlyList<OracleSelectListColumn> Columns => _columns;
+		public IReadOnlyList<OracleSelectListColumn> Columns => _columns;
 
-	    public IReadOnlyList<OracleSelectListColumn> AttachedColumns => _attachedColumns;
+		public IReadOnlyList<OracleSelectListColumn> AttachedColumns => _attachedColumns;
 
-	    public IReadOnlyCollection<OracleSelectListColumn> AsteriskColumns => _asteriskColumns;
+		public IReadOnlyCollection<OracleSelectListColumn> AsteriskColumns => _asteriskColumns;
 
-	    public OracleSqlModelReference ModelReference { get; set; }
+		public OracleSqlModelReference ModelReference { get; set; }
 
 		public IEnumerable<OracleReferenceContainer> ChildContainers
 		{
@@ -257,7 +257,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private static bool HasRemoteAsteriskReferencesInternal(OracleQueryBlock queryBlock)
 		{
-			var hasRemoteAsteriskReferences = queryBlock._asteriskColumns.Any(c => (c.RootNode.TerminalCount == 1 && queryBlock.ObjectReferences.Any(r => r.DatabaseLinkNode != null)) || (c.ColumnReferences.Any(r => r.ValidObjectReference != null && r.ValidObjectReference.DatabaseLinkNode != null)));
+			var hasRemoteAsteriskReferences = queryBlock._asteriskColumns.Any(c => (c.RootNode.TerminalCount == 1 && queryBlock.ObjectReferences.Any(r => r.DatabaseLinkNode != null)) || (c.ColumnReferences.Any(r => r.ValidObjectReference?.DatabaseLinkNode != null)));
 
 			OracleQueryBlock childQueryBlock;
 			return hasRemoteAsteriskReferences ||

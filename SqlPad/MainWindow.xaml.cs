@@ -210,10 +210,16 @@ namespace SqlPad
 		private void CloseTabExecutedHandler(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
 		{
 			var currentDocument = (executedRoutedEventArgs.Parameter ?? sender) as DocumentPage;
-			if (currentDocument != null)
+			if (currentDocument == null)
 			{
-				CloseDocument(currentDocument);
+				return;
 			}
+
+			var previousDocument = EditorNavigationService.GetPreviousDocumentEdit();
+			EditorNavigationService.IsEnabled = false;
+			CloseDocument(currentDocument);
+			GoToEditCommand(previousDocument);
+			EditorNavigationService.IsEnabled = true;
 		}
 
 		internal bool CloseDocument(DocumentPage document)
@@ -221,7 +227,9 @@ namespace SqlPad
 			DocumentTabControl.SelectedItem = document.TabItem;
 
 			if (document.IsDirty && !ConfirmDocumentSave(document))
+			{
 				return false;
+			}
 
 			SelectNewTabItem();
 			DocumentTabControl.RemoveTabItemWithoutBindingError(document.TabItem);

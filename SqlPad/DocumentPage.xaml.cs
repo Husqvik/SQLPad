@@ -984,6 +984,8 @@ namespace SqlPad
 		{
 			if (_isInitializing)
 			{
+				EditorNavigationService.IsEnabled = false;
+
 				App.MainWindow.DocumentTabControl.SelectionChanged += DocumentTabControlSelectionChangedHandler;
 				Application.Current.Deactivated += ApplicationDeactivatedHandler;
 
@@ -1029,6 +1031,8 @@ namespace SqlPad
 				_isInitializing = false;
 
 				CurrentSchema = WorkDocument.SchemaName;
+
+				EditorNavigationService.IsEnabled = true;
 			}
 
 			Editor.Focus();
