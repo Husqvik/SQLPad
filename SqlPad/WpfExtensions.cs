@@ -143,19 +143,24 @@ namespace SqlPad
 				inlines.Clear();
 				var contentPresenter = (ContentPresenter)textBlock.TemplatedParent;
 
+				object tag = null;
 				foreach (var item in substrings)
 				{
 					if (regex.Match(item).Success)
 					{
 						var run = new Run(item) { Background = Brushes.Yellow };
 						inlines.Add(run);
-						contentPresenter.Tag = DataGridHelper.TagHighlight;
+						tag = DataGridHelper.TagHighlight;
 					}
 					else
 					{
 						inlines.Add(item);
-						contentPresenter.Tag = null;
 					}
+				}
+
+				if (contentPresenter != null)
+				{
+					contentPresenter.Tag = tag;
 				}
 			}
 		}
