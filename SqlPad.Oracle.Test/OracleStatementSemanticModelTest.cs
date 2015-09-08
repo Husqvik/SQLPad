@@ -1295,6 +1295,23 @@ SELECT * FROM CTE";
 		}
 
 		[Test(Description = @"")]
+		public void TestModelBuildWhenTypingInlineViewInOuterJoinClause()
+		{
+			const string query1 =
+@"SELECT
+    *
+FROM
+    DUAL
+    LEFT JOIN (
+        SELEC DUMMY FROM DUAL
+    ) TMP
+    ON DUAL.DUMMY = TMP.DUMMY";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			Assert.DoesNotThrow(() => OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel));
+		}
+
+		[Test(Description = @"")]
 		public void TestModelBuildWithUnfinishedSqlModelRule()
 		{
 			const string query1 =
@@ -2045,9 +2062,9 @@ SELECT * FROM CTE";
 		}
 
 		[Test(Description = @"")]
-		public void TestCrossApplyColumnReference()
+		public void TestOuterApplyColumnReference()
 		{
-			const string query1 = @"SELECT DUMMY C1, C2 FROM DUAL T1 CROSS APPLY (SELECT DUMMY C2 FROM DUAL T2 WHERE DUMMY <> T1.DUMMY) T2";
+			const string query1 = @"SELECT DUMMY C1, C2 FROM DUAL T1 OUTER APPLY (SELECT DUMMY C2 FROM DUAL T2 WHERE DUMMY <> T1.DUMMY) T2";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
@@ -2061,6 +2078,7 @@ SELECT * FROM CTE";
 			var crossApliedTableReference = queryBlock.ObjectReferences.Last();
 			crossApliedTableReference.QueryBlocks.Count.ShouldBe(1);
 			var crossApliedQueryBlock = crossApliedTableReference.QueryBlocks.Single();
+			crossApliedTableReference.IsOuterJoined.ShouldBe(true);
 			crossApliedQueryBlock.ColumnReferences.Count.ShouldBe(2);
 			crossApliedQueryBlock.ColumnReferences[1].FullyQualifiedObjectName.ShouldBe(OracleObjectIdentifier.Create(null, "T1"));
 			crossApliedQueryBlock.ColumnReferences[1].ObjectNodeObjectReferences.Count.ShouldBe(1);

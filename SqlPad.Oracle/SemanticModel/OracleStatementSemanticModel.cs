@@ -1624,20 +1624,30 @@ namespace SqlPad.Oracle.SemanticModel
 		private void ResolveCrossAndOuterAppliedTableReferences(OracleQueryBlock queryBlock)
 		{
 			var tableReferenceJoinClause = queryBlock.RootNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.QueryBlock), NonTerminals.TableReferenceJoinClause);
-			var isApplied = queryBlock.RootNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.QueryBlock), NonTerminals.CrossOrOuterApplyClause) != null;
-			if (tableReferenceJoinClause == null || !isApplied)
+			var crossOrOuterApplyClause = queryBlock.RootNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.QueryBlock), NonTerminals.CrossOrOuterApplyClause);
+			if (tableReferenceJoinClause == null || crossOrOuterApplyClause == null)
 			{
 				return;
 			}
 
-			var appliedTableReferenceNode = tableReferenceJoinClause[0];
-			if (appliedTableReferenceNode == null)
+			var parentTableReferenceNode = tableReferenceJoinClause[0];
+			if (parentTableReferenceNode == null)
 			{
 				return;
 			}
 
 			var parentCorrelatedQueryBlock = GetQueryBlock(tableReferenceJoinClause);
-			queryBlock.CrossOrOuterApplyReference = parentCorrelatedQueryBlock.ObjectReferences.SingleOrDefault(o => o.RootNode == appliedTableReferenceNode);
+			queryBlock.CrossOrOuterApplyReference = parentCorrelatedQueryBlock.ObjectReferences.SingleOrDefault(o => o.RootNode == parentTableReferenceNode);
+
+			var appliedTableReferenceNode = crossOrOuterApplyClause[NonTerminals.TableReference];
+			if (appliedTableReferenceNode != null)
+			{
+				var appliedDataObjectReference = parentCorrelatedQueryBlock.ObjectReferences.SingleOrDefault(o => o.RootNode == appliedTableReferenceNode);
+				if (appliedDataObjectReference != null)
+				{
+					appliedDataObjectReference.IsOuterJoined = crossOrOuterApplyClause[NonTerminals.CrossOrOuter, Terminals.Outer] != null;
+				}
+			}
 		}
 
 		private void ResolveParentCorrelatedQueryBlock(OracleQueryBlock queryBlock, bool allowMoreThanOneLevel = false)
@@ -1778,15 +1788,20 @@ namespace SqlPad.Oracle.SemanticModel
 					continue;
 				}
 
-				var childReference = objectReferences[kvp.Key];
-				if (joinDescription.Type == JoinType.Left || joinDescription.Type == JoinType.Full)
-				{
-					childReference.IsOuterJoined = true;
-				}
-
 				if (joinDescription.Type == JoinType.Right || joinDescription.Type == JoinType.Full)
 				{
 					masterReference.IsOuterJoined = true;
+				}
+
+				OracleDataObjectReference childReference;
+				if (!objectReferences.TryGetValue(kvp.Key, out childReference))
+				{
+					continue;
+				}
+
+				if (joinDescription.Type == JoinType.Left || joinDescription.Type == JoinType.Full)
+				{
+					childReference.IsOuterJoined = true;
 				}
 
 				if (joinDescription.Columns != null || joinDescription.Definition == JoinDefinition.Explicit)
