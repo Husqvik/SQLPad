@@ -2640,6 +2640,30 @@ SELECT C1 FROM CTE";
 		}
 
 		[Test(Description = @"")]
+		public void TestConditionNotAlwaysTrueFalseWhenAnotherTableInnerJoined()
+		{
+			const string sqlText =
+@"SELECT
+	CASE WHEN TMP.DUMMY IS NULL THEN 1 END
+FROM
+    DUAL
+    JOIN DUAL TMP2 ON DUAL.DUMMY = TMP2.DUMMY
+    LEFT JOIN (
+        SELECT 1 DUMMY FROM DUAL
+    ) TMP
+    ON DUAL.DUMMY = TMP.DUMMY";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var invalidNonTerminalValidities = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			invalidNonTerminalValidities.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
 		public void TestRedundantIsNotNullCondition()
 		{
 			const string sqlText = @"SELECT * FROM SELECTION WHERE SELECTION_ID + 1 IS NOT NULL AND SELECTION_ID IS NOT NULL AND PROJECT_ID IS NOT NULL OR PROJECT_ID IS NULL";

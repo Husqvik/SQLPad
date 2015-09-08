@@ -2483,10 +2483,14 @@ namespace SqlPad.Oracle.SemanticModel
 						}
 					}
 
+					var joinClauseParent = joinClause.ParentNode;
 					var joinDescription =
 						new JoinDescription
 						{
-							MasterTableReferenceNode = joinClause.ParentNode[NonTerminals.TableReference],
+							MasterTableReferenceNode =
+								String.Equals(joinClauseParent.Id, NonTerminals.TableReferenceJoinClause)
+									? joinClauseParent[NonTerminals.TableReference]
+									: joinClauseParent[0]?[NonTerminals.TableReference],
 							Definition = joinDefinition,
 							Type = joinType
 						};
