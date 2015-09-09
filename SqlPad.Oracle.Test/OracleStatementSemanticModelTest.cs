@@ -661,6 +661,57 @@ SELECT * FROM sampleData";
 			columns[6].ColumnDescription.FullTypeName.ShouldBe("TIMESTAMP(9)");
 		}
 
+		[Test(Description = @""), Ignore]
+		public void TestLiteralColumnDataTypeResolutionInConcatenatedQueryBlocks()
+		{
+			const string query1 =
+@"WITH tmp AS (
+	SELECT 'X' C FROM DUAL UNION ALL
+	SELECT 'XX' FROM DUAL
+)
+SELECT C FROM tmp";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.MainQueryBlock.Columns.Count.ShouldBe(1);
+			semanticModel.MainQueryBlock.Columns[0].ColumnDescription.ShouldNotBe(null);
+			semanticModel.MainQueryBlock.Columns[0].ColumnDescription.FullTypeName.ShouldBe("CHAR(2)");
+		}
+
+		[Test(Description = @"")]
+		public void TestAliasedRecursiveQueryReference()
+		{
+			const string query1 =
+@"with recursion(dummy) as 
+(
+     select 1 from dual 
+     union all 
+     select r.dummy + 1
+     from dual
+     join recursion r on r.dummy <= 5
+)
+select * from recursion";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
+
+			var resursiveQueryBlock = semanticModel.QueryBlocks.Where(qb => qb.Type == QueryBlockType.CommonTableExpression).Skip(1).Single();
+			resursiveQueryBlock.ObjectReferences.Count.ShouldBe(2);
+			var objectReferences = resursiveQueryBlock.ObjectReferences.ToArray();
+			var recursiveObjectReference = objectReferences[1];
+			recursiveObjectReference.ObjectNode.Token.Value.ShouldBe("recursion");
+			recursiveObjectReference.AliasNode.Token.Value.ShouldBe("r");
+			recursiveObjectReference.QueryBlocks.Count.ShouldBe(1);
+
+			var columnReferences = resursiveQueryBlock.AllColumnReferences.ToList();
+			columnReferences.Count.ShouldBe(2);
+			columnReferences[0].ValidObjectReference.ShouldBe(recursiveObjectReference);
+			columnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			columnReferences[1].ValidObjectReference.ShouldBe(recursiveObjectReference);
+			columnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(1);
+		}
+
 		[Test(Description = @"")]
 		public void TestLiteralColumnDataTypeResolutionAccessedFromInlineView()
 		{

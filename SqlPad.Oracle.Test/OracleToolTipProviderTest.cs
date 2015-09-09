@@ -1038,6 +1038,21 @@ SELECT * FROM sampleData";
 			toolTip.Control.DataContext.ShouldBe("\"PUBLIC\".XMLTYPE (Synonym) => SYS.XMLTYPE (Object Type)");
 		}
 
+		[Test(Description = @""), STAThread]
+		public void TestTooltipOverExplicitColumnListInCommonTableExpression()
+		{
+			const string query =
+@"WITH data(value) AS (
+	SELECT 1 FROM DUAL UNION ALL
+	SELECT 2 FROM DUAL
+)
+SELECT * FROM data";
+
+			_documentRepository.UpdateStatements(query);
+
+			Assert.DoesNotThrow(() => _toolTipProvider.GetToolTip(_documentRepository, 12));
+		}
+
 		private static string GetTextFromTextBlock(TextBlock textBlock)
 		{
 			var inlines = textBlock.Inlines.Select(GetTextFromInline);

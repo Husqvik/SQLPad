@@ -1742,6 +1742,8 @@ namespace SqlPad.Oracle.SemanticModel
 			precedingQueryBlock.FollowingConcatenatedQueryBlock = queryBlock;
 			queryBlock.PrecedingConcatenatedQueryBlock = precedingQueryBlock;
 
+			queryBlock.AliasNode = null;
+
 			var setOperation = queryBlock.RootNode.ParentNode.ParentNode[0];
 			if (precedingQueryBlock.Type != QueryBlockType.CommonTableExpression || setOperation == null || setOperation.TerminalCount != 2 || !String.Equals(setOperation[0].Id, Terminals.Union) || !String.Equals(setOperation[1].Id, Terminals.All))
 			{
@@ -1749,14 +1751,12 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 
 			var anchorReferences = queryBlock.ObjectReferences
-				.Where(r => r.Type == ReferenceType.SchemaObject && r.OwnerNode == null && r.DatabaseLinkNode == null && String.Equals(r.FullyQualifiedObjectName.NormalizedName, precedingQueryBlock.NormalizedAlias))
+				.Where(r => r.Type == ReferenceType.SchemaObject && r.OwnerNode == null && r.DatabaseLinkNode == null && String.Equals(OracleObjectIdentifier.Create(null, r.ObjectNode, null).NormalizedName, precedingQueryBlock.NormalizedAlias))
 				.ToArray();
 			if (anchorReferences.Length == 0)
 			{
 				return;
 			}
-
-			queryBlock.AliasNode = null;
 
 			foreach(var anchorReference in anchorReferences)
 			{

@@ -34,6 +34,8 @@ namespace SqlPad
 		private const int MaximumOutputViewersPerPage = 16;
 		public const string FileMaskDefault = "SQL files (*.sql)|*.sql|SQL Pad files (*.sqlx)|*.sqlx|Text files(*.txt)|*.txt|All files (*.*)|*";
 
+		private static readonly string[] OpeningParenthesisOrBrackets = { "(", "[", "{" };
+		private static readonly string[] ClosingParenthesisOrBrackets = { ")", "]", "}" };
 		private static readonly ColorCodeToBrushConverter TabHeaderBackgroundBrushConverter = new ColorCodeToBrushConverter();
 
 		private SqlDocumentRepository _sqlDocumentRepository;
@@ -1077,9 +1079,10 @@ namespace SqlPad
 				{
 					var childNodes = terminal.ParentNode.ChildNodes;
 					var index = terminal.ParentNode.IndexOf(terminal);
-					var increment = terminal.Token.Value.In("(", "[", "{") ? 1 : -1;
+					var increment = terminal.Token.Value.In(OpeningParenthesisOrBrackets) ? 1 : -1;
 					var otherParenthesis = GetOppositeParenthesisOrBracket(terminal.Token.Value);
 
+					var nestedCounter = 0;
 					while (0 <= index && index < childNodes.Count)
 					{
 						index += increment;
@@ -1090,7 +1093,21 @@ namespace SqlPad
 						}
 
 						var otherParenthesisTerminal = childNodes[index];
-						if (otherParenthesisTerminal.Token != null && otherParenthesisTerminal.Token.Value == otherParenthesis)
+						if (otherParenthesisTerminal.Token == null)
+						{
+							continue;
+						}
+
+						if (increment == 1 && otherParenthesisTerminal.Token.Value.In(OpeningParenthesisOrBrackets))
+						{
+							nestedCounter++;
+						}
+						else if (increment == -1 && otherParenthesisTerminal.Token.Value.In(ClosingParenthesisOrBrackets))
+						{
+							nestedCounter++;
+						}
+
+						if (String.Equals(otherParenthesisTerminal.Token.Value, otherParenthesis) && nestedCounter-- == 0)
 						{
 							correspondingSegments.Add(terminal.SourcePosition);
 							correspondingSegments.Add(otherParenthesisTerminal.SourcePosition);
