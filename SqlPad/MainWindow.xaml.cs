@@ -217,8 +217,11 @@ namespace SqlPad
 
 			var previousDocument = EditorNavigationService.GetPreviousDocumentEdit();
 			EditorNavigationService.IsEnabled = false;
-			CloseDocument(currentDocument);
-			GoToEditCommand(previousDocument);
+			if (CloseDocument(currentDocument))
+			{
+				GoToEditCommand(previousDocument);
+			}
+
 			EditorNavigationService.IsEnabled = true;
 		}
 

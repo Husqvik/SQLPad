@@ -381,11 +381,71 @@ namespace SqlPad.Oracle.SemanticModel
 
 			ResolveReferences();
 
+			//HarmonizeConcatenatedQueryBlockColumnTypes();
+
 			BuildDmlModel();
 			
 			ResolveRedundantTerminals();
 
 			return this;
+		}
+
+		private void HarmonizeConcatenatedQueryBlockColumnTypes()
+		{
+			foreach (var queryBlock in _queryBlockNodes.Values)
+			{
+				if (queryBlock.PrecedingConcatenatedQueryBlock != null || queryBlock.FollowingConcatenatedQueryBlock == null)
+				{
+					continue;
+				}
+
+				var columnCount = queryBlock.Columns.Count - queryBlock.AsteriskColumns.Count - queryBlock.AttachedColumns.Count;
+				var columns = queryBlock.Columns.Where(c => !c.IsAsterisk).Take(columnCount).Select(c => c.ColumnDescription).ToArray();
+				foreach (var concatenatedQueryBlock in queryBlock.AllFollowingConcatenatedQueryBlocks)
+				{
+					var index = 0;
+					foreach (var column in concatenatedQueryBlock.Columns)
+					{
+						if (column.IsAsterisk/* || column.ColumnDescription == null*/)
+						{
+							continue;
+						}
+
+						var outputColumn = columns[index];
+						if (outputColumn == null)
+						{
+							continue;
+						}
+
+						var columnDataType = column.ColumnDescription.DataType;
+						if (columnDataType.FullyQualifiedName == outputColumn.DataType.FullyQualifiedName)
+						{
+							if (columnDataType.Length > outputColumn.DataType.Length)
+							{
+								outputColumn.DataType.Length = columnDataType.Length;
+							}
+							else if (outputColumn.DataType.Length > columnDataType.Length)
+							{
+								columnDataType.Length = outputColumn.DataType.Length;
+							}
+
+							if (column.ColumnDescription.CharacterSize > outputColumn.CharacterSize)
+							{
+								outputColumn.CharacterSize = column.ColumnDescription.CharacterSize;
+							}
+							else if (outputColumn.CharacterSize > column.ColumnDescription.CharacterSize)
+							{
+								column.ColumnDescription.CharacterSize = outputColumn.CharacterSize;
+							}
+						}
+
+						if (++index == columnCount)
+						{
+							break;
+						}
+					}
+				}
+			}
 		}
 
 		private void FindObjectReferences(OracleQueryBlock queryBlock)
@@ -1407,13 +1467,8 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private void ResolveMainObjectReferenceMerge()
 		{
-		    var mergeTarget = Statement.RootNode[0, 0]?[2];
-			if (mergeTarget == null || !String.Equals(mergeTarget.Id, NonTerminals.MergeTarget))
-			{
-				return;
-			}
-
-			var objectIdentifier = mergeTarget[NonTerminals.SchemaObject, Terminals.ObjectIdentifier];
+			var mergeTarget = Statement.RootNode[0, 0]?[NonTerminals.MergeTarget];
+			var objectIdentifier = mergeTarget?[NonTerminals.SchemaObject, Terminals.ObjectIdentifier];
 			if (objectIdentifier == null)
 			{
 				return;
@@ -1438,11 +1493,12 @@ namespace SqlPad.Oracle.SemanticModel
 			else if (MainQueryBlock != null)
 			{
 				mergeSourceReference = MainQueryBlock.SelfObjectReference;
+				mergeSourceReference.RootNode = mergeSource;
 				mergeSourceReference.AliasNode = mergeSource[Terminals.ObjectAlias];
 			}
 
-			var mergeCondition = Statement.RootNode[0, 0][6];
-			if (mergeCondition == null || !String.Equals(mergeCondition.Id, NonTerminals.Condition))
+			var mergeCondition = Statement.RootNode[0, 0][NonTerminals.Condition];
+			if (mergeCondition == null)
 			{
 				return;
 			}

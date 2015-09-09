@@ -2114,6 +2114,16 @@ SELECT * FROM ALL";
 		}
 
 		[Test(Description = @"")]
+		public void TestSuggestionInMergeSubquery()
+		{
+			const string statement =
+@"MERGE INTO EVENTS
+USING (SELECT :EVENT_ID, COUNTER FROM DUAL LEFT JOIN EVENTS ON E) SRC
+ON (EVENTS.ID = SRC.ID)";
+			Assert.DoesNotThrow(() => CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 83));
+		}
+
+		[Test(Description = @"")]
 		public void TestCorrelatedSubqueryColumnSuggestionWhenSameTableInBothSubqueries()
 		{
 			const string statement = @"SELECT * FROM SELECTION WHERE EXISTS (SELECT NULL FROM SELECTION WHERE SELECTION.)";

@@ -9,6 +9,7 @@ using SqlPad.Commands;
 using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.DataDictionary;
 using SqlPad.Oracle.SemanticModel;
+using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle
 {
@@ -70,7 +71,7 @@ namespace SqlPad.Oracle
 			}
 
 			var semanticModel = (OracleStatementSemanticModel)executionContext.DocumentRepository.ValidationModels[statement].SemanticModel;
-			var terminal = statement.GetTerminalAtPosition(executionContext.CaretOffset);
+			var terminal = statement.GetTerminalAtPosition(executionContext.CaretOffset, n => !String.Equals(n.Id, Terminals.Comma) && !String.Equals(n.Id, Terminals.Dot) && !String.Equals(n.Id, Terminals.RightParenthesis));
 			if (terminal == null)
 			{
 				return;
