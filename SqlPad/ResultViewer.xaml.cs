@@ -524,5 +524,17 @@ namespace SqlPad
 			SearchPanel.Visibility = Visibility.Visible;
 			SearchPhraseTextBox.Focus();
 		}
+
+		private void ResultViewerDataGridKeyDownHandler(object sender, KeyEventArgs e)
+		{
+			var reraisedEvent =
+				new KeyEventArgs(e.KeyboardDevice, e.InputSource, e.Timestamp, e.Key)
+				{
+					RoutedEvent = Keyboard.KeyDownEvent,
+					Source = e.OriginalSource
+				};
+
+			_outputViewer.RaiseEvent(reraisedEvent);
+		}
 	}
 }

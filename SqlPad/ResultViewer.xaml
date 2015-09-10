@@ -123,6 +123,7 @@
 		          ItemsSource="{Binding ResultRowItems, IsAsync=True}"
 		          MaxColumnWidth="{Binding ElementName=ResultGrid, Path=ActualWidth}"
 		          BeginningEdit="ResultGridBeginningEditCancelTextInputHandler"
+		          KeyDown="ResultViewerDataGridKeyDownHandler"
 		          SelectedCellsChanged="ResultGridSelectedCellsChangedHandler"
 		          ScrollViewer.ScrollChanged="ResultGridScrollChangedHandler"
 		          VirtualizingStackPanel.CleanUpVirtualizedItem="CleanUpVirtualizedItemHandler"
