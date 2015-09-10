@@ -205,7 +205,7 @@ namespace SqlPad
 		private async Task FetchNextRows(CancellationToken cancellationToken)
 		{
 			Task<IReadOnlyList<object[]>> innerTask = null;
-			var batchSize = StatementExecutionModel.DefaultRowBatchSize - _resultRows.Count % StatementExecutionModel.DefaultRowBatchSize;
+			var batchSize = ConfigurationProvider.Configuration.ResultGrid.FetchRowsBatchSize - _resultRows.Count % ConfigurationProvider.Configuration.ResultGrid.FetchRowsBatchSize;
 			var exception = await App.SafeActionAsync(() => innerTask = _outputViewer.ConnectionAdapter.FetchRecordsAsync(_resultInfo, batchSize, cancellationToken));
 			if (exception != null)
 			{
@@ -277,7 +277,7 @@ namespace SqlPad
 			var executionResult = await _outputViewer.ConnectionAdapter.ExecuteChildStatementAsync(executionModel, cancellationToken);
 			var childReferenceDataSources = await _outputViewer.StatementValidator.ApplyReferenceConstraintsAsync(executionResult, _outputViewer.ConnectionAdapter.DatabaseModel, cancellationToken);
 			var resultInfo = executionResult.ResultInfoColumnHeaders.Keys.Last();
-			var resultSet = await _outputViewer.ConnectionAdapter.FetchRecordsAsync(resultInfo, StatementExecutionModel.DefaultRowBatchSize, cancellationToken);
+			var resultSet = await _outputViewer.ConnectionAdapter.FetchRecordsAsync(resultInfo, ConfigurationProvider.Configuration.ResultGrid.FetchRowsBatchSize, cancellationToken);
 
 			var childRecordDataGrid =
 				new DataGrid

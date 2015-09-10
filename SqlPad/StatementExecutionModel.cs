@@ -17,8 +17,6 @@ namespace SqlPad
 
 	public class StatementExecutionModel
 	{
-		public const int DefaultRowBatchSize = 100;
-
 		public string StatementText { get; set; }
 
 		public IValidationModel ValidationModel { get; set; }

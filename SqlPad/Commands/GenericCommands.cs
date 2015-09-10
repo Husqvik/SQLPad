@@ -44,8 +44,8 @@ namespace SqlPad.Commands
 		public static RoutedCommand FormatStatementAsSingleLine = new RoutedCommand("FormatStatementAsSingleLine", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F, ModifierKeys.Shift | ModifierKeys.Alt) });
 		public static RoutedCommand FindUsages = new RoutedCommand("FindUsages", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F11, ModifierKeys.Alt | ModifierKeys.Shift) });
 		public static RoutedCommand FetchAllRows = new RoutedCommand("FetchAllRows", typeof(DataGrid));
-		public static RoutedCommand CancelUserAction = new RoutedCommand("CancelUserAction", typeof(Grid), new InputGestureCollection { new KeyGesture(Key.Escape) });
-		public static RoutedCommand RefreshDatabaseModel = new RoutedCommand("RefreshDatabaseModel", typeof(Grid), new InputGestureCollection { new KeyGesture(Key.F5) });
+		public static RoutedCommand CancelUserAction = new RoutedCommand("CancelUserAction", typeof(UserControl), new InputGestureCollection { new KeyGesture(Key.Escape) });
+		public static RoutedCommand RefreshDatabaseModel = new RoutedCommand("RefreshDatabaseModel", typeof(UserControl), new InputGestureCollection { new KeyGesture(Key.F5) });
 		public static RoutedCommand CreateNewPage = new RoutedCommand("CreateNewPage", typeof(Window), new InputGestureCollection { new KeyGesture(Key.T, ModifierKeys.Control) });
 		public static RoutedCommand ZoomIn = new RoutedCommand("ZoomIn", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.OemPeriod, ModifierKeys.Control | ModifierKeys.Shift) });
 		public static RoutedCommand ZoomOut = new RoutedCommand("ZoomOut", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.OemComma, ModifierKeys.Control | ModifierKeys.Shift) });

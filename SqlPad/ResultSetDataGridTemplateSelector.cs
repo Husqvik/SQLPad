@@ -115,7 +115,7 @@ namespace SqlPad
 			await _statementValidator.ApplyReferenceConstraintsAsync(executionResult, _connectionAdapter.DatabaseModel, cancellationToken);
 
 			var resultInfo = executionResult.ResultInfoColumnHeaders.Keys.Last();
-			var resultSet = await _connectionAdapter.FetchRecordsAsync(resultInfo, StatementExecutionModel.DefaultRowBatchSize, cancellationToken);
+			var resultSet = await _connectionAdapter.FetchRecordsAsync(resultInfo, ConfigurationProvider.Configuration.ResultGrid.FetchRowsBatchSize, cancellationToken);
 			if (resultSet.Count == 0)
 			{
 				container.Children.Add(new TextBlock { Text = "Record not found. " });

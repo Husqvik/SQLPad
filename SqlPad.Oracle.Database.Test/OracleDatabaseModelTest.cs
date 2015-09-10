@@ -139,7 +139,7 @@ WHERE
 			columnHeaders[0].DatabaseDataType.ShouldBe("Varchar2");
 			columnHeaders[0].Name.ShouldBe("DUMMY");
 
-			var fetchRecordsTask = connectionAdapter.FetchRecordsAsync(resultInfo, StatementExecutionModel.DefaultRowBatchSize, CancellationToken.None);
+			var fetchRecordsTask = connectionAdapter.FetchRecordsAsync(resultInfo, Int32.MaxValue, CancellationToken.None);
 			fetchRecordsTask.Wait();
 
 			connectionAdapter.CanFetch(resultInfo).ShouldBe(false);
@@ -201,7 +201,7 @@ WHERE
 				result.ExecutedSuccessfully.ShouldBe(true);
 				var resultInfo = result.ResultInfoColumnHeaders.Keys.First();
 
-				var fetchRecordsTask = connectionAdapter.FetchRecordsAsync(resultInfo, StatementExecutionModel.DefaultRowBatchSize, CancellationToken.None);
+				var fetchRecordsTask = connectionAdapter.FetchRecordsAsync(resultInfo, Int32.MaxValue, CancellationToken.None);
 				fetchRecordsTask.Wait();
 				var resultSet = fetchRecordsTask.Result;
 				resultSet.Count.ShouldBe(1);
@@ -292,7 +292,7 @@ WHERE
 				columnHeaders[8].DatabaseDataType.ShouldBe("Decimal");
 				columnHeaders[9].DatabaseDataType.ShouldBe("Date");
 
-				var fetchRecordsTask = connectionAdapter.FetchRecordsAsync(resultInfo, StatementExecutionModel.DefaultRowBatchSize, CancellationToken.None);
+				var fetchRecordsTask = connectionAdapter.FetchRecordsAsync(resultInfo, Int32.MaxValue, CancellationToken.None);
 				fetchRecordsTask.Wait();
 				var resultSet = fetchRecordsTask.Result;
 				resultSet.Count.ShouldBe(1);
@@ -393,7 +393,7 @@ WHERE
 				columnHeaders[5].DatabaseDataType.ShouldBe("Decimal");
 				columnHeaders[6].DatabaseDataType.ShouldBe("XmlType");
 
-				var fetchRecordsTask = connectionAdapter.FetchRecordsAsync(resultInfo, StatementExecutionModel.DefaultRowBatchSize, CancellationToken.None);
+				var fetchRecordsTask = connectionAdapter.FetchRecordsAsync(resultInfo, Int32.MaxValue, CancellationToken.None);
 				fetchRecordsTask.Wait();
 				var resultSet = fetchRecordsTask.Result;
 				resultSet.Count.ShouldBe(1);
@@ -486,7 +486,7 @@ END;",
 				var columnHeaders = result.ResultInfoColumnHeaders[resultInfo];
 				columnHeaders.Count.ShouldBe(1);
 
-				var fetchRecordsTask = connectionAdapter.FetchRecordsAsync(resultInfo, StatementExecutionModel.DefaultRowBatchSize, CancellationToken.None);
+				var fetchRecordsTask = connectionAdapter.FetchRecordsAsync(resultInfo, Int32.MaxValue, CancellationToken.None);
 				fetchRecordsTask.Wait();
 				var resultSet = fetchRecordsTask.Result;
 				resultSet.Count.ShouldBe(1);
