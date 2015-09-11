@@ -5981,6 +5981,18 @@ PURGE REPEAT INTERVAL '5' DAY";
 					terminals[13].Id.ShouldBe(Terminals.MathEquals);
 					terminals[14].Id.ShouldBe(Terminals.All);
 				}
+
+				[Test(Description = @"")]
+				public void TestAlterDefaultProfile()
+				{
+					const string statementText = @"ALTER PROFILE DEFAULT LIMIT SESSION_PER_USER 3";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
 			}
 
 			public class AlterRole

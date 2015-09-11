@@ -1521,10 +1521,21 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Profile" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="ObjectIdentifierOrDefault" />
           <Terminal Id="Limit" />
           <NonTerminal Id="ProfileOptionList" />
           <NonTerminal Id="ContainerDatabaseOption" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ObjectIdentifierOrDefault">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Default" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="ObjectIdentifier" />
         </Sequence>
       </Sequences>
     </Rule>

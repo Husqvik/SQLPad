@@ -804,6 +804,7 @@ namespace SqlPad.Oracle
 			public const string ObjectAsAlias = "ObjectAsAlias";
 			public const string ObjectAttributeProperty = "ObjectAttributeProperty";
 			public const string ObjectCommentOption = "ObjectCommentOption";
+			public const string ObjectIdentifierOrDefault = "ObjectIdentifierOrDefault";
 			public const string ObjectPrefix = "ObjectPrefix";
 			public const string ObjectPrivilege = "ObjectPrivilege";
 			public const string ObjectPrivilegeList = "ObjectPrivilegeList";
