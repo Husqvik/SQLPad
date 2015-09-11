@@ -690,7 +690,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					return batchResult;
 				}
 			}
-			catch (OracleException exception)
+			catch (OracleException exception) when(exception.Number != (int)OracleErrorCode.UserInvokedCancellation)
 			{
 				if (currentStatementResult != null)
 				{
@@ -718,13 +718,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 					}
 
 					_databaseModel.Disconnect(exception);
+				}
 
-					throw executionException;
-				}
-				else if (errorCode != OracleErrorCode.UserInvokedCancellation)
-				{
-					throw executionException;
-				}
+				throw executionException;
 			}
 			finally
 			{

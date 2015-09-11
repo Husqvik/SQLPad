@@ -381,7 +381,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 			ResolveReferences();
 
-			//HarmonizeConcatenatedQueryBlockColumnTypes();
+			HarmonizeConcatenatedQueryBlockColumnTypes();
 
 			BuildDmlModel();
 			
@@ -400,13 +400,13 @@ namespace SqlPad.Oracle.SemanticModel
 				}
 
 				var columnCount = queryBlock.Columns.Count - queryBlock.AsteriskColumns.Count - queryBlock.AttachedColumns.Count;
-				var columns = queryBlock.Columns.Where(c => !c.IsAsterisk).Take(columnCount).Select(c => c.ColumnDescription).ToArray();
+				var columns = queryBlock.Columns.Where(c => !c.IsAsterisk).Take(columnCount).ToArray();
 				foreach (var concatenatedQueryBlock in queryBlock.AllFollowingConcatenatedQueryBlocks)
 				{
 					var index = 0;
 					foreach (var column in concatenatedQueryBlock.Columns)
 					{
-						if (column.IsAsterisk/* || column.ColumnDescription == null*/)
+						if (column.IsAsterisk)
 						{
 							continue;
 						}
@@ -418,24 +418,44 @@ namespace SqlPad.Oracle.SemanticModel
 						}
 
 						var columnDataType = column.ColumnDescription.DataType;
-						if (columnDataType.FullyQualifiedName == outputColumn.DataType.FullyQualifiedName)
+						var outputColumnDescription = outputColumn.ColumnDescription;
+						outputColumnDescription.Nullable |= column.ColumnDescription.Nullable;
+
+						if (columnDataType.FullyQualifiedName == outputColumnDescription.DataType.FullyQualifiedName)
 						{
-							if (columnDataType.Length > outputColumn.DataType.Length)
+							if (columnDataType.Length > outputColumnDescription.DataType.Length)
 							{
-								outputColumn.DataType.Length = columnDataType.Length;
+								outputColumnDescription.DataType.Length = columnDataType.Length;
 							}
-							else if (outputColumn.DataType.Length > columnDataType.Length)
+							else if (outputColumnDescription.DataType.Length > columnDataType.Length)
 							{
-								columnDataType.Length = outputColumn.DataType.Length;
+								columnDataType.Length = outputColumnDescription.DataType.Length;
 							}
 
-							if (column.ColumnDescription.CharacterSize > outputColumn.CharacterSize)
+							if (column.ColumnDescription.CharacterSize > outputColumnDescription.CharacterSize)
 							{
-								outputColumn.CharacterSize = column.ColumnDescription.CharacterSize;
+								outputColumnDescription.CharacterSize = column.ColumnDescription.CharacterSize;
 							}
-							else if (outputColumn.CharacterSize > column.ColumnDescription.CharacterSize)
+							else if (outputColumnDescription.CharacterSize > column.ColumnDescription.CharacterSize)
 							{
-								column.ColumnDescription.CharacterSize = outputColumn.CharacterSize;
+								column.ColumnDescription.CharacterSize = outputColumnDescription.CharacterSize;
+							}
+						}
+						else if (String.IsNullOrEmpty(columnDataType.FullyQualifiedName.Name))
+						{
+							var expression = column.RootNode[0, 0];
+							if (expression != null && expression.TerminalCount > 1)
+							{
+								outputColumnDescription.DataType = OracleDataType.Empty;
+								break;
+							}
+						}
+						else if (String.IsNullOrEmpty(outputColumnDescription.DataType.FullyQualifiedName.Name))
+						{
+							var expression = outputColumn.RootNode[0, 0];
+							if (expression != null && expression.TerminalCount == 1 && String.Equals(expression.FirstTerminalNode.Id, Terminals.Null))
+							{
+								outputColumnDescription.DataType = columnDataType;
 							}
 						}
 

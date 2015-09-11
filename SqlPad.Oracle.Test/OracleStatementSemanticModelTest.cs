@@ -661,22 +661,36 @@ SELECT * FROM sampleData";
 			columns[6].ColumnDescription.FullTypeName.ShouldBe("TIMESTAMP(9)");
 		}
 
-		[Test(Description = @""), Ignore]
+		[Test(Description = @"")]
 		public void TestLiteralColumnDataTypeResolutionInConcatenatedQueryBlocks()
 		{
 			const string query1 =
-@"WITH tmp AS (
-	SELECT 'X' C FROM DUAL UNION ALL
-	SELECT 'XX' FROM DUAL
+@"WITH tmp(C1, C2, C3, C4) AS (
+	SELECT 'X', N'X', NULL, 'X' FROM DUAL UNION ALL
+	SELECT 'XX', NULL, DUMMY, DBMS_RANDOM.STRING('X', 16) FROM DUAL
 )
-SELECT C FROM tmp";
+SELECT C1, C2, C3, C4 FROM tmp";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
 
-			semanticModel.MainQueryBlock.Columns.Count.ShouldBe(1);
+			semanticModel.MainQueryBlock.Columns.Count.ShouldBe(4);
+			semanticModel.MainQueryBlock.Columns[0].NormalizedName.ShouldBe("\"C1\"");
 			semanticModel.MainQueryBlock.Columns[0].ColumnDescription.ShouldNotBe(null);
 			semanticModel.MainQueryBlock.Columns[0].ColumnDescription.FullTypeName.ShouldBe("CHAR(2)");
+			semanticModel.MainQueryBlock.Columns[0].ColumnDescription.Nullable.ShouldBe(false);
+			semanticModel.MainQueryBlock.Columns[1].NormalizedName.ShouldBe("\"C2\"");
+			semanticModel.MainQueryBlock.Columns[1].ColumnDescription.ShouldNotBe(null);
+			semanticModel.MainQueryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe("NCHAR(1)");
+			semanticModel.MainQueryBlock.Columns[1].ColumnDescription.Nullable.ShouldBe(true);
+			semanticModel.MainQueryBlock.Columns[2].NormalizedName.ShouldBe("\"C3\"");
+			semanticModel.MainQueryBlock.Columns[2].ColumnDescription.ShouldNotBe(null);
+			semanticModel.MainQueryBlock.Columns[2].ColumnDescription.FullTypeName.ShouldBe("VARCHAR2(1 BYTE)");
+			semanticModel.MainQueryBlock.Columns[2].ColumnDescription.Nullable.ShouldBe(true);
+			semanticModel.MainQueryBlock.Columns[3].NormalizedName.ShouldBe("\"C4\"");
+			semanticModel.MainQueryBlock.Columns[3].ColumnDescription.ShouldNotBe(null);
+			semanticModel.MainQueryBlock.Columns[3].ColumnDescription.FullTypeName.ShouldBe(String.Empty);
+			semanticModel.MainQueryBlock.Columns[3].ColumnDescription.Nullable.ShouldBe(true);
 		}
 
 		[Test(Description = @"")]

@@ -14,7 +14,7 @@ namespace SqlPad
 			new Configuration
 			{
 				dataModelField = new ConfigurationDataModel { DataModelRefreshPeriod = DefaultDataModelRefreshPeriod },
-				resultGridField = new ConfigurationResultGrid()
+				resultGridField = new ConfigurationResultGrid { FetchRowsBatchSize = DefaultRowBatchSize }
 			};
 
 		public void Validate()
