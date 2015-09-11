@@ -690,7 +690,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					return batchResult;
 				}
 			}
-			catch (OracleException exception) when(exception.Number != (int)OracleErrorCode.UserInvokedCancellation)
+			catch (OracleException exception)
 			{
 				if (currentStatementResult != null)
 				{
@@ -719,6 +719,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 					_databaseModel.Disconnect(exception);
 				}
+				else if (errorCode == OracleErrorCode.UserInvokedCancellation)
+				{
+					return batchResult;
+				}
 
 				throw executionException;
 			}
@@ -742,8 +746,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 					_isExecuting = false;
 				}
 			}
-
-			return batchResult;
 		}
 
 		private static async Task<object> GetBindVariableValue(BindVariableModel variable, CancellationToken cancellationToken)
