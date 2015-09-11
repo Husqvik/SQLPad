@@ -5985,7 +5985,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 				[Test(Description = @"")]
 				public void TestAlterDefaultProfile()
 				{
-					const string statementText = @"ALTER PROFILE DEFAULT LIMIT SESSION_PER_USER 3";
+					const string statementText = @"ALTER PROFILE DEFAULT LIMIT SESSIONS_PER_USER 3";
 
 					var result = Parser.Parse(statementText);
 

@@ -1577,7 +1577,7 @@
     <Rule StartingNonTerminal="ResourceParameters">
       <Sequences>
         <Sequence>
-          <Terminal Id="SessionPerUser" />
+          <Terminal Id="SessionsPerUser" />
           <NonTerminal Id="IntegerLiteralOrUnlimitedOrDefault" />
         </Sequence>
         <Sequence>
@@ -19125,7 +19125,7 @@
     <Terminal Id="AnySchema" Value="ANYSCHEMA" />
     <Terminal Id="NonSchema" Value="NONSCHEMA" />
     <Terminal Id="Profile" Value="PROFILE" />
-    <Terminal Id="SessionPerUser" Value="SESSION_PER_USER" />
+    <Terminal Id="SessionsPerUser" Value="SESSIONS_PER_USER" />
     <Terminal Id="CpuPerSession" Value="CPU_PER_SESSION" />
     <Terminal Id="CpuPerCall" Value="CPU_PER_CALL" />
     <Terminal Id="ConnectTime" Value="CONNECT_TIME" />
