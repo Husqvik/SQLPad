@@ -89,7 +89,10 @@ namespace SqlPad.Oracle.DataDictionary
 					return null;
 				}
 
-				definitionIndex++;
+				if (typeIndex > 0)
+				{
+					definitionIndex++;
+				}
 			}
 
 			return dataTypes.AsReadOnly();

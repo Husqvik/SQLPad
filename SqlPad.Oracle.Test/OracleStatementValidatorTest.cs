@@ -2328,6 +2328,30 @@ FROM (
 		}
 
 		[Test(Description = @"")]
+		public void TestUnpivotInValueDataTypeMismatchWithNullValue()
+		{
+			const string sqlText =
+@"SELECT
+	*
+FROM (
+	SELECT 0 VAL1, 0 VAL2 FROM DUAL)
+	UNPIVOT (
+		VAL 
+	FOR PLACEHOLDER IN (
+		VAL1 AS NULL,
+		VAL2 AS 0)
+	)";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
 		public void TestModelBuildWithNonexistingUnpivotColumnReference()
 		{
 			const string sqlText =
