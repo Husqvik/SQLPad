@@ -798,6 +798,7 @@ namespace SqlPad.Oracle
 			public const string NotNull = "NotNull";
 			public const string NullIfOrNoNullIf = "NullIfOrNoNullIf";
 			public const string NullNaNOrInfinite = "NullNaNOrInfinite";
+			public const string NullOrStringOrNumberLiteralOrParenthesisEnclosedStringOrIntegerLiteralList = "NullOrStringOrNumberLiteralOrParenthesisEnclosedStringOrIntegerLiteralList";
 			public const string NullsClause = "NullsClause";
 			public const string NumericOrDecimalOrDec = "NumericOrDecimalOrDec";
 			public const string ObjectAccessExpression = "ObjectAccessExpression";
@@ -1199,7 +1200,6 @@ namespace SqlPad.Oracle
 			public const string StringOrNumberLiteral = "StringOrNumberLiteral";
 			public const string StringOrNumberLiteralList = "StringOrNumberLiteralList";
 			public const string StringOrNumberLiteralListChained = "StringOrNumberLiteralListChained";
-			public const string StringOrNumberLiteralOrParenthesisEnclosedStringOrIntegerLiteralList = "StringOrNumberLiteralOrParenthesisEnclosedStringOrIntegerLiteralList";
 			public const string SubpartitionByHash = "SubpartitionByHash";
 			public const string SubpartitionByList = "SubpartitionByList";
 			public const string SubpartitionByRange = "SubpartitionByRange";
@@ -3265,7 +3265,7 @@ namespace SqlPad.Oracle
 			
 		private static readonly HashSet<string> IdentifiersInternal = new HashSet<string> { Terminals.BindVariableIdentifier, Terminals.CursorIdentifier, Terminals.DatabaseLinkIdentifier, Terminals.DataTypeIdentifier, Terminals.ExceptionIdentifier, Terminals.Identifier, Terminals.IndicatorVariableIdentifier, Terminals.LabelIdentifier, Terminals.MemberFunctionIdentifier, Terminals.ObjectIdentifier, Terminals.ObjectIdentifierIndex, Terminals.ParameterIdentifier, Terminals.PlSqlIdentifier, Terminals.SchemaIdentifier, Terminals.TypeIdentifier };
 
-		internal static readonly ICollection<string> ReservedWordsSql = new HashSet<string> { "ACCESS", "ADD", "ALL", "ALTER", "AND", "ANY", "ASC", "AUDIT", "BETWEEN", "BY", "CLUSTER", "COLUMN", "COMMENT", "COMPRESS", "CONNECT", "CREATE", "CURRENT", "DATE", "DECIMAL", "DEFAULT", "DELETE", "DESC", "DISTINCT", "DROP", "ELSE", "EXCLUSIVE", "EXISTS", "FILE", "FLOAT", "FOR", "FROM", "GRANT", "GROUP", "HAVING", "CHAR", "CHECK", "IDENTIFIED", "IMMEDIATE", "IN", "INDEX", "INSERT", "INTEGER", "INTERSECT", "INTO", "IS", "LEVEL", "LIKE", "LOCK", "LONG", "MINUS", "MODE", "MODIFY", "NOAUDIT", "NOCOMPRESS", "NOT", "NOWAIT", "NULL", "NUMBER", "OF", "OFFLINE", "ON", "OPTION", "OR", "ORDER", "PCTFREE", "PRIOR", "PUBLIC", "RAW", "RENAME", "RESOURCE", "REVOKE", "ROW", "ROWID", "ROWNUM", "ROWS", "SELECT", "SET", "SHARE", "SIZE", "SMALLINT", "SOME", "START", "SYNONYM", "SYSDATE", "TABLE", "THEN", "TO", "TRIGGER", "UNION", "UNIQUE", "UPDATE", "USER", "VALUES", "VARCHAR", "VARCHAR2", "VIEW", "WHERE", "WITH" };
+		internal static readonly ICollection<string> ReservedWordsSql = new HashSet<string> { "ACCESS", "ADD", "ALL", "ALTER", "AND", "ANY", "ASC", "AUDIT", "BETWEEN", "BY", "CLUSTER", "COLUMN", "COMMENT", "COMPRESS", "CONNECT", "CREATE", "CURRENT", "DATE", "DECIMAL", "DEFAULT", "DELETE", "DESC", "DISTINCT", "DROP", "ELSE", "EXCLUSIVE", "EXISTS", "FILE", "FLOAT", "FOR", "FROM", "GRANT", "GROUP", "HAVING", "CHAR", "CHECK", "IDENTIFIED", "IMMEDIATE", "IN", "INDEX", "INITIAL", "INSERT", "INTEGER", "INTERSECT", "INTO", "IS", "LEVEL", "LIKE", "LOCK", "LONG", "MINUS", "MODE", "MODIFY", "NOAUDIT", "NOCOMPRESS", "NOT", "NOWAIT", "NULL", "NUMBER", "OF", "OFFLINE", "ON", "OPTION", "OR", "ORDER", "PCTFREE", "PRIOR", "PUBLIC", "RAW", "RENAME", "RESOURCE", "REVOKE", "ROW", "ROWID", "ROWNUM", "ROWS", "SELECT", "SET", "SHARE", "SIZE", "SMALLINT", "SOME", "START", "SYNONYM", "SYSDATE", "TABLE", "THEN", "TO", "TRIGGER", "UNION", "UNIQUE", "UPDATE", "USER", "VALUES", "VARCHAR", "VARCHAR2", "VIEW", "WHERE", "WITH" };
 		
 		internal static readonly ICollection<string> ReservedWordsPlSqlDeclaration = new HashSet<string> { "BEGIN", "CASE", "DECLARE", "END", "EXCEPTION", "IF", "WHEN" };
 		

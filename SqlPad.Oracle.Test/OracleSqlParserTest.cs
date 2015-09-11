@@ -903,6 +903,16 @@ namespace SqlPad.Oracle.Test
 			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
+		[Test(Description = @"Tests upivot clause with NULL value. ")]
+		public void TestUnpivotClauseWithNullValue()
+		{
+			const string query1 = @"SELECT * FROM DUAL UNPIVOT (X FOR Y IN (DUMMY AS NULL))";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
+		}
+
 		[Test(Description = @"Tests table reference parenthesis encapsulation. ")]
 		public void TestTableReferenceParenthesisEncapsulation()
 		{

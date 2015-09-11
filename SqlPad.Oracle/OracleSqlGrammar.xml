@@ -8256,13 +8256,16 @@
       <Sequences>
         <Sequence>
           <Terminal Id="As" />
-          <NonTerminal Id="StringOrNumberLiteralOrParenthesisEnclosedStringOrIntegerLiteralList" />
+          <NonTerminal Id="NullOrStringOrNumberLiteralOrParenthesisEnclosedStringOrIntegerLiteralList" />
         </Sequence>
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="StringOrNumberLiteralOrParenthesisEnclosedStringOrIntegerLiteralList">
+    <Rule StartingNonTerminal="NullOrStringOrNumberLiteralOrParenthesisEnclosedStringOrIntegerLiteralList">
       <Sequences>
+        <Sequence>
+          <Terminal Id="Null" />
+        </Sequence>
         <Sequence>
           <NonTerminal Id="StringOrNumberLiteral" />
         </Sequence>
@@ -18789,7 +18792,7 @@
     <Terminal Id="Storage" Value="STORAGE" />
     <Terminal Id="Logging" Value="LOGGING" />
     <Terminal Id="NoLogging" Value="NOLOGGING" />
-    <Terminal Id="Initial" Value="INITIAL" />
+    <Terminal Id="Initial" Value="INITIAL" ReservedWord="Sql" />
     <Terminal Id="MaximumSize" Value="MAXSIZE" />
     <Terminal Id="Encrypt" Value="ENCRYPT" />
     <Terminal Id="FileSystemLikeLogging" Value="FILESYSTEM_LIKE_LOGGING" />

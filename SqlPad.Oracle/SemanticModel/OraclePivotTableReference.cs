@@ -188,7 +188,7 @@ namespace SqlPad.Oracle.SemanticModel
 						foreach (var columnTransformation in columnTransformations)
 						{
 							unpivotedColumns.AddRange(columnTransformation.GetDescendants(Terminals.Identifier).Select(t => t.Token.Value.ToQuotedIdentifier()));
-							unpivotColumnSelectorValues.AddIfNotNull(columnTransformation[NonTerminals.UnpivotValueSelector, NonTerminals.StringOrNumberLiteralOrParenthesisEnclosedStringOrIntegerLiteralList]);
+							unpivotColumnSelectorValues.AddIfNotNull(columnTransformation[NonTerminals.UnpivotValueSelector, NonTerminals.NullOrStringOrNumberLiteralOrParenthesisEnclosedStringOrIntegerLiteralList]);
 							unpivotColumnSources.AddIfNotNull(columnTransformation[NonTerminals.IdentifierOrParenthesisEnclosedIdentifierList]);
 						}
 

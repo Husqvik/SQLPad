@@ -40,9 +40,9 @@ namespace SqlPad.Oracle.DataDictionary
 			var definitionIndex = 0;
 			foreach (var node in nodes)
 			{
-				if (!String.Equals(node.Id, NonTerminals.StringOrNumberLiteralOrParenthesisEnclosedStringOrIntegerLiteralList))
+				if (!String.Equals(node.Id, NonTerminals.NullOrStringOrNumberLiteralOrParenthesisEnclosedStringOrIntegerLiteralList))
 				{
-					throw new ArgumentException($"All nodes must have ID of {nameof(NonTerminals.StringOrNumberLiteralOrParenthesisEnclosedStringOrIntegerLiteralList)}", nameof(nodes));
+					throw new ArgumentException($"All nodes must have ID of {nameof(NonTerminals.NullOrStringOrNumberLiteralOrParenthesisEnclosedStringOrIntegerLiteralList)}", nameof(nodes));
 				}
 
 				var literals = node.GetDescendants(Terminals.StringLiteral, Terminals.NumberLiteral);
