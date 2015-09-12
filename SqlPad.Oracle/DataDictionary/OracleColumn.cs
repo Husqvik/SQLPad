@@ -2,7 +2,7 @@
 
 namespace SqlPad.Oracle.DataDictionary
 {
-	[DebuggerDisplay("OracleColumn (Name={Name}; Type={FullTypeName})")]
+	[DebuggerDisplay("OracleColumn (Name={Name}; Type={FullTypeName}; Nullable={Nullable})")]
 	public class OracleColumn
 	{
 		private const string ColumnNameColumnValue = "\"COLUMN_VALUE\"";

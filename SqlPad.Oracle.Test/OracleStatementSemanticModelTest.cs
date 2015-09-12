@@ -2559,6 +2559,80 @@ FROM (
 		}
 
 		[Test(Description = @"")]
+		public void TestUnpivotTableColumnNullability()
+		{
+			const string query1 =
+@"SELECT
+	*
+FROM
+	dual
+	UNPIVOT (
+		x FOR c IN (
+			dummy AS NULL,
+			dummy AS 'X'
+		)
+	)
+WHERE c IS NULL";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.MainQueryBlock.ObjectReferences.Count.ShouldBe(1);
+			var unpivotTableReference = (OraclePivotTableReference)semanticModel.MainQueryBlock.ObjectReferences.Single();
+			unpivotTableReference.Columns.Count.ShouldBe(2);
+			unpivotTableReference.Columns[0].Name.ShouldBe("\"C\"");
+			unpivotTableReference.Columns[0].Nullable.ShouldBe(true);
+		}
+
+		[Test(Description = @"")]
+		public void TestModelBuildWhileTypingIncludeNullsInUnpivotClause()
+		{
+			const string query1 =
+@"SELECT
+	*
+FROM
+	dual
+	UNPIVOT INCLUDE N (
+		x FOR c IN (
+			dummy AS 'X'
+		)
+	)";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+
+			Assert.DoesNotThrow(() => OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel));
+		}
+
+		[Test(Description = @"")]
+		public void TestUnpivotTableWithAllowedNulls()
+		{
+			const string query1 =
+@"SELECT
+	*
+FROM
+	dual
+	UNPIVOT INCLUDE NULLS (
+		x FOR c IN (
+			dummy AS 'X'
+		)
+	)
+WHERE c IS NULL";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.MainQueryBlock.ObjectReferences.Count.ShouldBe(1);
+			var unpivotTableReference = (OraclePivotTableReference)semanticModel.MainQueryBlock.ObjectReferences.Single();
+			unpivotTableReference.Columns.Count.ShouldBe(2);
+			unpivotTableReference.Columns[0].Name.ShouldBe("\"C\"");
+			unpivotTableReference.Columns[0].Nullable.ShouldBe(true);
+		}
+
+		[Test(Description = @"")]
 		public void TestModelBuildWhenTypingUnpivotClause()
 		{
 			const string query1 =

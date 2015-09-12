@@ -185,10 +185,17 @@ namespace SqlPad.Oracle.SemanticModel
 						var unpivotedColumns = new HashSet<string>();
 						var unpivotColumnSelectorValues = new List<StatementGrammarNode>();
 						var columnTransformations = PivotClause[NonTerminals.UnpivotInClause].GetDescendants(NonTerminals.UnpivotValueToColumnTransformationList);
+						var groupingColumnsNullable = false;
 						foreach (var columnTransformation in columnTransformations)
 						{
 							unpivotedColumns.AddRange(columnTransformation.GetDescendants(Terminals.Identifier).Select(t => t.Token.Value.ToQuotedIdentifier()));
-							unpivotColumnSelectorValues.AddIfNotNull(columnTransformation[NonTerminals.UnpivotValueSelector, NonTerminals.NullOrStringOrNumberLiteralOrParenthesisEnclosedStringOrIntegerLiteralList]);
+							var columnSelectorValue = columnTransformation[NonTerminals.UnpivotValueSelector, NonTerminals.NullOrStringOrNumberLiteralOrParenthesisEnclosedStringOrIntegerLiteralList];
+							if (columnSelectorValue != null)
+							{
+								unpivotColumnSelectorValues.Add(columnSelectorValue);
+								groupingColumnsNullable |= columnSelectorValue.TerminalCount == 1 || String.Equals(columnSelectorValue.FirstTerminalNode.Id, Terminals.Null);
+							}
+
 							unpivotColumnSources.AddIfNotNull(columnTransformation[NonTerminals.IdentifierOrParenthesisEnclosedIdentifierList]);
 						}
 
@@ -202,11 +209,14 @@ namespace SqlPad.Oracle.SemanticModel
 							.Where(c => !unpivotedColumns.Contains(c.Name))
 							.Select(c => c.Clone()));
 
+						groupingColumnsNullable |= PivotClause[NonTerminals.UnpivotNullsClause, NonTerminals.IncludeOrExclude, Terminals.Include] != null;
+
 						columns.AddRange(groupingColumns.Select(
 							(c, i) =>
 								new OracleColumn
 								{
 									Name = c,
+									Nullable = groupingColumnsNullable,
 									DataType = groupingColumns.Count == unpivotColumnDataTypes?.Count
 										? unpivotColumnDataTypes[i]
 										: OracleDataType.Empty
