@@ -288,12 +288,14 @@ namespace SqlPad
 		{
 			if (_lockFile == null)
 			{
-				Trace.WriteLine("Lock file has not been ackquired. Work document collection cannot be saved. ");
+				Trace.WriteLine("Lock file has not been acquired. Work document collection cannot be saved. ");
 				return;
 			}
 
 			lock (Instance)
 			{
+				CleanEmptyBindVariables();
+
 				_allowBackupOverwrite &= File.Exists(_fileName);
 				if (_allowBackupOverwrite)
 				{
@@ -308,6 +310,20 @@ namespace SqlPad
 				if (_allowBackupOverwrite)
 				{
 					File.Delete(_backupFileName);
+				}
+			}
+		}
+
+		private static void CleanEmptyBindVariables()
+		{
+			foreach (var configuration in Instance._databaseProviderConfigurations.Values)
+			{
+				foreach (var kvp in configuration.BindVariablesInternal.ToArray())
+				{
+					if (kvp.Value.Value == null || Equals(kvp.Value.Value, String.Empty))
+					{
+						configuration.BindVariablesInternal.Remove(kvp.Key);
+					}
 				}
 			}
 		}

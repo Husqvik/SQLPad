@@ -31,10 +31,13 @@ namespace SqlPad.Oracle
 			if (statement != null)
 			{
 				currentNode = statement.GetTerminalAtPosition(cursorPosition)
-				                  ?? statement.GetNearestTerminalToPosition(cursorPosition);
+				              ?? statement.GetNearestTerminalToPosition(cursorPosition);
 			}
 
-			if (currentNode != null && String.Equals(currentNode.Id, OracleGrammarDescription.Terminals.RightParenthesis) && currentNode.PrecedingTerminal?.PrecedingTerminal != null)
+			if (currentNode != null &&
+				String.Equals(currentNode.Id, OracleGrammarDescription.Terminals.RightParenthesis) &&
+				!String.Equals(currentNode.ParentNode.Id, OracleGrammarDescription.NonTerminals.CommonTableExpression) &&
+				currentNode.PrecedingTerminal?.PrecedingTerminal != null)
 			{
 				currentNode = currentNode.PrecedingTerminal.PrecedingTerminal;
 			}
