@@ -292,9 +292,21 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			try
 			{
-				var command = ReinitializeResultInfo(resultInfo);
-				var dataReader = await command.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
-				_commandReaders[resultInfo] = new CommandReader { Command = command, Reader = dataReader };
+				var commandReader = ReinitializeResultInfo(resultInfo);
+				OracleDataReader dataReader;
+				if (commandReader.RefCursorInfo.Parameter != null || commandReader.RefCursorInfo.ImplicitCursorIndex.HasValue)
+				{
+					await commandReader.Command.ExecuteNonQueryAsynchronous(cancellationToken);
+					dataReader = commandReader.RefCursorInfo.Parameter != null
+						? ((OracleRefCursor)commandReader.RefCursorInfo.Parameter.Value).GetDataReader()
+						: commandReader.Command.ImplicitRefCursors[commandReader.RefCursorInfo.ImplicitCursorIndex.Value].GetDataReader();
+				}
+				else
+				{
+					dataReader = await commandReader.Command.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
+				}
+
+				_commandReaders[resultInfo] = new CommandReader { Command = commandReader.Command, Reader = dataReader, RefCursorInfo = commandReader.RefCursorInfo };
 				var columnHeaders = GetColumnHeadersFromReader(dataReader);
 				_resultInfoColumnHeaders[resultInfo] = columnHeaders;
 
@@ -311,7 +323,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 		}
 
-		private OracleCommand ReinitializeResultInfo(ResultInfo resultInfo)
+		private CommandReader ReinitializeResultInfo(ResultInfo resultInfo)
 		{
 			var commandReader = _commandReaders[resultInfo];
 			commandReader.Reader.Dispose();
@@ -320,7 +332,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var commandText = command.CommandText;
 			command.CommandText = null;
 			command.CommandText = commandText;
-			return command;
+			return commandReader;
 		}
 
 		public override async Task<StatementExecutionResult> ExecuteChildStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
@@ -696,6 +708,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 					}
 					else
 					{
+						if (isPlSql)
+						{
+							throw new InvalidOperationException("Debugging is not supported for PL/SQL fraction. ");
+						}
+
 						currentStatementResult.ExecutedAt = DateTime.Now;
 						var dataReader = await userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
 						currentStatementResult.Duration = DateTime.Now - currentStatementResult.ExecutedAt;
@@ -888,7 +905,14 @@ namespace SqlPad.Oracle.DatabaseConnection
 				var refCursor = parameter.Value as OracleRefCursor;
 				if (refCursor != null)
 				{
-					yield return AcquireRefCursor(userCommand, refCursor, parameter.ParameterName);
+					var refCursorInfo =
+						new RefCursorInfo
+						{
+							CursorName = parameter.ParameterName,
+							Parameter = parameter
+						};
+
+					yield return AcquireRefCursor(userCommand, refCursor, refCursorInfo);
 				}
 				else
 				{
@@ -909,16 +933,23 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			for (var i = 0; i < command.ImplicitRefCursors.Length; i++)
 			{
-				yield return AcquireRefCursor(command, command.ImplicitRefCursors[i], $"Implicit cursor {i + 1}");
+				var cursorInfo =
+					new RefCursorInfo
+					{
+						CursorName = $"Implicit cursor {i + 1}",
+						ImplicitCursorIndex = i
+					};
+
+				yield return AcquireRefCursor(command, command.ImplicitRefCursors[i], cursorInfo);
 			}
 		}
 
-		private KeyValuePair<ResultInfo, IReadOnlyList<ColumnHeader>> AcquireRefCursor(OracleCommand command, OracleRefCursor refCursor, string cursorName)
+		private KeyValuePair<ResultInfo, IReadOnlyList<ColumnHeader>> AcquireRefCursor(OracleCommand command, OracleRefCursor refCursor, RefCursorInfo refCursorInfo)
 		{
 			var reader = refCursor.GetDataReader();
-			var resultInfo = new ResultInfo($"RefCursor{reader.GetHashCode()}", cursorName, ResultIdentifierType.UserDefined);
+			var resultInfo = new ResultInfo($"RefCursor{reader.GetHashCode()}", refCursorInfo.CursorName, ResultIdentifierType.UserDefined);
 
-			_commandReaders.Add(resultInfo, new CommandReader { Reader = reader, Command = command } );
+			_commandReaders.Add(resultInfo, new CommandReader { Reader = reader, Command = command, RefCursorInfo = refCursorInfo } );
 			return new KeyValuePair<ResultInfo, IReadOnlyList<ColumnHeader>>(resultInfo, GetColumnHeadersFromReader(reader));
 		}
 
@@ -1033,12 +1064,20 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			public OracleDataReader Reader;
 			public OracleCommand Command;
+			public RefCursorInfo RefCursorInfo;
 
 			public void Dispose()
 			{
 				Reader.Dispose();
 				Command.Dispose();
 			}
+		}
+
+		private struct RefCursorInfo
+		{
+			public string CursorName;
+			public OracleParameter Parameter;
+			public int? ImplicitCursorIndex;
 		}
 	}
 }
