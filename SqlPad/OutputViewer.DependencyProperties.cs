@@ -8,19 +8,19 @@ namespace SqlPad
 	public partial class OutputViewer
 	{
 		#region dependency properties registration
-		public static readonly DependencyProperty ShowAllSessionExecutionStatisticsProperty = DependencyProperty.Register(nameof(ShowAllSessionExecutionStatistics), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(ShowAllSessionExecutionStatisticsPropertyChangedCallbackHandler));
-		public static readonly DependencyProperty EnableDatabaseOutputProperty = DependencyProperty.Register(nameof(EnableDatabaseOutput), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
-		public static readonly DependencyProperty IsPinnedProperty = DependencyProperty.Register(nameof(IsPinned), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
-		public static readonly DependencyProperty EnableChildReferenceDataSourcesProperty = DependencyProperty.Register(nameof(EnableChildReferenceDataSources), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
-		public static readonly DependencyProperty TitleProperty = DependencyProperty.Register(nameof(Title), typeof(string), typeof(OutputViewer), new FrameworkPropertyMetadata(TitlePropertyChangedCallbackHandler));
-		public static readonly DependencyProperty DatabaseOutputProperty = DependencyProperty.Register(nameof(DatabaseOutput), typeof(string), typeof(OutputViewer), new FrameworkPropertyMetadata(String.Empty));
-		public static readonly DependencyProperty ExecutionLogProperty = DependencyProperty.Register(nameof(ExecutionLog), typeof(string), typeof(OutputViewer), new FrameworkPropertyMetadata(String.Empty));
-		public static readonly DependencyProperty ActiveResultViewerProperty = DependencyProperty.Register(nameof(ActiveResultViewer), typeof(ResultViewer), typeof(OutputViewer), new FrameworkPropertyMetadata());
+		public static readonly DependencyProperty ShowAllSessionExecutionStatisticsProperty = DependencyProperty.Register(nameof(ShowAllSessionExecutionStatistics), typeof(bool), typeof(OutputViewer), new UIPropertyMetadata(ShowAllSessionExecutionStatisticsPropertyChangedCallbackHandler));
+		public static readonly DependencyProperty EnableDatabaseOutputProperty = DependencyProperty.Register(nameof(EnableDatabaseOutput), typeof(bool), typeof(OutputViewer), new UIPropertyMetadata(false));
+		public static readonly DependencyProperty IsPinnedProperty = DependencyProperty.Register(nameof(IsPinned), typeof(bool), typeof(OutputViewer), new UIPropertyMetadata(false));
+		public static readonly DependencyProperty EnableChildReferenceDataSourcesProperty = DependencyProperty.Register(nameof(EnableChildReferenceDataSources), typeof(bool), typeof(OutputViewer), new UIPropertyMetadata(false));
+		public static readonly DependencyProperty TitleProperty = DependencyProperty.Register(nameof(Title), typeof(string), typeof(OutputViewer), new UIPropertyMetadata(TitlePropertyChangedCallbackHandler));
+		public static readonly DependencyProperty DatabaseOutputProperty = DependencyProperty.Register(nameof(DatabaseOutput), typeof(string), typeof(OutputViewer), new UIPropertyMetadata(String.Empty));
+		public static readonly DependencyProperty ExecutionLogProperty = DependencyProperty.Register(nameof(ExecutionLog), typeof(string), typeof(OutputViewer), new UIPropertyMetadata(String.Empty));
+		public static readonly DependencyProperty ActiveResultViewerProperty = DependencyProperty.Register(nameof(ActiveResultViewer), typeof(ResultViewer), typeof(OutputViewer), new UIPropertyMetadata());
 
-		public static readonly DependencyProperty IsDebuggerControlVisibleProperty = DependencyProperty.Register(nameof(IsDebuggerControlVisible), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
-		public static readonly DependencyProperty IsDebuggerControlEnabledProperty = DependencyProperty.Register(nameof(IsDebuggerControlEnabled), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(true));
-		public static readonly DependencyProperty IsTransactionControlEnabledProperty = DependencyProperty.Register(nameof(IsTransactionControlEnabled), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(true));
-		public static readonly DependencyProperty HasActiveTransactionProperty = DependencyProperty.Register(nameof(HasActiveTransaction), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(false));
+		public static readonly DependencyProperty IsDebuggerControlVisibleProperty = DependencyProperty.Register(nameof(IsDebuggerControlVisible), typeof(bool), typeof(OutputViewer), new UIPropertyMetadata(false));
+		public static readonly DependencyProperty IsDebuggerControlEnabledProperty = DependencyProperty.Register(nameof(IsDebuggerControlEnabled), typeof(bool), typeof(OutputViewer), new UIPropertyMetadata(true));
+		public static readonly DependencyProperty IsTransactionControlEnabledProperty = DependencyProperty.Register(nameof(IsTransactionControlEnabled), typeof(bool), typeof(OutputViewer), new UIPropertyMetadata(true));
+		public static readonly DependencyProperty HasActiveTransactionProperty = DependencyProperty.Register(nameof(HasActiveTransaction), typeof(bool), typeof(OutputViewer), new UIPropertyMetadata(false));
 		#endregion
 
 		#region dependency property accessors

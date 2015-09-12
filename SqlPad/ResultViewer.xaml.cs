@@ -14,6 +14,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using Microsoft.Win32;
 using SqlPad.DataExport;
 using SqlPad.FindReplace;
@@ -23,14 +24,16 @@ namespace SqlPad
 	public partial class ResultViewer
 	{
 		#region dependency properties registration
-		public static readonly DependencyProperty SelectedCellNumericInfoVisibilityProperty = DependencyProperty.Register(nameof(SelectedCellNumericInfoVisibility), typeof(Visibility), typeof(ResultViewer), new FrameworkPropertyMetadata(Visibility.Collapsed));
-		public static readonly DependencyProperty SelectedCellInfoVisibilityProperty = DependencyProperty.Register(nameof(SelectedCellInfoVisibility), typeof(Visibility), typeof(ResultViewer), new FrameworkPropertyMetadata(Visibility.Collapsed));
-		public static readonly DependencyProperty SelectedCellValueCountProperty = DependencyProperty.Register(nameof(SelectedCellValueCount), typeof(int), typeof(ResultViewer), new FrameworkPropertyMetadata(0));
-		public static readonly DependencyProperty SelectedCellSumProperty = DependencyProperty.Register(nameof(SelectedCellSum), typeof(decimal), typeof(ResultViewer), new FrameworkPropertyMetadata(0m));
-		public static readonly DependencyProperty SelectedCellAverageProperty = DependencyProperty.Register(nameof(SelectedCellAverage), typeof(decimal), typeof(ResultViewer), new FrameworkPropertyMetadata(0m));
-		public static readonly DependencyProperty SelectedCellMinProperty = DependencyProperty.Register(nameof(SelectedCellMin), typeof(decimal), typeof(ResultViewer), new FrameworkPropertyMetadata(0m));
-		public static readonly DependencyProperty SelectedCellMaxProperty = DependencyProperty.Register(nameof(SelectedCellMax), typeof(decimal), typeof(ResultViewer), new FrameworkPropertyMetadata(0m));
-		public static readonly DependencyProperty SelectedRowIndexProperty = DependencyProperty.Register(nameof(SelectedRowIndex), typeof(int), typeof(ResultViewer), new FrameworkPropertyMetadata(0));
+		public static readonly DependencyProperty SelectedCellNumericInfoVisibilityProperty = DependencyProperty.Register(nameof(SelectedCellNumericInfoVisibility), typeof(Visibility), typeof(ResultViewer), new UIPropertyMetadata(Visibility.Collapsed));
+		public static readonly DependencyProperty SelectedCellInfoVisibilityProperty = DependencyProperty.Register(nameof(SelectedCellInfoVisibility), typeof(Visibility), typeof(ResultViewer), new UIPropertyMetadata(Visibility.Collapsed));
+		public static readonly DependencyProperty SelectedCellValueCountProperty = DependencyProperty.Register(nameof(SelectedCellValueCount), typeof(int), typeof(ResultViewer), new UIPropertyMetadata(0));
+		public static readonly DependencyProperty SelectedCellSumProperty = DependencyProperty.Register(nameof(SelectedCellSum), typeof(decimal), typeof(ResultViewer), new UIPropertyMetadata(0m));
+		public static readonly DependencyProperty SelectedCellAverageProperty = DependencyProperty.Register(nameof(SelectedCellAverage), typeof(decimal), typeof(ResultViewer), new UIPropertyMetadata(0m));
+		public static readonly DependencyProperty SelectedCellMinProperty = DependencyProperty.Register(nameof(SelectedCellMin), typeof(decimal), typeof(ResultViewer), new UIPropertyMetadata(0m));
+		public static readonly DependencyProperty SelectedCellMaxProperty = DependencyProperty.Register(nameof(SelectedCellMax), typeof(decimal), typeof(ResultViewer), new UIPropertyMetadata(0m));
+		public static readonly DependencyProperty SelectedRowIndexProperty = DependencyProperty.Register(nameof(SelectedRowIndex), typeof(int), typeof(ResultViewer), new UIPropertyMetadata(0));
+		public static readonly DependencyProperty AutoRefreshIntervalProperty = DependencyProperty.Register(nameof(AutoRefreshInterval), typeof(TimeSpan), typeof(ResultViewer), new UIPropertyMetadata(TimeSpan.FromSeconds(10), AutoRefreshIntervalChangedCallbackHandler));
+		public static readonly DependencyProperty AutoRefreshEnabledProperty = DependencyProperty.Register(nameof(AutoRefreshEnabled), typeof(bool), typeof(ResultViewer), new UIPropertyMetadata(false, AutoRefreshEnabledChangedCallbackHandler));
 		#endregion
 
 		#region dependency property accessors
@@ -89,10 +92,47 @@ namespace SqlPad
 			get { return (int)GetValue(SelectedRowIndexProperty); }
 			private set { SetValue(SelectedRowIndexProperty, value); }
 		}
+
+		[Bindable(true)]
+		public TimeSpan AutoRefreshInterval
+		{
+			get { return (TimeSpan)GetValue(AutoRefreshIntervalProperty); }
+			set { SetValue(AutoRefreshIntervalProperty, value); }
+		}
+
+		private static void AutoRefreshIntervalChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
+		{
+			var interval = (TimeSpan)args.NewValue;
+			((ResultViewer)dependencyObject)._refreshTimer.Interval = interval.TotalSeconds > 1
+				? interval
+				: TimeSpan.FromSeconds(1);
+		}
+
+		[Bindable(true)]
+		public bool AutoRefreshEnabled
+		{
+			get { return (bool)GetValue(AutoRefreshEnabledProperty); }
+			set { SetValue(AutoRefreshEnabledProperty, value); }
+		}
+
+		private static void AutoRefreshEnabledChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
+		{
+			var timer = ((ResultViewer)dependencyObject)._refreshTimer;
+			var enable = (bool)args.NewValue;
+			if (enable)
+			{
+				timer.Start();
+			}
+			else
+			{
+				timer.Stop();
+			}
+		}
 		#endregion
 
 		private readonly OutputViewer _outputViewer;
 		private readonly ResultInfo _resultInfo;
+		private readonly DispatcherTimer _refreshTimer;
 		private readonly ObservableCollection<object[]> _resultRows = new ObservableCollection<object[]>();
 		private readonly StatementExecutionResult _executionResult;
 
@@ -126,18 +166,27 @@ namespace SqlPad
 				};
 
 			header.MouseEnter += DataGridTabHeaderMouseEnterHandler;
+
+			_refreshTimer = new DispatcherTimer(DispatcherPriority.Normal, Dispatcher) { Interval = AutoRefreshInterval };
+			_refreshTimer.Tick += RefreshTimerTickHandler;
 		}
 
-		private async void RefreshHandler(object sender, ExecutedRoutedEventArgs args)
+		private async void RefreshTimerTickHandler(object sender, EventArgs eventArgs)
 		{
-			await _outputViewer.ExecuteUsingCancellationToken(
-				async ct =>
-				{
-					_columnHeaders = await _outputViewer.ConnectionAdapter.RefreshResult(_resultInfo, ct);
-					_resultRows.Clear();
-					await ApplyReferenceConstraints(ct);
-					await FetchNextRows(ct);
-				});
+			if (IsBusy)
+			{
+				return;
+			}
+
+			await App.SafeActionAsync(async () =>
+				await _outputViewer.ExecuteUsingCancellationToken(
+					async ct =>
+					{
+						_columnHeaders = await _outputViewer.ConnectionAdapter.RefreshResult(_resultInfo, ct);
+						_resultRows.Clear();
+						await ApplyReferenceConstraints(ct);
+						await FetchNextRows(ct);
+					}));
 		}
 
 		private void DataGridTabHeaderMouseEnterHandler(object sender, MouseEventArgs args)
@@ -554,6 +603,19 @@ namespace SqlPad
 				};
 
 			_outputViewer.RaiseEvent(reraisedEvent);
+		}
+	}
+
+	internal class TimeSpanToIntegerSecondConverter : ValueConverterBase
+	{
+		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			return System.Convert.ToInt32(((TimeSpan)value).TotalSeconds);
+		}
+
+		public override object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			return TimeSpan.FromSeconds(System.Convert.ToDouble(value));
 		}
 	}
 }

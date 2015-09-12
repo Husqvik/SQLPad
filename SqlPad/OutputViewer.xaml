@@ -52,17 +52,28 @@
 			<TabItem Header="_Log" x:Name="TabExecutionLog">
 				<DockPanel>
 					<Button Content="_Clear" DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="2" Width="50" Click="ClearExecutionLogHandler" />
-					<sqlPad:ScrollingTextBox Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType=sqlPad:OutputViewer}, Path=ExecutionLog, Mode=OneWay}" FontFamily="Consolas" IsReadOnly="True" IsReadOnlyCaretVisible="True" />
+					<sqlPad:ScrollingTextBox Text="{Binding ExecutionLog, Mode=OneWay}" FontFamily="Consolas" IsReadOnly="True" IsReadOnlyCaretVisible="True" />
 				</DockPanel>
 			</TabItem>
 
-			<TabItem Header="_Output" x:Name="TabDatabaseOutput">
+			<TabItem x:Name="TabDatabaseOutput">
+				<TabItem.Style>
+					<Style>
+						<Setter Property="TabItem.Header" Value="_Output (disabled)" />
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding EnableDatabaseOutput}" Value="True">
+								<Setter Property="TabItem.Header" Value="_Output (enabled)" />
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</TabItem.Style>
+
 				<DockPanel>
 					<StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
-						<CheckBox Margin="4" Content="_Enable" IsChecked="{Binding RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType=sqlPad:OutputViewer}, Path=EnableDatabaseOutput}" />
-						<CheckBox Margin="4" Content="_Keep history" IsChecked="{Binding RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType=sqlPad:OutputViewer}, Path=KeepDatabaseOutputHistory}" />
+						<CheckBox Margin="4" Content="_Enable" IsChecked="{Binding EnableDatabaseOutput}" />
+						<CheckBox Margin="4" Content="_Keep history" IsChecked="{Binding KeepDatabaseOutputHistory}" />
 					</StackPanel>
-					<sqlPad:ScrollingTextBox Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType=sqlPad:OutputViewer}, Path=DatabaseOutput, Mode=OneWay}" FontFamily="Consolas" IsReadOnly="True" IsReadOnlyCaretVisible="True" />
+					<sqlPad:ScrollingTextBox Text="{Binding DatabaseOutput, Mode=OneWay}" FontFamily="Consolas" IsReadOnly="True" IsReadOnlyCaretVisible="True" />
 				</DockPanel>
 			</TabItem>
 

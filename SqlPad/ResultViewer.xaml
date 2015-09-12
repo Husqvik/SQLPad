@@ -6,12 +6,15 @@
 			 xmlns:globalization="clr-namespace:System.Globalization;assembly=mscorlib"
 			 xmlns:dataExport="clr-namespace:SqlPad.DataExport"
 			 xmlns:sqlPad="clr-namespace:SqlPad"
+			 xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
 			 mc:Ignorable="d"
 			 d:DesignHeight="140" d:DesignWidth="384"
 			 Initialized="InitializedHandler"
 			 DataContext="{Binding RelativeSource={RelativeSource Self}}">
 
 	<UserControl.Resources>
+		<sqlPad:TimeSpanToIntegerSecondConverter x:Key="TimeSpanToIntegerSecondConverter" />
+		
 		<RoutedCommand x:Key="ExportToCsvFileCommand" />
 		<RoutedCommand x:Key="ExportToTsvFileCommand" />
 		<RoutedCommand x:Key="ExportToHtmlFileCommand" />
@@ -62,7 +65,13 @@
 				<Path Data="M 0,0 L 8,8 M 8,0 L 0,8" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" />
 			</Button>
 		</StackPanel>
-		
+
+		<StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+			<CheckBox Content="Autorefresh: " IsChecked="{Binding AutoRefreshEnabled}" VerticalAlignment="Center" />
+			<xctk:IntegerUpDown Value="{Binding AutoRefreshInterval, Converter={StaticResource TimeSpanToIntegerSecondConverter}}" Minimum="1" />
+			<TextBlock Text="seconds" VerticalAlignment="Center" Margin="4,0,0,2" />
+		</StackPanel>
+
 		<Popup x:Name="ResultViewTabHeaderPopup" Placement="Top" MouseLeave="DataGridTabHeaderPopupMouseLeaveHandler">
 			<Popup.Style>
 				<Style>
@@ -167,7 +176,7 @@
 
 				<CommandBinding Command="{StaticResource FetchAllRowsCommand}" Executed="FetchAllRowsHandler"
 				                CanExecute="CanFetchAllRowsHandler" />
-				<CommandBinding Command="{StaticResource RefreshCommand}" Executed="RefreshHandler"
+				<CommandBinding Command="{StaticResource RefreshCommand}" Executed="RefreshTimerTickHandler"
 				                CanExecute="CanRefreshHandler" />
 			</DataGrid.CommandBindings>
 			<DataGrid.ContextMenu>
