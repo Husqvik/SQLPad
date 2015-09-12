@@ -2628,8 +2628,8 @@ WHERE c IS NULL";
 			semanticModel.MainQueryBlock.ObjectReferences.Count.ShouldBe(1);
 			var unpivotTableReference = (OraclePivotTableReference)semanticModel.MainQueryBlock.ObjectReferences.Single();
 			unpivotTableReference.Columns.Count.ShouldBe(2);
-			unpivotTableReference.Columns[0].Name.ShouldBe("\"C\"");
-			unpivotTableReference.Columns[0].Nullable.ShouldBe(true);
+			unpivotTableReference.Columns[1].Name.ShouldBe("\"X\"");
+			unpivotTableReference.Columns[1].Nullable.ShouldBe(true);
 		}
 
 		[Test(Description = @"")]

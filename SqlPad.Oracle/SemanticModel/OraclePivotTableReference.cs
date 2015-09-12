@@ -209,8 +209,6 @@ namespace SqlPad.Oracle.SemanticModel
 							.Where(c => !unpivotedColumns.Contains(c.Name))
 							.Select(c => c.Clone()));
 
-						groupingColumnsNullable |= PivotClause[NonTerminals.UnpivotNullsClause, NonTerminals.IncludeOrExclude, Terminals.Include] != null;
-
 						columns.AddRange(groupingColumns.Select(
 							(c, i) =>
 								new OracleColumn
@@ -222,8 +220,16 @@ namespace SqlPad.Oracle.SemanticModel
 										: OracleDataType.Empty
 								}));
 
+						var unpivotColumnsNullable = PivotClause[NonTerminals.UnpivotNullsClause, NonTerminals.IncludeOrExclude, Terminals.Include] != null;
 						var unpivotColumns = PivotClause[NonTerminals.IdentifierOrParenthesisEnclosedIdentifierList].GetDescendants(Terminals.Identifier);
-						columns.AddRange(unpivotColumns.Select(i => new OracleColumn { Name = i.Token.Value.ToQuotedIdentifier(), DataType = OracleDataType.Empty }));
+						columns.AddRange(
+							unpivotColumns.Select(
+								i => new OracleColumn
+								{
+									Name = i.Token.Value.ToQuotedIdentifier(),
+									DataType = OracleDataType.Empty,
+									Nullable = unpivotColumnsNullable
+								}));
 
 						break;
 				}
