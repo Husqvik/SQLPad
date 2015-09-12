@@ -1,4 +1,4 @@
-SQLPad 0.3.0.173
+SQLPad 0.3.0.174
 ================
 
 SQLPad is an experimental SQL editor focused to quick and comfortable work.
@@ -210,7 +210,7 @@ IsProduction - indicates connection to a production system using red label
 
 	<Configuration xmlns="http://husqvik.com/SqlPad/2014/02">
 		<DataModel DataModelRefreshPeriod="60" />
-		<ResultGrid DateFormat="yyyy-MM-dd HH:mm:ss" NullPlaceholder="(null)" />
+		<ResultGrid DateFormat="yyyy-MM-dd HH:mm:ss" NullPlaceholder="(null)" FetchRowsBatchSize="500" />
 	</Configuration>
 
 DataModelRefreshPeriod - data dictionary refresh period in minutes; refresh can forced any time using F5
@@ -218,6 +218,8 @@ DataModelRefreshPeriod - data dictionary refresh period in minutes; refresh can 
 DateFormat - data grid date time format
 
 NullPlaceholder - data grid NULL value representation
+
+FetchRowsBatchSize - number of rows fetched in one batch
 
 #####OracleConfiguration.xml
 

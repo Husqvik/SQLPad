@@ -1875,8 +1875,9 @@ FROM
 			_editor.Text.ShouldBe(expectedResult);
 
 			var configuration = WorkDocumentCollection.GetProviderConfiguration(TestFixture.DatabaseModel.ConnectionString.ProviderName);
-			configuration.BindVariablesInternal.ContainsKey("BIND_VARIABLE").ShouldBe(true);
-			configuration.BindVariablesInternal["BIND_VARIABLE"].DataType.ShouldBe("NUMBER");
+			var bindVariable = configuration.GetBindVariable("BIND_VARIABLE");
+			bindVariable.ShouldNotBe(null);
+			bindVariable.DataType.ShouldBe("NUMBER");
 		}
 
 		[Test(Description = @""), STAThread]
@@ -1893,8 +1894,9 @@ FROM
 			_editor.Text.ShouldBe(expectedResult);
 
 			var configuration = WorkDocumentCollection.GetProviderConfiguration(TestFixture.DatabaseModel.ConnectionString.ProviderName);
-			configuration.BindVariablesInternal.ContainsKey("BIND_VARIABLE").ShouldBe(true);
-			configuration.BindVariablesInternal["BIND_VARIABLE"].DataType.ShouldBe("TIMESTAMP");
+			var bindVariable = configuration.GetBindVariable("BIND_VARIABLE");
+			bindVariable.ShouldNotBe(null);
+			bindVariable.DataType.ShouldBe("TIMESTAMP");
 		}
 
 		private void ExecuteConvertLiteralToBindVariableCommand(int actionIndex)

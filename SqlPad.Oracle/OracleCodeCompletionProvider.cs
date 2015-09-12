@@ -373,6 +373,24 @@ namespace SqlPad.Oracle
 				}
 			}
 
+			if (completionType.BindVariable)
+			{
+				var providerConfiguration = WorkDocumentCollection.GetProviderConfiguration(oracleDatabaseModel.ConnectionString.ProviderName);
+				var bindVariables =
+					providerConfiguration.BindVariables.Where(bv => bv.Value != null && !Equals(bv.Value, String.Empty) && !Equals(bv.Value, DateTime.MinValue) && CodeCompletionSearchHelper.IsMatch(bv.Name.ToQuotedIdentifier(), completionType.TerminalValuePartUntilCaret))
+						.Select(
+							bv =>
+								new OracleCodeCompletionItem
+								{
+									Name = bv.Name,
+									Text = bv.Name,
+									Category = OracleCodeCompletionCategory.BindVariable,
+									StatementNode = completionType.ReferenceIdentifier.IdentifierUnderCursor
+								});
+
+				completionItems = completionItems.Concat(bindVariables);
+			}
+
 			completionItems = completionItems.Concat(GenerateKeywordItems(completionType));
 
 			return completionItems.OrderItems().ToArray();

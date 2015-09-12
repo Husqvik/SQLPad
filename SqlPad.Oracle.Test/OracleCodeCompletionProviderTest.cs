@@ -2138,6 +2138,15 @@ ON (EVENTS.ID = SRC.ID)";
 		}
 
 		[Test(Description = @"")]
+		public void TestSuggestionAfterColorStartingBindVariable()
+		{
+			const string statement = @"SELECT COUNT(*) FROM SELECTION WHERE SELECTION_ID = :";
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 53).ToList();
+			items.Count.ShouldBeGreaterThan(0);
+			items.ForEach(i => i.Category.ShouldBe(OracleCodeCompletionCategory.BindVariable));
+		}
+
+		[Test(Description = @"")]
 		public void TestNextDaySpecialParameterCompletion()
 		{
 			const string statement = @"SELECT NEXT_DAY(SYSDATE, ) FROM DUAL";

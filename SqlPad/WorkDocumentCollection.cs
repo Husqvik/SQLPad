@@ -318,11 +318,11 @@ namespace SqlPad
 		{
 			foreach (var configuration in Instance._databaseProviderConfigurations.Values)
 			{
-				foreach (var kvp in configuration.BindVariablesInternal.ToArray())
+				foreach (var variable in configuration.BindVariables.ToArray())
 				{
-					if (kvp.Value.Value == null || Equals(kvp.Value.Value, String.Empty))
+					if (variable.Value == null || Equals(variable.Value, String.Empty) || Equals(variable.Value, DateTime.MinValue))
 					{
-						configuration.BindVariablesInternal.Remove(kvp.Key);
+						configuration.RemoveBindVariable(variable.Name);
 					}
 				}
 			}

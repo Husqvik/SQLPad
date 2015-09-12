@@ -22,7 +22,7 @@ namespace SqlPad
 
 		public string ProviderName { get; private set; }
 
-		public IDictionary<string, BindVariableConfiguration> BindVariablesInternal => _bindVariables ?? (_bindVariables = new Dictionary<string, BindVariableConfiguration>());
+		private IDictionary<string, BindVariableConfiguration> BindVariablesInternal => _bindVariables ?? (_bindVariables = new Dictionary<string, BindVariableConfiguration>());
 
 		public ICollection<StatementExecutionHistoryEntry> StatementExecutionHistory => _statementExecutionHistory ?? (_statementExecutionHistory = new HashSet<StatementExecutionHistoryEntry>());
 
@@ -39,6 +39,11 @@ namespace SqlPad
 		public void SetBindVariable(BindVariableConfiguration bindVariable)
 		{
 			BindVariablesInternal[bindVariable.Name] = bindVariable;
+		}
+
+		public void RemoveBindVariable(string bindVariableName)
+		{
+			BindVariablesInternal.Remove(bindVariableName);
 		}
 
 		public void AddStatementExecution(StatementExecutionHistoryEntry entry)

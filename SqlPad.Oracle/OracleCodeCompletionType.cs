@@ -73,6 +73,8 @@ namespace SqlPad.Oracle
 		public bool ExplicitSubPartition { get; }
 
 		public bool SpecialFunctionParameter { get; }
+
+		public bool BindVariable { get; }
 		
 		public bool InsertIntoColumns { get; private set; }
 		
@@ -216,7 +218,14 @@ namespace SqlPad.Oracle
 				EffectiveTerminal = nearestTerminal;
 			}
 
-			var terminalCandidateSourceToken = isCursorAfterToken ? nearestTerminal : precedingTerminal;
+			var isColon = String.Equals(nearestTerminal.Id, Terminals.Colon);
+			if (!String.Equals(Statement.RootNode.Id, NonTerminals.CreatePlSqlStatement))
+			{
+				BindVariable = isColon && (String.Equals(nearestTerminal.ParentNode.Id, NonTerminals.AssignmentTriggerReferenceTarget) || String.Equals(nearestTerminal.ParentNode.Id, NonTerminals.BindVariableExpression));
+				BindVariable |= String.Equals(nearestTerminal.Id, Terminals.BindVariableIdentifier);
+			}
+
+			var terminalCandidateSourceToken = isCursorAfterToken || isColon ? nearestTerminal : precedingTerminal;
 			if (nearestTerminal.Id.In(Terminals.RightParenthesis, Terminals.Comma) && isCursorTouchingTwoTerminals && precedingTerminal.Id.IsIdentifier())
 			{
 				terminalCandidateSourceToken = precedingTerminal.PrecedingTerminal;
@@ -356,8 +365,12 @@ namespace SqlPad.Oracle
 
 		private void ResolveCurrentTerminalValue(StatementGrammarNode terminal)
 		{
-			TerminalValueUnderCursor = terminal.Token.Value;
-			TerminalValuePartUntilCaret = CursorPosition > terminal.SourcePosition.IndexEnd + 1
+			var isCursorAfterColon = CursorPosition == terminal.SourcePosition.IndexEnd + 1 && String.Equals(terminal.Id, Terminals.Colon);
+			TerminalValueUnderCursor = isCursorAfterColon
+				? String.Empty
+				: terminal.Token.Value;
+
+			TerminalValuePartUntilCaret = isCursorAfterColon || CursorPosition > terminal.SourcePosition.IndexEnd + 1
 				? String.Empty
 				: terminal.Token.Value.Substring(0, CursorPosition - terminal.SourcePosition.IndexStart).Trim('"');
 		}
@@ -423,7 +436,7 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			var identifiers = lookupNode.GetPathFilterDescendants(n => !String.Equals(n.Id, NonTerminals.Expression) && !String.Equals(n.Id, NonTerminals.AliasedExpressionOrAllTableColumns), Terminals.SchemaIdentifier, Terminals.ObjectIdentifier, Terminals.Identifier, Terminals.Asterisk, Terminals.User, Terminals.SystemDate, Terminals.Level, Terminals.RowIdPseudoColumn, Terminals.Null).ToList();
+			var identifiers = lookupNode.GetPathFilterDescendants(n => !String.Equals(n.Id, NonTerminals.Expression) && !String.Equals(n.Id, NonTerminals.AliasedExpressionOrAllTableColumns), Terminals.SchemaIdentifier, Terminals.ObjectIdentifier, Terminals.Identifier, Terminals.BindVariableIdentifier, Terminals.Asterisk, Terminals.User, Terminals.SystemDate, Terminals.Level, Terminals.RowIdPseudoColumn, Terminals.Null).ToList();
 			ReferenceIdentifier = BuildReferenceIdentifier(identifiers);
 		}
 
@@ -434,7 +447,7 @@ namespace SqlPad.Oracle
 				{
 					SchemaIdentifier = GetIdentifierTokenValue(identifiers, Terminals.SchemaIdentifier),
 					ObjectIdentifier = GetIdentifierTokenValue(identifiers, Terminals.ObjectIdentifier, Terminals.DataTypeIdentifier),
-					Identifier = GetIdentifierTokenValue(identifiers, Terminals.Identifier, Terminals.Asterisk, Terminals.User, Terminals.SystemDate, Terminals.Level, Terminals.RowIdPseudoColumn, Terminals.Null),
+					Identifier = GetIdentifierTokenValue(identifiers, Terminals.Identifier, Terminals.BindVariableIdentifier, Terminals.Asterisk, Terminals.User, Terminals.SystemDate, Terminals.Level, Terminals.RowIdPseudoColumn, Terminals.Null),
 					CursorPosition = CursorPosition
 				};
 		}
@@ -506,6 +519,9 @@ namespace SqlPad.Oracle
 			builder.Append("; ");
 			builder.Append("Data type: ");
 			builder.Append(DataType);
+			builder.Append("; ");
+			builder.Append("Bind variable: ");
+			builder.Append(BindVariable);
 			builder.Append("; ");
 			builder.Append("InsertIntoColumns: ");
 			builder.Append(InsertIntoColumns);
