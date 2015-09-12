@@ -94,9 +94,9 @@ namespace SqlPad
 		private readonly OutputViewer _outputViewer;
 		private readonly ResultInfo _resultInfo;
 		private readonly ObservableCollection<object[]> _resultRows = new ObservableCollection<object[]>();
-		private readonly IEnumerable<ColumnHeader> _columnHeaders;
 		private readonly StatementExecutionResult _executionResult;
 
+		private IReadOnlyList<ColumnHeader> _columnHeaders;
 		private bool _isSelectingCells;
 		private bool _searchedTextHighlightUsed;
 
@@ -106,7 +106,9 @@ namespace SqlPad
 
 		public string StatementText => _executionResult.StatementModel.StatementText;
 
-		public ResultViewer(OutputViewer outputViewer, StatementExecutionResult executionResult, ResultInfo resultInfo, IEnumerable<ColumnHeader> columnHeaders)
+		private bool IsBusy => _outputViewer.IsBusy || _outputViewer.ConnectionAdapter.IsExecuting || _outputViewer.IsDebuggerControlVisible;
+
+		public ResultViewer(OutputViewer outputViewer, StatementExecutionResult executionResult, ResultInfo resultInfo, IReadOnlyList<ColumnHeader> columnHeaders)
 		{
 			_outputViewer = outputViewer;
 			_executionResult = executionResult;
@@ -124,6 +126,18 @@ namespace SqlPad
 				};
 
 			header.MouseEnter += DataGridTabHeaderMouseEnterHandler;
+		}
+
+		private async void RefreshHandler(object sender, ExecutedRoutedEventArgs args)
+		{
+			await _outputViewer.ExecuteUsingCancellationToken(
+				async ct =>
+				{
+					_columnHeaders = await _outputViewer.ConnectionAdapter.RefreshResult(_resultInfo, ct);
+					_resultRows.Clear();
+					await ApplyReferenceConstraints(ct);
+					await FetchNextRows(ct);
+				});
 		}
 
 		private void DataGridTabHeaderMouseEnterHandler(object sender, MouseEventArgs args)
@@ -169,7 +183,7 @@ namespace SqlPad
 
 			using (var writer = File.CreateText(dialog.FileName))
 			{
-				CSharpQueryClassGenerator.Generate(_executionResult, writer);
+				CSharpQueryClassGenerator.Generate(_executionResult.StatementModel, _columnHeaders, writer);
 			}
 		}
 
@@ -184,9 +198,14 @@ namespace SqlPad
 			canExecuteRoutedEventArgs.ContinueRouting = canExecuteRoutedEventArgs.CanExecute;
 		}
 
+		private void CanRefreshHandler(object sender, CanExecuteRoutedEventArgs canExecuteRoutedEventArgs)
+		{
+			canExecuteRoutedEventArgs.CanExecute = !IsBusy;
+		}
+
 		private bool CanFetchNextRows()
 		{
-			return !_outputViewer.IsBusy && _outputViewer.ConnectionAdapter.CanFetch(_resultInfo) && !_outputViewer.ConnectionAdapter.IsExecuting;
+			return !IsBusy && _outputViewer.ConnectionAdapter.CanFetch(_resultInfo);
 		}
 
 		private async void FetchAllRowsHandler(object sender, ExecutedRoutedEventArgs args)

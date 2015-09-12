@@ -41,38 +41,29 @@ namespace SqlPad.Test
 
 				var readOnlyDataTypes = new ReadOnlyDictionary<string, BindVariableType>(dataTypes);
 
-				var executionResult =
-					new StatementExecutionResult
+				var columnHeaders =
+					new[]
 					{
-						ResultInfoColumnHeaders =
-							new Dictionary<ResultInfo, IReadOnlyList<ColumnHeader>>
+						new ColumnHeader { ColumnIndex = 0, Name = "TestColumn1", DataType = typeof (int) },
+						new ColumnHeader { ColumnIndex = 1, Name = "TestColumn2", DataType = typeof (string) }
+					};
+
+				var statementModel =
+					new StatementExecutionModel
+					{
+						StatementText = "SELECT @testBindVariable1 TestColumn1, @testBindVariable2 TestColumn2",
+						BindVariables =
+							new[]
 							{
-								{
-									new ResultInfo(),
-									new[]
-									{
-										new ColumnHeader { ColumnIndex = 0, Name = "TestColumn1", DataType = typeof (int) },
-										new ColumnHeader { ColumnIndex = 1, Name = "TestColumn2", DataType = typeof (string) }
-									}
-								}
-							},
-						StatementModel =
-							new StatementExecutionModel
-							{
-								StatementText = "SELECT @testBindVariable1 TestColumn1, @testBindVariable2 TestColumn2",
-								BindVariables =
-									new[]
-									{
-										new BindVariableModel(new BindVariableConfiguration { Name = "testBindVariable1", DataType = intType.Name, DataTypes = readOnlyDataTypes }),
-										new BindVariableModel(new BindVariableConfiguration { Name = "testBindVariable2", DataType = varcharType.Name, DataTypes = readOnlyDataTypes })
-									}
+								new BindVariableModel(new BindVariableConfiguration { Name = "testBindVariable1", DataType = intType.Name, DataTypes = readOnlyDataTypes }),
+								new BindVariableModel(new BindVariableConfiguration { Name = "testBindVariable2", DataType = varcharType.Name, DataTypes = readOnlyDataTypes })
 							}
 					};
 
 				var builder = new StringBuilder();
 				using (var writer = new StringWriter(builder))
 				{
-					CSharpQueryClassGenerator.Generate(executionResult, writer);
+					CSharpQueryClassGenerator.Generate(statementModel, columnHeaders, writer);
 				}
 
 				var result = builder.ToString();

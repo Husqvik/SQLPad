@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace SqlPad
@@ -57,7 +57,7 @@ public class Query
 }}
 ";
 
-		public static void Generate(StatementExecutionResult executionResult, TextWriter writer)
+		public static void Generate(StatementExecutionModel statementModel, IReadOnlyList<ColumnHeader> columnHeaders, TextWriter writer)
 		{
 			var columnMapBuilder = new StringBuilder();
 			var resultRowPropertyBuilder = new StringBuilder();
@@ -65,11 +65,11 @@ public class Query
 			var parameterBuilder = new StringBuilder();
 
 			var index = 0;
-			if (executionResult.StatementModel.BindVariables.Count > 0)
+			if (statementModel.BindVariables.Count > 0)
 			{
 				parameterBuilder.AppendLine();
 
-				foreach (var bindVariable in executionResult.StatementModel.BindVariables)
+				foreach (var bindVariable in statementModel.BindVariables)
 				{
 					index++;
 
@@ -77,7 +77,7 @@ public class Query
 					bindVariableBuilder.Append(" ");
 					bindVariableBuilder.Append(bindVariable.Name);
 
-					if (index < executionResult.StatementModel.BindVariables.Count)
+					if (index < statementModel.BindVariables.Count)
 					{
 						bindVariableBuilder.Append(", ");
 					}
@@ -99,7 +99,6 @@ public class Query
 			}
 
 			index = 0;
-			var columnHeaders = executionResult.ResultInfoColumnHeaders.Values.First(); // TODO: Handle all readers
 			foreach (var column in columnHeaders)
 			{
 				index++;
@@ -133,7 +132,7 @@ public class Query
 				resultRowPropertyBuilder.AppendLine(" { get; set; }");
 			}
 
-			var statementText = executionResult.StatementModel.StatementText.Replace("\"", "\"\"");
+			var statementText = statementModel.StatementText.Replace("\"", "\"\"");
 			var queryClass = String.Format(ExportClassTemplate, statementText, bindVariableBuilder, parameterBuilder, columnMapBuilder);
 
 			writer.WriteLine(queryClass);

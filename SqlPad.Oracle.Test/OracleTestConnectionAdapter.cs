@@ -46,6 +46,11 @@ namespace SqlPad.Oracle.Test
 
 		public override int? SessionId { get; } = 1;
 
+		public override Task<IReadOnlyList<ColumnHeader>> RefreshResult(ResultInfo resultInfo, CancellationToken cancellationToken)
+		{
+			return Task.FromResult(ColumnHeaders);
+		}
+
 		public override Task<StatementExecutionBatchResult> ExecuteStatementAsync(StatementBatchExecutionModel executionModel, CancellationToken cancellationToken)
 		{
 			var result =
