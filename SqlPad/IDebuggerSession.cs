@@ -25,9 +25,9 @@ namespace SqlPad
 
 		Task Detach(CancellationToken cancellationToken);
 
-		Task<object> GetValue(string expression, CancellationToken cancellationToken);
+		Task GetValue(WatchItem watchItem, CancellationToken cancellationToken);
 
-		Task SetValue(string variable, string expression, CancellationToken cancellationToken);
+		Task SetValue(WatchItem watchItem, CancellationToken cancellationToken);
 	}
 
 	public class StackTraceItem

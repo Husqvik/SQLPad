@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:sqlPad="clr-namespace:SqlPad"
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="300"
              DataContext="{Binding RelativeSource={RelativeSource Self}}">
@@ -34,10 +35,35 @@
 							  AutoGenerateColumns="False" CanUserSortColumns="False" CanUserReorderColumns="False" CanUserResizeRows="False" SelectionMode="Single" SelectionUnit="Cell" CanUserDeleteRows="True"
 							  PreviewKeyDown="WatchItemGridPreviewKeyDown"
 							  CellEditEnding="CellEditEndingHandler"
+							  RowHeaderWidth="0"
 							  HorizontalGridLinesBrush="LightGray"
 							  VerticalGridLinesBrush="LightGray">
 						<DataGrid.Columns>
-							<DataGridTextColumn Header="Name" Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}" x:Name="ColumnDebugVariableName" />
+							<DataGridTemplateColumn Header="Name" x:Name="ColumnDebugExpressionName">
+								<DataGridTemplateColumn.CellTemplate>
+									<DataTemplate DataType="sqlPad:WatchItem">
+										<StackPanel Orientation="Horizontal">
+											<TextBlock Text="+" MouseLeftButtonDown="WatchItemExpandMouseLeftButtonDownHandler">
+												<TextBlock.Style>
+													<Style>
+														<Style.Triggers>
+															<DataTrigger Binding="{Binding ChildItems}" Value="{x:Null}">
+																<Setter Property="TextBlock.Visibility" Value="Hidden" />
+															</DataTrigger>
+														</Style.Triggers>
+													</Style>
+												</TextBlock.Style>
+											</TextBlock>
+											<TextBlock Text="{Binding Name}" />
+										</StackPanel>
+									</DataTemplate>
+								</DataGridTemplateColumn.CellTemplate>
+								<DataGridTemplateColumn.CellEditingTemplate>
+									<DataTemplate>
+										<TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
+									</DataTemplate>
+								</DataGridTemplateColumn.CellEditingTemplate>
+							</DataGridTemplateColumn>
 							<DataGridTextColumn Header="Value" Binding="{Binding Value, UpdateSourceTrigger=PropertyChanged}" />
 						</DataGrid.Columns>
 					</DataGrid>

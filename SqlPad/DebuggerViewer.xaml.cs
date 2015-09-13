@@ -133,7 +133,7 @@ namespace SqlPad
 			}
 
 			var watchItem = (WatchItem)args.Row.DataContext;
-			if (Equals(args.Column, ColumnDebugVariableName))
+			if (Equals(args.Column, ColumnDebugExpressionName))
 			{
 				_outputViewer.DocumentPage.WorkDocument.WatchItems = WatchItems.Select(i => i.Name).ToArray();
 
@@ -145,12 +145,12 @@ namespace SqlPad
 			}
 			else
 			{
-				await _debuggerSession.SetValue(watchItem.Name, watchItem.Value.ToString(), CancellationToken.None);
+				await _debuggerSession.SetValue(watchItem, CancellationToken.None);
 			}
 
 			try
 			{
-				watchItem.Value = await _debuggerSession.GetValue(watchItem.Name, CancellationToken.None);
+				await _debuggerSession.GetValue(watchItem, CancellationToken.None);
 			}
 			catch (Exception exception)
 			{
@@ -162,7 +162,7 @@ namespace SqlPad
 		{
 			foreach (var watchItem in WatchItems.Where(i => !String.IsNullOrWhiteSpace(i.Name)))
 			{
-				watchItem.Value = await _debuggerSession.GetValue(watchItem.Name, token);
+				await _debuggerSession.GetValue(watchItem, token);
 			}
 		}
 
@@ -178,12 +178,28 @@ namespace SqlPad
 				WatchItems.Remove((WatchItem)WatchItemGrid.CurrentItem);
 			}
 		}
+
+		private void WatchItemExpandMouseLeftButtonDownHandler(object sender, MouseButtonEventArgs e)
+		{
+			/*var textBlock = (TextBlock)sender;
+			var dataGrid = textBlock.FindParentVisual<DataGrid>();
+
+			var dataContext = textBlock.DataContext;*/
+		}
 	}
 
 	public class WatchItem : ModelBase
 	{
 		private object _value;
+		private ObservableCollection<WatchItem> _childItems;
+
 		public string Name { get; set; }
+
+		public ObservableCollection<WatchItem> ChildItems
+		{
+			get { return _childItems; }
+			set { UpdateValueAndRaisePropertyChanged(ref _childItems, value); }
+		}
 
 		public object Value
 		{

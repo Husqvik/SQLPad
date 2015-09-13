@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.IO;
 using System.Text;
@@ -109,29 +110,54 @@ namespace SqlPad.Oracle.DatabaseConnection
 			await attachTask;
 		}
 
-		public async Task<object> GetValue(string expression, CancellationToken cancellationToken)
+		public async Task GetValue(WatchItem watchItem, CancellationToken cancellationToken)
+		{
+			SetupGetValueCommandParameters(watchItem.Name);
+			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
+
+			var result = (ValueInfoStatus)GetValueFromOracleDecimal(_debuggerSessionCommand.Parameters["RESULT"]);
+			var value = GetValueFromOracleString(_debuggerSessionCommand.Parameters["VALUE"]);
+			Trace.WriteLine($"Get value '{watchItem.Name}' result: {result}; value={value}");
+
+			if (result != ValueInfoStatus.ErrorIndexedTable)
+			{
+				watchItem.Value = value;
+				return;
+			}
+
+			var indexes = await GetCollectionIndexes(OracleObjectIdentifier.Create(_runtimeInfo.SourceLocation.Owner, _runtimeInfo.SourceLocation.Name), watchItem.Name, cancellationToken);
+			watchItem.Value = $"collection ({indexes.Count} items)";
+
+			var watchItems = new ObservableCollection<WatchItem>();
+			foreach (var index in indexes)
+			{
+				var collectionItemExpression = $"{watchItem.Name}({index.Value})";
+				SetupGetValueCommandParameters(collectionItemExpression);
+				await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
+
+				var childItem =
+					new WatchItem
+					{
+						Name = collectionItemExpression,
+						Value = GetValueFromOracleString(_debuggerSessionCommand.Parameters["VALUE"])
+					};
+
+				watchItems.Add(childItem);
+			}
+
+			watchItem.ChildItems = watchItems;
+		}
+
+		private void SetupGetValueCommandParameters(string expression)
 		{
 			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.DebuggerGetValue;
 			_debuggerSessionCommand.Parameters.Clear();
 			_debuggerSessionCommand.AddSimpleParameter("RESULT", null, TerminalValues.Number);
 			_debuggerSessionCommand.AddSimpleParameter("VARIABLE_NAME", expression, TerminalValues.Varchar2);
 			_debuggerSessionCommand.AddSimpleParameter("VALUE", null, TerminalValues.Varchar2, 32767);
-
-			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
-
-			var result = (ValueInfoStatus)GetValueFromOracleDecimal(_debuggerSessionCommand.Parameters["RESULT"]);
-			var value = GetValueFromOracleString(_debuggerSessionCommand.Parameters["VALUE"]);
-			Trace.WriteLine($"Get value '{expression}' result: {result}; value={value}");
-
-			if (result == ValueInfoStatus.ErrorIndexedTable)
-			{
-				var entries = await GetCollectionIndexes(OracleObjectIdentifier.Create(_runtimeInfo.SourceLocation.Owner, _runtimeInfo.SourceLocation.Name), expression, cancellationToken);
-			}
-
-			return value;
 		}
 
-		private async Task<object> GetCollectionIndexes(OracleObjectIdentifier objectIdentifier, string variable, CancellationToken cancellationToken)
+		private async Task<IReadOnlyList<OracleDecimal>> GetCollectionIndexes(OracleObjectIdentifier objectIdentifier, string variable, CancellationToken cancellationToken)
 		{
 			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.GetDebuggerCollectionIndexes;
 			_debuggerSessionCommand.Parameters.Clear();
@@ -157,17 +183,18 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return entries;
 		}
 
-		public async Task SetValue(string variable, string expression, CancellationToken cancellationToken)
+		public async Task SetValue(WatchItem watchItem, CancellationToken cancellationToken)
 		{
 			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.DebuggerSetValue;
 			_debuggerSessionCommand.Parameters.Clear();
 			_debuggerSessionCommand.AddSimpleParameter("RESULT", null, TerminalValues.Number);
-			_debuggerSessionCommand.AddSimpleParameter("ASSIGNMENT_STATEMENT", $"{variable} := {expression};", TerminalValues.Varchar2);
+			var statement = $"{watchItem.Name} := {watchItem.Value};";
+			_debuggerSessionCommand.AddSimpleParameter("ASSIGNMENT_STATEMENT", statement, TerminalValues.Varchar2);
 
 			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
 
 			var result = (ValueInfoStatus)GetValueFromOracleDecimal(_debuggerSessionCommand.Parameters["RESULT"]);
-			Trace.WriteLine($"Set value result: {result}");
+			Trace.WriteLine($"Set value '{statement}' result: {result}");
 		}
 
 		private async void AfterSynchronized(Task synchronzationTask, object cancellationToken)
