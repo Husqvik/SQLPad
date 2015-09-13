@@ -491,6 +491,9 @@ namespace SqlPad.Oracle.Test
 			var maxFunctionAnalyticMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(null, null, "MAX"), true, false, false, false, false, false, 1, 1, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
 			allFunctionMetadata.Add(maxFunctionAnalyticMetadata);
 
+			var castFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(null, null, "CAST"), false, false, false, true, false, false, 1, 0, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
+			allFunctionMetadata.Add(castFunctionMetadata);
+
 			var maxFunctionAggregateMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(null, null, "MAX"), false, true, false, false, false, false, 1, 1, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
 			maxFunctionAggregateMetadata.AddParameter(new OracleProgramParameterMetadata(null, 1, 1, 0, ParameterDirection.Input, "EXPR", OracleObjectIdentifier.Empty, false));
 			allFunctionMetadata.Add(maxFunctionAggregateMetadata);
@@ -654,9 +657,9 @@ namespace SqlPad.Oracle.Test
 
 		protected override ILookup<OracleProgramIdentifier, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadata => NonSchemaBuiltInFunctionMetadataInternal;
 
-	    protected override ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuiltInPackageFunctionMetadata => BuiltInPackageFunctionMetadataInternal;
+		protected override ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuiltInPackageFunctionMetadata => BuiltInPackageFunctionMetadataInternal;
 
-	    private static readonly HashSet<OracleSchemaObject> AllObjectsInternal = new HashSet<OracleSchemaObject>
+		private static readonly HashSet<OracleSchemaObject> AllObjectsInternal = new HashSet<OracleSchemaObject>
 		{
 			new OracleTable
 			{

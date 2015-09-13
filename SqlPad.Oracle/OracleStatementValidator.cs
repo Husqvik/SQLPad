@@ -59,8 +59,8 @@ namespace SqlPad.Oracle
 					case ReferenceType.TableCollection:
 						var tableCollectionReference = (OracleTableCollectionReference)objectReference;
 						var tableCollectionProgramReference = tableCollectionReference.RowSourceReference as OracleProgramReference;
-						if (tableCollectionProgramReference?.Metadata != null &&
-						    !tableCollectionProgramReference.Metadata.ReturnParameter.DataType.In(OracleTypeCollection.OracleCollectionTypeNestedTable, OracleTypeCollection.OracleCollectionTypeVarryingArray))
+						var returnParameter = tableCollectionProgramReference?.Metadata?.ReturnParameter;
+						if (returnParameter?.DataType.In(OracleTypeCollection.OracleCollectionTypeNestedTable, OracleTypeCollection.OracleCollectionTypeVarryingArray) == false)
 						{
 							validationModel.ProgramNodeValidity[tableCollectionProgramReference.FunctionIdentifierNode] = new InvalidNodeValidationData(OracleSemanticErrorType.FunctionReturningRowSetRequired) {Node = tableCollectionProgramReference.FunctionIdentifierNode};
 						}

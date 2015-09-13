@@ -2647,6 +2647,16 @@ SELECT C1 FROM CTE";
 		}
 
 		[Test(Description = @"")]
+		public void TestValidationModelBuildWhileTypingCastWithinTableExpression()
+		{
+			const string sqlText = @"SELECT * FROM TABLE(CAST())";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			Assert.DoesNotThrow(() => BuildValidationModel(sqlText, statement));
+		}
+
+		[Test(Description = @"")]
 		public void TestColumnCountValidationInSimpleInClause()
 		{
 			const string sqlText = @"SELECT * FROM DUAL WHERE DUMMY IN (SELECT DUMMY, DUMMY FROM DUAL)";
