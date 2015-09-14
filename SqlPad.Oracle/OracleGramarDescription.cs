@@ -890,6 +890,7 @@ namespace SqlPad.Oracle
 			public const string ParenthesisEnclosedLiteralList = "ParenthesisEnclosedLiteralList";
 			public const string ParenthesisEnclosedLiteralListListOrSubquery = "ParenthesisEnclosedLiteralListListOrSubquery";
 			public const string ParenthesisEnclosedMergeInsertValuesExpressionOrDefaultValueList = "ParenthesisEnclosedMergeInsertValuesExpressionOrDefaultValueList";
+			public const string ParenthesisEnclosedNestedQuery = "ParenthesisEnclosedNestedQuery";
 			public const string ParenthesisEnclosedNestedStorageTableProperties = "ParenthesisEnclosedNestedStorageTableProperties";
 			public const string ParenthesisEnclosedObjectProperties = "ParenthesisEnclosedObjectProperties";
 			public const string ParenthesisEnclosedParameterDeclarationList = "ParenthesisEnclosedParameterDeclarationList";

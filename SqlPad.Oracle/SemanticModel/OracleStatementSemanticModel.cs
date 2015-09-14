@@ -502,7 +502,7 @@ namespace SqlPad.Oracle.SemanticModel
 						var functionIdentifierNode = tableCollection.GetDescendants(Terminals.Identifier).FirstOrDefault();
 						if (functionIdentifierNode != null)
 						{
-							var prefixNonTerminal = functionIdentifierNode.ParentNode[NonTerminals.Prefix];
+							var prefixNonTerminal = functionIdentifierNode.ParentNode.ParentNode[NonTerminals.Prefix];
 							var functionCallNodes = GetFunctionCallNodes(functionIdentifierNode);
 							var tableCollectionReference = ResolveColumnFunctionOrDataTypeReferenceFromIdentifier(queryBlock, queryBlock, functionIdentifierNode, StatementPlacement.TableReference, null, n => prefixNonTerminal);
 

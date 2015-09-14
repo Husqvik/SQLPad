@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Input;
 
@@ -54,7 +56,7 @@ namespace SqlPad
 
 		private void DebuggerAttachedHandler()
 		{
-			DisplaySourceAsync(CancellationToken.None);
+			Refresh(CancellationToken.None);
 			EnsureWatchItem();
 		}
 
@@ -66,7 +68,7 @@ namespace SqlPad
 			}
 		}
 
-		public async void DisplaySourceAsync(CancellationToken cancellationToken)
+		public async Task Refresh(CancellationToken cancellationToken)
 		{
 			StackTrace.Clear();
 			StackTrace.AddRange(_debuggerSession.StackTrace);
@@ -87,6 +89,8 @@ namespace SqlPad
 			TabSourceViewer.SelectedItem = debuggerView;
 
 			HighlightStackTraceLines();
+
+			await RefreshWatchItemsAsync(cancellationToken);
 		}
 
 		private void HighlightStackTraceLines()
@@ -158,7 +162,7 @@ namespace SqlPad
 			}
 		}
 
-		public async void RefreshWatchItemsAsync(CancellationToken token)
+		private async Task RefreshWatchItemsAsync(CancellationToken token)
 		{
 			foreach (var watchItem in WatchItems.Where(i => !String.IsNullOrWhiteSpace(i.Name)))
 			{
@@ -188,6 +192,7 @@ namespace SqlPad
 		}
 	}
 
+	[DebuggerDisplay("WatchItem (Name={Name}; Value={_value})")]
 	public class WatchItem : ModelBase
 	{
 		private object _value;

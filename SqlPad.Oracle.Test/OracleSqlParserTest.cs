@@ -2579,6 +2579,16 @@ ORDER BY symbol, tstamp";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
+		[Test(Description = @"")]
+		public void TestCastMultiSet()
+		{
+			const string statement1 = @"SELECT * FROM TABLE(CAST(MULTISET(SELECT * FROM DUAL) AS SYS.ODCIVARCHAR2LIST))";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single().Validate();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+		}
+
 		public class PlSql
 		{
 			[Test(Description = @"")]

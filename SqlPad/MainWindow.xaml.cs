@@ -215,11 +215,20 @@ namespace SqlPad
 				return;
 			}
 
+			var activeDocument = ActiveDocument;
 			var previousDocument = EditorNavigationService.GetPreviousDocumentEdit();
 			EditorNavigationService.IsEnabled = false;
 			if (CloseDocument(currentDocument))
 			{
-				GoToEditCommand(previousDocument);
+				var isDocumentOpen = AllDocuments.Any(p => p.WorkDocument == previousDocument.Document);
+				if (Equals(activeDocument, currentDocument) && isDocumentOpen)
+				{
+					GoToEditCommand(previousDocument);
+				}
+				else
+				{
+					DocumentTabControl.SelectedItem = activeDocument.TabItem;
+				}
 			}
 
 			EditorNavigationService.IsEnabled = true;
@@ -352,7 +361,7 @@ namespace SqlPad
 			WorkDocument workDocument;
 			if (WorkDocumentCollection.TryGetWorkingDocumentFor(document.DocumentFileName, out workDocument))
 			{
-				documentPage = AllDocuments.First(d => d.WorkDocument == workDocument);
+				documentPage = AllDocuments.Single(d => d.WorkDocument == workDocument);
 				DocumentTabControl.SelectedItem = documentPage.TabItem;
 			}
 			else

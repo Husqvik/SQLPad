@@ -3916,9 +3916,7 @@
         <Sequence>
           <NonTerminal Id="ParenthesisEnclosedIdentifierList" />
           <Terminal Id="MathEquals" />
-          <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="NestedQuery" />
-          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ParenthesisEnclosedNestedQuery" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -3948,9 +3946,7 @@
           <NonTerminal Id="Expression" />
         </Sequence>
         <Sequence>
-          <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="NestedQuery" />
-          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ParenthesisEnclosedNestedQuery" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -4561,9 +4557,7 @@
           <Terminal Id="Reference" />
           <Terminal Id="Identifier" />
           <Terminal Id="On" />
-          <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="NestedQuery" />
-          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ParenthesisEnclosedNestedQuery" />
           <NonTerminal Id="ModelColumnClauses" />
           <NonTerminal Id="CellReferenceOptions" IsOptional="true" />
         </Sequence>
@@ -4903,9 +4897,7 @@
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
-          <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="NestedQuery" />
-          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ParenthesisEnclosedNestedQuery" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -4979,9 +4971,7 @@
         </Sequence>
         <Sequence>
           <Terminal Id="Cursor" />
-          <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="NestedQuery" />
-          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ParenthesisEnclosedNestedQuery" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -5379,12 +5369,20 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Multiset" />
-          <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="NestedQuery" />
-          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ParenthesisEnclosedNestedQuery" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="Expression" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ParenthesisEnclosedNestedQuery">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="NestedQuery" />
+          <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -5909,9 +5907,7 @@
         </Sequence>
         <Sequence>
           <Terminal Id="Exists" />
-          <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="NestedQuery" />
-          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ParenthesisEnclosedNestedQuery" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -6871,11 +6867,7 @@
     <Rule StartingNonTerminal="TableCollectionInnerExpression">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="Prefix" IsOptional="true" />
-          <Terminal Id="Identifier" />
-          <NonTerminal Id="DatabaseLink" IsOptional="true" />
-          <NonTerminal Id="ParenthesisEnclosedAggregationFunctionParameters" IsOptional="true" />
-          <NonTerminal Id="OuterJoinOld" IsOptional="true" />
+          <NonTerminal Id="Expression" />
         </Sequence>
         <Sequence>
           <Terminal Id="LeftParenthesis" />

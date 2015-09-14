@@ -509,6 +509,22 @@ BEGIN
 	:entries := index_table;
 END;";
 
+		public const string GetDebuggerSourceCode =
+@"DECLARE
+	source_lines dbms_debug.vc2_table;
+	line_content VARCHAR2(32767);
+BEGIN
+	dbms_debug.show_source(first_line => 1, last_line => :last_line, source => source_lines);
+
+	DBMS_LOB.CREATETEMPORARY(lob_loc => :output_clob, cache => TRUE); 
+	DBMS_LOB.OPEN(lob_loc => :output_clob, open_mode => DBMS_LOB.LOB_READWRITE);
+
+	FOR i IN 1..source_lines.COUNT LOOP
+		line_content := source_lines(i) || CHR(10);
+		DBMS_LOB.WRITEAPPEND(lob_loc => :output_clob, amount => LENGTH(line_content), buffer => line_content);
+	END LOOP;
+END;";
+
 		private static string ToInValueList(params string[] values)
 		{
 			return String.Join(", ", values.Select(t => $"'{t}'"));

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
 using SqlPad.Oracle.DataDictionary;
@@ -61,7 +62,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_debuggerSessionCommand = _debuggerConnection.CreateCommand();
 			_debuggerSessionCommand.BindByName = true;
 
-			_sources.Add(PlSqlBlockTitle, debuggedCommand.CommandText);
+			_sources.Add(PlSqlBlockTitle, debuggedCommand.CommandText.Trim());
 		}
 
 		public async Task<bool> IsRunning(CancellationToken cancellationToken)
@@ -321,13 +322,35 @@ namespace SqlPad.Oracle.DatabaseConnection
 			foreach (var item in stackTrace.Items)
 			{
 				var isAnonymousBlock = String.IsNullOrEmpty(item.Name);
-
 				var objectName = isAnonymousBlock
 					? PlSqlBlockTitle
 					: $"{_runtimeInfo.SourceLocation.Owner}.{_runtimeInfo.SourceLocation.Name}";
 
 				string programText;
 				if (!_sources.TryGetValue(objectName, out programText))
+				//{
+				//	if (isAnonymousBlock && stackTrace.Items[0] != item)
+				//	{
+				//		var anonymousPlSqlSources = await GetAnonymousPlSqlSources(cancellationToken);
+				//		anonymousPlSqlSources = anonymousPlSqlSources.Trim();
+				//		foreach (var kvp in _sources)
+				//		{
+				//			if (String.Equals(kvp.Value, anonymousPlSqlSources))
+				//			{
+				//				objectName = kvp.Key;
+				//				programText = kvp.Value;
+				//				break;
+				//			}
+				//		}
+
+				//		if (String.Equals(objectName, PlSqlBlockTitle))
+				//		{
+				//			objectName = $"dynamic PL/SQL block #{dynamicSqlBlockCounter++}";
+				//			_sources.Add(objectName, anonymousPlSqlSources);
+				//		}
+				//	}
+				//}
+				//else
 				{
 					programText = await GetSources(item, cancellationToken);
 					_sources.Add(objectName, programText);
@@ -343,6 +366,17 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 				_stackTrace.Add(stackTraceItem);
 			}
+		}
+
+		private async Task<string> GetAnonymousPlSqlSources(CancellationToken cancellationToken)
+		{
+			var lineCount = _sources[PlSqlBlockTitle].Count(c => c == '\n') + 1;
+			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.GetDebuggerSourceCode;
+			_debuggerSessionCommand.Parameters.Clear();
+			_debuggerSessionCommand.AddSimpleParameter("LAST_LINE", lineCount, TerminalValues.Number);
+			_debuggerSessionCommand.AddSimpleParameter("OUTPUT_CLOB", null, TerminalValues.Clob);
+			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
+			return ((OracleClob)_debuggerSessionCommand.Parameters["OUTPUT_CLOB"].Value).Value;
 		}
 
 		private async Task<string> GetSources(OracleStackTraceItem activeItem, CancellationToken cancellationToken)

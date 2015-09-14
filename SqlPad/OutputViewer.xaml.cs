@@ -110,11 +110,11 @@ namespace SqlPad
 		private int InitializeResultViewers()
 		{
 			var tabControlIndex = 0;
-			foreach (var executionResult in _executionResult.StatementResults)
+			foreach (var statementResult in _executionResult.StatementResults)
 			{
-				foreach (var resultInfoColumnHeaders in executionResult.ResultInfoColumnHeaders.Where(r => r.Key.Type == ResultIdentifierType.UserDefined))
+				foreach (var resultInfoColumnHeaders in statementResult.ResultInfoColumnHeaders.Where(r => r.Key.Type == ResultIdentifierType.UserDefined))
 				{
-					var resultViewer = new ResultViewer(this, executionResult, resultInfoColumnHeaders.Key, resultInfoColumnHeaders.Value);
+					var resultViewer = new ResultViewer(this, statementResult, resultInfoColumnHeaders.Key, resultInfoColumnHeaders.Value);
 					resultViewer.TabItem.AddHandler(Selector.SelectedEvent, (RoutedEventHandler)ResultTabSelectedHandler);
 
 					if (ActiveResultViewer == null)
@@ -280,7 +280,12 @@ namespace SqlPad
 			{
 				DebuggerViewer.Initialize(this, ConnectionAdapter.DebuggerSession);
 				ConnectionAdapter.DebuggerSession.Attached += delegate { Dispatcher.Invoke(DebuggerSessionSynchronizedHandler); };
-				await ConnectionAdapter.DebuggerSession.Start(_statementExecutionCancellationTokenSource.Token);
+				var exception = await App.SafeActionAsync(() => ConnectionAdapter.DebuggerSession.Start(_statementExecutionCancellationTokenSource.Token));
+				if (exception != null)
+				{
+					Messages.ShowError(exception.Message);
+				}
+
 				return;
 			}
 
@@ -607,7 +612,6 @@ namespace SqlPad
 		{
 			IsDebuggerControlEnabled = false;
 			var exception = await App.SafeActionAsync(() => debuggerAction);
-			IsDebuggerControlEnabled = true;
 
 			if (ConnectionAdapter.DebuggerSession == null)
 			{
@@ -616,9 +620,10 @@ namespace SqlPad
 			}
 			else
 			{
-				DebuggerViewer.DisplaySourceAsync(_statementExecutionCancellationTokenSource.Token);
-				DebuggerViewer.RefreshWatchItemsAsync(_statementExecutionCancellationTokenSource.Token);
+				await DebuggerViewer.Refresh(_statementExecutionCancellationTokenSource.Token);
 			}
+
+			IsDebuggerControlEnabled = true;
 
 			if (exception != null)
 			{

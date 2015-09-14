@@ -61,7 +61,7 @@ namespace SqlPad.Oracle
 				new LineBreakSettings { NonTerminalId = NonTerminals.ConcatenatedSubquery, ChildNodeId = NonTerminals.SetOperation, BreakPosition = n => LineBreakPosition.BeforeNode | LineBreakPosition.AfterNode, GetIndentationBefore = n => -1 },
 				new LineBreakSettings { NonTerminalId = NonTerminals.QueryTableExpression, ChildNodeId = Terminals.RightParenthesis, BreakPosition = n => LineBreakPosition.BeforeNode, GetIndentationBefore = n => -1 },
 				new LineBreakSettings { NonTerminalId = NonTerminals.Condition, ChildNodeId = Terminals.RightParenthesis, GetIndentationAfter = GetAfterConditionClosingParenthesisIndentation },
-				new LineBreakSettings { NonTerminalId = NonTerminals.Expression, ChildNodeId = Terminals.RightParenthesis, GetIndentationAfter = GetAfterExpressionClosingParenthesisIndentation }
+				new LineBreakSettings { NonTerminalId = NonTerminals.ParenthesisEnclosedNestedQuery, ChildNodeId = Terminals.RightParenthesis, GetIndentationAfter = GetAfterExpressionClosingParenthesisIndentation }
 			};
 
 		private static int GetAfterConditionClosingParenthesisIndentation(StatementGrammarNode node)

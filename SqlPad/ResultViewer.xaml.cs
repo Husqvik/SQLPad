@@ -32,7 +32,7 @@ namespace SqlPad
 		public static readonly DependencyProperty SelectedCellMinProperty = DependencyProperty.Register(nameof(SelectedCellMin), typeof(decimal), typeof(ResultViewer), new UIPropertyMetadata(0m));
 		public static readonly DependencyProperty SelectedCellMaxProperty = DependencyProperty.Register(nameof(SelectedCellMax), typeof(decimal), typeof(ResultViewer), new UIPropertyMetadata(0m));
 		public static readonly DependencyProperty SelectedRowIndexProperty = DependencyProperty.Register(nameof(SelectedRowIndex), typeof(int), typeof(ResultViewer), new UIPropertyMetadata(0));
-		public static readonly DependencyProperty AutoRefreshIntervalProperty = DependencyProperty.Register(nameof(AutoRefreshInterval), typeof(TimeSpan), typeof(ResultViewer), new UIPropertyMetadata(TimeSpan.FromSeconds(10), AutoRefreshIntervalChangedCallbackHandler));
+		public static readonly DependencyProperty AutoRefreshIntervalProperty = DependencyProperty.Register(nameof(AutoRefreshInterval), typeof(TimeSpan), typeof(ResultViewer), new UIPropertyMetadata(TimeSpan.FromSeconds(60), AutoRefreshIntervalChangedCallbackHandler));
 		public static readonly DependencyProperty AutoRefreshEnabledProperty = DependencyProperty.Register(nameof(AutoRefreshEnabled), typeof(bool), typeof(ResultViewer), new UIPropertyMetadata(false, AutoRefreshEnabledChangedCallbackHandler));
 		#endregion
 
