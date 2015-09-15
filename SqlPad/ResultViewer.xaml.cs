@@ -18,6 +18,7 @@ using System.Windows.Threading;
 using Microsoft.Win32;
 using SqlPad.DataExport;
 using SqlPad.FindReplace;
+using Xceed.Wpf.Toolkit;
 
 namespace SqlPad
 {
@@ -103,9 +104,14 @@ namespace SqlPad
 		private static void AutoRefreshIntervalChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
 		{
 			var interval = (TimeSpan)args.NewValue;
-			((ResultViewer)dependencyObject)._refreshTimer.Interval = interval.TotalSeconds > 1
-				? interval
-				: TimeSpan.FromSeconds(1);
+			var resultViewer = (ResultViewer)dependencyObject;
+			if (interval.TotalSeconds < 1)
+			{
+				interval = TimeSpan.FromSeconds(1);
+			}
+
+			resultViewer.AutorefreshProgressBar.Maximum = interval.TotalSeconds;
+			resultViewer.RefreshProgressBar();
 		}
 
 		[Bindable(true)]
@@ -117,26 +123,29 @@ namespace SqlPad
 
 		private static void AutoRefreshEnabledChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
 		{
-			var timer = ((ResultViewer)dependencyObject)._refreshTimer;
+			var resultViewer = (ResultViewer)dependencyObject;
 			var enable = (bool)args.NewValue;
 			if (enable)
 			{
-				timer.Start();
+				resultViewer._refreshProgressBarTimer.Start();
+				resultViewer._lastRefresh = DateTime.Now;
+				resultViewer.AutorefreshProgressBar.Maximum = resultViewer.AutorefreshProgressBar.Value = resultViewer.AutoRefreshInterval.TotalSeconds;
 			}
 			else
 			{
-				timer.Stop();
+				resultViewer._refreshProgressBarTimer.Stop();
 			}
 		}
 		#endregion
 
 		private readonly OutputViewer _outputViewer;
 		private readonly ResultInfo _resultInfo;
-		private readonly DispatcherTimer _refreshTimer;
+		private readonly DispatcherTimer _refreshProgressBarTimer;
 		private readonly ObservableCollection<object[]> _resultRows = new ObservableCollection<object[]>();
 		private readonly StatementExecutionResult _executionResult;
 
 		private IReadOnlyList<ColumnHeader> _columnHeaders;
+		private DateTime _lastRefresh;
 		private bool _isSelectingCells;
 		private bool _searchedTextHighlightUsed;
 
@@ -167,8 +176,28 @@ namespace SqlPad
 
 			header.MouseEnter += DataGridTabHeaderMouseEnterHandler;
 
-			_refreshTimer = new DispatcherTimer(DispatcherPriority.Normal, Dispatcher) { Interval = AutoRefreshInterval };
-			_refreshTimer.Tick += RefreshTimerTickHandler;
+			_refreshProgressBarTimer = new DispatcherTimer(DispatcherPriority.Normal, Dispatcher) { Interval = TimeSpan.FromSeconds(0.25) };
+			_refreshProgressBarTimer.Tick += RefreshTimerProgressBarTickHandler;
+		}
+
+		private void RefreshTimerProgressBarTickHandler(object sender, EventArgs eventArgs)
+		{
+			RefreshProgressBar();
+		}
+
+		private void RefreshProgressBar()
+		{
+			var remainingSeconds = AutorefreshProgressBar.Maximum - (DateTime.Now - _lastRefresh).TotalSeconds;
+			if (remainingSeconds < 0)
+			{
+				RefreshTimerTickHandler(this, EventArgs.Empty);
+				remainingSeconds = 0;
+			}
+
+			AutorefreshProgressBar.Value = remainingSeconds;
+			AutorefreshProgressBar.ToolTip = remainingSeconds == 0
+				? "refreshing... "
+				: $"remaining: {TimeSpan.FromSeconds(remainingSeconds).ToPrettyString()}";
 		}
 
 		private async void RefreshTimerTickHandler(object sender, EventArgs eventArgs)
@@ -177,6 +206,8 @@ namespace SqlPad
 			{
 				return;
 			}
+
+			_refreshProgressBarTimer.Stop();
 
 			await App.SafeActionAsync(async () =>
 				await _outputViewer.ExecuteUsingCancellationToken(
@@ -187,6 +218,11 @@ namespace SqlPad
 						await ApplyReferenceConstraints(ct);
 						await FetchNextRows(ct);
 					}));
+
+			AutorefreshProgressBar.Value = AutorefreshProgressBar.Maximum;
+
+			_lastRefresh = DateTime.Now;
+			_refreshProgressBarTimer.Start();
 		}
 
 		private void DataGridTabHeaderMouseEnterHandler(object sender, MouseEventArgs args)
@@ -616,6 +652,15 @@ namespace SqlPad
 		public override object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			return TimeSpan.FromSeconds(System.Convert.ToDouble(value));
+		}
+	}
+
+	public class NumericUpDown : IntegerUpDown
+	{
+		public override void OnApplyTemplate()
+		{
+			base.OnApplyTemplate();
+			TextBox.MaxLength = 8;
 		}
 	}
 }

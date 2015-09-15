@@ -86,6 +86,7 @@
     <Compile Include="MiscellaneousTest.cs" />
     <Compile Include="OracleCodeCompletionProviderTest.cs" />
     <Compile Include="OracleNavigationServiceTest.cs" />
+    <Compile Include="OraclePlSqlStatementSemanticModelTest.cs" />
     <Compile Include="OracleSnippetProviderTest.cs">
       <SubType>Code</SubType>
     </Compile>

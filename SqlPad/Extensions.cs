@@ -122,12 +122,24 @@ namespace SqlPad
 				return $"{(int)timeSpan.TotalMilliseconds} ms";
 			}
 
-			if (timeSpan.TotalMilliseconds < 60000)
+			if (timeSpan.TotalSeconds < 60)
 			{
 				return $"{Math.Round(timeSpan.TotalMilliseconds / 1000, 2)} s";
 			}
 
-			return $"{(int)timeSpan.TotalMinutes:00}:{timeSpan.Seconds:00}";
+			if (timeSpan.TotalHours < 1)
+			{
+				return $"{timeSpan.Minutes:00}:{timeSpan.Seconds:00}";
+			}
+
+			if (timeSpan.TotalDays < 1)
+			{
+				return $"{timeSpan.Hours}:{timeSpan.Minutes:00}:{timeSpan.Seconds:00}";
+			}
+
+			var plural = timeSpan.TotalDays >= 2 ? "s" : null;
+
+			return $"{(int)timeSpan.TotalDays} day{plural} {timeSpan.Hours}:{timeSpan.Minutes:00}:{timeSpan.Seconds:00}";
 		}
 
 		public static async Task<byte[]> ReadAllBytesAsync(this FileStream file, CancellationToken cancellationToken)

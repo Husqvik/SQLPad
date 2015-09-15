@@ -6,7 +6,7 @@
 			 xmlns:globalization="clr-namespace:System.Globalization;assembly=mscorlib"
 			 xmlns:dataExport="clr-namespace:SqlPad.DataExport"
 			 xmlns:sqlPad="clr-namespace:SqlPad"
-			 xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+			 xmlns:system="clr-namespace:System;assembly=mscorlib"
 			 mc:Ignorable="d"
 			 d:DesignHeight="140" d:DesignWidth="384"
 			 Initialized="InitializedHandler"
@@ -66,10 +66,23 @@
 			</Button>
 		</StackPanel>
 
-		<StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-			<CheckBox Content="Autorefresh: " IsChecked="{Binding AutoRefreshEnabled}" VerticalAlignment="Center" />
-			<xctk:IntegerUpDown Value="{Binding AutoRefreshInterval, Converter={StaticResource TimeSpanToIntegerSecondConverter}}" Minimum="1" />
-			<TextBlock Text="seconds" VerticalAlignment="Center" Margin="4,0,0,2" />
+		<StackPanel DockPanel.Dock="Top" >
+			<StackPanel Orientation="Horizontal">
+				<CheckBox Content="Autorefresh: " IsChecked="{Binding AutoRefreshEnabled}" VerticalAlignment="Center" />
+				<sqlPad:NumericUpDown Value="{Binding AutoRefreshInterval, Converter={StaticResource TimeSpanToIntegerSecondConverter}}" Minimum="1" />
+				<TextBlock Text="seconds" VerticalAlignment="Center" Margin="4,0,0,2" />
+			</StackPanel>
+			<ProgressBar x:Name="AutorefreshProgressBar" Height="4" Orientation="Horizontal" ToolTipService.ShowDuration="{x:Static Member=system:Int32.MaxValue}">
+				<ProgressBar.Style>
+					<Style>
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding AutoRefreshEnabled}" Value="False">
+								<Setter Property="ProgressBar.Visibility" Value="Collapsed" />
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</ProgressBar.Style>
+			</ProgressBar>
 		</StackPanel>
 
 		<Popup x:Name="ResultViewTabHeaderPopup" Placement="Top" MouseLeave="DataGridTabHeaderPopupMouseLeaveHandler">
