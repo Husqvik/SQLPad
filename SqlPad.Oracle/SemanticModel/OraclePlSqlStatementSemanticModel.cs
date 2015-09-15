@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using SqlPad.Oracle.DatabaseConnection;
+using SqlPad.Oracle.DataDictionary;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
@@ -75,12 +76,39 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private void ResolveProgramDefinitions()
 		{
+			var identifier = OracleObjectIdentifier.Empty;
+
 			var anonymousPlSqlBlock = String.Equals(Statement.RootNode.Id, NonTerminals.PlSqlBlockStatement);
 			var functionOrProcedure = Statement.RootNode[NonTerminals.CreatePlSqlObjectClause]?[0];
-			var isSchemaFunctionOrProcedure = functionOrProcedure != null && (String.Equals(functionOrProcedure.Id, NonTerminals.CreateProcedure) || String.Equals(functionOrProcedure.Id, NonTerminals.CreateFunction));
-			if (isSchemaFunctionOrProcedure || anonymousPlSqlBlock)
+			var isSchemaProcedure = String.Equals(functionOrProcedure?.Id, NonTerminals.CreateProcedure);
+			var isSchemaFunction = String.Equals(functionOrProcedure?.Id, NonTerminals.CreateFunction);
+			if (isSchemaProcedure || isSchemaFunction || anonymousPlSqlBlock)
 			{
-				var plSqlProgram = new OraclePlSqlProgram { RootNode = functionOrProcedure };
+				StatementGrammarNode schemaObjectNode = null;
+				if (isSchemaFunction)
+				{
+					schemaObjectNode = functionOrProcedure[NonTerminals.PlSqlFunctionSource, NonTerminals.SchemaObject];
+				}
+				else if (isSchemaProcedure)
+				{
+					schemaObjectNode = functionOrProcedure[NonTerminals.SchemaObject];
+				}
+
+				if (schemaObjectNode != null)
+				{
+					var owner = schemaObjectNode[NonTerminals.SchemaPrefix, Terminals.SchemaIdentifier]?.Token.Value ?? DatabaseModel.CurrentSchema;
+					var name = schemaObjectNode[Terminals.ObjectIdentifier]?.Token.Value;
+					identifier = OracleObjectIdentifier.Create(owner, name);
+				}
+
+				var plSqlProgram =
+					new OraclePlSqlProgram
+					{
+						RootNode = functionOrProcedure,
+						ObjectIdentifier = identifier,
+						Name = identifier.NormalizedName
+					};
+
 				_programs.Add(plSqlProgram);
 
 				ResolveSubProgramDefinitions(plSqlProgram);
@@ -95,13 +123,48 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private void ResolveSubProgramDefinitions(OraclePlSqlProgram program)
 		{
+			foreach (var childNode in program.RootNode.ChildNodes)
+			{
+				ResolveSubProgramDefinitions(program, childNode);
+			}
+		}
 
+		private void ResolveSubProgramDefinitions(OraclePlSqlProgram program, StatementGrammarNode node)
+		{
+			foreach (var childNode in node.ChildNodes)
+			{
+				var subProgram = program;
+				if (String.Equals(childNode.Id, NonTerminals.ProcedureDefinition) || String.Equals(childNode.Id, NonTerminals.FunctionDefinition))
+				{
+					var nameTerminal = childNode[0]?[Terminals.Identifier];
+
+					subProgram =
+						new OraclePlSqlProgram
+						{
+							RootNode = childNode,
+							ObjectIdentifier = program.ObjectIdentifier
+						};
+
+					if (nameTerminal != null)
+					{
+						subProgram.Name = nameTerminal.Token.Value.ToQuotedIdentifier();
+					}
+
+					program.SubPrograms.Add(subProgram);
+				}
+
+				ResolveSubProgramDefinitions(subProgram, childNode);
+			}
 		}
 	}
 
 	public class OraclePlSqlProgram
 	{
 		public StatementGrammarNode RootNode { get; set; }
+
+		public OracleObjectIdentifier ObjectIdentifier { get; set; }
+
+		public string Name { get; set; }
 
 		public IList<OraclePlSqlProgram> SubPrograms { get; } = new List<OraclePlSqlProgram>();
 	}
