@@ -131,9 +131,15 @@ namespace SqlPad
 
 		private void RemoveResultViewers()
 		{
-			foreach (var item in TabControlResult.Items.Cast<TabItem>().Where(i => i.Content is ResultViewer).ToArray())
+			var resultViewers = TabControlResult.Items
+				.Cast<TabItem>()
+				.Select(i => i.Content as ResultViewer)
+				.Where(v => v != null)
+				.ToArray();
+
+			foreach (var item in resultViewers)
 			{
-				TabControlResult.RemoveTabItemWithoutBindingError(item);
+				item.Close();
 			}
 
 			ActiveResultViewer = null;
@@ -494,6 +500,7 @@ namespace SqlPad
 
 		public void Dispose()
 		{
+			RemoveResultViewers();
 			Application.Current.Deactivated -= ApplicationDeactivatedHandler;
 			_timerExecutionMonitor.Stop();
 			ConnectionAdapter.Dispose();

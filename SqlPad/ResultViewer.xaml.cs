@@ -180,6 +180,12 @@ namespace SqlPad
 			_refreshProgressBarTimer.Tick += RefreshTimerProgressBarTickHandler;
 		}
 
+		public void Close()
+		{
+			_refreshProgressBarTimer.Stop();
+			_outputViewer.TabControlResult.RemoveTabItemWithoutBindingError(TabItem);
+		}
+
 		private void RefreshTimerProgressBarTickHandler(object sender, EventArgs eventArgs)
 		{
 			RefreshProgressBar();
@@ -197,7 +203,7 @@ namespace SqlPad
 			AutorefreshProgressBar.Value = remainingSeconds;
 			AutorefreshProgressBar.ToolTip = remainingSeconds == 0
 				? "refreshing... "
-				: $"remaining: {TimeSpan.FromSeconds(remainingSeconds).ToPrettyString()}";
+				: $"last refresh: {_lastRefresh}; remaining: {TimeSpan.FromSeconds(remainingSeconds).ToPrettyString()}";
 		}
 
 		private async void RefreshTimerTickHandler(object sender, EventArgs eventArgs)
@@ -209,9 +215,9 @@ namespace SqlPad
 
 			_refreshProgressBarTimer.Stop();
 
-			await App.SafeActionAsync(async () =>
-				await _outputViewer.ExecuteUsingCancellationToken(
-					async ct =>
+			await _outputViewer.ExecuteUsingCancellationToken(
+				async ct => await App.SafeActionAsync(
+					async () =>
 					{
 						_columnHeaders = await _outputViewer.ConnectionAdapter.RefreshResult(_resultInfo, ct);
 						_resultRows.Clear();
