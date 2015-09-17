@@ -697,7 +697,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 						if (executionModel.EnableDebug)
 						{
 							// TODO: Add COMPILE DEBUG
-							InitializeDebuggerSession((OracleCommand)userCommand.Clone());
+							_debuggerSession = new OracleDebuggerSession(this, (OracleCommand)userCommand.Clone(), batchResult);
+							_debuggerSession.Detached += DebuggerSessionDetachedHandler;
+
+							//await _debuggerSession.AddBreakpoint(OracleObjectIdentifier.Create("HUSQVIK", "TESTPROC"), 6, cancellationToken);
+							//await _debuggerSession.GetLineMap(OracleObjectIdentifier.Create("HUSQVIK", "TESTPROC"), cancellationToken);
 						}
 						else
 						{
@@ -710,7 +714,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					{
 						if (isPlSql)
 						{
-							throw new InvalidOperationException("Debugging is not supported for PL/SQL fraction. ");
+							throw new InvalidOperationException("Debugging is not supported for PL/SQL fragment. ");
 						}
 
 						currentStatementResult.ExecutedAt = DateTime.Now;
@@ -729,18 +733,14 @@ namespace SqlPad.Oracle.DatabaseConnection
 						}
 					}
 
-					resultInfoColumnHeaders.AddRange(UpdateBindVariables(statement, userCommand));
-
+					resultInfoColumnHeaders.AddRange(UpdateBindVariables(currentStatementResult.StatementModel, userCommand));
 					currentStatementResult.ResultInfoColumnHeaders = resultInfoColumnHeaders.AsReadOnly();
+					_resultInfoColumnHeaders.AddRange(resultInfoColumnHeaders);
+
 					currentStatementResult.CompilationErrors = _userCommandHasCompilationErrors
 						? await RetrieveCompilationErrors(statement.ValidationModel.Statement, cancellationToken)
 						: CompilationError.EmptyArray;
-
-					_resultInfoColumnHeaders.AddRange(resultInfoColumnHeaders);
 				}
-
-				batchResult.StatementResults = statementResults.AsReadOnly();
-				return batchResult;
 			}
 			catch (OracleException exception)
 			{
@@ -754,7 +754,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 					}
 				}
 
-				batchResult.StatementResults = statementResults.AsReadOnly();
 				var executionException = new StatementExecutionException(batchResult, exception);
 
 				if (!TryHandleNetworkError(exception) && exception.Number == (int)OracleErrorCode.UserInvokedCancellation)
@@ -766,17 +765,13 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 			finally
 			{
+				batchResult.StatementResults = statementResults.AsReadOnly();
+
 				try
 				{
 					if (_userConnection.State == ConnectionState.Open && !executionModel.EnableDebug && !cancellationToken.IsCancellationRequested)
 					{
-						var exception = await ResolveExecutionPlanIdentifiersAndTransactionStatus(cancellationToken);
-						if (exception != null)
-						{
-							await SafeResolveTransactionStatus(cancellationToken);
-						}
-
-						batchResult.DatabaseOutput = await RetrieveDatabaseOutput(cancellationToken);
+						await FinalizeBatchExecution(batchResult, cancellationToken);
 					}
 				}
 				finally
@@ -784,6 +779,19 @@ namespace SqlPad.Oracle.DatabaseConnection
 					_isExecuting = false;
 				}
 			}
+
+			return batchResult;
+		}
+
+		internal async Task FinalizeBatchExecution(StatementExecutionBatchResult batchResult, CancellationToken cancellationToken)
+		{
+			var exception = await ResolveExecutionPlanIdentifiersAndTransactionStatus(cancellationToken);
+			if (exception != null)
+			{
+				await SafeResolveTransactionStatus(cancellationToken);
+			}
+
+			batchResult.DatabaseOutput = await RetrieveDatabaseOutput(cancellationToken);
 		}
 
 		private bool TryHandleNetworkError(OracleException exception)
@@ -833,17 +841,15 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return value;
 		}
 
-		private void InitializeDebuggerSession(OracleCommand command)
-		{
-			_debuggerSession = new OracleDebuggerSession(command);
-			_debuggerSession.Detached += DebuggerSessionDetachedHandler;
-
-			//await _debuggerSession.SetBreakpoint(OracleObjectIdentifier.Create("HUSQVIK", "TESTPROC"), 6, cancellationToken);
-			//await _debuggerSession.GetLineMap(OracleObjectIdentifier.Create("HUSQVIK", "TESTPROC"), cancellationToken);
-		}
-
 		private void DebuggerSessionDetachedHandler(object sender, EventArgs args)
 		{
+			var statementResult = _debuggerSession.ExecutionResult.StatementResults[0];
+			var resultInfoColumnHeaders = new Dictionary<ResultInfo, IReadOnlyList<ColumnHeader>>();
+			resultInfoColumnHeaders.AddRange(AcquireImplicitRefCursors(_debuggerSession.DebuggedCommand));
+			resultInfoColumnHeaders.AddRange(UpdateBindVariables(statementResult.StatementModel, _debuggerSession.DebuggedCommand));
+			_resultInfoColumnHeaders.AddRange(resultInfoColumnHeaders);
+			statementResult.ResultInfoColumnHeaders = resultInfoColumnHeaders.AsReadOnly();
+
 			_debuggerSession.Detached -= DebuggerSessionDetachedHandler;
 			_debuggerSession.Dispose();
 			_debuggerSession = null;

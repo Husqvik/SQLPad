@@ -31,16 +31,16 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private static readonly XmlSerializer StackTraceSerializer = new XmlSerializer(typeof(OracleStackTrace));
 
+		private readonly OracleConnectionAdapter _connectionAdapter;
 		private readonly OracleCommand _debuggedSessionCommand;
 		private readonly OracleConnection _debuggerConnection;
 		private readonly OracleCommand _debuggerSessionCommand;
-		private readonly OracleCommand _debuggedCommand;
 		private readonly List<StackTraceItem> _stackTrace = new List<StackTraceItem>();
 		private readonly Dictionary<string, string> _sources = new Dictionary<string, string>();
 
 		private OracleRuntimeInfo _runtimeInfo;
 		private string _debuggerSessionId;
-		private Task _debuggedAction;
+		private Task<int> _debuggedAction;
 
 		public event EventHandler Detached;
 
@@ -50,12 +50,18 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public int? ActiveLine => _runtimeInfo.SourceLocation.LineNumber;
 
+		internal StatementExecutionBatchResult ExecutionResult { get; }
+
+		internal OracleCommand DebuggedCommand { get; }
+
 		public IReadOnlyList<StackTraceItem> StackTrace => _stackTrace;
 
-		public OracleDebuggerSession(OracleCommand debuggedCommand)
+		public OracleDebuggerSession(OracleConnectionAdapter connectionAdapter, OracleCommand debuggedCommand, StatementExecutionBatchResult executionResult)
 		{
-			_debuggedCommand = debuggedCommand;
-			var debuggedConnection = _debuggedCommand.Connection;
+			_connectionAdapter = connectionAdapter;
+			ExecutionResult = executionResult;
+			DebuggedCommand = debuggedCommand;
+			var debuggedConnection = DebuggedCommand.Connection;
 			_debuggedSessionCommand = debuggedConnection.CreateCommand();
 			_debuggedSessionCommand.BindByName = true;
 			_debuggerConnection = (OracleConnection)debuggedConnection.Clone();
@@ -105,7 +111,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			var attachTask = Synchronize(cancellationToken).ContinueWith(AfterSynchronized, cancellationToken, TaskContinuationOptions.OnlyOnRanToCompletion);
 
-			_debuggedAction = _debuggedCommand.ExecuteNonQueryAsynchronous(cancellationToken);
+			_debuggedAction = DebuggedCommand.ExecuteNonQueryAsynchronous(cancellationToken);
 			Trace.WriteLine("Debugged action started. ");
 
 			await attachTask;
@@ -450,7 +456,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return value.IsNull ? (int?)null : Convert.ToInt32(value.Value);
 		}
 
-		public async Task SetBreakpoint(OracleObjectIdentifier objectIdentifier, int line, CancellationToken cancellationToken)
+		public async Task<int?> AddBreakpoint(OracleObjectIdentifier objectIdentifier, int line, CancellationToken cancellationToken)
 		{
 			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.SetDebuggerBreakpoint;
 			_debuggerSessionCommand.Parameters.Clear();
@@ -467,6 +473,36 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var breakpointIdentifier = GetNullableValueFromOracleDecimal(breakpointIdentifierParameter);
 
 			Trace.WriteLine($"Breakpoint '{breakpointIdentifier}' set ({result}). ");
+			return breakpointIdentifier;
+		}
+
+		public async Task<bool> EnableBreakpoint(int breakpointIdentifier, CancellationToken cancellationToken)
+		{
+			_debuggerConnection.ActionName = "Enable breakpoint";
+			return await SetBreakpoint(breakpointIdentifier, "enable", cancellationToken);
+		}
+
+		public async Task<bool> DisableBreakpoint(int breakpointIdentifier, CancellationToken cancellationToken)
+		{
+			_debuggerConnection.ActionName = "Disable breakpoint";
+			return await SetBreakpoint(breakpointIdentifier, "disable", cancellationToken);
+		}
+
+		public async Task<bool> DeleteBreakpoint(int breakpointIdentifier, CancellationToken cancellationToken)
+		{
+			_debuggerConnection.ActionName = "Delete breakpoint";
+			return await SetBreakpoint(breakpointIdentifier, "delete", cancellationToken);
+		}
+
+		private async Task<bool> SetBreakpoint(int breakpointIdentifier, string option, CancellationToken cancellationToken)
+		{
+			_debuggerSessionCommand.CommandText = $"BEGIN :result := dbms_debug.{option}_breakpoint(breakpoint => :breakpointIdentifier); END;";
+			_debuggerSessionCommand.AddSimpleParameter("BREAKPOINT_IDENTIFIER", breakpointIdentifier);
+			var resultParameter = _debuggerSessionCommand.AddSimpleParameter("RESULT", null, TerminalValues.Number);
+			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
+
+			var result = (OracleBreakpointFunctionResult)GetValueFromOracleDecimal(resultParameter);
+			return result == OracleBreakpointFunctionResult.Success;
 		}
 
 		public Task Continue(CancellationToken cancellationToken)
@@ -493,6 +529,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return ContinueAndDetachIfTerminated(OracleDebugBreakFlags.AnyReturn, cancellationToken);
 		}
 
+		public Task Abort(CancellationToken cancellationToken)
+		{
+			_debuggerConnection.ActionName = "Abort";
+			return ContinueAndDetachIfTerminated(OracleDebugBreakFlags.AbortExecution, cancellationToken);
+		}
+
 		private void TerminateTargetSessionDebugMode()
 		{
 			_debuggedSessionCommand.CommandText = OracleDatabaseCommands.FinalizeDebuggee;
@@ -502,7 +544,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			Trace.WriteLine("Target session debug mode terminated. ");
 		}
 
-		public async Task Detach(CancellationToken cancellationToken)
+		private async Task Detach(CancellationToken cancellationToken)
 		{
 			var taskDebugOff = _debuggedAction.ContinueWith(t => TerminateTargetSessionDebugMode(), cancellationToken);
 
@@ -517,6 +559,15 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			Trace.WriteLine("Debugger detached from target session. ");
 
+			var statementResult = ExecutionResult.StatementResults[0];
+			if (_debuggedAction.Status == TaskStatus.RanToCompletion)
+			{
+				statementResult.AffectedRowCount = _debuggedAction.Result;
+			}
+
+			statementResult.Duration = DateTime.Now - statementResult.ExecutedAt;
+			await _connectionAdapter.FinalizeBatchExecution(ExecutionResult, cancellationToken);
+
 			RaiseDetached();
 		}
 
@@ -527,7 +578,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public void Dispose()
 		{
-			_debuggedCommand.Dispose();
+			Attached = null;
+			Detached = null;
+
+			DebuggedCommand.Dispose();
 			_debuggedSessionCommand.Dispose();
 			_debuggerSessionCommand.Dispose();
 			_debuggerConnection.Dispose();

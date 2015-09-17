@@ -237,7 +237,7 @@ WHERE
 				var innerException = taskException.InnerExceptions[0];
 				innerException.ShouldBeTypeOf<StatementExecutionException>();
 
-				var executionException = (StatementExecutionException) innerException;
+				var executionException = (StatementExecutionException)innerException;
 				executionException.BatchResult.StatementResults.Count.ShouldBe(1);
 				var result = executionException.BatchResult.StatementResults[0];
 

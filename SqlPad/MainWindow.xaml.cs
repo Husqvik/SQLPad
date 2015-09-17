@@ -220,7 +220,7 @@ namespace SqlPad
 			EditorNavigationService.IsEnabled = false;
 			if (CloseDocument(currentDocument))
 			{
-				var isDocumentOpen = AllDocuments.Any(p => p.WorkDocument == previousDocument.Document);
+				var isDocumentOpen = previousDocument != null && AllDocuments.Any(p => p.WorkDocument == previousDocument.Document);
 				if (Equals(activeDocument, currentDocument) && isDocumentOpen)
 				{
 					GoToEditCommand(previousDocument);

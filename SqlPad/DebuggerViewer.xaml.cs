@@ -54,9 +54,9 @@ namespace SqlPad
 			_debuggerSession.Attached += delegate { Dispatcher.Invoke(DebuggerAttachedHandler); };
 		}
 
-		private void DebuggerAttachedHandler()
+		private async void DebuggerAttachedHandler()
 		{
-			Refresh(CancellationToken.None);
+			await Refresh(CancellationToken.None);
 			EnsureWatchItem();
 		}
 

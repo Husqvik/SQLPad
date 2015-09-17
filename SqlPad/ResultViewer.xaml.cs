@@ -130,6 +130,7 @@ namespace SqlPad
 				resultViewer._lastRefresh = DateTime.Now;
 				resultViewer._refreshProgressBarTimer.Start();
 				resultViewer.AutorefreshProgressBar.Maximum = resultViewer.AutorefreshProgressBar.Value = resultViewer.AutoRefreshInterval.TotalSeconds;
+				resultViewer.RefreshProgressBar();
 			}
 			else
 			{
@@ -196,14 +197,41 @@ namespace SqlPad
 			var remainingSeconds = AutorefreshProgressBar.Maximum - (DateTime.Now - _lastRefresh).TotalSeconds;
 			if (remainingSeconds < 0)
 			{
-				RefreshTimerTickHandler(this, EventArgs.Empty);
+				if (AutoRefreshEnabled)
+				{
+					RefreshTimerTickHandler(this, EventArgs.Empty);
+				}
+
 				remainingSeconds = 0;
+			}
+			else
+			{
+				AdjustProgressBarRefreshInterval(remainingSeconds);
 			}
 
 			AutorefreshProgressBar.Value = remainingSeconds;
 			AutorefreshProgressBar.ToolTip = remainingSeconds == 0
 				? "refreshing... "
 				: $"last refresh: {_lastRefresh}; remaining: {TimeSpan.FromSeconds(remainingSeconds).ToPrettyString()}";
+		}
+
+		private void AdjustProgressBarRefreshInterval(double remainingSeconds)
+		{
+			TimeSpan interval;
+			if (remainingSeconds < 4)
+			{
+				interval = TimeSpan.FromSeconds(0.1);
+			}
+			else if (remainingSeconds < 60)
+			{
+				interval = TimeSpan.FromSeconds(0.25);
+			}
+			else
+			{
+				interval = TimeSpan.FromSeconds(1);
+			}
+
+			_refreshProgressBarTimer.Interval = interval;
 		}
 
 		private async void RefreshTimerTickHandler(object sender, EventArgs eventArgs)

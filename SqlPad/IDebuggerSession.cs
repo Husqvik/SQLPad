@@ -11,6 +11,8 @@ namespace SqlPad
 
 		event EventHandler Attached;
 
+		event EventHandler Detached;
+
 		IReadOnlyList<StackTraceItem> StackTrace { get; }
 
 		Task Start(CancellationToken cancellationToken);
@@ -23,7 +25,7 @@ namespace SqlPad
 
 		Task StepOut(CancellationToken cancellationToken);
 
-		Task Detach(CancellationToken cancellationToken);
+		Task Abort(CancellationToken cancellationToken);
 
 		Task GetValue(WatchItem watchItem, CancellationToken cancellationToken);
 

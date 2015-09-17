@@ -286,6 +286,7 @@ namespace SqlPad
 			{
 				DebuggerViewer.Initialize(this, ConnectionAdapter.DebuggerSession);
 				ConnectionAdapter.DebuggerSession.Attached += delegate { Dispatcher.Invoke(DebuggerSessionSynchronizedHandler); };
+				ConnectionAdapter.DebuggerSession.Detached += DebuggerSessionDetachedHandler;
 				var exception = await App.SafeActionAsync(() => ConnectionAdapter.DebuggerSession.Start(_statementExecutionCancellationTokenSource.Token));
 				if (exception != null)
 				{
@@ -307,7 +308,19 @@ namespace SqlPad
 			}
 
 			UpdateTimerMessage(actionResult.Elapsed, false);
-			
+
+			await DisplayExecutionResult();
+		}
+
+		private async void DebuggerSessionDetachedHandler(object sender, EventArgs args)
+		{
+			await DisplayExecutionResult();
+		}
+
+		private async Task DisplayExecutionResult()
+		{
+			var lastStatementResult = _executionResult.StatementResults.Last();
+
 			WriteDatabaseOutput(_executionResult.DatabaseOutput);
 
 			var keepPreviousSelectedTab = false;
@@ -655,7 +668,7 @@ namespace SqlPad
 
 		private async void ButtonDebuggerAbortClickHandler(object sender, RoutedEventArgs e)
 		{
-			await ExecuteUsingCancellationToken(t => ExecuteDebuggerAction(ConnectionAdapter.DebuggerSession.Detach(t)));
+			await ExecuteUsingCancellationToken(t => ExecuteDebuggerAction(ConnectionAdapter.DebuggerSession.Abort(t)));
 		}
 	}
 }
