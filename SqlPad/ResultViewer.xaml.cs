@@ -33,8 +33,8 @@ namespace SqlPad
 		public static readonly DependencyProperty SelectedCellMinProperty = DependencyProperty.Register(nameof(SelectedCellMin), typeof(decimal), typeof(ResultViewer), new UIPropertyMetadata(0m));
 		public static readonly DependencyProperty SelectedCellMaxProperty = DependencyProperty.Register(nameof(SelectedCellMax), typeof(decimal), typeof(ResultViewer), new UIPropertyMetadata(0m));
 		public static readonly DependencyProperty SelectedRowIndexProperty = DependencyProperty.Register(nameof(SelectedRowIndex), typeof(int), typeof(ResultViewer), new UIPropertyMetadata(0));
-		public static readonly DependencyProperty AutoRefreshIntervalProperty = DependencyProperty.Register(nameof(AutoRefreshInterval), typeof(TimeSpan), typeof(ResultViewer), new UIPropertyMetadata(TimeSpan.FromSeconds(60), AutoRefreshIntervalChangedCallbackHandler));
-		public static readonly DependencyProperty AutoRefreshEnabledProperty = DependencyProperty.Register(nameof(AutoRefreshEnabled), typeof(bool), typeof(ResultViewer), new UIPropertyMetadata(false, AutoRefreshEnabledChangedCallbackHandler));
+		public static readonly DependencyProperty AutoRefreshIntervalProperty = DependencyProperty.Register(nameof(AutoRefreshInterval), typeof(TimeSpan), typeof(ResultViewer), new UIPropertyMetadata(TimeSpan.FromSeconds(60), AutoRefreshIntervalChangedCallback));
+		public static readonly DependencyProperty AutoRefreshEnabledProperty = DependencyProperty.Register(nameof(AutoRefreshEnabled), typeof(bool), typeof(ResultViewer), new UIPropertyMetadata(false, AutoRefreshEnabledChangedCallback));
 		#endregion
 
 		#region dependency property accessors
@@ -101,7 +101,7 @@ namespace SqlPad
 			set { SetValue(AutoRefreshIntervalProperty, value); }
 		}
 
-		private static void AutoRefreshIntervalChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
+		private static void AutoRefreshIntervalChangedCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
 		{
 			var interval = (TimeSpan)args.NewValue;
 			var resultViewer = (ResultViewer)dependencyObject;
@@ -121,14 +121,14 @@ namespace SqlPad
 			set { SetValue(AutoRefreshEnabledProperty, value); }
 		}
 
-		private static void AutoRefreshEnabledChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
+		private static void AutoRefreshEnabledChangedCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
 		{
 			var resultViewer = (ResultViewer)dependencyObject;
 			var enable = (bool)args.NewValue;
 			if (enable)
 			{
-				resultViewer._refreshProgressBarTimer.Start();
 				resultViewer._lastRefresh = DateTime.Now;
+				resultViewer._refreshProgressBarTimer.Start();
 				resultViewer.AutorefreshProgressBar.Maximum = resultViewer.AutorefreshProgressBar.Value = resultViewer.AutoRefreshInterval.TotalSeconds;
 			}
 			else
