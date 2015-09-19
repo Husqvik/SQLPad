@@ -35,7 +35,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private readonly OracleCommand _debuggedSessionCommand;
 		private readonly OracleConnection _debuggerConnection;
 		private readonly OracleCommand _debuggerSessionCommand;
-		private readonly List<StackTraceItem> _stackTrace = new List<StackTraceItem>();
+		private readonly List<DebugProgramItem> _stackTrace = new List<DebugProgramItem>();
 		private readonly Dictionary<string, string> _sources = new Dictionary<string, string>();
 
 		private OracleRuntimeInfo _runtimeInfo;
@@ -54,7 +54,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		internal OracleCommand DebuggedCommand { get; }
 
-		public IReadOnlyList<StackTraceItem> StackTrace => _stackTrace;
+		public IReadOnlyList<DebugProgramItem> StackTrace => _stackTrace;
 
 		public OracleDebuggerSession(OracleConnectionAdapter connectionAdapter, OracleCommand debuggedCommand, StatementExecutionBatchResult executionResult)
 		{
@@ -328,6 +328,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			foreach (var item in stackTrace.Items)
 			{
 				var isAnonymousBlock = String.IsNullOrEmpty(item.Name);
+				var objectIdentifier = OracleObjectIdentifier.Create(_runtimeInfo.SourceLocation.Owner, _runtimeInfo.SourceLocation.Name);
 				var objectName = isAnonymousBlock
 					? PlSqlBlockTitle
 					: $"{_runtimeInfo.SourceLocation.Owner}.{_runtimeInfo.SourceLocation.Name}";
@@ -362,15 +363,16 @@ namespace SqlPad.Oracle.DatabaseConnection
 					_sources.Add(objectName, programText);
 				}
 
-				var stackTraceItem =
-					new StackTraceItem
+				var debugProgramItem =
+					new DebugProgramItem
 					{
 						Header = objectName,
 						ProgramText = programText,
-						Line = item.Line
+						Line = item.Line,
+						ProgramIdentifier = objectIdentifier
 					};
 
-				_stackTrace.Add(stackTraceItem);
+				_stackTrace.Add(debugProgramItem);
 			}
 		}
 
@@ -456,7 +458,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return value.IsNull ? (int?)null : Convert.ToInt32(value.Value);
 		}
 
-		public async Task<int?> AddBreakpoint(OracleObjectIdentifier objectIdentifier, int line, CancellationToken cancellationToken)
+		public async Task<BreakpointActionResult> SetBreakpoint(object programInfo, int line, CancellationToken cancellationToken)
+		{
+			return await SetBreakpoint((OracleObjectIdentifier)programInfo, line, cancellationToken);
+		}
+
+		public async Task<BreakpointActionResult> SetBreakpoint(OracleObjectIdentifier objectIdentifier, int line, CancellationToken cancellationToken)
 		{
 			_debuggerSessionCommand.CommandText = OracleDatabaseCommands.SetDebuggerBreakpoint;
 			_debuggerSessionCommand.Parameters.Clear();
@@ -473,36 +480,50 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var breakpointIdentifier = GetNullableValueFromOracleDecimal(breakpointIdentifierParameter);
 
 			Trace.WriteLine($"Breakpoint '{breakpointIdentifier}' set ({result}). ");
-			return breakpointIdentifier;
+			return
+				new BreakpointActionResult
+				{
+					BreakpointIdentifier = breakpointIdentifier,
+					IsSuccessful = result == OracleBreakpointFunctionResult.Success
+				};
 		}
 
-		public async Task<bool> EnableBreakpoint(int breakpointIdentifier, CancellationToken cancellationToken)
+		public async Task<BreakpointActionResult> EnableBreakpoint(object breakpointIdentifier, CancellationToken cancellationToken)
 		{
 			_debuggerConnection.ActionName = "Enable breakpoint";
-			return await SetBreakpoint(breakpointIdentifier, "enable", cancellationToken);
+			return await ConfigureBreakpoint(breakpointIdentifier, "enable", cancellationToken);
 		}
 
-		public async Task<bool> DisableBreakpoint(int breakpointIdentifier, CancellationToken cancellationToken)
+		public async Task<BreakpointActionResult> DisableBreakpoint(object breakpointIdentifier, CancellationToken cancellationToken)
 		{
 			_debuggerConnection.ActionName = "Disable breakpoint";
-			return await SetBreakpoint(breakpointIdentifier, "disable", cancellationToken);
+			return await ConfigureBreakpoint(breakpointIdentifier, "disable", cancellationToken);
 		}
 
-		public async Task<bool> DeleteBreakpoint(int breakpointIdentifier, CancellationToken cancellationToken)
+		public async Task<BreakpointActionResult> DeleteBreakpoint(object breakpointIdentifier, CancellationToken cancellationToken)
 		{
 			_debuggerConnection.ActionName = "Delete breakpoint";
-			return await SetBreakpoint(breakpointIdentifier, "delete", cancellationToken);
+			return await ConfigureBreakpoint(breakpointIdentifier, "delete", cancellationToken);
 		}
 
-		private async Task<bool> SetBreakpoint(int breakpointIdentifier, string option, CancellationToken cancellationToken)
+		private async Task<BreakpointActionResult> ConfigureBreakpoint(object breakpointIdentifier, string option, CancellationToken cancellationToken)
 		{
-			_debuggerSessionCommand.CommandText = $"BEGIN :result := dbms_debug.{option}_breakpoint(breakpoint => :breakpointIdentifier); END;";
+			_debuggerSessionCommand.CommandText = $"BEGIN :result := dbms_debug.{option}_breakpoint(breakpoint => :breakpoint_identifier); END;";
+			_debuggerSessionCommand.Parameters.Clear();
 			_debuggerSessionCommand.AddSimpleParameter("BREAKPOINT_IDENTIFIER", breakpointIdentifier);
 			var resultParameter = _debuggerSessionCommand.AddSimpleParameter("RESULT", null, TerminalValues.Number);
 			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
 
 			var result = (OracleBreakpointFunctionResult)GetValueFromOracleDecimal(resultParameter);
-			return result == OracleBreakpointFunctionResult.Success;
+
+			Trace.WriteLine($"Breakpoint '{breakpointIdentifier}' {option}d ({result}). ");
+
+			return
+				new BreakpointActionResult
+				{
+					BreakpointIdentifier = breakpointIdentifier,
+					IsSuccessful = result == OracleBreakpointFunctionResult.Success
+				};
 		}
 
 		public Task Continue(CancellationToken cancellationToken)

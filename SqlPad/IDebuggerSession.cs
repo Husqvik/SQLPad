@@ -13,7 +13,7 @@ namespace SqlPad
 
 		event EventHandler Detached;
 
-		IReadOnlyList<StackTraceItem> StackTrace { get; }
+		IReadOnlyList<DebugProgramItem> StackTrace { get; }
 
 		Task Start(CancellationToken cancellationToken);
 
@@ -30,14 +30,27 @@ namespace SqlPad
 		Task GetValue(WatchItem watchItem, CancellationToken cancellationToken);
 
 		Task SetValue(WatchItem watchItem, CancellationToken cancellationToken);
+
+		Task<BreakpointActionResult> SetBreakpoint(object programInfo, int line, CancellationToken cancellationToken);
+
+		Task<BreakpointActionResult> DeleteBreakpoint(object breakpointIdentifier, CancellationToken cancellationToken);
 	}
 
-	public class StackTraceItem
+	public class DebugProgramItem
 	{
 		public string Header { get; set; }
 
 		public string ProgramText { get; set; }
 
 		public int Line { get; set; }
+
+		public object ProgramIdentifier { get; set; }
+	}
+
+	public struct BreakpointActionResult
+	{
+		public object BreakpointIdentifier;
+
+		public bool IsSuccessful;
 	}
 }

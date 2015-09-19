@@ -74,7 +74,6 @@ namespace SqlPad
 		private readonly Dictionary<string, BindVariableConfiguration> _currentBindVariables = new Dictionary<string, BindVariableConfiguration>();
 
 		private readonly SqlFoldingStrategy _foldingStrategy;
-		private readonly IconMargin _iconMargin;
 
 		private CompletionWindow _completionWindow;
 		private ConnectionStringSettings _connectionString;
@@ -109,8 +108,6 @@ namespace SqlPad
 		{
 			InitializeComponent();
 
-			_iconMargin = new IconMargin(Editor);
-			//Editor.TextArea.LeftMargins.Add(_iconMargin);
 			//Editor.TextArea.LeftMargins.Add(new ModificationNotificationMargin(Editor));
 			_foldingStrategy = new SqlFoldingStrategy(FoldingManager.Install(Editor.TextArea), Editor);
 			_foldingStrategy.FoldingMargin.ContextMenu = (ContextMenu)Resources["FoldingActionMenu"];
@@ -416,7 +413,6 @@ namespace SqlPad
 			DatabaseModel = InfrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings[_connectionString.Name], DocumentHeader);
 			SchemaLabel = InfrastructureFactory.SchemaLabel;
 			_sqlDocumentRepository = new SqlDocumentRepository(InfrastructureFactory.CreateParser(), InfrastructureFactory.CreateStatementValidator(), DatabaseModel);
-			_iconMargin.DocumentRepository = _sqlDocumentRepository;
 
 			DisposeOutputViewers();
 			AddNewOutputViewer();

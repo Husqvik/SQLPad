@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Input;
+using SqlPad.Bookmarks;
 
 namespace SqlPad
 {
@@ -18,7 +19,7 @@ namespace SqlPad
 		private IDebuggerSession _debuggerSession;
 		private bool _isInitialized;
 
-		public IList<StackTraceItem> StackTrace { get; } = new ObservableCollection<StackTraceItem>();
+		public IList<DebugProgramItem> StackTrace { get; } = new ObservableCollection<DebugProgramItem>();
 
 		public IList<WatchItem> WatchItems { get; } = new ObservableCollection<WatchItem>();
 
@@ -77,8 +78,8 @@ namespace SqlPad
 			DebuggerTabItem debuggerView;
 			if (!_viewers.TryGetValue(activeStackItem.Header, out debuggerView))
 			{
-				debuggerView = new DebuggerTabItem(activeStackItem.Header);
-				debuggerView.CodeViewer.Initialize(_outputViewer.DocumentPage.InfrastructureFactory, _outputViewer.ConnectionAdapter.DatabaseModel);
+				debuggerView = new DebuggerTabItem(activeStackItem, _outputViewer);
+				debuggerView.BreakpointChanged += CodeViewerBreakpointChangedHandler;
 
 				await debuggerView.CodeViewer.LoadAsync(activeStackItem.ProgramText, cancellationToken);
 
@@ -91,6 +92,28 @@ namespace SqlPad
 			HighlightStackTraceLines();
 
 			await RefreshWatchItemsAsync(cancellationToken);
+		}
+
+		private void CodeViewerBreakpointChangedHandler(object sender, BreakpointChangedEventArgs args)
+		{
+			var debuggerView = (DebuggerTabItem)sender;
+			var breakpoint = args.Breakpoint;
+
+			switch (args.State)
+			{
+				case BreakpointState.Added:
+					args.SetBreakpointTask = _debuggerSession.SetBreakpoint(debuggerView.ProgramItem.ProgramIdentifier, breakpoint.Anchor.Line, CancellationToken.None);
+					break;
+				case BreakpointState.Enabled:
+					//args.SetBreakpointTask = _debuggerSession.EnableBreakpoint(breakpoint.Identifier, CancellationToken.None);
+					break;
+				case BreakpointState.Disabled:
+					//args.SetBreakpointTask = _debuggerSession.DisableBreakpoint(breakpoint.Identifier, CancellationToken.None);
+					break;
+				case BreakpointState.Removed:
+					args.SetBreakpointTask = _debuggerSession.DeleteBreakpoint(breakpoint.Identifier, CancellationToken.None);
+					break;
+			}
 		}
 
 		private void HighlightStackTraceLines()
@@ -123,7 +146,7 @@ namespace SqlPad
 				return;
 			}
 
-			var currentItem = (StackTraceItem)StackTraceItems.SelectedItem;
+			var currentItem = (DebugProgramItem)StackTraceItems.SelectedItem;
 			var debuggerViewer = _viewers[currentItem.Header];
 			TabSourceViewer.SelectedItem = debuggerViewer;
 			debuggerViewer.CodeViewer.Editor.ScrollToLine(currentItem.Line);

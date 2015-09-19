@@ -700,7 +700,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 							_debuggerSession = new OracleDebuggerSession(this, (OracleCommand)userCommand.Clone(), batchResult);
 							_debuggerSession.Detached += DebuggerSessionDetachedHandler;
 
-							//await _debuggerSession.AddBreakpoint(OracleObjectIdentifier.Create("HUSQVIK", "TESTPROC"), 6, cancellationToken);
+							//await _debuggerSession.SetBreakpoint(OracleObjectIdentifier.Create("HUSQVIK", "TESTPROC"), 6, cancellationToken);
 							//await _debuggerSession.GetLineMap(OracleObjectIdentifier.Create("HUSQVIK", "TESTPROC"), cancellationToken);
 						}
 						else

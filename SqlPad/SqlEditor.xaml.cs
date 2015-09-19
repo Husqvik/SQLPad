@@ -18,12 +18,12 @@ namespace SqlPad
 	{
 		private readonly SqlDocumentColorizingTransformer _colorizingTransformer = new SqlDocumentColorizingTransformer();
 		private readonly Popup _dynamicPopup;
-		private readonly IconMargin _iconMargin;
 
-		private SqlDocumentRepository _sqlDocumentRepository;
 		private IHelpProvider _createHelpProvider;
 		private ICodeCompletionProvider _codeCompletionProvider;
 		private INavigationService _navigationService;
+
+		public SqlDocumentRepository DocumentRepository { get; private set; }
 
 		public bool ColorizeBackground
 		{
@@ -34,9 +34,6 @@ namespace SqlPad
 		public SqlEditor()
 		{
 			InitializeComponent();
-
-			_iconMargin = new IconMargin(Editor);
-			Editor.TextArea.LeftMargins.Add(_iconMargin);
 
 			Editor.TextArea.TextView.LineTransformers.Add(_colorizingTransformer);
 
@@ -49,20 +46,20 @@ namespace SqlPad
 			_codeCompletionProvider = infrastructureFactory.CreateCodeCompletionProvider();
 			_navigationService = infrastructureFactory.CreateNavigationService();
 			_colorizingTransformer.SetParser(infrastructureFactory.CreateParser());
-			_iconMargin.DocumentRepository = _sqlDocumentRepository = new SqlDocumentRepository(infrastructureFactory.CreateParser(), infrastructureFactory.CreateStatementValidator(), databaseModel);
+			DocumentRepository = new SqlDocumentRepository(infrastructureFactory.CreateParser(), infrastructureFactory.CreateStatementValidator(), databaseModel);
 		}
 
 		public async Task LoadAsync(string sqlText, CancellationToken cancellationToken)
 		{
 			Editor.Text = sqlText;
-			await _sqlDocumentRepository.UpdateStatementsAsync(sqlText, cancellationToken);
-			_colorizingTransformer.SetDocumentRepository(_sqlDocumentRepository);
+			await DocumentRepository.UpdateStatementsAsync(sqlText, cancellationToken);
+			_colorizingTransformer.SetDocumentRepository(DocumentRepository);
 			Editor.TextArea.TextView.Redraw();
 		}
 
 		private void ShowFunctionOverloads(object sender, ExecutedRoutedEventArgs args)
 		{
-			var functionOverloads = _codeCompletionProvider.ResolveFunctionOverloads(_sqlDocumentRepository, Editor.CaretOffset);
+			var functionOverloads = _codeCompletionProvider.ResolveFunctionOverloads(DocumentRepository, Editor.CaretOffset);
 			if (functionOverloads.Count == 0)
 			{
 				return;
@@ -80,7 +77,7 @@ namespace SqlPad
 
 		private void FindUsages(object sender, ExecutedRoutedEventArgs args)
 		{
-			var executionContext = ActionExecutionContext.Create(Editor, _sqlDocumentRepository);
+			var executionContext = ActionExecutionContext.Create(Editor, DocumentRepository);
 			_navigationService.FindUsages(executionContext);
 			AddHighlightSegments(executionContext.SegmentsToReplace);
 		}
@@ -94,8 +91,8 @@ namespace SqlPad
 		private void NavigateToPreviousHighlightedUsage(object sender, ExecutedRoutedEventArgs args)
 		{
 			var nextSegments = _colorizingTransformer.HighlightSegments
-						.Where(s => s.IndextStart < Editor.CaretOffset)
-						.OrderByDescending(s => s.IndextStart);
+				.Where(s => s.IndextStart < Editor.CaretOffset)
+				.OrderByDescending(s => s.IndextStart);
 
 			NavigateToUsage(nextSegments);
 		}
@@ -103,8 +100,8 @@ namespace SqlPad
 		private void NavigateToNextHighlightedUsage(object sender, ExecutedRoutedEventArgs args)
 		{
 			var nextSegments = _colorizingTransformer.HighlightSegments
-						.Where(s => s.IndextStart > Editor.CaretOffset)
-						.OrderBy(s => s.IndextStart);
+				.Where(s => s.IndextStart > Editor.CaretOffset)
+				.OrderBy(s => s.IndextStart);
 
 			NavigateToUsage(nextSegments);
 		}
@@ -126,14 +123,14 @@ namespace SqlPad
 
 		private void NavigateToQueryBlockRoot(object sender, ExecutedRoutedEventArgs args)
 		{
-			var executionContext = ActionExecutionContext.Create(Editor, _sqlDocumentRepository);
+			var executionContext = ActionExecutionContext.Create(Editor, DocumentRepository);
 			var queryBlockRootIndex = _navigationService.NavigateToQueryBlockRoot(executionContext);
 			Editor.NavigateToOffset(queryBlockRootIndex);
 		}
 
 		private void NavigateToDefinition(object sender, ExecutedRoutedEventArgs args)
 		{
-			var executionContext = ActionExecutionContext.Create(Editor, _sqlDocumentRepository);
+			var executionContext = ActionExecutionContext.Create(Editor, DocumentRepository);
 			var queryBlockRootIndex = _navigationService.NavigateToDefinition(executionContext);
 			Editor.NavigateToOffset(queryBlockRootIndex);
 		}
@@ -150,7 +147,7 @@ namespace SqlPad
 
 		private void ShowHelpHandler(object sender, ExecutedRoutedEventArgs e)
 		{
-			var executionContext = ActionExecutionContext.Create(Editor, _sqlDocumentRepository);
+			var executionContext = ActionExecutionContext.Create(Editor, DocumentRepository);
 			_createHelpProvider.ShowHelp(executionContext);
 		}
 	}
@@ -167,7 +164,24 @@ namespace SqlPad
 	{
 		private readonly ExecutedCodeBackgroundRenderer _backgroundRenderer = new ExecutedCodeBackgroundRenderer();
 
+		public DebugProgramItem ProgramItem { get; }
+
 		public SqlEditor CodeViewer { get; }
+
+		public event EventHandler<BreakpointChangedEventArgs> BreakpointChanged;
+
+		public DebuggerTabItem(DebugProgramItem programItem, OutputViewer outputViewer)
+		{
+			ProgramItem = programItem;
+
+			Header = programItem.Header;
+			Content = CodeViewer = new SqlEditor { ColorizeBackground = false };
+			CodeViewer.Initialize(outputViewer.DocumentPage.InfrastructureFactory, outputViewer.ConnectionAdapter.DatabaseModel);
+			CodeViewer.Editor.TextArea.TextView.BackgroundRenderers.Add(_backgroundRenderer);
+
+			var iconMargin = new IconMargin(this) { DocumentRepository = CodeViewer.DocumentRepository };
+			CodeViewer.Editor.TextArea.LeftMargins.Add(iconMargin);
+		}
 
 		public void HighlightStackTraceLines(int? activeLineNumber, IEnumerable<int> inactiveLines)
 		{
@@ -181,11 +195,9 @@ namespace SqlPad
 			CodeViewer.Editor.TextArea.TextView.Redraw();
 		}
 
-		public DebuggerTabItem(string header)
+		internal void RaiseBreakpointChanged(BreakpointChangedEventArgs args)
 		{
-			Header = header;
-			Content = CodeViewer = new SqlEditor { ColorizeBackground = false };
-			CodeViewer.Editor.TextArea.TextView.BackgroundRenderers.Add(_backgroundRenderer);
+			BreakpointChanged?.Invoke(this, args);
 		}
 	}
 }
