@@ -12,6 +12,7 @@ namespace SqlPad
 		public const string DefaultDocumentHeaderBackgroundColorCode = "#FFFFFFFF";
 		private double _fontSize;
 		private List<bool> _foldingStates;
+		private HashSet<BreakpointData> _breakpoints;
 		private string[] _watchItems;
 
 		public WorkDocument()
@@ -104,6 +105,8 @@ namespace SqlPad
 			}
 			set { _fontSize = value; }
 		}
+
+		public ICollection<BreakpointData> Breakpoints => _breakpoints ?? (_breakpoints = new HashSet<BreakpointData>());
 
 		public WorkDocument CloneAsRecent()
 		{

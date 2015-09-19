@@ -20,7 +20,6 @@ using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Folding;
 using Microsoft.Win32;
-using SqlPad.Bookmarks;
 using SqlPad.Commands;
 using SqlPad.FindReplace;
 using MessageBox = System.Windows.MessageBox;

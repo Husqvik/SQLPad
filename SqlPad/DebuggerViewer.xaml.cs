@@ -14,6 +14,7 @@ namespace SqlPad
 	public partial class DebuggerViewer
 	{
 		private readonly Dictionary<string, DebuggerTabItem> _viewers = new Dictionary<string, DebuggerTabItem>();
+		private readonly Dictionary<BreakpointData, object> _breakpointIdentifiers = new Dictionary<BreakpointData, object>();
 
 		private OutputViewer _outputViewer;
 		private IDebuggerSession _debuggerSession;
@@ -57,8 +58,27 @@ namespace SqlPad
 
 		private async void DebuggerAttachedHandler()
 		{
+			await RestoreBreakPointConfiguration();
 			await Refresh(CancellationToken.None);
 			EnsureWatchItem();
+		}
+
+		private async Task RestoreBreakPointConfiguration()
+		{
+			foreach (var breakpoint in _outputViewer.DocumentPage.WorkDocument.Breakpoints)
+			{
+				object breakpointIdentifier;
+				if (_breakpointIdentifiers.TryGetValue(breakpoint, out breakpointIdentifier))
+				{
+					continue;
+				}
+
+				var result = await _debuggerSession.SetBreakpoint(breakpoint.ProgramIdentifier, breakpoint.LineNumber, CancellationToken.None);
+				if (result.IsSuccessful)
+				{
+					_breakpointIdentifiers.Add(breakpoint, result.BreakpointIdentifier);
+				}
+			}
 		}
 
 		private void EnsureWatchItem()
@@ -79,12 +99,18 @@ namespace SqlPad
 			if (!_viewers.TryGetValue(activeStackItem.Header, out debuggerView))
 			{
 				debuggerView = new DebuggerTabItem(activeStackItem, _outputViewer);
+				debuggerView.BreakpointChanging += CodeViewerBreakpointChangingHandler;
 				debuggerView.BreakpointChanged += CodeViewerBreakpointChangedHandler;
 
 				await debuggerView.CodeViewer.LoadAsync(activeStackItem.ProgramText, cancellationToken);
 
 				_viewers.Add(activeStackItem.Header, debuggerView);
 				TabSourceViewer.Items.Add(debuggerView);
+
+				foreach (var breakpointIdentifier in _breakpointIdentifiers.Where(kvp => kvp.Key.ProgramIdentifier.Equals(activeStackItem.ProgramIdentifier)).ToArray())
+				{
+					debuggerView.AddBreakpoint(breakpointIdentifier.Key, breakpointIdentifier.Value);
+				}
 			}
 
 			TabSourceViewer.SelectedItem = debuggerView;
@@ -94,7 +120,7 @@ namespace SqlPad
 			await RefreshWatchItemsAsync(cancellationToken);
 		}
 
-		private void CodeViewerBreakpointChangedHandler(object sender, BreakpointChangedEventArgs args)
+		private void CodeViewerBreakpointChangingHandler(object sender, BreakpointChangingEventArgs args)
 		{
 			var debuggerView = (DebuggerTabItem)sender;
 			var breakpoint = args.Breakpoint;
@@ -102,7 +128,8 @@ namespace SqlPad
 			switch (args.State)
 			{
 				case BreakpointState.Added:
-					args.SetBreakpointTask = _debuggerSession.SetBreakpoint(debuggerView.ProgramItem.ProgramIdentifier, breakpoint.Anchor.Line, CancellationToken.None);
+					args.SetBreakpointTask =
+						_debuggerSession.SetBreakpoint(debuggerView.ProgramItem.ProgramIdentifier, breakpoint.Anchor.Line, CancellationToken.None);
 					break;
 				case BreakpointState.Enabled:
 					//args.SetBreakpointTask = _debuggerSession.EnableBreakpoint(breakpoint.Identifier, CancellationToken.None);
@@ -111,8 +138,21 @@ namespace SqlPad
 					//args.SetBreakpointTask = _debuggerSession.DisableBreakpoint(breakpoint.Identifier, CancellationToken.None);
 					break;
 				case BreakpointState.Removed:
-					args.SetBreakpointTask = _debuggerSession.DeleteBreakpoint(breakpoint.Identifier, CancellationToken.None);
+					args.SetBreakpointTask =
+						_debuggerSession.DeleteBreakpoint(breakpoint.Identifier, CancellationToken.None);
 					break;
+			}
+		}
+
+		private void CodeViewerBreakpointChangedHandler(object sender, BreakpointChangedEventArgs args)
+		{
+			if (args.State == BreakpointState.Added)
+			{
+				_breakpointIdentifiers[args.BreakpointData] = args.Breakpoint.Identifier;
+			}
+			else
+			{
+				_breakpointIdentifiers.Remove(args.BreakpointData);
 			}
 		}
 

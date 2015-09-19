@@ -163,24 +163,35 @@ namespace SqlPad
 	public class DebuggerTabItem : TabItem
 	{
 		private readonly ExecutedCodeBackgroundRenderer _backgroundRenderer = new ExecutedCodeBackgroundRenderer();
+		private readonly IconMargin _iconMargin;
 
 		public DebugProgramItem ProgramItem { get; }
 
 		public SqlEditor CodeViewer { get; }
+
+		public OutputViewer OutputViewer { get; }
+
+		public event EventHandler<BreakpointChangingEventArgs> BreakpointChanging;
 
 		public event EventHandler<BreakpointChangedEventArgs> BreakpointChanged;
 
 		public DebuggerTabItem(DebugProgramItem programItem, OutputViewer outputViewer)
 		{
 			ProgramItem = programItem;
+			OutputViewer = outputViewer;
 
 			Header = programItem.Header;
 			Content = CodeViewer = new SqlEditor { ColorizeBackground = false };
 			CodeViewer.Initialize(outputViewer.DocumentPage.InfrastructureFactory, outputViewer.ConnectionAdapter.DatabaseModel);
 			CodeViewer.Editor.TextArea.TextView.BackgroundRenderers.Add(_backgroundRenderer);
 
-			var iconMargin = new IconMargin(this) { DocumentRepository = CodeViewer.DocumentRepository };
-			CodeViewer.Editor.TextArea.LeftMargins.Add(iconMargin);
+			_iconMargin = new IconMargin(this) { DocumentRepository = CodeViewer.DocumentRepository };
+			CodeViewer.Editor.TextArea.LeftMargins.Add(_iconMargin);
+		}
+
+		public void AddBreakpoint(BreakpointData breakpoint, object breakpointIdentifier)
+		{
+			_iconMargin.AddExistingBreakpoint(breakpointIdentifier, breakpoint.LineNumber, breakpoint.IsEnabled);
 		}
 
 		public void HighlightStackTraceLines(int? activeLineNumber, IEnumerable<int> inactiveLines)
@@ -193,6 +204,11 @@ namespace SqlPad
 			}
 
 			CodeViewer.Editor.TextArea.TextView.Redraw();
+		}
+
+		internal void RaiseBreakpointChanging(BreakpointChangingEventArgs args)
+		{
+			BreakpointChanging?.Invoke(this, args);
 		}
 
 		internal void RaiseBreakpointChanged(BreakpointChangedEventArgs args)

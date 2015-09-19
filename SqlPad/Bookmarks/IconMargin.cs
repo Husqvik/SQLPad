@@ -19,6 +19,8 @@ namespace SqlPad.Bookmarks
 		private readonly HashSet<BreakpointMarker> _markers = new HashSet<BreakpointMarker>();
 		private readonly List<BreakpointMarker> _visibleMarkers = new List<BreakpointMarker>();
 
+		private ICollection<BreakpointData> DocumentBreakpoints => _debuggerView.OutputViewer.DocumentPage.WorkDocument.Breakpoints;
+
 		public SqlDocumentRepository DocumentRepository { get; set; }
 
 		public IEnumerable<Breakpoint> Breakpoints => _markers.Select(m => m.Breakpoint);
@@ -43,21 +45,46 @@ namespace SqlPad.Bookmarks
 
 			RemoveVisualChild(marker);
 			InvalidateMeasure();
+
+			DocumentBreakpoints.Remove(GetBreakpointData(marker.Breakpoint));
 		}
 
-		public async void AddBreakpoint(BreakpointMarker marker)
+		public void AddExistingBreakpoint(object breakpointIdentifier, int line, bool enable)
 		{
-			var actionResult = await SafeRaiseBreakpointChanged(marker.Breakpoint, BreakpointState.Added);
+			var sqlTextEditor = _debuggerView.CodeViewer.Editor;
+			var lineStartOffset = sqlTextEditor.Document.GetLineByNumber(line).Offset;
+			var anchor = sqlTextEditor.Document.CreateAnchor(lineStartOffset);
+			var breakpoint = new Breakpoint(anchor) { Identifier = breakpointIdentifier, IsEnabled = enable };
+			AddBreakpointMarker(breakpoint);
+		}
+
+		private void AddBreakpointMarker(Breakpoint breakpoint)
+		{
+			_markers.Add(new BreakpointMarker(breakpoint));
+			InvalidateMeasure();
+		}
+
+		public async Task AddBreakpoint(int offset, bool enable = true)
+		{
+			var sqlTextEditor = _debuggerView.CodeViewer.Editor;
+			var lineStartOffset = sqlTextEditor.Document.GetLineByOffset(offset).Offset;
+			var anchor = sqlTextEditor.Document.CreateAnchor(lineStartOffset);
+			var breakpoint = new Breakpoint(anchor) { IsEnabled = enable };
+
+			var actionResult = await SafeRaiseBreakpointChanged(breakpoint, BreakpointState.Added);
 			if (!actionResult.IsSuccessful)
 			{
 				return;
 			}
 
-			marker.Breakpoint.Identifier = actionResult.BreakpointIdentifier;
+			AddBreakpointMarker(breakpoint);
 
-			_markers.Add(marker);
+			DocumentBreakpoints.Add(GetBreakpointData(breakpoint));
+		}
 
-			InvalidateMeasure();
+		private BreakpointData GetBreakpointData(Breakpoint breakpoint)
+		{
+			return new BreakpointData(_debuggerView.ProgramItem.ProgramIdentifier, breakpoint.Anchor.Line, breakpoint.IsEnabled);
 		}
 
 		private async Task<BreakpointActionResult> SafeRaiseBreakpointChanged(Breakpoint breakpoint, BreakpointState breakpointState)
@@ -66,9 +93,19 @@ namespace SqlPad.Bookmarks
 
 			try
 			{
-				var args = new BreakpointChangedEventArgs(breakpoint, breakpointState);
-				_debuggerView.RaiseBreakpointChanged(args);
-				result = await args.SetBreakpointTask;
+				var changingEventArgs = new BreakpointChangingEventArgs(breakpoint, breakpointState);
+				_debuggerView.RaiseBreakpointChanging(changingEventArgs);
+				result = await changingEventArgs.SetBreakpointTask;
+
+				if (result.IsSuccessful)
+				{
+					if (breakpointState == BreakpointState.Added)
+					{
+						breakpoint.Identifier = result.BreakpointIdentifier;
+					}
+
+					_debuggerView.RaiseBreakpointChanged(new BreakpointChangedEventArgs(breakpoint, breakpointState, GetBreakpointData(breakpoint)));
+				}
 			}
 			catch (Exception exception)
 			{
@@ -103,7 +140,7 @@ namespace SqlPad.Bookmarks
 				_visibleMarkers.Add(marker);
 				AddVisualChild(marker);
 
-				var topLeft = new Point(0, visualLine.VisualTop - textView.VerticalOffset + 2);
+				var topLeft = new Point(0, visualLine.VisualTop - textView.VerticalOffset);
 				marker.Arrange(new Rect(PixelSnapHelpers.Round(topLeft, pixelSize), marker.DesiredSize));
 			}
 			
@@ -132,7 +169,7 @@ namespace SqlPad.Bookmarks
 			InvalidateVisual();
 		}
 
-		protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+		protected async override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
 		{
 			e.Handled = true;
 
@@ -145,10 +182,7 @@ namespace SqlPad.Bookmarks
 			}
 
 			var offset = sqlTextEditor.Document.GetOffset(position.Value.Line, position.Value.Column);
-			var anchor = sqlTextEditor.Document.CreateAnchor(offset);
-			var breakpoint = new BreakpointMarker(new Breakpoint(anchor));
-
-			AddBreakpoint(breakpoint);
+			await AddBreakpoint(offset);
 		}
 
 		protected override HitTestResult HitTestCore(PointHitTestParameters hitTestParameters)
@@ -192,7 +226,7 @@ namespace SqlPad.Bookmarks
 		{
 			Brush brush;
 			Pen pen;
-			if (Breakpoint.Enabled)
+			if (Breakpoint.IsEnabled)
 			{
 				pen = EdgePenEnabled;
 				brush = Brushes.Red;
@@ -219,26 +253,45 @@ namespace SqlPad.Bookmarks
 	{
 		public TextAnchor Anchor { get; }
 
-		public bool Enabled { get; set; }
+		public bool IsEnabled { get; set; }
 
 		public object Identifier { get; set; }
 
 		public Breakpoint(TextAnchor anchor)
 		{
 			Anchor = anchor;
-			Enabled = true;
+			IsEnabled = true;
 		}
 	}
 
-	public class BreakpointChangedEventArgs : EventArgs
+	public class BreakpointChangingEventArgs : BreakpointChangedEventArgsBase
+	{
+		public Task<BreakpointActionResult> SetBreakpointTask { get; set; }
+
+		public BreakpointChangingEventArgs(Breakpoint breakpoint, BreakpointState state)
+			: base(breakpoint, state)
+		{
+		}
+	}
+
+	public class BreakpointChangedEventArgs : BreakpointChangedEventArgsBase
+	{
+		public BreakpointData BreakpointData { get; }
+
+		public BreakpointChangedEventArgs(Breakpoint breakpoint, BreakpointState state, BreakpointData breakpointData)
+			: base(breakpoint, state)
+		{
+			BreakpointData = breakpointData;
+		}
+	}
+
+	public abstract class BreakpointChangedEventArgsBase : EventArgs
 	{
 		public Breakpoint Breakpoint { get; }
 
 		public BreakpointState State { get; }
 
-		public Task<BreakpointActionResult> SetBreakpointTask { get; set; }
-
-		public BreakpointChangedEventArgs(Breakpoint breakpoint, BreakpointState state)
+		protected BreakpointChangedEventArgsBase(Breakpoint breakpoint, BreakpointState state)
 		{
 			Breakpoint = breakpoint;
 			State = state;

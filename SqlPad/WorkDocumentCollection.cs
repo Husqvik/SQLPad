@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows;
 using ProtoBuf.Meta;
 
@@ -38,22 +39,29 @@ namespace SqlPad
 
 			var workingDocumentType = Serializer.Add(typeof(WorkDocument), false);
 			workingDocumentType.UseConstructor = false;
-			workingDocumentType.Add("DocumentFileName", "DocumentId", "ConnectionName", "SchemaName", "CursorPosition", "SelectionStart", "SelectionLength", "IsModified", "VisualLeft", "VisualTop", "EditorGridRowHeight", "Text", "EditorGridColumnWidth", "TabIndex", "_foldingStates", "EnableDatabaseOutput", "KeepDatabaseOutputHistory", "HeaderBackgroundColorCode", "DocumentTitle", "_fontSize", "WatchItems", "DebuggerViewDefaultTabIndex");
+			workingDocumentType.Add(nameof(WorkDocument.DocumentFileName), nameof(WorkDocument.DocumentId), nameof(WorkDocument.ConnectionName), nameof(WorkDocument.SchemaName), nameof(WorkDocument.CursorPosition),
+				nameof(WorkDocument.SelectionStart), nameof(WorkDocument.SelectionLength), nameof(WorkDocument.IsModified), nameof(WorkDocument.VisualLeft), nameof(WorkDocument.VisualTop), nameof(WorkDocument.EditorGridRowHeight),
+				nameof(WorkDocument.Text), nameof(WorkDocument.EditorGridColumnWidth), nameof(WorkDocument.TabIndex), "_foldingStates", nameof(WorkDocument.EnableDatabaseOutput), nameof(WorkDocument.KeepDatabaseOutputHistory),
+				nameof(WorkDocument.HeaderBackgroundColorCode), nameof(WorkDocument.DocumentTitle), "_fontSize", nameof(WorkDocument.WatchItems), nameof(WorkDocument.DebuggerViewDefaultTabIndex), "_breakpoints");
 
 			var windowPropertiesType = Serializer.Add(typeof(WindowProperties), false);
 			windowPropertiesType.UseConstructor = false;
-			windowPropertiesType.Add("Left", "Top", "Width", "Height", "State");
+			windowPropertiesType.Add(nameof(WindowProperties.Left), nameof(WindowProperties.Top), nameof(WindowProperties.Width), nameof(WindowProperties.Height), nameof(WindowProperties.State));
 
 			var sqlPadConfigurationType = Serializer.Add(typeof(DatabaseProviderConfiguration), false);
 			sqlPadConfigurationType.UseConstructor = false;
-			sqlPadConfigurationType.Add("_bindVariables", "ProviderName", "_statementExecutionHistory");
+			sqlPadConfigurationType.Add("_bindVariables", nameof(DatabaseProviderConfiguration.ProviderName), "_statementExecutionHistory");
 
 			var bindVariableConfigurationType = Serializer.Add(typeof(BindVariableConfiguration), false);
-			bindVariableConfigurationType.Add("Name", "DataType", "_internalValue", "IsFilePath");
+			bindVariableConfigurationType.Add(nameof(BindVariableConfiguration.Name), nameof(BindVariableConfiguration.DataType), "_internalValue", nameof(BindVariableConfiguration.IsFilePath));
 
 			var statementExecutionType = Serializer.Add(typeof(StatementExecutionHistoryEntry), false);
 			statementExecutionType.UseConstructor = false;
-			statementExecutionType.Add("StatementText", "ExecutedAt", "Tags");
+			statementExecutionType.Add(nameof(StatementExecutionHistoryEntry.StatementText), nameof(StatementExecutionHistoryEntry.ExecutedAt), nameof(StatementExecutionHistoryEntry.Tags));
+
+			var breakpointDataType = Serializer.Add(typeof(BreakpointData), false);
+			breakpointDataType.UseConstructor = false;
+			breakpointDataType.Add("_programIdentifier", nameof(BreakpointData.LineNumber), nameof(BreakpointData.IsEnabled));
 		}
 
 		private WorkDocumentCollection() {}
@@ -379,5 +387,70 @@ namespace SqlPad
 		public double Width { get; private set; }
 		public double Height { get; private set; }
 		public WindowState State { get; private set; }
+	}
+
+	[DebuggerDisplay("BreakpointData (ObjectIdentifier={ProgramIdentifier}, Offset={LineNumber}, IsEnabled={IsEnabled})")]
+	public class BreakpointData
+	{
+		private static readonly BinaryFormatter Formatter = new BinaryFormatter();
+
+		private readonly byte[] _programIdentifier;
+
+		private object _programIdentifierValue;
+
+		public object ProgramIdentifier
+		{
+			get
+			{
+				if (_programIdentifierValue != null)
+				{
+					return _programIdentifierValue;
+				}
+
+				using (var stream = new MemoryStream(_programIdentifier))
+				{
+					return _programIdentifierValue = Formatter.Deserialize(stream);
+				}
+			}
+		}
+
+		public int LineNumber { get; private set; }
+
+		public bool IsEnabled { get; private set; }
+
+		public BreakpointData(object programIdentifier, int lineNumber, bool isEnabled)
+		{
+			using (var stream = new MemoryStream())
+			{
+				Formatter.Serialize(stream, programIdentifier);
+				stream.Seek(0, SeekOrigin.Begin);
+				_programIdentifier = stream.ToArray();
+			}
+
+			_programIdentifierValue = programIdentifier;
+
+			LineNumber = lineNumber;
+			IsEnabled = isEnabled;
+		}
+
+		protected bool Equals(BreakpointData other)
+		{
+			return Equals(_programIdentifierValue, other._programIdentifierValue) && LineNumber == other.LineNumber;
+		}
+
+		public override bool Equals(object obj)
+		{
+			if (ReferenceEquals(null, obj)) return false;
+			if (ReferenceEquals(this, obj)) return true;
+			return obj.GetType() == GetType() && Equals((BreakpointData)obj);
+		}
+
+		public override int GetHashCode()
+		{
+			unchecked
+			{
+				return (_programIdentifierValue.GetHashCode() * 397) ^ LineNumber;
+			}
+		}
 	}
 }

@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace SqlPad.Oracle.DataDictionary
 {
-	[DebuggerDisplay("OracleObjectIdentifier (Owner={Owner,nq}; Name={Name,nq})")]
+	[DebuggerDisplay("OracleObjectIdentifier (Owner={Owner,nq}; Name={Name,nq})"), Serializable]
 	public struct OracleObjectIdentifier
 	{
 		public static readonly OracleObjectIdentifier Empty = new OracleObjectIdentifier(null, null);

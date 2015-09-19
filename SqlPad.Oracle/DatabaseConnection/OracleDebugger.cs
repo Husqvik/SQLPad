@@ -128,7 +128,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			if (result != ValueInfoStatus.ErrorIndexedTable)
 			{
-				watchItem.Value = value;
+				watchItem.Value = result == ValueInfoStatus.ErrorNullValue ? "NULL" : value;
 				return;
 			}
 

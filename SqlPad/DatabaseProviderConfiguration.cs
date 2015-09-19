@@ -104,7 +104,7 @@ namespace SqlPad
 			{
 				return true;
 			}
-			
+
 			return obj.GetType() == GetType() && Equals((StatementExecutionHistoryEntry)obj);
 		}
 
@@ -122,7 +122,7 @@ namespace SqlPad
 		private object _value;
 
 		public string Name { get; set; }
-		
+
 		public string DataType { get; set; }
 
 		public bool IsFilePath { get; set; }
@@ -171,7 +171,7 @@ namespace SqlPad
 		}
 
 		public ReadOnlyDictionary<string, BindVariableType> DataTypes { get; set; }
-		
+
 		public IReadOnlyList<StatementGrammarNode> Nodes { get; set; }
 	}
 
