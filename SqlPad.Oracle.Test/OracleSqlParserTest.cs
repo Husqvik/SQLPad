@@ -2589,6 +2589,16 @@ ORDER BY symbol, tstamp";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
+		[Test(Description = @"")]
+		public void TestPartitionJoinWithNonParenthesisEnclosedKey()
+		{
+			const string statement1 = @"SELECT * FROM DUAL T1 LEFT JOIN DUAL T2 PARTITION BY DUMMY ON T1.DUMMY = T2.DUMMY";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
+		}
+
 		public class PlSql
 		{
 			[Test(Description = @"")]

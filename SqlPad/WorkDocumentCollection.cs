@@ -435,7 +435,7 @@ namespace SqlPad
 
 		protected bool Equals(BreakpointData other)
 		{
-			return Equals(_programIdentifierValue, other._programIdentifierValue) && LineNumber == other.LineNumber;
+			return Equals(ProgramIdentifier, other.ProgramIdentifier) && LineNumber == other.LineNumber;
 		}
 
 		public override bool Equals(object obj)
@@ -449,7 +449,7 @@ namespace SqlPad
 		{
 			unchecked
 			{
-				return (_programIdentifierValue.GetHashCode() * 397) ^ LineNumber;
+				return (ProgramIdentifier.GetHashCode() * 397) ^ LineNumber;
 			}
 		}
 	}

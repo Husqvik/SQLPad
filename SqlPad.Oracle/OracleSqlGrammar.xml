@@ -7542,7 +7542,7 @@
         <Sequence>
           <Terminal Id="Partition" />
           <Terminal Id="By" />
-          <NonTerminal Id="GroupingExpressionList" />
+          <NonTerminal Id="ParenthesisEnclosedExpressionListWithMandatoryExpressions" Comment="Invalid documentation; accepts only parenthesis enclosed expression list" />
         </Sequence>
       </Sequences>
     </Rule>
