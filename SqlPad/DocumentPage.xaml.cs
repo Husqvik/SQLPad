@@ -657,11 +657,6 @@ namespace SqlPad
 
 		private void InitializeGenericCommandBindings()
 		{
-			ChangeDeleteLineCommandInputGesture();
-
-			Editor.TextArea.CommandBindings.Add(new CommandBinding(GenericCommands.DuplicateText, GenericCommandHandler.DuplicateText));
-			Editor.TextArea.CommandBindings.Add(new CommandBinding(GenericCommands.BlockComment, GenericCommandHandler.HandleBlockComments));
-			Editor.TextArea.CommandBindings.Add(new CommandBinding(GenericCommands.LineComment, GenericCommandHandler.HandleLineComments));
 			Editor.TextArea.CommandBindings.Add(new CommandBinding(GenericCommands.MultiNodeEdit, EditMultipleNodes));
 
 			Editor.TextArea.CommandBindings.Add(new CommandBinding(DiagnosticCommands.ShowTokenCommand, ShowTokenCommandExecutionHandler));
@@ -973,15 +968,6 @@ namespace SqlPad
 			}
 		}
 
-		private void ChangeDeleteLineCommandInputGesture()
-		{
-			var deleteLineCommand = (RoutedCommand)Editor.TextArea.DefaultInputHandler.Editing.CommandBindings
-				.Single(b => b.Command == AvalonEditCommands.DeleteLine)
-				.Command;
-
-			deleteLineCommand.InputGestures[0] = new KeyGesture(Key.L, ModifierKeys.Control);
-		}
-
 		private void PageLoadedHandler(object sender, RoutedEventArgs e)
 		{
 			if (_isInitializing)
@@ -1160,7 +1146,7 @@ namespace SqlPad
 			var oldCorrespondingTerminals = _colorizingTransformer.CorrespondingSegments.ToArray();
 			_colorizingTransformer.SetCorrespondingTerminals(correspondingSegments);
 
-			RedrawSegments(oldCorrespondingTerminals.Concat(correspondingSegments));
+			Editor.RedrawSegments(oldCorrespondingTerminals.Concat(correspondingSegments));
 		}
 
 		private void HighlightActiveStatement(StatementBase newActiveStatement)
@@ -1188,7 +1174,7 @@ namespace SqlPad
 					segments.Add(newActiveStatement.SourcePosition);
 				}
 
-				RedrawSegments(segments);
+				Editor.RedrawSegments(segments);
 			}
 		}
 
@@ -1284,14 +1270,6 @@ namespace SqlPad
 			}
 
 			return models.AsReadOnly();
-		}
-
-		private void RedrawSegments(IEnumerable<SourcePosition> segments)
-		{
-			foreach (var segment in segments)
-			{
-				Editor.TextArea.TextView.Redraw(segment.IndexStart, segment.Length);
-			}
 		}
 
 		private void TextEnteredHandler(object sender, TextCompositionEventArgs e)

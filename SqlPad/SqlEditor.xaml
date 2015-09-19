@@ -9,10 +9,36 @@
              d:DesignHeight="100" d:DesignWidth="240">
 	
 	<UserControl.Resources>
-        <sqlPad:IsReadOnlyToVisibilityConverter x:Key="IsReadOnlyToVisibilityConverter" />
+		<sqlPad:IsReadOnlyToVisibilityConverter x:Key="IsReadOnlyToVisibilityConverter" />
+		
+		<ContextMenu x:Key="ContextMenuReadOnly">
+			<MenuItem Command="Copy" />
+		</ContextMenu>
+		
+		<ContextMenu x:Key="ContextMenuReadWrite">
+			<MenuItem Command="Undo" />
+				<MenuItem Command="Redo" />
+				<Separator />
+				<MenuItem Command="Cut" />
+				<MenuItem Command="Copy" />
+				<MenuItem Command="Paste" />
+		</ContextMenu>
 	</UserControl.Resources>
 
 	<sqlPad:SqlTextEditor x:Name="Editor" IsReadOnly="True" FontFamily="Consolas" ShowLineNumbers="True">
+		<sqlPad:SqlTextEditor.Style>
+			<Style>
+				<Style.Triggers>
+					<Trigger Property="sqlPad:SqlTextEditor.IsReadOnly" Value="True">
+						<Setter Property="sqlPad:SqlTextEditor.ContextMenu" Value="{StaticResource ContextMenuReadOnly}" />
+					</Trigger>
+					<Trigger Property="sqlPad:SqlTextEditor.IsReadOnly" Value="False">
+						<Setter Property="sqlPad:SqlTextEditor.ContextMenu" Value="{StaticResource ContextMenuReadWrite}" />
+					</Trigger>
+				</Style.Triggers>
+			</Style>
+		</sqlPad:SqlTextEditor.Style>
+		
 		<sqlPad:SqlTextEditor.CommandBindings>
 			<CommandBinding Command="commands:GenericCommands.FindUsages" Executed="FindUsages" />
 			<CommandBinding Command="commands:GenericCommands.NavigateToDefinitionRoot" Executed="NavigateToDefinition" />
@@ -24,16 +50,5 @@
 			<CommandBinding Command="commands:GenericCommands.ZoomOut" Executed="EditorZoomOutHandler" />
 			<CommandBinding Command="commands:GenericCommands.Help" Executed="ShowHelpHandler" />
 		</sqlPad:SqlTextEditor.CommandBindings>
-
-		<!--<sqlPad:SqlTextEditor.ContextMenu>
-			<ContextMenu DataContext="{Binding ElementName=Editor}">
-				<MenuItem Command="Undo" Visibility="{Binding IsReadOnly, Converter={StaticResource IsReadOnlyToVisibilityConverter}}" />
-				<MenuItem Command="Redo" Visibility="{Binding IsReadOnly, Converter={StaticResource IsReadOnlyToVisibilityConverter}}"/>
-				<Separator Visibility="{Binding IsReadOnly, Converter={StaticResource IsReadOnlyToVisibilityConverter}}" />
-				<MenuItem Command="Cut" Visibility="{Binding IsReadOnly, Converter={StaticResource IsReadOnlyToVisibilityConverter}}" />
-				<MenuItem Command="Copy" />
-				<MenuItem Command="Paste" Visibility="{Binding IsReadOnly, Converter={StaticResource IsReadOnlyToVisibilityConverter}}" />
-			</ContextMenu>
-		</sqlPad:SqlTextEditor.ContextMenu>-->
 	</sqlPad:SqlTextEditor>
 </UserControl>

@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Input;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Search;
+using SqlPad.Commands;
 
 namespace SqlPad
 {
@@ -35,6 +36,26 @@ namespace SqlPad
 
 			var searchPanel = SearchPanel.Install(this);
 			searchPanel.Style = (Style)Application.Current.Resources["SearchPanelStyle"];
+
+			ChangeDeleteLineCommandInputGesture();
+
+			TextArea.CommandBindings.Add(new CommandBinding(GenericCommands.DuplicateText, GenericCommandHandler.DuplicateText, CanExecuteEditCommand));
+			TextArea.CommandBindings.Add(new CommandBinding(GenericCommands.BlockComment, GenericCommandHandler.HandleBlockComments, CanExecuteEditCommand));
+			TextArea.CommandBindings.Add(new CommandBinding(GenericCommands.LineComment, GenericCommandHandler.HandleLineComments, CanExecuteEditCommand));
+		}
+
+		private void CanExecuteEditCommand(object sender, CanExecuteRoutedEventArgs e)
+		{
+			e.CanExecute = !IsReadOnly;
+		}
+
+		private void ChangeDeleteLineCommandInputGesture()
+		{
+			var deleteLineCommand = (RoutedCommand)TextArea.DefaultInputHandler.Editing.CommandBindings
+				.Single(b => b.Command == AvalonEditCommands.DeleteLine)
+				.Command;
+
+			deleteLineCommand.InputGestures[0] = new KeyGesture(Key.L, ModifierKeys.Control);
 		}
 
 		private void TextAreaSelectionChangedHandler(object sender, EventArgs eventArgs)
@@ -48,6 +69,14 @@ namespace SqlPad
 
 			SetValue(CurrentLineKey, location.Line);
 			SetValue(CurrentColumnKey, location.Column);
+		}
+
+		public void RedrawSegments(IEnumerable<SourcePosition> segments)
+		{
+			foreach (var segment in segments)
+			{
+				TextArea.TextView.Redraw(segment.IndexStart, segment.Length);
+			}
 		}
 
 		public bool TryRemoveBlockComment()
