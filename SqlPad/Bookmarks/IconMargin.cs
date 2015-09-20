@@ -140,7 +140,7 @@ namespace SqlPad.Bookmarks
 				_visibleMarkers.Add(marker);
 				AddVisualChild(marker);
 
-				var topLeft = new Point(0, visualLine.VisualTop - textView.VerticalOffset);
+				var topLeft = new Point(0, visualLine.VisualTop - textView.VerticalOffset - 2);
 				marker.Arrange(new Rect(PixelSnapHelpers.Round(topLeft, pixelSize), marker.DesiredSize));
 			}
 			

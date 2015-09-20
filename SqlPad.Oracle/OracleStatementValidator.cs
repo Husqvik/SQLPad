@@ -603,6 +603,17 @@ namespace SqlPad.Oracle
 							new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = queryBlock.SelectList };
 					}
 				}
+
+				foreach (var joinDescription in queryBlock.JoinDescriptions)
+				{
+					if (joinDescription.MasterPartitionClause != null && joinDescription.SlavePartitionClause != null)
+					{
+						validationModel.InvalidNonTerminals[joinDescription.MasterPartitionClause] =
+							new InvalidNodeValidationData(OracleSemanticErrorType.PartitionedTableOnBothSidesOfPartitionedOuterJoinNotSupported) { Node = joinDescription.MasterPartitionClause };
+						validationModel.InvalidNonTerminals[joinDescription.SlavePartitionClause] =
+							new InvalidNodeValidationData(OracleSemanticErrorType.PartitionedTableOnBothSidesOfPartitionedOuterJoinNotSupported) { Node = joinDescription.SlavePartitionClause };
+					}
+				}
 			}
 		}
 

@@ -46,7 +46,8 @@ namespace SqlPad.Oracle.SemanticModel
 		private readonly Dictionary<StatementGrammarNode, OracleQueryBlock> _queryBlockNodes = new Dictionary<StatementGrammarNode, OracleQueryBlock>();
 		private readonly List<OracleInsertTarget> _insertTargets = new List<OracleInsertTarget>();
 		private readonly List<OracleLiteral> _literals = new List<OracleLiteral>();
-		private readonly Dictionary<StatementGrammarNode, JoinDescription> _joinTableReferenceNodes = new Dictionary<StatementGrammarNode, JoinDescription>();
+		private readonly Dictionary<StatementGrammarNode, OracleJoinDescription> _joinTableReferenceNodes = new Dictionary<StatementGrammarNode, OracleJoinDescription>();
+		private readonly Dictionary<StatementGrammarNode, OracleDataObjectReference> _rootNodeObjectReference = new Dictionary<StatementGrammarNode, OracleDataObjectReference>();
 		private readonly HashSet<StatementGrammarNode> _redundantTerminals = new HashSet<StatementGrammarNode>();
 		private readonly List<RedundantTerminalGroup> _redundantTerminalGroups = new List<RedundantTerminalGroup>();
 		private readonly OracleDatabaseModelBase _databaseModel;
@@ -56,7 +57,7 @@ namespace SqlPad.Oracle.SemanticModel
 		private readonly Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>> _accessibleQueryBlockRoot = new Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>>();
 		private readonly Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementGrammarNode, string>>> _objectReferenceCteRootNodes = new Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementGrammarNode, string>>>();
 		private readonly Dictionary<OracleReference, OracleTableCollectionReference> _rowSourceTableCollectionReferences = new Dictionary<OracleReference, OracleTableCollectionReference>();
-		private readonly Dictionary<StatementGrammarNode, StatementGrammarNode> _joinPartitionColumnTableReferenceRootNodes = new Dictionary<StatementGrammarNode, StatementGrammarNode>();
+		private readonly Dictionary<StatementGrammarNode, OracleDataObjectReference> _joinPartitionColumnTableReferenceRootNodes = new Dictionary<StatementGrammarNode, OracleDataObjectReference>();
 		private readonly HashSet<OracleQueryBlock> _unreferencedQueryBlocks = new HashSet<OracleQueryBlock>();
 		private readonly HashSet<StatementGrammarNode> _oldOuterJoinColumnReferences = new HashSet<StatementGrammarNode>();
 		
@@ -490,6 +491,7 @@ namespace SqlPad.Oracle.SemanticModel
 						specialTableReference.RootNode = tableReferenceNonterminal;
 						specialTableReference.AliasNode = tableReferenceNonterminal[NonTerminals.InnerSpecialTableReference].GetSingleDescendant(Terminals.ObjectAlias);
 						queryBlock.ObjectReferences.Add(specialTableReference);
+						_rootNodeObjectReference.Add(specialTableReference.RootNode, specialTableReference);
 					}
 				}
 				else
@@ -517,6 +519,7 @@ namespace SqlPad.Oracle.SemanticModel
 								};
 
 							queryBlock.ObjectReferences.Add(tableCollectionDataObjectReference);
+							_rootNodeObjectReference.Add(tableCollectionDataObjectReference.RootNode, tableCollectionDataObjectReference);
 							_rowSourceTableCollectionReferences.Add(tableCollectionReference, tableCollectionDataObjectReference);
 
 							if (functionCallNodes.Length > 0)
@@ -545,6 +548,7 @@ namespace SqlPad.Oracle.SemanticModel
 								};
 
 							queryBlock.ObjectReferences.Add(objectReference);
+							_rootNodeObjectReference.Add(objectReference.RootNode, objectReference);
 						}
 
 						var identifiers = queryTableExpression.GetPathFilterDescendants(n => n != nestedQueryTableReference && !String.Equals(n.Id, NonTerminals.NestedQuery), Terminals.Identifier, Terminals.User, Terminals.Trim, Terminals.CharacterCode);
@@ -594,6 +598,7 @@ namespace SqlPad.Oracle.SemanticModel
 							};
 
 						queryBlock.ObjectReferences.Add(objectReference);
+						_rootNodeObjectReference.Add(objectReference.RootNode, objectReference);
 
 						if (commonTableExpressions.Count > 0)
 						{
@@ -1857,13 +1862,10 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private void ResolveNaturalJoinColumnsAndOuterJoinReferences(OracleQueryBlock queryBlock)
 		{
-			var objectReferences = queryBlock.ObjectReferences.ToDictionary(o => o.RootNode);
-
-			foreach (var kvp in _joinTableReferenceNodes)
+			foreach (var joinDescription in queryBlock.JoinDescriptions)
 			{
-				var joinDescription = kvp.Value;
-				OracleDataObjectReference masterReference;
-				if (joinDescription.MasterTableReferenceNode == null || !objectReferences.TryGetValue(joinDescription.MasterTableReferenceNode, out masterReference))
+				var masterReference = joinDescription.MasterObjectReference;
+				if (masterReference == null)
 				{
 					continue;
 				}
@@ -1873,8 +1875,8 @@ namespace SqlPad.Oracle.SemanticModel
 					masterReference.IsOuterJoined = true;
 				}
 
-				OracleDataObjectReference childReference;
-				if (!objectReferences.TryGetValue(kvp.Key, out childReference))
+				var childReference = joinDescription.SlaveObjectReference;
+				if (childReference == null)
 				{
 					continue;
 				}
@@ -2019,7 +2021,7 @@ namespace SqlPad.Oracle.SemanticModel
 							throw new NotImplementedException($"Reference '{objectReference.Type}' is not implemented yet. ");
 					}
 
-					JoinDescription joinDescription;
+					OracleJoinDescription joinDescription;
 					_joinTableReferenceNodes.TryGetValue(objectReference.RootNode, out joinDescription);
 
 					var exposedColumnDictionary = new Dictionary<string, OracleColumnReference>();
@@ -2327,9 +2329,9 @@ namespace SqlPad.Oracle.SemanticModel
 
 			foreach (var rowSourceReference in rowSources)
 			{
-				StatementGrammarNode tableReferenceNode;
-				if (columnReference.Placement == StatementPlacement.Join && _joinPartitionColumnTableReferenceRootNodes.TryGetValue(columnReference.ColumnNode, out tableReferenceNode) &&
-					tableReferenceNode != rowSourceReference.RootNode)
+				OracleDataObjectReference joinPartitionObjectReference;
+				if (columnReference.Placement == StatementPlacement.Join && _joinPartitionColumnTableReferenceRootNodes.TryGetValue(columnReference.ColumnNode, out joinPartitionObjectReference) &&
+					joinPartitionObjectReference != rowSourceReference)
 				{
 					continue;
 				}
@@ -2350,7 +2352,7 @@ namespace SqlPad.Oracle.SemanticModel
 					continue;
 				}
 
-				JoinDescription joinDescription;
+				OracleJoinDescription joinDescription;
 				if (rowSourceReference.RootNode != null && _joinTableReferenceNodes.TryGetValue(rowSourceReference.RootNode, out joinDescription) &&
 					joinDescription.Definition == JoinDefinition.Natural && joinDescription.Columns.Contains(columnReference.NormalizedName))
 				{
@@ -2550,7 +2552,13 @@ namespace SqlPad.Oracle.SemanticModel
 						? JoinDefinition.Natural
 						: JoinDefinition.Explicit;
 
-					var joinType = JoinType.Inner;
+					var joinDescription =
+						new OracleJoinDescription
+						{
+							Definition = joinDefinition,
+							Type = JoinType.Inner
+						};
+
 					IReadOnlyList<StatementGrammarNode> masterPartitionIdentifiers = null;
 					IReadOnlyList<StatementGrammarNode> slavePartitionIdentifiers = null;
 					var outerJoinClause = joinClause[NonTerminals.OuterJoinClause];
@@ -2562,13 +2570,13 @@ namespace SqlPad.Oracle.SemanticModel
 							switch (joinTypeNode.FirstTerminalNode.Id)
 							{
 								case Terminals.Left:
-									joinType = JoinType.Left;
+									joinDescription.Type = JoinType.Left;
 									break;
 								case Terminals.Right:
-									joinType = JoinType.Right;
+									joinDescription.Type = JoinType.Right;
 									break;
 								case Terminals.Full:
-									joinType = JoinType.Full;
+									joinDescription.Type = JoinType.Full;
 									break;
 							}
 						}
@@ -2576,17 +2584,18 @@ namespace SqlPad.Oracle.SemanticModel
 						var masterJoinPartitionClauseCandidate = outerJoinClause[0];
 						if (String.Equals(masterJoinPartitionClauseCandidate?.Id, NonTerminals.OuterJoinPartitionClause))
 						{
+							joinDescription.MasterPartitionClause = masterJoinPartitionClauseCandidate;
 							masterPartitionIdentifiers = masterJoinPartitionClauseCandidate.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBlock, Terminals.Identifier).ToArray();
 							ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(queryBlock, queryBlock, masterPartitionIdentifiers, StatementPlacement.Join, null);
 							CreateGrammarSpecificFunctionReferences(GetGrammarSpecificFunctionNodes(masterJoinPartitionClauseCandidate), queryBlock, queryBlock.ProgramReferences, StatementPlacement.Join, null);
 						}
 
-						var slaveJoinPartitionClause = outerJoinClause.ChildNodes.SingleOrDefault(n => n != masterJoinPartitionClauseCandidate && String.Equals(n.Id, NonTerminals.OuterJoinPartitionClause));
-						if (slaveJoinPartitionClause != null)
+						joinDescription.SlavePartitionClause = outerJoinClause.ChildNodes.SingleOrDefault(n => n != masterJoinPartitionClauseCandidate && String.Equals(n.Id, NonTerminals.OuterJoinPartitionClause));
+						if (joinDescription.SlavePartitionClause != null)
 						{
-							slavePartitionIdentifiers = slaveJoinPartitionClause.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBlock, Terminals.Identifier).ToArray();
+							slavePartitionIdentifiers = joinDescription.SlavePartitionClause.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBlock, Terminals.Identifier).ToArray();
 							ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(queryBlock, queryBlock, slavePartitionIdentifiers, StatementPlacement.Join, null);
-							CreateGrammarSpecificFunctionReferences(GetGrammarSpecificFunctionNodes(slaveJoinPartitionClause), queryBlock, queryBlock.ProgramReferences, StatementPlacement.Join, null);
+							CreateGrammarSpecificFunctionReferences(GetGrammarSpecificFunctionNodes(joinDescription.SlavePartitionClause), queryBlock, queryBlock.ProgramReferences, StatementPlacement.Join, null);
 						}
 					}
 
@@ -2595,22 +2604,25 @@ namespace SqlPad.Oracle.SemanticModel
 						? joinClauseParent[NonTerminals.TableReference]
 						: joinClauseParent[0]?[NonTerminals.TableReference];
 
-					StorePartitionColumnIdentifierTableReferenceRelations(masterPartitionIdentifiers, masterTableReferenceNode);
+					queryBlock.JoinDescriptions.Add(joinDescription);
 
-					var joinDescription =
-						new JoinDescription
-						{
-							MasterTableReferenceNode = masterTableReferenceNode,
-							Definition = joinDefinition,
-							Type = joinType
-						};
+					OracleDataObjectReference objectReference;
+					if (masterTableReferenceNode != null &&
+					    _rootNodeObjectReference.TryGetValue(masterTableReferenceNode, out objectReference))
+					{
+						joinDescription.MasterObjectReference = objectReference;
+						StorePartitionColumnIdentifierTableReferenceRelations(masterPartitionIdentifiers, objectReference);
+					}
 
 					var tableReferenceNode = joinClause[0][NonTerminals.TableReference];
 					if (tableReferenceNode != null)
 					{
+						_rootNodeObjectReference.TryGetValue(tableReferenceNode, out objectReference);
+						joinDescription.SlaveObjectReference = objectReference;
+
 						_joinTableReferenceNodes.Add(tableReferenceNode, joinDescription);
 
-						StorePartitionColumnIdentifierTableReferenceRelations(slavePartitionIdentifiers, tableReferenceNode);
+						StorePartitionColumnIdentifierTableReferenceRelations(slavePartitionIdentifiers, objectReference);
 					}
 
 					if (joinCondition == null)
@@ -2632,16 +2644,16 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 		}
 
-		private void StorePartitionColumnIdentifierTableReferenceRelations(IReadOnlyList<StatementGrammarNode> partitionColumnIdentifiers, StatementGrammarNode tableReferenceNode)
+		private void StorePartitionColumnIdentifierTableReferenceRelations(IReadOnlyList<StatementGrammarNode> partitionColumnIdentifiers, OracleDataObjectReference objectReference)
 		{
-			if (partitionColumnIdentifiers == null || tableReferenceNode == null)
+			if (partitionColumnIdentifiers == null || objectReference == null)
 			{
 				return;
 			}
 
 			foreach (var identifier in partitionColumnIdentifiers)
 			{
-				_joinPartitionColumnTableReferenceRootNodes.Add(identifier, tableReferenceNode);
+				_joinPartitionColumnTableReferenceRootNodes.Add(identifier, objectReference);
 			}
 		}
 
@@ -3259,28 +3271,37 @@ namespace SqlPad.Oracle.SemanticModel
 			public StatementGrammarNode CteNode;
 			public string CteAlias;
 		}
+	}
 
-		private class JoinDescription
-		{
-			public StatementGrammarNode MasterTableReferenceNode;
-			public HashSet<string> Columns;
-			public JoinType Type;
-			public JoinDefinition Definition;
-		}
+	public class OracleJoinDescription
+	{
+		public OracleDataObjectReference MasterObjectReference { get; set; }
 
-		private enum JoinDefinition
-		{
-			Explicit,
-			Natural
-		}
+		public StatementGrammarNode MasterPartitionClause { get; set; }
 
-		private enum JoinType
-		{
-			Inner,
-			Left,
-			Right,
-			Full
-		}
+		public OracleDataObjectReference SlaveObjectReference { get; set; }
+
+		public StatementGrammarNode SlavePartitionClause { get; set; }
+
+		public ICollection<string> Columns { get; set; }
+
+		public JoinType Type { get; set; }
+
+		public JoinDefinition Definition { get; set; }
+	}
+
+	public enum JoinDefinition
+	{
+		Explicit,
+		Natural
+	}
+
+	public enum JoinType
+	{
+		Inner,
+		Left,
+		Right,
+		Full
 	}
 
 	public enum ReferenceType

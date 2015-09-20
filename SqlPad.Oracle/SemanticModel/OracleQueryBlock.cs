@@ -16,6 +16,7 @@ namespace SqlPad.Oracle.SemanticModel
 		private readonly List<OracleSelectListColumn> _asteriskColumns = new List<OracleSelectListColumn>();
 		private readonly List<OracleQueryBlock> _commonTableExpressions = new List<OracleQueryBlock>();
 		private readonly List<OracleProgramMetadata> _attachedFunctions = new List<OracleProgramMetadata>();
+		private readonly List<OracleJoinDescription> _joinDescriptions = new List<OracleJoinDescription>();
 		
 		private OracleDataObjectReference _selfObjectReference;
 		private bool? _hasRemoteAsteriskReferences;
@@ -92,6 +93,8 @@ namespace SqlPad.Oracle.SemanticModel
 		public bool IsRecursive { get; set; }
 		
 		public bool IsRedundant { get; set; }
+
+		public IList<OracleJoinDescription> JoinDescriptions => _joinDescriptions;
 
 		public IList<OracleProgramMetadata> AttachedFunctions => _attachedFunctions;
 

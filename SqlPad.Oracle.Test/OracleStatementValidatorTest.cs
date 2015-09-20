@@ -2747,5 +2747,24 @@ WHERE
 			var invalidNonTerminalValidities = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
 			invalidNonTerminalValidities.Count.ShouldBe(0);
 		}
+
+		[Test(Description = @"")]
+		public void TestPartitionClauseOnBothOuterJoinEnds()
+		{
+			const string sqlText = @"SELECT NULL FROM DUAL T1 PARTITION BY (T1.DUMMY, DBMS_RANDOM.VALUE) LEFT JOIN DUAL T2 PARTITION BY (T2.DUMMY, DBMS_RANDOM.VALUE) ON NULL IS NULL";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var invalidNonTerminalValidities = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			invalidNonTerminalValidities.Count.ShouldBe(2);
+			invalidNonTerminalValidities[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.PartitionedTableOnBothSidesOfPartitionedOuterJoinNotSupported);
+			invalidNonTerminalValidities[0].Node.Id.ShouldBe(NonTerminals.OuterJoinPartitionClause);
+			invalidNonTerminalValidities[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.PartitionedTableOnBothSidesOfPartitionedOuterJoinNotSupported);
+			invalidNonTerminalValidities[1].Node.Id.ShouldBe(NonTerminals.OuterJoinPartitionClause);
+		}
 	}
 }
