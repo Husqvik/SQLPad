@@ -3057,6 +3057,31 @@ WHEN NOT MATCHED THEN INSERT VALUES (T2.DUMMY)";
 			var columnReferences = semanticModel.MainObjectReferenceContainer.ColumnReferences.ToList();
 			columnReferences.Count.ShouldBe(5);
 			columnReferences.ForEach(c => c.ColumnNodeColumnReferences.Count.ShouldBe(1));
-        }
+		}
+
+		[Test(Description = @"")]
+		public void TestPartitionJoinReferences()
+		{
+			const string query1 = @"SELECT NULL FROM DUAL T1 PARTITION BY (T1.DUMMY, DBMS_RANDOM.VALUE) LEFT JOIN DUAL T2 PARTITION BY (T1.DUMMY, DBMS_RANDOM.VALUE) ON NULL IS NULL LEFT JOIN DUAL T3 PARTITION BY (T3.DUMMY) ON NULL IS NULL";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
+			var columnReferences = semanticModel.MainQueryBlock.ColumnReferences.ToList();
+			columnReferences.Count.ShouldBe(3);
+			columnReferences[0].ObjectNode.Token.Value.ShouldBe("T1");
+			columnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			columnReferences[0].ObjectNodeObjectReferences.Count.ShouldBe(1);
+			columnReferences[1].ObjectNode.Token.Value.ShouldBe("T1");
+			columnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(0);
+			columnReferences[1].ObjectNodeObjectReferences.Count.ShouldBe(0);
+			columnReferences[2].ObjectNode.Token.Value.ShouldBe("T3");
+			columnReferences[2].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			columnReferences[2].ObjectNodeObjectReferences.Count.ShouldBe(1);
+
+			var programReferences = semanticModel.MainQueryBlock.ProgramReferences.ToList();
+			programReferences.ForEach(p => p.Metadata.ShouldNotBe(null));
+		}
 	}
 }

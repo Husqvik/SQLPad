@@ -56,6 +56,7 @@ namespace SqlPad.Oracle.SemanticModel
 		private readonly Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>> _accessibleQueryBlockRoot = new Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>>();
 		private readonly Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementGrammarNode, string>>> _objectReferenceCteRootNodes = new Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementGrammarNode, string>>>();
 		private readonly Dictionary<OracleReference, OracleTableCollectionReference> _rowSourceTableCollectionReferences = new Dictionary<OracleReference, OracleTableCollectionReference>();
+		private readonly Dictionary<StatementGrammarNode, StatementGrammarNode> _joinPartitionColumnTableReferenceRootNodes = new Dictionary<StatementGrammarNode, StatementGrammarNode>();
 		private readonly HashSet<OracleQueryBlock> _unreferencedQueryBlocks = new HashSet<OracleQueryBlock>();
 		private readonly HashSet<StatementGrammarNode> _oldOuterJoinColumnReferences = new HashSet<StatementGrammarNode>();
 		
@@ -2326,6 +2327,13 @@ namespace SqlPad.Oracle.SemanticModel
 
 			foreach (var rowSourceReference in rowSources)
 			{
+				StatementGrammarNode tableReferenceNode;
+				if (columnReference.Placement == StatementPlacement.Join && _joinPartitionColumnTableReferenceRootNodes.TryGetValue(columnReference.ColumnNode, out tableReferenceNode) &&
+					tableReferenceNode != rowSourceReference.RootNode)
+				{
+					continue;
+				}
+
 				if (columnReference.ObjectNode != null &&
 				    (rowSourceReference.FullyQualifiedObjectName == columnReference.FullyQualifiedObjectName ||
 				     (columnReference.OwnerNode == null &&
@@ -2336,28 +2344,26 @@ namespace SqlPad.Oracle.SemanticModel
 					columnReference.IsCorrelated = correlatedRowSources;
 				}
 
+				if (!String.IsNullOrEmpty(columnReference.FullyQualifiedObjectName.NormalizedName) &&
+				columnReference.ObjectNodeObjectReferences.Count == 0)
+				{
+					continue;
+				}
+
+				JoinDescription joinDescription;
+				if (rowSourceReference.RootNode != null && _joinTableReferenceNodes.TryGetValue(rowSourceReference.RootNode, out joinDescription) &&
+					joinDescription.Definition == JoinDefinition.Natural && joinDescription.Columns.Contains(columnReference.NormalizedName))
+				{
+					continue;
+				}
+
 				AddColumnNodeColumnReferences(rowSourceReference, columnReference, hasColumnReferencesToSelectList);
 			}
 		}
 
 		private void AddColumnNodeColumnReferences(OracleDataObjectReference rowSourceReference, OracleColumnReference columnReference, bool hasColumnReferencesToSelectList)
 		{
-			if (!String.IsNullOrEmpty(columnReference.FullyQualifiedObjectName.NormalizedName) &&
-				columnReference.ObjectNodeObjectReferences.Count == 0)
-			{
-				return;
-			}
-
-			JoinDescription joinDescription;
-			if (rowSourceReference.RootNode != null &&
-				_joinTableReferenceNodes.TryGetValue(rowSourceReference.RootNode, out joinDescription) && joinDescription.Definition == JoinDefinition.Natural &&
-				joinDescription.Columns.Contains(columnReference.NormalizedName))
-			{
-				return;
-			}
-
 			var matchedColumns = Enumerable.Empty<OracleSelectListColumn>();
-
 			var newColumnReferences = new List<OracleColumn>();
 			switch (rowSourceReference.Type)
 			{
@@ -2545,31 +2551,56 @@ namespace SqlPad.Oracle.SemanticModel
 						: JoinDefinition.Explicit;
 
 					var joinType = JoinType.Inner;
+					IReadOnlyList<StatementGrammarNode> masterPartitionIdentifiers = null;
+					IReadOnlyList<StatementGrammarNode> slavePartitionIdentifiers = null;
 					var outerJoinClause = joinClause[NonTerminals.OuterJoinClause];
 					if (outerJoinClause != null)
 					{
-						switch (outerJoinClause.FirstTerminalNode.Id)
+						var joinTypeNode = outerJoinClause[NonTerminals.NaturalOrOuterJoinType, NonTerminals.OuterJoinTypeWithKeyword];
+						if (joinTypeNode != null)
 						{
-							case Terminals.Left:
-								joinType = JoinType.Left;
-								break;
-							case Terminals.Right:
-								joinType = JoinType.Right;
-								break;
-							case Terminals.Full:
-								joinType = JoinType.Full;
-								break;
+							switch (joinTypeNode.FirstTerminalNode.Id)
+							{
+								case Terminals.Left:
+									joinType = JoinType.Left;
+									break;
+								case Terminals.Right:
+									joinType = JoinType.Right;
+									break;
+								case Terminals.Full:
+									joinType = JoinType.Full;
+									break;
+							}
+						}
+
+						var masterJoinPartitionClauseCandidate = outerJoinClause[0];
+						if (String.Equals(masterJoinPartitionClauseCandidate?.Id, NonTerminals.OuterJoinPartitionClause))
+						{
+							masterPartitionIdentifiers = masterJoinPartitionClauseCandidate.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBlock, Terminals.Identifier).ToArray();
+							ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(queryBlock, queryBlock, masterPartitionIdentifiers, StatementPlacement.Join, null);
+							CreateGrammarSpecificFunctionReferences(GetGrammarSpecificFunctionNodes(masterJoinPartitionClauseCandidate), queryBlock, queryBlock.ProgramReferences, StatementPlacement.Join, null);
+						}
+
+						var slaveJoinPartitionClause = outerJoinClause.ChildNodes.SingleOrDefault(n => n != masterJoinPartitionClauseCandidate && String.Equals(n.Id, NonTerminals.OuterJoinPartitionClause));
+						if (slaveJoinPartitionClause != null)
+						{
+							slavePartitionIdentifiers = slaveJoinPartitionClause.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBlock, Terminals.Identifier).ToArray();
+							ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(queryBlock, queryBlock, slavePartitionIdentifiers, StatementPlacement.Join, null);
+							CreateGrammarSpecificFunctionReferences(GetGrammarSpecificFunctionNodes(slaveJoinPartitionClause), queryBlock, queryBlock.ProgramReferences, StatementPlacement.Join, null);
 						}
 					}
 
 					var joinClauseParent = joinClause.ParentNode;
+					var masterTableReferenceNode = String.Equals(joinClauseParent.Id, NonTerminals.TableReferenceJoinClause)
+						? joinClauseParent[NonTerminals.TableReference]
+						: joinClauseParent[0]?[NonTerminals.TableReference];
+
+					StorePartitionColumnIdentifierTableReferenceRelations(masterPartitionIdentifiers, masterTableReferenceNode);
+
 					var joinDescription =
 						new JoinDescription
 						{
-							MasterTableReferenceNode =
-								String.Equals(joinClauseParent.Id, NonTerminals.TableReferenceJoinClause)
-									? joinClauseParent[NonTerminals.TableReference]
-									: joinClauseParent[0]?[NonTerminals.TableReference],
+							MasterTableReferenceNode = masterTableReferenceNode,
 							Definition = joinDefinition,
 							Type = joinType
 						};
@@ -2578,6 +2609,8 @@ namespace SqlPad.Oracle.SemanticModel
 					if (tableReferenceNode != null)
 					{
 						_joinTableReferenceNodes.Add(tableReferenceNode, joinDescription);
+
+						StorePartitionColumnIdentifierTableReferenceRelations(slavePartitionIdentifiers, tableReferenceNode);
 					}
 
 					if (joinCondition == null)
@@ -2596,6 +2629,19 @@ namespace SqlPad.Oracle.SemanticModel
 					var joinCondifitionClauseGrammarSpecificFunctions = GetGrammarSpecificFunctionNodes(joinCondition);
 					CreateGrammarSpecificFunctionReferences(joinCondifitionClauseGrammarSpecificFunctions, queryBlock, queryBlock.ProgramReferences, StatementPlacement.Join, null);
 				}
+			}
+		}
+
+		private void StorePartitionColumnIdentifierTableReferenceRelations(IReadOnlyList<StatementGrammarNode> partitionColumnIdentifiers, StatementGrammarNode tableReferenceNode)
+		{
+			if (partitionColumnIdentifiers == null || tableReferenceNode == null)
+			{
+				return;
+			}
+
+			foreach (var identifier in partitionColumnIdentifiers)
+			{
+				_joinPartitionColumnTableReferenceRootNodes.Add(identifier, tableReferenceNode);
 			}
 		}
 

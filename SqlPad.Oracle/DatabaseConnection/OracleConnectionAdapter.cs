@@ -690,7 +690,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 					var resultInfoColumnHeaders = new Dictionary<ResultInfo, IReadOnlyList<ColumnHeader>>();
 					var isPlSql = ((OracleStatement)statement.Statement)?.IsPlSql ?? false;
-					if (!statement.IsPartialStatement && isPlSql)
+					if (isPlSql && executionModel.EnableDebug && statement.IsPartialStatement)
+					{
+						throw new InvalidOperationException("Debugging is not supported for PL/SQL fragment. ");
+					}
+
+					if (isPlSql)
 					{
 						currentStatementResult.ExecutedAt = DateTime.Now;
 
@@ -699,9 +704,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 							// TODO: Add COMPILE DEBUG
 							_debuggerSession = new OracleDebuggerSession(this, (OracleCommand)userCommand.Clone(), batchResult);
 							_debuggerSession.Detached += DebuggerSessionDetachedHandler;
-
-							//await _debuggerSession.SetBreakpoint(OracleObjectIdentifier.Create("HUSQVIK", "TESTPROC"), 6, cancellationToken);
-							//await _debuggerSession.GetLineMap(OracleObjectIdentifier.Create("HUSQVIK", "TESTPROC"), cancellationToken);
 						}
 						else
 						{
@@ -712,11 +714,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 					}
 					else
 					{
-						if (isPlSql)
-						{
-							throw new InvalidOperationException("Debugging is not supported for PL/SQL fragment. ");
-						}
-
 						currentStatementResult.ExecutedAt = DateTime.Now;
 						var dataReader = await userCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
 						currentStatementResult.Duration = DateTime.Now - currentStatementResult.ExecutedAt;
