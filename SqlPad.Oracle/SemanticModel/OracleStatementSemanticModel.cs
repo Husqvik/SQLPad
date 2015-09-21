@@ -37,6 +37,7 @@ namespace SqlPad.Oracle.SemanticModel
 			Terminals.Count,
 			Terminals.Trim,
 			Terminals.CharacterCode,
+			Terminals.RowNumberPseudoColumn,
 			NonTerminals.DataType,
 			NonTerminals.AggregateFunction,
 			NonTerminals.AnalyticFunction,
@@ -2336,14 +2337,20 @@ namespace SqlPad.Oracle.SemanticModel
 					continue;
 				}
 
-				if (columnReference.ObjectNode != null &&
-				    (rowSourceReference.FullyQualifiedObjectName == columnReference.FullyQualifiedObjectName ||
-				     (columnReference.OwnerNode == null &&
-				      rowSourceReference.Type == ReferenceType.SchemaObject &&
-				      String.Equals(rowSourceReference.FullyQualifiedObjectName.NormalizedName, columnReference.FullyQualifiedObjectName.NormalizedName))))
+				if (columnReference.ObjectNode != null)
 				{
-					columnReference.ObjectNodeObjectReferences.Add(rowSourceReference);
-					columnReference.IsCorrelated = correlatedRowSources;
+					if (rowSourceReference.FullyQualifiedObjectName == columnReference.FullyQualifiedObjectName ||
+					    (columnReference.OwnerNode == null &&
+					     rowSourceReference.Type == ReferenceType.SchemaObject &&
+					     String.Equals(rowSourceReference.FullyQualifiedObjectName.NormalizedName, columnReference.FullyQualifiedObjectName.NormalizedName)))
+					{
+						columnReference.ObjectNodeObjectReferences.Add(rowSourceReference);
+						columnReference.IsCorrelated = correlatedRowSources;
+					}
+				}
+				else if (String.Equals(columnReference.ColumnNode.Id, Terminals.RowNumberPseudoColumn))
+				{
+					break;
 				}
 
 				if (!String.IsNullOrEmpty(columnReference.FullyQualifiedObjectName.NormalizedName) &&
@@ -2663,7 +2670,7 @@ namespace SqlPad.Oracle.SemanticModel
 			queryBlock.WhereClause = queryBlock.RootNode[NonTerminals.WhereClause];
 			if (queryBlock.WhereClause != null)
 			{
-				identifiers = queryBlock.WhereClause.GetDescendantsWithinSameQueryBlock(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level);
+				identifiers = queryBlock.WhereClause.GetDescendantsWithinSameQueryBlock(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level, Terminals.RowNumberPseudoColumn);
 				ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(queryBlock, queryBlock, identifiers, StatementPlacement.Where, null);
 
 				var whereClauseGrammarSpecificFunctions = GetGrammarSpecificFunctionNodes(queryBlock.WhereClause);
@@ -2673,7 +2680,7 @@ namespace SqlPad.Oracle.SemanticModel
 			queryBlock.GroupByClause = queryBlock.RootNode[NonTerminals.GroupByClause];
 			if (queryBlock.GroupByClause != null)
 			{
-				identifiers = queryBlock.GroupByClause.GetPathFilterDescendants(n => !n.Id.In(NonTerminals.NestedQuery), Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level);
+				identifiers = queryBlock.GroupByClause.GetPathFilterDescendants(n => !n.Id.In(NonTerminals.NestedQuery), Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level, Terminals.RowNumberPseudoColumn);
 				ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(queryBlock, queryBlock, identifiers, StatementPlacement.GroupBy, null);
 
 				var groupByClauseGrammarSpecificFunctions = GetGrammarSpecificFunctionNodes(queryBlock.GroupByClause);
@@ -2686,7 +2693,7 @@ namespace SqlPad.Oracle.SemanticModel
 				return;
 			}
 
-			identifiers = queryBlock.HavingClause.GetDescendantsWithinSameQueryBlock(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level);
+			identifiers = queryBlock.HavingClause.GetDescendantsWithinSameQueryBlock(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level, Terminals.RowNumberPseudoColumn);
 			ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(queryBlock, queryBlock, identifiers, StatementPlacement.Having, null);
 
 			var havingClauseGrammarSpecificFunctions = GetGrammarSpecificFunctionNodes(queryBlock.HavingClause);
@@ -2844,19 +2851,20 @@ namespace SqlPad.Oracle.SemanticModel
 					else
 					{
 						var columnExpressionIdentifiers = columnExpressionsIdentifierLookup[columnExpression].ToArray();
-						var identifiers = columnExpressionIdentifiers.Where(t => t.Id.In(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level, Terminals.User) || String.Equals(t.ParentNode.Id, NonTerminals.DataType)).ToArray();
+						var identifiers = columnExpressionIdentifiers.Where(t => t.Id.In(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level, Terminals.RowNumberPseudoColumn, Terminals.User) || String.Equals(t.ParentNode.Id, NonTerminals.DataType)).ToArray();
 
 						var previousColumnReferences = column.ColumnReferences.Count;
 						ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(queryBlock, column, identifiers, StatementPlacement.SelectList, column);
 
 						if (identifiers.Length == 1)
 						{
-							var parentExpression = identifiers[0].ParentNode.ParentNode.ParentNode;
+							var identifier = identifiers[0];
+							var parentExpression = String.Equals(identifier.Id, Terminals.RowNumberPseudoColumn) ? identifier.ParentNode : identifier.ParentNode.ParentNode.ParentNode;
 							column.IsDirectReference = String.Equals(parentExpression.Id, NonTerminals.Expression) && parentExpression.ChildNodes.Count == 1 && String.Equals(parentExpression.ParentNode.Id, NonTerminals.AliasedExpression);
 						}
 						
 						var columnReferenceAdded = column.ColumnReferences.Count > previousColumnReferences;
-						if (columnReferenceAdded && column.IsDirectReference && columnAliasNode == null)
+						if (columnReferenceAdded && columnAliasNode == null && column.IsDirectReference)
 						{
 							column.AliasNode = identifiers[0];
 						}

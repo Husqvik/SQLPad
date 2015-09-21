@@ -1478,7 +1478,7 @@ END;";
 		[Test(Description = @"")]
 		public void TestListAggregationFunction()
 		{
-			const string query1 = @"SELECT LISTAGG(ROWNUM, ', ') WITHIN GROUP (ORDER BY ROWNUM) FROM DUAL";
+			const string query1 = @"SELECT LISTAGG('Value', ', ') WITHIN GROUP (ORDER BY NULL) FROM DUAL";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
@@ -1968,7 +1968,7 @@ FROM
 @"WITH
 	FUNCTION F1(p IN NUMBER) RETURN NUMBER AS BEGIN RETURN DBMS_RANDOM.VALUE; END;
 	FUNCTION COUNT(p IN NUMBER) RETURN NUMBER AS BEGIN RETURN DBMS_RANDOM.VALUE; END;
-SELECT F1(ROWNUM) RESULT1, COUNT(ROWNUM), F2(ROWNUM), T.* FROM (
+SELECT F1(NULL) RESULT1, COUNT(NULL), F2(NULL), T.* FROM (
 	WITH
 		FUNCTION F2(p IN NUMBER) RETURN NUMBER AS BEGIN RETURN F1(p); END;
 		FUNCTION ""f 3""(p IN NUMBER) RETURN NUMBER AS BEGIN RETURN F1(p); END;
@@ -3057,6 +3057,34 @@ WHEN NOT MATCHED THEN INSERT VALUES (T2.DUMMY)";
 			var columnReferences = semanticModel.MainObjectReferenceContainer.ColumnReferences.ToList();
 			columnReferences.Count.ShouldBe(5);
 			columnReferences.ForEach(c => c.ColumnNodeColumnReferences.Count.ShouldBe(1));
+		}
+
+		[Test(Description = @"")]
+		public void TestRownumColumnReference()
+		{
+			const string query1 = @"SELECT NULL FROM (SELECT ROWNUM FROM DUAL) T WHERE T.""ROWNUM"" = 1";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
+			var columnReferences = semanticModel.MainQueryBlock.ColumnReferences;
+			columnReferences.Count.ShouldBe(1);
+			columnReferences[0].NormalizedName.ShouldBe("\"ROWNUM\"");
+			columnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+		}
+
+		[Test(Description = @"")]
+		public void TestRownumPseudoColumnPriority()
+		{
+			const string query1 = @"SELECT NULL FROM (SELECT ROWNUM FROM SELECTION WHERE ROWNUM <= 100) T WHERE ROWNUM > 98";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
+			semanticModel.MainQueryBlock.ColumnReferences.Count.ShouldBe(0);
+			semanticModel.MainQueryBlock.ProgramReferences.Count.ShouldBe(1);
 		}
 
 		[Test(Description = @"")]

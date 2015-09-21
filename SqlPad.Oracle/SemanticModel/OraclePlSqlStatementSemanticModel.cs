@@ -167,5 +167,18 @@ namespace SqlPad.Oracle.SemanticModel
 		public string Name { get; set; }
 
 		public IList<OraclePlSqlProgram> SubPrograms { get; } = new List<OraclePlSqlProgram>();
+
+		public IList<OraclePlSqlParameter> Parameters { get; } = new List<OraclePlSqlParameter>();
+
+		public OraclePlSqlParameter ReturnParameter { get; set; }
+	}
+
+	public class OraclePlSqlParameter
+	{
+		public string Name { get; set; }
+
+		public ParameterDirection Direction { get; set; }
+
+		public OracleDataType DataType { get; set; }
 	}
 }

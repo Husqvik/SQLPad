@@ -75,6 +75,7 @@ namespace SqlPad.Oracle
 					case Terminals.PercentileContinuousDistribution:
 					case Terminals.NegationOrNull:
 					case Terminals.RowIdPseudoColumn:
+					case Terminals.RowNumberPseudoColumn:
 					case Terminals.User:
 					case Terminals.Level:
 					case Terminals.Extract:
