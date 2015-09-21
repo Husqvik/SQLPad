@@ -188,6 +188,8 @@ namespace SqlPad.Oracle
 					{
 						isCursorAfterToken = false;
 					}
+
+					TerminalValueUnderCursor = TerminalValueUnderCursor.Trim('"');
 				}
 			}
 			else

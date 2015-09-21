@@ -329,7 +329,7 @@ WHERE
 	line_content VARCHAR2(32767);
 BEGIN
 	DBMS_LOB.CREATETEMPORARY(lob_loc => :output_clob, cache => TRUE); 
-    DBMS_LOB.OPEN(lob_loc => :output_clob, open_mode => DBMS_LOB.LOB_READWRITE);
+	DBMS_LOB.OPEN(lob_loc => :output_clob, open_mode => DBMS_LOB.LOB_READWRITE);
 
 	DBMS_OUTPUT.GET_LINES(lines => lines, numlines => line_count);
 
@@ -339,8 +339,8 @@ BEGIN
 			line_content := line_content || CHR(10);
 		END IF;
 
-        DBMS_LOB.WRITEAPPEND(lob_loc => :output_clob, amount => LENGTH(line_content), buffer => line_content);
-    END LOOP;
+		DBMS_LOB.WRITEAPPEND(lob_loc => :output_clob, amount => LENGTH(line_content), buffer => line_content);
+	END LOOP;
 END;";
 
 		public const string SelectExecutionPlanTextCommandText = "SELECT PLAN_TABLE_OUTPUT FROM TABLE(SYS.DBMS_XPLAN.DISPLAY_CURSOR(:SQL_ID, :CHILD_NUMBER, 'ALLSTATS LAST ADVANCED'))";

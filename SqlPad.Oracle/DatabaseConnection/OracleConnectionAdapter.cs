@@ -809,6 +809,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 
 			_databaseModel.Disconnect(exception);
+			_userTransaction = null;
+			_userSessionId = null;
 			return true;
 		}
 

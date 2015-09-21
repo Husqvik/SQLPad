@@ -2162,6 +2162,13 @@ ON (EVENTS.ID = SRC.ID)";
 			items[6].Name.ShouldBe("Wednesday");
 		}
 
+		[Test(Description = @"")]
+		public void TestDatabaseLinkSuggestionWhenUnfinishedQuotedIdentifier()
+		{
+			const string statement = @"SELECT * FROM ""Respondent""@""HQ_PDB_LOOPBACK";
+			Assert.DoesNotThrow(() => CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 43));
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)

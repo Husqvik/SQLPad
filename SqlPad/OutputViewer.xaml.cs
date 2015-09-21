@@ -65,6 +65,7 @@ namespace SqlPad
 			private set
 			{
 				_isRunning = value;
+				IsTransactionControlEnabled = !value;
 				DocumentPage.NotifyExecutionEvent();
 			}
 		}
@@ -531,8 +532,6 @@ namespace SqlPad
 
 		private async Task ExecuteTransactionOperation(Func<Task> transactionOperation)
 		{
-			IsTransactionControlEnabled = false;
-
 			IsBusy = true;
 
 			var result = await SafeTimedActionAsync(transactionOperation);
@@ -546,8 +545,6 @@ namespace SqlPad
 			{
 				Messages.ShowError(result.Exception.Message);
 			}
-
-			IsTransactionControlEnabled = true;
 
 			IsBusy = false;
 

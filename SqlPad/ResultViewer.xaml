@@ -68,7 +68,7 @@
 
 		<StackPanel DockPanel.Dock="Top" >
 			<StackPanel Orientation="Horizontal">
-				<CheckBox Content="Autorefresh: " IsChecked="{Binding AutoRefreshEnabled}" VerticalAlignment="Center" />
+				<CheckBox Content="_Autorefresh: " IsChecked="{Binding AutoRefreshEnabled}" VerticalAlignment="Center" />
 				<sqlPad:NumericUpDown Value="{Binding AutoRefreshInterval, Converter={StaticResource TimeSpanToIntegerSecondConverter}}" Minimum="1" />
 				<TextBlock Text="seconds" VerticalAlignment="Center" Margin="4,0,0,2" />
 			</StackPanel>
