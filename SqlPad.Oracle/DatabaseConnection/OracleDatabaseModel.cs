@@ -65,12 +65,17 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			_connectionString = connectionString;
 			var connectionStringBuilder = new OracleConnectionStringBuilder(_connectionString.ConnectionString) { SelfTuning = false, MinPoolSize = 1, IncrPoolSize = 1 };
+			if (String.IsNullOrWhiteSpace(connectionStringBuilder.UserID))
+			{
+				throw new ArgumentException("Connection string must contain USER ID");
+			}
+
 			_innerConnectionString = connectionStringBuilder.ConnectionString;
 
 			ConnectionIdentifier = identifier;
 			_moduleName = $"{ModuleNameSqlPadDatabaseModelBase}/{identifier}";
 			_oracleConnectionString = new OracleConnectionStringBuilder(connectionString.ConnectionString);
-			_currentSchema = _oracleConnectionString.UserID;
+			_currentSchema = _oracleConnectionString.UserID.ToQuotedIdentifier().Trim('"');
 			_connectionStringName = $"{_oracleConnectionString.DataSource}_{_currentSchema}";
 
 			lock (ActiveDataModelRefresh)
