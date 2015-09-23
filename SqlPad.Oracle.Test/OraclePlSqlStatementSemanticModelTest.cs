@@ -68,15 +68,35 @@ END;";
 			semanticModel.Programs.Count.ShouldBe(1);
 			semanticModel.Programs[0].ObjectIdentifier.ShouldBe(expectedObjectIdentifier);
 			semanticModel.Programs[0].Name.ShouldBe("\"TEST_FUNCTION\"");
+			semanticModel.Programs[0].Parameters.Count.ShouldBe(3);
+			semanticModel.Programs[0].Parameters[0].Name.ShouldBe("\"P1\"");
+			semanticModel.Programs[0].Parameters[0].Direction.ShouldBe(ParameterDirection.Input);
+			semanticModel.Programs[0].Parameters[1].Name.ShouldBe("\"P2\"");
+			semanticModel.Programs[0].Parameters[1].Direction.ShouldBe(ParameterDirection.InputOutput);
+			semanticModel.Programs[0].Parameters[2].Name.ShouldBe("\"P3\"");
+			semanticModel.Programs[0].Parameters[2].Direction.ShouldBe(ParameterDirection.Output);
+			semanticModel.Programs[0].ReturnParameter.ShouldNotBe(null);
 			semanticModel.Programs[0].SubPrograms.Count.ShouldBe(2);
 			semanticModel.Programs[0].SubPrograms[0].ObjectIdentifier.ShouldBe(expectedObjectIdentifier);
 			semanticModel.Programs[0].SubPrograms[0].Name.ShouldBe("\"TEST_INNER_PROCEDURE\"");
+			semanticModel.Programs[0].SubPrograms[0].Parameters.Count.ShouldBe(1);
+			semanticModel.Programs[0].SubPrograms[0].Parameters[0].Name.ShouldBe("\"P1\"");
+			semanticModel.Programs[0].SubPrograms[0].Parameters[0].Direction.ShouldBe(ParameterDirection.Input);
+			semanticModel.Programs[0].SubPrograms[0].ReturnParameter.ShouldBe(null);
 			semanticModel.Programs[0].SubPrograms[0].SubPrograms.Count.ShouldBe(0);
 			semanticModel.Programs[0].SubPrograms[1].ObjectIdentifier.ShouldBe(expectedObjectIdentifier);
 			semanticModel.Programs[0].SubPrograms[1].Name.ShouldBe("\"TEST_INNER_FUNCTION\"");
+			semanticModel.Programs[0].SubPrograms[1].Parameters.Count.ShouldBe(1);
+			semanticModel.Programs[0].SubPrograms[1].Parameters[0].Name.ShouldBe("\"P1\"");
+			semanticModel.Programs[0].SubPrograms[1].Parameters[0].Direction.ShouldBe(ParameterDirection.Input);
+			semanticModel.Programs[0].SubPrograms[1].ReturnParameter.ShouldNotBe(null);
 			semanticModel.Programs[0].SubPrograms[1].SubPrograms.Count.ShouldBe(1);
 			semanticModel.Programs[0].SubPrograms[1].SubPrograms[0].ObjectIdentifier.ShouldBe(expectedObjectIdentifier);
 			semanticModel.Programs[0].SubPrograms[1].SubPrograms[0].Name.ShouldBe("\"TEST_NESTED_PROCEDURE\"");
+			semanticModel.Programs[0].SubPrograms[1].SubPrograms[0].Parameters.Count.ShouldBe(1);
+			semanticModel.Programs[0].SubPrograms[1].SubPrograms[0].Parameters[0].Name.ShouldBe("\"P1\"");
+			semanticModel.Programs[0].SubPrograms[1].SubPrograms[0].Parameters[0].Direction.ShouldBe(ParameterDirection.Input);
+			semanticModel.Programs[0].SubPrograms[1].SubPrograms[0].ReturnParameter.ShouldBe(null);
 		}
 	}
 }

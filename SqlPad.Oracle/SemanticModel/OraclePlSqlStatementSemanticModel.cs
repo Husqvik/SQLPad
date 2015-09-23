@@ -109,6 +109,8 @@ namespace SqlPad.Oracle.SemanticModel
 						Name = identifier.NormalizedName
 					};
 
+				ResolveParameterDeclarations(plSqlProgram);
+
 				_programs.Add(plSqlProgram);
 
 				ResolveSubProgramDefinitions(plSqlProgram);
@@ -145,6 +147,8 @@ namespace SqlPad.Oracle.SemanticModel
 							ObjectIdentifier = program.ObjectIdentifier
 						};
 
+					ResolveParameterDeclarations(subProgram);
+
 					if (nameTerminal != null)
 					{
 						subProgram.Name = nameTerminal.Token.Value.ToQuotedIdentifier();
@@ -155,6 +159,61 @@ namespace SqlPad.Oracle.SemanticModel
 
 				ResolveSubProgramDefinitions(subProgram, childNode);
 			}
+		}
+
+		private void ResolveParameterDeclarations(OraclePlSqlProgram program)
+		{
+			StatementGrammarNode parameterSourceNode;
+			switch (program.RootNode.Id)
+			{
+				case NonTerminals.CreateFunction:
+					parameterSourceNode = program.RootNode[NonTerminals.PlSqlFunctionSource];
+					break;
+				default:
+					parameterSourceNode = program.RootNode[0];
+					break;
+			}
+
+			var parameterDeclarationList = parameterSourceNode?[NonTerminals.ParenthesisEnclosedParameterDeclarationList, NonTerminals.ParameterDeclarationList];
+			if (parameterDeclarationList == null)
+			{
+				return;
+			}
+
+			var parameterDeclarations = StatementGrammarNode.GetAllChainedClausesByPath(parameterDeclarationList, null, NonTerminals.ParameterDeclarationListChained, NonTerminals.ParameterDeclarationList)
+				.Select(n => n[NonTerminals.ParameterDeclaration]);
+			foreach (var parameterDeclaration in parameterDeclarations)
+			{
+				program.Parameters.Add(ResolveParameter(parameterDeclaration));
+			}
+
+			var returnParameterNode = parameterSourceNode[NonTerminals.PlSqlDataTypeWithoutConstraint];
+			if (returnParameterNode != null)
+			{
+				program.ReturnParameter =
+					new OraclePlSqlParameter
+					{
+						Direction = ParameterDirection.ReturnValue,
+						DataType = null
+					};
+			}
+		}
+
+		private static OraclePlSqlParameter ResolveParameter(StatementGrammarNode parameterDeclaration)
+		{
+			parameterDeclaration = parameterDeclaration[NonTerminals.CursorParameterDeclaration] ?? parameterDeclaration;
+			var direction = ParameterDirection.Input;
+			if (parameterDeclaration[Terminals.Out] != null)
+			{
+				direction = parameterDeclaration[Terminals.In] == null ? ParameterDirection.Output : ParameterDirection.InputOutput;
+			}
+
+			return
+				new OraclePlSqlParameter
+				{
+					Name = parameterDeclaration[Terminals.ParameterIdentifier].Token.Value.ToQuotedIdentifier(),
+					Direction = direction
+				};
 		}
 	}
 

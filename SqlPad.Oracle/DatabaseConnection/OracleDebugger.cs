@@ -830,6 +830,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 		ErrorNoDebugInfo = 2, // Debug info missing
 		ErrorNoSuchObject = 3, // No such variable/parameter
 		ErrorUnknownType = 4, // Debug info garbled
+		ErrorIllegalValue = 5, // Constraint violation
+		ErrorIllegalNull = 6, // Constraint violation
+		ErrorValueMalformed = 7, // Bad value
+		ErrorOther = 8, // Unknown error
+		ErrorNameIncomplete = 11, // not a scalar value
 		ErrorIndexedTable = 18, // Cannot get/set an entire collection at once
 		ErrorIllegalIndex = 19, // Illegal collection index
 		ErrorNullValue = 32, // Value is null
