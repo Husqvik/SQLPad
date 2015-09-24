@@ -1,6 +1,5 @@
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Controls;
 
 namespace SqlPad.DataExport
 {
@@ -8,12 +7,12 @@ namespace SqlPad.DataExport
 	{
 		string FileNameFilter { get; }
 
-		void ExportToFile(string fileName, DataGrid dataGrid, IDataExportConverter dataExportConverter);
+		void ExportToFile(string fileName, ResultViewer resultViewer, IDataExportConverter dataExportConverter);
 
-		Task ExportToFileAsync(string fileName, DataGrid dataGrid, IDataExportConverter dataExportConverter, CancellationToken cancellationToken);
+		Task ExportToFileAsync(string fileName, ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken);
 
-		void ExportToClipboard(DataGrid dataGrid, IDataExportConverter dataExportConverter);
+		void ExportToClipboard(ResultViewer resultViewer, IDataExportConverter dataExportConverter);
 
-		Task ExportToClipboardAsync(DataGrid dataGrid, IDataExportConverter dataExportConverter, CancellationToken cancellationToken);
+		Task ExportToClipboardAsync(ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken);
 	}
 }

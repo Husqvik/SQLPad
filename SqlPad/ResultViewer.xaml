@@ -22,6 +22,7 @@
 		<RoutedCommand x:Key="ExportToSqlInsertFileCommand" />
 		<RoutedCommand x:Key="ExportToSqlUpdateFileCommand" />
 		<RoutedCommand x:Key="ExportToXmlFileCommand" />
+		<RoutedCommand x:Key="ExportToExcelFileCommand" />
 
 		<RoutedCommand x:Key="ExportToCsvClipboardCommand" />
 		<RoutedCommand x:Key="ExportToTsvClipboardCommand" />
@@ -42,6 +43,7 @@
 		<dataExport:SqlInsertDataExporter x:Key="SqlInsertDataExporter" />
 		<dataExport:SqlUpdateDataExporter x:Key="SqlUpdateDataExporter" />
 		<dataExport:XmlDataExporter x:Key="XmlDataExporter" />
+		<dataExport:ExcelDataExporter x:Key="ExcelDataExporter" />
 
 		<RoutedCommand x:Key="OpenSearchBar" />
 		<RoutedCommand x:Key="CloseSearchBar" />
@@ -168,6 +170,8 @@
 				                CanExecute="CanExportDataHandler" />
 				<CommandBinding Command="{StaticResource ExportToXmlFileCommand}" Executed="ExportDataFileHandler"
 				                CanExecute="CanExportDataHandler" />
+				<CommandBinding Command="{StaticResource ExportToExcelFileCommand}" Executed="ExportDataFileHandler"
+				                CanExecute="CanExportDataHandler" />
 
 				<CommandBinding Command="{StaticResource ExportToCsvClipboardCommand}" Executed="ExportDataClipboardHandler"
 				                CanExecute="CanExportDataHandler" />
@@ -199,6 +203,8 @@
 					<MenuItem Header="Export to _file">
 						<MenuItem Header="_Comma-separated value..." Command="{StaticResource ExportToCsvFileCommand}"
 						          CommandParameter="{StaticResource CsvDataExporter}" />
+						<MenuItem Header="_Excel sheet..." Command="{StaticResource ExportToExcelFileCommand}"
+						          CommandParameter="{StaticResource ExcelDataExporter}" />
 						<MenuItem Header="_Tab-separated value..." Command="{StaticResource ExportToTsvFileCommand}"
 						          CommandParameter="{StaticResource TsvDataExporter}" />
 						<MenuItem Header="_HTML..." Command="{StaticResource ExportToHtmlFileCommand}"

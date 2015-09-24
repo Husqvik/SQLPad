@@ -76,6 +76,7 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="EPPlus" />
     <Reference Include="ICSharpCode.AvalonEdit" />
     <Reference Include="MoonPdfLib" />
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL" />
@@ -85,9 +86,7 @@
     <Reference Include="System.Transactions" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xaml">
-      <RequiredTargetFramework>4.0</RequiredTargetFramework>
-    </Reference>
+    <Reference Include="System.Xaml" />
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -104,6 +103,7 @@
     <Compile Include="Bookmarks\IconMargin.cs" />
     <Compile Include="CellValueConverter.cs" />
     <Compile Include="CSharpQueryClassGenerator.cs" />
+    <Compile Include="DataExport\ExcelDataExporter.cs" />
     <Compile Include="DataGridHelper.cs" />
     <Compile Include="DebuggerViewer.xaml.cs">
       <DependentUpon>DebuggerViewer.xaml</DependentUpon>

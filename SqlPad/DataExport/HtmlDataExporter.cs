@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Controls;
 
 namespace SqlPad.DataExport
 {
@@ -17,31 +16,31 @@ namespace SqlPad.DataExport
 
 		public string FileNameFilter => "HTML files (*.html)|*.html|All files (*.*)|*";
 
-	    public void ExportToClipboard(DataGrid dataGrid, IDataExportConverter dataExportConverter)
+	    public void ExportToClipboard(ResultViewer resultViewer, IDataExportConverter dataExportConverter)
 		{
-			ExportToFile(null, dataGrid, dataExportConverter);
+			ExportToFile(null, resultViewer, dataExportConverter);
 		}
 
-		public void ExportToFile(string fileName, DataGrid dataGrid, IDataExportConverter dataExportConverter)
+		public void ExportToFile(string fileName, ResultViewer resultViewer, IDataExportConverter dataExportConverter)
 		{
-			ExportToFileAsync(fileName, dataGrid, dataExportConverter, CancellationToken.None).Wait();
+			ExportToFileAsync(fileName, resultViewer, dataExportConverter, CancellationToken.None).Wait();
 		}
 
-		public Task ExportToClipboardAsync(DataGrid dataGrid, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
+		public Task ExportToClipboardAsync(ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
 		{
-			return ExportToFileAsync(null, dataGrid, dataExportConverter, cancellationToken);
+			return ExportToFileAsync(null, resultViewer, dataExportConverter, cancellationToken);
 		}
 
-		public Task ExportToFileAsync(string fileName, DataGrid dataGrid, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
+		public Task ExportToFileAsync(string fileName, ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
 		{
-			var orderedColumns = DataExportHelper.GetOrderedExportableColumns(dataGrid);
+			var orderedColumns = DataExportHelper.GetOrderedExportableColumns(resultViewer.ResultGrid);
 			var columnHeaders = orderedColumns
 				.Select(h => h.Name.Replace(QuoteCharacter, EscapedQuote));
 
 			var headerLine = BuildlTableRowTemplate(columnHeaders.Select(h => $"<th>{h}</th>"));
 			var htmlTableRowTemplate = BuildlTableRowTemplate(Enumerable.Range(0, orderedColumns.Count).Select(i => $"<td>{{{i}}}</td>"));
 
-			var rows = dataGrid.Items;
+			var rows = resultViewer.ResultGrid.Items;
 
 			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(orderedColumns, headerLine, htmlTableRowTemplate, rows, w, cancellationToken));
 		}

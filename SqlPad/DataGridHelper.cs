@@ -45,7 +45,7 @@ namespace SqlPad
 					ClipboardContentBinding = valueBinding
 				};
 
-			if (columnHeader.DataType.In(typeof(Decimal), typeof(Int16), typeof(Int32), typeof(Int64), typeof(Byte)))
+			if (columnHeader.IsNumeric)
 			{
 				columnTemplate.HeaderStyle = (Style)Application.Current.Resources["HeaderStyleRightAlign"];
 				columnTemplate.CellStyle = (Style)Application.Current.Resources["CellStyleRightAlign"];

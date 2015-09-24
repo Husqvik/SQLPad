@@ -152,6 +152,8 @@ namespace SqlPad
 
 		public TabItem TabItem { get; }
 
+		public string Title { get; }
+
 		public IReadOnlyList<object[]> ResultRowItems => _resultRows;
 
 		public string StatementText => _executionResult.StatementModel.StatementText;
@@ -165,9 +167,11 @@ namespace SqlPad
 			_resultInfo = resultInfo;
 			_columnHeaders = columnHeaders;
 
+			Title = resultInfo.Title;
+
 			InitializeComponent();
 
-			var header = new HeaderedContentControl { Content = new AccessText { Text = resultInfo.Title } };
+			var header = new HeaderedContentControl { Content = new AccessText { Text = Title } };
 			TabItem =
 				new TabItem
 				{
@@ -461,14 +465,14 @@ namespace SqlPad
 				return;
 			}
 
-			App.SafeActionWithUserError(() => dataExporter.ExportToFile(dialog.FileName, ResultGrid, _outputViewer.DocumentPage.InfrastructureFactory.DataExportConverter));
+			App.SafeActionWithUserError(() => dataExporter.ExportToFile(dialog.FileName, this, _outputViewer.DocumentPage.InfrastructureFactory.DataExportConverter));
 		}
 
 		private void ExportDataClipboardHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			var dataExporter = (IDataExporter)args.Parameter;
 
-			App.SafeActionWithUserError(() => dataExporter.ExportToClipboard(ResultGrid, _outputViewer.DocumentPage.InfrastructureFactory.DataExportConverter));
+			App.SafeActionWithUserError(() => dataExporter.ExportToClipboard(this, _outputViewer.DocumentPage.InfrastructureFactory.DataExportConverter));
 		}
 
 		private async void ResultGridScrollChangedHandler(object sender, ScrollChangedEventArgs e)

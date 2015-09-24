@@ -81,6 +81,8 @@ namespace SqlPad
 
 		public IReadOnlyCollection<IReferenceDataSource> ParentReferenceDataSources { get; set; }
 
+		public bool IsNumeric => DataType.In(typeof(Decimal), typeof(Int16), typeof(Int32), typeof(Int64), typeof(Byte));
+
 		public override string ToString()
 		{
 			return Name;
