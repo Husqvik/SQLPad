@@ -34,6 +34,10 @@ namespace SqlPad
 		Task<BreakpointActionResult> SetBreakpoint(object programInfo, int line, CancellationToken cancellationToken);
 
 		Task<BreakpointActionResult> DeleteBreakpoint(object breakpointIdentifier, CancellationToken cancellationToken);
+
+		Task<BreakpointActionResult> EnableBreakpoint(object breakpointIdentifier, CancellationToken cancellationToken);
+
+		Task<BreakpointActionResult> DisableBreakpoint(object breakpointIdentifier, CancellationToken cancellationToken);
 	}
 
 	public class DebugProgramItem

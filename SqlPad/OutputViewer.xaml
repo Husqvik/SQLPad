@@ -6,7 +6,7 @@
 			 xmlns:sqlPad="clr-namespace:SqlPad"
 			 xmlns:componentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
 			 mc:Ignorable="d" 
-			 d:DesignHeight="140" d:DesignWidth="384"
+			 d:DesignHeight="184" d:DesignWidth="384"
 			 MouseMove="OutputViewerMouseMoveHandler"
 			 DataContext="{Binding RelativeSource={RelativeSource Self}}">
 

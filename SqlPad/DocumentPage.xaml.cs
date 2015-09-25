@@ -735,7 +735,7 @@ namespace SqlPad
 
 		private void CanExecuteDatabaseCommandHandler(object sender, CanExecuteRoutedEventArgs args)
 		{
-			if (!DatabaseModel.IsInitialized || ActiveOutputViewer.IsBusy || _sqlDocumentRepository.StatementText != Editor.Text)
+			if (!DatabaseModel.IsInitialized || ActiveOutputViewer.IsBusy || ActiveOutputViewer.IsDebuggerControlVisible || !String.Equals(_sqlDocumentRepository.StatementText, Editor.Text))
 			{
 				return;
 			}

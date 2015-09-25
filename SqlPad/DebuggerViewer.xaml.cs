@@ -78,6 +78,11 @@ namespace SqlPad
 				{
 					_breakpointIdentifiers.Add(breakpoint, result.BreakpointIdentifier);
 				}
+
+				if (!breakpoint.IsEnabled)
+				{
+					await _debuggerSession.DisableBreakpoint(result.BreakpointIdentifier, CancellationToken.None);
+				}
 			}
 		}
 
@@ -128,18 +133,16 @@ namespace SqlPad
 			switch (args.State)
 			{
 				case BreakpointState.Added:
-					args.SetBreakpointTask =
-						_debuggerSession.SetBreakpoint(debuggerView.ProgramItem.ProgramIdentifier, breakpoint.Anchor.Line, CancellationToken.None);
+					args.SetBreakpointTask = _debuggerSession.SetBreakpoint(debuggerView.ProgramItem.ProgramIdentifier, breakpoint.Anchor.Line, CancellationToken.None);
 					break;
 				case BreakpointState.Enabled:
-					//args.SetBreakpointTask = _debuggerSession.EnableBreakpoint(breakpoint.Identifier, CancellationToken.None);
+					args.SetBreakpointTask = _debuggerSession.EnableBreakpoint(breakpoint.Identifier, CancellationToken.None);
 					break;
 				case BreakpointState.Disabled:
-					//args.SetBreakpointTask = _debuggerSession.DisableBreakpoint(breakpoint.Identifier, CancellationToken.None);
+					args.SetBreakpointTask = _debuggerSession.DisableBreakpoint(breakpoint.Identifier, CancellationToken.None);
 					break;
 				case BreakpointState.Removed:
-					args.SetBreakpointTask =
-						_debuggerSession.DeleteBreakpoint(breakpoint.Identifier, CancellationToken.None);
+					args.SetBreakpointTask = _debuggerSession.DeleteBreakpoint(breakpoint.Identifier, CancellationToken.None);
 					break;
 			}
 		}
@@ -235,7 +238,10 @@ namespace SqlPad
 
 		private void DebuggerOptionsSelectionChangedHandler(object sender, SelectionChangedEventArgs e)
 		{
-			_outputViewer.DocumentPage.WorkDocument.DebuggerViewDefaultTabIndex = ((TabControl)sender).SelectedIndex;
+			if (_outputViewer != null)
+			{
+				_outputViewer.DocumentPage.WorkDocument.DebuggerViewDefaultTabIndex = ((TabControl)sender).SelectedIndex;
+			}
 		}
 
 		private void WatchItemGridPreviewKeyDown(object sender, KeyEventArgs e)

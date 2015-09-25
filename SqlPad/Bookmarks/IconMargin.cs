@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using ICSharpCode.AvalonEdit.Document;
@@ -15,6 +16,11 @@ namespace SqlPad.Bookmarks
 	public class IconMargin : AbstractMargin
 	{
 		private readonly DebuggerTabItem _debuggerView;
+		private readonly RoutedCommand _enableBreakPointCommand = new RoutedCommand();
+		private readonly RoutedCommand _disableBreakPointCommand = new RoutedCommand();
+		private readonly ContextMenu _contextMenu = new ContextMenu();
+		private readonly MenuItem _enableBreakpointMenuItem;
+		private readonly MenuItem _disableBreakpointMenuItem;
 
 		private readonly HashSet<BreakpointMarker> _markers = new HashSet<BreakpointMarker>();
 		private readonly List<BreakpointMarker> _visibleMarkers = new List<BreakpointMarker>();
@@ -30,6 +36,37 @@ namespace SqlPad.Bookmarks
 		public IconMargin(DebuggerTabItem debuggerView)
 		{
 			_debuggerView = debuggerView;
+
+			_contextMenu.CommandBindings.Add(new CommandBinding(_enableBreakPointCommand, EnableBreakpointExecutedHandler));
+			_contextMenu.CommandBindings.Add(new CommandBinding(_disableBreakPointCommand, DisableBreakpointExecutedHandler));
+			_contextMenu.Items.Add(_enableBreakpointMenuItem = new MenuItem { Header = "_Enable", Command = _enableBreakPointCommand });
+			_contextMenu.Items.Add(_disableBreakpointMenuItem = new MenuItem { Header = "_Disable", Command = _disableBreakPointCommand });
+		}
+
+		private async void EnableBreakpointExecutedHandler(object sender, ExecutedRoutedEventArgs args)
+		{
+			await EnableOrDisableBreakpoint((BreakpointMarker)args.Parameter, BreakpointState.Enabled);
+		}
+
+		private async void DisableBreakpointExecutedHandler(object sender, ExecutedRoutedEventArgs args)
+		{
+			await EnableOrDisableBreakpoint((BreakpointMarker)args.Parameter, BreakpointState.Disabled);
+		}
+
+		private async Task EnableOrDisableBreakpoint(BreakpointMarker breakpointMarker, BreakpointState state)
+		{
+			var breakpoint = breakpointMarker.Breakpoint;
+			var actionResult = await SafeRaiseBreakpointChanged(breakpoint, state);
+			if (!actionResult.IsSuccessful)
+			{
+				return;
+			}
+
+			breakpoint.IsEnabled = state == BreakpointState.Enabled;
+			var breakpointData = GetBreakpointData(breakpoint);
+			DocumentBreakpoints.Single(bp => Equals(bp, breakpointData)).IsEnabled = breakpoint.IsEnabled;
+
+			breakpointMarker.InvalidateVisual();
 		}
 
 		public async void RemoveBreakpoint(BreakpointMarker marker)
@@ -140,7 +177,7 @@ namespace SqlPad.Bookmarks
 				_visibleMarkers.Add(marker);
 				AddVisualChild(marker);
 
-				var topLeft = new Point(0, visualLine.VisualTop - textView.VerticalOffset - 2);
+				var topLeft = new Point(0, visualLine.VisualTop - textView.VerticalOffset);
 				marker.Arrange(new Rect(PixelSnapHelpers.Round(topLeft, pixelSize), marker.DesiredSize));
 			}
 			
@@ -194,11 +231,24 @@ namespace SqlPad.Bookmarks
 		{
 			return _visibleMarkers[index];
 		}
+
+		protected override void OnMouseRightButtonDown(MouseButtonEventArgs e)
+		{
+			ContextMenu = null;
+		}
+
+		public void ConfigureContextActions(BreakpointMarker breakpointMarker)
+		{
+			ContextMenu = _contextMenu;
+			_enableBreakpointMenuItem.Visibility = breakpointMarker.Breakpoint.IsEnabled ? Visibility.Collapsed : Visibility.Visible;
+			_disableBreakpointMenuItem.Visibility = breakpointMarker.Breakpoint.IsEnabled ? Visibility.Visible : Visibility.Collapsed;
+			_enableBreakpointMenuItem.CommandParameter = _disableBreakpointMenuItem.CommandParameter = breakpointMarker;
+		}
 	}
 
 	public sealed class BreakpointMarker : UIElement
 	{
-		private const double BreakpointRadius = 6;
+		private const double BreakpointRadius = 7;
 		
 		private static readonly Size BreakpointSize = new Size(2 * BreakpointRadius, 2 * BreakpointRadius);
 		private static readonly Pen EdgePenEnabled = new Pen(Brushes.White, 1.0) { StartLineCap = PenLineCap.Square, EndLineCap = PenLineCap.Square };
@@ -246,6 +296,14 @@ namespace SqlPad.Bookmarks
 
 			var bookmarkMargin = (IconMargin)VisualParent;
 			bookmarkMargin.RemoveBreakpoint(this);
+		}
+
+		protected override void OnMouseRightButtonDown(MouseButtonEventArgs e)
+		{
+			e.Handled = true;
+
+			var bookmarkMargin = (IconMargin)VisualParent;
+			bookmarkMargin.ConfigureContextActions(this);
 		}
 	}
 

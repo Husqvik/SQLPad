@@ -416,7 +416,7 @@ namespace SqlPad
 
 		public int LineNumber { get; private set; }
 
-		public bool IsEnabled { get; private set; }
+		public bool IsEnabled { get; set; }
 
 		public BreakpointData(object programIdentifier, int lineNumber, bool isEnabled)
 		{
