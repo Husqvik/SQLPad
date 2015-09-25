@@ -67,10 +67,7 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="EPPlus, Version=4.0.4.0, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Output\Debug\x86\EPPlus.dll</HintPath>
-    </Reference>
+    <Reference Include="EPPlus" />
     <Reference Include="ICSharpCode.AvalonEdit, processorArchitecture=MSIL" />
     <Reference Include="nunit.framework,processorArchitecture=MSIL" />
     <Reference Include="PresentationCore" />
