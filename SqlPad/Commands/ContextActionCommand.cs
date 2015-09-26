@@ -9,7 +9,7 @@ namespace SqlPad.Commands
 	{
 		private readonly SqlTextEditor _textEditor;
 		
-		public ContextAction ContextAction { get; private set; }
+		public ContextAction ContextAction { get; }
 
 		public ContextActionCommand(SqlTextEditor textEditor, ContextAction contextAction)
 		{
@@ -63,7 +63,6 @@ namespace SqlPad.Commands
 				{
 					_textEditor.IsEnabled = false;
 					await ContextAction.ExecutionHandler.ExecutionHandlerAsync(ContextAction.ExecutionContext, cancellationTokenSource.Token);
-					operationMonitor.Close();
 				}
 				catch (Exception e)
 				{

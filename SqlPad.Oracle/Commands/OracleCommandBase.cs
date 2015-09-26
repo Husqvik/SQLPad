@@ -14,13 +14,13 @@ namespace SqlPad.Oracle.Commands
 
 		protected readonly ActionExecutionContext ExecutionContext;
 
-		protected StatementGrammarNode CurrentNode { get; private set; }
+		protected StatementGrammarNode CurrentNode { get; }
 		
-		protected OracleStatementSemanticModel SemanticModel { get; private set; }
+		protected OracleStatementSemanticModel SemanticModel { get; }
 
 		protected OracleQueryBlock CurrentQueryBlock { get; private set; }
 
-		protected virtual Func<StatementGrammarNode, bool> CurrentNodeFilterFunction { get { return null; } }
+		protected virtual Func<StatementGrammarNode, bool> CurrentNodeFilterFunction => null;
 
 		protected OracleCommandBase(ActionExecutionContext executionContext)
 		{
@@ -61,25 +61,27 @@ namespace SqlPad.Oracle.Commands
 
 		public static CommandExecutionHandler CreateStandardExecutionHandler<TCommand>(string commandName) where TCommand : OracleCommandBase
 		{
-			return new CommandExecutionHandler
-			{
-				Name = commandName,
-				CanExecuteHandler = context => CreateCommandInstance<TCommand>(context).CanExecute(),
-				ExecutionHandler = CreateExecutionHandler<TCommand>(),
-				ExecutionHandlerAsync = CreateAsynchronousExecutionHandler<TCommand>()
-			};			
+			return
+				new CommandExecutionHandler
+				{
+					Name = commandName,
+					CanExecuteHandler = context => CreateCommandInstance<TCommand>(context).CanExecute(),
+					ExecutionHandler = CreateExecutionHandler<TCommand>(),
+					ExecutionHandlerAsync = CreateAsynchronousExecutionHandler<TCommand>()
+				};
 		}
 
 		private static Action<ActionExecutionContext> CreateExecutionHandler<TCommand>() where TCommand : OracleCommandBase
 		{
-			return context =>
-			       {
-					   var commandInstance = CreateCommandInstance<TCommand>(context);
-				       if (commandInstance.CanExecute())
-				       {
-					       commandInstance.Execute();
-				       }
-			       };
+			return
+				context =>
+				{
+					var commandInstance = CreateCommandInstance<TCommand>(context);
+					if (commandInstance.CanExecute())
+					{
+						commandInstance.Execute();
+					}
+				};
 		}
 
 		private static Func<ActionExecutionContext, CancellationToken, Task> CreateAsynchronousExecutionHandler<TCommand>() where TCommand : OracleCommandBase
@@ -88,19 +90,9 @@ namespace SqlPad.Oracle.Commands
 			{
 				var commandInstance = CreateCommandInstance<TCommand>(context);
 
-				Task task;
-				if (commandInstance.CanExecute())
-				{
-					task = commandInstance.ExecuteAsync(cancellationToken);
-				}
-				else
-				{
-					var source = new TaskCompletionSource<object>();
-					source.SetResult(null);
-					task = source.Task;
-				}
-
-				return task;
+				return commandInstance.CanExecute()
+					? commandInstance.ExecuteAsync(cancellationToken)
+					: Task.FromResult((object)null);
 			};
 		}
 

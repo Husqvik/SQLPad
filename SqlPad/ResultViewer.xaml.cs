@@ -456,7 +456,7 @@ namespace SqlPad
 			}
 		}
 
-		private void ExportDataFileHandler(object sender, ExecutedRoutedEventArgs args)
+		private async void ExportDataFileHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			var dataExporter = (IDataExporter)args.Parameter;
 			var dialog = new SaveFileDialog { Filter = dataExporter.FileNameFilter, OverwritePrompt = !dataExporter.HasAppendSupport };
@@ -465,14 +465,31 @@ namespace SqlPad
 				return;
 			}
 
-			App.SafeActionWithUserError(() => dataExporter.ExportToFile(dialog.FileName, this, _outputViewer.DocumentPage.InfrastructureFactory.DataExportConverter));
+			await ExportData(token => dataExporter.ExportToFileAsync(dialog.FileName, this, _outputViewer.DocumentPage.InfrastructureFactory.DataExportConverter, token));
 		}
 
-		private void ExportDataClipboardHandler(object sender, ExecutedRoutedEventArgs args)
+		private static async Task ExportData(Func<CancellationToken, Task> getExportTaskFunction)
+		{
+			using (var cancellationTokenSource = new CancellationTokenSource())
+			{
+				var operationMonitor = new WindowOperationMonitor(cancellationTokenSource) { Owner = Application.Current.MainWindow };
+				operationMonitor.Show();
+
+				var exception = await App.SafeActionAsync(() => getExportTaskFunction(cancellationTokenSource.Token));
+
+				operationMonitor.Close();
+
+				if (exception != null && !(exception is OperationCanceledException))
+				{
+					Messages.ShowError(exception.Message);
+				}
+			}
+		}
+
+		private async void ExportDataClipboardHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			var dataExporter = (IDataExporter)args.Parameter;
-
-			App.SafeActionWithUserError(() => dataExporter.ExportToClipboard(this, _outputViewer.DocumentPage.InfrastructureFactory.DataExportConverter));
+			await ExportData(token => dataExporter.ExportToClipboardAsync(this, _outputViewer.DocumentPage.InfrastructureFactory.DataExportConverter, token));
 		}
 
 		private async void ResultGridScrollChangedHandler(object sender, ScrollChangedEventArgs e)
