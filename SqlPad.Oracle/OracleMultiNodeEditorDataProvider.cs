@@ -12,7 +12,7 @@ namespace SqlPad.Oracle
 	{
 		public MultiNodeEditorData GetMultiNodeEditorData(ActionExecutionContext executionContext)
 		{
-			var multiNodeData = new MultiNodeEditorData { SynchronizedNodes = new StatementGrammarNode[0] };
+			var multiNodeData = new MultiNodeEditorData { SynchronizedSegments = new SourcePosition[0] };
 			var terminal = executionContext.DocumentRepository.Statements.GetTerminalAtPosition(executionContext.CaretOffset, n => !String.Equals(n.Id, Terminals.Comma) && !String.Equals(n.Id, Terminals.Dot) && !String.Equals(n.Id, Terminals.RightParenthesis));
 			if (executionContext.SelectionLength > 0 || terminal?.Id.IsIdentifierOrAlias() != true)
 			{
@@ -31,10 +31,10 @@ namespace SqlPad.Oracle
 						.SelectMany(c => c.ObjectReferences)
 						.Single(o => o.AliasNode == terminal);
 
-					multiNodeData.SynchronizedNodes = semanticModel.AllReferenceContainers
+					multiNodeData.SynchronizedSegments = semanticModel.AllReferenceContainers
 						.SelectMany(c => c.ColumnReferences)
 						.Where(c => c.ObjectNode != null && c.ValidObjectReference == objectReference)
-						.Select(c => c.ObjectNode)
+						.Select(c => c.ObjectNode.SourcePosition)
 						.ToArray();
 
 					break;
@@ -45,21 +45,21 @@ namespace SqlPad.Oracle
 					var objectAliasNode = dataObjectReference?.AliasNode;
 					if (objectAliasNode != null)
 					{
-						var editNodes = new List<StatementGrammarNode> { objectAliasNode };
+						var editNodes = new List<SourcePosition> { objectAliasNode.SourcePosition };
 						var editNodesSource = semanticModel.AllReferenceContainers
 							.SelectMany(c => c.ColumnReferences)
 							.Where(r => r.ObjectNode != null && r != columnReference && r.ValidObjectReference == dataObjectReference)
-							.Select(r => r.ObjectNode);
+							.Select(r => r.ObjectNode.SourcePosition);
 
 						editNodes.AddRange(editNodesSource);
-						multiNodeData.SynchronizedNodes = editNodes;
+						multiNodeData.SynchronizedSegments = editNodes;
 					}
 
 					break;
 
 				case Terminals.BindVariableIdentifier:
 					var bindVariable = FindUsagesCommand.GetBindVariable(semanticModel, terminal.Token.Value);
-					multiNodeData.SynchronizedNodes = bindVariable.Nodes.Where(n => n != terminal).ToArray();
+					multiNodeData.SynchronizedSegments = bindVariable.Nodes.Where(n => n != terminal).Select(t => t.SourcePosition).ToArray();
 					break;
 
 				case Terminals.ColumnAlias:
@@ -67,8 +67,9 @@ namespace SqlPad.Oracle
 						.OfType<OracleSelectListColumn>()
 						.Single(c => c.AliasNode == terminal);
 
-					multiNodeData.SynchronizedNodes = FindUsagesCommand.GetParentQueryBlockReferences(selectListColumn)
+					multiNodeData.SynchronizedSegments = FindUsagesCommand.GetParentQueryBlockReferences(selectListColumn)
 						.TakeWhile(t => String.Equals(t.Token.Value.ToQuotedIdentifier(), selectListColumn.NormalizedName))
+						.Select(t => t.SourcePosition)
 						.ToArray();
 					break;
 

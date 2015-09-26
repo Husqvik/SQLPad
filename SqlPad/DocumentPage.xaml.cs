@@ -19,6 +19,7 @@ using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Folding;
+using ICSharpCode.AvalonEdit.Rendering;
 using Microsoft.Win32;
 using SqlPad.Commands;
 using SqlPad.FindReplace;
@@ -69,6 +70,7 @@ namespace SqlPad
 		private readonly ObservableCollection<OutputViewer> _outputViewers = new ObservableCollection<OutputViewer>();
 		private readonly ObservableCollection<string> _schemas = new ObservableCollection<string>();
 		private readonly SqlDocumentColorizingTransformer _colorizingTransformer = new SqlDocumentColorizingTransformer();
+		private readonly MultiNodeEditorBoxRenderer _multiNodeEditorBoxRenderer = new MultiNodeEditorBoxRenderer();
 		private readonly ContextMenu _contextActionMenu = new ContextMenu { Placement = PlacementMode.Relative };
 		private readonly Dictionary<string, BindVariableConfiguration> _currentBindVariables = new Dictionary<string, BindVariableConfiguration>();
 
@@ -341,8 +343,6 @@ namespace SqlPad
 
 		private void ConfigureEditor()
 		{
-			//Editor.Options.ShowColumnRuler = true;
-
 			Editor.TextArea.SelectionCornerRadius = 0;
 			Editor.TextArea.TextView.LineTransformers.Add(_colorizingTransformer);
 
@@ -352,6 +352,8 @@ namespace SqlPad
 
 			Editor.TextArea.Caret.PositionChanged += CaretPositionChangedHandler;
 			Editor.TextArea.SelectionChanged += delegate { ShowHideBindVariableList(); };
+
+			Editor.TextArea.TextView.BackgroundRenderers.Add(_multiNodeEditorBoxRenderer);
 
 			EditorAdapter = new TextEditorAdapter(Editor);
 		}
@@ -956,9 +958,29 @@ namespace SqlPad
 
 		private void MultiNodeEditHandler(object sender, ExecutedRoutedEventArgs args)
 		{
+			if (_multiNodeEditor == null &&
+				MultiNodeEditor.TryCreateMultiNodeEditor(Editor, ActionExecutionContext.Create(Editor, _documentRepository), InfrastructureFactory.CreateMultiNodeEditorDataProvider(), out _multiNodeEditor))
+			{
+				RedrawMultiEditSegments();
+			}
+		}
+
+		private void RedrawMultiEditSegments(bool forceRedraw = false)
+		{
 			if (_multiNodeEditor == null)
 			{
-				MultiNodeEditor.TryCreateMultiNodeEditor(Editor, ActionExecutionContext.Create(Editor, _documentRepository), InfrastructureFactory.CreateMultiNodeEditorDataProvider(), out _multiNodeEditor);
+				_multiNodeEditorBoxRenderer.MasterSegment = null;
+				_multiNodeEditorBoxRenderer.SynchronizedSegments = null;
+			}
+			else
+			{
+				_multiNodeEditorBoxRenderer.MasterSegment = _multiNodeEditor.MasterSegment;
+				_multiNodeEditorBoxRenderer.SynchronizedSegments = _multiNodeEditor.SynchronizedSegments;
+			}
+
+			if (forceRedraw || _multiNodeEditor != null)
+			{
+				Editor.TextArea.TextView.InvalidateLayer(KnownLayer.Background);
 			}
 		}
 
@@ -1485,6 +1507,8 @@ namespace SqlPad
 				return;
 			}
 
+			RedrawMultiEditSegments();
+
 			CheckDocumentModified();
 
 			Parse();
@@ -1905,7 +1929,11 @@ namespace SqlPad
 			{
 				DisableCodeCompletion();
 
-				_multiNodeEditor = null;
+				if (_multiNodeEditor != null)
+				{
+					_multiNodeEditor = null;
+					RedrawMultiEditSegments(true);
+				}
 
 				if (e.Key == Key.Escape)
 				{
@@ -1921,8 +1949,13 @@ namespace SqlPad
 			if ((e.Key == Key.Back || e.Key == Key.Delete) && _multiNodeEditor != null)
 			{
 				Editor.Document.BeginUpdate();
+
 				if (!_multiNodeEditor.RemoveCharacter(e.Key == Key.Back))
+				{
 					_multiNodeEditor = null;
+				}
+
+				RedrawMultiEditSegments(true);
 			}
 			else if (e.Key == Key.Back && Editor.Document.TextLength > Editor.CaretOffset)
 			{

@@ -368,7 +368,7 @@ namespace SqlPad.Bookmarks
 	{
 		private static readonly Brush BackgroundBrushActive = Brushes.Yellow;
 		private static readonly Brush BackgroundBrushInactive = Brushes.LightGreen;
-		private static readonly Pen EdgePen = new Pen(BackgroundBrushActive, 1);
+		private static readonly Pen EdgePen = new Pen(Brushes.Transparent, 0);
 
 		private int? _activeLine;
 		private int[] _inactiveLines = new int[0];
@@ -405,10 +405,10 @@ namespace SqlPad.Bookmarks
 
 			textView.EnsureVisualLines();
 			var startOffset = textView.Document.GetLineByNumber(line.Value).Offset;
-			var textSegment = new ICSharpCode.AvalonEdit.Document.TextSegment {StartOffset = startOffset};
-			foreach (var rect in BackgroundGeometryBuilder.GetRectsForSegment(textView, textSegment))
+			var textSegment = new ICSharpCode.AvalonEdit.Document.TextSegment { StartOffset = startOffset };
+			foreach (var rectangle in BackgroundGeometryBuilder.GetRectsForSegment(textView, textSegment))
 			{
-				drawingContext.DrawRectangle(brush, EdgePen, new Rect(rect.Location, new Size(textView.ActualWidth, rect.Height)));
+				drawingContext.DrawRectangle(brush, EdgePen, new Rect(rectangle.Location, new Size(textView.ActualWidth, rectangle.Height)));
 			}
 		}
 	}

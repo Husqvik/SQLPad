@@ -17,7 +17,9 @@ namespace SqlPad.Oracle
 			var vendorValue = value as IValue;
 			return vendorValue != null
 				? vendorValue.ToSqlLiteral()
-				: $"'{stringValue.Replace("'", "''")}'";
+				: value is Int16 || value is Int32 || value is Int64
+					? stringValue
+					: $"'{stringValue.Replace("'", "''")}'";
 		}
 
 		public string ToColumnName(string columnHeader)
@@ -42,10 +44,13 @@ namespace SqlPad.Oracle
 
 		public string ToJson(object value)
 		{
+			var stringValue = value.ToString();
 			var vendorValue = value as IValue;
 			return vendorValue != null
 				? vendorValue.ToJson()
-				: $"\"{value.ToString().Replace("\"", "\\\"")}\"";
+				: value is Int16 || value is Int32 || value is Int64
+					? stringValue
+					: $"\"{stringValue.Replace("\"", "\\\"")}\"";
 		}
 	}
 }
