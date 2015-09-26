@@ -1,30 +1,38 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using ICSharpCode.AvalonEdit;
+using ICSharpCode.AvalonEdit.Document;
+using SqlPad.Commands;
 
 namespace SqlPad
 {
 	public class MultiNodeEditor
 	{
 		private readonly TextEditor _editor;
-		private readonly IMultiNodeEditorDataProvider _dataProvider;
-		private readonly IDatabaseModel _databaseModel;
 
-		private MultiNodeEditor(TextEditor editor, IMultiNodeEditorDataProvider dataProvider, IDatabaseModel databaseModel)
+		private TextAnchor _masterAnchorStart;
+		private TextAnchor _masterAnchorEnd;
+		private readonly List<TextAnchor> _anchors = new List<TextAnchor>();
+
+		private bool IsModificationValid => _masterAnchorStart.Offset <= _editor.CaretOffset && _masterAnchorEnd.Offset >= _editor.CaretOffset;
+
+		private MultiNodeEditor(TextEditor editor)
 		{
-			_databaseModel = databaseModel;
-			_dataProvider = dataProvider;
 			_editor = editor;
 		}
 
 		public bool Replace(string newText)
 		{
-			var data = GetSynchronizationData(_dataProvider, _editor, _databaseModel);
-			if (!IsModificationValid(data))
-				return false;
-
-			foreach (var node in data.SynchronizedNodes)
+			if (!IsModificationValid)
 			{
-				_editor.Document.Replace(node.SourcePosition.IndexStart + data.OffsetFromNodeStartIndex, _editor.SelectionLength, newText);
+				return false;
+			}
+
+			var editTerminalOffset = _editor.CaretOffset - _masterAnchorStart.Offset;
+
+			foreach (var anchor in _anchors)
+			{
+				_editor.Document.Replace(anchor.Offset + editTerminalOffset, _editor.SelectionLength, newText);
 			}
 
 			return true;
@@ -32,43 +40,58 @@ namespace SqlPad
 
 		public bool RemoveCharacter(bool reverse)
 		{
-			var data = GetSynchronizationData(_dataProvider, _editor, _databaseModel);
-			if (!IsModificationValid(data))
-				return false;
-
-			foreach (var node in data.SynchronizedNodes)
+			if (!IsModificationValid)
 			{
-				var selectionCharacter = reverse && _editor.SelectionLength == 0 ? 1 : 0;
-				var removedCharacters = _editor.SelectionLength == 0 ? 1 : _editor.SelectionLength;
-				_editor.Document.Remove(node.SourcePosition.IndexStart + data.OffsetFromNodeStartIndex - selectionCharacter, removedCharacters);
+				return false;
+			}
+
+			var editTerminalOffset = _editor.CaretOffset - _masterAnchorStart.Offset;
+			var selectionCharacter = reverse && _editor.SelectionLength == 0 ? 1 : 0;
+			var removedCharacters = _editor.SelectionLength == 0 ? 1 : _editor.SelectionLength;
+			foreach (var anchor in _anchors)
+			{
+				_editor.Document.Remove(anchor.Offset + editTerminalOffset - selectionCharacter, removedCharacters);
 			}
 
 			return true;
 		}
 
-		public static bool TryCreateMultiNodeEditor(TextEditor editor, IMultiNodeEditorDataProvider dataProvider, IDatabaseModel databaseModel, out MultiNodeEditor multiNodeEditor)
+		public static bool TryCreateMultiNodeEditor(TextEditor editor, ActionExecutionContext executionContext, IMultiNodeEditorDataProvider dataProvider, out MultiNodeEditor multiNodeEditor)
 		{
-			var data = GetSynchronizationData(dataProvider, editor, databaseModel);
+			multiNodeEditor = null;
+			if (!String.Equals(editor.Text, executionContext.DocumentRepository.StatementText))
+			{
+				return false;
+			}
 
-			multiNodeEditor = data.CurrentNode != null ? new MultiNodeEditor(editor, dataProvider, databaseModel) : null;
-			return multiNodeEditor != null;
-		}
+			var data = dataProvider.GetMultiNodeEditorData(executionContext);
+			if (data.CurrentNode == null)
+			{
+				return false;
+			}
 
-		private bool IsModificationValid(MultiNodeEditorData data)
-		{
-			return data.CurrentNode != null && data.CurrentNode.SourcePosition.IndexStart <= _editor.CaretOffset && data.CurrentNode.SourcePosition.IndexEnd + 1 >= _editor.CaretOffset;
-		}
+			multiNodeEditor =
+				new MultiNodeEditor(editor)
+				{
+					_masterAnchorStart = editor.Document.CreateAnchor(data.CurrentNode.SourcePosition.IndexStart),
+					_masterAnchorEnd = editor.Document.CreateAnchor(data.CurrentNode.SourcePosition.IndexEnd + 1)
+				};
 
-		private static MultiNodeEditorData GetSynchronizationData(IMultiNodeEditorDataProvider dataProvider, TextEditor editor, IDatabaseModel databaseModel)
-		{
-			return dataProvider.GetMultiNodeEditorData(databaseModel, editor.Text, editor.CaretOffset, editor.SelectionStart, editor.SelectionLength);
+			foreach (var editTerminal in data.SynchronizedNodes)
+			{
+				multiNodeEditor._anchors.Add(editor.Document.CreateAnchor(editTerminal.SourcePosition.IndexStart));
+			}
+
+			return true;
 		}
 	}
 
 	public struct MultiNodeEditorData
 	{
 		public int OffsetFromNodeStartIndex { get; set; }
+
 		public StatementGrammarNode CurrentNode { get; set; }
-		public IEnumerable<StatementGrammarNode> SynchronizedNodes { get; set; }
+
+		public IReadOnlyCollection<StatementGrammarNode> SynchronizedNodes { get; set; }
 	}
 }

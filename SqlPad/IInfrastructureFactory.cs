@@ -70,7 +70,7 @@ namespace SqlPad
 
 	public interface IMultiNodeEditorDataProvider
 	{
-		MultiNodeEditorData GetMultiNodeEditorData(IDatabaseModel databaseModel, string sqlText, int currentPosition, int selectionStart, int selectionLength);
+		MultiNodeEditorData GetMultiNodeEditorData(ActionExecutionContext executionContext);
 	}
 
 	public interface IExecutionPlanViewer

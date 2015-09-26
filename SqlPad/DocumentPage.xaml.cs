@@ -37,7 +37,7 @@ namespace SqlPad
 		private static readonly string[] ClosingParenthesisOrBrackets = { ")", "]", "}" };
 		private static readonly ColorCodeToBrushConverter TabHeaderBackgroundBrushConverter = new ColorCodeToBrushConverter();
 
-		private SqlDocumentRepository _sqlDocumentRepository;
+		private SqlDocumentRepository _documentRepository;
 		private ICodeCompletionProvider _codeCompletionProvider;
 		private ICodeSnippetProvider _codeSnippetProvider;
 		private IContextActionProvider _contextActionProvider;
@@ -173,7 +173,7 @@ namespace SqlPad
 			var insertIndex = Editor.CaretOffset;
 			var builder = new StringBuilder(statementText);
 
-			var statement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
+			var statement = _documentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
 			if (statement?.RootNode != null)
 			{
 				insertIndex = statement.SourcePosition.IndexEnd + 1;
@@ -377,7 +377,7 @@ namespace SqlPad
 			foreach (var handler in InfrastructureFactory.CommandFactory.CommandHandlers)
 			{
 				var command = new RoutedCommand(handler.Name, typeof(TextEditor), handler.DefaultGestures);
-				var routedHandlerMethod = GenericCommandHandler.CreateRoutedEditCommandHandler(handler, () => _sqlDocumentRepository);
+				var routedHandlerMethod = GenericCommandHandler.CreateRoutedEditCommandHandler(handler, () => _documentRepository);
 				var commandBinding = new CommandBinding(command, routedHandlerMethod);
 				_specificCommandBindings.Add(commandBinding);
 				Editor.TextArea.DefaultInputHandler.Editing.CommandBindings.Add(commandBinding);
@@ -411,7 +411,7 @@ namespace SqlPad
 
 			DatabaseModel = InfrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings[_connectionString.Name], DocumentHeader);
 			SchemaLabel = InfrastructureFactory.SchemaLabel;
-			_sqlDocumentRepository = new SqlDocumentRepository(InfrastructureFactory.CreateParser(), InfrastructureFactory.CreateStatementValidator(), DatabaseModel);
+			_documentRepository = new SqlDocumentRepository(InfrastructureFactory.CreateParser(), InfrastructureFactory.CreateStatementValidator(), DatabaseModel);
 
 			DisposeOutputViewers();
 			AddNewOutputViewer();
@@ -652,14 +652,13 @@ namespace SqlPad
 
 		private void InitializeGenericCommandBindings()
 		{
-			Editor.TextArea.CommandBindings.Add(new CommandBinding(GenericCommands.MultiNodeEdit, EditMultipleNodes));
-
+			Editor.TextArea.CommandBindings.Add(new CommandBinding(GenericCommands.MultiNodeEdit, MultiNodeEditHandler));
 			Editor.TextArea.CommandBindings.Add(new CommandBinding(DiagnosticCommands.ShowTokenCommand, ShowTokenCommandExecutionHandler));
 		}
 
 		private void CanExecuteShowCodeCompletionHandler(object sender, CanExecuteRoutedEventArgs args)
 		{
-			args.CanExecute = _sqlDocumentRepository.StatementText == Editor.Text;
+			args.CanExecute = _documentRepository.StatementText == Editor.Text;
 		}
 
 		private void ShowCodeCompletionOptions(object sender, ExecutedRoutedEventArgs e)
@@ -680,7 +679,7 @@ namespace SqlPad
 
 		private void ShowTokenCommandExecutionHandler(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
 		{
-			var tokens = InfrastructureFactory.CreateTokenReader(_sqlDocumentRepository.StatementText).GetTokens(true).ToArray();
+			var tokens = InfrastructureFactory.CreateTokenReader(_documentRepository.StatementText).GetTokens(true).ToArray();
 			var message = "Parsed: " + String.Join(", ", tokens.Where(t => t.CommentType == CommentType.None).Select(t => "{" + t.Value + "}"));
 			message += Environment.NewLine + "Comments: " + String.Join(", ", tokens.Where(t => t.CommentType != CommentType.None).Select(t => "{" + t.Value + "}"));
 			MessageBox.Show(message, "Tokens", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -688,24 +687,24 @@ namespace SqlPad
 
 		private void FormatStatement(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
 		{
-			GenericCommandHandler.ExecuteEditCommand(_sqlDocumentRepository, Editor, _statementFormatter.ExecutionHandler.ExecutionHandler);
+			GenericCommandHandler.ExecuteEditCommand(_documentRepository, Editor, _statementFormatter.ExecutionHandler.ExecutionHandler);
 		}
 
 		private void FormatStatementAsSingleLine(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
 		{
-			GenericCommandHandler.ExecuteEditCommand(_sqlDocumentRepository, Editor, _statementFormatter.SingleLineExecutionHandler.ExecutionHandler);
+			GenericCommandHandler.ExecuteEditCommand(_documentRepository, Editor, _statementFormatter.SingleLineExecutionHandler.ExecutionHandler);
 		}
 
 		private void NavigateToQueryBlockRoot(object sender, ExecutedRoutedEventArgs args)
 		{
-			var executionContext = ActionExecutionContext.Create(Editor, _sqlDocumentRepository);
+			var executionContext = ActionExecutionContext.Create(Editor, _documentRepository);
 			var queryBlockRootIndex = _navigationService.NavigateToQueryBlockRoot(executionContext);
 			Editor.NavigateToOffset(queryBlockRootIndex);
 		}
 		
 		private void NavigateToDefinition(object sender, ExecutedRoutedEventArgs args)
 		{
-			var executionContext = ActionExecutionContext.Create(Editor, _sqlDocumentRepository);
+			var executionContext = ActionExecutionContext.Create(Editor, _documentRepository);
 			var queryBlockRootIndex = _navigationService.NavigateToDefinition(executionContext);
 			Editor.NavigateToOffset(queryBlockRootIndex);
 		}
@@ -717,7 +716,7 @@ namespace SqlPad
 
 		private void ShowFunctionOverloads(object sender, ExecutedRoutedEventArgs args)
 		{
-			var functionOverloads = _codeCompletionProvider.ResolveFunctionOverloads(_sqlDocumentRepository, Editor.CaretOffset);
+			var functionOverloads = _codeCompletionProvider.ResolveFunctionOverloads(_documentRepository, Editor.CaretOffset);
 			if (functionOverloads.Count == 0)
 			{
 				return;
@@ -735,7 +734,7 @@ namespace SqlPad
 
 		private void CanExecuteDatabaseCommandHandler(object sender, CanExecuteRoutedEventArgs args)
 		{
-			if (!DatabaseModel.IsInitialized || ActiveOutputViewer.IsBusy || ActiveOutputViewer.IsDebuggerControlVisible || !String.Equals(_sqlDocumentRepository.StatementText, Editor.Text))
+			if (!DatabaseModel.IsInitialized || ActiveOutputViewer.IsBusy || ActiveOutputViewer.IsDebuggerControlVisible || !String.Equals(_documentRepository.StatementText, Editor.Text))
 			{
 				return;
 			}
@@ -793,7 +792,7 @@ namespace SqlPad
 			var selectionEnd = Editor.SelectionStart + Editor.SelectionLength;
 			var selectionStart = Editor.SelectionStart;
 			var isOnlyStatement = true;
-			foreach (var validationModel in _sqlDocumentRepository.ValidationModels.Values)
+			foreach (var validationModel in _documentRepository.ValidationModels.Values)
 			{
 				var statement = validationModel.Statement;
 				if (Editor.SelectionStart > statement.RootNode.SourcePosition.IndexEnd + 1)
@@ -898,12 +897,12 @@ namespace SqlPad
 
 		private void NavigateToError(Func<IEnumerable<StatementGrammarNode>, IOrderedEnumerable<StatementGrammarNode>> getOrderedNodesFunction)
 		{
-			if (_sqlDocumentRepository.StatementText != Editor.Text)
+			if (_documentRepository.StatementText != Editor.Text)
 			{
 				return;
 			}
 
-			var sourceNodes = _sqlDocumentRepository.ValidationModels.Values
+			var sourceNodes = _documentRepository.ValidationModels.Values
 				.SelectMany(vm => vm.Errors)
 				.Select(e => e.Node);
 
@@ -917,7 +916,7 @@ namespace SqlPad
 
 		private void FindUsages(object sender, ExecutedRoutedEventArgs args)
 		{
-			var executionContext = ActionExecutionContext.Create(Editor, _sqlDocumentRepository);
+			var executionContext = ActionExecutionContext.Create(Editor, _documentRepository);
 			_navigationService.FindUsages(executionContext);
 			AddHighlightSegments(executionContext.SegmentsToReplace);
 		}
@@ -955,11 +954,11 @@ namespace SqlPad
 			}
 		}
 
-		private void EditMultipleNodes(object sender, ExecutedRoutedEventArgs args)
+		private void MultiNodeEditHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			if (_multiNodeEditor == null)
 			{
-				MultiNodeEditor.TryCreateMultiNodeEditor(Editor, InfrastructureFactory.CreateMultiNodeEditorDataProvider(), DatabaseModel, out _multiNodeEditor);
+				MultiNodeEditor.TryCreateMultiNodeEditor(Editor, ActionExecutionContext.Create(Editor, _documentRepository), InfrastructureFactory.CreateMultiNodeEditorDataProvider(), out _multiNodeEditor);
 			}
 		}
 
@@ -1041,7 +1040,7 @@ namespace SqlPad
 
 			CloseToolTipWhenNotOpenByShortCutOrCaretChange();
 
-			if (_sqlDocumentRepository.Statements == null)
+			if (_documentRepository.Statements == null)
 			{
 				return;
 			}
@@ -1052,7 +1051,7 @@ namespace SqlPad
 			{
 				ShowHideBindVariableList();
 
-				var activeStatement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
+				var activeStatement = _documentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
 				HighlightActiveStatement(activeStatement);
 
 				var terminal = activeStatement?.GetTerminalAtPosition(Editor.CaretOffset, t => t.Type == NodeType.Terminal && t.Token.Value.In("(", ")", "[", "]", "{", "}"));
@@ -1133,7 +1132,7 @@ namespace SqlPad
 				}
 				else
 				{
-					var executionContext = ActionExecutionContext.Create(Editor, _sqlDocumentRepository);
+					var executionContext = ActionExecutionContext.Create(Editor, _documentRepository);
 					correspondingSegments.AddRange(_navigationService.FindCorrespondingSegments(executionContext));
 				}
 			}
@@ -1196,7 +1195,7 @@ namespace SqlPad
 
 		private void ShowHideBindVariableList()
 		{
-			if (_sqlDocumentRepository.Statements == null || !String.Equals(_sqlDocumentRepository.StatementText, Editor.Text))
+			if (_documentRepository.Statements == null || !String.Equals(_documentRepository.StatementText, Editor.Text))
 			{
 				return;
 			}
@@ -1322,7 +1321,7 @@ namespace SqlPad
 
 					break;
 				case "\"":
-					pairCharacterHandled = !PreviousPairCharacterExists(text, '"', '"') && IsNextCharacterBlank() && _sqlDocumentRepository.CanAddPairCharacter(Editor.CaretOffset, '"');
+					pairCharacterHandled = !PreviousPairCharacterExists(text, '"', '"') && IsNextCharacterBlank() && _documentRepository.CanAddPairCharacter(Editor.CaretOffset, '"');
 					if (pairCharacterHandled)
 					{
 						InsertPairCharacter("\"\"");
@@ -1330,7 +1329,7 @@ namespace SqlPad
 					
 					break;
 				case "'":
-					pairCharacterHandled = !PreviousPairCharacterExists(text, '\'', '\'') && IsNextCharacterBlank() && _sqlDocumentRepository.CanAddPairCharacter(Editor.CaretOffset, '\'');
+					pairCharacterHandled = !PreviousPairCharacterExists(text, '\'', '\'') && IsNextCharacterBlank() && _documentRepository.CanAddPairCharacter(Editor.CaretOffset, '\'');
 					if (pairCharacterHandled)
 					{
 						InsertPairCharacter("''");
@@ -1344,7 +1343,7 @@ namespace SqlPad
 
 		private bool IsAtValidClosingParenthesis()
 		{
-			var activeStatement = _sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
+			var activeStatement = _documentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
 			var terminal = activeStatement?.GetTerminalAtPosition(Editor.CaretOffset, t => t.Type == NodeType.Terminal && String.Equals(t.Token.Value, ")"));
 			return terminal != null && terminal.SourcePosition.IndexStart == Editor.CaretOffset &&
 			       terminal.ParentNode.ChildNodes.Any(n => n.Type == NodeType.Terminal && n != terminal && String.Equals(n.Token.Value, "("));
@@ -1395,9 +1394,9 @@ namespace SqlPad
 			{
 				items = await Task.Factory.StartNew(
 					() =>
-						_codeSnippetProvider.GetSnippets(_sqlDocumentRepository, _sqlDocumentRepository.StatementText, caretOffset)
+						_codeSnippetProvider.GetSnippets(_documentRepository, _documentRepository.StatementText, caretOffset)
 							.Select(s => new CompletionData(s))
-							.Concat(_codeCompletionProvider.ResolveItems(_sqlDocumentRepository, DatabaseModel, caretOffset, forcedInvokation)
+							.Concat(_codeCompletionProvider.ResolveItems(_documentRepository, DatabaseModel, caretOffset, forcedInvokation)
 								.Select(i => new CompletionData(i)))
 							.ToArray());
 			}
@@ -1408,7 +1407,7 @@ namespace SqlPad
 				return;
 			}
 
-			if (!String.Equals(_sqlDocumentRepository.StatementText, Editor.Text))
+			if (!String.Equals(_documentRepository.StatementText, Editor.Text))
 			{
 				return;
 			}
@@ -1562,12 +1561,12 @@ namespace SqlPad
 
 			if (IsParsingSynchronous)
 			{
-				_sqlDocumentRepository.UpdateStatements(Editor.Text);
+				_documentRepository.UpdateStatements(Editor.Text);
 				ParseDoneHandler(true);
 			}
 			else
 			{
-				_sqlDocumentRepository.UpdateStatementsAsync(Editor.Text, _parsingCancellationTokenSource.Token)
+				_documentRepository.UpdateStatementsAsync(Editor.Text, _parsingCancellationTokenSource.Token)
 					.ContinueWith(t => ParseDoneHandler(t.Status == TaskStatus.RanToCompletion));
 			}
 		}
@@ -1580,17 +1579,17 @@ namespace SqlPad
 				return;
 			}
 
-			_colorizingTransformer.SetDocumentRepository(_sqlDocumentRepository);
+			_colorizingTransformer.SetDocumentRepository(_documentRepository);
 
 			Dispatcher.Invoke(ParseDoneUiHandler);
 		}
 
 		private void ParseDoneUiHandler()
 		{
-			var hasTextChanged = !String.Equals(_sqlDocumentRepository.StatementText, Editor.Text);
+			var hasTextChanged = !String.Equals(_documentRepository.StatementText, Editor.Text);
 			if (!hasTextChanged)
 			{
-				_foldingStrategy.UpdateFoldings(_sqlDocumentRepository.Statements);
+				_foldingStrategy.UpdateFoldings(_documentRepository.Statements);
 			}
 
 			if (_isInitialParsing)
@@ -1606,7 +1605,7 @@ namespace SqlPad
 				return;
 			}
 
-			_colorizingTransformer.SetActiveStatement(_sqlDocumentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset));
+			_colorizingTransformer.SetActiveStatement(_documentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset));
 
 			Editor.TextArea.TextView.Redraw();
 
@@ -1627,7 +1626,7 @@ namespace SqlPad
 
 			var visualPosition = e.GetPosition(Editor);
 			var position = Editor.GetPositionFromPoint(visualPosition);
-			if (!position.HasValue || _sqlDocumentRepository.Statements == null)
+			if (!position.HasValue || _documentRepository.Statements == null)
 			{
 				return;
 			}
@@ -1649,7 +1648,7 @@ namespace SqlPad
 			}
 			else
 			{
-				var toolTip = _toolTipProvider.GetToolTip(_sqlDocumentRepository, offset);
+				var toolTip = _toolTipProvider.GetToolTip(_documentRepository, offset);
 				if (toolTip == null)
 				{
 					return;
@@ -1818,7 +1817,7 @@ namespace SqlPad
 		private bool PopulateContextActionMenu()
 		{
 			return PopulateContextMenuItems(
-				c => _contextActionProvider.GetContextActions(_sqlDocumentRepository, c)
+				c => _contextActionProvider.GetContextActions(_documentRepository, c)
 					.Select(BuildContextMenuItem));
 		}
 
@@ -1833,7 +1832,7 @@ namespace SqlPad
 		private bool PopulateGenerateCodeItemsMenu()
 		{
 			return PopulateContextMenuItems(
-				c => _codeSnippetProvider.GetCodeGenerationItems(_sqlDocumentRepository)
+				c => _codeSnippetProvider.GetCodeGenerationItems(_documentRepository)
 					.Select(ci => CreateContextMenuItemFromCodeSnippet(ci, c)));
 		}
 
@@ -1859,7 +1858,7 @@ namespace SqlPad
 		{
 			_contextActionMenu.Items.Clear();
 
-			var executionContext = ActionExecutionContext.Create(Editor, _sqlDocumentRepository);
+			var executionContext = ActionExecutionContext.Create(Editor, _documentRepository);
 			foreach (var menuItem in buildMenuItemFunction(executionContext))
 			{
 				_contextActionMenu.Items.Add(menuItem);
@@ -1969,7 +1968,7 @@ namespace SqlPad
 		private void CompilationErrorHandler(object sender, CompilationErrorArgs e)
 		{
 			var failedStatementSourcePosition = e.CompilationError.Statement.SourcePosition;
-			var isStatementUnchanged = _sqlDocumentRepository.Statements.Any(s => failedStatementSourcePosition == s.SourcePosition);
+			var isStatementUnchanged = _documentRepository.Statements.Any(s => failedStatementSourcePosition == s.SourcePosition);
 			if (!isStatementUnchanged)
 			{
 				return;
@@ -2021,14 +2020,14 @@ namespace SqlPad
 
 		private void ShowHelpHandler(object sender, ExecutedRoutedEventArgs e)
 		{
-			var executionContext = ActionExecutionContext.Create(Editor, _sqlDocumentRepository);
+			var executionContext = ActionExecutionContext.Create(Editor, _documentRepository);
 			_createHelpProvider.ShowHelp(executionContext);
 		}
 
 		private void BindVariableEditorGotFocusHandler(object sender, RoutedEventArgs e)
 		{
 			var bindVariable = (BindVariableModel)((FrameworkElement)sender).DataContext;
-			var executionContext = ActionExecutionContext.Create(Editor, _sqlDocumentRepository);
+			var executionContext = ActionExecutionContext.Create(Editor, _documentRepository);
 			executionContext.CaretOffset = bindVariable.BindVariable.Nodes[0].SourcePosition.IndexStart;
 			_navigationService.DisplayBindVariableUsages(executionContext);
 			AddHighlightSegments(executionContext.SegmentsToReplace);

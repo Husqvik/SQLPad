@@ -10,6 +10,7 @@ namespace SqlPad.Oracle.Commands
 	internal class AddAliasCommand : OracleCommandBase
 	{
 		public const string Title = "Add Alias";
+
 		private OracleDataObjectReference _currentObjectReference;
 		private OracleColumnReference _currentColumnReference;
 
@@ -85,7 +86,9 @@ namespace SqlPad.Oracle.Commands
 			var settingsModel = ConfigureSettings();
 
 			if (!ExecutionContext.SettingsProvider.GetSettings())
+			{
 				return;
+			}
 
 			switch (CurrentNode.Id)
 			{
@@ -111,7 +114,7 @@ namespace SqlPad.Oracle.Commands
 		public void AddObjectAlias(OracleDataObjectReference dataObjectReference, string alias)
 		{
 			var prefixedColumnReferences = dataObjectReference.Owner.AllColumnReferences
-				.Where(c => (c.OwnerNode != null || c.ObjectNode != null) && c.ObjectNodeObjectReferences.Count == 1 && c.ObjectNodeObjectReferences.Single() == dataObjectReference);
+				.Where(c => (c.OwnerNode != null || c.ObjectNode != null) && c.ObjectNodeObjectReferences.Count == 1 && c.ObjectNodeObjectReferences.First() == dataObjectReference);
 
 			foreach (var columnReference in prefixedColumnReferences)
 			{
@@ -120,7 +123,7 @@ namespace SqlPad.Oracle.Commands
 				_executionContext.SegmentsToReplace.Add(
 					new TextSegment
 					{
-						IndextStart = firstPrefixNode == null ? columnReference.ColumnNode.SourcePosition.IndexStart - 1 : firstPrefixNode.SourcePosition.IndexStart,
+						IndextStart = firstPrefixNode.SourcePosition.IndexStart,
 						Length = columnReference.ColumnNode.SourcePosition.IndexStart - firstPrefixNode.SourcePosition.IndexStart,
 						Text = alias + "."
 					});
@@ -132,12 +135,12 @@ namespace SqlPad.Oracle.Commands
 			if (isUnquotable)
 			{
 				textSegment =
-						new TextSegment
-						{
-							IndextStart = dataObjectReference.ObjectNode.SourcePosition.IndexStart,
-							Length = dataObjectReference.ObjectNode.SourcePosition.Length,
-							Text = alias
-						};
+					new TextSegment
+					{
+						IndextStart = dataObjectReference.ObjectNode.SourcePosition.IndexStart,
+						Length = dataObjectReference.ObjectNode.SourcePosition.Length,
+						Text = alias
+					};
 			}
 			else
 			{

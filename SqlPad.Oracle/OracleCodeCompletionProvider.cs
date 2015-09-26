@@ -376,8 +376,9 @@ namespace SqlPad.Oracle
 			if (completionType.BindVariable)
 			{
 				var providerConfiguration = WorkDocumentCollection.GetProviderConfiguration(oracleDatabaseModel.ConnectionString.ProviderName);
+				var currentNormalizedValue = completionType.TerminalValuePartUntilCaret.ToQuotedIdentifier();
 				var bindVariables =
-					providerConfiguration.BindVariables.Where(bv => bv.Value != null && !Equals(bv.Value, String.Empty) && !Equals(bv.Value, DateTime.MinValue) && CodeCompletionSearchHelper.IsMatch(bv.Name.ToQuotedIdentifier(), completionType.TerminalValuePartUntilCaret))
+					providerConfiguration.BindVariables.Where(bv => bv.Value != null && !Equals(bv.Value, String.Empty) && !Equals(bv.Value, DateTime.MinValue) && !String.Equals(bv.Name.ToQuotedIdentifier(), currentNormalizedValue) && CodeCompletionSearchHelper.IsMatch(bv.Name.ToQuotedIdentifier(), completionType.TerminalValuePartUntilCaret))
 						.Select(
 							bv =>
 								new OracleCodeCompletionItem
