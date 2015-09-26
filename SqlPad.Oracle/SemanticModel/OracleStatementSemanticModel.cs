@@ -2164,11 +2164,20 @@ namespace SqlPad.Oracle.SemanticModel
 				result = _databaseModel.GetProgramMetadata(identifier, parameterCount, false, hasAnalyticClause);
 			}
 
-			if (result.Metadata != null && String.IsNullOrEmpty(result.Metadata.Identifier.Package) &&
-				programReference.ObjectNode != null)
+			if (result.Metadata != null)
 			{
-				programReference.OwnerNode = programReference.ObjectNode;
-				programReference.ObjectNode = null;
+				if (programReference.ObjectNode == null && programReference.Name[0] == '"' &&
+					(result.Metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramLevel || result.Metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramRowNum))
+				{
+					return null;
+				}
+
+				if (String.IsNullOrEmpty(result.Metadata.Identifier.Package) &&
+				    programReference.ObjectNode != null)
+				{
+					programReference.OwnerNode = programReference.ObjectNode;
+					programReference.ObjectNode = null;
+				}
 			}
 
 			programReference.SchemaObject = result.SchemaObject;

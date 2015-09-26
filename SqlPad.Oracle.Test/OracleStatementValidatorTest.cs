@@ -2785,5 +2785,26 @@ WHERE
 			invalidNonTerminalValidities[1].SemanticErrorType.ShouldBe(OracleSemanticErrorTooltipText.FunctionOrPseudoColumnMayBeUsedInsideSqlStatementOnly);
 			invalidNonTerminalValidities[1].Node.Id.ShouldBe(NonTerminals.PrefixedColumnReference);
 		}
+
+		[Test(Description = @"")]
+		public void TestQuotedPseudocolumnUsage()
+		{
+			const string sqlText = "SELECT \"ROWNUM\", \"LEVEL\" FROM DUAL CONNECT BY LEVEL <= 2";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var columnValidities = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			columnValidities.Count.ShouldBe(2);
+			columnValidities[0].IsRecognized.ShouldBe(false);
+			columnValidities[1].IsRecognized.ShouldBe(false);
+
+			var programValidities = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			programValidities.Count.ShouldBe(1);
+			programValidities[0].IsRecognized.ShouldBe(true);
+		}
 	}
 }
