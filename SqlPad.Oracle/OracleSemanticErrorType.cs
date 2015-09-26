@@ -43,6 +43,7 @@ namespace SqlPad.Oracle
 	{
 		public const string InvalidDateLiteral = "ANSI format of DATE literal must be [-]YYYY-MM-DD";
 		public const string InvalidTimestampLiteral = "ANSI format of TIMESTAMP literal must be [-]YYYY-MM-DD HH24:MI:SS[.1-9 digits] [time zone definition]";
+		public const string FunctionOrPseudoColumnMayBeUsedInsideSqlStatementOnly = "Function or pseudo-column may be used inside a SQL statement only";
 	}
 
 	public static class OracleSuggestionType

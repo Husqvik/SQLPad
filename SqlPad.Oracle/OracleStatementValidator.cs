@@ -883,20 +883,6 @@ namespace SqlPad.Oracle
 				{
 					semanticError = OracleSemanticErrorType.InvalidParameterCount;
 				}
-				else if (programReference.Metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramLevel)
-				{
-					if (programReference.Owner?.HierarchicalQueryClause?[NonTerminals.HierarchicalQueryConnectByClause] == null)
-					{
-						validationModel.ProgramNodeValidity[programReference.FunctionIdentifierNode] =
-							new SemanticErrorNodeValidationData(OracleSemanticErrorType.ConnectByClauseRequired, OracleSemanticErrorType.ConnectByClauseRequired)
-							{
-								IsRecognized = true,
-								Node = programReference.FunctionIdentifierNode
-							};
-
-						return;
-					}
-				}
 				else if (programReference.Metadata.DisplayType == OracleProgramMetadata.DisplayTypeParenthesis)
 				{
 					semanticError = OracleSemanticErrorType.MissingParenthesis;
@@ -923,15 +909,54 @@ namespace SqlPad.Oracle
 				validationModel.ProgramNodeValidity[programReference.ObjectNode] = new InvalidNodeValidationData(packageSemanticError) { IsRecognized = programReference.SchemaObject != null, Node = programReference.ObjectNode };
 			}
 
-			if (semanticError == OracleSemanticErrorType.None && isRecognized && !programReference.Metadata.IsPackageFunction && programReference.SchemaObject != null && !programReference.SchemaObject.IsValid)
+			var isRecognizedWithoutError = semanticError == OracleSemanticErrorType.None && isRecognized;
+			if (isRecognizedWithoutError)
 			{
-				semanticError = OracleSemanticErrorType.ObjectStatusInvalid;
+				if (!programReference.Metadata.IsPackageFunction && programReference.SchemaObject != null && !programReference.SchemaObject.IsValid)
+				{
+					semanticError = OracleSemanticErrorType.ObjectStatusInvalid;
+				}
+				else if (programReference.Metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramLevel)
+				{
+					if (programReference.Owner?.HierarchicalQueryClause?[NonTerminals.HierarchicalQueryConnectByClause] == null)
+					{
+						validationModel.ProgramNodeValidity[programReference.RootNode] =
+							new InvalidNodeValidationData(OracleSemanticErrorType.ConnectByClauseRequired)
+							{
+								Node = programReference.RootNode
+							};
+
+						return;
+					}
+
+					if (ValidateIdentifierNodeOnly(programReference, validationModel)) return;
+				}
+				else if (programReference.Metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramRowNum)
+				{
+					if (ValidateIdentifierNodeOnly(programReference, validationModel)) return;
+				}
 			}
 
 			if (!validationModel.ProgramNodeValidity.ContainsKey(programReference.FunctionIdentifierNode))
 			{
 				validationModel.ProgramNodeValidity[programReference.FunctionIdentifierNode] = new InvalidNodeValidationData(semanticError) { IsRecognized = isRecognized, Node = programReference.FunctionIdentifierNode };
 			}
+		}
+
+		private static bool ValidateIdentifierNodeOnly(OracleReference programReference, OracleValidationModel validationModel)
+		{
+			if (programReference.ObjectNode == null)
+			{
+				return false;
+			}
+
+			validationModel.InvalidNonTerminals[programReference.RootNode] =
+				new InvalidNodeValidationData(OracleSemanticErrorTooltipText.FunctionOrPseudoColumnMayBeUsedInsideSqlStatementOnly)
+				{
+					Node = programReference.RootNode
+				};
+
+			return true;
 		}
 
 		private static bool IsInClauseValidWithLnNvl(StatementGrammarNode parameterNode)

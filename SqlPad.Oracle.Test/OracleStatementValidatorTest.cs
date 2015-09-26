@@ -2766,5 +2766,24 @@ WHERE
 			invalidNonTerminalValidities[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.PartitionedTableOnBothSidesOfPartitionedOuterJoinNotSupported);
 			invalidNonTerminalValidities[1].Node.Id.ShouldBe(NonTerminals.OuterJoinPartitionClause);
 		}
+
+		[Test(Description = @"")]
+		public void TestInvalidPseudocolumnUsage()
+		{
+			const string sqlText = "SELECT SYS.STANDARD.\"LEVEL\"(), SYS.STANDARD.\"ROWNUM\" FROM DUAL CONNECT BY LEVEL <= 2";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var invalidNonTerminalValidities = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			invalidNonTerminalValidities.Count.ShouldBe(2);
+			invalidNonTerminalValidities[0].SemanticErrorType.ShouldBe(OracleSemanticErrorTooltipText.FunctionOrPseudoColumnMayBeUsedInsideSqlStatementOnly);
+			invalidNonTerminalValidities[0].Node.Id.ShouldBe(NonTerminals.Expression);
+			invalidNonTerminalValidities[1].SemanticErrorType.ShouldBe(OracleSemanticErrorTooltipText.FunctionOrPseudoColumnMayBeUsedInsideSqlStatementOnly);
+			invalidNonTerminalValidities[1].Node.Id.ShouldBe(NonTerminals.PrefixedColumnReference);
+		}
 	}
 }

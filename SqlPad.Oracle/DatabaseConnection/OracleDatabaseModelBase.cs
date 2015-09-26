@@ -35,6 +35,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramRound = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "ROUND");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramLevel = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "LEVEL");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramRowNum = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "ROWNUM");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramNextDay = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "NEXT_DAY");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramSysContext = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "SYS_CONTEXT");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramToChar = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "TO_CHAR");
