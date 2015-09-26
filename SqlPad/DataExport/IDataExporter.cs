@@ -7,6 +7,8 @@ namespace SqlPad.DataExport
 	{
 		string FileNameFilter { get; }
 
+		bool HasAppendSupport { get; }
+
 		void ExportToFile(string fileName, ResultViewer resultViewer, IDataExportConverter dataExportConverter);
 
 		Task ExportToFileAsync(string fileName, ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken);

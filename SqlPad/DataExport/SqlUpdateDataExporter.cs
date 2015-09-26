@@ -12,7 +12,9 @@ namespace SqlPad.DataExport
 	{
 		public string FileNameFilter => "SQL files (*.sql)|*.sql|All files (*.*)|*";
 
-	    public void ExportToClipboard(ResultViewer resultViewer, IDataExportConverter dataExportConverter)
+		public bool HasAppendSupport { get; } = false;
+
+		public void ExportToClipboard(ResultViewer resultViewer, IDataExportConverter dataExportConverter)
 		{
 			ExportToFile(null, resultViewer, dataExportConverter);
 		}

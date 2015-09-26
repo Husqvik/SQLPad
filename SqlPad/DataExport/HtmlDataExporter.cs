@@ -16,7 +16,9 @@ namespace SqlPad.DataExport
 
 		public string FileNameFilter => "HTML files (*.html)|*.html|All files (*.*)|*";
 
-	    public void ExportToClipboard(ResultViewer resultViewer, IDataExportConverter dataExportConverter)
+		public bool HasAppendSupport { get; } = false;
+
+		public void ExportToClipboard(ResultViewer resultViewer, IDataExportConverter dataExportConverter)
 		{
 			ExportToFile(null, resultViewer, dataExportConverter);
 		}

@@ -20,6 +20,8 @@ namespace SqlPad.DataExport
 
 		public virtual string FileNameFilter => "CSV files (*.csv)|*.csv|All files (*.*)|*";
 
+		public bool HasAppendSupport { get; } = false;
+
 		public void ExportToClipboard(ResultViewer resultViewer, IDataExportConverter dataExportConverter)
 		{
 			ExportToFile(null, resultViewer, dataExportConverter);

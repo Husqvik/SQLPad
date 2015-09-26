@@ -459,7 +459,7 @@ namespace SqlPad
 		private void ExportDataFileHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			var dataExporter = (IDataExporter)args.Parameter;
-			var dialog = new SaveFileDialog { Filter = dataExporter.FileNameFilter, OverwritePrompt = true };
+			var dialog = new SaveFileDialog { Filter = dataExporter.FileNameFilter, OverwritePrompt = !dataExporter.HasAppendSupport };
 			if (dialog.ShowDialog() != true)
 			{
 				return;
