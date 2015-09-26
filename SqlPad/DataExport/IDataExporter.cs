@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,10 +12,10 @@ namespace SqlPad.DataExport
 
 		void ExportToFile(string fileName, ResultViewer resultViewer, IDataExportConverter dataExportConverter);
 
-		Task ExportToFileAsync(string fileName, ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken);
+		Task ExportToFileAsync(string fileName, ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress = null);
 
 		void ExportToClipboard(ResultViewer resultViewer, IDataExportConverter dataExportConverter);
 
-		Task ExportToClipboardAsync(ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken);
+		Task ExportToClipboardAsync(ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress = null);
 	}
 }

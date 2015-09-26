@@ -26,20 +26,20 @@ namespace SqlPad.DataExport
 			ExportToFileAsync(fileName, resultViewer, dataExportConverter, CancellationToken.None).Wait();
 		}
 
-		public Task ExportToClipboardAsync(ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
+		public Task ExportToClipboardAsync(ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress = null)
 		{
-			return ExportToFileAsync(null, resultViewer, dataExportConverter, cancellationToken);
+			return ExportToFileAsync(null, resultViewer, dataExportConverter, cancellationToken, reportProgress);
 		}
 
-		public Task ExportToFileAsync(string fileName, ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
+		public Task ExportToFileAsync(string fileName, ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress = null)
 		{
 			var orderedColumns = DataExportHelper.GetOrderedExportableColumns(resultViewer.ResultGrid);
 			var rows = (ICollection)resultViewer.ResultGrid.Items;
 			var worksheetName = resultViewer.Title;
-			return Task.Factory.StartNew(() => ExportInternal(fileName, worksheetName, orderedColumns, rows, cancellationToken), cancellationToken);
+			return Task.Factory.StartNew(() => ExportInternal(fileName, worksheetName, orderedColumns, rows, cancellationToken, reportProgress), cancellationToken);
 		}
 
-		private static void ExportInternal(string fileName, string worksheetName, IReadOnlyList<ColumnHeader> orderedColumns, ICollection rows, CancellationToken cancellationToken)
+		private static void ExportInternal(string fileName, string worksheetName, IReadOnlyList<ColumnHeader> orderedColumns, ICollection rows, CancellationToken cancellationToken, IProgress<int> reportProgress)
 		{
 			var package = new ExcelPackage(new FileInfo(fileName));
 			if (package.Workbook.Worksheets[worksheetName] != null)
@@ -48,6 +48,8 @@ namespace SqlPad.DataExport
 			}
 
 			var worksheet = package.Workbook.Worksheets.Add(worksheetName);
+			var rowCount = rows.Count;
+			var totalCells = orderedColumns.Count * rowCount;
 
 			for (var i = 0; i < orderedColumns.Count; i++)
 			{
@@ -61,6 +63,9 @@ namespace SqlPad.DataExport
 				foreach (object[] rowValues in rows)
 				{
 					cancellationToken.ThrowIfCancellationRequested();
+
+					var progress = (int)Math.Round((i * rowCount + rowIndex - 2) * 100f / totalCells);
+					reportProgress?.Report(progress);
 
 					var stringValue = FormatValue(rowValues[i]);
 					object value;
@@ -95,6 +100,8 @@ namespace SqlPad.DataExport
 			}
 
 			package.Save();
+
+			reportProgress?.Report(100);
 		}
 
 		private static string FormatValue(object value)

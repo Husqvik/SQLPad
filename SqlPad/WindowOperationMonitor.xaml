@@ -4,11 +4,12 @@
         xmlns:sqlPad="clr-namespace:SqlPad"
         Title="Operation Monitor"
 		WindowStyle="None"
-		SizeToContent="Height" Width="220" WindowStartupLocation="CenterOwner" Topmost="True" ResizeMode="NoResize">
+		SizeToContent="Height" Width="220" WindowStartupLocation="CenterOwner" Topmost="True" ResizeMode="NoResize"
+		DataContext="{Binding RelativeSource={RelativeSource Self}}">
 	<Border BorderBrush="DimGray" BorderThickness="2">
 		<StackPanel sqlPad:MarginSetter.Margin="8,4,8,4">
 			<TextBlock>Please wait...</TextBlock>
-			<ProgressBar IsIndeterminate="True" Height="16" />
+			<ProgressBar x:Name="ProgressBar" IsIndeterminate="{Binding IsIndeterminate}" Height="16" Maximum="100" />
 			<Button Content="Cancel" IsCancel="True" Width="60" Height="24" HorizontalAlignment="Center" Click="ButtonCancelOperationClickHandler" />
 		</StackPanel>
 	</Border>

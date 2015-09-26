@@ -465,17 +465,17 @@ namespace SqlPad
 				return;
 			}
 
-			await ExportData(token => dataExporter.ExportToFileAsync(dialog.FileName, this, _outputViewer.DocumentPage.InfrastructureFactory.DataExportConverter, token));
+			await ExportData((token, progress) => dataExporter.ExportToFileAsync(dialog.FileName, this, _outputViewer.DocumentPage.InfrastructureFactory.DataExportConverter, token, progress));
 		}
 
-		private static async Task ExportData(Func<CancellationToken, Task> getExportTaskFunction)
+		private static async Task ExportData(Func<CancellationToken, IProgress<int>, Task> getExportTaskFunction)
 		{
 			using (var cancellationTokenSource = new CancellationTokenSource())
 			{
-				var operationMonitor = new WindowOperationMonitor(cancellationTokenSource) { Owner = Application.Current.MainWindow };
+				var operationMonitor = new WindowOperationMonitor(cancellationTokenSource) { IsIndeterminate = false };
 				operationMonitor.Show();
 
-				var exception = await App.SafeActionAsync(() => getExportTaskFunction(cancellationTokenSource.Token));
+				var exception = await App.SafeActionAsync(() => getExportTaskFunction(cancellationTokenSource.Token, operationMonitor));
 
 				operationMonitor.Close();
 
@@ -489,7 +489,7 @@ namespace SqlPad
 		private async void ExportDataClipboardHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			var dataExporter = (IDataExporter)args.Parameter;
-			await ExportData(token => dataExporter.ExportToClipboardAsync(this, _outputViewer.DocumentPage.InfrastructureFactory.DataExportConverter, token));
+			await ExportData((token, progress) => dataExporter.ExportToClipboardAsync(this, _outputViewer.DocumentPage.InfrastructureFactory.DataExportConverter, token, progress));
 		}
 
 		private async void ResultGridScrollChangedHandler(object sender, ScrollChangedEventArgs e)

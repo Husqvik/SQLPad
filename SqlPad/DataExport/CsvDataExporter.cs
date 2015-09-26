@@ -32,12 +32,12 @@ namespace SqlPad.DataExport
 			ExportToFileAsync(fileName, resultViewer, dataExportConverter, CancellationToken.None).Wait();
 		}
 
-		public Task ExportToClipboardAsync(ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
+		public Task ExportToClipboardAsync(ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress = null)
 		{
-			return ExportToFileAsync(null, resultViewer, dataExportConverter, cancellationToken);
+			return ExportToFileAsync(null, resultViewer, dataExportConverter, cancellationToken, reportProgress);
 		}
 
-		public Task ExportToFileAsync(string fileName, ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
+		public Task ExportToFileAsync(string fileName, ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress = null)
 		{
 			var orderedColumns = DataExportHelper.GetOrderedExportableColumns(resultViewer.ResultGrid);
 			var columnHeaders = orderedColumns
@@ -45,22 +45,20 @@ namespace SqlPad.DataExport
 
 			var headerLine = String.Join(Separator, columnHeaders);
 
-			var rows = (IEnumerable)resultViewer.ResultGrid.Items;
+			var rows = (ICollection)resultViewer.ResultGrid.Items;
 
-			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(orderedColumns, headerLine, rows, w, cancellationToken));
+			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(orderedColumns, headerLine, rows, w, cancellationToken, reportProgress));
 		}
 
-		private void ExportInternal(IReadOnlyList<ColumnHeader> orderedColumns, string headerLine, IEnumerable rows, TextWriter writer, CancellationToken cancellationToken)
+		private void ExportInternal(IEnumerable<ColumnHeader> orderedColumns, string headerLine, ICollection rows, TextWriter writer, CancellationToken cancellationToken, IProgress<int> reportProgress)
 		{
 			writer.WriteLine(headerLine);
 
-			foreach (object[] rowValues in rows)
-			{
-				cancellationToken.ThrowIfCancellationRequested();
-
-				var contentLine = String.Join(Separator, orderedColumns.Select(c => FormatCsvValue(rowValues[c.ColumnIndex])));
-				writer.WriteLine(contentLine);
-			}
+			DataExportHelper.ExportRows(
+				rows,
+				(rowValues, isLastRow) => writer.WriteLine(String.Join(Separator, orderedColumns.Select(c => FormatCsvValue(rowValues[c.ColumnIndex])))),
+				reportProgress,
+				cancellationToken);
 		}
 
 		private static string FormatCsvValue(object value)

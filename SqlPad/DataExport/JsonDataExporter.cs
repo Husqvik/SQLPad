@@ -29,12 +29,12 @@ namespace SqlPad.DataExport
 			ExportToFileAsync(fileName, resultViewer, dataExportConverter, CancellationToken.None).Wait();
 		}
 
-		public Task ExportToClipboardAsync(ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
+		public Task ExportToClipboardAsync(ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress = null)
 		{
-			return ExportToFileAsync(null, resultViewer, dataExportConverter, cancellationToken);
+			return ExportToFileAsync(null, resultViewer, dataExportConverter, cancellationToken, reportProgress);
 		}
 
-		public Task ExportToFileAsync(string fileName, ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
+		public Task ExportToFileAsync(string fileName, ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress = null)
 		{
 			var orderedColumns = DataExportHelper.GetOrderedExportableColumns(resultViewer.ResultGrid);
 			var columnHeaders = orderedColumns
@@ -47,31 +47,32 @@ namespace SqlPad.DataExport
 
 			var rows = resultViewer.ResultGrid.Items;
 
-			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(orderedColumns, jsonTemplateBuilder.ToString(), rows, w, dataExportConverter, cancellationToken));
+			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(orderedColumns, jsonTemplateBuilder.ToString(), rows, w, dataExportConverter, cancellationToken, reportProgress));
 		}
 
-		private void ExportInternal(IReadOnlyList<ColumnHeader> orderedColumns, string jsonTemplate, ICollection rows, TextWriter writer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
+		private static void ExportInternal(IEnumerable<ColumnHeader> orderedColumns, string jsonTemplate, ICollection rows, TextWriter writer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress)
 		{
 			writer.WriteLine('[');
 
-			var rowIndex = 1;
-			foreach (object[] rowValues in rows)
-			{
-				cancellationToken.ThrowIfCancellationRequested();
-
-				var values = orderedColumns.Select(h => (object)FormatJsonValue(rowValues[h.ColumnIndex], dataExportConverter)).ToArray();
-				writer.Write(jsonTemplate, values);
-
-				if (rowIndex < rows.Count)
-				{
-					writer.WriteLine(',');
-				}
-
-				rowIndex++;
-			}
+			DataExportHelper.ExportRows(
+				rows,
+				(rowValues, isLastRow) => ExportRow(writer, rowValues, orderedColumns, jsonTemplate, dataExportConverter, isLastRow),
+				reportProgress,
+				cancellationToken);
 
 			writer.WriteLine();
 			writer.Write(']');
+		}
+
+		private static void ExportRow(TextWriter writer, IReadOnlyList<object> rowValues, IEnumerable<ColumnHeader> orderedColumns, string jsonTemplate, IDataExportConverter dataExportConverter, bool isLastRow)
+		{
+			var values = orderedColumns.Select(h => (object)FormatJsonValue(rowValues[h.ColumnIndex], dataExportConverter)).ToArray();
+			writer.Write(jsonTemplate, values);
+
+			if (!isLastRow)
+			{
+				writer.WriteLine(',');
+			}
 		}
 
 		private static string FormatJsonValue(object value, IDataExportConverter dataExportConverter)

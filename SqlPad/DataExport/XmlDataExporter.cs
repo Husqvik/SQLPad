@@ -36,49 +36,39 @@ namespace SqlPad.DataExport
 			ExportToFileAsync(fileName, resultViewer, dataExportConverter, CancellationToken.None).Wait();
 		}
 
-		public Task ExportToClipboardAsync(ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
+		public Task ExportToClipboardAsync(ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress = null)
 		{
-			return ExportToFileAsync(null, resultViewer, dataExportConverter, cancellationToken);
+			return ExportToFileAsync(null, resultViewer, dataExportConverter, cancellationToken, reportProgress);
 		}
 
-		public Task ExportToFileAsync(string fileName, ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
+		public Task ExportToFileAsync(string fileName, ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress = null)
 		{
 			var orderedColumns = DataExportHelper.GetOrderedExportableColumns(resultViewer.ResultGrid);
-			var columnHeaders = orderedColumns
-					.Select(h => FormatColumnHeaderAsXmlElementName(h.Name))
-					.ToArray();
+			var rows = (ICollection)resultViewer.ResultGrid.Items;
 
-			var rows = (IEnumerable)resultViewer.ResultGrid.Items;
-
-			return Task.Factory.StartNew(() => ExportInternal(orderedColumns, columnHeaders, rows, fileName, dataExportConverter, cancellationToken), cancellationToken);
+			return Task.Factory.StartNew(() => ExportInternal(orderedColumns, rows, fileName, dataExportConverter, cancellationToken, reportProgress), cancellationToken);
 		}
 
-		private void ExportInternal(IReadOnlyList<ColumnHeader> orderedColumns, IReadOnlyList<string> columnHeaders, IEnumerable rows, string fileName, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
+		private static void ExportInternal(IReadOnlyList<ColumnHeader> orderedColumns, ICollection rows, string fileName, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress)
 		{
-			var columnCount = columnHeaders.Count;
-
 			var stringBuilder = new StringBuilder();
 
 			var exportToClipboard = String.IsNullOrEmpty(fileName);
+
+			var columnHeaders = orderedColumns
+				.Select(h => FormatColumnHeaderAsXmlElementName(h.Name))
+				.ToArray();
 
 			using (var xmlWriter = exportToClipboard ? XmlWriter.Create(stringBuilder, XmlWriterSettings) : XmlWriter.Create(fileName, XmlWriterSettings))
 			{
 				xmlWriter.WriteStartDocument();
 				xmlWriter.WriteStartElement("data");
 
-				foreach (object[] rowValues in rows)
-				{
-					cancellationToken.ThrowIfCancellationRequested();
-
-					xmlWriter.WriteStartElement("row");
-
-					for (var i = 0; i < columnCount; i++)
-					{
-						xmlWriter.WriteElementString(columnHeaders[i], FormatXmlValue(rowValues[orderedColumns[i].ColumnIndex], dataExportConverter));
-					}
-
-					xmlWriter.WriteEndElement();
-				}
+				DataExportHelper.ExportRows(
+					rows,
+					(rowValues, isLastRow) => ExportRow(xmlWriter, rowValues, orderedColumns, columnHeaders, dataExportConverter),
+					reportProgress,
+					cancellationToken);
 
 				xmlWriter.WriteEndElement();
 				xmlWriter.WriteEndDocument();
@@ -88,6 +78,18 @@ namespace SqlPad.DataExport
 			{
 				Application.Current.Dispatcher.InvokeAsync(() => Clipboard.SetText(stringBuilder.ToString()));
 			}
+		}
+
+		private static void ExportRow(XmlWriter xmlWriter, IReadOnlyList<object> rowValues, IReadOnlyList<ColumnHeader> orderedColumns, IReadOnlyList<string> columnHeaders, IDataExportConverter dataExportConverter)
+		{
+			xmlWriter.WriteStartElement("row");
+
+			for (var i = 0; i < orderedColumns.Count; i++)
+			{
+				xmlWriter.WriteElementString(columnHeaders[i], FormatXmlValue(rowValues[orderedColumns[i].ColumnIndex], dataExportConverter));
+			}
+
+			xmlWriter.WriteEndElement();
 		}
 
 		private static string FormatXmlValue(object value, IDataExportConverter dataExportConverter)

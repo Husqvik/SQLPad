@@ -1,8 +1,10 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -43,6 +45,25 @@ namespace SqlPad.DataExport
 					.Select(c => c.Header as ColumnHeader)
 					.Where(h => h != null)
 					.ToArray();
+		}
+
+		public static void ExportRows(ICollection rows, Action<object[], bool> exportRowAction, IProgress<int> reportProgress, CancellationToken cancellationToken)
+		{
+			var rowCount = rows.Count;
+			var rowNumber = 0;
+			foreach (object[] rowValues in rows)
+			{
+				cancellationToken.ThrowIfCancellationRequested();
+
+				var progress = (int)Math.Round(rowNumber * 100f / rowCount);
+				reportProgress?.Report(progress);
+
+				rowNumber++;
+
+				exportRowAction(rowValues, rowNumber == rowCount);
+			}
+
+			reportProgress?.Report(100);
 		}
 
 		private static void RunExportActionInternal(string fileName, StringBuilder stringBuilder, Action<TextWriter> exportAction)

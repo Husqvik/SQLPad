@@ -28,12 +28,12 @@ namespace SqlPad.DataExport
 			ExportToFileAsync(fileName, resultViewer, dataExportConverter, CancellationToken.None).Wait();
 		}
 
-		public Task ExportToClipboardAsync(ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
+		public Task ExportToClipboardAsync(ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress = null)
 		{
-			return ExportToFileAsync(null, resultViewer, dataExportConverter, cancellationToken);
+			return ExportToFileAsync(null, resultViewer, dataExportConverter, cancellationToken, reportProgress);
 		}
 
-		public Task ExportToFileAsync(string fileName, ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
+		public Task ExportToFileAsync(string fileName, ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress = null)
 		{
 			var orderedColumns = DataExportHelper.GetOrderedExportableColumns(resultViewer.ResultGrid);
 			var columnHeaders = orderedColumns
@@ -44,7 +44,7 @@ namespace SqlPad.DataExport
 
 			var rows = resultViewer.ResultGrid.Items;
 
-			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(orderedColumns, headerLine, htmlTableRowTemplate, rows, w, cancellationToken));
+			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(orderedColumns, headerLine, htmlTableRowTemplate, rows, w, cancellationToken, reportProgress));
 		}
 
 		private static string BuildlTableRowTemplate(IEnumerable<string> columnValues)
@@ -56,18 +56,16 @@ namespace SqlPad.DataExport
 			return htmlTableRowTemplateBuilder.ToString();
 		}
 
-		private void ExportInternal(IReadOnlyList<ColumnHeader> orderedColumns, string headerLine, string htmlTemplate, ICollection rows, TextWriter writer, CancellationToken cancellationToken)
+		private static void ExportInternal(IEnumerable<ColumnHeader> orderedColumns, string headerLine, string htmlTemplate, ICollection rows, TextWriter writer, CancellationToken cancellationToken, IProgress<int> reportProgress)
 		{
 			writer.Write("<!DOCTYPE html><html><head><title></title></head><body><table border=\"1\" style=\"border-collapse:collapse\">");
 			writer.Write(headerLine);
 
-			foreach (object[] rowValues in rows)
-			{
-				cancellationToken.ThrowIfCancellationRequested();
-
-				var values = orderedColumns.Select(h => (object)FormatHtmlValue(rowValues[h.ColumnIndex])).ToArray();
-				writer.Write(htmlTemplate, values);
-			}
+			DataExportHelper.ExportRows(
+				rows,
+				(rowValues, isLastRow) => writer.Write(htmlTemplate, orderedColumns.Select(h => (object)FormatHtmlValue(rowValues[h.ColumnIndex])).ToArray()),
+				reportProgress,
+				cancellationToken);
 
 			writer.Write("<table>");
 		}

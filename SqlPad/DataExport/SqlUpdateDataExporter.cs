@@ -24,12 +24,12 @@ namespace SqlPad.DataExport
 			ExportToFileAsync(fileName, resultViewer, dataExportConverter, CancellationToken.None).Wait();
 		}
 
-		public Task ExportToClipboardAsync(ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
+		public Task ExportToClipboardAsync(ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress = null)
 		{
-			return ExportToFileAsync(null, resultViewer, dataExportConverter, cancellationToken);
+			return ExportToFileAsync(null, resultViewer, dataExportConverter, cancellationToken, reportProgress);
 		}
 
-		public Task ExportToFileAsync(string fileName, ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
+		public Task ExportToFileAsync(string fileName, ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress = null)
 		{
 			var orderedColumns = DataExportHelper.GetOrderedExportableColumns(resultViewer.ResultGrid);
 			var columnHeaders = orderedColumns
@@ -39,21 +39,19 @@ namespace SqlPad.DataExport
 
 			var rows = resultViewer.ResultGrid.Items;
 
-			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(orderedColumns, sqlTemplate, rows, w, dataExportConverter, cancellationToken));
+			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(orderedColumns, sqlTemplate, rows, w, dataExportConverter, cancellationToken, reportProgress));
 		}
 
 
 		protected abstract string BuildSqlCommandTemplate(IEnumerable<string> columnHeaders);
 
-		private void ExportInternal(IReadOnlyList<ColumnHeader> orderedColumns, string sqlTemplate, IEnumerable rows, TextWriter writer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
+		private static void ExportInternal(IEnumerable<ColumnHeader> orderedColumns, string sqlTemplate, ICollection rows, TextWriter writer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress)
 		{
-			foreach (object[] rowValues in rows)
-			{
-				cancellationToken.ThrowIfCancellationRequested();
-
-				var values = orderedColumns.Select(h => (object)FormatSqlValue(rowValues[h.ColumnIndex], dataExportConverter)).ToArray();
-				writer.WriteLine(sqlTemplate, values);
-			}
+			DataExportHelper.ExportRows(
+				rows,
+				(rowValues, isLastRow) => writer.WriteLine(sqlTemplate, orderedColumns.Select(h => (object)FormatSqlValue(rowValues[h.ColumnIndex], dataExportConverter)).ToArray()),
+				reportProgress,
+				cancellationToken);
 		}
 
 		private static string FormatSqlValue(object value, IDataExportConverter dataExportConverter)
