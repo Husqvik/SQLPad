@@ -9,6 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using ICSharpCode.AvalonEdit.Rendering;
 using SqlPad.Bookmarks;
 using SqlPad.Commands;
 
@@ -17,6 +18,7 @@ namespace SqlPad
 	public partial class SqlEditor
 	{
 		private readonly SqlDocumentColorizingTransformer _colorizingTransformer = new SqlDocumentColorizingTransformer();
+		private readonly SqlEditorBackgroundRenderer _backgroundRenderer;
 		private readonly Popup _dynamicPopup;
 
 		private IHelpProvider _createHelpProvider;
@@ -35,7 +37,10 @@ namespace SqlPad
 		{
 			InitializeComponent();
 
+			_backgroundRenderer = new SqlEditorBackgroundRenderer(Editor);
+
 			Editor.TextArea.TextView.LineTransformers.Add(_colorizingTransformer);
+			Editor.TextArea.TextView.BackgroundRenderers.Add(_backgroundRenderer);
 
 			_dynamicPopup = new Popup { PlacementTarget = Editor.TextArea };
 		}
@@ -84,13 +89,13 @@ namespace SqlPad
 
 		private void AddHighlightSegments(ICollection<TextSegment> segments)
 		{
-			_colorizingTransformer.AddHighlightSegments(segments);
-			Editor.TextArea.TextView.Redraw();
+			_backgroundRenderer.AddHighlightSegments(segments);
+			Editor.TextArea.TextView.InvalidateLayer(KnownLayer.Background);
 		}
 
 		private void NavigateToPreviousHighlightedUsage(object sender, ExecutedRoutedEventArgs args)
 		{
-			var nextSegments = _colorizingTransformer.HighlightSegments
+			var nextSegments = _backgroundRenderer.HighlightSegments
 				.Where(s => s.IndextStart < Editor.CaretOffset)
 				.OrderByDescending(s => s.IndextStart);
 
@@ -99,7 +104,7 @@ namespace SqlPad
 
 		private void NavigateToNextHighlightedUsage(object sender, ExecutedRoutedEventArgs args)
 		{
-			var nextSegments = _colorizingTransformer.HighlightSegments
+			var nextSegments = _backgroundRenderer.HighlightSegments
 				.Where(s => s.IndextStart > Editor.CaretOffset)
 				.OrderBy(s => s.IndextStart);
 
@@ -108,7 +113,7 @@ namespace SqlPad
 
 		private void NavigateToUsage(IEnumerable<TextSegment> nextSegments)
 		{
-			if (!_colorizingTransformer.HighlightSegments.Any())
+			if (!_backgroundRenderer.HighlightSegments.Any())
 			{
 				return;
 			}

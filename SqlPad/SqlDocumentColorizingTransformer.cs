@@ -12,8 +12,6 @@ namespace SqlPad
 		private readonly object _lockObject = new object();
 
 		private static readonly SolidColorBrush ErrorBrush = Brushes.Red;
-		private static readonly SolidColorBrush HighlightUsageBrush = Brushes.Turquoise;
-		private static readonly SolidColorBrush HighlightDefinitionBrush = Brushes.SandyBrown;
 		private static readonly SolidColorBrush KeywordBrush = Brushes.Blue;
 		private static readonly SolidColorBrush LiteralBrush = Brushes.SaddleBrown;
 		private static readonly SolidColorBrush AliasBrush = Brushes.MidnightBlue;
@@ -26,7 +24,6 @@ namespace SqlPad
 		private static readonly SolidColorBrush InvalidActiveStatementBackgroundBrush = new SolidColorBrush(Color.FromArgb(64, Colors.PaleVioletRed.R, Colors.PaleVioletRed.G, Colors.PaleVioletRed.B));
 		private static readonly SolidColorBrush RedundantBrush = new SolidColorBrush(Color.FromArgb(168, Colors.Black.R, Colors.Black.G, Colors.Black.B));
 
-		private readonly Stack<ICollection<TextSegment>> _highlightSegments = new Stack<ICollection<TextSegment>>();
 		private readonly List<SourcePosition> _correspondingSegments = new List<SourcePosition>();
 		private readonly HashSet<StatementGrammarNode> _redundantTerminals = new HashSet<StatementGrammarNode>();
 		private readonly Dictionary<DocumentLine, ICollection<StatementGrammarNode>> _lineTerminals = new Dictionary<DocumentLine, ICollection<StatementGrammarNode>>();
@@ -43,8 +40,6 @@ namespace SqlPad
 		public StatementBase ActiveStatement { get; private set; }
 
 		public IReadOnlyCollection<SourcePosition> CorrespondingSegments => _correspondingSegments.AsReadOnly();
-
-		public IEnumerable<TextSegment> HighlightSegments => _highlightSegments.SelectMany(c => c);
 
 		public bool ColorizeBackground { get; set; } = true;
 
@@ -102,26 +97,6 @@ namespace SqlPad
 		{
 			_correspondingSegments.Clear();
 			_correspondingSegments.AddRange(correspondingSegments);
-		}
-
-		public void AddHighlightSegments(ICollection<TextSegment> highlightSegments)
-		{
-			lock (_lockObject)
-			{
-				if (highlightSegments != null)
-				{
-					if (_highlightSegments.Any(c => c.Any(s => s.Equals(highlightSegments.First()))))
-					{
-						return;
-					}
-
-					_highlightSegments.Push(highlightSegments);
-				}
-				else if (_highlightSegments.Count > 0)
-				{
-					_highlightSegments.Pop();
-				}
-			}
 		}
 
 		protected override void Colorize(ITextRunConstructionContext context)
@@ -317,7 +292,6 @@ namespace SqlPad
 				var colorEndOffset = Math.Min(line.EndOffset, statement.SourcePosition.IndexEnd + 1);
 
 				SetCorrespondingTerminalsBrush(line);
-				SetHighlightedSegmentBrush(line);
 
 				if (colorizeBackground)
 				{
@@ -352,21 +326,9 @@ namespace SqlPad
 						));*/
 						});
 				}
-
-				SetHighlightedSegmentBrush(line);
 			}
 
 			SetCorrespondingTerminalsBrush(line);
-		}
-
-		private void SetHighlightedSegmentBrush(ISegment line)
-		{
-			foreach (var highlightSegment in _highlightSegments.SelectMany(s => s))
-			{
-				ProcessSegmentAtLine(line,
-					new SourcePosition {IndexStart = highlightSegment.IndextStart, IndexEnd = highlightSegment.IndextStart + highlightSegment.Length - 1},
-					element => element.BackgroundBrush = highlightSegment.DisplayOptions == DisplayOptions.Usage ? HighlightUsageBrush : HighlightDefinitionBrush);
-			}
 		}
 
 		private void SetCorrespondingTerminalsBrush(ISegment line)

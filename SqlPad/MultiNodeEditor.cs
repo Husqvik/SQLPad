@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Media;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Document;
@@ -110,48 +111,96 @@ namespace SqlPad
 		public IReadOnlyCollection<SourcePosition> SynchronizedSegments { get; set; }
 	}
 
-	public class MultiNodeEditorBoxRenderer : IBackgroundRenderer
+	public class SqlEditorBackgroundRenderer : IBackgroundRenderer
 	{
+		private static readonly Pen NullPen = new Pen(Brushes.Transparent, 0);
 		private static readonly Pen MasterEdgePen = new Pen(Brushes.Red, 1);
 		private static readonly Pen SynchronizedEdgePen = new Pen(Brushes.Black, 1) { DashStyle = DashStyles.Dot };
 
+		private static readonly SolidColorBrush HighlightUsageBrush = Brushes.Turquoise;
+		private static readonly SolidColorBrush HighlightDefinitionBrush = Brushes.SandyBrown;
+
+		private readonly Stack<IReadOnlyCollection<HighlightSegment>> _highlightSegments = new Stack<IReadOnlyCollection<HighlightSegment>>();
+		private readonly TextEditor _textEditor;
+
 		public KnownLayer Layer { get; } = KnownLayer.Background;
+
+		public IEnumerable<TextSegment> HighlightSegments => _highlightSegments.SelectMany(g => g.Select(s => s.Segment));
 
 		public IReadOnlyCollection<SourcePosition> SynchronizedSegments { get; set; }
 
 		public SourcePosition? MasterSegment { get; set; }
 
-		static MultiNodeEditorBoxRenderer()
+		static SqlEditorBackgroundRenderer()
 		{
 			SynchronizedEdgePen.Freeze();
 			MasterEdgePen.Freeze();
+			NullPen.Freeze();
+		}
+
+		public SqlEditorBackgroundRenderer(TextEditor textEditor)
+		{
+			_textEditor = textEditor;
 		}
 
 		public void Draw(TextView textView, DrawingContext drawingContext)
 		{
-			if (SynchronizedSegments == null)
+			if (SynchronizedSegments != null)
 			{
-				return;
+				if (MasterSegment.HasValue)
+				{
+					DrawRectangle(textView, drawingContext, MasterSegment.Value, Brushes.Transparent, MasterEdgePen);
+				}
+
+				foreach (var segment in SynchronizedSegments)
+				{
+					DrawRectangle(textView, drawingContext, segment, Brushes.Transparent, SynchronizedEdgePen);
+				}
 			}
 
-			if (MasterSegment.HasValue)
+			foreach (var highlightSegmentGroup in _highlightSegments)
 			{
-				DrawBoundingBox(textView, drawingContext, MasterSegment.Value, MasterEdgePen);
-			}
-
-			foreach (var segment in SynchronizedSegments)
-			{
-				DrawBoundingBox(textView, drawingContext, segment, SynchronizedEdgePen);
+				foreach (var highlightSegment in highlightSegmentGroup)
+				{
+					var brush = highlightSegment.Segment.DisplayOptions == DisplayOptions.Definition ? HighlightDefinitionBrush : HighlightUsageBrush;
+					var indexStart = highlightSegment.HighlightStartAnchor.Offset;
+					DrawRectangle(textView, drawingContext, SourcePosition.Create(indexStart, indexStart + highlightSegment.Segment.Length), brush, NullPen);
+				}
 			}
 		}
 
-		private static void DrawBoundingBox(TextView textView, DrawingContext drawingContext, SourcePosition sourceSegment, Pen pen)
+		private static void DrawRectangle(TextView textView, DrawingContext drawingContext, SourcePosition sourceSegment, Brush brush, Pen pen)
 		{
 			var segment = new ICSharpCode.AvalonEdit.Document.TextSegment { StartOffset = sourceSegment.IndexStart, EndOffset = sourceSegment.IndexEnd };
 			foreach (var rectangle in BackgroundGeometryBuilder.GetRectsForSegment(textView, segment))
 			{
-				drawingContext.DrawRectangle(Brushes.Transparent, pen, rectangle);
+				drawingContext.DrawRectangle(brush, pen, rectangle);
 			}
+		}
+
+		public void AddHighlightSegments(ICollection<TextSegment> highlightSegments)
+		{
+			if (highlightSegments != null)
+			{
+				if (_highlightSegments.Any(c => c.Any(s => s.Segment.Equals(highlightSegments.First()))))
+				{
+					return;
+				}
+
+				var anchoredSegment = highlightSegments.Select(s => new HighlightSegment { Segment = s, HighlightStartAnchor = _textEditor.Document.CreateAnchor(s.IndextStart) }).ToArray();
+				_highlightSegments.Push(anchoredSegment);
+			}
+			else if (_highlightSegments.Count > 0)
+			{
+				_highlightSegments.Pop();
+			}
+		}
+
+		private struct HighlightSegment
+		{
+			public TextAnchor HighlightStartAnchor;
+
+			public TextSegment Segment;
 		}
 	}
 }

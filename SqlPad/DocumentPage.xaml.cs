@@ -70,7 +70,7 @@ namespace SqlPad
 		private readonly ObservableCollection<OutputViewer> _outputViewers = new ObservableCollection<OutputViewer>();
 		private readonly ObservableCollection<string> _schemas = new ObservableCollection<string>();
 		private readonly SqlDocumentColorizingTransformer _colorizingTransformer = new SqlDocumentColorizingTransformer();
-		private readonly MultiNodeEditorBoxRenderer _multiNodeEditorBoxRenderer = new MultiNodeEditorBoxRenderer();
+		private readonly SqlEditorBackgroundRenderer _backgroundRenderer;
 		private readonly ContextMenu _contextActionMenu = new ContextMenu { Placement = PlacementMode.Relative };
 		private readonly Dictionary<string, BindVariableConfiguration> _currentBindVariables = new Dictionary<string, BindVariableConfiguration>();
 
@@ -112,6 +112,7 @@ namespace SqlPad
 			//Editor.TextArea.LeftMargins.Add(new ModificationNotificationMargin(Editor));
 			_foldingStrategy = new SqlFoldingStrategy(FoldingManager.Install(Editor.TextArea), Editor);
 			_foldingStrategy.FoldingMargin.ContextMenu = (ContextMenu)Resources["FoldingActionMenu"];
+			_backgroundRenderer = new SqlEditorBackgroundRenderer(Editor);
 
 			_contextActionMenu.PlacementTarget = Editor;
 			
@@ -353,7 +354,7 @@ namespace SqlPad
 			Editor.TextArea.Caret.PositionChanged += CaretPositionChangedHandler;
 			Editor.TextArea.SelectionChanged += delegate { ShowHideBindVariableList(); };
 
-			Editor.TextArea.TextView.BackgroundRenderers.Add(_multiNodeEditorBoxRenderer);
+			Editor.TextArea.TextView.BackgroundRenderers.Add(_backgroundRenderer);
 
 			EditorAdapter = new TextEditorAdapter(Editor);
 		}
@@ -925,7 +926,7 @@ namespace SqlPad
 
 		private void NavigateToPreviousHighlightedUsage(object sender, ExecutedRoutedEventArgs args)
 		{
-			var nextSegments = _colorizingTransformer.HighlightSegments
+			var nextSegments = _backgroundRenderer.HighlightSegments
 						.Where(s => s.IndextStart < Editor.CaretOffset)
 						.OrderByDescending(s => s.IndextStart);
 
@@ -934,7 +935,7 @@ namespace SqlPad
 
 		private void NavigateToNextHighlightedUsage(object sender, ExecutedRoutedEventArgs args)
 		{
-			var nextSegments = _colorizingTransformer.HighlightSegments
+			var nextSegments = _backgroundRenderer.HighlightSegments
 						.Where(s => s.IndextStart > Editor.CaretOffset)
 						.OrderBy(s => s.IndextStart);
 
@@ -943,7 +944,7 @@ namespace SqlPad
 
 		private void NavigateToUsage(IEnumerable<TextSegment> nextSegments)
 		{
-			if (!_colorizingTransformer.HighlightSegments.Any())
+			if (!_backgroundRenderer.HighlightSegments.Any())
 			{
 				return;
 			}
@@ -969,13 +970,13 @@ namespace SqlPad
 		{
 			if (_multiNodeEditor == null)
 			{
-				_multiNodeEditorBoxRenderer.MasterSegment = null;
-				_multiNodeEditorBoxRenderer.SynchronizedSegments = null;
+				_backgroundRenderer.MasterSegment = null;
+				_backgroundRenderer.SynchronizedSegments = null;
 			}
 			else
 			{
-				_multiNodeEditorBoxRenderer.MasterSegment = _multiNodeEditor.MasterSegment;
-				_multiNodeEditorBoxRenderer.SynchronizedSegments = _multiNodeEditor.SynchronizedSegments;
+				_backgroundRenderer.MasterSegment = _multiNodeEditor.MasterSegment;
+				_backgroundRenderer.SynchronizedSegments = _multiNodeEditor.SynchronizedSegments;
 			}
 
 			if (forceRedraw || _multiNodeEditor != null)
@@ -1941,7 +1942,7 @@ namespace SqlPad
 				}
 			}
 
-			if (e.Key == Key.Back || e.Key == Key.Delete || (e.Key.In(Key.V, Key.Insert) && Keyboard.Modifiers == ModifierKeys.Control))
+			if (e.Key == Key.Back || e.Key == Key.Delete || (e.Key.In(Key.V, Key.Z, Key.Insert) && Keyboard.Modifiers == ModifierKeys.Control))
 			{
 				DisableCodeCompletion();
 			}
@@ -1970,14 +1971,13 @@ namespace SqlPad
 
 		private void AddHighlightSegments(ICollection<TextSegment> segments)
 		{
-			_colorizingTransformer.AddHighlightSegments(segments);
-			Editor.TextArea.TextView.Redraw();
+			_backgroundRenderer.AddHighlightSegments(segments);
+			Editor.TextArea.TextView.InvalidateLayer(KnownLayer.Background);
 		}
 
 		private void ClearLastHighlight()
 		{
-			_colorizingTransformer.AddHighlightSegments(null);
-			Editor.TextArea.TextView.Redraw();
+			AddHighlightSegments(null);
 		}
 
 		private bool AreConsencutive(char previousCharacter, char currentCharacter)
