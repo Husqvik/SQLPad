@@ -11,9 +11,8 @@ namespace SqlPad.Commands
 		public static RoutedCommand CloseAllDocumentsButThis = new RoutedCommand();
 		public static RoutedCommand OpenContainingFolder = new RoutedCommand();
 		public static RoutedCommand CollapseAllFoldings = new RoutedCommand("CollapseAllFoldings", typeof(ContextMenu));
-		public static RoutedCommand DebugStepInto = new RoutedCommand("DebugStepInto", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F11) });
-		public static RoutedCommand DebugStepOut = new RoutedCommand("DebugStepInto", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F11, ModifierKeys.Shift) });
-		public static RoutedCommand DebugNextLine = new RoutedCommand("DebugNextLine", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F10) });
+		public static RoutedCommand DebugStepInto = new RoutedCommand("DebugStepInto", typeof(OutputViewer), new InputGestureCollection { new KeyGesture(Key.F11) });
+		public static RoutedCommand DebugStepOver = new RoutedCommand("DebugStepOver", typeof(OutputViewer), new InputGestureCollection { new KeyGesture(Key.F10) });
 		public static RoutedCommand ExpandAllFoldings = new RoutedCommand("ExpandAllFoldings", typeof(ContextMenu));
 		public static RoutedCommand ExplainPlan = new RoutedCommand("ExplainPlan", typeof(Grid), new InputGestureCollection { new KeyGesture(Key.E, ModifierKeys.Control) });
 		public static RoutedCommand GoToNextEdit = new RoutedCommand("GoToNextEdit", typeof(Window), new InputGestureCollection { new KeyGesture(Key.OemMinus, ModifierKeys.Control | ModifierKeys.Shift) });

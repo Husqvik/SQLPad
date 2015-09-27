@@ -19,7 +19,7 @@ namespace SqlPad
 
 		Task Continue(CancellationToken cancellationToken);
 
-		Task StepNextLine(CancellationToken cancellationToken);
+		Task StepOver(CancellationToken cancellationToken);
 
 		Task StepInto(CancellationToken cancellationToken);
 

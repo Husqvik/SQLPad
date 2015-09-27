@@ -532,7 +532,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return ContinueAndDetachIfTerminated(OracleDebugBreakFlags.Exception, cancellationToken);
 		}
 
-		public Task StepNextLine(CancellationToken cancellationToken)
+		public Task StepOver(CancellationToken cancellationToken)
 		{
 			_debuggerConnection.ActionName = "Step next line";
 			return ContinueAndDetachIfTerminated(OracleDebugBreakFlags.NextLine, cancellationToken);

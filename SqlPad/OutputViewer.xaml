@@ -5,10 +5,16 @@
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:sqlPad="clr-namespace:SqlPad"
 			 xmlns:componentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+			 xmlns:commands="clr-namespace:SqlPad.Commands"
 			 mc:Ignorable="d" 
 			 d:DesignHeight="184" d:DesignWidth="384"
 			 MouseMove="OutputViewerMouseMoveHandler"
 			 DataContext="{Binding RelativeSource={RelativeSource Self}}">
+	
+	<UserControl.CommandBindings>
+		<CommandBinding Command="{x:Static commands:GenericCommands.DebugStepInto}" Executed="DebuggerStepIntoExecutedHandler" CanExecute="DebuggerActionCanExecuteHandler" />
+		<CommandBinding Command="{x:Static commands:GenericCommands.DebugStepOver}" Executed="DebuggerStepOverExecutedHandler" CanExecute="DebuggerActionCanExecuteHandler" />
+	</UserControl.CommandBindings>
 
 	<DockPanel LastChildFill="True">
 		<StackPanel DockPanel.Dock="Left">
@@ -43,8 +49,8 @@
 			</StackPanel.Style>
 			
 			<Button Content="_Continue" Padding="6,1,6,1" Margin="0,2,2,2" Click="ButtonDebuggerContinueClickHandler" />
-			<Button Content="_Step into" Padding="6,1,6,1" Margin="0,2,2,2" Click="ButtonDebuggerStepIntoClickHandler" />
-			<Button Content="Step _over" Padding="6,1,6,1" Margin="0,2,2,2" Click="ButtonDebuggerStepOverClickHandler" />
+			<Button Content="_Step into" Padding="6,1,6,1" Margin="0,2,2,2" Command="{x:Static commands:GenericCommands.DebugStepInto}" />
+			<Button Content="Step _over" Padding="6,1,6,1" Margin="0,2,2,2" Command="{x:Static commands:GenericCommands.DebugStepOver}" />
 			<Button Content="_Abort" Padding="6,1,6,1" Margin="0,2,0,2" Click="ButtonDebuggerAbortClickHandler" />
 		</StackPanel>
 		

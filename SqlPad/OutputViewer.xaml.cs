@@ -653,19 +653,24 @@ namespace SqlPad
 			await ExecuteUsingCancellationToken(t => ExecuteDebuggerAction(ConnectionAdapter.DebuggerSession.Continue(t)));
 		}
 
-		private async void ButtonDebuggerStepIntoClickHandler(object sender, RoutedEventArgs e)
+		private async void DebuggerStepIntoExecutedHandler(object sender, RoutedEventArgs e)
 		{
 			await ExecuteUsingCancellationToken(t => ExecuteDebuggerAction(ConnectionAdapter.DebuggerSession.StepInto(t)));
 		}
 
-		private async void ButtonDebuggerStepOverClickHandler(object sender, RoutedEventArgs e)
+		private async void DebuggerStepOverExecutedHandler(object sender, RoutedEventArgs e)
 		{
-			await ExecuteUsingCancellationToken(t => ExecuteDebuggerAction(ConnectionAdapter.DebuggerSession.StepNextLine(t)));
+			await ExecuteUsingCancellationToken(t => ExecuteDebuggerAction(ConnectionAdapter.DebuggerSession.StepOver(t)));
 		}
 
 		private async void ButtonDebuggerAbortClickHandler(object sender, RoutedEventArgs e)
 		{
 			await ExecuteUsingCancellationToken(t => ExecuteDebuggerAction(ConnectionAdapter.DebuggerSession.Abort(t)));
+		}
+
+		private void DebuggerActionCanExecuteHandler(object sender, CanExecuteRoutedEventArgs e)
+		{
+			e.CanExecute = ConnectionAdapter?.DebuggerSession != null;
 		}
 	}
 }
