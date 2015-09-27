@@ -103,7 +103,7 @@ namespace SqlPad
 
 		public IReadOnlyList<string> Schemas => _schemas;
 
-		private OutputViewer ActiveOutputViewer => (OutputViewer)OutputViewerList.SelectedItem;
+		internal OutputViewer ActiveOutputViewer => (OutputViewer)OutputViewerList.SelectedItem;
 
 		public DocumentPage(WorkDocument workDocument = null)
 		{

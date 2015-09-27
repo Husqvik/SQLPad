@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using SqlPad.Bookmarks;
@@ -107,6 +108,11 @@ namespace SqlPad
 				debuggerView.BreakpointChanging += CodeViewerBreakpointChangingHandler;
 				debuggerView.BreakpointChanged += CodeViewerBreakpointChangedHandler;
 
+				if (_viewers.Count == 0)
+				{
+					debuggerView.Loaded += DebuggerViewLoadedHandler;
+				}
+
 				await debuggerView.CodeViewer.LoadAsync(activeStackItem.ProgramText, cancellationToken);
 
 				_viewers.Add(activeStackItem.Header, debuggerView);
@@ -118,11 +124,18 @@ namespace SqlPad
 				}
 			}
 
-			TabSourceViewer.SelectedItem = debuggerView;
+			debuggerView.IsSelected = true;
 
 			HighlightStackTraceLines();
 
 			await RefreshWatchItemsAsync(cancellationToken);
+		}
+
+		private void DebuggerViewLoadedHandler(object sender, RoutedEventArgs routedEventArgs)
+		{
+			var debuggerTabItem = (DebuggerTabItem)sender;
+			debuggerTabItem.Loaded -= DebuggerViewLoadedHandler;
+			debuggerTabItem.CodeViewer.Editor.Focus();
 		}
 
 		private void CodeViewerBreakpointChangingHandler(object sender, BreakpointChangingEventArgs args)

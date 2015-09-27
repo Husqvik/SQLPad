@@ -82,7 +82,8 @@ namespace SqlPad
 		{
 			InitializeComponent();
 
-			_timerExecutionMonitor = new DispatcherTimer(TimeSpan.FromMilliseconds(100), DispatcherPriority.Normal, (sender, args) => UpdateTimerMessage(_stopWatch.Elapsed, IsCancellationRequested), Dispatcher);
+			_timerExecutionMonitor = new DispatcherTimer(DispatcherPriority.Normal, Dispatcher) { Interval = TimeSpan.FromMilliseconds(100) };
+			_timerExecutionMonitor.Tick += TimerExecutionMonitorTickHandler;
 
 			Application.Current.Deactivated += ApplicationDeactivatedHandler;
 
@@ -101,6 +102,14 @@ namespace SqlPad
 
 			TraceViewer = DocumentPage.InfrastructureFactory.CreateTraceViewer(ConnectionAdapter);
 			TabTrace.Content = TraceViewer.Control;
+		}
+
+		private void TimerExecutionMonitorTickHandler(object sender, EventArgs e)
+		{
+			if (Equals(DocumentPage.ActiveOutputViewer, this))
+			{
+				UpdateTimerMessage(_stopWatch.Elapsed, IsCancellationRequested);
+			}
 		}
 
 		private void SessionExecutionStatisticsFilterHandler(object sender, FilterEventArgs e)
@@ -376,7 +385,7 @@ namespace SqlPad
 		private void DebuggerSessionSynchronizedHandler()
 		{
 			IsDebuggerControlVisible = true;
-			TabControlResult.SelectedItem = TabDebugger;
+			TabDebugger.IsSelected = true;
 		}
 
 		private void UpdateHistoryEntries()
@@ -634,6 +643,7 @@ namespace SqlPad
 			{
 				IsDebuggerControlVisible = false;
 				SelectDefaultTabIfNeeded();
+				DocumentPage.Editor.Focus();
 			}
 			else
 			{
