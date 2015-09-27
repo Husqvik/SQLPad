@@ -17,7 +17,7 @@ namespace SqlPad
 		private readonly TextAnchor _masterAnchorEnd;
 		private readonly List<TextAnchor> _anchors = new List<TextAnchor>();
 
-		private bool IsModificationValid => _masterAnchorStart.Offset <= _editor.CaretOffset && _masterAnchorEnd.Offset >= _editor.CaretOffset;
+		private bool IsModificationValid => _masterAnchorStart.Offset <= _editor.CaretOffset && _masterAnchorEnd.Offset >= _editor.CaretOffset && _masterAnchorEnd.Offset > _masterAnchorStart.Offset;
 
 		private MultiNodeEditor(TextEditor editor, MultiNodeEditorData data)
 		{
@@ -163,8 +163,17 @@ namespace SqlPad
 				foreach (var highlightSegment in highlightSegmentGroup)
 				{
 					var brush = highlightSegment.Segment.DisplayOptions == DisplayOptions.Definition ? HighlightDefinitionBrush : HighlightUsageBrush;
+					if (highlightSegment.HighlightStartAnchor.IsDeleted || highlightSegment.HighlightEndAnchor.IsDeleted)
+					{
+						continue;
+					}
+
 					var indexStart = highlightSegment.HighlightStartAnchor.Offset;
-					DrawRectangle(textView, drawingContext, SourcePosition.Create(indexStart, indexStart + highlightSegment.Segment.Length), brush, NullPen);
+					var indexEnd = highlightSegment.HighlightEndAnchor.Offset;
+					if (indexEnd > indexStart)
+					{
+						DrawRectangle(textView, drawingContext, SourcePosition.Create(indexStart, indexEnd), brush, NullPen);
+					}
 				}
 			}
 		}
@@ -187,7 +196,16 @@ namespace SqlPad
 					return;
 				}
 
-				var anchoredSegment = highlightSegments.Select(s => new HighlightSegment { Segment = s, HighlightStartAnchor = _textEditor.Document.CreateAnchor(s.IndextStart) }).ToArray();
+				var anchoredSegment =
+					highlightSegments.Select(
+						s =>
+							new HighlightSegment
+							{
+								Segment = s,
+								HighlightStartAnchor = _textEditor.Document.CreateAnchor(s.IndextStart),
+								HighlightEndAnchor = _textEditor.Document.CreateAnchor(s.IndextStart + s.Length)
+							}).ToArray();
+
 				_highlightSegments.Push(anchoredSegment);
 			}
 			else if (_highlightSegments.Count > 0)
@@ -199,6 +217,8 @@ namespace SqlPad
 		private struct HighlightSegment
 		{
 			public TextAnchor HighlightStartAnchor;
+
+			public TextAnchor HighlightEndAnchor;
 
 			public TextSegment Segment;
 		}

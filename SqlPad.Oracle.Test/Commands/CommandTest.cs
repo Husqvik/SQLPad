@@ -574,6 +574,19 @@ FROM
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestFindColumnUsagesInParentQueryBlockWhenCursorInWhereClauseInChildQueryBlock()
+		{
+			var foundSegments = FindUsagesOrdered("SELECT DUMMY FROM (SELECT DUMMY FROM DUAL WHERE DUMMY = 'X')", 49);
+			foundSegments.Count.ShouldBe(3);
+			foundSegments[0].IndextStart.ShouldBe(7);
+			foundSegments[0].Length.ShouldBe(5);
+			foundSegments[1].IndextStart.ShouldBe(26);
+			foundSegments[1].Length.ShouldBe(5);
+			foundSegments[2].IndextStart.ShouldBe(48);
+			foundSegments[2].Length.ShouldBe(5);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestFindColumnUsagesOfIndirectColumnReferenceAtColumnNode()
 		{
 			var foundSegments = FindUsagesOrdered(FindUsagesStatementText, 121);
