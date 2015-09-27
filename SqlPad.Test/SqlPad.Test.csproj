@@ -82,6 +82,7 @@
   <ItemGroup>
     <Compile Include="EditorNavigationServiceTest.cs" />
     <Compile Include="MiscellaneousTest.cs" />
+    <Compile Include="MultiNodeEditorTest.cs" />
     <Compile Include="TemporaryDirectoryTestFixture.cs" />
     <Compile Include="TestFixture.cs" />
     <Compile Include="VisualComponentTest.cs" />

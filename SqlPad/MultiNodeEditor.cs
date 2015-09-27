@@ -38,7 +38,7 @@ namespace SqlPad
 				return false;
 			}
 
-			var editTerminalOffset = _editor.CaretOffset - _masterAnchorStart.Offset;
+			var editTerminalOffset = _editor.SelectionStart - _masterAnchorStart.Offset;
 
 			foreach (var anchor in _anchors)
 			{
@@ -55,7 +55,7 @@ namespace SqlPad
 				return false;
 			}
 
-			var editTerminalOffset = _editor.CaretOffset - _masterAnchorStart.Offset;
+			var editTerminalOffset = _editor.SelectionStart - _masterAnchorStart.Offset;
 			var selectionCharacter = reverse && _editor.SelectionLength == 0 ? 1 : 0;
 			var removedCharacters = _editor.SelectionLength == 0 ? 1 : _editor.SelectionLength;
 			foreach (var anchor in _anchors)

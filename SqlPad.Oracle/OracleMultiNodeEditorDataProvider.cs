@@ -24,7 +24,7 @@ namespace SqlPad.Oracle
 			var semanticModel = (OracleStatementSemanticModel)executionContext.DocumentRepository.ValidationModels[terminal.Statement].SemanticModel;
 
 			OracleColumnReference columnReference;
-            switch (terminal.Id)
+			switch (terminal.Id)
 			{
 				case Terminals.ObjectAlias:
 					var objectReference = semanticModel.AllReferenceContainers
@@ -71,10 +71,6 @@ namespace SqlPad.Oracle
 						.TakeWhile(t => String.Equals(t.Token.Value.ToQuotedIdentifier(), selectListColumn.NormalizedName))
 						.Select(t => t.SourcePosition)
 						.ToArray();
-					break;
-
-				case Terminals.Identifier:
-					columnReference = semanticModel.GetColumnReference(terminal);
 					break;
 			}
 
