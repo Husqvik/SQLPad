@@ -222,7 +222,7 @@ namespace SqlPad.Oracle.Commands
 				String.Equals(columnReference.NormalizedName, normalizedName);
 		}
 
-		private static IEnumerable<StatementGrammarNode> GetModelClauseAndPivotTableReferences(OracleReference columnReference)
+		private static IEnumerable<StatementGrammarNode> GetModelClauseAndPivotTableReferences(OracleReference columnReference, bool onlyAliasOrigin)
 		{
 			var nodes = new List<StatementGrammarNode>();
 			if (columnReference.Owner == null)
@@ -253,7 +253,7 @@ namespace SqlPad.Oracle.Commands
 				var objectReference = (OracleDataObjectReference)innerReference.ColumnNodeObjectReferences.First();
 				foreach (var innerObjectReference in objectReference.IncludeInnerReferences)
 				{
-					nodes.AddRange(GetChildQueryBlockColumnReferences(innerObjectReference, innerReference));
+					nodes.AddRange(GetChildQueryBlockColumnReferences(innerObjectReference, innerReference, onlyAliasOrigin));
 				}
 			}
 
@@ -262,10 +262,10 @@ namespace SqlPad.Oracle.Commands
 
 		private IEnumerable<StatementGrammarNode> GetColumnUsages()
 		{
-			return GetColumnUsages(_semanticModel, _currentNode);
+			return GetColumnUsages(_semanticModel, _currentNode, false);
 		}
 
-		internal static IEnumerable<StatementGrammarNode> GetColumnUsages(OracleStatementSemanticModel semanticModel, StatementGrammarNode columnNode)
+		internal static IEnumerable<StatementGrammarNode> GetColumnUsages(OracleStatementSemanticModel semanticModel, StatementGrammarNode columnNode, bool onlyAliasOrigin)
 		{
 			IEnumerable<StatementGrammarNode> nodes;
 			var columnReference = semanticModel.AllReferenceContainers
@@ -295,7 +295,7 @@ namespace SqlPad.Oracle.Commands
 						selectListColumn = null;
 					}
 
-					if (selectListColumn != null && selectListColumn.HasExplicitAlias)
+					if (selectListColumn != null && !onlyAliasOrigin && selectListColumn.HasExplicitAlias)
 					{
 						nodes = nodes.Concat(new[] { selectListColumn.AliasNode });
 					}
@@ -309,11 +309,11 @@ namespace SqlPad.Oracle.Commands
 					nodes = searchChildren ? nodes.Concat(nodeList) : nodeList;
 				}
 
-				nodes = nodes.Concat(GetModelClauseAndPivotTableReferences(columnReference));
+				nodes = nodes.Concat(GetModelClauseAndPivotTableReferences(columnReference, onlyAliasOrigin));
 
 				if (searchChildren)
 				{
-					nodes = nodes.Concat(GetChildQueryBlockColumnReferences(objectReference, columnReference));
+					nodes = nodes.Concat(GetChildQueryBlockColumnReferences(objectReference, columnReference, onlyAliasOrigin));
 				}
 			}
 			else
@@ -323,12 +323,18 @@ namespace SqlPad.Oracle.Commands
 				selectListColumn = queryBlock.Columns.SingleOrDefault(c => c.AliasNode == columnNode);
 			}
 
-			nodes = nodes.Concat(GetParentQueryBlockReferences(selectListColumn));
+			var parentNodes = GetParentQueryBlockReferences(selectListColumn);
+			if (onlyAliasOrigin)
+			{
+				parentNodes = parentNodes.TakeWhile(t => String.Equals(t.Token.Value.ToQuotedIdentifier(), columnNode.Token.Value.ToQuotedIdentifier()));
+			}
+
+			nodes = nodes.Concat(parentNodes);
 
 			return nodes;
 		}
 
-		private static IEnumerable<StatementGrammarNode> GetChildQueryBlockColumnReferences(OracleObjectWithColumnsReference objectReference, OracleColumnReference columnReference)
+		private static IEnumerable<StatementGrammarNode> GetChildQueryBlockColumnReferences(OracleObjectWithColumnsReference objectReference, OracleColumnReference columnReference, bool onlyAliasOrigin)
 		{
 			var nodes = Enumerable.Empty<StatementGrammarNode>();
 			if (objectReference.QueryBlocks.Count != 1)
@@ -344,25 +350,35 @@ namespace SqlPad.Oracle.Commands
 				return nodes;
 			}
 
-			if (childColumn.AliasNode != null)
+			if (childColumn.AliasNode != null && (!onlyAliasOrigin || childColumn.HasExplicitAlias))
 			{
 				nodes = nodes.Concat(Enumerable.Repeat(childColumn.AliasNode, 1));
 			}
 
 			if (childColumn.IsDirectReference && childColumn.ColumnReferences.Count > 0 && childColumn.ColumnReferences.All(cr => cr.ColumnNodeColumnReferences.Count == 1))
 			{
+				var childColumnReference = childColumn.ColumnReferences.Single();
+
+				if (onlyAliasOrigin)
+				{
+					var childColumnObjectReference = childColumnReference.ValidObjectReference;
+					if (childColumnObjectReference == null || childColumnObjectReference.QueryBlocks.Count != 1 || !String.Equals(childColumnReference.NormalizedName, childColumn.NormalizedName))
+					{
+						return nodes;
+					}
+				}
+
 				var childSelectColumnReferences = childQueryBlock.Columns.SelectMany(c => c.ColumnReferences)
-					.Where(c => !c.ReferencesAllColumns && c.ColumnNodeObjectReferences.Count == 1 && c.SelectListColumn.NormalizedName == columnReference.NormalizedName && c.ColumnNode != childColumn.AliasNode)
+					.Where(c => !c.ReferencesAllColumns && c.ColumnNodeObjectReferences.Count == 1 && String.Equals(c.SelectListColumn.NormalizedName, columnReference.NormalizedName) && c.ColumnNode != childColumn.AliasNode)
 					.Select(c => c.ColumnNode);
 
 				nodes = nodes.Concat(childSelectColumnReferences);
 
-				var childColumnReference = childColumn.ColumnReferences.Single();
-				nodes = nodes.Concat(childQueryBlock.ColumnReferences.Where(c => c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeObjectReferences.Single() == childColumnReference.ColumnNodeObjectReferences.Single() && c.NormalizedName == childColumnReference.NormalizedName).Select(c => c.ColumnNode));
+				nodes = nodes.Concat(childQueryBlock.ColumnReferences.Where(c => c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeObjectReferences.Single() == childColumnReference.ColumnNodeObjectReferences.Single() && String.Equals(c.NormalizedName, childColumnReference.NormalizedName)).Select(c => c.ColumnNode));
 
 				if (childColumnReference.ColumnNodeObjectReferences.Count == 1)
 				{
-					nodes = nodes.Concat(GetChildQueryBlockColumnReferences(childColumnReference.ColumnNodeObjectReferences.Single(), childColumnReference));
+					nodes = nodes.Concat(GetChildQueryBlockColumnReferences(childColumnReference.ColumnNodeObjectReferences.Single(), childColumnReference, onlyAliasOrigin));
 				}
 			}
 

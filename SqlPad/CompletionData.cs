@@ -53,7 +53,7 @@ namespace SqlPad
 		{
 			if (Content == null)
 			{
-				Content = new TextBlock();
+				Content = new TextBlock { IsEnabled = false };
 			}
 		}
 

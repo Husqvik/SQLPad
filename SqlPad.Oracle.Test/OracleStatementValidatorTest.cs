@@ -1794,6 +1794,42 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test(Description = @"")]
+		public void TestPriorOperator()
+		{
+			const string sqlText = @"UPDATE DUAL SET DUMMY = (SELECT PRIOR DUMMY FROM DUAL) WHERE CONNECT_BY_ROOT DUMMY IS NULL OR PRIOR DUMMY IS NULL OR SYS_CONNECT_BY_PATH(DUMMY, '-') IS NOT NULL OR EXISTS (SELECT PRIOR DUMMY, CONNECT_BY_ROOT DUMMY, SYS_CONNECT_BY_PATH(DUMMY, '-') FROM DUAL CONNECT BY LEVEL <= 3)";
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var nodeValidities = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
+			nodeValidities.Length.ShouldBe(3);
+			nodeValidities[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ConnectByClauseRequired);
+			nodeValidities[0].ToolTipText.ShouldBe(OracleSemanticErrorType.ConnectByClauseRequired);
+			nodeValidities[0].Node.Token.Value.ShouldBe("PRIOR");
+			nodeValidities[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ConnectByClauseRequired);
+			nodeValidities[1].ToolTipText.ShouldBe(OracleSemanticErrorType.ConnectByClauseRequired);
+			nodeValidities[1].Node.Token.Value.ShouldBe("CONNECT_BY_ROOT");
+			nodeValidities[2].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ConnectByClauseRequired);
+			nodeValidities[2].ToolTipText.ShouldBe(OracleSemanticErrorType.ConnectByClauseRequired);
+			nodeValidities[2].Node.Token.Value.ShouldBe("PRIOR");
+
+			nodeValidities = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
+			nodeValidities.Length.ShouldBe(4);
+			nodeValidities[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ConnectByClauseRequired);
+			nodeValidities[0].ToolTipText.ShouldBe(OracleSemanticErrorType.ConnectByClauseRequired);
+			nodeValidities[0].Node.FirstTerminalNode.Token.Value.ShouldBe("SYS_CONNECT_BY_PATH");
+			nodeValidities[1].IsRecognized.ShouldBe(true);
+			nodeValidities[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
+			nodeValidities[1].Node.Token.Value.ShouldBe("SYS_CONNECT_BY_PATH");
+			nodeValidities[2].IsRecognized.ShouldBe(true);
+			nodeValidities[2].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
+			nodeValidities[2].Node.Token.Value.ShouldBe("SYS_CONNECT_BY_PATH");
+			nodeValidities[3].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
+			nodeValidities[3].Node.Token.Value.ShouldBe("LEVEL");
+		}
+
+		[Test(Description = @"")]
 		public void TestColumnResolutionFromTableCollectionExpressionUsingCollectionType()
 		{
 			const string sqlText = @"SELECT PLAN_TABLE_OUTPUT, COLUMN_VALUE FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR(NULL, NULL, 'ALLSTATS LAST ADVANCED')) T1, TABLE(SYS.ODCIRAWLIST(HEXTORAW('ABCDEF'), HEXTORAW('A12345'), HEXTORAW('F98765'))) T2";

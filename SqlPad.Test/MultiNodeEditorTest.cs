@@ -127,5 +127,53 @@ namespace SqlPad.Test
 
 			_editor.Text.ShouldBe("SELECT DU__AL.DUMMY C1, DUAL.DUMMY C2 FROM DUAL DUAL");
 		}
+
+		[Test(Description = @""), STAThread]
+		public void ReplaceTextWhenRenamingColumnIdentifierWithSameColumnWithSameAliases()
+		{
+			_editor.Text = "SELECT ALIAS1 ALIAS1 FROM (SELECT ALIAS1 ALIAS1 FROM (SELECT DUMMY ALIAS1 FROM DUAL))";
+			_editor.CaretOffset = 8;
+
+			var executionContext = ActionExecutionContext.Create(_editor, ConfigureDocumentRepository());
+
+			MultiNodeEditor multiNodeEditor;
+			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out multiNodeEditor).ShouldBe(true);
+
+			multiNodeEditor.Replace("__").ShouldBe(true);
+
+			_editor.Text.ShouldBe("SELECT ALIAS1 ALIAS1 FROM (SELECT A__LIAS1 A__LIAS1 FROM (SELECT DUMMY A__LIAS1 FROM DUAL))");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void ReplaceTextWhenRenamingColumnIdentifierWithSameColumnWithMultipleAliases()
+		{
+			_editor.Text = "SELECT ALIAS2 ALIAS3 FROM (SELECT ALIAS1 ALIAS2 FROM (SELECT DUMMY ALIAS1 FROM DUAL))";
+			_editor.CaretOffset = 8;
+
+			var executionContext = ActionExecutionContext.Create(_editor, ConfigureDocumentRepository());
+
+			MultiNodeEditor multiNodeEditor;
+			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out multiNodeEditor).ShouldBe(true);
+
+			multiNodeEditor.Replace("__").ShouldBe(true);
+
+			_editor.Text.ShouldBe("SELECT ALIAS2 ALIAS3 FROM (SELECT ALIAS1 A__LIAS2 FROM (SELECT DUMMY ALIAS1 FROM DUAL))");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void ReplaceTextWhenRenamingChildColumnIdentifierWithSameColumnWithMultipleAliases()
+		{
+			_editor.Text = "SELECT ALIAS2 ALIAS3 FROM (SELECT ALIAS1 ALIAS2 FROM (SELECT DUMMY ALIAS1 FROM DUAL))";
+			_editor.CaretOffset = 35;
+
+			var executionContext = ActionExecutionContext.Create(_editor, ConfigureDocumentRepository());
+
+			MultiNodeEditor multiNodeEditor;
+			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out multiNodeEditor).ShouldBe(true);
+
+			multiNodeEditor.Replace("__").ShouldBe(true);
+
+			_editor.Text.ShouldBe("SELECT ALIAS2 ALIAS3 FROM (SELECT ALIAS1 ALIAS2 FROM (SELECT DUMMY A__LIAS1 FROM DUAL))");
+		}
 	}
 }

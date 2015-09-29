@@ -489,8 +489,15 @@ namespace SqlPad.Oracle
 
 		private static void ValidateQueryBlocks(OracleValidationModel validationModel)
 		{
+			AddInvalidPriorOperators(validationModel, validationModel.SemanticModel.NonQueryBlockTerminals);
+
 			foreach (var queryBlock in validationModel.SemanticModel.QueryBlocks)
 			{
+				if (queryBlock.HierarchicalQueryClause?[NonTerminals.HierarchicalQueryConnectByClause] == null)
+				{
+					AddInvalidPriorOperators(validationModel, queryBlock.Terminals);
+				}
+
 				ValidateConcatenatedQueryBlocks(validationModel, queryBlock);
 
 				if (queryBlock.OrderByClause != null &&
@@ -752,6 +759,23 @@ namespace SqlPad.Oracle
 			}
 		}
 
+		private static void AddInvalidPriorOperators(OracleValidationModel validationModel, IEnumerable<StatementGrammarNode> terminals)
+		{
+			foreach (var terminal in terminals)
+			{
+				if (!String.Equals(terminal.Id, Terminals.Prior) && !String.Equals(terminal.Id, Terminals.ConnectByRoot))
+				{
+					continue;
+				}
+
+				validationModel.InvalidNonTerminals[terminal] =
+					new InvalidNodeValidationData(OracleSemanticErrorType.ConnectByClauseRequired)
+					{
+						Node = terminal
+					};
+			}
+		}
+
 		private static bool IsNotWithinMainQueryBlock(OracleReference reference)
 		{
 			return reference.Owner != null && reference.Owner != reference.Owner.SemanticModel.MainQueryBlock;
@@ -916,24 +940,32 @@ namespace SqlPad.Oracle
 				{
 					semanticError = OracleSemanticErrorType.ObjectStatusInvalid;
 				}
-				else if (programReference.Metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramLevel)
+				else
 				{
-					if (programReference.Owner?.HierarchicalQueryClause?[NonTerminals.HierarchicalQueryConnectByClause] == null)
+					var isLevel = programReference.Metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramLevel;
+					if (isLevel ||
+					    programReference.Metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramSysConnectByPath)
 					{
-						validationModel.ProgramNodeValidity[programReference.RootNode] =
-							new InvalidNodeValidationData(OracleSemanticErrorType.ConnectByClauseRequired)
+						if (programReference.Owner?.HierarchicalQueryClause?[NonTerminals.HierarchicalQueryConnectByClause] == null)
+						{
+							validationModel.ProgramNodeValidity[programReference.RootNode] =
+								new InvalidNodeValidationData(OracleSemanticErrorType.ConnectByClauseRequired)
+								{
+									Node = programReference.RootNode
+								};
+
+							if (isLevel)
 							{
-								Node = programReference.RootNode
-							};
+								return;
+							}
+						}
 
-						return;
+						if (isLevel && ValidateIdentifierNodeOnly(programReference, validationModel)) return;
 					}
-
-					if (ValidateIdentifierNodeOnly(programReference, validationModel)) return;
-				}
-				else if (programReference.Metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramRowNum)
-				{
-					if (ValidateIdentifierNodeOnly(programReference, validationModel)) return;
+					else if (programReference.Metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramRowNum)
+					{
+						if (ValidateIdentifierNodeOnly(programReference, validationModel)) return;
+					}
 				}
 			}
 

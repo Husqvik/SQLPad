@@ -32,6 +32,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramLnNvl = OracleProgramIdentifier.CreateFromValues(null, null, "LNNVL");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramExtract = OracleProgramIdentifier.CreateFromValues(null, null, "EXTRACT");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramRatioToReport = OracleProgramIdentifier.CreateFromValues(null, null, "RATIO_TO_REPORT");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramSysConnectByPath = OracleProgramIdentifier.CreateFromValues(null, null, "SYS_CONNECT_BY_PATH");
 
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramRound = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "ROUND");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramLevel = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "LEVEL");

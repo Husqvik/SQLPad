@@ -54,7 +54,6 @@ namespace SqlPad.Oracle.SemanticModel
 		private readonly OracleDatabaseModelBase _databaseModel;
 		private readonly OracleReferenceBuilder _referenceBuilder;
 		private readonly Dictionary<OracleSelectListColumn, List<OracleDataObjectReference>> _asteriskTableReferences = new Dictionary<OracleSelectListColumn, List<OracleDataObjectReference>>();
-		private readonly Dictionary<OracleQueryBlock, List<StatementGrammarNode>> _queryBlockTerminals = new Dictionary<OracleQueryBlock, List<StatementGrammarNode>>();
 		private readonly Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>> _accessibleQueryBlockRoot = new Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>>();
 		private readonly Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementGrammarNode, string>>> _objectReferenceCteRootNodes = new Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementGrammarNode, string>>>();
 		private readonly Dictionary<OracleReference, OracleTableCollectionReference> _rowSourceTableCollectionReferences = new Dictionary<OracleReference, OracleTableCollectionReference>();
@@ -80,7 +79,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		IDatabaseModel IStatementSemanticModel.DatabaseModel => DatabaseModel;
 
-	    public OracleStatement Statement { get; }
+		public OracleStatement Statement { get; }
 
 		StatementBase IStatementSemanticModel.Statement => Statement;
 
@@ -95,6 +94,8 @@ namespace SqlPad.Oracle.SemanticModel
 		public ICollection<RedundantTerminalGroup> RedundantSymbolGroups => _redundantTerminalGroups.AsReadOnly();
 
 		public OracleMainObjectReferenceContainer MainObjectReferenceContainer { get; }
+
+		public IReadOnlyList<StatementGrammarNode> NonQueryBlockTerminals { get; private set; }
 
 		public IEnumerable<OracleReferenceContainer> AllReferenceContainers
 		{
@@ -158,6 +159,7 @@ namespace SqlPad.Oracle.SemanticModel
 			var queryBlockTerminalList = new KeyValuePair<OracleQueryBlock, List<StatementGrammarNode>>();
 			var statementDefinedFunctions = new Dictionary<StatementGrammarNode, IReadOnlyCollection<OracleProgramMetadata>>();
 			var queryBlockNodes = new Dictionary<StatementGrammarNode, OracleQueryBlock>();
+			var nonQueryBlockTerminals = new List<StatementGrammarNode>();
 
 			foreach (var terminal in Statement.AllTerminals)
 			{
@@ -172,7 +174,7 @@ namespace SqlPad.Oracle.SemanticModel
 					}
 
 					queryBlockTerminalList = new KeyValuePair<OracleQueryBlock, List<StatementGrammarNode>>(queryBlock, new List<StatementGrammarNode>());
-					_queryBlockTerminals.Add(queryBlock, queryBlockTerminalList.Value);
+					queryBlock.Terminals = queryBlockTerminalList.Value;
 				}
 				else if ((String.Equals(terminal.Id, Terminals.Date) && String.Equals(terminal.ParentNode.Id, NonTerminals.Expression)) ||
 				         String.Equals(terminal.Id, Terminals.Timestamp) && String.Equals(terminal.ParentNode.Id, NonTerminals.TimestampOrTime))
@@ -212,7 +214,13 @@ namespace SqlPad.Oracle.SemanticModel
 						queryBlockTerminalList = queryBlockTerminalListQueue.Pop();
 					}
 				}
+				else
+				{
+					nonQueryBlockTerminals.Add(terminal);
+				}
 			}
+
+			NonQueryBlockTerminals = nonQueryBlockTerminals.AsReadOnly();
 
 			foreach (var queryBlock in queryBlockNodes.Values)
 			{
@@ -2821,7 +2829,7 @@ namespace SqlPad.Oracle.SemanticModel
 			else
 			{
 				var columnExpressions = StatementGrammarNode.GetAllChainedClausesByPath(queryBlock.SelectList[NonTerminals.AliasedExpressionOrAllTableColumns], n => n.ParentNode, NonTerminals.SelectExpressionExpressionChainedList, NonTerminals.AliasedExpressionOrAllTableColumns);
-				var columnExpressionsIdentifierLookup = _queryBlockTerminals[queryBlock]
+				var columnExpressionsIdentifierLookup = queryBlock.Terminals
 					.Where(t => t.SourcePosition.IndexStart >= queryBlock.SelectList.SourcePosition.IndexStart && t.SourcePosition.IndexEnd <= queryBlock.SelectList.SourcePosition.IndexEnd &&
 					            (StandardIdentifierIds.Contains(t.Id) || t.ParentNode.Id.In(NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, NonTerminals.WithinGroupAggregationFunction, NonTerminals.DataType)))
 					.ToLookup(t => t.GetAncestor(NonTerminals.AliasedExpressionOrAllTableColumns));

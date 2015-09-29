@@ -72,6 +72,13 @@ namespace SqlPad.Oracle
 						.Select(t => t.SourcePosition)
 						.ToArray();
 					break;
+
+				case Terminals.Identifier:
+					multiNodeData.SynchronizedSegments = FindUsagesCommand.GetColumnUsages(semanticModel, terminal, true)
+						.Where(t => t != terminal)
+						.Select(t => t.SourcePosition)
+						.ToArray();
+					break;
 			}
 
 			return multiNodeData;

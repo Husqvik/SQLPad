@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using SqlPad.Oracle.DataDictionary;
-using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
 namespace SqlPad.Oracle.SemanticModel
@@ -147,6 +146,8 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public ICollection<OracleQueryBlock> AccessibleQueryBlocks { get; private set; }
 
+		public IReadOnlyList<StatementGrammarNode> Terminals { get; set; }
+
 		public OracleQueryBlock FollowingConcatenatedQueryBlock { get; set; }
 		
 		public OracleQueryBlock PrecedingConcatenatedQueryBlock { get; set; }
@@ -282,7 +283,7 @@ namespace SqlPad.Oracle.SemanticModel
 		{
 			int columnIndex;
 			var expression = orderExpression[NonTerminals.Expression];
-			if (expression == null || expression.TerminalCount != 1 || expression.FirstTerminalNode.Id != Terminals.NumberLiteral ||
+			if (expression == null || expression.TerminalCount != 1 || expression.FirstTerminalNode.Id != OracleGrammarDescription.Terminals.NumberLiteral ||
 				expression.FirstTerminalNode.Token.Value.IndexOf('.') != -1 || !Int32.TryParse(expression.FirstTerminalNode.Token.Value, out columnIndex))
 			{
 				return OracleOrderByColumnIndexReference.None;
