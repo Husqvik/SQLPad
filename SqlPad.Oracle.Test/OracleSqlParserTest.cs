@@ -2599,6 +2599,16 @@ ORDER BY symbol, tstamp";
 			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 		}
 
+		[Test(Description = @"")]
+		public void TestUnsupportedTimeLiteralExpression()
+		{
+			const string statement1 = @"SELECT TIME'12:34:56' AT LOCAL FROM DUAL";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+		}
+
 		public class PlSql
 		{
 			[Test(Description = @"")]

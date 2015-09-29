@@ -101,7 +101,7 @@ namespace SqlPad.Oracle.SemanticModel
 					identifier = OracleObjectIdentifier.Create(owner, name);
 				}
 
-				var plSqlProgram =
+				var program =
 					new OraclePlSqlProgram
 					{
 						RootNode = functionOrProcedure,
@@ -109,11 +109,12 @@ namespace SqlPad.Oracle.SemanticModel
 						Name = identifier.NormalizedName
 					};
 
-				ResolveParameterDeclarations(plSqlProgram);
+				ResolveParameterDeclarations(program);
+				ResolveLocalVariableAndTypeDeclarations(program);
 
-				_programs.Add(plSqlProgram);
+				_programs.Add(program);
 
-				ResolveSubProgramDefinitions(plSqlProgram);
+				ResolveSubProgramDefinitions(program);
 			}
 			else
 			{
@@ -148,6 +149,7 @@ namespace SqlPad.Oracle.SemanticModel
 						};
 
 					ResolveParameterDeclarations(subProgram);
+					ResolveLocalVariableAndTypeDeclarations(subProgram);
 
 					if (nameTerminal != null)
 					{
@@ -158,6 +160,75 @@ namespace SqlPad.Oracle.SemanticModel
 				}
 
 				ResolveSubProgramDefinitions(subProgram, childNode);
+			}
+		}
+
+		private void ResolveLocalVariableAndTypeDeclarations(OraclePlSqlProgram program)
+		{
+			StatementGrammarNode programSourceNode;
+			switch (program.RootNode.Id)
+			{
+				case NonTerminals.CreateFunction:
+					programSourceNode = program.RootNode[NonTerminals.PlSqlFunctionSource, NonTerminals.FunctionTypeDefinition];
+					break;
+				default:
+					programSourceNode = program.RootNode;
+					break;
+			}
+
+			var item1 = programSourceNode?[NonTerminals.ProgramImplentationDeclaration, NonTerminals.ProgramDeclareSection, NonTerminals.ItemList1, NonTerminals.Item1];
+			if (item1 == null)
+			{
+				return;
+			}
+
+			var itemDeclarations = StatementGrammarNode.GetAllChainedClausesByPath(item1, n => String.Equals(n.ParentNode.Id, NonTerminals.Item1OrPragmaDefinition) ? n.ParentNode.ParentNode : n.ParentNode, NonTerminals.ItemList1Chained, NonTerminals.Item1OrPragmaDefinition, NonTerminals.Item1).ToArray();
+			foreach (var itemDeclaration in itemDeclarations)
+			{
+				var variable = new OraclePlSqlVariable();
+				var declarationRoot = itemDeclaration[0];
+				StatementGrammarNode identifierNode = null;
+				switch (declarationRoot?.Id)
+				{
+					case NonTerminals.ItemDeclaration:
+						var specificNode = declarationRoot[0];
+						if (specificNode != null)
+						{
+							switch (specificNode.Id)
+							{
+								case NonTerminals.ConstantDeclaration:
+									variable.IsConstant = true;
+									identifierNode = specificNode[Terminals.Identifier];
+									break;
+
+								case NonTerminals.ExceptionDeclaration:
+									variable.IsException = true;
+									identifierNode = specificNode[Terminals.ExceptionIdentifier];
+									break;
+
+								case NonTerminals.VariableDeclaration:
+									identifierNode = specificNode[NonTerminals.FieldDefinition, Terminals.Identifier];
+									break;
+							}
+						}
+
+						break;
+
+					case NonTerminals.TypeDefinition:
+						var typeIdentifierNode = declarationRoot[Terminals.TypeIdentifier];
+						if (typeIdentifierNode != null)
+						{
+							program.Types.Add(new OraclePlSqlType { Name = typeIdentifierNode.Token.Value.ToQuotedIdentifier() });
+						}
+
+						break;
+				}
+
+				if (identifierNode != null)
+				{
+					variable.Name = identifierNode.Token.Value.ToQuotedIdentifier();
+					program.Variables.Add(variable);
+				}
 			}
 		}
 
@@ -194,7 +265,7 @@ namespace SqlPad.Oracle.SemanticModel
 					new OraclePlSqlParameter
 					{
 						Direction = ParameterDirection.ReturnValue,
-						DataType = null
+						//DataType = null
 					};
 			}
 		}
@@ -229,7 +300,27 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public IList<OraclePlSqlParameter> Parameters { get; } = new List<OraclePlSqlParameter>();
 
+		public IList<OraclePlSqlType> Types { get; } = new List<OraclePlSqlType>();
+
+		public IList<OraclePlSqlVariable> Variables { get; } = new List<OraclePlSqlVariable>();
+
 		public OraclePlSqlParameter ReturnParameter { get; set; }
+	}
+
+	public class OraclePlSqlVariable
+	{
+		public string Name { get; set; }
+
+		public bool IsConstant { get; set; }
+
+		public bool IsException { get; set; }
+
+		//public OracleDataType DataType { get; set; }
+	}
+
+	public class OraclePlSqlType
+	{
+		public string Name { get; set; }
 	}
 
 	public class OraclePlSqlParameter
@@ -238,6 +329,6 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public ParameterDirection Direction { get; set; }
 
-		public OracleDataType DataType { get; set; }
+		//public OracleDataType DataType { get; set; }
 	}
 }

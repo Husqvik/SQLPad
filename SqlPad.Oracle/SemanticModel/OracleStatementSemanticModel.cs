@@ -174,8 +174,8 @@ namespace SqlPad.Oracle.SemanticModel
 					queryBlockTerminalList = new KeyValuePair<OracleQueryBlock, List<StatementGrammarNode>>(queryBlock, new List<StatementGrammarNode>());
 					_queryBlockTerminals.Add(queryBlock, queryBlockTerminalList.Value);
 				}
-				else if (String.Equals(terminal.ParentNode.Id, NonTerminals.Expression) &&
-				         (String.Equals(terminal.Id, Terminals.Date) || String.Equals(terminal.Id, Terminals.Timestamp)))
+				else if ((String.Equals(terminal.Id, Terminals.Date) && String.Equals(terminal.ParentNode.Id, NonTerminals.Expression)) ||
+				         String.Equals(terminal.Id, Terminals.Timestamp) && String.Equals(terminal.ParentNode.Id, NonTerminals.TimestampOrTime))
 				{
 					var literal = CreateLiteral(terminal);
 					if (literal.Terminal != null && String.Equals(literal.Terminal.Id, Terminals.StringLiteral))
@@ -3279,7 +3279,7 @@ namespace SqlPad.Oracle.SemanticModel
 				new OracleLiteral
 				{
 					Terminal = terminal.FollowingTerminal,
-					Type = terminal.Id == Terminals.Date ? LiteralType.Date : LiteralType.Timestamp
+					Type = String.Equals(terminal.Id, Terminals.Date) ? LiteralType.Date : LiteralType.Timestamp
 				};
 		}
 

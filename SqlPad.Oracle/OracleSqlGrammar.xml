@@ -4943,7 +4943,7 @@
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
-          <Terminal Id="Timestamp" />
+          <NonTerminal Id="TimestampOrTime" />
           <Terminal Id="StringLiteral" />
           <NonTerminal Id="TimestampAtTimeZone" IsOptional="true" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
@@ -5016,6 +5016,17 @@
         <Sequence>
           <Terminal Id="CharacterCode" />
           <NonTerminal Id="CharacterCodeParameterClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="TimestampOrTime">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Timestamp" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Time" />
         </Sequence>
       </Sequences>
     </Rule>

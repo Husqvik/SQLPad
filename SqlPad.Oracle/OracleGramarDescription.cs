@@ -1272,6 +1272,7 @@ namespace SqlPad.Oracle
 			public const string TieringClause = "TieringClause";
 			public const string TimeoutClause = "TimeoutClause";
 			public const string TimestampAtTimeZone = "TimestampAtTimeZone";
+			public const string TimestampOrTime = "TimestampOrTime";
 			public const string TimeZoneExpression = "TimeZoneExpression";
 			public const string TimeZoneOrLocal = "TimeZoneOrLocal";
 			public const string TimingPoint = "TimingPoint";
