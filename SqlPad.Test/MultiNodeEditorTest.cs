@@ -44,6 +44,29 @@ namespace SqlPad.Test
 		}
 
 		[Test(Description = @""), STAThread]
+		public void CancelEditing()
+		{
+			const string originalText = "SELECT DUAL.DUMMY C1, DUAL.DUMMY C2 FROM DUAL DUAL";
+			_editor.Text = originalText;
+
+			const int originalCaretOffset = 9;
+			_editor.CaretOffset = 9;
+
+			var executionContext = ActionExecutionContext.Create(_editor, ConfigureDocumentRepository());
+
+			MultiNodeEditor multiNodeEditor;
+			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out multiNodeEditor).ShouldBe(true);
+
+			_editor.Document.Insert(_editor.CaretOffset, "__");
+
+			multiNodeEditor.Replace("__").ShouldBe(true);
+			multiNodeEditor.Cancel();
+
+			_editor.Text.ShouldBe(originalText);
+			_editor.CaretOffset.ShouldBe(originalCaretOffset);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void ReplaceTextWhenRenamingObjectIdentifier()
 		{
 			_editor.Text = "SELECT DU__AL.DUMMY C1, DU__AL.DUMMY C2 FROM DUAL DU__AL";

@@ -3471,6 +3471,7 @@ END;";
 						Terminals.StringLiteral,
 						Terminals.Sum,
 						Terminals.SystemDate,
+						Terminals.Time,
 						Terminals.Timestamp,
 						Terminals.Treat,
 						Terminals.Trim,

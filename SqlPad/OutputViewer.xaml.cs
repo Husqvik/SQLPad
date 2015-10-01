@@ -525,6 +525,7 @@ namespace SqlPad
 		{
 			RemoveResultViewers();
 			Application.Current.Deactivated -= ApplicationDeactivatedHandler;
+			_timerExecutionMonitor.Tick -= TimerExecutionMonitorTickHandler;
 			_timerExecutionMonitor.Stop();
 			ConnectionAdapter.Dispose();
 		}

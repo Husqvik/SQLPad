@@ -187,6 +187,7 @@ namespace SqlPad
 
 		public void Close()
 		{
+			_refreshProgressBarTimer.Tick -= RefreshTimerProgressBarTickHandler;
 			_refreshProgressBarTimer.Stop();
 			_outputViewer.TabControlResult.RemoveTabItemWithoutBindingError(TabItem);
 		}

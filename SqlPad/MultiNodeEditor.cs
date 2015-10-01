@@ -13,6 +13,7 @@ namespace SqlPad
 	{
 		private readonly TextEditor _editor;
 		private readonly string _originalValue;
+		private readonly int _originalCaretOffset;
 		private readonly TextAnchor _masterAnchorStart;
 		private readonly TextAnchor _masterAnchorEnd;
 		private readonly List<TextAnchor> _anchors = new List<TextAnchor>();
@@ -41,6 +42,7 @@ namespace SqlPad
 		{
 			_editor = editor;
 			_originalValue = data.CurrentNode.Token.Value;
+			_originalCaretOffset = editor.CaretOffset;
 			_masterAnchorStart = editor.Document.CreateAnchor(data.CurrentNode.SourcePosition.IndexStart);
 			_masterAnchorStart.MovementType = AnchorMovementType.BeforeInsertion;
 			_masterAnchorEnd = editor.Document.CreateAnchor(data.CurrentNode.SourcePosition.IndexEnd + 1);
@@ -130,6 +132,8 @@ namespace SqlPad
 			}
 
 			_editor.EndChange();
+
+			_editor.CaretOffset = _originalCaretOffset;
 		}
 	}
 
