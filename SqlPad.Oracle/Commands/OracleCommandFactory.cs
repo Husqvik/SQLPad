@@ -24,12 +24,13 @@ namespace SqlPad.Oracle.Commands
 		public static readonly CommandExecutionHandler AddAlias = OracleCommandBase.CreateStandardExecutionHandler<AddAliasCommand>("AddAlias");
 		public static readonly CommandExecutionHandler AddCreateTableAs = OracleCommandBase.CreateStandardExecutionHandler<AddCreateTableAsCommand>("AddCreateTableAs");
 		public static readonly CommandExecutionHandler AddInsertIntoColumnList = OracleCommandBase.CreateStandardExecutionHandler<AddInsertIntoColumnListCommand>("AddInsertIntoColumnList");
+		public static readonly CommandExecutionHandler AddMissingColumn = OracleCommandBase.CreateStandardExecutionHandler<AddMissingColumnCommand>("AddMissingColumn");
 		public static readonly CommandExecutionHandler AddToGroupByClause = OracleCommandBase.CreateStandardExecutionHandler<AddToGroupByCommand>("AddToGroupByClause");
 		public static readonly CommandExecutionHandler CleanRedundantSymbol = OracleCommandBase.CreateStandardExecutionHandler<CleanRedundantSymbolCommand>("CleanRedundantSymbol");
 		public static readonly CommandExecutionHandler ConvertOrderByNumberColumnReferences = OracleCommandBase.CreateStandardExecutionHandler<ConvertOrderByNumberColumnReferencesCommand>("ConvertOrderByNumberColumnReferences");
 		public static readonly CommandExecutionHandler CreateScript = OracleCommandBase.CreateStandardExecutionHandler<CreateScriptCommand>("CreateScript");
 		public static readonly CommandExecutionHandler ExpandAsterisk = OracleCommandBase.CreateStandardExecutionHandler<ExpandAsteriskCommand>("ExpandAsterisk");
-		public static readonly CommandExecutionHandler AddMissingColumn = OracleCommandBase.CreateStandardExecutionHandler<AddMissingColumnCommand>("AddMissingColumn");
+		public static readonly CommandExecutionHandler GenerateCustomTypeCSharpWrapperClass = OracleCommandBase.CreateStandardExecutionHandler<GenerateCustomTypeCSharpWrapperClassCommand>("GenerateCustomTypeCSharpWrapperClass");
 		public static readonly CommandExecutionHandler PropagateColumn = OracleCommandBase.CreateStandardExecutionHandler<PropagateColumnCommand>("PropagateColumn");
 		public static readonly CommandExecutionHandler ToggleFullyQualifiedReferences = OracleCommandBase.CreateStandardExecutionHandler<ToggleFullyQualifiedReferencesCommand>("ToggleFullyQualifiedReferences");
 		public static readonly CommandExecutionHandler ToggleQuotedNotation = OracleCommandBase.CreateStandardExecutionHandler<ToggleQuotedNotationCommand>("ToggleQuotedNotation");

@@ -410,5 +410,23 @@ namespace SqlPad.Oracle.Test
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 79).SingleOrDefault(a => a.Name == ConvertOrderByNumberColumnReferencesCommand.Title);
 			action.ShouldBe(null);
 		}
+
+		[Test(Description = @""), STAThread]
+		public void TestGenerateCustomTypeCSharpWrapperClassCommandAtXmlTypes()
+		{
+			const string query1 = @"SELECT XMLTYPE() FROM DUAL";
+
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 7).SingleOrDefault(a => a.Name == GenerateCustomTypeCSharpWrapperClassCommand.Title);
+			action.ShouldBe(null);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestGenerateCustomTypeCSharpWrapperClassCommandAtColumnIdentifier()
+		{
+			const string query1 = @"SELECT DUMMY FROM DUAL";
+
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 7).SingleOrDefault(a => a.Name == GenerateCustomTypeCSharpWrapperClassCommand.Title);
+			action.ShouldBe(null);
+		}
 	}
 }

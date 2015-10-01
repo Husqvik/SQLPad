@@ -1049,12 +1049,12 @@ namespace SqlPad.Oracle
 			if (parentObject != null && joinedObject != null && (parentObject.ReferenceConstraints.Any() || joinedObject.ReferenceConstraints.Any()))
 			{
 				var joinedToParentKeys = parentObject.ReferenceConstraints.Where(k => k.TargetObject == joinedObject)
-					.Select(k => GenerateJoinConditionSuggestionItem(parentSchemaObject.FullyQualifiedObjectName, effectiveJoinedObjectIdentifier, k.Columns, k.ReferenceConstraint.Columns, OracleCodeCompletionCategory.JoinConditionByReferenceConstraint, false, skipOnTerminal, insertOffset));
+					.Select(k => GenerateJoinConditionSuggestionItem(parentSchemaObject.FullyQualifiedObjectName, effectiveJoinedObjectIdentifier, k.Columns, k.ReferenceConstraint.Columns, OracleCodeCompletionCategory.JoinConditionByReferenceConstraint, false, skipOnTerminal, insertOffset, 0));
 
 				suggestionItems.AddRange(joinedToParentKeys);
 
 				var parentToJoinedKeys = joinedObject.ReferenceConstraints.Where(k => k.TargetObject == parentObject)
-					.Select(k => GenerateJoinConditionSuggestionItem(effectiveJoinedObjectIdentifier, parentSchemaObject.FullyQualifiedObjectName, k.Columns, k.ReferenceConstraint.Columns, OracleCodeCompletionCategory.JoinConditionByReferenceConstraint, true, skipOnTerminal, insertOffset));
+					.Select(k => GenerateJoinConditionSuggestionItem(effectiveJoinedObjectIdentifier, parentSchemaObject.FullyQualifiedObjectName, k.Columns, k.ReferenceConstraint.Columns, OracleCodeCompletionCategory.JoinConditionByReferenceConstraint, true, skipOnTerminal, insertOffset, 0));
 
 				suggestionItems.AddRange(parentToJoinedKeys);
 				referenceConstraintJoinConditionFound = suggestionItems.Any();
@@ -1067,7 +1067,7 @@ namespace SqlPad.Oracle
 					.Intersect(
 						joinedSchemaObject.Columns
 						.Where(c => !String.IsNullOrEmpty(c.Name)).Select(c => c.Name))
-					.Select(c => GenerateJoinConditionSuggestionItem(parentSchemaObject.FullyQualifiedObjectName, effectiveJoinedObjectIdentifier, new[] { c }, new[] { c }, OracleCodeCompletionCategory.JoinConditionByName, false, skipOnTerminal, insertOffset));
+					.Select(c => GenerateJoinConditionSuggestionItem(parentSchemaObject.FullyQualifiedObjectName, effectiveJoinedObjectIdentifier, new[] { c }, new[] { c }, OracleCodeCompletionCategory.JoinConditionByName, false, skipOnTerminal, insertOffset, 1));
 
 				suggestionItems.AddRange(columnNameJoinConditions);
 			}
@@ -1082,7 +1082,7 @@ namespace SqlPad.Oracle
 				: OracleObjectIdentifier.Create(objectReference.OwnerNode, objectReference.ObjectNode, null);
 		}
 
-		private OracleCodeCompletionItem GenerateJoinConditionSuggestionItem(OracleObjectIdentifier sourceObject, OracleObjectIdentifier targetObject, IList<string> keySourceColumns, IList<string> keyTargetColumns, string itemCategory, bool swapSides, bool skipOnTerminal, int insertOffset)
+		private OracleCodeCompletionItem GenerateJoinConditionSuggestionItem(OracleObjectIdentifier sourceObject, OracleObjectIdentifier targetObject, IList<string> keySourceColumns, IList<string> keyTargetColumns, string itemCategory, bool swapSides, bool skipOnTerminal, int insertOffset, int priority)
 		{
 			var builder = new StringBuilder();
 			if (!skipOnTerminal)
@@ -1113,7 +1113,8 @@ namespace SqlPad.Oracle
 					Name = builder.ToString(),
 					Text = builder.ToString(),
 					InsertOffset = insertOffset,
-					Category = itemCategory
+					Category = itemCategory,
+					Priority = priority
 				};
 		}
 	}

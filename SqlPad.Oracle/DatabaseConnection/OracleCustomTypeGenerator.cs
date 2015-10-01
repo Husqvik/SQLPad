@@ -250,7 +250,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			nullPropertyBuilder.SetGetMethod(nullPropertyGetterBuilder);
 		}
 
-		private static Type MapOracleTypeToNetType(OracleObjectIdentifier typeIdentifier)
+		public static Type MapOracleTypeToNetType(OracleObjectIdentifier typeIdentifier)
 		{
 			var targetType = typeof(string);
 			switch (typeIdentifier.ToString().Trim('"'))

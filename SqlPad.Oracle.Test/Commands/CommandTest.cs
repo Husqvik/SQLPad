@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 using NUnit.Framework;
 using Shouldly;
 using SqlPad.Commands;
@@ -2097,6 +2098,164 @@ MODEL
 			const string expectedResult = @"SELECT COUNT(*) TOTALS FROM DUAL GROUP BY DUMMY ORDER BY TOTALS DESC";
 
 			_editor.Text.ShouldBe(expectedResult);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestGenerateCustomTypeCSharpWrapperClassCommand()
+		{
+			const string statementText = @"SELECT SYS.ODCIARGDESC() FROM DUAL";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 11;
+
+			CanExecuteCommand(OracleCommands.GenerateCustomTypeCSharpWrapperClass).ShouldBe(true);
+			ExecuteCommand(OracleCommands.GenerateCustomTypeCSharpWrapperClass);
+
+			const string expectedResult =
+@"using Oracle.DataAccess.Client;
+using Oracle.DataAccess.Types;
+
+[OracleCustomTypeMapping(""SYS.ODCIARGDESC"")]
+public class SYS_ODCIARGDESC : CustomTypeBase<SYS_ODCIARGDESC>
+{
+	[OracleObjectMapping(""ARGTYPE"")]
+	public Oracle.DataAccess.Types.OracleDecimal ARGTYPE;
+	[OracleObjectMapping(""TABLENAME"")]
+	public System.String TABLENAME;
+	[OracleObjectMapping(""TABLESCHEMA"")]
+	public System.String TABLESCHEMA;
+	[OracleObjectMapping(""COLNAME"")]
+	public System.String COLNAME;
+	[OracleObjectMapping(""TABLEPARTITIONLOWER"")]
+	public System.String TABLEPARTITIONLOWER;
+	[OracleObjectMapping(""TABLEPARTITIONUPPER"")]
+	public System.String TABLEPARTITIONUPPER;
+	[OracleObjectMapping(""CARDINALITY"")]
+	public Oracle.DataAccess.Types.OracleDecimal CARDINALITY;
+
+	public override void FromCustomObject(OracleConnection connection, IntPtr pointerUdt)
+	{
+		OracleUdt.SetValue(connection, pointerUdt, ""ARGTYPE"", ARGTYPE);
+		OracleUdt.SetValue(connection, pointerUdt, ""TABLENAME"", TABLENAME);
+		OracleUdt.SetValue(connection, pointerUdt, ""TABLESCHEMA"", TABLESCHEMA);
+		OracleUdt.SetValue(connection, pointerUdt, ""COLNAME"", COLNAME);
+		OracleUdt.SetValue(connection, pointerUdt, ""TABLEPARTITIONLOWER"", TABLEPARTITIONLOWER);
+		OracleUdt.SetValue(connection, pointerUdt, ""TABLEPARTITIONUPPER"", TABLEPARTITIONUPPER);
+		OracleUdt.SetValue(connection, pointerUdt, ""CARDINALITY"", CARDINALITY);
+	}
+
+	public override void ToCustomObject(OracleConnection connection, IntPtr pointerUdt)
+	{
+		ARGTYPE = (Oracle.DataAccess.Types.OracleDecimal)OracleUdt.GetValue(connection, pointerUdt, ""ARGTYPE"");
+		TABLENAME = (System.String)OracleUdt.GetValue(connection, pointerUdt, ""TABLENAME"");
+		TABLESCHEMA = (System.String)OracleUdt.GetValue(connection, pointerUdt, ""TABLESCHEMA"");
+		COLNAME = (System.String)OracleUdt.GetValue(connection, pointerUdt, ""COLNAME"");
+		TABLEPARTITIONLOWER = (System.String)OracleUdt.GetValue(connection, pointerUdt, ""TABLEPARTITIONLOWER"");
+		TABLEPARTITIONUPPER = (System.String)OracleUdt.GetValue(connection, pointerUdt, ""TABLEPARTITIONUPPER"");
+		CARDINALITY = (Oracle.DataAccess.Types.OracleDecimal)OracleUdt.GetValue(connection, pointerUdt, ""CARDINALITY"");
+	}
+}
+
+public abstract class CustomTypeBase<T> : IOracleCustomType, IOracleCustomTypeFactory, INullable where T : CustomTypeBase<T>, new()
+{
+	private bool _isNull;
+	
+	public IOracleCustomType CreateObject()
+	{
+		return new T();
+	}
+
+	public abstract void FromCustomObject(OracleConnection connection, IntPtr pointerUdt);
+
+	public abstract void ToCustomObject(OracleConnection connection, IntPtr pointerUdt);
+
+	public bool IsNull
+	{
+		get { return this._isNull; }
+	}
+
+	public static T Null
+	{
+		get { return new T { _isNull = true }; }
+	}
+}
+";
+
+			var result = Clipboard.GetText();
+			result.ShouldBe(expectedResult);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestGenerateCustomCollectionTypeCSharpWrapperClassCommand()
+		{
+			const string statementText = @"SELECT SYS.ODCIARGDESCLIST() FROM DUAL";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 11;
+
+			CanExecuteCommand(OracleCommands.GenerateCustomTypeCSharpWrapperClass).ShouldBe(true);
+			ExecuteCommand(OracleCommands.GenerateCustomTypeCSharpWrapperClass);
+
+			const string expectedResult =
+@"using Oracle.DataAccess.Client;
+using Oracle.DataAccess.Types;
+
+[OracleCustomTypeMapping(""SYS.ODCIARGDESCLIST"")]
+public class SYS_ODCIARGDESCLIST : CustomCollectionTypeBase<SYS_ODCIARGDESCLIST, SYS_ODCIARGDESC>
+{
+}
+
+public abstract class CustomCollectionTypeBase<TType, TValue> : CustomTypeBase<TType>, IOracleArrayTypeFactory where TType : CustomTypeBase<TType>, new()
+{
+	[OracleArrayMapping()]
+	public TValue[] Values;
+
+	public override void FromCustomObject(OracleConnection connection, IntPtr pointerUdt)
+	{
+		OracleUdt.SetValue(connection, pointerUdt, 0, Values);
+	}
+
+	public override void ToCustomObject(OracleConnection connection, IntPtr pointerUdt)
+	{
+		Values = (TValue[])OracleUdt.GetValue(connection, pointerUdt, 0);
+	}
+
+	public Array CreateArray(int numElems)
+	{
+		return new TValue[numElems];
+	}
+
+	public Array CreateStatusArray(int numElems)
+	{
+		return null;
+	}
+}
+
+public abstract class CustomTypeBase<T> : IOracleCustomType, IOracleCustomTypeFactory, INullable where T : CustomTypeBase<T>, new()
+{
+	private bool _isNull;
+	
+	public IOracleCustomType CreateObject()
+	{
+		return new T();
+	}
+
+	public abstract void FromCustomObject(OracleConnection connection, IntPtr pointerUdt);
+
+	public abstract void ToCustomObject(OracleConnection connection, IntPtr pointerUdt);
+
+	public bool IsNull
+	{
+		get { return this._isNull; }
+	}
+
+	public static T Null
+	{
+		get { return new T { _isNull = true }; }
+	}
+}
+";
+
+			var result = Clipboard.GetText();
+			result.ShouldBe(expectedResult);
 		}
 	}
 }

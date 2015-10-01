@@ -1945,9 +1945,16 @@ namespace SqlPad
 				}
 			}
 
-			if (e.Key == Key.Back || e.Key == Key.Delete || (e.Key.In(Key.V, Key.Z, Key.Insert) && Keyboard.Modifiers == ModifierKeys.Control))
+			var isControlPressed = Keyboard.Modifiers == ModifierKeys.Control;
+			if (e.Key == Key.Back || e.Key == Key.Delete || (e.Key.In(Key.V, Key.Z, Key.Insert) && isControlPressed))
 			{
 				DisableCodeCompletion();
+
+				var clipboardText = Clipboard.GetText();
+				if (_multiNodeEditor != null && e.Key.In(Key.V, Key.Insert) && !String.IsNullOrEmpty(clipboardText))
+				{
+					_multiNodeEditor.Replace(clipboardText);
+				}
 			}
 
 			if ((e.Key == Key.Back || e.Key == Key.Delete) && _multiNodeEditor != null)

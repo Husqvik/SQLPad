@@ -90,6 +90,7 @@
     <Compile Include="Commands\LiteralBindVariableConversionCommand.cs" />
     <Compile Include="Commands\BindVariableLiteralConversionCommand.cs" />
     <Compile Include="Commands\ConvertOrderByNumberColumnReferencesCommand.cs" />
+    <Compile Include="Commands\GenerateCustomTypeCSharpWrapperClassCommand.cs" />
     <Compile Include="Commands\UnquoteCommand.cs" />
     <Compile Include="Commands\CreateScriptCommand.cs" />
     <Compile Include="Commands\AddInsertIntoColumnListCommand.cs" />
@@ -109,6 +110,7 @@
     <Compile Include="Commands\ResolveAmbiguousColumnCommand.cs" />
     <Compile Include="Commands\AddAliasCommand.cs" />
     <Compile Include="Commands\OracleCommandFactory.cs" />
+    <Compile Include="CustomTypeCSharpWrapperClassGenerator.cs" />
     <Compile Include="DataDictionary\OracleReferenceBuilder.cs" />
     <Compile Include="DatabaseConnection\OracleTraceEvent.cs" />
     <Compile Include="Documentation.cs">
