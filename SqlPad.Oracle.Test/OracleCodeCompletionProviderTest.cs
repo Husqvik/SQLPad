@@ -1584,7 +1584,7 @@ se";
 			items.Count.ShouldBe(1);
 			items[0].Name.ShouldBe("ON D1.DUMMY = DUAL.DUMMY");
 			items[0].Text.ShouldBe("ON D1.DUMMY = DUAL.DUMMY");
-			items[0].Category.ShouldBe(OracleCodeCompletionCategory.JoinCondition);
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.JoinConditionByName);
 			items[0].CaretOffset.ShouldBe(0);
 			items[0].StatementNode.ShouldBe(null);
 		}
@@ -1597,7 +1597,7 @@ se";
 			items.Count.ShouldBe(1);
 			items[0].Name.ShouldBe("ON S.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID");
 			items[0].Text.ShouldBe("ON S.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID");
-			items[0].Category.ShouldBe(OracleCodeCompletionCategory.JoinCondition);
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.JoinConditionByReferenceConstraint);
 			items[0].CaretOffset.ShouldBe(0);
 			items[0].StatementNode.ShouldBe(null);
 		}
@@ -1610,7 +1610,7 @@ se";
 			items.Count.ShouldBe(1);
 			items[0].Name.ShouldBe("ON RB.RESPONDENTBUCKET_ID = SELECTION.RESPONDENTBUCKET_ID");
 			items[0].Text.ShouldBe("ON RB.RESPONDENTBUCKET_ID = SELECTION.RESPONDENTBUCKET_ID");
-			items[0].Category.ShouldBe(OracleCodeCompletionCategory.JoinCondition);
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.JoinConditionByReferenceConstraint);
 			items[0].CaretOffset.ShouldBe(0);
 			items[0].StatementNode.ShouldBe(null);
 		}
