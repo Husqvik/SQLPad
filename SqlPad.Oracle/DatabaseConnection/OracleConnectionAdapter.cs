@@ -515,6 +515,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 							? new OracleDateTime()
 							: new OracleDateTime(oracleDate);
 						break;
+					case "IntervalDS":
+						value = new OracleIntervalDayToSecond(reader.GetOracleIntervalDS(i));
+						break;
+					case "IntervalYM":
+						value = new OracleIntervalYearToMonth(reader.GetOracleIntervalYM(i));
+						break;
 					case "Char":
 					case "NChar":
 					case "Varchar":

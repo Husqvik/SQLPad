@@ -520,6 +520,89 @@ namespace SqlPad.Oracle.DatabaseConnection
 		}
 	}
 
+	public class OracleIntervalDayToSecond : IValue
+	{
+		private static readonly FieldInfo FieldDayPrecision = typeof(OracleIntervalDS).GetField("m_dayPrec", BindingFlags.Instance | BindingFlags.NonPublic);
+		private static readonly FieldInfo FieldSecondPrecision = typeof(OracleIntervalDS).GetField("m_fSecondPrec", BindingFlags.Instance | BindingFlags.NonPublic);
+
+		private readonly OracleIntervalDS _value;
+
+		public bool IsNull { get; }
+
+		public OracleIntervalDayToSecond(OracleIntervalDS intervalDayToSecond)
+		{
+			_value = intervalDayToSecond;
+			IsNull = intervalDayToSecond.IsNull;
+		}
+
+		public string ToSqlLiteral()
+		{
+			return IsNull
+				? TerminalValues.Null
+				: $"INTERVAL '{_value}' DAY({FieldDayPrecision.GetValue(_value)}) TO SECOND({FieldSecondPrecision.GetValue(_value)})";
+		}
+
+		public string ToXml()
+		{
+			return _value.ToString();
+		}
+
+		public string ToJson()
+		{
+			return IsNull
+				? "null"
+				: $"\"{_value}\"";
+		}
+
+		public object RawValue => _value;
+
+		public override string ToString()
+		{
+			return _value.ToString();
+		}
+	}
+
+	public class OracleIntervalYearToMonth : IValue
+	{
+		private static readonly FieldInfo FieldYearPrecision = typeof(OracleIntervalYM).GetField("m_yearPrec", BindingFlags.Instance | BindingFlags.NonPublic);
+
+		private readonly OracleIntervalYM _value;
+
+		public bool IsNull { get; }
+
+		public OracleIntervalYearToMonth(OracleIntervalYM intervalYearToMonth)
+		{
+			_value = intervalYearToMonth;
+			IsNull = intervalYearToMonth.IsNull;
+		}
+
+		public string ToSqlLiteral()
+		{
+			return IsNull
+				? TerminalValues.Null
+				: $"INTERVAL '{_value}' YEAR({FieldYearPrecision.GetValue(_value)}) TO MONTH";
+		}
+
+		public string ToXml()
+		{
+			return _value.ToString();
+		}
+
+		public string ToJson()
+		{
+			return IsNull
+				? "null"
+				: $"\"{_value}\"";
+		}
+
+		public object RawValue => _value;
+
+		public override string ToString()
+		{
+			return _value.ToString();
+		}
+	}
+
 	public class OracleDateTime : IValue
 	{
 		public const string IsoDateDotNetFormatMask = "yyyy-MM-dd HH:mm:ss";

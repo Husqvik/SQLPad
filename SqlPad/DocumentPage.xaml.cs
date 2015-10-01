@@ -1394,14 +1394,9 @@ namespace SqlPad
 				return;
 			}
 
-			if (_multiNodeEditor != null)
+			if (_multiNodeEditor != null && !_multiNodeEditor.Replace(e.Text))
 			{
-				Editor.Document.BeginUpdate();
-
-				if (!_multiNodeEditor.Replace(e.Text))
-				{
-					_multiNodeEditor = null;
-				}
+				_multiNodeEditor = null;
 			}
 
 			if (e.Text.Length == 1 && _completionWindow != null && e.Text == "\t")
@@ -1926,19 +1921,27 @@ namespace SqlPad
 				DynamicPopup.IsOpen = false;
 			}
 
-			if (e.Key == Key.Return || e.Key == Key.Escape)
+			var isReturn = e.Key == Key.Return;
+			var isEscape = e.Key == Key.Escape;
+			if (isReturn || isEscape)
 			{
 				DisableCodeCompletion();
 
-				if (_multiNodeEditor != null)
-				{
-					_multiNodeEditor = null;
-					RedrawMultiEditSegments(true);
-				}
-
-				if (e.Key == Key.Escape)
+				if (isEscape)
 				{
 					ClearLastHighlight();
+				}
+
+				if (_multiNodeEditor != null)
+				{
+					if (isEscape)
+					{
+						_multiNodeEditor.Cancel();
+					}
+
+					e.Handled = true;
+					_multiNodeEditor = null;
+					RedrawMultiEditSegments(true);
 				}
 			}
 

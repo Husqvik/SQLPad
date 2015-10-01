@@ -41,7 +41,7 @@ namespace SqlPad.Oracle
 
 				case Terminals.ObjectIdentifier:
 					columnReference = semanticModel.GetReference<OracleColumnReference>(terminal);
-					var dataObjectReference = columnReference.ValidObjectReference as OracleDataObjectReference;
+					var dataObjectReference = columnReference?.ValidObjectReference as OracleDataObjectReference;
 					var objectAliasNode = dataObjectReference?.AliasNode;
 					if (objectAliasNode != null)
 					{
