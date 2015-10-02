@@ -279,6 +279,13 @@ namespace SqlPad
 					UpdateExecutionLog(executionException.BatchResult.StatementResults);
 					WriteDatabaseOutput(executionException.BatchResult.DatabaseOutput);
 
+					var lastStatementResult = executionException.BatchResult.StatementResults.Last();
+					var errorPosition = lastStatementResult.ErrorPosition;
+					if (errorPosition.HasValue)
+					{
+						DocumentPage.Editor.CaretOffset = lastStatementResult.StatementModel.Statement.RootNode.SourcePosition.IndexStart + errorPosition.Value;
+					}
+
 					/*if (caretOffset == DocumentPage.Editor.CaretOffset && String.Equals(text, DocumentPage.Editor.Text))
 					{
 						var newCaretPosition = executionException.BatchResult.StatementResults.First(r => !r.ExecutedSuccessfully).StatementModel.Statement.SourcePosition.IndexStart;
@@ -310,8 +317,7 @@ namespace SqlPad
 
 			UpdateHistoryEntries();
 
-			var lastStatementResult = _executionResult.StatementResults.LastOrDefault();
-			if (lastStatementResult == null || !lastStatementResult.ExecutedSuccessfully)
+			if (_executionResult.StatementResults.Last().ExecutedSuccessfully == false)
 			{
 				NotifyExecutionCanceled();
 				return;
@@ -329,8 +335,6 @@ namespace SqlPad
 
 		private async Task DisplayExecutionResult()
 		{
-			var lastStatementResult = _executionResult.StatementResults.Last();
-
 			WriteDatabaseOutput(_executionResult.DatabaseOutput);
 
 			var keepPreviousSelectedTab = false;
@@ -347,6 +351,7 @@ namespace SqlPad
 				SelectPreviousTab();
 			}
 
+			var lastStatementResult = _executionResult.StatementResults.Last();
 			if (lastStatementResult.CompilationErrors.Count > 0)
 			{
 				var lineOffset = DocumentPage.Editor.GetLineNumberByOffset(lastStatementResult.StatementModel.ValidationModel.Statement.SourcePosition.IndexStart);

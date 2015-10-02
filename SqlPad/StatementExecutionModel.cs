@@ -43,6 +43,8 @@ namespace SqlPad
 
 		public int? AffectedRowCount { get; set; }
 
+		public int? ErrorPosition { get; set; }
+
 		public Exception Exception { get; set; }
 
 		public bool ExecutedSuccessfully => Exception == null;

@@ -386,6 +386,13 @@ ORDER BY
 		public const string SelectTraceFileFullName = "SELECT TRACEFILE FROM V$PROCESS WHERE ADDR = (SELECT PADDR FROM V$SESSION WHERE SID = SYS_CONTEXT('USERENV', 'SID'))";
 		public const string SelectCurrentSessionId = "SELECT SYS_CONTEXT('USERENV', 'SID') SID FROM SYS.DUAL";
 		public const string SelectUserAdditionalData = "SELECT INITCAP(ACCOUNT_STATUS) ACCOUNT_STATUS, LOCK_DATE, EXPIRY_DATE, DEFAULT_TABLESPACE, TEMPORARY_TABLESPACE, PROFILE, EDITIONS_ENABLED, INITCAP(AUTHENTICATION_TYPE) AUTHENTICATION_TYPE, LAST_LOGIN FROM DBA_USERS WHERE USERNAME = :USERNAME";
+		public const string GetSyntaxErrorIndex =
+@"BEGIN
+	dbms_sql.parse(dbms_sql.open_cursor, :sql_text, DBMS_SQL.native);
+EXCEPTION
+	WHEN others THEN
+		:error_position := dbms_sql.last_error_position;
+END;";
 
 		public const string StartDebuggee = "BEGIN /*EXECUTE IMMEDIATE 'ALTER SESSION SET PLSQL_DEBUG=TRUE';*/ :debug_session_id := dbms_debug.initialize(diagnostics => 0); dbms_debug.debug_on; END;";
 		public const string FinalizeDebuggee = "BEGIN dbms_debug.debug_off; END;";

@@ -764,6 +764,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 					return batchResult;
 				}
 
+				currentStatementResult.ErrorPosition = await GetSyntaxErrorIndex(currentStatementResult.StatementModel.StatementText, cancellationToken);
+
 				throw executionException;
 			}
 			finally
@@ -795,6 +797,24 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 
 			batchResult.DatabaseOutput = await RetrieveDatabaseOutput(cancellationToken);
+		}
+
+		private async Task<int?> GetSyntaxErrorIndex(string sqlText, CancellationToken cancellationToken)
+		{
+			using (var connection = new OracleConnection(_connectionString))
+			{
+				using (var command = connection.CreateCommand())
+				{
+					command.CommandText = OracleDatabaseCommands.GetSyntaxErrorIndex;
+					command.AddSimpleParameter("SQL_TEXT", sqlText);
+					var errorPositionParameter = command.AddSimpleParameter("ERROR_POSITION", null, TerminalValues.Number);
+
+					await connection.OpenAsynchronous(cancellationToken);
+					await command.ExecuteNonQueryAsynchronous(cancellationToken);
+					var result = (OracleDecimal)errorPositionParameter.Value;
+					return result.IsNull ? null : (int?)result.Value;
+				}
+			}
 		}
 
 		private bool TryHandleNetworkError(OracleException exception)
@@ -1019,7 +1039,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 					try
 					{
-						connection.Open();
+						await connection.OpenAsync(cancellationToken);
 						connection.ModuleName = $"{_moduleName}/BackgroundConnection";
 						connection.ActionName = "Fetch execution info";
 
