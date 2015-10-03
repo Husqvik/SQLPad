@@ -18423,7 +18423,7 @@
     <Terminal Id="Partition" Value="PARTITION" />
     <Terminal Id="Subpartition" Value="SUBPARTITION" />
     <Terminal Id="Table" Value="TABLE" ReservedWord="Sql" />
-    <Terminal Id="Cursor" Value="CURSOR" />
+    <Terminal Id="Cursor" Value="CURSOR" ReservedWord="PlSqlDeclaration" />
     <Terminal Id="Public" Value="PUBLIC" ReservedWord="Sql" />
     <Terminal Id="Column" Value="COLUMN" ReservedWord="Sql" />
     <Terminal Id="RowNumberPseudoColumn" Value="ROWNUM" ReservedWord="Sql" />

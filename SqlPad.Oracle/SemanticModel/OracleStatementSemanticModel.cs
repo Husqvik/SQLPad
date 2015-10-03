@@ -177,7 +177,8 @@ namespace SqlPad.Oracle.SemanticModel
 					queryBlock.Terminals = queryBlockTerminalList.Value;
 				}
 				else if ((String.Equals(terminal.Id, Terminals.Date) && String.Equals(terminal.ParentNode.Id, NonTerminals.Expression)) ||
-				         String.Equals(terminal.Id, Terminals.Timestamp) && String.Equals(terminal.ParentNode.Id, NonTerminals.TimestampOrTime))
+				         String.Equals(terminal.Id, Terminals.Timestamp) && String.Equals(terminal.ParentNode.Id, NonTerminals.TimestampOrTime) ||
+				         String.Equals(terminal.Id, Terminals.Interval) && String.Equals(terminal.ParentNode.Id, NonTerminals.IntervalExpression))
 				{
 					var literal = CreateLiteral(terminal);
 					if (literal.Terminal != null && String.Equals(literal.Terminal.Id, Terminals.StringLiteral))
@@ -3273,7 +3274,7 @@ namespace SqlPad.Oracle.SemanticModel
 				.Concat(GetCommonTableExpressionReferences(nestedQuery));
 		}
 
-		private CommonTableExpressionReference GetCteReference(StatementGrammarNode cteListNode)
+		private static CommonTableExpressionReference GetCteReference(StatementGrammarNode cteListNode)
 		{
 			var cteNode = cteListNode[0];
 			var objectIdentifierNode = cteNode[0];
@@ -3281,14 +3282,33 @@ namespace SqlPad.Oracle.SemanticModel
 			return new CommonTableExpressionReference { CteNode = cteNode, CteAlias = cteAlias };
 		}
 
-		private OracleLiteral CreateLiteral(StatementGrammarNode terminal)
+		private static OracleLiteral CreateLiteral(StatementGrammarNode terminal)
 		{
-			return
-				new OracleLiteral
-				{
-					Terminal = terminal.FollowingTerminal,
-					Type = String.Equals(terminal.Id, Terminals.Date) ? LiteralType.Date : LiteralType.Timestamp
-				};
+			var literal = new OracleLiteral { Terminal = terminal.FollowingTerminal };
+
+			switch (terminal.Id)
+			{
+				case Terminals.Date:
+					literal.Type = LiteralType.Date;
+					break;
+				case Terminals.Timestamp:
+					literal.Type = LiteralType.Timestamp;
+					break;
+				case Terminals.Interval:
+					var intervalTypeNode = terminal.ParentNode[2, 0];
+					if (intervalTypeNode != null)
+					{
+						literal.Type = String.Equals(intervalTypeNode.Id, NonTerminals.IntervalDayToSecond)
+							? LiteralType.IntervalDayToSecond
+							: LiteralType.IntervalYearToMonth;
+					}
+
+					break;
+				default:
+					throw new ArgumentException($"Unsupported terminal ID: {terminal.Id}");
+			}
+
+			return literal;
 		}
 
 		private struct CommonTableExpressionReference

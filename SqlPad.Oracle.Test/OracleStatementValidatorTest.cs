@@ -1743,6 +1743,40 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test(Description = @"")]
+		public void TestIntervalYearToMonthLiteral()
+		{
+			const string sqlText = @"SELECT INTERVAL ' 123 - 2 ' YEAR(3) TO MONTH, INTERVAL ' - 999999999 ' MONTH, INTERVAL '123-12' YEAR(3) TO MONTH, INTERVAL '9999999999' MONTH FROM DUAL";
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var invalidNodes = validationModel.IdentifierNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
+			invalidNodes.Length.ShouldBe(2);
+			invalidNodes[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidIntervalLiteral);
+			invalidNodes[0].ToolTipText.ShouldBe(OracleSemanticErrorTooltipText.InvalidIntervalYearToMonthLiteral);
+			invalidNodes[0].Node.Token.Value.ShouldBe("'123-12'");
+			invalidNodes[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidIntervalLiteral);
+			invalidNodes[1].ToolTipText.ShouldBe(OracleSemanticErrorTooltipText.InvalidIntervalYearToMonthLiteral);
+			invalidNodes[1].Node.Token.Value.ShouldBe("'9999999999'");
+		}
+
+		[Test(Description = @"")]
+		public void TestIntervalDayToSecondLiteral()
+		{
+			const string sqlText = @"SELECT INTERVAL ' + 000000000 03 : 35 : 21 . 135802468  ' DAY(9) TO SECOND(9), INTERVAL ' - 999999999 . 999999999 ' SECOND FROM DUAL";
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var invalidNodes = validationModel.IdentifierNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
+			invalidNodes.Length.ShouldBe(0);
+
+			// TODO: Add specific invalid cases
+		}
+
+		[Test(Description = @"")]
 		public void TestInvalidDateAndTimeStampLiteralUsingMultiByteStrings()
 		{
 			const string sqlText = @"SELECT DATE N'2014-12-06', TIMESTAMP n'2014-12-06 17:50:42' FROM DUAL";

@@ -2,7 +2,10 @@ namespace SqlPad.Oracle.SemanticModel
 {
 	public enum LiteralType
 	{
+		Unknown,
 		Date,
+		IntervalYearToMonth,
+		IntervalDayToSecond,
 		Timestamp
 	}
 

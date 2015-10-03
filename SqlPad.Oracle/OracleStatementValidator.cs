@@ -18,8 +18,8 @@ namespace SqlPad.Oracle
 	{
 		private static readonly Regex DateValidator = new Regex(@"^(?<Year>([+-]\s*)?[0-9]{1,4})\s*-\s*(?<Month>[0-9]{1,2})\s*-\s*(?<Day>[0-9]{1,2})\s*$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 		private static readonly Regex TimestampValidator = new Regex(@"^(?<Year>([+-]\s*)?[0-9]{1,4})\s*-\s*(?<Month>[0-9]{1,2})\s*-\s*(?<Day>[0-9]{1,2})\s*(?<Hour>[0-9]{1,2})\s*:\s*(?<Minute>[0-9]{1,2})\s*:\s*(?<Second>[0-9]{1,2})\s*(\.\s*(?<Fraction>[0-9]{1,9}))?\s*(((?<OffsetHour>[+-]\s*[0-9]{1,2})\s*:\s*(?<OffsetMinutes>[0-9]{1,2}))|(?<Timezone>[a-zA-Z]+))?$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
-		private static readonly Regex IntervalYearToMonthValidator = new Regex(@"^\s*(?<Years>([+-]\s*)?[0-9]{1,9})\s*([-]\s*(?<Months>[0-9]{1,2}))\s*$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
-		private static readonly Regex IntervalDayToSecondValidator = new Regex(@"^\s*(?<Days>([+-]\s*)?[0-9]{1,9})\s*(?<Hours>[0-9]{1,2})\s*:\s*(?<Minutes>[0-9]{1,2})\s*:\s*(?<Seconds>[0-9]{1,2})\s*(\.\s*(?<Fraction>[0-9]{1,9}))?\s*$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+		private static readonly Regex IntervalYearToMonthValidator = new Regex(@"^\s*(?<Years>([+-]\s*)?[0-9]{1,9})\s*([-]\s*(?<Months>[0-9]{1,2}))?\s*$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+		private static readonly Regex IntervalDayToSecondValidator = new Regex(@"^\s*(?<Days>([+-]\s*)?[0-9]{1,9})\s*(?<Hours>[0-9]{1,2})?\s*(:\s*(?<Minutes>[0-9]{1,2}))?\s*(:\s*(?<Seconds>[0-9]{1,2}))?\s*(\.\s*(?<Fraction>[0-9]{1,9}))?\s*$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 		private static readonly Version MinimumJsonSupportVersion = new Version(12, 1, 0, 2);
 
 		public IStatementSemanticModel BuildSemanticModel(string statementText, StatementBase statementBase, IDatabaseModel databaseModel)
@@ -266,6 +266,14 @@ namespace SqlPad.Oracle
 						errorType = OracleSemanticErrorType.InvalidDateLiteral;
 						tooltipText = OracleSemanticErrorTooltipText.InvalidDateLiteral;
 						break;
+					case LiteralType.IntervalYearToMonth:
+						errorType = OracleSemanticErrorType.InvalidIntervalLiteral;
+						tooltipText = OracleSemanticErrorTooltipText.InvalidIntervalYearToMonthLiteral;
+						break;
+					case LiteralType.IntervalDayToSecond:
+						errorType = OracleSemanticErrorType.InvalidIntervalLiteral;
+						tooltipText = OracleSemanticErrorTooltipText.InvalidIntervalDayToSecondLiteral;
+						break;
 					case LiteralType.Timestamp:
 						errorType = OracleSemanticErrorType.InvalidTimestampLiteral;
 						tooltipText = OracleSemanticErrorTooltipText.InvalidTimestampLiteral;
@@ -274,18 +282,20 @@ namespace SqlPad.Oracle
 						throw new NotSupportedException();
 				}
 
-				var validationData = new SemanticErrorNodeValidationData(errorType, tooltipText) {IsRecognized = true, Node = literal.Terminal};
+				var validationData = new SemanticErrorNodeValidationData(errorType, tooltipText) { IsRecognized = true, Node = literal.Terminal };
 				validationModel.IdentifierNodeValidity[literal.Terminal] = validationData;
 			}
 		}
 
-		private bool IsLiteralValid(OracleLiteral literal)
+		private static bool IsLiteralValid(OracleLiteral literal)
 		{
 			var value = literal.Terminal.Token.Value.ToPlainString();
 
 			Match match;
 			switch (literal.Type)
 			{
+				case LiteralType.Unknown:
+					return true;
 				case LiteralType.Date:
 					match = DateValidator.Match(value);
 					return !literal.IsMultibyte && IsDateValid(match.Groups["Year"].Value, match.Groups["Month"].Value, match.Groups["Day"].Value, false);
@@ -330,8 +340,12 @@ namespace SqlPad.Oracle
 					}
 
 					return true;
+				case LiteralType.IntervalYearToMonth:
+					return IsIntervalYearToMonthValid(literal, value);
+				case LiteralType.IntervalDayToSecond:
+					return IsIntervalDayToSecondValid(literal, value);
 				default:
-					throw new NotSupportedException();
+					throw new NotSupportedException($"Literal '{literal.Type}' is not supported. ");
 			}
 		}
 
@@ -486,7 +500,118 @@ namespace SqlPad.Oracle
 			}
 
 			int dayValue;
-			return Int32.TryParse(day, out dayValue) || dayValue >= 1 || dayValue <= DateTime.DaysInMonth(yearValue, monthValue);
+			return Int32.TryParse(day, out dayValue) && dayValue >= 1 && dayValue <= (yearValue > 0 ? DateTime.DaysInMonth(yearValue, monthValue) : 31);
+		}
+
+		private static bool IsIntervalYearToMonthValid(OracleLiteral literal, string value)
+		{
+			var match = IntervalYearToMonthValidator.Match(value);
+			if (!match.Success)
+			{
+				return false;
+			}
+
+			var years = match.Groups["Years"].Value;
+			var months = match.Groups["Months"].Value;
+
+			int yearValue;
+			if (!Int32.TryParse(years.Replace(" ", null), out yearValue) || yearValue < -999999999 || yearValue > 999999999)
+			{
+				return false;
+			}
+
+			var intervalYearToMonthNode = literal.Terminal.ParentNode[2, 0];
+			var yearToMonthNode = intervalYearToMonthNode[2];
+
+			if (yearToMonthNode == null)
+			{
+				return true;
+			}
+
+			if (String.Equals(intervalYearToMonthNode.FirstTerminalNode.Id, Terminals.Month) && String.Equals(yearToMonthNode.LastTerminalNode.Id, Terminals.Year))
+			{
+				return false;
+			}
+
+			int monthValue;
+			return String.IsNullOrEmpty(months) || Int32.TryParse(months, out monthValue) && monthValue <= 11;
+		}
+
+		private static bool IsIntervalDayToSecondValid(OracleLiteral literal, string value)
+		{
+			var match = IntervalDayToSecondValidator.Match(value);
+			if (!match.Success)
+			{
+				return false;
+			}
+
+			var days = match.Groups["Days"].Value;
+			var hours = match.Groups["Hours"].Value;
+			var minutes = match.Groups["Minutes"].Value;
+			var seconds = match.Groups["Seconds"].Value;
+			var fraction = match.Groups["Fraction"].Value;
+
+			int dayValue;
+			if (!Int32.TryParse(days.Replace(" ", null), out dayValue) || dayValue < -999999999 || dayValue > 999999999)
+			{
+				return false;
+			}
+
+			var intervalDayToSecond = literal.Terminal.ParentNode[2, 0];
+			var toDayOrHourOrMinuteOrSecondNode = intervalDayToSecond[1];
+			var singleElementOnly = toDayOrHourOrMinuteOrSecondNode == null;
+
+			if (singleElementOnly)
+			{
+				return true;
+			}
+
+			var toUnitTerminalId = toDayOrHourOrMinuteOrSecondNode.FirstTerminalNode.Id;
+			switch (intervalDayToSecond.FirstTerminalNode.Id)
+			{
+				case Terminals.Hour:
+					if (String.Equals(toUnitTerminalId, Terminals.Day))
+					{
+						return false;
+					}
+
+					break;
+				case Terminals.Minute:
+					if (String.Equals(toUnitTerminalId, Terminals.Day) || String.Equals(toUnitTerminalId, Terminals.Hour))
+					{
+						return false;
+					}
+
+					break;
+				case Terminals.Second:
+					if (!String.Equals(toUnitTerminalId, Terminals.Second))
+					{
+						return false;
+					}
+
+					break;
+			}
+
+			int hourValue;
+			if (!String.IsNullOrEmpty(hours) && (!Int32.TryParse(hours, out hourValue) || hourValue > 23))
+			{
+				return false;
+			}
+
+			int minuteValue;
+			if (!String.IsNullOrEmpty(minutes) && (!Int32.TryParse(minutes, out minuteValue) || minuteValue > 59))
+			{
+				return false;
+			}
+
+			int secondValue;
+			if (!String.IsNullOrEmpty(seconds) && (!Int32.TryParse(seconds, out secondValue) || secondValue > 59))
+			{
+				return false;
+			}
+
+			int fractionValue;
+			return String.IsNullOrEmpty(fraction) || Int32.TryParse(fraction, out fractionValue) && fractionValue <= 999999999;
 		}
 
 		private static void ValidateQueryBlocks(OracleValidationModel validationModel)
