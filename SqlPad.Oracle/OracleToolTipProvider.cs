@@ -83,6 +83,7 @@ namespace SqlPad.Oracle
 					case Terminals.JsonQuery:
 					case Terminals.JsonExists:
 					case Terminals.JsonValue:
+					case Terminals.XmlCast:
 					case Terminals.XmlElement:
 					case Terminals.XmlSerialize:
 					case Terminals.XmlParse:

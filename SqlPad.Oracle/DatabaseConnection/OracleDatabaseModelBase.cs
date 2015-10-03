@@ -29,8 +29,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 		public const int DefaultMaxLengthNVarchar = 2000;
 		public const int DefaultMaxLengthRaw = 2000;
 
-		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramLnNvl = OracleProgramIdentifier.CreateFromValues(null, null, "LNNVL");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramCast = OracleProgramIdentifier.CreateFromValues(null, null, "CAST");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramExtract = OracleProgramIdentifier.CreateFromValues(null, null, "EXTRACT");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramLnNvl = OracleProgramIdentifier.CreateFromValues(null, null, "LNNVL");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramRatioToReport = OracleProgramIdentifier.CreateFromValues(null, null, "RATIO_TO_REPORT");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramSysConnectByPath = OracleProgramIdentifier.CreateFromValues(null, null, "SYS_CONNECT_BY_PATH");
 

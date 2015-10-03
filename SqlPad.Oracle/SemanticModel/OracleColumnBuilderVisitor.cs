@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.DataDictionary;
 
 namespace SqlPad.Oracle.SemanticModel
@@ -51,12 +52,33 @@ namespace SqlPad.Oracle.SemanticModel
 		{
 			var programMetadata = programReference.Metadata;
 			var semanticModel = programReference.Owner.SemanticModel;
-			if (programMetadata == null || programMetadata.Parameters.Count <= 1 || !semanticModel.HasDatabaseModel ||
-			    (!String.Equals(programMetadata.Parameters[0].DataType, OracleTypeCollection.OracleCollectionTypeNestedTable) && !String.Equals(programMetadata.Parameters[0].DataType, OracleTypeCollection.OracleCollectionTypeVarryingArray)))
+			if (programMetadata == null || !semanticModel.HasDatabaseModel)
 			{
 				return;
 			}
-			
+
+			if (programReference.ParameterReferences.Count == 2 && programMetadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramCast)
+			{
+				var dataTypeNode = programReference.ParameterReferences[1].ParameterNode;
+				var dataTypeReference = programReference.Container.DataTypeReferences.SingleOrDefault(dt => dt.RootNode == dataTypeNode);
+				var collectionType = dataTypeReference?.SchemaObject.GetTargetSchemaObject() as OracleTypeCollection;
+				if (collectionType != null)
+				{
+					_columns.Add(OracleColumn.BuildColumnValueColumn(collectionType.ElementDataType));
+				}
+			}
+
+			if (programMetadata.Parameters.Count <= 1)
+			{
+				return;
+			}
+
+			var dataTypeType = programMetadata.Parameters[0].DataType;
+			if (!String.Equals(dataTypeType, OracleTypeCollection.OracleCollectionTypeNestedTable) && !String.Equals(dataTypeType, OracleTypeCollection.OracleCollectionTypeVarryingArray))
+			{
+				return;
+			}
+
 			var returnParameter = programMetadata.Parameters.SingleOrDefault(p => p.Direction == ParameterDirection.ReturnValue && p.DataLevel == 1 && p.Position == 1);
 			if (returnParameter == null)
 			{

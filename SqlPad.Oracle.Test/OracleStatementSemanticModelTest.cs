@@ -3115,7 +3115,7 @@ WHEN NOT MATCHED THEN INSERT VALUES (T2.DUMMY)";
 		[Test(Description = @"")]
 		public void TestDataTypeReferenceInCastMultisetClause()
 		{
-			const string query1 = @"SELECT NULL FROM DUAL T, TABLE(CAST(MULTISET(SELECT SYSDATE - LEVEL FROM DUAL WHERE T.DUMMY = 'X' CONNECT BY LEVEL <= 5) AS SYS.ODCIDATELIST))";
+			const string query1 = @"SELECT DUMMY, COLUMN_VALUE FROM DUAL T, TABLE(CAST(MULTISET(SELECT SYSDATE - LEVEL FROM DUAL WHERE T.DUMMY = 'X' CONNECT BY LEVEL <= 5) AS SYS.ODCIDATELIST))";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
@@ -3125,6 +3125,11 @@ WHEN NOT MATCHED THEN INSERT VALUES (T2.DUMMY)";
 			dataTypeReferences.Count.ShouldBe(1);
 			dataTypeReferences[0].ObjectNode.Token.Value.ShouldBe("ODCIDATELIST");
 			dataTypeReferences[0].ResolvedDataType.ShouldNotBe(null);
+
+			semanticModel.MainQueryBlock.Columns.Count.ShouldBe(2);
+			semanticModel.MainQueryBlock.Columns[1].ColumnReferences.Count.ShouldBe(1);
+			semanticModel.MainQueryBlock.Columns[1].ColumnReferences[0].ValidObjectReference.ShouldNotBe(null);
+			semanticModel.MainQueryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe("DATE");
 		}
 	}
 }
