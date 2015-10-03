@@ -7,7 +7,7 @@ namespace SqlPad.Oracle
 		public const string ConnectByClauseRequired = "CONNECT BY clause required in this query block";
 		public const string InvalidDateLiteral = "Invalid date literal";
 		public const string InvalidTimestampLiteral = "Invalid timestamp literal";
-		public const string InvalidIntervalLiteral = "Invalid interval literal";
+		public const string InvalidIntervalLiteral = "Invalid interval";
 		public const string AmbiguousReference = "Ambiguous reference";
 		public const string InvalidParameterCount = "Invalid parameter count";
 		public const string MissingParenthesis = "Missing parenthesis";
@@ -45,8 +45,8 @@ namespace SqlPad.Oracle
 	{
 		public const string InvalidDateLiteral = "ANSI format of DATE literal must be [-]YYYY-MM-DD";
 		public const string InvalidTimestampLiteral = "ANSI format of TIMESTAMP literal must be [-]YYYY-MM-DD HH24:MI:SS[.1-9 digits] [time zone definition]";
-		public const string InvalidIntervalYearToMonthLiteral = "INTERVAL DAY TO SECOND literal must be [-][1-9 digits][-(0-11)]";
-		public const string InvalidIntervalDayToSecondLiteral = "INTERVAL YEAR TO MONTH literal must be [-][1-9 digits][0-23][:0-59][:0-59][.1-9 digits]";
+		public const string InvalidIntervalYearToMonthLiteral = "INTERVAL DAY TO SECOND literal must be [-][1-9 digits][-(0-11)] and match target elements";
+		public const string InvalidIntervalDayToSecondLiteral = "INTERVAL YEAR TO MONTH literal must be [-][1-9 digits][0-23][:0-59][:0-59][.1-9 digits] and match target elements";
 		public const string FunctionOrPseudoColumnMayBeUsedInsideSqlStatementOnly = "Function or pseudo-column may be used inside a SQL statement only";
 	}
 

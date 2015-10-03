@@ -1745,20 +1745,39 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		[Test(Description = @"")]
 		public void TestIntervalYearToMonthLiteral()
 		{
-			const string sqlText = @"SELECT INTERVAL ' 123 - 2 ' YEAR(3) TO MONTH, INTERVAL ' - 999999999 ' MONTH, INTERVAL '123-12' YEAR(3) TO MONTH, INTERVAL '9999999999' MONTH FROM DUAL";
+			const string sqlText =
+@"SELECT
+	INTERVAL ' 123 - 2 ' YEAR(3) TO MONTH,
+	INTERVAL ' - 999999999 ' MONTH,
+	INTERVAL '123-12' YEAR(3) TO MONTH,
+	INTERVAL '9999999999' MONTH,
+	INTERVAL '123-11' MONTH(3) TO YEAR,
+	INTERVAL '1234-11' MONTH(2),
+	INTERVAL '0' MONTH(10)
+FROM DUAL";
+
 			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var invalidNodes = validationModel.IdentifierNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
-			invalidNodes.Length.ShouldBe(2);
+			invalidNodes.Length.ShouldBe(5);
 			invalidNodes[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidIntervalLiteral);
 			invalidNodes[0].ToolTipText.ShouldBe(OracleSemanticErrorTooltipText.InvalidIntervalYearToMonthLiteral);
 			invalidNodes[0].Node.Token.Value.ShouldBe("'123-12'");
 			invalidNodes[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidIntervalLiteral);
 			invalidNodes[1].ToolTipText.ShouldBe(OracleSemanticErrorTooltipText.InvalidIntervalYearToMonthLiteral);
 			invalidNodes[1].Node.Token.Value.ShouldBe("'9999999999'");
+			invalidNodes[2].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidIntervalLiteral);
+			invalidNodes[2].ToolTipText.ShouldBe(OracleSemanticErrorType.InvalidIntervalLiteral);
+			invalidNodes[2].Node.Token.Value.ShouldBe("YEAR");
+			invalidNodes[3].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidIntervalLiteral);
+			invalidNodes[3].ToolTipText.ShouldBe(OracleSemanticErrorTooltipText.InvalidIntervalYearToMonthLiteral);
+			invalidNodes[3].Node.Token.Value.ShouldBe("'1234-11'");
+			invalidNodes[4].SemanticErrorType.ShouldBe(OracleSemanticErrorType.DatetimeOrIntervalPrecisionIsOutOfRange);
+			invalidNodes[4].ToolTipText.ShouldBe(OracleSemanticErrorType.DatetimeOrIntervalPrecisionIsOutOfRange);
+			invalidNodes[4].Node.Token.Value.ShouldBe("10");
 		}
 
 		[Test(Description = @"")]
@@ -1769,7 +1788,12 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 	INTERVAL ' + 000000000 03 : 35 : 21 . 135802468  ' DAY(9) TO SECOND(9),
 	INTERVAL ' - 999999999 . 999999999 ' SECOND,
 	INTERVAL ' - 999999999 : 59 . 999999999 ' MINUTE(9) TO SECOND,
-	INTERVAL ' - 999999999 : 59 : 59 . 999999999 ' HOUR(9) TO SECOND
+	INTERVAL ' - 999999999 : 59 : 59 . 999999999 ' HOUR(9) TO SECOND,
+	INTERVAL ' 999999999 : 60 . 999999999 ' MINUTE(9) TO HOUR,
+	INTERVAL ' - 999999999 : 59 . 015 ' MINUTE(5) TO SECOND(2),
+	INTERVAL '0' DAY(10) TO SECOND(11),
+	INTERVAL ' - 123456789 . 987654321 ' SECOND(10, 99),
+	INTERVAL '0' SECOND(9, -0)
 FROM DUAL";
 
 			var statement = Parser.Parse(sqlText).Single();
@@ -1778,9 +1802,32 @@ FROM DUAL";
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var invalidNodes = validationModel.IdentifierNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
-			invalidNodes.Length.ShouldBe(0);
+			invalidNodes.Length.ShouldBe(8);
 
-			// TODO: Add specific invalid cases
+			invalidNodes[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidIntervalLiteral);
+			invalidNodes[0].ToolTipText.ShouldBe(OracleSemanticErrorTooltipText.InvalidIntervalDayToSecondLiteral);
+			invalidNodes[0].Node.Token.Value.ShouldBe("' 999999999 : 60 . 999999999 '");
+			invalidNodes[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidIntervalLiteral);
+			invalidNodes[1].ToolTipText.ShouldBe(OracleSemanticErrorType.InvalidIntervalLiteral);
+			invalidNodes[1].Node.Token.Value.ShouldBe("HOUR");
+			invalidNodes[2].SemanticErrorType.ShouldBe(OracleSemanticErrorType.LeadingPrecisionOfTheIntervalIsTooSmall);
+			invalidNodes[2].ToolTipText.ShouldBe(OracleSemanticErrorType.LeadingPrecisionOfTheIntervalIsTooSmall);
+			invalidNodes[2].Node.Token.Value.ShouldBe("5");
+			invalidNodes[3].SemanticErrorType.ShouldBe(OracleSemanticErrorType.DatetimeOrIntervalPrecisionIsOutOfRange);
+			invalidNodes[3].ToolTipText.ShouldBe(OracleSemanticErrorType.DatetimeOrIntervalPrecisionIsOutOfRange);
+			invalidNodes[3].Node.Token.Value.ShouldBe("10");
+			invalidNodes[4].SemanticErrorType.ShouldBe(OracleSemanticErrorType.DatetimeOrIntervalPrecisionIsOutOfRange);
+			invalidNodes[4].ToolTipText.ShouldBe(OracleSemanticErrorType.DatetimeOrIntervalPrecisionIsOutOfRange);
+			invalidNodes[4].Node.Token.Value.ShouldBe("11");
+			invalidNodes[5].SemanticErrorType.ShouldBe(OracleSemanticErrorType.DatetimeOrIntervalPrecisionIsOutOfRange);
+			invalidNodes[5].ToolTipText.ShouldBe(OracleSemanticErrorType.DatetimeOrIntervalPrecisionIsOutOfRange);
+			invalidNodes[5].Node.Token.Value.ShouldBe("10");
+			invalidNodes[6].SemanticErrorType.ShouldBe(OracleSemanticErrorType.DatetimeOrIntervalPrecisionIsOutOfRange);
+			invalidNodes[6].ToolTipText.ShouldBe(OracleSemanticErrorType.DatetimeOrIntervalPrecisionIsOutOfRange);
+			invalidNodes[6].Node.Id.ShouldBe(NonTerminals.NegativeInteger);
+			invalidNodes[7].SemanticErrorType.ShouldBe(OracleSemanticErrorType.DatetimeOrIntervalPrecisionIsOutOfRange);
+			invalidNodes[7].ToolTipText.ShouldBe(OracleSemanticErrorType.DatetimeOrIntervalPrecisionIsOutOfRange);
+			invalidNodes[7].Node.Id.ShouldBe(NonTerminals.NegativeInteger);
 		}
 
 		[Test(Description = @"")]
