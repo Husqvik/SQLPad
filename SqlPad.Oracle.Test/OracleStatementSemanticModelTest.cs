@@ -3111,5 +3111,20 @@ WHEN NOT MATCHED THEN INSERT VALUES (T2.DUMMY)";
 			var programReferences = semanticModel.MainQueryBlock.ProgramReferences.ToList();
 			programReferences.ForEach(p => p.Metadata.ShouldNotBe(null));
 		}
+
+		[Test(Description = @"")]
+		public void TestDataTypeReferenceInCastMultisetClause()
+		{
+			const string query1 = @"SELECT NULL FROM DUAL T, TABLE(CAST(MULTISET(SELECT SYSDATE - LEVEL FROM DUAL WHERE T.DUMMY = 'X' CONNECT BY LEVEL <= 5) AS SYS.ODCIDATELIST))";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
+			var dataTypeReferences = semanticModel.MainQueryBlock.DataTypeReferences.ToList();
+			dataTypeReferences.Count.ShouldBe(1);
+			dataTypeReferences[0].ObjectNode.Token.Value.ShouldBe("ODCIDATELIST");
+			dataTypeReferences[0].ResolvedDataType.ShouldNotBe(null);
+		}
 	}
 }

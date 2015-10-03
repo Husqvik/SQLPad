@@ -512,29 +512,36 @@ namespace SqlPad.Oracle.SemanticModel
 					var tableCollection = queryTableExpression[NonTerminals.TableCollectionExpression];
 					if (tableCollection != null)
 					{
-						var functionIdentifierNode = tableCollection.GetDescendants(Terminals.Identifier).FirstOrDefault();
-						if (functionIdentifierNode != null)
+						var expression = tableCollection.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBlock, NonTerminals.Expression).FirstOrDefault();
+						if (expression != null)
 						{
-							var prefixNonTerminal = functionIdentifierNode.ParentNode.ParentNode[NonTerminals.Prefix];
-							var functionCallNodes = GetFunctionCallNodes(functionIdentifierNode);
-							var tableCollectionReference = ResolveColumnFunctionOrDataTypeReferenceFromIdentifier(queryBlock, queryBlock, functionIdentifierNode, StatementPlacement.TableReference, null, n => prefixNonTerminal);
-
-							var tableCollectionDataObjectReference =
-								new OracleTableCollectionReference
-								{
-									RowSourceReference = tableCollectionReference,
-									AliasNode = objectReferenceAlias,
-									DatabaseLinkNode = databaseLinkNode,
-									RootNode = tableReferenceNonterminal
-								};
-
-							queryBlock.ObjectReferences.Add(tableCollectionDataObjectReference);
-							_rootNodeObjectReference.Add(tableCollectionDataObjectReference.RootNode, tableCollectionDataObjectReference);
-							_rowSourceTableCollectionReferences.Add(tableCollectionReference, tableCollectionDataObjectReference);
-
-							if (functionCallNodes.Length > 0)
+							var identifiers = expression.GetDescendantsWithinSameQueryBlock(Terminals.Identifier, Terminals.User, Terminals.DataTypeIdentifier).ToList();
+							var grammarSpecificProgramReferences = CreateGrammarSpecificFunctionReferences(GetGrammarSpecificFunctionNodes(expression), queryBlock, queryBlock.ProgramReferences, StatementPlacement.TableReference, null);
+							if (identifiers.Count > 0 || grammarSpecificProgramReferences.Count > 0)
 							{
-								var identifiers = functionCallNodes.SelectMany(n => n.GetDescendantsWithinSameQueryBlock(Terminals.Identifier, Terminals.User, Terminals.Trim, Terminals.CharacterCode));
+								OracleReference tableCollectionReference;
+								var functionIdentifierNode = identifiers.FirstOrDefault();
+								if (grammarSpecificProgramReferences.Count == 0 ||
+								    functionIdentifierNode.SourcePosition.IndexStart < (tableCollectionReference = grammarSpecificProgramReferences[0]).RootNode.SourcePosition.IndexStart)
+								{
+									var prefixNonTerminal = functionIdentifierNode.ParentNode.ParentNode[NonTerminals.Prefix];
+									tableCollectionReference = ResolveColumnFunctionOrDataTypeReferenceFromIdentifier(queryBlock, queryBlock, functionIdentifierNode, StatementPlacement.TableReference, null, n => prefixNonTerminal);
+									identifiers.RemoveAt(0);
+								}
+
+								var tableCollectionDataObjectReference =
+									new OracleTableCollectionReference
+									{
+										RowSourceReference = tableCollectionReference,
+										AliasNode = objectReferenceAlias,
+										DatabaseLinkNode = databaseLinkNode,
+										RootNode = tableReferenceNonterminal
+									};
+
+								queryBlock.ObjectReferences.Add(tableCollectionDataObjectReference);
+								_rootNodeObjectReference.Add(tableCollectionDataObjectReference.RootNode, tableCollectionDataObjectReference);
+								_rowSourceTableCollectionReferences.Add(tableCollectionReference, tableCollectionDataObjectReference);
+
 								ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(queryBlock, queryBlock, identifiers, StatementPlacement.TableReference, null);
 							}
 						}
@@ -2740,7 +2747,7 @@ namespace SqlPad.Oracle.SemanticModel
 		private IEnumerable<StatementGrammarNode> GetGrammarSpecificFunctionNodes(StatementGrammarNode sourceNode, Func<StatementGrammarNode, bool> filter = null)
 		{
 			return sourceNode.GetPathFilterDescendants(n => NodeFilters.BreakAtNestedQueryBlock(n) && (filter == null || filter(n)),
-				Terminals.Count, Terminals.Trim, Terminals.CharacterCode, Terminals.NegationOrNull, Terminals.JsonExists, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, NonTerminals.WithinGroupAggregationFunction);
+				Terminals.Count, Terminals.Trim, Terminals.CharacterCode, Terminals.Cast, Terminals.NegationOrNull, Terminals.JsonExists, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, NonTerminals.WithinGroupAggregationFunction);
 		}
 
 		private void ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(OracleQueryBlock queryBlock, OracleReferenceContainer referenceContainer, IEnumerable<StatementGrammarNode> identifiers, StatementPlacement placement, OracleSelectListColumn selectListColumn, Func<StatementGrammarNode, StatementGrammarNode> getPrefixNonTerminalFromIdentiferFunction = null)
@@ -2898,8 +2905,9 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 		}
 
-		private static void CreateGrammarSpecificFunctionReferences(IEnumerable<StatementGrammarNode> grammarSpecificFunctions, OracleQueryBlock queryBlock, ICollection<OracleProgramReference> functionReferences, StatementPlacement placement, OracleSelectListColumn selectListColumn)
+		private static IReadOnlyList<OracleProgramReference> CreateGrammarSpecificFunctionReferences(IEnumerable<StatementGrammarNode> grammarSpecificFunctions, OracleQueryBlock queryBlock, ICollection<OracleProgramReference> programReferences, StatementPlacement placement, OracleSelectListColumn selectListColumn)
 		{
+			var newProgramReferences = new List<OracleProgramReference>();
 			foreach (var identifierNode in grammarSpecificFunctions.Select(n => n.FirstTerminalNode).Distinct())
 			{
 				var rootNode = String.Equals(identifierNode.Id, Terminals.NegationOrNull)
@@ -2987,7 +2995,7 @@ namespace SqlPad.Oracle.SemanticModel
 					}
 				}
 
-				var functionReference =
+				var programReference =
 					new OracleProgramReference
 					{
 						FunctionIdentifierNode = identifierNode,
@@ -3002,8 +3010,11 @@ namespace SqlPad.Oracle.SemanticModel
 						Placement = placement
 					};
 
-				functionReferences.Add(functionReference);
+				programReferences.Add(programReference);
+				newProgramReferences.Add(programReference);
 			}
+
+			return newProgramReferences.AsReadOnly();
 		}
 
 		private static StatementGrammarNode[] GetFunctionCallNodes(StatementGrammarNode identifier)

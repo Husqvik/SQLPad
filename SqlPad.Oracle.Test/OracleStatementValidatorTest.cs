@@ -1764,7 +1764,14 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		[Test(Description = @"")]
 		public void TestIntervalDayToSecondLiteral()
 		{
-			const string sqlText = @"SELECT INTERVAL ' + 000000000 03 : 35 : 21 . 135802468  ' DAY(9) TO SECOND(9), INTERVAL ' - 999999999 . 999999999 ' SECOND FROM DUAL";
+			const string sqlText =
+@"SELECT
+	INTERVAL ' + 000000000 03 : 35 : 21 . 135802468  ' DAY(9) TO SECOND(9),
+	INTERVAL ' - 999999999 . 999999999 ' SECOND,
+	INTERVAL ' - 999999999 : 59 . 999999999 ' MINUTE(9) TO SECOND,
+	INTERVAL ' - 999999999 : 59 : 59 . 999999999 ' HOUR(9) TO SECOND
+FROM DUAL";
+
 			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
@@ -2875,6 +2882,28 @@ WHERE
 			var programValidities = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
 			programValidities.Count.ShouldBe(1);
 			programValidities[0].IsRecognized.ShouldBe(true);
+		}
+
+		[Test(Description = @"")]
+		public void TestColumnReferenceInMultiSetTableCollectionExpression()
+		{
+			const string sqlText = "SELECT NULL FROM DUAL T, TABLE(CAST(MULTISET(SELECT SYSDATE - LEVEL FROM DUAL WHERE T.DUMMY = 'X' CONNECT BY LEVEL <= 5) AS SYS.ODCIDATELIST))";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var columnValidities = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			columnValidities.Count.ShouldBe(1);
+			columnValidities[0].IsRecognized.ShouldBe(true);
+			columnValidities[0].SemanticErrorType.ShouldBe(null);
+
+			var programValidities = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			programValidities.Count.ShouldBe(3);
+			programValidities[0].IsRecognized.ShouldBe(true);
+			programValidities[0].Node.FirstTerminalNode.Token.Value.ShouldBe("CAST");
+			programValidities[0].SemanticErrorType.ShouldBe(null);
 		}
 	}
 }

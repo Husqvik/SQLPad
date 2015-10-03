@@ -38,6 +38,7 @@ namespace SqlPad.Oracle
 		public const string UnsupportedInConnectedDatabaseVersion = "Unsupported in connected database version";
 		public const string ExpressionMustHaveSameDatatypeAsCorrespondingExpression = "Expression must have same datatype as corresponding expression";
 		public const string PartitionedTableOnBothSidesOfPartitionedOuterJoinNotSupported = "Partitioned table on both sides of PARTITIONED OUTER JOIN is not supported";
+		public const string LeadingPrecisionOfTheIntervalIsTooSmall = "The leading precision of the interval is too small";
 	}
 
 	public static class OracleSemanticErrorTooltipText

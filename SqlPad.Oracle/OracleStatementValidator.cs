@@ -76,7 +76,11 @@ namespace SqlPad.Oracle
 							if (collectionType == null && validationModel.ColumnNodeValidity.TryGetValue(tableCollectionColumnReference.ColumnNode, out validationData) &&
 							    validationData.IsRecognized && String.IsNullOrEmpty(validationData.SemanticErrorType))
 							{
-								validationModel.ColumnNodeValidity[tableCollectionColumnReference.ColumnNode] = new InvalidNodeValidationData(OracleSemanticErrorType.CannotAccessRowsFromNonNestedTableItem) {Node = tableCollectionColumnReference.ColumnNode};
+								validationModel.ColumnNodeValidity[tableCollectionColumnReference.ColumnNode] =
+									new InvalidNodeValidationData(OracleSemanticErrorType.CannotAccessRowsFromNonNestedTableItem)
+									{
+										Node = tableCollectionColumnReference.ColumnNode
+									};
 							}
 						}
 
@@ -558,15 +562,15 @@ namespace SqlPad.Oracle
 			}
 
 			var intervalDayToSecond = literal.Terminal.ParentNode[2, 0];
-			var toDayOrHourOrMinuteOrSecondNode = intervalDayToSecond[1];
-			var singleElementOnly = toDayOrHourOrMinuteOrSecondNode == null;
+			var dayOrHourOrMinuteOrSecondNode = intervalDayToSecond[NonTerminals.ToDayOrHourOrMinuteOrSecondWithPrecision, NonTerminals.DayOrHourOrMinuteOrSecondWithPrecision];
+			var singleElementOnly = dayOrHourOrMinuteOrSecondNode == null;
 
 			if (singleElementOnly)
 			{
 				return true;
 			}
 
-			var toUnitTerminalId = toDayOrHourOrMinuteOrSecondNode.FirstTerminalNode.Id;
+			var toUnitTerminalId = dayOrHourOrMinuteOrSecondNode.FirstTerminalNode.Id;
 			switch (intervalDayToSecond.FirstTerminalNode.Id)
 			{
 				case Terminals.Hour:

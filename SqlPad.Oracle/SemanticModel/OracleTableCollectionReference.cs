@@ -29,19 +29,19 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public override string Name => AliasNode?.Token.Value;
 
-	    protected override OracleObjectIdentifier BuildFullyQualifiedObjectName()
+		protected override OracleObjectIdentifier BuildFullyQualifiedObjectName()
 		{
 			return OracleObjectIdentifier.Create(null, Name);
 		}
 
 		public override IReadOnlyList<OracleColumn> Columns => _columns ?? BuildColumns();
 
-	    private IReadOnlyList<OracleColumn> BuildColumns()
+		private IReadOnlyList<OracleColumn> BuildColumns()
 		{
 			var columnBuilderVisitor = new OracleColumnBuilderVisitor();
-		    _rowSourceReference?.Accept(columnBuilderVisitor);
+			_rowSourceReference?.Accept(columnBuilderVisitor);
 
-		    return _columns = columnBuilderVisitor.Columns;
+			return _columns = columnBuilderVisitor.Columns;
 		}
 	}
 }
