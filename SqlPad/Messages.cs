@@ -10,9 +10,9 @@ namespace SqlPad
 			return String.IsNullOrEmpty(exception.Message) ? "<error message not available>" : exception.Message;
 		}
 
-		public static MessageBoxResult ShowInformation(string errorMessage, string caption = "Information", Window owner = null)
+		public static MessageBoxResult ShowInformation(string message, string caption = "Information", Window owner = null)
 		{
-			return ShowMessage(errorMessage, caption, MessageBoxImage.Information, owner);
+			return ShowMessage(message, caption, MessageBoxImage.Information, owner);
 		}
 
 		public static MessageBoxResult ShowError(string errorMessage, string caption = "Error", Window owner = null)

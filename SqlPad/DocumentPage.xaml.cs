@@ -361,7 +361,8 @@ namespace SqlPad
 
 		private void DocumentChangingHandler(object sender, DocumentChangeEventArgs args)
 		{
-			if (args.InsertedText.IndexOfAny(TextSegment.Separators, 0, args.InsertionLength) != -1 ||
+			if ((args.InsertionLength > 0 && args.RemovalLength > 0) ||
+				args.InsertedText.IndexOfAny(TextSegment.Separators, 0, args.InsertionLength) != -1 ||
 			    args.RemovedText.IndexOfAny(TextSegment.Separators, 0, args.RemovalLength) != -1)
 			{
 				DisableCodeCompletion();

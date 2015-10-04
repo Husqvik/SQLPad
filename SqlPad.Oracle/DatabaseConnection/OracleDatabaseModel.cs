@@ -849,10 +849,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private void RaiseEvent(EventHandler eventHandler)
 		{
-		    eventHandler?.Invoke(this, EventArgs.Empty);
+			eventHandler?.Invoke(this, EventArgs.Empty);
 		}
 
-	    public override Task Initialize()
+		public override Task Initialize()
 		{
 			return Task.Factory.StartNew(InitializeInternal);
 		}

@@ -332,15 +332,13 @@ namespace SqlPad.Oracle.DatabaseConnection
 			customTypeBuilder.SetCustomAttribute(attribute);
 		}
 
-		private static ConstructorBuilder AddConstructor(TypeBuilder customTypeBuilder, ConstructorInfo baseConstructor)
+		private static void AddConstructor(TypeBuilder customTypeBuilder, ConstructorInfo baseConstructor)
 		{
 			var constructor = customTypeBuilder.DefineConstructor(MethodAttributes.Public | MethodAttributes.HideBySig, CallingConventions.HasThis, null);
 			var ilGenerator = constructor.GetILGenerator();
 			ilGenerator.Emit(OpCodes.Ldarg_0);
 			ilGenerator.Emit(OpCodes.Call, baseConstructor);
 			ilGenerator.Emit(OpCodes.Ret);
-
-			return constructor;
 		}
 
 		private static string MakeValidMemberName(string typeName)
@@ -419,9 +417,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 			Array = (T[])OracleUdt.GetValue(connection, pointerUdt, 0);
 		}
 
-		public string DataTypeName { get; private set; }
+		public string DataTypeName { get; }
 
-		public string ElementTypeName { get; private set; }
+		public string ElementTypeName { get; }
 		
 		public bool IsEditable => false;
 

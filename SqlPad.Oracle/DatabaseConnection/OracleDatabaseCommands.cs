@@ -499,7 +499,7 @@ END;";
 	
 	TYPE index_table_type IS TABLE OF NUMBER INDEX BY BINARY_INTEGER;
 	index_table index_table_type;
-	i BINARY_INTEGER := 0;
+	i BINARY_INTEGER := -1;
 BEGIN
 	program_info.namespace := dbms_debug.namespace_pkgspec_or_toplevel;
 	program_info.owner := :owner;

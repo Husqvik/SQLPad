@@ -267,10 +267,12 @@ namespace SqlPad
 
 		private void WatchItemExpandMouseLeftButtonDownHandler(object sender, MouseButtonEventArgs e)
 		{
-			/*var textBlock = (TextBlock)sender;
-			var dataGrid = textBlock.FindParentVisual<DataGrid>();
+			var textBlock = (TextBlock)sender;
+			//var dataGrid = textBlock.FindParentVisual<DataGrid>();
 
-			var dataContext = textBlock.DataContext;*/
+			var watchItem = (WatchItem)textBlock.DataContext;
+			var itemLabels = watchItem.ChildItems.Select(i => $"{i.Name} = {i.Value}");
+			Messages.ShowInformation(String.Join(Environment.NewLine, itemLabels));
 		}
 	}
 
