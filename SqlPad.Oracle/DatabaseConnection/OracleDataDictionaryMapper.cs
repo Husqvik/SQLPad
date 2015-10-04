@@ -681,6 +681,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 				case OracleTypeBase.TypeCodeXml:
 					schemaType = new OracleTypeObject().WithTypeCode(OracleTypeBase.TypeCodeXml);
 					break;
+				case OracleTypeBase.TypeCodeAnyData:
+					schemaType = new OracleTypeObject().WithTypeCode(OracleTypeBase.TypeCodeAnyData);
+					break;
 				case OracleTypeBase.TypeCodeObject:
 					schemaType = new OracleTypeObject();
 					break;

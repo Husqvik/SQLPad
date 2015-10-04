@@ -19,7 +19,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 	internal class OracleCustomTypeGenerator
 	{
 		private const string DynamicAssemblyNameBase = "SqlPad.Oracle.CustomTypes";
-		private const MethodAttributes InterfaceMethodAttributes = MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.Virtual | MethodAttributes.Final | MethodAttributes.NewSlot;
 		private static readonly Assembly CurrentAssembly = typeof(OracleCustomTypeGenerator).Assembly;
 		private static readonly Dictionary<string, OracleCustomTypeGenerator> Generators = new Dictionary<string, OracleCustomTypeGenerator>();
 
@@ -131,18 +130,13 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			var fullyQualifiedObjectTypeName = objectType.FullyQualifiedName.ToString().Replace("\"", null);
 			var customTypeClassName = $"{DynamicAssemblyNameBase}.ObjectTypes.{MakeValidMemberName(fullyQualifiedObjectTypeName)}";
-			var customTypeBuilder = customTypeModuleBuilder.DefineType(customTypeClassName, TypeAttributes.Public | TypeAttributes.Class, typeof(OracleCustomTypeBase), new[] { typeof(IOracleCustomType), typeof(IOracleCustomTypeFactory), typeof(IValue) });
+			var customTypeBuilder = customTypeModuleBuilder.DefineType(customTypeClassName, TypeAttributes.Public | TypeAttributes.Class);
+			customTypeBuilder.SetParent(typeof(OracleCustomTypeBase<>).MakeGenericType(customTypeBuilder));
 			AddOracleCustomTypeMappingAttribute(customTypeBuilder, fullyQualifiedObjectTypeName);
 
-			var constructorBuilder = AddConstructor(customTypeBuilder, typeof(object).GetConstructor(Type.EmptyTypes));
+			AddConstructor(customTypeBuilder, typeof(object).GetConstructor(Type.EmptyTypes));
 
 			ImplementAbstractStringValueProperty(customTypeBuilder, "DataTypeName", fullyQualifiedObjectTypeName, MethodAttributes.Public);
-
-			var createObjectMethodBuilder = customTypeBuilder.DefineMethod("CreateObject", InterfaceMethodAttributes, typeof(IOracleCustomType), null);
-
-			var ilGenerator = createObjectMethodBuilder.GetILGenerator();
-			ilGenerator.Emit(OpCodes.Newobj, constructorBuilder);
-			ilGenerator.Emit(OpCodes.Ret);
 
 			var fields = new Dictionary<string, FieldInfo>();
 			foreach (var objectAttribute in objectType.Attributes)
@@ -159,9 +153,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				fields.Add(fieldName, fieldBuilder);
 			}
 
-			ImplementNullableInterface(customTypeBuilder, constructorBuilder);
-
-			ilGenerator = BuildOracleCustomTypeInterfaceMethod(customTypeBuilder, "FromCustomObject");
+			var ilGenerator = BuildOracleCustomTypeInterfaceMethod(customTypeBuilder, "FromCustomObject");
 
 			foreach (var field in fields)
 			{
@@ -219,37 +211,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 			mappingTable.Add(mappingTableKey, mappingTableValue);*/
 		}
 
-		private static void ImplementNullableInterface(TypeBuilder customTypeBuilder, ConstructorInfo constructorInfo)
-		{
-			var isNullValueFieldBuilder = customTypeBuilder.DefineField("_isNull", typeof (bool), FieldAttributes.Private);
-			var isNullPropertyBuilder = customTypeBuilder.DefineProperty("IsNull", PropertyAttributes.None, CallingConventions.HasThis, typeof (bool), null);
-
-			const MethodAttributes isNullAttributes = MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.Virtual | MethodAttributes.SpecialName;
-			var isNullPropertyGetterBuilder = customTypeBuilder.DefineMethod("get_IsNull", isNullAttributes, typeof (bool), null);
-
-			var ilGenerator = isNullPropertyGetterBuilder.GetILGenerator();
-			ilGenerator.Emit(OpCodes.Ldarg_0);
-			ilGenerator.Emit(OpCodes.Ldfld, isNullValueFieldBuilder);
-			ilGenerator.Emit(OpCodes.Ret);
-
-			isNullPropertyBuilder.SetGetMethod(isNullPropertyGetterBuilder);
-
-			var nullPropertyBuilder = customTypeBuilder.DefineProperty("Null", PropertyAttributes.None, customTypeBuilder, null);
-
-			var nullPropertyGetterBuilder = customTypeBuilder.DefineMethod("get_Null", MethodAttributes.Public | MethodAttributes.Static, customTypeBuilder, null);
-			ilGenerator = nullPropertyGetterBuilder.GetILGenerator();
-			ilGenerator.DeclareLocal(customTypeBuilder);
-			ilGenerator.Emit(OpCodes.Newobj, constructorInfo);
-			ilGenerator.Emit(OpCodes.Stloc_0);
-			ilGenerator.Emit(OpCodes.Ldloc_0);
-			ilGenerator.Emit(OpCodes.Ldc_I4_1);
-			ilGenerator.Emit(OpCodes.Stfld, isNullValueFieldBuilder);
-			ilGenerator.Emit(OpCodes.Ldloc_0);
-			ilGenerator.Emit(OpCodes.Ret);
-
-			nullPropertyBuilder.SetGetMethod(nullPropertyGetterBuilder);
-		}
-
 		public static Type MapOracleTypeToNetType(OracleObjectIdentifier typeIdentifier)
 		{
 			var targetType = typeof(string);
@@ -257,6 +218,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			{
 				case "NUMBER":
 				case "INTEGER":
+				case "DECIMAL":
 					targetType = typeof(OracleDecimal);
 					break;
 				case "DATE":
@@ -279,6 +241,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 				case "BINARY_DOUBLE":
 				case "DOUBLE PRECISION":
 				case "BINARY_FLOAT":
+				case "SIGNED BINARY INTEGER(8)":
+				case "SIGNED BINARY INTEGER(32)":
+				case "UNSIGNED BINARY INTEGER(16)":
+				case "UNSIGNED BINARY INTEGER(32)":
 					targetType = typeof(decimal?);
 					break;
 				case "TIMESTAMP":
@@ -287,6 +253,22 @@ namespace SqlPad.Oracle.DatabaseConnection
 				case "TIMESTAMP WITH TZ":
 					targetType = typeof(OracleTimeStampTZ);
 					break;
+				case "TIMESTAMP WITH LOCAL TZ":
+					targetType = typeof(OracleTimeStampLTZ);
+					break;
+				case "INTERVAL YEAR TO MONTH":
+					targetType = typeof(OracleIntervalYM);
+					break;
+				case "INTERVAL DAY TO SECOND":
+					targetType = typeof(OracleIntervalDS);
+					break;
+				case "CONTIGUOUS ARRAY":
+				case "CANONICAL":
+				case "REF":
+					targetType = typeof(object);
+					break;
+				default:
+					break;
 			}
 
 			return targetType;
@@ -294,7 +276,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private static ILGenerator BuildOracleCustomTypeInterfaceMethod(TypeBuilder typeBuilder, string methodName)
 		{
-			var methodBuilder = typeBuilder.DefineMethod(methodName, InterfaceMethodAttributes, null, new[] { typeof(OracleConnection), typeof(IntPtr) });
+			var methodBuilder = typeBuilder.DefineMethod(methodName, MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.Virtual, null, new[] { typeof(OracleConnection), typeof(IntPtr) });
 			methodBuilder.DefineParameter(1, ParameterAttributes.None, "connection");
 			methodBuilder.DefineParameter(2, ParameterAttributes.None, "pointerUdt");
 			return methodBuilder.GetILGenerator();
@@ -443,9 +425,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 		
 		public bool IsEditable => false;
 
-	    public long Length => Array?.Length ?? 0;
+		public long Length => Array?.Length ?? 0;
 
-	    public void Prefetch() { }
+		public void Prefetch() { }
 
 		public IList Records
 		{
@@ -454,7 +436,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public ColumnHeader ColumnHeader => _columnHeader ?? BuildColumnHeader();
 
-	    private ColumnHeader BuildColumnHeader()
+		private ColumnHeader BuildColumnHeader()
 		{
 			_columnHeader =
 				new ColumnHeader
@@ -510,19 +492,30 @@ namespace SqlPad.Oracle.DatabaseConnection
 		}
 	}
 
-	public abstract class OracleCustomTypeBase : IComplexType
+	public abstract class OracleCustomTypeBase<T> : IComplexType, IOracleCustomType, IOracleCustomTypeFactory, INullable where T : OracleCustomTypeBase<T>, new()
 	{
 		private IReadOnlyList<CustomTypeAttributeValue> _attributes;
 		private string _preview;
 
-		public abstract string DataTypeName { get; }
+		public bool IsNull { get; private set; }
 
-		public abstract bool IsNull { get; }
+		public static T Null => new T { IsNull = true };
+
+		public abstract string DataTypeName { get; }
 
 		public object RawValue
 		{
 			get { throw new NotImplementedException(); }
 		}
+
+		public IOracleCustomType CreateObject()
+		{
+			return new T();
+		}
+
+		public abstract void FromCustomObject(OracleConnection connection, IntPtr pointerUdt);
+
+		public abstract void ToCustomObject(OracleConnection connection, IntPtr pointerUdt);
 
 		public string ToSqlLiteral()
 		{
@@ -541,13 +534,13 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public bool IsEditable => false;
 
-	    public long Length { get { throw new NotSupportedException(); } }
+		public long Length { get { throw new NotSupportedException(); } }
 		
 		public void Prefetch() { }
 
 		public IReadOnlyList<CustomTypeAttributeValue> Attributes => _attributes ?? BuildAttributeCollection();
 
-	    public override string ToString()
+		public override string ToString()
 		{
 			return _preview ?? BuildPreview();
 		}
@@ -643,6 +636,18 @@ namespace SqlPad.Oracle.DatabaseConnection
 			if (oracleTimestampWithLocalTimeZone != null)
 			{
 				return new OracleTimestampWithLocalTimeZone(oracleTimestampWithLocalTimeZone.Value);
+			}
+
+			var oracleIntervaYearToMonth = value as OracleIntervalYM?;
+			if (oracleIntervaYearToMonth != null)
+			{
+				return new OracleIntervalYearToMonth(oracleIntervaYearToMonth.Value);
+			}
+
+			var oracleIntervalDayToSecond = value as OracleIntervalDS?;
+			if (oracleIntervalDayToSecond != null)
+			{
+				return new OracleIntervalDayToSecond(oracleIntervalDayToSecond.Value);
 			}
 
 			var oracleDecimal = value as OracleDecimal?;

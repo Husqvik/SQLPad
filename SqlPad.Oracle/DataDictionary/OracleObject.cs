@@ -246,9 +246,10 @@ namespace SqlPad.Oracle.DataDictionary
 
 	public abstract class OracleTypeBase : OracleSchemaObject
 	{
+		public const string TypeCodeAnyData = "ANYDATA";
+		public const string TypeCodeCollection = "COLLECTION";
 		public const string TypeCodeObject = "OBJECT";
 		public const string TypeCodeXml = "XMLTYPE";
-		public const string TypeCodeCollection = "COLLECTION";
 
 		private OracleProgramMetadata _constructorMetadata;
 		
