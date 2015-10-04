@@ -51,10 +51,10 @@ IS
 		PROCEDURE TEST_NESTED_PROCEDURE(p1 VARCHAR2)
 		IS
 		BEGIN
-			NULL;
+			SELECT dummy INTO x FROM DUAL;
 		END;
 	BEGIN
-		NULL;
+		SELECT dummy INTO x FROM DUAL;
 	END;
 BEGIN
 	SELECT COUNT(*) INTO test_variable1 FROM DUAL;
@@ -93,6 +93,7 @@ END;";
 			mainProgram.Types[0].Name.ShouldBe("\"TEST_TYPE1\"");
 			mainProgram.Types[1].Name.ShouldBe("\"TEST_TABLE_TYPE1\"");
 			mainProgram.SubPrograms.Count.ShouldBe(2);
+			mainProgram.ChildModels.Count.ShouldBe(2);
 
 			mainProgram.SubPrograms[0].ObjectIdentifier.ShouldBe(expectedObjectIdentifier);
 			mainProgram.SubPrograms[0].Name.ShouldBe("\"TEST_INNER_PROCEDURE\"");
@@ -103,6 +104,7 @@ END;";
 			mainProgram.SubPrograms[0].Variables.Count.ShouldBe(0);
 			mainProgram.SubPrograms[0].Types.Count.ShouldBe(0);
 			mainProgram.SubPrograms[0].SubPrograms.Count.ShouldBe(0);
+			mainProgram.SubPrograms[0].ChildModels.Count.ShouldBe(0);
 
 			mainProgram.SubPrograms[1].ObjectIdentifier.ShouldBe(expectedObjectIdentifier);
 			mainProgram.SubPrograms[1].Name.ShouldBe("\"TEST_INNER_FUNCTION\"");
@@ -116,6 +118,7 @@ END;";
 			mainProgram.SubPrograms[1].Variables[0].IsException.ShouldBe(true);
 			mainProgram.SubPrograms[1].Types.Count.ShouldBe(0);
 			mainProgram.SubPrograms[1].SubPrograms.Count.ShouldBe(1);
+			mainProgram.SubPrograms[1].ChildModels.Count.ShouldBe(1);
 
 			mainProgram.SubPrograms[1].SubPrograms[0].ObjectIdentifier.ShouldBe(expectedObjectIdentifier);
 			mainProgram.SubPrograms[1].SubPrograms[0].Name.ShouldBe("\"TEST_NESTED_PROCEDURE\"");
@@ -126,6 +129,7 @@ END;";
 			mainProgram.SubPrograms[1].SubPrograms[0].Variables.Count.ShouldBe(0);
 			mainProgram.SubPrograms[1].SubPrograms[0].Types.Count.ShouldBe(0);
 			mainProgram.SubPrograms[1].SubPrograms[0].SubPrograms.Count.ShouldBe(0);
+			mainProgram.SubPrograms[1].SubPrograms[0].ChildModels.Count.ShouldBe(1);
 		}
 	}
 }

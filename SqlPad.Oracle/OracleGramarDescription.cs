@@ -980,7 +980,6 @@ namespace SqlPad.Oracle
 			public const string PlSqlRaiseStatement = "PlSqlRaiseStatement";
 			public const string PlSqlReturnStatement = "PlSqlReturnStatement";
 			public const string PlSqlSearchedCaseExpressionBranch = "PlSqlSearchedCaseExpressionBranch";
-			public const string PlSqlSelectIntoStatement = "PlSqlSelectIntoStatement";
 			public const string PlSqlSimpleCaseExpressionBranch = "PlSqlSimpleCaseExpressionBranch";
 			public const string PlSqlSqlStatement = "PlSqlSqlStatement";
 			public const string PlSqlSqlStatementType = "PlSqlSqlStatementType";

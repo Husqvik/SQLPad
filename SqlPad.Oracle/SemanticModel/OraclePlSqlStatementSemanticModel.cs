@@ -21,15 +21,14 @@ namespace SqlPad.Oracle.SemanticModel
 	{
 		private readonly OracleDatabaseModelBase _databaseModel;
 		private readonly List<OraclePlSqlProgram> _programs = new List<OraclePlSqlProgram>();
-		private readonly List<OracleStatementSemanticModel> _sqlModels = new List<OracleStatementSemanticModel>();
 
 		private CancellationToken _cancellationToken;
 
 		public IDatabaseModel DatabaseModel => _databaseModel;
 
-		public StatementBase Statement { get; private set; }
+		public StatementBase Statement { get; }
 
-		public string StatementText { get; private set; }
+		public string StatementText { get; }
 
 		public bool HasDatabaseModel => DatabaseModel == null;
 
@@ -111,6 +110,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 				ResolveParameterDeclarations(program);
 				ResolveLocalVariableAndTypeDeclarations(program);
+				ResolveSqlStatements(program);
 
 				_programs.Add(program);
 
@@ -119,8 +119,19 @@ namespace SqlPad.Oracle.SemanticModel
 			else
 			{
 				throw new NotImplementedException();
-				var programDefinitionNodes = Statement.RootNode.GetDescendants(NonTerminals.FunctionDefinition, NonTerminals.ProcedureDefinition);
-				_programs.AddRange(programDefinitionNodes.Select(n => new OraclePlSqlProgram { RootNode = n }));
+				//var programDefinitionNodes = Statement.RootNode.GetDescendants(NonTerminals.FunctionDefinition, NonTerminals.ProcedureDefinition);
+				//_programs.AddRange(programDefinitionNodes.Select(n => new OraclePlSqlProgram { RootNode = n }));
+			}
+		}
+
+		private void ResolveSqlStatements(OraclePlSqlProgram program)
+		{
+			var sqlStatementNodes = program.RootNode.GetPathFilterDescendants(n => !String.Equals(n.Id, NonTerminals.ProgramDeclareSection), NonTerminals.SelectStatement, NonTerminals.InsertStatement, NonTerminals.UpdateStatement, NonTerminals.MergeStatement);
+			foreach (var rootNode in sqlStatementNodes)
+			{
+				var childStatement = new OracleStatement { RootNode = rootNode, ParseStatus = Statement.ParseStatus, SourcePosition = rootNode.SourcePosition };
+				var childStatementSemanticModel = OracleStatementSemanticModel.Build(rootNode.GetText(StatementText), childStatement, _databaseModel);
+				program.ChildModels.Add(childStatementSemanticModel);
 			}
 		}
 
@@ -150,6 +161,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 					ResolveParameterDeclarations(subProgram);
 					ResolveLocalVariableAndTypeDeclarations(subProgram);
+					ResolveSqlStatements(subProgram);
 
 					if (nameTerminal != null)
 					{
@@ -295,6 +307,8 @@ namespace SqlPad.Oracle.SemanticModel
 		public OracleObjectIdentifier ObjectIdentifier { get; set; }
 
 		public string Name { get; set; }
+
+		public IList<OracleStatementSemanticModel> ChildModels { get; } = new List<OracleStatementSemanticModel>();
 
 		public IList<OraclePlSqlProgram> SubPrograms { get; } = new List<OraclePlSqlProgram>();
 

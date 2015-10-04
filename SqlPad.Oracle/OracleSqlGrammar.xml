@@ -12617,9 +12617,6 @@
           <NonTerminal Id="PlSqlReturnStatement" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="PlSqlSelectIntoStatement" />
-        </Sequence>
-        <Sequence>
           <NonTerminal Id="PlSqlSqlStatement" />
         </Sequence>
         <Sequence>
@@ -13040,15 +13037,6 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
-    <Rule StartingNonTerminal="PlSqlSelectIntoStatement" Scope="Sql">
-      <Sequences>
-        <Sequence>
-          <NonTerminal Id="SelectStatement" />
-          <Terminal Id="Semicolon" />
-        </Sequence>
-      </Sequences>
-    </Rule>
 
     <Rule StartingNonTerminal="PlSqlSqlStatement" Scope="Sql">
       <Sequences>
@@ -13062,6 +13050,9 @@
     <Rule StartingNonTerminal="PlSqlSqlStatementType">
       <Sequences>
         <Sequence>
+          <NonTerminal Id="SelectStatement" />
+        </Sequence>
+          <Sequence>
           <NonTerminal Id="CommitStatement" />
         </Sequence>
         <!--<Sequence>

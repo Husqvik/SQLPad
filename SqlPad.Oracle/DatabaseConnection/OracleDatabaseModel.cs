@@ -489,6 +489,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			_isDisposed = true;
 
+			InternalRefreshStarted -= InternalRefreshStartedHandler;
+			InternalRefreshCompleted -= InternalRefreshCompletedHandler;
+
 			_refreshTimer.Stop();
 			_refreshTimer.Dispose();
 

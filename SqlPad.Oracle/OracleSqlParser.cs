@@ -519,12 +519,13 @@ namespace SqlPad.Oracle
 				}
 
 				context.Statement.SourcePosition = new SourcePosition { IndexStart = indexStart, IndexEnd = indexEnd };
-				var rootNode = new StatementGrammarNode(NodeType.NonTerminal, context.Statement, null)
-				               {
-					               Id = result.NodeId,
-								   IsGrammarValid = result.Nodes.All(n => n.IsGrammarValid),
-								   IsRequired = true,
-				               };
+				var rootNode =
+					new StatementGrammarNode(NodeType.NonTerminal, context.Statement, null)
+					{
+						Id = result.NodeId,
+						IsGrammarValid = result.Nodes.All(n => n.IsGrammarValid),
+						IsRequired = true,
+					};
 				
 				rootNode.AddChildNodes(result.Nodes);
 

@@ -39,7 +39,8 @@ WHERE
 		static OracleDatabaseModelTest()
 		{
 			OracleConfiguration.Configuration.ExecutionPlan.TargetTable.Name = ExplainPlanTableName;
-		}
+			ConfigurationProvider.Configuration.DataModel.DataModelRefreshPeriod = 1440;
+        }
 
 		[Test]
 		public void TestModelInitialization()
@@ -54,24 +55,24 @@ WHERE
 				databaseModel.SystemParameters.Count.ShouldBe(0);
 
 				databaseModel.IsInitialized.ShouldBe(false);
-				var refreshStartedResetEvent = new ManualResetEvent(false);
 				var refreshFinishedResetEvent = new ManualResetEvent(false);
-				databaseModel.RefreshStarted += (sender, args) => refreshStartedResetEvent.Set();
-				databaseModel.RefreshCompleted += (sender, args) => refreshFinishedResetEvent.Set();
-				databaseModel.Initialize();
-				refreshStartedResetEvent.WaitOne();
+				databaseModel.RefreshCompleted += delegate { refreshFinishedResetEvent.Set(); };
+				databaseModel.Initialize().Wait();
+
+				databaseModel.IsInitialized.ShouldBe(true);
+				databaseModel.Schemas.Count.ShouldBeGreaterThan(0);
+
+				if (!databaseModel.IsFresh)
+				{
+					refreshFinishedResetEvent.WaitOne();
+				}
+
+				Trace.WriteLine("Assert original database model");
+				AssertDatabaseModel(databaseModel);
 
 				using (var modelClone = OracleDatabaseModel.GetDatabaseModel(_connectionString, "Clone"))
 				{
-					var cloneRefreshTask = modelClone.Refresh();
-					refreshFinishedResetEvent.WaitOne();
-					cloneRefreshTask.Wait();
-
-					databaseModel.IsInitialized.ShouldBe(true);
-					databaseModel.Schemas.Count.ShouldBeGreaterThan(0);
-
-					Trace.WriteLine("Assert original database model");
-					AssertDatabaseModel(databaseModel);
+					modelClone.Refresh().Wait();
 
 					Trace.WriteLine("Assert cloned database model");
 					AssertDatabaseModel(modelClone);
@@ -188,10 +189,8 @@ WHERE
 					BindVariables = new BindVariableModel[0]
 				};
 
-			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
 			{
-				databaseModel.Initialize().Wait();
-
 				var connectionAdapter = databaseModel.CreateConnectionAdapter();
 				var task = connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel } }, CancellationToken.None);
 				task.Wait();
@@ -226,10 +225,8 @@ WHERE
 					BindVariables = new BindVariableModel[0]
 				};
 
-			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
 			{
-				databaseModel.Initialize().Wait();
-
 				var connectionAdapter = databaseModel.CreateConnectionAdapter();
 				var task = connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel } }, CancellationToken.None);
 				var taskException = Assert.Throws<AggregateException>(() => task.Wait());
@@ -266,10 +263,8 @@ WHERE
 					BindVariables = new BindVariableModel[0]
 				};
 
-			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
 			{
-				databaseModel.Initialize().Wait();
-
 				var connectionAdapter = databaseModel.CreateConnectionAdapter();
 				var task = connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel }, GatherExecutionStatistics = true }, CancellationToken.None);
 				task.Wait();
@@ -370,10 +365,8 @@ WHERE
 					BindVariables = new BindVariableModel[0]
 				};
 
-			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
 			{
-				databaseModel.Initialize().Wait();
-
 				var connectionAdapter = databaseModel.CreateConnectionAdapter();
 				var task = connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel }, GatherExecutionStatistics = true }, CancellationToken.None);
 				task.Wait();
@@ -437,10 +430,8 @@ WHERE
 					BindVariables = new BindVariableModel[0],
 				};
 
-			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
 			{
-				databaseModel.Initialize().Wait();
-
 				var connectionAdapter = databaseModel.CreateConnectionAdapter();
 				var task = connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel } }, CancellationToken.None);
 				task.Wait();
@@ -470,10 +461,8 @@ END;",
 					BindVariables = new BindVariableModel[0],
 				};
 
-			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
 			{
-				databaseModel.Initialize().Wait();
-
 				var connectionAdapter = databaseModel.CreateConnectionAdapter();
 				var task = connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel } }, CancellationToken.None);
 				task.Wait();
@@ -499,9 +488,8 @@ END;",
 		public void TestColumnDetailDataProvider()
 		{
 			var model = new ColumnDetailsModel();
-			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
 			{
-				databaseModel.Initialize().Wait();
 				databaseModel.UpdateColumnDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DUAL\""), "\"DUMMY\"", model, CancellationToken.None).Wait();
 			}
 
@@ -538,16 +526,8 @@ FROM
 WHERE
 	LNNVL(1 <> 1)";
 
-			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
 			{
-				databaseModel.Initialize().Wait();
-				if (!databaseModel.IsFresh)
-				{
-					var refreshFinishedResetEvent = new ManualResetEvent(false);
-					databaseModel.RefreshCompleted += delegate { refreshFinishedResetEvent.Set(); };
-					refreshFinishedResetEvent.WaitOne(TimeSpan.FromSeconds(30));
-				}
-
 				var statement = OracleSqlParser.Instance.Parse(testQuery).Single();
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
@@ -563,9 +543,8 @@ WHERE
 		public void TestColumnIndexAndConstraintDetails()
 		{
 			var model = new ColumnDetailsModel();
-			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
 			{
-				databaseModel.Initialize().Wait();
 				databaseModel.UpdateColumnDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"COL$\""), "\"OBJ#\"", model, CancellationToken.None).Wait();
 			}
 
@@ -583,9 +562,8 @@ WHERE
 		{
 			var model = new TableDetailsModel();
 
-			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
 			{
-				databaseModel.Initialize().Wait();
 				databaseModel.UpdateTableDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DUAL\""), model, CancellationToken.None).Wait();
 			}
 
@@ -605,9 +583,8 @@ WHERE
 		{
 			var model = new TableDetailsModel();
 
-			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
 			{
-				databaseModel.Initialize().Wait();
 				databaseModel.UpdateTableDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"COL$\""), model, CancellationToken.None).Wait();
 			}
 
@@ -638,9 +615,8 @@ WHERE
 		{
 			var model = new ColumnDetailsModel();
 
-			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
 			{
-				databaseModel.Initialize().Wait();
 				databaseModel.UpdateColumnDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"XS$OBJ\""), "TENANT", model, CancellationToken.None).Wait();
 			}
 
@@ -673,9 +649,8 @@ WHERE
 		{
 			IReadOnlyList<string> remoteTableColumns;
 
-			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
 			{
-				databaseModel.Initialize().Wait();
 				var task = databaseModel.GetRemoteTableColumnsAsync(LoopbackDatabaseLinkName, new OracleObjectIdentifier(null, "\"USER_TABLES\""), CancellationToken.None);
 				task.Wait();
 
@@ -714,9 +689,8 @@ WHERE
 		{
 			var model = new ViewDetailsModel();
 
-			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
 			{
-				databaseModel.Initialize().Wait();
 				databaseModel.UpdateViewDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DBA_DV_STATUS\""), model, CancellationToken.None).Wait();
 			}
 
@@ -740,9 +714,8 @@ WHERE
 		{
 			var model = new ViewDetailsModel();
 
-			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
 			{
-				databaseModel.Initialize().Wait();
 				databaseModel.UpdateViewDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"ALL_COL_PRIVS\""), model, CancellationToken.None).Wait();
 			}
 
@@ -754,10 +727,8 @@ WHERE
 		public void TestExplainPlanDataProvider()
 		{
 			Task<ExecutionPlanItemCollection> task;
-			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
 			{
-				databaseModel.Initialize().Wait();
-				
 				var executionModel =
 					new StatementExecutionModel
 					{
@@ -814,10 +785,8 @@ WHERE
 		public void TestCursorExecutionStatisticsDataProvider()
 		{
 			Task<ExecutionStatisticsPlanItemCollection> taskStatistics;
-			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
 			{
-				databaseModel.Initialize().Wait();
-
 				var executionModel =
 					new StatementExecutionModel
 					{
@@ -921,10 +890,8 @@ ORDER BY
 	ID";
 			
 			Task<ExecutionPlanItemCollection> task;
-			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
 			{
-				databaseModel.Initialize().Wait();
-
 				var executionModel =
 					new StatementExecutionModel
 					{
@@ -944,13 +911,33 @@ ORDER BY
 
 		private void ExecuteDataProvider(params IModelDataProvider[] updaters)
 		{
-			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
 			{
-				databaseModel.Initialize().Wait();
-
 				var task = (Task)typeof (OracleDatabaseModel).GetMethod("UpdateModelAsync", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(databaseModel, new object[] { CancellationToken.None, false, updaters });
 				task.Wait();
 			}
+		}
+	}
+
+	internal static class DataModelInitializer
+	{
+		public static OracleDatabaseModel GetInitializedDataModel(ConnectionStringSettings connectionString, string identifier = null)
+		{
+			var databaseModel = OracleDatabaseModel.GetDatabaseModel(connectionString, identifier);
+
+			using (var refreshFinishedResetEvent = new ManualResetEvent(false))
+			{
+				databaseModel.RefreshCompleted += delegate { refreshFinishedResetEvent.Set(); };
+
+				databaseModel.Initialize().Wait();
+
+				if (!databaseModel.IsFresh)
+				{
+					refreshFinishedResetEvent.WaitOne();
+				}
+			}
+
+			return databaseModel;
 		}
 	}
 }
