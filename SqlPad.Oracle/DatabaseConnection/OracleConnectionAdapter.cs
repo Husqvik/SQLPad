@@ -645,17 +645,17 @@ namespace SqlPad.Oracle.DatabaseConnection
 			OracleGlobalization.SetThreadInfo(info);
 		}
 
-		private async Task<StatementExecutionBatchResult> ExecuteUserStatementAsync(StatementBatchExecutionModel executionModel, bool isReferenceConstraintNavigation, CancellationToken cancellationToken)
+		private async Task<StatementExecutionBatchResult> ExecuteUserStatementAsync(StatementBatchExecutionModel batchExecutionModel, bool isReferenceConstraintNavigation, CancellationToken cancellationToken)
 		{
-			if (executionModel.Statements == null || executionModel.Statements.Count == 0)
+			if (batchExecutionModel.Statements == null || batchExecutionModel.Statements.Count == 0)
 			{
-				throw new ArgumentException("An execution batch must contain at least one statement. ", nameof(executionModel));
+				throw new ArgumentException("An execution batch must contain at least one statement. ", nameof(batchExecutionModel));
 			}
 
 			_isExecuting = true;
 			_userCommandHasCompilationErrors = false;
 
-			var batchResult = new StatementExecutionBatchResult { ExecutionModel = executionModel };
+			var batchResult = new StatementExecutionBatchResult { ExecutionModel = batchExecutionModel };
 			var statementResults = new List<StatementExecutionResult>();
 			StatementExecutionResult currentStatementResult = null;
 
@@ -678,29 +678,30 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 				userCommand.InitialLONGFetchSize = OracleDatabaseModel.InitialLongFetchSize;
 
-				if (executionModel.GatherExecutionStatistics)
+				if (batchExecutionModel.GatherExecutionStatistics)
 				{
 					_executionStatisticsDataProvider = new SessionExecutionStatisticsDataProvider(_databaseModel.StatisticsKeys, _userSessionId.Value);
 					await _databaseModel.UpdateModelAsync(cancellationToken, true, _executionStatisticsDataProvider.SessionBeginExecutionStatisticsDataProvider);
 				}
 
-				foreach (var statement in executionModel.Statements)
+				foreach (var executionModel in batchExecutionModel.Statements)
 				{
-					currentStatementResult = new StatementExecutionResult { StatementModel = statement };
+					currentStatementResult = new StatementExecutionResult { StatementModel = executionModel };
 					statementResults.Add(currentStatementResult);
 
 					userCommand.Parameters.Clear();
-					userCommand.CommandText = statement.StatementText.Replace("\r\n", "\n");
+					userCommand.CommandText = executionModel.StatementText.Replace("\r\n", "\n");
 
-					foreach (var variable in statement.BindVariables)
+					foreach (var variable in executionModel.BindVariables)
 					{
 						var value = await GetBindVariableValue(variable, cancellationToken);
 						userCommand.AddSimpleParameter(variable.Name, value, variable.DataType.Name);
 					}
 
 					var resultInfoColumnHeaders = new Dictionary<ResultInfo, IReadOnlyList<ColumnHeader>>();
-					var isPlSql = ((OracleStatement)statement.Statement)?.IsPlSql ?? false;
-					if (isPlSql && executionModel.EnableDebug && statement.IsPartialStatement)
+					var statement = (OracleStatement)executionModel.Statement;
+					var isPlSql = statement?.IsPlSql ?? false;
+					if (isPlSql && batchExecutionModel.EnableDebug && executionModel.IsPartialStatement)
 					{
 						throw new InvalidOperationException("Debugging is not supported for PL/SQL fragment. ");
 					}
@@ -709,7 +710,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					{
 						currentStatementResult.ExecutedAt = DateTime.Now;
 
-						if (executionModel.EnableDebug)
+						if (batchExecutionModel.EnableDebug)
 						{
 							// TODO: Add COMPILE DEBUG
 							_debuggerSession = new OracleDebuggerSession(this, (OracleCommand)userCommand.Clone(), batchResult);
@@ -745,8 +746,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 					_resultInfoColumnHeaders.AddRange(resultInfoColumnHeaders);
 
 					currentStatementResult.CompilationErrors = _userCommandHasCompilationErrors
-						? await RetrieveCompilationErrors(statement.ValidationModel.Statement, cancellationToken)
+						? await RetrieveCompilationErrors(executionModel.ValidationModel.Statement, cancellationToken)
 						: CompilationError.EmptyArray;
+
+					currentStatementResult.SuccessfulExecutionMessage = statement == null
+						? OracleStatement.DefaultMessageCommandExecutedSuccessfully
+						: statement.SuccessfulExecutionMessage;
 				}
 			}
 			catch (OracleException exception)
@@ -768,7 +773,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 					return batchResult;
 				}
 
-				currentStatementResult.ErrorPosition = await GetSyntaxErrorIndex(currentStatementResult.StatementModel.StatementText, cancellationToken);
+				if (currentStatementResult != null)
+				{
+					currentStatementResult.ErrorPosition = await GetSyntaxErrorIndex(currentStatementResult.StatementModel.StatementText, cancellationToken);
+				}
 
 				throw executionException;
 			}
@@ -778,7 +786,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 				try
 				{
-					if (_userConnection.State == ConnectionState.Open && !executionModel.EnableDebug && !cancellationToken.IsCancellationRequested)
+					if (_userConnection.State == ConnectionState.Open && !batchExecutionModel.EnableDebug && !cancellationToken.IsCancellationRequested)
 					{
 						await FinalizeBatchExecution(batchResult, cancellationToken);
 					}

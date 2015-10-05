@@ -23,7 +23,7 @@ namespace SqlPad.Oracle.Database.Test
 	{
 		private const string LoopbackDatabaseLinkName = "HQ_PDB";
 		private const string ExplainPlanTableName = "TOAD_PLAN_TABLE";
-		private readonly ConnectionStringSettings _connectionString = new ConnectionStringSettings("TestConnection", "DATA SOURCE=HQ_PDB_TCP;PASSWORD=oracle;USER ID=HUSQVIK");
+		private static readonly ConnectionStringSettings ConnectionString;
 
 		private const string ExplainPlanTestQuery =
 @"SELECT /*+ gather_plan_statistics */
@@ -40,12 +40,14 @@ WHERE
 		{
 			OracleConfiguration.Configuration.ExecutionPlan.TargetTable.Name = ExplainPlanTableName;
 			ConfigurationProvider.Configuration.DataModel.DataModelRefreshPeriod = 1440;
-        }
+			var databaseConfiguration = (DatabaseConnectionConfigurationSection)ConfigurationManager.GetSection(DatabaseConnectionConfigurationSection.SectionName);
+			ConnectionString = ConfigurationManager.ConnectionStrings[databaseConfiguration.Infrastructures[0].ConnectionStringName];
+		}
 
 		[Test]
 		public void TestModelInitialization()
 		{
-			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString, "Original"))
+			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(ConnectionString, "Original"))
 			{
 				databaseModel.Schemas.Count.ShouldBe(0);
 				databaseModel.AllObjects.Count.ShouldBe(0);
@@ -70,7 +72,7 @@ WHERE
 				Trace.WriteLine("Assert original database model");
 				AssertDatabaseModel(databaseModel);
 
-				using (var modelClone = OracleDatabaseModel.GetDatabaseModel(_connectionString, "Clone"))
+				using (var modelClone = OracleDatabaseModel.GetDatabaseModel(ConnectionString, "Clone"))
 				{
 					modelClone.Refresh().Wait();
 
@@ -189,7 +191,7 @@ WHERE
 					BindVariables = new BindVariableModel[0]
 				};
 
-			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
 				var connectionAdapter = databaseModel.CreateConnectionAdapter();
 				var task = connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel } }, CancellationToken.None);
@@ -225,7 +227,7 @@ WHERE
 					BindVariables = new BindVariableModel[0]
 				};
 
-			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
 				var connectionAdapter = databaseModel.CreateConnectionAdapter();
 				var task = connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel } }, CancellationToken.None);
@@ -263,7 +265,7 @@ WHERE
 					BindVariables = new BindVariableModel[0]
 				};
 
-			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
 				var connectionAdapter = databaseModel.CreateConnectionAdapter();
 				var task = connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel }, GatherExecutionStatistics = true }, CancellationToken.None);
@@ -365,7 +367,7 @@ WHERE
 					BindVariables = new BindVariableModel[0]
 				};
 
-			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
 				var connectionAdapter = databaseModel.CreateConnectionAdapter();
 				var task = connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel }, GatherExecutionStatistics = true }, CancellationToken.None);
@@ -430,7 +432,7 @@ WHERE
 					BindVariables = new BindVariableModel[0],
 				};
 
-			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
 				var connectionAdapter = databaseModel.CreateConnectionAdapter();
 				var task = connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel } }, CancellationToken.None);
@@ -461,7 +463,7 @@ END;",
 					BindVariables = new BindVariableModel[0],
 				};
 
-			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
 				var connectionAdapter = databaseModel.CreateConnectionAdapter();
 				var task = connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel } }, CancellationToken.None);
@@ -488,7 +490,7 @@ END;",
 		public void TestColumnDetailDataProvider()
 		{
 			var model = new ColumnDetailsModel();
-			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
 				databaseModel.UpdateColumnDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DUAL\""), "\"DUMMY\"", model, CancellationToken.None).Wait();
 			}
@@ -526,7 +528,7 @@ FROM
 WHERE
 	LNNVL(1 <> 1)";
 
-			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
 				var statement = OracleSqlParser.Instance.Parse(testQuery).Single();
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
@@ -543,7 +545,7 @@ WHERE
 		public void TestColumnIndexAndConstraintDetails()
 		{
 			var model = new ColumnDetailsModel();
-			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
 				databaseModel.UpdateColumnDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"COL$\""), "\"OBJ#\"", model, CancellationToken.None).Wait();
 			}
@@ -562,7 +564,7 @@ WHERE
 		{
 			var model = new TableDetailsModel();
 
-			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
 				databaseModel.UpdateTableDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DUAL\""), model, CancellationToken.None).Wait();
 			}
@@ -583,7 +585,7 @@ WHERE
 		{
 			var model = new TableDetailsModel();
 
-			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
 				databaseModel.UpdateTableDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"COL$\""), model, CancellationToken.None).Wait();
 			}
@@ -615,7 +617,7 @@ WHERE
 		{
 			var model = new ColumnDetailsModel();
 
-			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
 				databaseModel.UpdateColumnDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"XS$OBJ\""), "TENANT", model, CancellationToken.None).Wait();
 			}
@@ -649,7 +651,7 @@ WHERE
 		{
 			IReadOnlyList<string> remoteTableColumns;
 
-			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
 				var task = databaseModel.GetRemoteTableColumnsAsync(LoopbackDatabaseLinkName, new OracleObjectIdentifier(null, "\"USER_TABLES\""), CancellationToken.None);
 				task.Wait();
@@ -689,7 +691,7 @@ WHERE
 		{
 			var model = new ViewDetailsModel();
 
-			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
 				databaseModel.UpdateViewDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DBA_DV_STATUS\""), model, CancellationToken.None).Wait();
 			}
@@ -714,7 +716,7 @@ WHERE
 		{
 			var model = new ViewDetailsModel();
 
-			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
 				databaseModel.UpdateViewDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"ALL_COL_PRIVS\""), model, CancellationToken.None).Wait();
 			}
@@ -727,7 +729,7 @@ WHERE
 		public void TestExplainPlanDataProvider()
 		{
 			Task<ExecutionPlanItemCollection> task;
-			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
 				var executionModel =
 					new StatementExecutionModel
@@ -785,7 +787,7 @@ WHERE
 		public void TestCursorExecutionStatisticsDataProvider()
 		{
 			Task<ExecutionStatisticsPlanItemCollection> taskStatistics;
-			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
 				var executionModel =
 					new StatementExecutionModel
@@ -890,7 +892,7 @@ ORDER BY
 	ID";
 			
 			Task<ExecutionPlanItemCollection> task;
-			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
 				var executionModel =
 					new StatementExecutionModel
@@ -911,7 +913,7 @@ ORDER BY
 
 		private void ExecuteDataProvider(params IModelDataProvider[] updaters)
 		{
-			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(_connectionString))
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
 				var task = (Task)typeof (OracleDatabaseModel).GetMethod("UpdateModelAsync", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(databaseModel, new object[] { CancellationToken.None, false, updaters });
 				task.Wait();

@@ -188,7 +188,7 @@ namespace SqlPad
 
 			StatusInfo.ResultGridAvailable = false;
 			StatusInfo.MoreRowsAvailable = false;
-			StatusInfo.StatementExecutedSuccessfully = false;
+			StatusInfo.SuccessfulExecutionMessage = null;
 			StatusInfo.AffectedRowCount = -1;
 
 			RemoveResultViewers();
@@ -378,7 +378,7 @@ namespace SqlPad
 			{
 				if (lastStatementResult.AffectedRowCount == -1)
 				{
-					StatusInfo.StatementExecutedSuccessfully = true;
+					StatusInfo.SuccessfulExecutionMessage = lastStatementResult.SuccessfulExecutionMessage;
 				}
 				else if (lastStatementResult.AffectedRowCount.HasValue)
 				{

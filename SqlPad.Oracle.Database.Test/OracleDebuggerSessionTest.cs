@@ -12,10 +12,16 @@ namespace SqlPad.Oracle.Database.Test
 	[TestFixture]
 	public class OracleDebuggerSessionTest
 	{
-		private readonly ConnectionStringSettings _connectionString = new ConnectionStringSettings("TestConnection", "DATA SOURCE=HQ_PDB_TCP;PASSWORD=oracle;USER ID=HUSQVIK");
+		private static readonly ConnectionStringSettings ConnectionString;
 		private readonly OracleStatementValidator _validator = new OracleStatementValidator();
 
 		private ManualResetEvent _resetEvent;
+
+		static OracleDebuggerSessionTest()
+		{
+			var databaseConfiguration = (DatabaseConnectionConfigurationSection)ConfigurationManager.GetSection(DatabaseConnectionConfigurationSection.SectionName);
+			ConnectionString = ConfigurationManager.ConnectionStrings[databaseConfiguration.Infrastructures[0].ConnectionStringName];
+		}
 
 		[SetUp]
 		public void SetUpAttribute()
@@ -33,7 +39,7 @@ namespace SqlPad.Oracle.Database.Test
 		[Test]
 		public void BasicTest()
 		{
-			var databaseModel = OracleDatabaseModel.GetDatabaseModel(_connectionString, "DebuggerTestConnection");
+			var databaseModel = OracleDatabaseModel.GetDatabaseModel(ConnectionString, "DebuggerTestConnection");
 			databaseModel.Initialize().Wait();
 			var connectionAdapter = (OracleConnectionAdapter)databaseModel.CreateConnectionAdapter();
 

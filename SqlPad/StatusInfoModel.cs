@@ -1,3 +1,4 @@
+using System;
 using System.Windows;
 
 namespace SqlPad
@@ -8,7 +9,7 @@ namespace SqlPad
 		private string _executionTimerMessage;
 		private bool _moreRowsAvailable;
 		private bool _resultGridAvailable;
-		private bool _statementExecutedSuccessfully;
+		private string _successfulExecutionMessage;
 
 		public bool ResultGridAvailable
 		{
@@ -22,12 +23,12 @@ namespace SqlPad
 			}
 		}
 
-		public bool StatementExecutedSuccessfully
+		public string SuccessfulExecutionMessage
 		{
-			get { return _statementExecutedSuccessfully; }
+			get { return _successfulExecutionMessage; }
 			set
 			{
-				if (UpdateValueAndRaisePropertyChanged(ref _statementExecutedSuccessfully, value))
+				if (UpdateValueAndRaisePropertyChanged(ref _successfulExecutionMessage, value))
 				{
 					RaisePropertyChanged(nameof(StatementExecutionInfoSeparatorVisibility));
 				}
@@ -61,9 +62,9 @@ namespace SqlPad
 
 		public Visibility AffectedRowCountVisibility => _affectedRowCount == -1 ? Visibility.Collapsed : Visibility.Visible;
 
-	    public Visibility StatementExecutionInfoSeparatorVisibility =>
-	        !_resultGridAvailable && (AffectedRowCountVisibility == Visibility.Collapsed && !_statementExecutedSuccessfully)
-	            ? Visibility.Collapsed
-	            : Visibility.Visible;
+		public Visibility StatementExecutionInfoSeparatorVisibility =>
+			!_resultGridAvailable && (AffectedRowCountVisibility == Visibility.Collapsed && String.IsNullOrEmpty(_successfulExecutionMessage))
+				? Visibility.Collapsed
+				: Visibility.Visible;
 	}
 }

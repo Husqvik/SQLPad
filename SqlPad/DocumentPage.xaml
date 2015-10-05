@@ -68,13 +68,11 @@
 
 	<UserControl.CommandBindings>
 		<CommandBinding Command="commands:GenericCommands.ShowExecutionHistory" Executed="ShowExecutionHistoryExecutedHandler" />
+		<CommandBinding Command="commands:GenericCommands.CancelUserAction" Executed="CancelUserActionHandler" CanExecute="CanExecuteCancelUserActionHandler" />
+		<CommandBinding Command="commands:GenericCommands.RefreshDatabaseModel" Executed="RefreshDatabaseModel" />
 	</UserControl.CommandBindings>
 
 	<Grid>
-		<Grid.CommandBindings>
-			<CommandBinding Command="commands:GenericCommands.CancelUserAction" Executed="CancelUserActionHandler" CanExecute="CanExecuteCancelUserActionHandler" />
-			<CommandBinding Command="commands:GenericCommands.RefreshDatabaseModel" Executed="RefreshDatabaseModel" />
-		</Grid.CommandBindings>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto" />
 			<RowDefinition Height="*" x:Name="RowDefinitionEditor" />
@@ -94,7 +92,7 @@
 				<RowDefinition Height="Auto" />
 			</Grid.RowDefinitions>
 
-			<CheckBox Content="_Debug mode" VerticalAlignment="Center" IsChecked="{Binding EnableDebug}" Visibility="Collapsed" />
+			<CheckBox Content="_Debug mode" VerticalAlignment="Center" IsChecked="{Binding EnableDebug}" />
 
 			<StackPanel Grid.Row="0" HorizontalAlignment="Right" Orientation="Horizontal" Grid.Column="2">
 				<Grid Margin="0,1,8,3">
@@ -426,7 +424,7 @@
 					<TextBlock Visibility="{Binding ElementName=OutputViewerList, Mode=OneWay, Path=SelectedItem.(sqlPad:OutputViewer.StatusInfo).AffectedRowCountVisibility}">
 						<Run Text="{Binding ElementName=OutputViewerList, Mode=OneWay, Path=SelectedItem.(sqlPad:OutputViewer.StatusInfo).AffectedRowCount, Converter={StaticResource PrettyPrintNumericConverter}}" /><Run Text=" row(s) affected " />
 					</TextBlock>
-					<TextBlock Text="Command executed successfully " Visibility="{Binding ElementName=OutputViewerList, Path=SelectedItem.(sqlPad:OutputViewer.StatusInfo).StatementExecutedSuccessfully, Mode=OneWay, Converter={StaticResource ObjectToVisibilityConverter}}" />
+					<TextBlock Text="{Binding ElementName=OutputViewerList, Path=SelectedItem.(sqlPad:OutputViewer.StatusInfo).SuccessfulExecutionMessage, Mode=OneWay}" Visibility="{Binding ElementName=OutputViewerList, Path=SelectedItem.(sqlPad:OutputViewer.StatusInfo).SuccessfulExecutionMessage, Mode=OneWay, Converter={StaticResource ObjectToVisibilityConverter}}" />
 					<TextBlock Visibility="{Binding ElementName=OutputViewerList, Path=SelectedItem.(sqlPad:OutputViewer.StatusInfo).ResultGridAvailable, Mode=OneWay, Converter={StaticResource ObjectToVisibilityConverter}}">
 						<Run Text="Row " />
 						<Run Text="{Binding ElementName=OutputViewerList, Path=SelectedItem.(sqlPad:OutputViewer.ActiveResultViewer).SelectedRowIndex, Mode=OneWay}" />

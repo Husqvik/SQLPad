@@ -56,7 +56,9 @@ namespace SqlPad
 		public IReadOnlyList<CompilationError> CompilationErrors { get; set; }
 
 		public IReadOnlyDictionary<ResultInfo, IReadOnlyList<ColumnHeader>> ResultInfoColumnHeaders { get; set; }
-	}
+
+		public string SuccessfulExecutionMessage { get; set; }
+    }
 
 	public class StatementExecutionException : Exception
 	{
