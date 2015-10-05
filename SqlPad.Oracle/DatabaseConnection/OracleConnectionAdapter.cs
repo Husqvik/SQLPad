@@ -292,6 +292,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			try
 			{
+				await EnsureUserConnectionOpen(cancellationToken);
+
 				var commandReader = ReinitializeResultInfo(resultInfo);
 				OracleDataReader dataReader;
 				if (commandReader.RefCursorInfo.Parameter != null || commandReader.RefCursorInfo.ImplicitCursorIndex.HasValue)
@@ -607,6 +609,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var isConnectionStateChanged = await _userConnection.EnsureConnectionOpen(cancellationToken);
 			if (isConnectionStateChanged)
 			{
+				Trace.WriteLine("User connection has been open. ");
+
 				_userConnection.ModuleName = _moduleName;
 				_userConnection.ActionName = "User query";
 
