@@ -66,6 +66,7 @@ namespace SqlPad.Oracle
 			{
 				BuildCommonDateFormatCompletionItems(currentNode, completionItems);
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "J", "J - Julian day; the number of days since January 1, 4712 BC"));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "JSP", "JSP - Julian day spelled"));
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "Q", "Q - Quarter of year (1, 2, 3, 4; January - March = 1)"));
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "WW", "WW - Week of year (1-53) where week 1 starts on the first day of the year and continues to the seventh day of the year"));
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "W", "W - Week of month (1-5) where week 1 starts on the first day of the month and ends on the seventh"));

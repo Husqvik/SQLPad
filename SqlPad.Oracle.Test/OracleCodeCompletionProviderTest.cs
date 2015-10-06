@@ -1005,13 +1005,13 @@ se";
 		{
 			const string statement = @"SELECT TO_CHAR(12.34, '9G999D00', '') FROM DUAL";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 30).ToList();
-			items.Count.ShouldBe(33);
+			items.Count.ShouldBe(34);
 			items[0].Name.ShouldBe("CC - Century");
 			items[0].Text.ShouldBe("'CC'");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
-			items[32].Name.ShouldStartWith("YYYY-MM-DD\"T\"HH24:MI:SS - XML date time - ");
-			items[32].Text.ShouldBe("'YYYY-MM-DD\"T\"HH24:MI:SS'");
-			items[32].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+			items[33].Name.ShouldStartWith("YYYY-MM-DD\"T\"HH24:MI:SS - XML date time - ");
+			items[33].Text.ShouldBe("'YYYY-MM-DD\"T\"HH24:MI:SS'");
+			items[33].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 		}
 
 		[Test(Description = @"")]
