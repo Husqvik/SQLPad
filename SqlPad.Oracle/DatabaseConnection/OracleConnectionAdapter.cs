@@ -331,6 +331,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 			commandReader.Reader.Dispose();
 
 			var command = commandReader.Command;
+			command.Connection = _userConnection;
+
 			var commandText = command.CommandText;
 			command.CommandText = null;
 			command.CommandText = commandText;
