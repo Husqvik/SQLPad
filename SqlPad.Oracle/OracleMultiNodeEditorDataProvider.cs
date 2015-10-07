@@ -24,37 +24,77 @@ namespace SqlPad.Oracle
 			var semanticModel = (OracleStatementSemanticModel)executionContext.DocumentRepository.ValidationModels[terminal.Statement].SemanticModel;
 
 			OracleColumnReference columnReference;
+			OracleQueryBlock cteQueryBlock;
 			switch (terminal.Id)
 			{
 				case Terminals.ObjectAlias:
 					var objectReference = semanticModel.AllReferenceContainers
 						.SelectMany(c => c.ObjectReferences)
-						.Single(o => o.AliasNode == terminal);
+						.SingleOrDefault(o => o.AliasNode == terminal);
 
-					multiNodeData.SynchronizedSegments = semanticModel.AllReferenceContainers
+					var synchronizedSegments = new List<SourcePosition>();
+					cteQueryBlock = semanticModel.QueryBlocks.SingleOrDefault(qb => qb.AliasNode == terminal);
+					if (objectReference == null && cteQueryBlock != null)
+					{
+						synchronizedSegments.AddRange(GetDataObjectReferences(cteQueryBlock).Select(o => o.ObjectNode.SourcePosition));
+					}
+
+					var objectQualifiedColumnSynchronizedSegments = semanticModel.AllReferenceContainers
 						.SelectMany(c => c.ColumnReferences)
-						.Where(c => c.ObjectNode != null && c.ValidObjectReference == objectReference)
-						.Select(c => c.ObjectNode.SourcePosition)
-						.ToArray();
+						.Where(c => c.ObjectNode != null && c.ValidObjectReference != null && (c.ValidObjectReference == objectReference || (c.ValidObjectReference.QueryBlocks.Count == 1 && c.ValidObjectReference.QueryBlocks.First() == cteQueryBlock)))
+						.Concat(GetCommonTableExpressionObjectPrefixedColumnReferences(cteQueryBlock))
+						.Select(c => c.ObjectNode.SourcePosition);
+
+					synchronizedSegments.AddRange(objectQualifiedColumnSynchronizedSegments);
+					multiNodeData.SynchronizedSegments = synchronizedSegments.AsReadOnly();
 
 					break;
 
 				case Terminals.ObjectIdentifier:
+					var editNodes = new List<SourcePosition>();
+
 					columnReference = semanticModel.GetReference<OracleColumnReference>(terminal);
-					var dataObjectReference = columnReference?.ValidObjectReference as OracleDataObjectReference;
-					var objectAliasNode = dataObjectReference?.AliasNode;
-					if (objectAliasNode != null)
+
+					OracleDataObjectReference dataObjectReference = null;
+					var dataObjectReferenceCandidate = columnReference?.ValidObjectReference as OracleDataObjectReference;
+					if (dataObjectReferenceCandidate != null)
 					{
-						var editNodes = new List<SourcePosition> { objectAliasNode.SourcePosition };
+						dataObjectReference = dataObjectReferenceCandidate;
+					}
+					else
+					{
+						dataObjectReferenceCandidate = semanticModel.GetReference<OracleDataObjectReference>(terminal);
+						if (dataObjectReferenceCandidate?.Type == ReferenceType.CommonTableExpression)
+						{
+							dataObjectReference = dataObjectReferenceCandidate;
+
+							if (dataObjectReferenceCandidate.QueryBlocks.Count == 1)
+							{
+								cteQueryBlock = dataObjectReferenceCandidate.QueryBlocks.First();
+								editNodes.Add(cteQueryBlock.AliasNode.SourcePosition);
+								var cteColumnReferences = GetCommonTableExpressionObjectPrefixedColumnReferences(cteQueryBlock);
+								editNodes.AddRange(cteColumnReferences.Select(c => c.ObjectNode.SourcePosition));
+								editNodes.AddRange(GetDataObjectReferences(cteQueryBlock).Where(o => o != dataObjectReference).Select(o => o.ObjectNode.SourcePosition));
+							}
+						}
+					}
+
+					if (dataObjectReference != null)
+					{
+						if (dataObjectReference.AliasNode != null)
+						{
+							editNodes.Add(dataObjectReference.AliasNode.SourcePosition);
+						}
+
 						var editNodesSource = semanticModel.AllReferenceContainers
 							.SelectMany(c => c.ColumnReferences)
 							.Where(r => r.ObjectNode != null && r != columnReference && r.ValidObjectReference == dataObjectReference)
 							.Select(r => r.ObjectNode.SourcePosition);
 
 						editNodes.AddRange(editNodesSource);
-						multiNodeData.SynchronizedSegments = editNodes;
 					}
 
+					multiNodeData.SynchronizedSegments = editNodes.AsReadOnly();
 					break;
 
 				case Terminals.BindVariableIdentifier:
@@ -82,6 +122,38 @@ namespace SqlPad.Oracle
 			}
 
 			return multiNodeData;
+		}
+
+		private IEnumerable<OracleReference> GetCommonTableExpressionObjectPrefixedColumnReferences(OracleQueryBlock cteQueryBlock)
+		{
+			var sourceColumnReferences = cteQueryBlock.AllColumnReferences;
+			if (cteQueryBlock.IsRecursive)
+			{
+				sourceColumnReferences = sourceColumnReferences.Concat(cteQueryBlock.AllFollowingConcatenatedQueryBlocks.SelectMany(qb => qb.AllColumnReferences));
+			}
+
+			return sourceColumnReferences
+				.Where(c => c.ObjectNode != null && c.ValidObjectReference != null &&
+				            c.OwnerNode == null && String.Equals(c.ValidObjectReference.FullyQualifiedObjectName.NormalizedName, cteQueryBlock.NormalizedAlias));
+		}
+
+		private IEnumerable<OracleDataObjectReference> GetDataObjectReferences(OracleQueryBlock cteQueryBlock)
+		{
+			var dataObjectReferences = cteQueryBlock.SemanticModel.AllReferenceContainers
+				.SelectMany(c => c.ObjectReferences)
+				.Where(o => o.QueryBlocks.Count == 1 && o.QueryBlocks.First() == cteQueryBlock);
+
+			if (cteQueryBlock.IsRecursive)
+			{
+				var recursiveDataObjectReferences =
+					cteQueryBlock.AllFollowingConcatenatedQueryBlocks
+						.SelectMany(c => c.ObjectReferences)
+						.Where(o => o.OwnerNode == null && o.ObjectNode != null && String.Equals(o.ObjectNode.Token.Value.ToQuotedIdentifier(), cteQueryBlock.NormalizedAlias));
+
+				dataObjectReferences = dataObjectReferences.Concat(recursiveDataObjectReferences);
+			}
+
+			return dataObjectReferences;
 		}
 	}
 }

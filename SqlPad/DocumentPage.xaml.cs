@@ -1937,6 +1937,7 @@ namespace SqlPad
 				{
 					if (isEscape)
 					{
+						_completionWindow?.Close();
 						_multiNodeEditor.Cancel();
 					}
 
