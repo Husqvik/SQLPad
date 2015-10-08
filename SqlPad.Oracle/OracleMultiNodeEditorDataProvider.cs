@@ -55,35 +55,54 @@ namespace SqlPad.Oracle
 
 					columnReference = semanticModel.GetReference<OracleColumnReference>(terminal);
 
-					OracleDataObjectReference dataObjectReference = null;
+					var objectReferences = new HashSet<OracleDataObjectReference>();
 					var dataObjectReferenceCandidate = columnReference?.ValidObjectReference as OracleDataObjectReference;
 					if (dataObjectReferenceCandidate != null)
 					{
-						dataObjectReference = dataObjectReferenceCandidate;
+						objectReferences.Add(dataObjectReferenceCandidate);
 					}
 					else
 					{
 						dataObjectReferenceCandidate = semanticModel.GetReference<OracleDataObjectReference>(terminal);
-						if (dataObjectReferenceCandidate?.Type == ReferenceType.CommonTableExpression)
-						{
-							dataObjectReference = dataObjectReferenceCandidate;
+					}
 
-							if (dataObjectReferenceCandidate.QueryBlocks.Count == 1)
+					if (dataObjectReferenceCandidate?.Type == ReferenceType.CommonTableExpression)
+					{
+						objectReferences.Add(dataObjectReferenceCandidate);
+
+						if (dataObjectReferenceCandidate.QueryBlocks.Count == 1)
+						{
+							cteQueryBlock = dataObjectReferenceCandidate.QueryBlocks.First();
+							var cteColumnReferences = GetCommonTableExpressionObjectPrefixedColumnReferences(cteQueryBlock);
+							editNodes.AddRange(cteColumnReferences.Select(c => c.ObjectNode.SourcePosition));
+							editNodes.AddRange(GetDataObjectReferences(cteQueryBlock).Where(o => o != dataObjectReferenceCandidate).Select(o => o.ObjectNode.SourcePosition));
+
+							StatementGrammarNode cteAliasNode;
+							if (cteQueryBlock.AliasNode == null)
 							{
-								cteQueryBlock = dataObjectReferenceCandidate.QueryBlocks.First();
-								editNodes.Add(cteQueryBlock.AliasNode.SourcePosition);
-								var cteColumnReferences = GetCommonTableExpressionObjectPrefixedColumnReferences(cteQueryBlock);
-								editNodes.AddRange(cteColumnReferences.Select(c => c.ObjectNode.SourcePosition));
-								editNodes.AddRange(GetDataObjectReferences(cteQueryBlock).Where(o => o != dataObjectReference).Select(o => o.ObjectNode.SourcePosition));
+								cteQueryBlock = cteQueryBlock.AllPrecedingConcatenatedQueryBlocks.Last();
+								cteAliasNode = cteQueryBlock.AliasNode;
+								var referencesToCte = semanticModel.AllReferenceContainers.SelectMany(c => c.ObjectReferences).Where(o => o.QueryBlocks.Count == 1 && o.QueryBlocks.First() == cteQueryBlock);
+								objectReferences.AddRange(referencesToCte);
 							}
+							else
+							{
+								cteAliasNode = cteQueryBlock.AliasNode;
+							}
+
+							editNodes.Add(cteAliasNode.SourcePosition);
 						}
 					}
 
-					if (dataObjectReference != null)
+					foreach (var dataObjectReference in objectReferences)
 					{
 						if (dataObjectReference.AliasNode != null)
 						{
 							editNodes.Add(dataObjectReference.AliasNode.SourcePosition);
+						}
+						else if (dataObjectReference.Type == ReferenceType.CommonTableExpression && dataObjectReference.ObjectNode != terminal)
+						{
+							editNodes.Add(dataObjectReference.ObjectNode.SourcePosition);
 						}
 
 						var editNodesSource = semanticModel.AllReferenceContainers

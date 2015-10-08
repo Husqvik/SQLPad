@@ -40,6 +40,11 @@ namespace SqlPad.Oracle
 		{
 			get
 			{
+				if (String.Equals(RootNode.Id, NonTerminals.PlSqlBlockStatement))
+				{
+					return "PL/SQL procedure successfully completed. ";
+				}
+
 				var statementNode = RootNode[0, 0];
 				switch (statementNode?.Id)
 				{

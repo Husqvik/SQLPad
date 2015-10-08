@@ -135,8 +135,8 @@ WHERE
 			var outputViewer = DocumentPage.OutputViewers[0];
 			outputViewer.DatabaseOutput.ShouldBe($"Test database output{Environment.NewLine}");
 			outputViewer.CompilationErrors.Count.ShouldBe(1);
-			outputViewer.ExecutionLog.Length.ShouldBe(87);
-			outputViewer.ExecutionLog.ShouldContain("Statement executed successfully");
+			outputViewer.ExecutionLog.Length.ShouldBe(84);
+			outputViewer.ExecutionLog.ShouldContain("Command executed successfully. (");
 			outputViewer.IsBusy.ShouldBe(false);
 			outputViewer.HasActiveTransaction.ShouldBe(false);
 			outputViewer.SessionExecutionStatistics.Count.ShouldBeGreaterThan(0);

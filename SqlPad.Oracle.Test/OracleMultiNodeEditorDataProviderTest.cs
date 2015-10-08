@@ -57,5 +57,35 @@ FROM
 			segments[2].IndexStart.ShouldBe(76);
 			segments[3].IndexStart.ShouldBe(107);
 		}
+
+		[Test(Description = @"")]
+		public void TestRecursiveCteNodesAtInnerObjectReference()
+		{
+			var multiNodeEditorData = GetMultiNodeEditorData(CteSqlText, 76);
+
+			multiNodeEditorData.CurrentNode.ShouldNotBe(null);
+			multiNodeEditorData.CurrentNode.SourcePosition.IndexStart.ShouldBe(76);
+			multiNodeEditorData.SynchronizedSegments.Count.ShouldBe(4);
+			var segments = multiNodeEditorData.SynchronizedSegments.OrderBy(s => s.IndexStart).ToArray();
+			segments[0].IndexStart.ShouldBe(5);
+			segments[1].IndexStart.ShouldBe(59);
+			segments[2].IndexStart.ShouldBe(107);
+			segments[3].IndexStart.ShouldBe(123);
+		}
+
+		[Test(Description = @"")]
+		public void TestRecursiveCteNodesAtOuterColumnReference()
+		{
+			var multiNodeEditorData = GetMultiNodeEditorData(CteSqlText, 107);
+
+			multiNodeEditorData.CurrentNode.ShouldNotBe(null);
+			multiNodeEditorData.CurrentNode.SourcePosition.IndexStart.ShouldBe(107);
+			multiNodeEditorData.SynchronizedSegments.Count.ShouldBe(4);
+			var segments = multiNodeEditorData.SynchronizedSegments.OrderBy(s => s.IndexStart).ToArray();
+			segments[0].IndexStart.ShouldBe(5);
+			segments[1].IndexStart.ShouldBe(59);
+			segments[2].IndexStart.ShouldBe(76);
+			segments[3].IndexStart.ShouldBe(123);
+		}
 	}
 }

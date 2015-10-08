@@ -103,7 +103,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			try
 			{
 				await ExecuteSimpleCommandUsingUserConnection(commandText, cancellationToken);
-				Trace.WriteLine($"Enable trace event statement executed successfully: \n{commandText}");
+				Trace.WriteLine($"Enable trace event command executed successfully: \n{commandText}");
 
 				await RetrieveTraceFileName(cancellationToken);
 			}
@@ -165,7 +165,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 
 			await ExecuteSimpleCommandUsingUserConnection(commandText, cancellationToken);
-			Trace.WriteLine($"Disable trace event statement executed successfully: \n{commandText}");
+			Trace.WriteLine($"Disable trace event command executed successfully: \n{commandText}");
 		}
 
 		internal void SwitchCurrentSchema()

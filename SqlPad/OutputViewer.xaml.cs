@@ -259,8 +259,7 @@ namespace SqlPad
 
 		private async Task ExecuteDatabaseCommandAsyncInternal(StatementBatchExecutionModel executionModel)
 		{
-			//var caretOffset = DocumentPage.Editor.CaretOffset;
-			//var text = DocumentPage.Editor.Text;
+			var beforeExecutionText = DocumentPage.Editor.Text;
 
 			Initialize();
 
@@ -281,16 +280,10 @@ namespace SqlPad
 
 					var lastStatementResult = executionException.BatchResult.StatementResults.Last();
 					var errorPosition = lastStatementResult.ErrorPosition;
-					if (errorPosition.HasValue)
+					if (errorPosition.HasValue && String.Equals(beforeExecutionText, DocumentPage.Editor.Text))
 					{
 						DocumentPage.Editor.CaretOffset = lastStatementResult.StatementModel.Statement.RootNode.SourcePosition.IndexStart + errorPosition.Value;
 					}
-
-					/*if (caretOffset == DocumentPage.Editor.CaretOffset && String.Equals(text, DocumentPage.Editor.Text))
-					{
-						var newCaretPosition = executionException.BatchResult.StatementResults.First(r => !r.ExecutedSuccessfully).StatementModel.Statement.SourcePosition.IndexStart;
-						DocumentPage.Editor.NavigateToOffset(newCaretPosition);
-					}*/
 				}
 
 				Messages.ShowError(actionResult.Exception.Message);
@@ -422,9 +415,10 @@ namespace SqlPad
 
 				if (executionResult.ExecutedSuccessfully)
 				{
-					_executionLogBuilder.Append("Statement executed successfully (");
+					_executionLogBuilder.Append(executionResult.SuccessfulExecutionMessage);
+					_executionLogBuilder.Append("(");
 					_executionLogBuilder.Append(executionResult.Duration.Value.ToPrettyString());
-					_executionLogBuilder.Append("). ");
+					_executionLogBuilder.Append(")");
 
 					if (executionResult.AffectedRowCount != -1)
 					{

@@ -73,6 +73,7 @@ namespace SqlPad.Oracle.Test
 					ExecutedAt = DateTime.Now,
 					Duration = TimeSpan.FromMilliseconds(1),
 					Exception = null,
+					SuccessfulExecutionMessage = "Command executed successfully. ",
 					CompilationErrors =
 						new[]
 						{
