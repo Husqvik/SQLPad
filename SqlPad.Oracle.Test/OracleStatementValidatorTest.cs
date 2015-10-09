@@ -1866,6 +1866,21 @@ FROM DUAL";
 		}
 
 		[Test(Description = @"")]
+		public void TestLevelFunctionWithoutConnectByClauseAsFunctionParameter()
+		{
+			const string sqlText = @"SELECT DBMS_RANDOM.VALUE(1, LEVEL) FROM DUAL";
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var programNodeValidity = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
+			programNodeValidity.Length.ShouldBe(3);
+			programNodeValidity[2].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ConnectByClauseRequired);
+			programNodeValidity[2].Node.FirstTerminalNode.Token.Value.ShouldBe("LEVEL");
+		}
+
+		[Test(Description = @"")]
 		public void TestLevelFunctionOutsideQueryBlock()
 		{
 			const string sqlText = @"UPDATE DUAL SET DUMMY = LEVEL";
@@ -2952,5 +2967,39 @@ WHERE
 			programValidities[0].Node.FirstTerminalNode.Token.Value.ShouldBe("CAST");
 			programValidities[0].SemanticErrorType.ShouldBe(null);
 		}
+
+		[Test(Description = @"")]
+		public void TestSelectIntoClauseOutsidePlSql()
+		{
+			const string sqlText = "SELECT DUMMY INTO x FROM DUAL";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var invalidNonTerminals = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			invalidNonTerminals.Count.ShouldBe(1);
+			invalidNonTerminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.SelectIntoClauseAllowedOnlyInMainQueryBlockWithinPlSqlScope);
+		}
+
+		[Test(Description = @"")]
+		public void TestSelectIntoClauseWithinPlSql()
+		{
+			const string sqlText =
+@"BEGIN
+	SELECT DUMMY INTO :x FROM (SELECT DUMMY INTO :y FROM DUAL);
+END;";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var invalidNonTerminals = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			invalidNonTerminals.Count.ShouldBe(1);
+			invalidNonTerminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.SelectIntoClauseAllowedOnlyInMainQueryBlockWithinPlSqlScope);
+			invalidNonTerminals[0].Node.LastTerminalNode.Token.Value.ShouldBe("y");
+        }
 	}
 }

@@ -39,6 +39,7 @@ namespace SqlPad.Oracle
 		public const string ExpressionMustHaveSameDatatypeAsCorrespondingExpression = "Expression must have same datatype as corresponding expression";
 		public const string PartitionedTableOnBothSidesOfPartitionedOuterJoinNotSupported = "Partitioned table on both sides of PARTITIONED OUTER JOIN is not supported";
 		public const string LeadingPrecisionOfTheIntervalIsTooSmall = "The leading precision of the interval is too small";
+		public const string SelectIntoClauseAllowedOnlyInMainQueryBlockWithinPlSqlScope = "SELECT INTO clause is allowed only in main query block within PL/SQL scope";
 	}
 
 	public static class OracleSemanticErrorTooltipText

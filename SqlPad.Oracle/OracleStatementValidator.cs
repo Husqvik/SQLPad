@@ -756,8 +756,16 @@ namespace SqlPad.Oracle
 					foreach (var invalidColumnIndexReference in queryBlock.OrderByColumnIndexReferences.Where(r => !r.IsValid))
 					{
 						validationModel.ColumnNodeValidity[invalidColumnIndexReference.Terminal] =
-							new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnIndex) {Node = invalidColumnIndexReference.Terminal};
+							new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnIndex) { Node = invalidColumnIndexReference.Terminal };
 					}
+				}
+
+				var supportsIntoClause = queryBlock.Type == QueryBlockType.Normal && !String.Equals(queryBlock.Statement.RootNode.Id, NonTerminals.StandaloneStatement) && queryBlock.RootNode.GetAncestor(NonTerminals.QueryBlock) == null;
+				var selectIntoClause = queryBlock.RootNode[NonTerminals.IntoVariableClause];
+				if (!supportsIntoClause && selectIntoClause != null)
+				{
+					validationModel.InvalidNonTerminals[selectIntoClause] =
+						new InvalidNodeValidationData(OracleSemanticErrorType.SelectIntoClauseAllowedOnlyInMainQueryBlockWithinPlSqlScope) { Node = selectIntoClause };
 				}
 
 				var nestedQuery = queryBlock.RootNode.GetAncestor(NonTerminals.NestedQuery);
