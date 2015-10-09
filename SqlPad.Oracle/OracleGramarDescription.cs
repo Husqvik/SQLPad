@@ -384,6 +384,7 @@ namespace SqlPad.Oracle
 			public const string DynamicReturningClause = "DynamicReturningClause";
 			public const string EachRowOrStatement = "EachRowOrStatement";
 			public const string EditionableOrNonEditionable = "EditionableOrNonEditionable";
+			public const string ElementType = "ElementType";
 			public const string EnableDisableClause = "EnableDisableClause";
 			public const string EnableDisableClauseList = "EnableDisableClauseList";
 			public const string EnableDisableConstraintType = "EnableDisableConstraintType";
@@ -863,6 +864,7 @@ namespace SqlPad.Oracle
 			public const string ParameterDeclaration = "ParameterDeclaration";
 			public const string ParameterDeclarationList = "ParameterDeclarationList";
 			public const string ParameterDeclarationListChained = "ParameterDeclarationListChained";
+			public const string ParameterDirectionDeclaration = "ParameterDirectionDeclaration";
 			public const string ParameterFileDataSource = "ParameterFileDataSource";
 			public const string ParenthesisEnclosedAggregationFunctionParameters = "ParenthesisEnclosedAggregationFunctionParameters";
 			public const string ParenthesisEnclosedAliasedExpressionList = "ParenthesisEnclosedAliasedExpressionList";

@@ -3127,7 +3127,35 @@ END;";
 			{
 				const string statement1 =
 @"DECLARE
-	type test_type is table of dual%rowtype;
+	type test_type is table of dual%ROWTYPE;
+BEGIN
+	NULL;
+END;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestTypeDefinitionBasedOnColumnType()
+			{
+				const string statement1 =
+@"DECLARE
+	type test_type is varray(50) of test_table.test_column%TYPE;
+BEGIN
+	NULL;
+END;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestParameterDeclarationBasedOnFullyQualifiedColumnType()
+			{
+				const string statement1 =
+@"DECLARE
+	PROCEDURE test_procedure(p IN husqvik.selection.status%TYPE) IS BEGIN NULL; END;
 BEGIN
 	NULL;
 END;";

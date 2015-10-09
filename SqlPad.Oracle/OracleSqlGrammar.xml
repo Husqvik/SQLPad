@@ -5492,7 +5492,7 @@
         </Sequence>
         <Sequence>
           <Terminal Id="Ref" IsOptional="true" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <NonTerminal Id="Prefix" IsOptional="true" />
           <Terminal Id="DataTypeIdentifier" />
           <NonTerminal Id="PercentCharacterTypeOrRowType" IsOptional="true" />
         </Sequence>
@@ -11433,12 +11433,21 @@
         <Sequence>
           <Terminal Id="ParameterIdentifier" />
           <Terminal Id="In" IsOptional="true" />
+          <NonTerminal Id="ParameterDirectionDeclaration" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ParameterDirectionDeclaration">
+      <Sequences>
+        <Sequence>
           <Terminal Id="Out" />
           <Terminal Id="NoCopy" IsOptional="true" />
           <NonTerminal Id="PlSqlDataTypeWithoutConstraint" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="CursorParameterDeclaration" />
+          <NonTerminal Id="PlSqlDataTypeWithoutConstraint" />
+          <NonTerminal Id="VariableDeclarationDefaultValue" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -11724,12 +11733,23 @@
           <NonTerminal Id="ParenthesisEnclosedIntegerLiteral" />
           <Terminal Id="Of" />
           <Terminal Id="Ref" IsOptional="true" />
-          <NonTerminal Id="DataType" />
+          <NonTerminal Id="ElementType" />
           <NonTerminal Id="NotNull" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
     
+    <Rule StartingNonTerminal="ElementType">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="RowTypeDefinition" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="DataType" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+      
     <Rule StartingNonTerminal="ParenthesisEnclosedIntegerLiteral">
       <Sequences>
         <Sequence>

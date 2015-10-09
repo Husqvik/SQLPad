@@ -336,21 +336,19 @@ namespace SqlPad.Oracle.SemanticModel
 			var parameterIndex = 0;
 			foreach (var parameterDeclaration in parameterDeckarations.GetDescendants(NonTerminals.ParameterDeclaration))
 			{
-				var effectiveParameterDeclaration = String.Equals(parameterDeclaration[0].Id, NonTerminals.CursorParameterDeclaration)
-					? parameterDeclaration[0]
-					: parameterDeclaration;
-
 				parameterIndex++;
-				var parameterName = effectiveParameterDeclaration[Terminals.ParameterIdentifier].Token.Value.ToQuotedIdentifier();
-				var direction = effectiveParameterDeclaration[Terminals.Out] == null ? ParameterDirection.Input : ParameterDirection.Output;
-				if (direction == ParameterDirection.Output && effectiveParameterDeclaration[Terminals.In] != null)
+				var parameterName = parameterDeclaration[Terminals.ParameterIdentifier].Token.Value.ToQuotedIdentifier();
+				var parameterDirectionDeclaration = parameterDeclaration[NonTerminals.ParameterDirectionDeclaration];
+
+				var direction = parameterDirectionDeclaration[Terminals.Out] == null ? ParameterDirection.Input : ParameterDirection.Output;
+				if (direction == ParameterDirection.Output && parameterDeclaration[Terminals.In] != null)
 				{
 					direction = ParameterDirection.InputOutput;
 				}
 
-				var isOptional = effectiveParameterDeclaration[NonTerminals.VariableDeclarationDefaultValue] != null;
+				var isOptional = parameterDirectionDeclaration[NonTerminals.VariableDeclarationDefaultValue] != null;
 
-				var parameterType = ResolveParameterType(effectiveParameterDeclaration);
+				var parameterType = ResolveParameterType(parameterDirectionDeclaration);
 
 				metadata.AddParameter(new OracleProgramParameterMetadata(parameterName, parameterIndex, parameterIndex, 0, direction, parameterType, OracleObjectIdentifier.Empty, isOptional));
 			}

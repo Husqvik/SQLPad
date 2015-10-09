@@ -284,9 +284,8 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private static OraclePlSqlParameter ResolveParameter(StatementGrammarNode parameterDeclaration)
 		{
-			parameterDeclaration = parameterDeclaration[NonTerminals.CursorParameterDeclaration] ?? parameterDeclaration;
 			var direction = ParameterDirection.Input;
-			if (parameterDeclaration[Terminals.Out] != null)
+			if (parameterDeclaration[NonTerminals.ParameterDirectionDeclaration, Terminals.Out] != null)
 			{
 				direction = parameterDeclaration[Terminals.In] == null ? ParameterDirection.Output : ParameterDirection.InputOutput;
 			}
