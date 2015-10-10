@@ -3075,12 +3075,12 @@ namespace SqlPad.Oracle.SemanticModel
 			var columnReference =
 				new OracleColumnReference(container)
 				{
-					RootNode = identifierNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.AliasedExpressionOrAllTableColumns), NonTerminals.PrefixedColumnReference)
-					           ?? identifierNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.AliasedExpressionOrAllTableColumns), NonTerminals.PrefixedAsterisk)
-					           ?? identifierNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.QueryTableExpression), NonTerminals.TableCollectionInnerExpression)
-					           ?? (String.Equals(identifierNode.ParentNode.Id, NonTerminals.IdentifierList) || String.Equals(identifierNode.ParentNode.Id, NonTerminals.ColumnIdentifierChainedList) || String.Equals(identifierNode.Id, Terminals.RowNumberPseudoColumn) || String.Equals(identifierNode.Id, Terminals.Level) || String.Equals(identifierNode.Id, Terminals.User)
-						           ? identifierNode
-						           : null),
+					RootNode =
+						String.Equals(identifierNode.ParentNode.Id, NonTerminals.IdentifierList) || String.Equals(identifierNode.ParentNode.Id, NonTerminals.ColumnIdentifierChainedList) || String.Equals(identifierNode.Id, Terminals.RowNumberPseudoColumn) || String.Equals(identifierNode.Id, Terminals.Level) || String.Equals(identifierNode.Id, Terminals.User)
+							? identifierNode
+							: identifierNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.AliasedExpressionOrAllTableColumns), NonTerminals.PrefixedColumnReference)
+							  ?? identifierNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.AliasedExpressionOrAllTableColumns), NonTerminals.PrefixedAsterisk)
+							  ?? identifierNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.QueryTableExpression), NonTerminals.TableCollectionInnerExpression),
 					ColumnNode = identifierNode,
 					DatabaseLinkNode = OracleReferenceBuilder.GetDatabaseLinkFromIdentifier(identifierNode),
 					Placement = placement,

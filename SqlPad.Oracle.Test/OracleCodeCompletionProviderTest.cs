@@ -2562,6 +2562,20 @@ ON (EVENTS.ID = SRC.ID)";
 						referenceIdentifier.ObjectIdentifierEffectiveValue.ShouldBe("SELE");
 						referenceIdentifier.IdentifierEffectiveValue.ShouldBe(null);
 					}
+
+					[Test(Description = @"")]
+					public void TestTableCollectionExpressionReferenceIdentifiers()
+					{
+						const string statement = @"SELECT column_value FROM TABLE (SYS.ODCI)";
+						var referenceIdentifier = InitializeCodeCompletionType(statement, 39).ReferenceIdentifier;
+						referenceIdentifier.CursorPosition.ShouldBe(39);
+						referenceIdentifier.SchemaIdentifierOriginalValue.ShouldBe(null);
+						referenceIdentifier.ObjectIdentifierOriginalValue.ShouldBe("SYS");
+						referenceIdentifier.IdentifierOriginalValue.ShouldBe("ODCI");
+						referenceIdentifier.SchemaIdentifierEffectiveValue.ShouldBe(null);
+						referenceIdentifier.ObjectIdentifierEffectiveValue.ShouldBe("SYS");
+						referenceIdentifier.IdentifierEffectiveValue.ShouldBe("ODC");
+					}
 				}
 			}
 		}

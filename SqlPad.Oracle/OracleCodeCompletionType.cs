@@ -384,9 +384,9 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			AnalyzePrefixedColumnReference(effectiveTerminal);
-
 			AnalyzeQueryTableExpression(effectiveTerminal);
+
+			AnalyzePrefixedColumnReference(effectiveTerminal);
 
 			AnalyzeDataType(effectiveTerminal);
 		}
