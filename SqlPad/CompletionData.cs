@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using System.Windows.Input;
 using System.Windows.Media;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
@@ -16,9 +17,9 @@ namespace SqlPad
 		private readonly string _completionText;
 		private readonly int _insertOffset;
 		private readonly int _caretOffset;
-		private int _selectionStartOffset;
-		private int _selectionLength;
 		private readonly List<Run> _inlines = new List<Run>();
+
+		private ActiveSnippet _activeSnippet;
 
 		public ICodeSnippet Snippet { get; set; }
 
@@ -37,7 +38,6 @@ namespace SqlPad
 			Snippet = codeSnippet;
 			Text = codeSnippet.Name;
 			Application.Current.Dispatcher.Invoke(BuildDecription);
-			_completionText = FormatSnippetText(codeSnippet, this);
 		}
 
 		private void BuildDecription()
@@ -116,30 +116,7 @@ namespace SqlPad
 
 		internal static string FormatSnippetText(ICodeSnippet codeSnippet)
 		{
-			return FormatSnippetText(codeSnippet, null);
-		}
-
-		private static string FormatSnippetText(ICodeSnippet codeSnippet, CompletionData completionData)
-		{
-			var parameters = codeSnippet.Parameters.OrderBy(p => p.Index).Select(p => (object)p.DefaultValue).ToArray();
-			if (parameters.Length == 0)
-			{
-				return codeSnippet.BaseText;
-			}
-			
-			var firstParameter = (string)parameters[0];
-			const string substitute = "{0}";
-			parameters[0] = substitute;
-
-			var preformattedText = String.Format(codeSnippet.BaseText, parameters);
-
-			if (completionData != null)
-			{
-				completionData._selectionStartOffset = preformattedText.IndexOf(substitute, StringComparison.InvariantCultureIgnoreCase);
-				completionData._selectionLength = firstParameter.Length;
-			}
-
-			return String.Format(preformattedText, firstParameter);
+			return String.Format(codeSnippet.BaseText, codeSnippet.Parameters.Select(p => (object)p.DefaultValue).ToArray());
 		}
 
 		public StatementGrammarNode Node { get; }
@@ -152,16 +129,12 @@ namespace SqlPad
 
 		public object Description { get; private set; }
 
-		public void Complete(TextArea textArea, ISegment completionSegment, EventArgs insertionRequestEventArgs)
+		public void Complete(TextArea textArea, ISegment completionSegment, EventArgs args)
 		{
 			if (Snippet != null)
 			{
-				textArea.Document.Replace(completionSegment.Offset, completionSegment.Length, _completionText);
-				var selectionStartOffset = completionSegment.Offset + _selectionStartOffset;
-				var selectionEndOffset = selectionStartOffset + _selectionLength;
-				textArea.Selection = Selection.Create(textArea, selectionStartOffset, selectionEndOffset);
-				textArea.Caret.Offset = selectionEndOffset;
-				
+				_activeSnippet?.Terminate();
+				_activeSnippet = new ActiveSnippet(completionSegment, textArea, this);
 				return;
 			}
 
@@ -183,5 +156,81 @@ namespace SqlPad
 		}
 
 		public double Priority => 0;
+
+		private class ActiveSnippet
+		{
+			private readonly List<Tuple<TextAnchor, TextAnchor>> _anchors = new List<Tuple<TextAnchor, TextAnchor>>();
+			private int _activeParameter;
+			private readonly TextArea _textArea;
+			private readonly CompletionData _completionData;
+
+			public ActiveSnippet(ISegment completionSegment, TextArea textArea, CompletionData completionData)
+			{
+				textArea.Document.BeginUpdate();
+				textArea.Document.Replace(completionSegment.Offset, completionSegment.Length, completionData.Snippet.BaseText);
+
+				if (completionData.Snippet.Parameters.Count > 0)
+				{
+					_completionData = completionData;
+					_textArea = textArea;
+
+					foreach (var parameter in completionData.Snippet.Parameters.OrderBy(p => p.Index))
+					{
+						var parameterOffset = _completionData.Snippet.BaseText.IndexOf($"{{{parameter.Index}}}", StringComparison.InvariantCulture);
+						var documentStartOffset = completionSegment.Offset + parameterOffset;
+						textArea.Document.Replace(documentStartOffset, 3, parameter.DefaultValue);
+
+						var anchorStart = textArea.Document.CreateAnchor(documentStartOffset);
+						var anchorEnd = textArea.Document.CreateAnchor(anchorStart.Offset + parameter.DefaultValue.Length);
+						_anchors.Add(Tuple.Create(anchorStart, anchorEnd));
+					}
+
+					SelectNextParameter();
+
+					if (completionData.Snippet.Parameters.Count > 1)
+					{
+						textArea.PreviewKeyDown += TextAreaPreviewKeyDownHandler;
+					}
+				}
+
+				textArea.Document.EndUpdate();
+			}
+
+			public void Terminate()
+			{
+				_textArea.PreviewKeyDown -= TextAreaPreviewKeyDownHandler;
+			}
+
+			private void TextAreaPreviewKeyDownHandler(object sender, KeyEventArgs args)
+			{
+				var isReturn = args.Key == Key.Return;
+				if (args.Key == Key.Escape || (isReturn && !SelectNextParameter()))
+				{
+					Terminate();
+				}
+
+				args.Handled = isReturn;
+			}
+
+			private bool SelectNextParameter()
+			{
+				if (_activeParameter >= _completionData.Snippet.Parameters.Count)
+				{
+					SelectText(_textArea.Caret.Offset, _textArea.Caret.Offset);
+					return false;
+				}
+
+				var anchors = _anchors[_activeParameter++];
+
+				SelectText(anchors.Item1.Offset, anchors.Item2.Offset);
+				return true;
+			}
+
+			private void SelectText(int startOffset, int endOffset)
+			{
+				_textArea.Selection = Selection.Create(_textArea, startOffset, endOffset);
+				_textArea.Caret.Offset = endOffset;
+			}
+		}
 	}
 }

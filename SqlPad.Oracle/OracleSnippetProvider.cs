@@ -82,7 +82,7 @@ namespace SqlPad.Oracle
 
 		public string BaseText { get; set; }
 
-		public ICollection<ICodeSnippetParameter> Parameters { get; set; }
+		public IReadOnlyList<ICodeSnippetParameter> Parameters { get; set; }
 
 		public SourcePosition SourceToReplace { get; set; }
 	}

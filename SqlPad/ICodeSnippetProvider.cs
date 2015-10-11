@@ -17,7 +17,7 @@ namespace SqlPad
 
 		string BaseText { get; }
 
-		ICollection<ICodeSnippetParameter> Parameters { get; }
+		IReadOnlyList<ICodeSnippetParameter> Parameters { get; }
 
 		SourcePosition SourceToReplace { get; }
 	}
