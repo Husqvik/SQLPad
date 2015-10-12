@@ -45,6 +45,23 @@ namespace SqlPad.Oracle
 					return "PL/SQL procedure successfully completed. ";
 				}
 
+				if (String.Equals(RootNode.Id, NonTerminals.CreatePlSqlStatement))
+				{
+					switch (RootNode[NonTerminals.CreatePlSqlObjectClause]?[0].Id)
+					{
+						case NonTerminals.CreateFunction:
+							return "Function created. ";
+						case NonTerminals.CreateProcedure:
+							return "Procedure created. ";
+						case NonTerminals.CreatePackageBody:
+							return "Package body created. ";
+						case NonTerminals.CreatePackage:
+							return "Package created. ";
+						case NonTerminals.CreateTrigger:
+							return "Trigger created. ";
+					}
+				}
+
 				var statementNode = RootNode[0, 0];
 				switch (statementNode?.Id)
 				{

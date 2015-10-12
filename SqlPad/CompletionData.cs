@@ -214,13 +214,13 @@ namespace SqlPad
 
 			private bool SelectNextParameter()
 			{
-				if (_activeParameter >= _completionData.Snippet.Parameters.Count)
+				Tuple<TextAnchor, TextAnchor> anchors;
+				if (_activeParameter >= _completionData.Snippet.Parameters.Count ||
+					(anchors = _anchors[_activeParameter++]).Item1.IsDeleted || anchors.Item2.IsDeleted)
 				{
 					SelectText(_textArea.Caret.Offset, _textArea.Caret.Offset);
 					return false;
 				}
-
-				var anchors = _anchors[_activeParameter++];
 
 				SelectText(anchors.Item1.Offset, anchors.Item2.Offset);
 				return true;
