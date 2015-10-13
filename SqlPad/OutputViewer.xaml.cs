@@ -422,8 +422,15 @@ namespace SqlPad
 
 					if (executionResult.AffectedRowCount != -1)
 					{
+						_executionLogBuilder.Append(". ");
 						_executionLogBuilder.Append(Convert.ToDecimal(executionResult.AffectedRowCount).ToString("N0"));
-						_executionLogBuilder.Append(" row(s) affected. ");
+						_executionLogBuilder.Append(" row");
+						if (executionResult.AffectedRowCount != 1)
+						{
+							_executionLogBuilder.Append("s");
+						}
+
+						_executionLogBuilder.Append(" affected. ");
 					}
 				}
 				else
