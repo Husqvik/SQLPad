@@ -52,6 +52,7 @@ namespace SqlPad
 		private FileSystemWatcher _documentFileWatcher;
 		private DateTime _lastDocumentFileChange;
 		private DatabaseProviderConfiguration _providerConfiguration;
+		private ActiveSnippet _activeSnippet;
 
 		private bool _isParsing;
 		private bool _isInitializing = true;
@@ -1406,6 +1407,11 @@ namespace SqlPad
 			}
 		}
 
+		internal void ActivateSnippet(ISegment completionSegment, CompletionData completionData)
+		{
+			_activeSnippet = new ActiveSnippet(completionSegment, Editor.TextArea, completionData);
+		}
+
 		private async void CreateCodeCompletionWindow(bool forcedInvokation, int caretOffset)
 		{
 			IReadOnlyCollection<CompletionData> items;
@@ -1414,7 +1420,7 @@ namespace SqlPad
 				items = await Task.Factory.StartNew(
 					() =>
 						_codeSnippetProvider.GetSnippets(_documentRepository, _documentRepository.StatementText, caretOffset)
-							.Select(s => new CompletionData(s))
+							.Select(s => new CompletionData(s, this))
 							.Concat(_codeCompletionProvider.ResolveItems(_documentRepository, DatabaseModel, caretOffset, forcedInvokation)
 								.Select(i => new CompletionData(i)))
 							.ToArray());
@@ -1931,6 +1937,16 @@ namespace SqlPad
 				if (isEscape)
 				{
 					ClearLastHighlight();
+					_activeSnippet = null;
+				}
+				else if (_activeSnippet != null)
+				{
+					if (!_activeSnippet.SelectNextParameter())
+					{
+						_activeSnippet = null;
+					}
+
+					e.Handled = true;
 				}
 
 				if (_multiNodeEditor != null)

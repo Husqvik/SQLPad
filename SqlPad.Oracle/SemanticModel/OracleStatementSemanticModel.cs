@@ -1017,11 +1017,10 @@ namespace SqlPad.Oracle.SemanticModel
 				sqlModelColumns.AddRange(measureColumns);
 
 				queryBlock.ModelReference =
-					new OracleSqlModelReference(this, sqlModelColumns, queryBlock.ObjectReferences)
+					new OracleSqlModelReference(this, sqlModelColumns, queryBlock.ObjectReferences, measureParenthesisEnclosedAliasedExpressionList)
 					{
 						Owner = queryBlock,
-						RootNode = modelClause,
-						MeasureExpressionList = measureParenthesisEnclosedAliasedExpressionList
+						RootNode = modelClause
 					};
 
 				var ruleDimensionIdentifiers = new List<StatementGrammarNode>();

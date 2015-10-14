@@ -257,6 +257,14 @@ namespace SqlPad.Oracle.Commands
 				}
 			}
 
+			if (columnReference.Owner.ModelReference != null)
+			{
+				foreach (var modelColumn in columnReference.Owner.ModelReference.ColumnDefinitions.Where(c => !c.IsDirectReference && c.AliasNode != null && String.Equals(c.NormalizedName, normalizedName)))
+				{
+					nodes.Add(modelColumn.AliasNode);
+				}
+			}
+
 			return nodes;
 		}
 
@@ -321,6 +329,23 @@ namespace SqlPad.Oracle.Commands
 				nodes = new[] { columnNode };
 				var queryBlock = semanticModel.GetQueryBlock(columnNode);
 				selectListColumn = queryBlock.Columns.SingleOrDefault(c => c.AliasNode == columnNode);
+
+				if (selectListColumn == null && queryBlock.ModelReference != null)
+				{
+					selectListColumn = queryBlock.ModelReference.ColumnDefinitions.SingleOrDefault(c => c.AliasNode == columnNode);
+					if (selectListColumn != null)
+					{
+						columnReference = queryBlock.ModelReference.DimensionReferenceContainer.ColumnReferences
+							.Concat(queryBlock.ModelReference.MeasuresReferenceContainer.ColumnReferences)
+							.Concat(queryBlock.AllColumnReferences)
+							.FirstOrDefault(c => String.Equals(c.NormalizedName, selectListColumn.NormalizedName));
+
+						if (columnReference != null)
+						{
+							return GetColumnUsages(semanticModel, columnReference.ColumnNode, onlyAliasOrigin);
+						}
+					}
+				}
 			}
 
 			var parentNodes = GetParentQueryBlockReferences(selectListColumn);

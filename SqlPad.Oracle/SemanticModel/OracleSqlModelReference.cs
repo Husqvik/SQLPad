@@ -5,12 +5,12 @@ using SqlPad.Oracle.DataDictionary;
 
 namespace SqlPad.Oracle.SemanticModel
 {
-	[DebuggerDisplay("OracleSqlModelReference (Columns={Columns.Count})")]
+	[DebuggerDisplay("OracleSqlModelReference (Columns={_columns.Count})")]
 	public class OracleSqlModelReference : OracleDataObjectReference
 	{
-		private readonly IReadOnlyList<OracleSelectListColumn> _sqlModelColumns;
-
 		private IReadOnlyList<OracleColumn> _columns;
+
+		public IReadOnlyList<OracleSelectListColumn> ColumnDefinitions { get; }
 
 		public OracleReferenceContainer SourceReferenceContainer { get; }
 
@@ -22,11 +22,20 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public override IEnumerable<OracleDataObjectReference> IncludeInnerReferences => base.IncludeInnerReferences.Concat(SourceReferenceContainer.ObjectReferences);
 
-		public OracleSqlModelReference(OracleStatementSemanticModel semanticModel, IReadOnlyList<OracleSelectListColumn> columns, IEnumerable<OracleDataObjectReference> sourceReferences)
+		public override IReadOnlyList<OracleColumn> Columns
+		{
+			get { return _columns ?? (_columns = ColumnDefinitions.Select(c => c.ColumnDescription).ToArray()); }
+		}
+
+		public StatementGrammarNode MeasureExpressionList { get; }
+
+		public OracleSqlModelReference(OracleStatementSemanticModel semanticModel, IReadOnlyList<OracleSelectListColumn> columns, IEnumerable<OracleDataObjectReference> sourceReferences, StatementGrammarNode measureExpressionList)
 			: base(ReferenceType.SqlModel)
 		{
-			_sqlModelColumns = columns;
-			
+			ColumnDefinitions = columns;
+
+			MeasureExpressionList = measureExpressionList;
+
 			SourceReferenceContainer = new OracleReferenceContainer(semanticModel);
 			foreach (var column in columns)
 			{
@@ -51,12 +60,5 @@ namespace SqlPad.Oracle.SemanticModel
 				sourceReference.Container = SourceReferenceContainer;
 			}
 		}
-
-		public override IReadOnlyList<OracleColumn> Columns
-		{
-			get { return _columns ?? (_columns = _sqlModelColumns.Select(c => c.ColumnDescription).ToArray()); }
-		}
-
-		public StatementGrammarNode MeasureExpressionList { get; set; }
 	}
 }

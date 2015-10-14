@@ -618,6 +618,77 @@ FROM
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestFindColumnUsagesAtMeasureDeclarationAlias()
+		{
+			const string sql =
+@"SELECT
+	DIMENSION, MEASURE1
+FROM
+	DUAL
+MODEL
+	DIMENSION BY (0 DIMENSION)
+	MEASURES (0 MEASURE1)
+	RULES (
+		MEASURE1[ANY] = 0
+    )";
+
+			var foundSegments = FindUsagesOrdered(sql, 92);
+			foundSegments.Count.ShouldBe(3);
+			foundSegments[0].IndextStart.ShouldBe(20);
+			foundSegments[0].Length.ShouldBe(8);
+			foundSegments[1].IndextStart.ShouldBe(92);
+			foundSegments[1].Length.ShouldBe(8);
+			foundSegments[2].IndextStart.ShouldBe(115);
+			foundSegments[2].Length.ShouldBe(8);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestFindColumnUsagesAtDimensionDeclarationAlias()
+		{
+			const string sql =
+@"SELECT
+	DIMENSION, MEASURE1
+FROM
+	DUAL
+MODEL
+	DIMENSION BY (0 DIMENSION)
+	MEASURES (0 MEASURE1)
+	RULES (
+		MEASURE1[ANY] = 0
+    )";
+
+			var foundSegments = FindUsagesOrdered(sql, 67);
+			foundSegments.Count.ShouldBe(2);
+			foundSegments[0].IndextStart.ShouldBe(9);
+			foundSegments[0].Length.ShouldBe(9);
+			foundSegments[1].IndextStart.ShouldBe(67);
+			foundSegments[1].Length.ShouldBe(9);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestFindColumnUsagesAtDimensionAtSelectColumn()
+		{
+			const string sql =
+@"SELECT
+	DIMENSION, MEASURE1
+FROM
+	DUAL
+MODEL
+	DIMENSION BY (0 DIMENSION)
+	MEASURES (0 MEASURE1)
+	RULES (
+		MEASURE1[ANY] = 0
+    )";
+
+			var foundSegments = FindUsagesOrdered(sql, 9);
+			foundSegments.Count.ShouldBe(2);
+			foundSegments[0].IndextStart.ShouldBe(9);
+			foundSegments[0].Length.ShouldBe(9);
+			foundSegments[1].IndextStart.ShouldBe(67);
+			foundSegments[1].Length.ShouldBe(9);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestFindColumnUsagesOfComputedColumnAtUsage()
 		{
 			var foundSegments = FindUsagesOrdered(FindUsagesStatementText, 80);
