@@ -509,10 +509,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 					DataType = dataType,
 					Nullable = String.Equals((string)reader["NULLABLE"], "Y"),
 					Virtual = String.Equals((string)reader["VIRTUAL_COLUMN"], "YES"),
-					Hidden = String.Equals((string)reader["HIDDEN_COLUMN"], "YES"),
-					UserGenerated = String.Equals((string)reader["USER_GENERATED"], "YES"),
 					DefaultValue = OracleReaderValueConvert.ToString(reader["DATA_DEFAULT"]),
-					CharacterSize = Convert.ToInt32(reader["CHAR_LENGTH"])
+					CharacterSize = Convert.ToInt32(reader["CHAR_LENGTH"]),
+					UserGenerated = true
 				};
 
 			if (version.Major >= 12)

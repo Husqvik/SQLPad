@@ -243,10 +243,11 @@ namespace SqlPad
 				return false;
 			}
 
+			document.SaveWorkingDocument();
+
 			SelectNewTabItem();
 			DocumentTabControl.RemoveTabItemWithoutBindingError(document.TabItem);
 
-			document.SaveWorkingDocument();
 			WorkDocumentCollection.CloseDocument(document.WorkDocument);
 
 			document.Dispose();
