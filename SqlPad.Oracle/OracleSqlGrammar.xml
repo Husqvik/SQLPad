@@ -13218,7 +13218,7 @@
         </Sequence>
         <Sequence>
           <Terminal Id="PlSqlIdentifier" />
-          <NonTerminal Id="PlSqlParenthesisEnclosedExpression" IsOptional="true" />
+          <NonTerminal Id="PlSqlParenthesisEnclosedExpressionOrIndexer" IsOptional="true" />
           <NonTerminal Id="DotRecordAttributeChained" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -13234,12 +13234,21 @@
       </Sequences>
     </Rule>
 
+    <Rule StartingNonTerminal="PlSqlParenthesisEnclosedExpressionOrIndexer">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="PlSqlParenthesisEnclosedExpression" />
+          <NonTerminal Id="PlSqlParenthesisEnclosedExpressionOrIndexer" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
     <Rule StartingNonTerminal="DotRecordAttributeChained">
       <Sequences>
         <Sequence>
           <Terminal Id="Dot" />
           <Terminal Id="PlSqlIdentifier" />
-          <NonTerminal Id="PlSqlParenthesisEnclosedExpression" IsOptional="true" />
+          <NonTerminal Id="PlSqlParenthesisEnclosedExpressionOrIndexer" IsOptional="true" />
           <NonTerminal Id="DotRecordAttributeChained" IsOptional="true" />
         </Sequence>
       </Sequences>

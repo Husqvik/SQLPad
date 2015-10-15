@@ -3164,6 +3164,22 @@ END;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
+			[Test(Description = @"")]
+			public void TestArrayOfArraysIndexer()
+			{
+				const string statement1 =
+@"DECLARE
+	TYPE SIMPLE_LIST IS TABLE OF VARCHAR2(30) INDEX BY VARCHAR(30);
+	TYPE LIST_OF_LISTS IS TABLE OF SIMPLE_LIST INDEX BY VARCHAR2(30);
+	x LIST_OF_LISTS;
+BEGIN
+	x('A')('1') := 'Value';
+END;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
+
 			public class Triggers
 			{
 				[Test(Description = @"")]

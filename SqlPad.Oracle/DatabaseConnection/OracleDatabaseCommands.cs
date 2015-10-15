@@ -339,7 +339,9 @@ BEGIN
 			line_content := line_content || CHR(10);
 		END IF;
 
-		DBMS_LOB.WRITEAPPEND(lob_loc => :output_clob, amount => LENGTH(line_content), buffer => line_content);
+		IF line_content IS NOT NULL THEN
+			DBMS_LOB.WRITEAPPEND(lob_loc => :output_clob, amount => LENGTH(line_content), buffer => line_content);
+		END IF;
 	END LOOP;
 END;";
 

@@ -977,6 +977,7 @@ namespace SqlPad.Oracle
 			public const string PlSqlOpenStatement = "PlSqlOpenStatement";
 			public const string PlSqlParenthesisEnclosedExpression = "PlSqlParenthesisEnclosedExpression";
 			public const string PlSqlParenthesisEnclosedExpressionList = "PlSqlParenthesisEnclosedExpressionList";
+			public const string PlSqlParenthesisEnclosedExpressionOrIndexer = "PlSqlParenthesisEnclosedExpressionOrIndexer";
 			public const string PlSqlPipeRowStatement = "PlSqlPipeRowStatement";
 			public const string PlSqlProcedureCall = "PlSqlProcedureCall";
 			public const string PlSqlRaiseStatement = "PlSqlRaiseStatement";
