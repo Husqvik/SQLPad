@@ -321,9 +321,9 @@ namespace SqlPad
 			await DisplayExecutionResult();
 		}
 
-		private async void DebuggerSessionDetachedHandler(object sender, EventArgs args)
+		private void DebuggerSessionDetachedHandler(object sender, EventArgs args)
 		{
-			await DisplayExecutionResult();
+			Dispatcher.BeginInvoke(new Action(async () => await DisplayExecutionResult()));
 		}
 
 		private async Task DisplayExecutionResult()
