@@ -159,10 +159,15 @@ namespace SqlPad
 
 	internal class ActiveSnippet
 	{
-		private readonly List<Tuple<TextAnchor, TextAnchor>> _anchors = new List<Tuple<TextAnchor, TextAnchor>>();
-		private int _activeParameter;
 		private readonly TextArea _textArea;
 		private readonly CompletionData _completionData;
+		private readonly List<Tuple<TextAnchor, TextAnchor>> _followingAnchors = new List<Tuple<TextAnchor, TextAnchor>>();
+
+		public Tuple<TextAnchor, TextAnchor> ActiveAnchors { get; private set; }
+
+		public IReadOnlyList<Tuple<TextAnchor, TextAnchor>> FollowingAnchors => _followingAnchors;
+
+		public bool ActiveAnchorsValid => !ActiveAnchors.Item1.IsDeleted && !ActiveAnchors.Item2.IsDeleted;
 
 		public ActiveSnippet(ISegment completionSegment, TextArea textArea, CompletionData completionData)
 		{
@@ -182,7 +187,7 @@ namespace SqlPad
 
 					var anchorStart = textArea.Document.CreateAnchor(documentStartOffset);
 					var anchorEnd = textArea.Document.CreateAnchor(anchorStart.Offset + parameter.DefaultValue.Length);
-					_anchors.Add(Tuple.Create(anchorStart, anchorEnd));
+					_followingAnchors.Add(Tuple.Create(anchorStart, anchorEnd));
 				}
 
 				SelectNextParameter();
@@ -193,15 +198,14 @@ namespace SqlPad
 
 		public bool SelectNextParameter()
 		{
-			Tuple<TextAnchor, TextAnchor> anchors;
-			if (_activeParameter >= _completionData.Snippet.Parameters.Count ||
-				(anchors = _anchors[_activeParameter++]).Item1.IsDeleted || anchors.Item2.IsDeleted)
+			if (_followingAnchors.Count == 0 ||
+				(ActiveAnchors = _followingAnchors[0]).Item1.IsDeleted || ActiveAnchors.Item2.IsDeleted)
 			{
 				SelectText(_textArea.Caret.Offset, _textArea.Caret.Offset);
 				return false;
 			}
 
-			SelectText(anchors.Item1.Offset, anchors.Item2.Offset);
+			SelectText(ActiveAnchors.Item1.Offset, ActiveAnchors.Item2.Offset);
 			return true;
 		}
 
@@ -209,6 +213,11 @@ namespace SqlPad
 		{
 			_textArea.Selection = Selection.Create(_textArea, startOffset, endOffset);
 			_textArea.Caret.Offset = endOffset;
+
+			if (_followingAnchors.Count > 0)
+			{
+				_followingAnchors.RemoveAt(0);
+			}
 		}
 	}
 }

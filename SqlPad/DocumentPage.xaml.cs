@@ -52,8 +52,8 @@ namespace SqlPad
 		private FileSystemWatcher _documentFileWatcher;
 		private DateTime _lastDocumentFileChange;
 		private DatabaseProviderConfiguration _providerConfiguration;
-		private ActiveSnippet _activeSnippet;
 
+		private bool _undoExecuted;
 		private bool _isParsing;
 		private bool _isInitializing = true;
 		private bool _isInitialParsing = true;
@@ -1409,7 +1409,8 @@ namespace SqlPad
 
 		internal void ActivateSnippet(ISegment completionSegment, CompletionData completionData)
 		{
-			_activeSnippet = new ActiveSnippet(completionSegment, Editor.TextArea, completionData);
+			var activeSnippet = new ActiveSnippet(completionSegment, Editor.TextArea, completionData);
+			_backgroundRenderer.ActiveSnippet = activeSnippet.ActiveAnchors == null ? null : activeSnippet;
 		}
 
 		private async void CreateCodeCompletionWindow(bool forcedInvokation, int caretOffset)
@@ -1517,6 +1518,13 @@ namespace SqlPad
 			Parse();
 
 			UpdateCompletionItemHighlight();
+
+			if (_undoExecuted && _backgroundRenderer.ActiveSnippet != null && !_backgroundRenderer.ActiveSnippet.ActiveAnchorsValid)
+			{
+				_backgroundRenderer.ActiveSnippet = null;
+			}
+
+			_undoExecuted = false;
 		}
 
 		private void UpdateCompletionItemHighlight()
@@ -1937,13 +1945,13 @@ namespace SqlPad
 				if (isEscape)
 				{
 					ClearLastHighlight();
-					_activeSnippet = null;
+					_backgroundRenderer.ActiveSnippet = null;
 				}
-				else if (_activeSnippet != null)
+				else if (_backgroundRenderer.ActiveSnippet != null)
 				{
-					if (!_activeSnippet.SelectNextParameter())
+					if (!_backgroundRenderer.ActiveSnippet.SelectNextParameter())
 					{
-						_activeSnippet = null;
+						_backgroundRenderer.ActiveSnippet = null;
 					}
 
 					e.Handled = true;
@@ -1974,6 +1982,8 @@ namespace SqlPad
 					_multiNodeEditor.Replace(clipboardText);
 				}
 			}
+
+			_undoExecuted = isControlPressed && e.Key == Key.Z;
 
 			if ((e.Key == Key.Back || e.Key == Key.Delete) && _multiNodeEditor != null)
 			{

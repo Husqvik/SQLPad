@@ -144,7 +144,7 @@ namespace SqlPad
 		public IReadOnlyCollection<SourcePosition> SynchronizedSegments { get; set; }
 	}
 
-	public class SqlEditorBackgroundRenderer : IBackgroundRenderer
+	internal class SqlEditorBackgroundRenderer : IBackgroundRenderer
 	{
 		private static readonly Pen NullPen = new Pen(Brushes.Transparent, 0);
 		private static readonly Pen MasterEdgePen = new Pen(Brushes.Red, 1);
@@ -156,6 +156,8 @@ namespace SqlPad
 		private readonly Stack<IReadOnlyCollection<HighlightSegment>> _highlightSegments = new Stack<IReadOnlyCollection<HighlightSegment>>();
 		private readonly TextEditor _textEditor;
 
+		private ActiveSnippet _activeSnippet;
+
 		public KnownLayer Layer { get; } = KnownLayer.Background;
 
 		public IEnumerable<TextSegment> HighlightSegments => _highlightSegments.SelectMany(g => g.Select(s => s.Segment));
@@ -163,6 +165,29 @@ namespace SqlPad
 		public IReadOnlyCollection<SourcePosition> SynchronizedSegments { get; set; }
 
 		public SourcePosition? MasterSegment { get; set; }
+
+		public ActiveSnippet ActiveSnippet
+		{
+			get { return _activeSnippet; }
+			set
+			{
+				if (_activeSnippet == value)
+				{
+					return;
+				}
+
+				_activeSnippet = value;
+
+				if (value == null && _textEditor.SelectionLength > 0)
+				{
+					var caretOffset = _textEditor.SelectionStart + _textEditor.SelectionLength;
+					_textEditor.SelectionLength = 0;
+					_textEditor.CaretOffset = caretOffset;
+				}
+
+				_textEditor.TextArea.TextView.InvalidateLayer(KnownLayer.Background);
+			}
+		}
 
 		static SqlEditorBackgroundRenderer()
 		{
@@ -188,6 +213,21 @@ namespace SqlPad
 				foreach (var segment in SynchronizedSegments)
 				{
 					DrawRectangle(textView, drawingContext, segment, Brushes.Transparent, SynchronizedEdgePen);
+				}
+			}
+
+			if (_activeSnippet != null && _activeSnippet.ActiveAnchorsValid)
+			{
+				DrawRectangle(textView, drawingContext, SourcePosition.Create(_activeSnippet.ActiveAnchors.Item1.Offset, _activeSnippet.ActiveAnchors.Item2.Offset), Brushes.Transparent, MasterEdgePen);
+
+				foreach (var anchors in _activeSnippet.FollowingAnchors)
+				{
+					if (anchors.Item1.IsDeleted || anchors.Item2.IsDeleted)
+					{
+						continue;
+					}
+
+					DrawRectangle(textView, drawingContext, SourcePosition.Create(anchors.Item1.Offset, anchors.Item2.Offset), Brushes.Transparent, SynchronizedEdgePen);
 				}
 			}
 

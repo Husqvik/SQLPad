@@ -20,6 +20,8 @@ using Oracle.DataAccess.Types;
 
 using ParameterDirection = System.Data.ParameterDirection;
 using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
+using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
+using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle.DatabaseConnection
 {
@@ -673,11 +675,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 				userCommand.BindByName = true;
 				userCommand.AddToStatementCache = false;
 
-				if (_userTransaction == null)
-				{
-					_userTransaction = _userConnection.BeginTransaction();
-				}
-
 				userCommand.InitialLONGFetchSize = OracleDatabaseModel.InitialLongFetchSize;
 
 				if (batchExecutionModel.GatherExecutionStatistics)
@@ -690,6 +687,16 @@ namespace SqlPad.Oracle.DatabaseConnection
 				{
 					currentStatementResult = new StatementExecutionResult { StatementModel = executionModel };
 					statementResults.Add(currentStatementResult);
+
+					if (_userTransaction == null)
+					{
+						var isolationLevel = executionModel.Statement.RootNode[NonTerminals.Statement, NonTerminals.SetTransactionStatement, NonTerminals.TransactionModeOrIsolationLevelOrRollbackSegment, NonTerminals.SerializableOrReadCommitted, Terminals.Serializable] != null
+							? IsolationLevel.Serializable
+							: IsolationLevel.ReadCommitted;
+
+						_userTransaction = _userConnection.BeginTransaction(isolationLevel);
+						_userTransactionIsolationLevel = isolationLevel;
+					}
 
 					userCommand.Parameters.Clear();
 					userCommand.CommandText = executionModel.StatementText.Replace("\r\n", "\n");

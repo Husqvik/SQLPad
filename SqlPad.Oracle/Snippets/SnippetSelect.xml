@@ -3,11 +3,8 @@
   <Text><![CDATA[SELECT
 	*
 FROM
-	{0}]]></Text>
+	]]></Text>
   <Description><![CDATA[SELECT * FROM ...]]></Description>
-  <Parameters>
-    <Parameter Index="0" DefaultValue="" />
-  </Parameters>
   <AllowedTerminals>
     <Terminal Id ="Select" />
   </AllowedTerminals>

@@ -101,7 +101,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_debuggedSessionCommand.AddSimpleParameter("DEBUG_SESSION_ID", null, TerminalValues.Varchar2, 12);
 			var debuggedSessionIdParameter = _debuggedSessionCommand.Parameters[0];
 
-			_debuggedSessionCommand.ExecuteNonQuery();
+			await _debuggedSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
 			_debuggerSessionId = ((OracleString)debuggedSessionIdParameter.Value).Value;
 
 			Trace.WriteLine($"Target debug session initialized. Debug session ID = {_debuggerSessionId}");
