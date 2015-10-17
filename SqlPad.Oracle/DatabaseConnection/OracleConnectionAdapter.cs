@@ -690,7 +690,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 					if (_userTransaction == null)
 					{
-						var isolationLevel = executionModel.Statement.RootNode[NonTerminals.Statement, NonTerminals.SetTransactionStatement, NonTerminals.TransactionModeOrIsolationLevelOrRollbackSegment, NonTerminals.SerializableOrReadCommitted, Terminals.Serializable] != null
+						var isolationLevel = executionModel.Statement?.RootNode[NonTerminals.Statement, NonTerminals.SetTransactionStatement, NonTerminals.TransactionModeOrIsolationLevelOrRollbackSegment, NonTerminals.SerializableOrReadCommitted, Terminals.Serializable] != null
 							? IsolationLevel.Serializable
 							: IsolationLevel.ReadCommitted;
 

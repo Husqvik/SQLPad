@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -156,76 +155,5 @@ namespace SqlPad
 		}
 
 		public double Priority => 0;
-	}
-
-	internal class ActiveSnippet
-	{
-		private readonly TextArea _textArea;
-		private readonly CompletionData _completionData;
-		private readonly List<Tuple<TextAnchor, TextAnchor>> _followingAnchors = new List<Tuple<TextAnchor, TextAnchor>>();
-
-		public Tuple<TextAnchor, TextAnchor> ActiveAnchors { get; private set; }
-
-		public IReadOnlyList<Tuple<TextAnchor, TextAnchor>> FollowingAnchors => _followingAnchors;
-
-		public bool ActiveAnchorsValid => !ActiveAnchors.Item1.IsDeleted && !ActiveAnchors.Item2.IsDeleted;
-
-		public ActiveSnippet(int completionSegmentOffset, int completionSegmentLength, TextArea textArea, CompletionData completionData)
-		{
-			textArea.Document.BeginUpdate();
-			textArea.Document.Replace(completionSegmentOffset, completionSegmentLength, completionData.Snippet.BaseText);
-
-			if (completionData.Snippet.Parameters.Count > 0)
-			{
-				_completionData = completionData;
-				_textArea = textArea;
-
-				var text = _completionData.Snippet.BaseText;
-				foreach (var parameter in completionData.Snippet.Parameters.OrderBy(p => p.Index))
-				{
-					int parameterOffset;
-					var parameterPlaceholder = $"{{{parameter.Index}}}";
-					var regex = new Regex(Regex.Escape(parameterPlaceholder), RegexOptions.CultureInvariant);
-					while ((parameterOffset = text.IndexOf(parameterPlaceholder, StringComparison.InvariantCulture)) != -1)
-					{
-						var documentStartOffset = completionSegmentOffset + parameterOffset;
-						text = regex.Replace(text, parameter.DefaultValue, 1);
-						textArea.Document.Replace(documentStartOffset, 3, parameter.DefaultValue);
-
-						var anchorStart = textArea.Document.CreateAnchor(documentStartOffset);
-						var anchorEnd = textArea.Document.CreateAnchor(anchorStart.Offset + parameter.DefaultValue.Length);
-						_followingAnchors.Add(Tuple.Create(anchorStart, anchorEnd));
-					}
-				}
-
-				SelectNextParameter();
-			}
-
-			textArea.Document.EndUpdate();
-		}
-
-		public bool SelectNextParameter()
-		{
-			if (_followingAnchors.Count == 0 ||
-				(ActiveAnchors = _followingAnchors[0]).Item1.IsDeleted || ActiveAnchors.Item2.IsDeleted)
-			{
-				SelectText(_textArea.Caret.Offset, _textArea.Caret.Offset);
-				return false;
-			}
-
-			SelectText(ActiveAnchors.Item1.Offset, ActiveAnchors.Item2.Offset);
-			return true;
-		}
-
-		private void SelectText(int startOffset, int endOffset)
-		{
-			_textArea.Selection = Selection.Create(_textArea, startOffset, endOffset);
-			_textArea.Caret.Offset = endOffset;
-
-			if (_followingAnchors.Count > 0)
-			{
-				_followingAnchors.RemoveAt(0);
-			}
-		}
 	}
 }

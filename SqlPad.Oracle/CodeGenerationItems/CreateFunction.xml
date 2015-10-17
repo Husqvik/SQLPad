@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Snippet Name="CREATE FUNCTION" Description="" xmlns="http://husqvik.com/SqlPad/2014/02" Rdbms="Oracle" Version="*">
-  <Text><![CDATA[CREATE OR REPLACE FUNCTION {0} ({1} {2}) RETURN VARCHAR2
+  <Text><![CDATA[CREATE OR REPLACE FUNCTION {0} ({1} {2}) RETURN {3}
 IS
 BEGIN
   RETURN NULL;
@@ -12,5 +12,6 @@ END {0};
     <Parameter Index="0" DefaultValue="function_name" />
     <Parameter Index="1" DefaultValue="parameter1" />
     <Parameter Index="2" DefaultValue="VARCHAR2" />
+    <Parameter Index="3" DefaultValue="VARCHAR2" />
   </Parameters>
 </Snippet>

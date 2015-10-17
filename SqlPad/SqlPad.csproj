@@ -97,6 +97,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ActiveSnippet.cs" />
     <Compile Include="AssemblyBuildInfo.cs" />
     <Compile Include="BinaryDataHelper.cs" />
     <Compile Include="BindVariableModel.cs" />
@@ -118,6 +119,7 @@
     <Compile Include="SqlEditor.xaml.cs">
       <DependentUpon>SqlEditor.xaml</DependentUpon>
     </Compile>
+    <Compile Include="SqlEditorBackgroundRenderer.cs" />
     <Compile Include="StatementExecutionHistory.xaml.cs">
       <DependentUpon>StatementExecutionHistory.xaml</DependentUpon>
     </Compile>

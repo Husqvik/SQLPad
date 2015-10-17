@@ -1409,8 +1409,9 @@ namespace SqlPad
 
 		internal void ActivateSnippet(int completionSegmentOffset, int completionSegmentLength, CompletionData completionData)
 		{
-			var activeSnippet = new ActiveSnippet(completionSegmentOffset, completionSegmentLength, Editor.TextArea, completionData);
+			var activeSnippet = new ActiveSnippet(completionSegmentOffset, completionSegmentLength, Editor, completionData);
 			_backgroundRenderer.ActiveSnippet = activeSnippet.ActiveAnchors == null ? null : activeSnippet;
+			_multiNodeEditor = activeSnippet.GetMultiNodeEditor();
 		}
 
 		private async void CreateCodeCompletionWindow(bool forcedInvokation, int caretOffset)
