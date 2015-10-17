@@ -145,6 +145,11 @@ namespace SqlPad.Oracle
 
 		private IEnumerable<OracleReference> GetCommonTableExpressionObjectPrefixedColumnReferences(OracleQueryBlock cteQueryBlock)
 		{
+			if (cteQueryBlock == null)
+			{
+				return Enumerable.Empty<OracleReference>();
+			}
+
 			var sourceColumnReferences = cteQueryBlock.AllColumnReferences;
 			if (cteQueryBlock.IsRecursive)
 			{

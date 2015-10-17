@@ -87,5 +87,14 @@ FROM
 			segments[2].IndexStart.ShouldBe(76);
 			segments[3].IndexStart.ShouldBe(123);
 		}
+
+		[Test(Description = @"")]
+		public void TestObjectAliasNodesWithoutCte()
+		{
+			const string sqlText = @"SELECT ALIAS.DUMMY FROM DUAL ALIAS";
+			var multiNodeEditorData = GetMultiNodeEditorData(sqlText, 29);
+			multiNodeEditorData.CurrentNode.ShouldNotBe(null);
+			multiNodeEditorData.SynchronizedSegments.Count.ShouldBe(1);
+		}
 	}
 }
