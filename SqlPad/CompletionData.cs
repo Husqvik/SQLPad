@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -133,7 +134,7 @@ namespace SqlPad
 		{
 			if (Snippet != null)
 			{
-				_documentPage.ActivateSnippet(completionSegment, this);
+				_documentPage.ActivateSnippet(completionSegment.Offset, completionSegment.Length, this);
 				return;
 			}
 
@@ -169,10 +170,10 @@ namespace SqlPad
 
 		public bool ActiveAnchorsValid => !ActiveAnchors.Item1.IsDeleted && !ActiveAnchors.Item2.IsDeleted;
 
-		public ActiveSnippet(ISegment completionSegment, TextArea textArea, CompletionData completionData)
+		public ActiveSnippet(int completionSegmentOffset, int completionSegmentLength, TextArea textArea, CompletionData completionData)
 		{
 			textArea.Document.BeginUpdate();
-			textArea.Document.Replace(completionSegment.Offset, completionSegment.Length, completionData.Snippet.BaseText);
+			textArea.Document.Replace(completionSegmentOffset, completionSegmentLength, completionData.Snippet.BaseText);
 
 			if (completionData.Snippet.Parameters.Count > 0)
 			{
@@ -182,15 +183,19 @@ namespace SqlPad
 				var text = _completionData.Snippet.BaseText;
 				foreach (var parameter in completionData.Snippet.Parameters.OrderBy(p => p.Index))
 				{
+					int parameterOffset;
 					var parameterPlaceholder = $"{{{parameter.Index}}}";
-					var parameterOffset = text.IndexOf(parameterPlaceholder, StringComparison.InvariantCulture);
-					var documentStartOffset = completionSegment.Offset + parameterOffset;
-					text = text.Replace(parameterPlaceholder, parameter.DefaultValue);
-					textArea.Document.Replace(documentStartOffset, 3, parameter.DefaultValue);
+					var regex = new Regex(Regex.Escape(parameterPlaceholder), RegexOptions.CultureInvariant);
+					while ((parameterOffset = text.IndexOf(parameterPlaceholder, StringComparison.InvariantCulture)) != -1)
+					{
+						var documentStartOffset = completionSegmentOffset + parameterOffset;
+						text = regex.Replace(text, parameter.DefaultValue, 1);
+						textArea.Document.Replace(documentStartOffset, 3, parameter.DefaultValue);
 
-					var anchorStart = textArea.Document.CreateAnchor(documentStartOffset);
-					var anchorEnd = textArea.Document.CreateAnchor(anchorStart.Offset + parameter.DefaultValue.Length);
-					_followingAnchors.Add(Tuple.Create(anchorStart, anchorEnd));
+						var anchorStart = textArea.Document.CreateAnchor(documentStartOffset);
+						var anchorEnd = textArea.Document.CreateAnchor(anchorStart.Offset + parameter.DefaultValue.Length);
+						_followingAnchors.Add(Tuple.Create(anchorStart, anchorEnd));
+					}
 				}
 
 				SelectNextParameter();

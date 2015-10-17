@@ -5,7 +5,7 @@ IS
   PROCEDURE {1}
   IS
   BEGIN
-    {2};
+    NULL;
   END {1};
 END {0};
 
@@ -14,6 +14,5 @@ END {0};
   <Parameters>
     <Parameter Index="0" DefaultValue="package_name" />
     <Parameter Index="1" DefaultValue="procedure1" />
-    <Parameter Index="2" DefaultValue="NULL" />
   </Parameters>
 </Snippet>

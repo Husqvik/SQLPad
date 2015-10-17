@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace SqlPad.FindReplace
 {
 	public static class TextSearchHelper
 	{
-		private static readonly string[] RegularExpressionEscapeCharacters = { "*", "(", ")", "." };
 		private static readonly char[] SearchPhraseSeparators = { ' ' };
 
 		public static string[] GetSearchedWords(string searchPhrase)
@@ -16,7 +16,7 @@ namespace SqlPad.FindReplace
 
 		public static string GetRegexPattern(IEnumerable<string> searchedWords)
 		{
-			var regexPatterns = searchedWords.Select(w => $"({RegularExpressionEscapeCharacters.Aggregate(w, (p, c) => p.Replace(c, $"\\{c}"))})");
+			var regexPatterns = searchedWords.Select(w => $"({Regex.Escape(w)})");
 			return String.Join("|", regexPatterns);
 		}	
 	}

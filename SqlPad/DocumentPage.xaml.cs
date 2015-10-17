@@ -1407,9 +1407,9 @@ namespace SqlPad
 			}
 		}
 
-		internal void ActivateSnippet(ISegment completionSegment, CompletionData completionData)
+		internal void ActivateSnippet(int completionSegmentOffset, int completionSegmentLength, CompletionData completionData)
 		{
-			var activeSnippet = new ActiveSnippet(completionSegment, Editor.TextArea, completionData);
+			var activeSnippet = new ActiveSnippet(completionSegmentOffset, completionSegmentLength, Editor.TextArea, completionData);
 			_backgroundRenderer.ActiveSnippet = activeSnippet.ActiveAnchors == null ? null : activeSnippet;
 		}
 
@@ -1873,17 +1873,16 @@ namespace SqlPad
 
 		private MenuItem CreateContextMenuItemFromCodeSnippet(ICodeSnippet codeSnippet, ActionExecutionContext executionContext)
 		{
-			var textSegment =
-				new TextSegment
-				{
-					IndextStart = Editor.CaretOffset,
-					Text = CompletionData.FormatSnippetText(codeSnippet)
-				};
-
 			var executionHandler =
 				new CommandExecutionHandler
 				{
-					ExecutionHandler = c => c.SegmentsToReplace.Add(textSegment)
+					ExecutionHandler =
+						c =>
+						{
+							ActivateSnippet(c.CaretOffset, 0, new CompletionData(codeSnippet, this));
+							c.CaretOffset = Editor.CaretOffset;
+							c.SelectionLength = Editor.SelectionLength;
+						}
 				};
 
 			return BuildContextMenuItem(new ContextAction(codeSnippet.Name, executionHandler, executionContext));

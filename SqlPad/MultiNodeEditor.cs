@@ -264,7 +264,7 @@ namespace SqlPad
 		{
 			if (highlightSegments != null)
 			{
-				if (_highlightSegments.Any(c => c.Any(s => s.Segment.Equals(highlightSegments.First()))))
+				if (_highlightSegments.SelectMany(g => g).Any(s => s.Segment.Equals(highlightSegments.First())))
 				{
 					return;
 				}
