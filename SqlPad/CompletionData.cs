@@ -179,10 +179,13 @@ namespace SqlPad
 				_completionData = completionData;
 				_textArea = textArea;
 
+				var text = _completionData.Snippet.BaseText;
 				foreach (var parameter in completionData.Snippet.Parameters.OrderBy(p => p.Index))
 				{
-					var parameterOffset = _completionData.Snippet.BaseText.IndexOf($"{{{parameter.Index}}}", StringComparison.InvariantCulture);
+					var parameterPlaceholder = $"{{{parameter.Index}}}";
+					var parameterOffset = text.IndexOf(parameterPlaceholder, StringComparison.InvariantCulture);
 					var documentStartOffset = completionSegment.Offset + parameterOffset;
+					text = text.Replace(parameterPlaceholder, parameter.DefaultValue);
 					textArea.Document.Replace(documentStartOffset, 3, parameter.DefaultValue);
 
 					var anchorStart = textArea.Document.CreateAnchor(documentStartOffset);
