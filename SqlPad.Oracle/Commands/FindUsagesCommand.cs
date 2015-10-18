@@ -418,12 +418,17 @@ namespace SqlPad.Oracle.Commands
 				return nodes;
 			}
 
-			var parentQueryBlocks = selectListColumn.Owner.SemanticModel.QueryBlocks.Where(qb => qb.ObjectReferences.SelectMany(o => o.QueryBlocks).Contains(selectListColumn.Owner));
+			var parentQueryBlocks = selectListColumn.Owner.SemanticModel.QueryBlocks
+				.Where(qb => qb.ObjectReferences.SelectMany(o => o.IncludeInnerReferences).SelectMany(o => o.QueryBlocks).Contains(selectListColumn.Owner));
+
 			foreach (var parentQueryBlock in parentQueryBlocks)
 			{
 				var parentReferences = parentQueryBlock.AllColumnReferences
-					.Where(c => c.ColumnNodeColumnReferences.Count == 1 && c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeObjectReferences.First().QueryBlocks.Count == 1
-								&& c.ColumnNodeObjectReferences.First().QueryBlocks.First() == selectListColumn.Owner && c.NormalizedName == selectListColumn.NormalizedName)
+					.Where(c => c.ColumnNodeColumnReferences.Count == 1 && c.ColumnNodeObjectReferences.Count == 1 &&
+					            ((c.ColumnNodeObjectReferences.First().QueryBlocks.Count == 1 && c.ColumnNodeObjectReferences.First().QueryBlocks.First() == selectListColumn.Owner) ||
+					             c.Placement.In(StatementPlacement.Model, StatementPlacement.PivotClause) ||
+								 (c.ColumnNodeObjectReferences.FirstOrDefault() == parentQueryBlock.ModelReference)) &&
+					            String.Equals(c.NormalizedName, selectListColumn.NormalizedName))
 					.ToArray();
 
 				if (parentReferences.Length == 0)
@@ -437,9 +442,10 @@ namespace SqlPad.Oracle.Commands
 
 				if (parentColumnReferences.Length == 1)
 				{
+					var parentColumnReference = parentColumnReferences[0];
 					nodes = nodes
-						.Concat(parentColumnReferences.Where(c => c.ColumnNode != c.SelectListColumn.AliasNode).Select(c => c.SelectListColumn.AliasNode))
-						.Concat(GetParentQueryBlockReferences(parentColumnReferences[0].SelectListColumn));
+						.Concat(parentColumnReferences.Where(c => c.SelectListColumn.HasExplicitAlias).Select(c => c.SelectListColumn.AliasNode))
+						.Concat(GetParentQueryBlockReferences(parentColumnReference.SelectListColumn));
 				}
 			}
 
@@ -448,7 +454,7 @@ namespace SqlPad.Oracle.Commands
 
 		private IEnumerable<StatementGrammarNode> GetSchemaReferenceUsage()
 		{
-			return _currentNode.Statement.AllTerminals.Where(t => t.Id == Terminals.SchemaIdentifier && t.Token.Value.ToQuotedIdentifier() == _currentNode.Token.Value.ToQuotedIdentifier());
+			return _currentNode.Statement.AllTerminals.Where(t => String.Equals(t.Id, Terminals.SchemaIdentifier) && String.Equals(t.Token.Value.ToQuotedIdentifier(), _currentNode.Token.Value.ToQuotedIdentifier()));
 		}
 	}
 }
