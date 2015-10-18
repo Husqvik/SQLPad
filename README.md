@@ -1,4 +1,4 @@
-SQLPad 0.3.0.235
+SQLPad 0.3.0.236
 ================
 
 SQLPad is an experimental SQL editor focused to quick and comfortable work.
@@ -234,6 +234,10 @@ FetchRowsBatchSize - number of rows fetched in one batch
 		</StartupScript>
 		<RemoteTraceDirectory>\\coresrv01\c$\Oracle\diag\rdbms\orcl\orcl\trace</RemoteTraceDirectory>
 	</OracleConfiguration>
+
+StartupScript - optional initialization script executed when connection to database is established
+
+RemoteTraceDirectory - remote database trace directory; enables access to remote trace files from SQL Pad
 
 TargetTable - table name used for EXPLAIN PLAN function; table is not created automatically and must be created manually using script:
 

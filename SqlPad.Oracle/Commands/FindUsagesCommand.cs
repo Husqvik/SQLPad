@@ -214,12 +214,13 @@ namespace SqlPad.Oracle.Commands
 				.Concat(nodes);
 		}
 
-		private static bool IsValidReference(OracleColumnReference columnReference, string normalizedName, OracleObjectWithColumnsReference objectReference)
+		private static bool IsValidReference(OracleColumnReference columnReference, OracleColumnReference selectedColumnReference, OracleObjectWithColumnsReference objectReference)
 		{
+			var isInnerModelClauseReference = selectedColumnReference.Placement == StatementPlacement.Model && selectedColumnReference.ValidObjectReference != objectReference.Owner.ModelReference;
 			return
 				columnReference.ColumnNodeObjectReferences.Count == 1 &&
-				columnReference.ColumnNodeObjectReferences.First() == objectReference &&
-				String.Equals(columnReference.NormalizedName, normalizedName);
+				(columnReference.ColumnNodeObjectReferences.First() == objectReference || isInnerModelClauseReference) &&
+				String.Equals(columnReference.NormalizedName, selectedColumnReference.NormalizedName);
 		}
 
 		private static IEnumerable<StatementGrammarNode> GetModelClauseAndPivotTableReferences(OracleReference columnReference, bool onlyAliasOrigin)
@@ -233,6 +234,7 @@ namespace SqlPad.Oracle.Commands
 			var normalizedName = columnReference.NormalizedName;
 			var modelClauseAndPivotTableColumnReferences = columnReference.Owner.AllColumnReferences
 				.Where(c => c.ColumnNodeObjectReferences.Count == 1 &&
+				            c != columnReference &&
 				            c.Placement.In(StatementPlacement.Model, StatementPlacement.PivotClause) &&
 				            String.Equals(c.SelectListColumn?.NormalizedName, normalizedName));
 
@@ -285,7 +287,7 @@ namespace SqlPad.Oracle.Commands
 			{
 				var objectReference = columnReference.ColumnNodeObjectReferences.First();
 				var sourceColumnReferences = objectReference.Owner == null ? objectReference.Container.ColumnReferences : objectReference.Owner.AllColumnReferences;
-				var columnReferences = sourceColumnReferences.Where(c => IsValidReference(c, columnReference.NormalizedName, objectReference)).ToArray();
+				var columnReferences = sourceColumnReferences.Where(c => IsValidReference(c, columnReference, objectReference)).ToArray();
 				nodes = columnReferences.Select(c => c.ColumnNode);
 
 				bool searchChildren;

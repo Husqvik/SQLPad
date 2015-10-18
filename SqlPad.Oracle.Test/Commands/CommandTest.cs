@@ -716,6 +716,33 @@ MODEL
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestFindColumnUsagesAtMeasureDirectReferencedColumnWithinModelClause()
+		{
+			const string sql =
+@"SELECT
+	DIMENSION, VAL
+FROM
+	(SELECT 0 VAL FROM DUAL)
+MODEL
+	DIMENSION BY (0 DIMENSION)
+	MEASURES (VAL)
+	RULES (
+		VAL[ANY] = 0
+    )";
+
+			var foundSegments = FindUsagesOrdered(sql, 105);
+			foundSegments.Count.ShouldBe(4);
+			foundSegments[0].IndextStart.ShouldBe(20);
+			foundSegments[0].Length.ShouldBe(3);
+			foundSegments[1].IndextStart.ShouldBe(42);
+			foundSegments[1].Length.ShouldBe(3);
+			foundSegments[2].IndextStart.ShouldBe(105);
+			foundSegments[2].Length.ShouldBe(3);
+			foundSegments[3].IndextStart.ShouldBe(123);
+			foundSegments[3].Length.ShouldBe(3);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestFindColumnUsagesOfComputedColumnAtUsage()
 		{
 			var foundSegments = FindUsagesOrdered(FindUsagesStatementText, 80);
