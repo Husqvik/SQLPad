@@ -21,6 +21,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private const int MaximumValueSize = 32767;
 		private const int MaximumCharacterValueSize = 2000;
 		private static readonly FieldInfo FieldReaderInternalTypes = typeof(OracleDataReader).GetField("m_oraType", BindingFlags.Instance | BindingFlags.NonPublic);
+		private static readonly FieldInfo FieldCommandParameters = typeof(OracleCommand).GetField("m_parameters", BindingFlags.Instance | BindingFlags.NonPublic);
 
 		internal static OracleParameter AddSimpleParameter(this OracleCommand command, string parameterName, object value, string databaseType = null, int? size = null)
 		{
@@ -124,6 +125,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 		public static int[] GetInternalDataTypes(this OracleDataReader reader)
 		{
 			return ((IEnumerable)FieldReaderInternalTypes.GetValue(reader)).Cast<int>().ToArray();
+		}
+
+		public static void ResetParametersToAvoidOdacBug(this OracleCommand command)
+		{
+			FieldCommandParameters.SetValue(command, null);
 		}
 
 		public static Task<bool> ReadAsynchronous(this OracleDataReader reader, CancellationToken cancellationToken)

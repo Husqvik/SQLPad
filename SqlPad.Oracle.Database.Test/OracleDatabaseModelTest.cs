@@ -21,8 +21,8 @@ namespace SqlPad.Oracle.Database.Test
 	[TestFixture]
 	public class OracleDatabaseModelTest : TemporaryDirectoryTestFixture
 	{
-		private const string LoopbackDatabaseLinkName = "HQ_PDB";
-		private const string ExplainPlanTableName = "TOAD_PLAN_TABLE";
+		private const string LoopbackDatabaseLinkName = "HQ_PDB@LOOPBACK";
+		private const string ExplainPlanTableName = "EXPLAIN_PLAN";
 		private static readonly ConnectionStringSettings ConnectionString;
 
 		private const string ExplainPlanTestQuery =
@@ -182,7 +182,7 @@ WHERE
 		}
 
 		[Test]
-		public void TestRowIdFetch()
+		public async Task TestRowIdFetch()
 		{
 			var executionModel =
 				new StatementExecutionModel
@@ -194,17 +194,14 @@ WHERE
 			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
 				var connectionAdapter = databaseModel.CreateConnectionAdapter();
-				var task = connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel } }, CancellationToken.None);
-				task.Wait();
-				task.Result.StatementResults.Count.ShouldBe(1);
-				var result = task.Result.StatementResults[0];
+				var statementBatchResult = await connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel } }, CancellationToken.None);
+				statementBatchResult.StatementResults.Count.ShouldBe(1);
+				var result = statementBatchResult.StatementResults[0];
 
 				result.ExecutedSuccessfully.ShouldBe(true);
 				var resultInfo = result.ResultInfoColumnHeaders.Keys.First();
 
-				var fetchRecordsTask = connectionAdapter.FetchRecordsAsync(resultInfo, Int32.MaxValue, CancellationToken.None);
-				fetchRecordsTask.Wait();
-				var resultSet = fetchRecordsTask.Result;
+				var resultSet = await connectionAdapter.FetchRecordsAsync(resultInfo, Int32.MaxValue, CancellationToken.None);
 				resultSet.Count.ShouldBe(1);
 				var firstRow = resultSet[0];
 				firstRow[0].ShouldBeTypeOf<OracleRowId>();
@@ -253,10 +250,8 @@ WHERE
 
 #if !ORACLE_MANAGED_DATA_ACCESS_CLIENT
 		[Test]
-		public void TestDataTypesFetch()
+		public async Task TestDataTypesFetch()
 		{
-			CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
-
 			var clobParameter = String.Join(" ", Enumerable.Repeat("CLOB DATA", 200));
 			var executionModel =
 				new StatementExecutionModel
@@ -268,10 +263,9 @@ WHERE
 			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
 				var connectionAdapter = databaseModel.CreateConnectionAdapter();
-				var task = connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel }, GatherExecutionStatistics = true }, CancellationToken.None);
-				task.Wait();
-				task.Result.StatementResults.Count.ShouldBe(1);
-				var result = task.Result.StatementResults[0];
+				var statementBatchResult = await connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel }, GatherExecutionStatistics = true }, CancellationToken.None);
+				statementBatchResult.StatementResults.Count.ShouldBe(1);
+				var result = statementBatchResult.StatementResults[0];
 
 				result.ExecutedSuccessfully.ShouldBe(true);
 				var resultInfo = result.ResultInfoColumnHeaders.Keys.First();
@@ -289,9 +283,9 @@ WHERE
 				columnHeaders[8].DatabaseDataType.ShouldBe("Decimal");
 				columnHeaders[9].DatabaseDataType.ShouldBe("Date");
 
-				var fetchRecordsTask = connectionAdapter.FetchRecordsAsync(resultInfo, Int32.MaxValue, CancellationToken.None);
-				fetchRecordsTask.Wait();
-				var resultSet = fetchRecordsTask.Result;
+				var resultSet = await connectionAdapter.FetchRecordsAsync(resultInfo, Int32.MaxValue, CancellationToken.None);
+				CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
+
 				resultSet.Count.ShouldBe(1);
 				var firstRow = resultSet[0];
 				firstRow[0].ShouldBeTypeOf<OracleBlobValue>();
@@ -358,7 +352,7 @@ WHERE
 		}
 
 		[Test]
-		public void TestNullDataTypesFetch()
+		public async Task TestNullDataTypesFetch()
 		{
 			var executionModel =
 				new StatementExecutionModel
@@ -370,10 +364,9 @@ WHERE
 			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
 				var connectionAdapter = databaseModel.CreateConnectionAdapter();
-				var task = connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel }, GatherExecutionStatistics = true }, CancellationToken.None);
-				task.Wait();
-				task.Result.StatementResults.Count.ShouldBe(1);
-				var result = task.Result.StatementResults[0];
+				var statementBatchResult = await connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel }, GatherExecutionStatistics = true }, CancellationToken.None);
+				statementBatchResult.StatementResults.Count.ShouldBe(1);
+				var result = statementBatchResult.StatementResults[0];
 
 				result.ExecutedSuccessfully.ShouldBe(true);
 				var resultInfo = result.ResultInfoColumnHeaders.Keys.First();
@@ -388,9 +381,7 @@ WHERE
 				columnHeaders[5].DatabaseDataType.ShouldBe("Decimal");
 				columnHeaders[6].DatabaseDataType.ShouldBe("XmlType");
 
-				var fetchRecordsTask = connectionAdapter.FetchRecordsAsync(resultInfo, Int32.MaxValue, CancellationToken.None);
-				fetchRecordsTask.Wait();
-				var resultSet = fetchRecordsTask.Result;
+				var resultSet = await connectionAdapter.FetchRecordsAsync(resultInfo, Int32.MaxValue, CancellationToken.None);
 				resultSet.Count.ShouldBe(1);
 				var firstRow = resultSet[0];
 				firstRow[0].ShouldBeTypeOf<OracleBlobValue>();
@@ -423,7 +414,7 @@ WHERE
 #endif
 
 		[Test]
-		public void TestDmlExecution()
+		public async Task TestDmlExecution()
 		{
 			var executionModel =
 				new StatementExecutionModel
@@ -435,10 +426,9 @@ WHERE
 			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
 				var connectionAdapter = databaseModel.CreateConnectionAdapter();
-				var task = connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel } }, CancellationToken.None);
-				task.Wait();
-				task.Result.StatementResults.Count.ShouldBe(1);
-				var result = task.Result.StatementResults[0];
+				var statementBatchResult = await connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel } }, CancellationToken.None);
+				statementBatchResult.StatementResults.Count.ShouldBe(1);
+				var result = statementBatchResult.StatementResults[0];
 
 				result.ExecutedSuccessfully.ShouldBe(true);
 				result.ResultInfoColumnHeaders.Count.ShouldBe(0);
@@ -448,7 +438,7 @@ WHERE
 		}
 
 		[Test]
-		public void TestPlSqlExecution()
+		public async Task TestPlSqlExecution()
 		{
 			var executionModel =
 				new StatementExecutionModel
@@ -466,10 +456,9 @@ END;",
 			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
 				var connectionAdapter = databaseModel.CreateConnectionAdapter();
-				var task = connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel } }, CancellationToken.None);
-				task.Wait();
-				task.Result.StatementResults.Count.ShouldBe(1);
-				var result = task.Result.StatementResults[0];
+				var statementBatchResult = await connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel } }, CancellationToken.None);
+				statementBatchResult.StatementResults.Count.ShouldBe(1);
+				var result = statementBatchResult.StatementResults[0];
 
 				result.ExecutedSuccessfully.ShouldBe(true);
 				var resultInfo = result.ResultInfoColumnHeaders.Keys.First();
@@ -477,9 +466,7 @@ END;",
 				var columnHeaders = result.ResultInfoColumnHeaders[resultInfo];
 				columnHeaders.Count.ShouldBe(1);
 
-				var fetchRecordsTask = connectionAdapter.FetchRecordsAsync(resultInfo, Int32.MaxValue, CancellationToken.None);
-				fetchRecordsTask.Wait();
-				var resultSet = fetchRecordsTask.Result;
+				var resultSet = await connectionAdapter.FetchRecordsAsync(resultInfo, Int32.MaxValue, CancellationToken.None);
 				resultSet.Count.ShouldBe(1);
 				var rowData = resultSet[0];
 				rowData[0].ToString().ShouldBe("X");
@@ -487,12 +474,12 @@ END;",
 		}
 
 		[Test]
-		public void TestColumnDetailDataProvider()
+		public async Task TestColumnDetailDataProvider()
 		{
 			var model = new ColumnDetailsModel();
 			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
-				databaseModel.UpdateColumnDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DUAL\""), "\"DUMMY\"", model, CancellationToken.None).Wait();
+				await databaseModel.UpdateColumnDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DUAL\""), "\"DUMMY\"", model, CancellationToken.None);
 			}
 
 			model.AverageValueSize.ShouldBe(2);
@@ -505,7 +492,7 @@ END;",
 		}
 
 		[Test]
-		public void TestSpecialFunctionSemanticValidity()
+		public async Task TestSpecialFunctionSemanticValidity()
 		{
 			const string testQuery =
 @"SELECT
@@ -534,20 +521,19 @@ WHERE
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 				var validator = new OracleStatementValidator();
-				var task = validator.BuildSemanticModelAsync(testQuery, statement, databaseModel, CancellationToken.None);
-				task.Wait();
-				var validationModel = validator.BuildValidationModel(task.Result);
+				var sematicModel = await validator.BuildSemanticModelAsync(testQuery, statement, databaseModel, CancellationToken.None);
+				var validationModel = validator.BuildValidationModel(sematicModel);
 				validationModel.SemanticErrors.Count().ShouldBe(0);
 			}
 		}
 
 		[Test]
-		public void TestColumnIndexAndConstraintDetails()
+		public async Task TestColumnIndexAndConstraintDetails()
 		{
 			var model = new ColumnDetailsModel();
 			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
-				databaseModel.UpdateColumnDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"COL$\""), "\"OBJ#\"", model, CancellationToken.None).Wait();
+				await databaseModel.UpdateColumnDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"COL$\""), "\"OBJ#\"", model, CancellationToken.None);
 			}
 
 			model.IndexDetails.Count.ShouldBe(3);
@@ -560,13 +546,13 @@ WHERE
 		}
 
 		[Test]
-		public void TestTableDetailDataProvider()
+		public async Task TestTableDetailDataProvider()
 		{
 			var model = new TableDetailsModel();
 
 			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
-				databaseModel.UpdateTableDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DUAL\""), model, CancellationToken.None).Wait();
+				await databaseModel.UpdateTableDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DUAL\""), model, CancellationToken.None);
 			}
 
 			model.AverageRowSize.ShouldBe(2);
@@ -581,13 +567,13 @@ WHERE
 		}
 
 		[Test]
-		public void TestIndexDetailDataProvider()
+		public async Task TestIndexDetailDataProvider()
 		{
 			var model = new TableDetailsModel();
 
 			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
-				databaseModel.UpdateTableDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"COL$\""), model, CancellationToken.None).Wait();
+				await databaseModel.UpdateTableDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"COL$\""), model, CancellationToken.None);
 			}
 
 			model.IndexDetails.Count.ShouldBe(3);
@@ -613,13 +599,13 @@ WHERE
 		}
 
 		[Test]
-		public void TestConstraintDetailDataProvider()
+		public async Task TestConstraintDetailDataProvider()
 		{
 			var model = new ColumnDetailsModel();
 
 			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
-				databaseModel.UpdateColumnDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"XS$OBJ\""), "TENANT", model, CancellationToken.None).Wait();
+				await databaseModel.UpdateColumnDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"XS$OBJ\""), "TENANT", model, CancellationToken.None);
 			}
 
 			model.ConstraintDetails.Count.ShouldBe(2);
@@ -647,16 +633,13 @@ WHERE
 		}
 
 		[Test]
-		public void TestRemoteTableColumnDataProvider()
+		public async Task TestRemoteTableColumnDataProvider()
 		{
 			IReadOnlyList<string> remoteTableColumns;
 
 			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
-				var task = databaseModel.GetRemoteTableColumnsAsync(LoopbackDatabaseLinkName, new OracleObjectIdentifier(null, "\"USER_TABLES\""), CancellationToken.None);
-				task.Wait();
-
-				remoteTableColumns = task.Result;
+				remoteTableColumns = await databaseModel.GetRemoteTableColumnsAsync(LoopbackDatabaseLinkName, new OracleObjectIdentifier(null, "\"USER_TABLES\""), CancellationToken.None);
 			}
 
 			remoteTableColumns.Count.ShouldBe(64);
@@ -665,35 +648,35 @@ WHERE
 		}
 
 		[Test]
-		public void TestTableSpaceAllocationDataProvider()
+		public async Task TestTableSpaceAllocationDataProvider()
 		{
 			var model = new TableDetailsModel();
 			var tableSpaceAllocationDataProvider = new TableSpaceAllocationDataProvider(model, new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DUAL\""), String.Empty);
 
-			ExecuteDataProvider(tableSpaceAllocationDataProvider);
+			await ExecuteDataProvider(tableSpaceAllocationDataProvider);
 
 			model.AllocatedBytes.ShouldBe(65536);
 			model.LargeObjectBytes.ShouldBe(null);
 		}
 
 		[Test]
-		public void TestDisplayCursorDataProvider()
+		public async Task TestDisplayCursorDataProvider()
 		{
 			var displayCursorDataProvider = DisplayCursorDataProvider.CreateDisplayLastCursorDataProvider();
-			ExecuteDataProvider(displayCursorDataProvider);
+			await ExecuteDataProvider(displayCursorDataProvider);
 
 			displayCursorDataProvider.PlanText.ShouldNotBe(null);
 			Trace.WriteLine(displayCursorDataProvider.PlanText);
 		}
 
 		[Test]
-		public void TestViewDetailDataProvider()
+		public async Task TestViewDetailDataProvider()
 		{
 			var model = new ViewDetailsModel();
 
 			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
-				databaseModel.UpdateViewDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DBA_DV_STATUS\""), model, CancellationToken.None).Wait();
+				await databaseModel.UpdateViewDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DBA_DV_STATUS\""), model, CancellationToken.None);
 			}
 
 			model.ConstraintDetails.Count.ShouldBe(1);
@@ -712,13 +695,13 @@ WHERE
 		}
 
 		[Test]
-		public void TestViewCommentDataProvider()
+		public async Task TestViewCommentDataProvider()
 		{
 			var model = new ViewDetailsModel();
 
 			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
-				databaseModel.UpdateViewDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"ALL_COL_PRIVS\""), model, CancellationToken.None).Wait();
+				await databaseModel.UpdateViewDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"ALL_COL_PRIVS\""), model, CancellationToken.None);
 			}
 
 			model.ConstraintDetails.Count.ShouldBe(0);
@@ -726,9 +709,9 @@ WHERE
 		}
 
 		[Test]
-		public void TestExplainPlanDataProvider()
+		public async Task TestExplainPlanDataProvider()
 		{
-			Task<ExecutionPlanItemCollection> task;
+			ExecutionPlanItemCollection planItemCollection;
 			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
 				var executionModel =
@@ -738,12 +721,11 @@ WHERE
 						StatementText = ExplainPlanTestQuery
 					};
 
-				task = databaseModel.ExplainPlanAsync(executionModel, CancellationToken.None);
-				task.Wait();
+				planItemCollection = await databaseModel.ExplainPlanAsync(executionModel, CancellationToken.None);
 			}
 
-			var rootItem = task.Result.RootItem;
-			task.Result.AllItems.Count.ShouldBe(12);
+			var rootItem = planItemCollection.RootItem;
+			planItemCollection.AllItems.Count.ShouldBe(12);
 			rootItem.ShouldNotBe(null);
 			rootItem.Operation.ShouldBe("SELECT STATEMENT");
 			rootItem.ExecutionOrder.ShouldBe(12);
@@ -784,9 +766,9 @@ WHERE
 		}
 
 		[Test]
-		public void TestCursorExecutionStatisticsDataProvider()
+		public async Task TestCursorExecutionStatisticsDataProvider()
 		{
-			Task<ExecutionStatisticsPlanItemCollection> taskStatistics;
+			ExecutionStatisticsPlanItemCollection taskStatistics;
 			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
 				var executionModel =
@@ -800,11 +782,10 @@ WHERE
 				var task = connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel } }, CancellationToken.None);
 				task.Wait();
 
-				taskStatistics = connectionAdapter.GetCursorExecutionStatisticsAsync(CancellationToken.None);
-				taskStatistics.Wait();
+				taskStatistics = await connectionAdapter.GetCursorExecutionStatisticsAsync(CancellationToken.None);
 			}
 
-			var allItems = taskStatistics.Result.AllItems.Values.ToArray();
+			var allItems = taskStatistics.AllItems.Values.ToArray();
 			allItems.Length.ShouldBe(12);
 
 			var hashJoin = allItems[1];
@@ -838,7 +819,7 @@ WHERE
 		}
 
 		[Test]
-		public void TestComplextExplainExecutionOrder()
+		public async Task TestComplextExplainExecutionOrder()
 		{
 			const string testQuery =
 @"WITH PLAN_SOURCE AS (
@@ -890,8 +871,8 @@ FROM (
 ) RICH_PLAN_DATA
 ORDER BY
 	ID";
-			
-			Task<ExecutionPlanItemCollection> task;
+
+			ExecutionPlanItemCollection planItemCollection;
 			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
 				var executionModel =
@@ -901,22 +882,20 @@ ORDER BY
 						StatementText = testQuery
 					};
 
-				task = databaseModel.ExplainPlanAsync(executionModel, CancellationToken.None);
-				task.Wait();
+				planItemCollection = await databaseModel.ExplainPlanAsync(executionModel, CancellationToken.None);
 			}
 
-			var executionOrder = task.Result.AllItems.Values.Select(i => i.ExecutionOrder).ToArray();
+			var executionOrder = planItemCollection.AllItems.Values.Select(i => i.ExecutionOrder).ToArray();
 			var expectedExecutionOrder = new [] { 19, 4, 3, 2, 1, 7, 6, 5, 10, 9, 8, 18, 12, 11, 17, 16, 15, 14, 13 };
 
 			executionOrder.ShouldBe(expectedExecutionOrder);
 		}
 
-		private void ExecuteDataProvider(params IModelDataProvider[] updaters)
+		private async Task ExecuteDataProvider(params IModelDataProvider[] updaters)
 		{
 			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
-				var task = (Task)typeof (OracleDatabaseModel).GetMethod("UpdateModelAsync", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(databaseModel, new object[] { CancellationToken.None, false, updaters });
-				task.Wait();
+				await (Task)typeof (OracleDatabaseModel).GetMethod("UpdateModelAsync", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(databaseModel, new object[] { CancellationToken.None, false, updaters });
 			}
 		}
 	}

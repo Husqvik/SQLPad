@@ -407,7 +407,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					{
 						foreach (var updater in updaters)
 						{
-							command.Parameters.Clear();
+							command.ResetParametersToAvoidOdacBug();
 							command.CommandText = String.Empty;
 							command.CommandType = CommandType.Text;
 							updater.InitializeCommand(command);
