@@ -45,7 +45,7 @@ WHERE
 		}
 
 		[Test]
-		public void TestModelInitialization()
+		public async Task TestModelInitialization()
 		{
 			using (var databaseModel = OracleDatabaseModel.GetDatabaseModel(ConnectionString, "Original"))
 			{
@@ -59,7 +59,7 @@ WHERE
 				databaseModel.IsInitialized.ShouldBe(false);
 				var refreshFinishedResetEvent = new ManualResetEvent(false);
 				databaseModel.RefreshCompleted += delegate { refreshFinishedResetEvent.Set(); };
-				databaseModel.Initialize().Wait();
+				await databaseModel.Initialize();
 
 				databaseModel.IsInitialized.ShouldBe(true);
 				databaseModel.Schemas.Count.ShouldBeGreaterThan(0);
@@ -70,19 +70,19 @@ WHERE
 				}
 
 				Trace.WriteLine("Assert original database model");
-				AssertDatabaseModel(databaseModel);
+				await AssertDatabaseModel(databaseModel);
 
 				using (var modelClone = OracleDatabaseModel.GetDatabaseModel(ConnectionString, "Clone"))
 				{
-					modelClone.Refresh().Wait();
+					await modelClone.Refresh();
 
 					Trace.WriteLine("Assert cloned database model");
-					AssertDatabaseModel(modelClone);
+					await AssertDatabaseModel(modelClone);
 				}
 			}
 		}
 
-		private void AssertDatabaseModel(OracleDatabaseModelBase databaseModel)
+		private async Task AssertDatabaseModel(OracleDatabaseModelBase databaseModel)
 		{
 			databaseModel.Version.Major.ShouldBeGreaterThanOrEqualTo(11);
 
@@ -103,13 +103,12 @@ WHERE
 
 			var objectForScriptCreation = databaseModel.GetFirstSchemaObject<OracleSchemaObject>(databaseModel.GetPotentialSchemaObjectIdentifiers("SYS", "OBJ$"));
 			objectForScriptCreation.ShouldNotBe(null);
-			var scriptTask = databaseModel.GetObjectScriptAsync(objectForScriptCreation, CancellationToken.None);
-			scriptTask.Wait();
+			var objectScript = await databaseModel.GetObjectScriptAsync(objectForScriptCreation, CancellationToken.None);
 
-			Trace.WriteLine("Object script output: " + Environment.NewLine + scriptTask.Result + Environment.NewLine);
+			Trace.WriteLine("Object script output: " + Environment.NewLine + objectScript + Environment.NewLine);
 
-			scriptTask.Result.ShouldNotBe(null);
-			scriptTask.Result.Length.ShouldBeGreaterThan(100);
+			objectScript.ShouldNotBe(null);
+			objectScript.Length.ShouldBeGreaterThan(100);
 
 			var executionModel =
 				new StatementExecutionModel
@@ -121,11 +120,10 @@ WHERE
 			var connectionAdapter = (OracleConnectionAdapter)databaseModel.CreateConnectionAdapter();
 			connectionAdapter.EnableDatabaseOutput = true;
 			var batchExecutionModel = new StatementBatchExecutionModel { Statements = new [] { executionModel }, GatherExecutionStatistics = true };
-			var taskStatement = connectionAdapter.ExecuteStatementAsync(batchExecutionModel, CancellationToken.None);
-			taskStatement.Wait();
-			taskStatement.Result.StatementResults.Count.ShouldBe(1);
-			taskStatement.Result.ExecutionModel.ShouldBe(batchExecutionModel);
-			var result = taskStatement.Result.StatementResults[0];
+			var statementExecutionBatchResult = await connectionAdapter.ExecuteStatementAsync(batchExecutionModel, CancellationToken.None);
+			statementExecutionBatchResult.StatementResults.Count.ShouldBe(1);
+			statementExecutionBatchResult.ExecutionModel.ShouldBe(batchExecutionModel);
+			var result = statementExecutionBatchResult.StatementResults[0];
 			result.StatementModel.ShouldBe(executionModel);
 			result.ExecutedSuccessfully.ShouldBe(true);
 			result.AffectedRowCount.ShouldBe(-1);
@@ -142,24 +140,18 @@ WHERE
 			columnHeaders[0].DatabaseDataType.ShouldBe("Varchar2");
 			columnHeaders[0].Name.ShouldBe("DUMMY");
 
-			var fetchRecordsTask = connectionAdapter.FetchRecordsAsync(resultInfo, Int32.MaxValue, CancellationToken.None);
-			fetchRecordsTask.Wait();
+			var rows = await connectionAdapter.FetchRecordsAsync(resultInfo, Int32.MaxValue, CancellationToken.None);
 
 			connectionAdapter.CanFetch(resultInfo).ShouldBe(false);
 
-			var rows = fetchRecordsTask.Result;
 			rows.Count.ShouldBe(1);
 			rows[0].Length.ShouldBe(1);
 			rows[0][0].ToString().ShouldBe("X");
 
-			var task = connectionAdapter.FetchRecordsAsync(resultInfo, 1, CancellationToken.None);
-			task.Wait();
-			task.Result.Any().ShouldBe(false);
+			rows = await connectionAdapter.FetchRecordsAsync(resultInfo, 1, CancellationToken.None);
+			rows.Any().ShouldBe(false);
 
-			var displayCursorTask = connectionAdapter.GetCursorExecutionStatisticsAsync(CancellationToken.None);
-			displayCursorTask.Wait();
-
-			var planItemCollection = displayCursorTask.Result;
+			var planItemCollection = await connectionAdapter.GetCursorExecutionStatisticsAsync(CancellationToken.None);
 			planItemCollection.PlanText.ShouldNotBe(null);
 			planItemCollection.PlanText.ShouldNotBe(String.Empty);
 
@@ -167,10 +159,9 @@ WHERE
 
 			planItemCollection.PlanText.ShouldContain(executionModel.StatementText);
 
-			var taskStatistics = connectionAdapter.GetExecutionStatisticsAsync(CancellationToken.None);
-			taskStatistics.Wait();
+			var executionStatistics = await connectionAdapter.GetExecutionStatisticsAsync(CancellationToken.None);
 
-			var statisticsRecords = taskStatistics.Result.Where(r => r.Value != 0).ToArray();
+			var statisticsRecords = executionStatistics.Where(r => r.Value != 0).ToArray();
 			statisticsRecords.Length.ShouldBeGreaterThan(0);
 
 			var statistics = String.Join(Environment.NewLine, statisticsRecords.Select(r => $"{r.Name.PadRight(40)}: {r.Value}"));
