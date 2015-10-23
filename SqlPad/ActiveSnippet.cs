@@ -10,6 +10,8 @@ namespace SqlPad
 {
 	internal class ActiveSnippet
 	{
+		private static readonly Regex RegexNewLine = new Regex(@"\r?\n", RegexOptions.CultureInvariant | RegexOptions.Compiled);
+
 		private readonly TextEditor _editor;
 		private readonly List<List<Tuple<TextAnchor, TextAnchor>>> _followingAnchorGroups = new List<List<Tuple<TextAnchor, TextAnchor>>>();
 
@@ -21,14 +23,22 @@ namespace SqlPad
 
 		public ActiveSnippet(int completionSegmentOffset, int completionSegmentLength, TextEditor editor, CompletionData completionData)
 		{
+			var lineBeginOffset = editor.Document.GetLineByOffset(completionSegmentOffset).Offset;
+			var snippetBaseText = completionData.Snippet.BaseText;
+			if (lineBeginOffset < completionSegmentOffset)
+			{
+				var indentationText = editor.Document.GetText(lineBeginOffset, completionSegmentOffset - lineBeginOffset);
+				snippetBaseText = RegexNewLine.Replace(snippetBaseText, m => $"{m.Value}{indentationText}");
+			}
+
 			editor.Document.BeginUpdate();
-			editor.Document.Replace(completionSegmentOffset, completionSegmentLength, completionData.Snippet.BaseText);
+			editor.Document.Replace(completionSegmentOffset, completionSegmentLength, snippetBaseText);
 
 			if (completionData.Snippet.Parameters.Count > 0)
 			{
 				_editor = editor;
 
-				var text = completionData.Snippet.BaseText;
+				var text = snippetBaseText;
 				foreach (var parameter in completionData.Snippet.Parameters.OrderBy(p => p.Index))
 				{
 					var anchorGroup = new List<Tuple<TextAnchor, TextAnchor>>();

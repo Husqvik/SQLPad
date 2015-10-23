@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -112,11 +111,6 @@ namespace SqlPad
 			run.Text = text;
 			run.Foreground = isHighlight ? Brushes.Red : Brushes.Black;
 			inlineIndex++;
-		}
-
-		internal static string FormatSnippetText(ICodeSnippet codeSnippet)
-		{
-			return String.Format(codeSnippet.BaseText, codeSnippet.Parameters.Select(p => (object)p.DefaultValue).ToArray());
 		}
 
 		public StatementGrammarNode Node { get; }
