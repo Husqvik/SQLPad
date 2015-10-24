@@ -832,6 +832,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 					await connection.OpenAsynchronous(cancellationToken);
 					await command.ExecuteNonQueryAsynchronous(cancellationToken);
+					await connection.CloseAsynchronous(cancellationToken);
 					var result = (OracleDecimal)errorPositionParameter.Value;
 					return result.IsNull ? null : (int?)result.Value;
 				}
@@ -1060,7 +1061,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 					try
 					{
-						await connection.OpenAsync(cancellationToken);
+						await connection.OpenAsynchronous(cancellationToken);
 						connection.ModuleName = $"{_moduleName}/BackgroundConnection";
 						connection.ActionName = "Fetch execution info";
 
@@ -1085,6 +1086,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 					{
 						Trace.WriteLine($"Execution plan identifers and transaction status could not been fetched: {e}");
 						return e;
+					}
+					finally
+					{
+						await connection.CloseAsynchronous(cancellationToken);
 					}
 				}
 			}

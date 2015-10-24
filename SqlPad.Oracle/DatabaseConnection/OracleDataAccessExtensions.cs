@@ -8,8 +8,10 @@ using System.Threading;
 using System.Threading.Tasks;
 #if ORACLE_MANAGED_DATA_ACCESS_CLIENT
 using Oracle.ManagedDataAccess.Client;
+using Oracle.ManagedDataAccess.Types;
 #else
 using Oracle.DataAccess.Client;
+using Oracle.DataAccess.Types;
 #endif
 
 using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
@@ -155,6 +157,26 @@ namespace SqlPad.Oracle.DatabaseConnection
 		public static Task OpenAsynchronous(this OracleConnection connection, CancellationToken cancellationToken)
 		{
 			return ExecuteAsynchronous<object>(delegate { /* ODAC does not support cancellation of a connection being opened. */ }, delegate { connection.Open(); return null; }, cancellationToken);
+		}
+
+		public static Task CloseAsynchronous(this OracleConnection connection, CancellationToken cancellationToken)
+		{
+			return ExecuteAsynchronous<object>(delegate { }, delegate { connection.Close(); return null; }, cancellationToken);
+		}
+
+		public static Task<int> ReadAsynchronous(this OracleBlob blob, byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+		{
+			return ExecuteAsynchronous(delegate { }, () => blob.Read(buffer, offset, count), cancellationToken);
+		}
+
+		public static Task<int> ReadAsynchronous(this OracleClob clob, char[] buffer, int offset, int count, CancellationToken cancellationToken)
+		{
+			return ExecuteAsynchronous(delegate { }, () => clob.Read(buffer, offset, count), cancellationToken);
+		}
+
+		public static Task<int> ReadAsynchronous(this OracleXmlStream xmlStream, char[] buffer, int offset, int count, CancellationToken cancellationToken)
+		{
+			return ExecuteAsynchronous(delegate { }, () => xmlStream.Read(buffer, offset, count), cancellationToken);
 		}
 
 		public static Task RollbackAsynchronous(this OracleTransaction transaction)
