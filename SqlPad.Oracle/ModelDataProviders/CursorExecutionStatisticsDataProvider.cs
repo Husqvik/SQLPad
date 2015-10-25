@@ -1,6 +1,8 @@
 using System;
 using System.Data;
 using System.Globalization;
+using System.Threading;
+using System.Threading.Tasks;
 using SqlPad.Oracle.DatabaseConnection;
 #if ORACLE_MANAGED_DATA_ACCESS_CLIENT
 using Oracle.ManagedDataAccess.Client;
@@ -33,9 +35,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 			command.AddSimpleParameter("CHILD_NUMBER", _childNumber);
 		}
 
-		public override void MapReaderData(OracleDataReader reader)
+		public override async Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 		{
-			ItemCollection = _executionStatisticsBuilder.Build(reader);
+			ItemCollection = await _executionStatisticsBuilder.Build(reader, cancellationToken);
 		}
 	}
 

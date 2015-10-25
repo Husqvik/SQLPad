@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.ToolTips;
 #if ORACLE_MANAGED_DATA_ACCESS_CLIENT
@@ -22,9 +24,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 			command.AddSimpleParameter("USERNAME", DataModel.Schema.Name.Trim('"'));
 		}
 
-		public override void MapReaderData(OracleDataReader reader)
+		public override async Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 		{
-			if (!reader.Read())
+			if (!await reader.ReadAsynchronous(cancellationToken))
 			{
 				return;
 			}

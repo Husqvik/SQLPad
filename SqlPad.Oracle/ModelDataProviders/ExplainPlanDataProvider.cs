@@ -1,5 +1,7 @@
 using System;
 using System.Data;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.DataDictionary;
@@ -40,7 +42,10 @@ namespace SqlPad.Oracle.ModelDataProviders
 				command.CommandText = $"EXPLAIN PLAN SET STATEMENT_ID = '{DataModel.ExecutionPlanKey}' INTO {DataModel.TargetTableName} FOR\n{DataModel.StatementText}";
 			}
 
-			public override void MapReaderData(OracleDataReader reader) { }
+			public override Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
+			{
+				return Task.FromResult(0);
+			}
 		}
 
 		private class LoadExplainPlanDataProviderInternal : ModelDataProvider<ExplainPlanModelInternal>
@@ -57,9 +62,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 				command.AddSimpleParameter("STATEMENT_ID", DataModel.ExecutionPlanKey);
 			}
 
-			public override void MapReaderData(OracleDataReader reader)
+			public override async Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 			{
-				DataModel.ItemCollection = _planBuilder.Build(reader);
+				DataModel.ItemCollection = await _planBuilder.Build(reader, cancellationToken);
 			}
 		}
 
@@ -86,13 +91,13 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 	internal abstract class ExecutionPlanBuilderBase<TCollection, TItem> where TCollection : ExecutionPlanItemCollectionBase<TItem>, new() where TItem : ExecutionPlanItem, new()
 	{
-		public TCollection Build(OracleDataReader reader)
+		public async Task<TCollection> Build(OracleDataReader reader, CancellationToken cancellationToken)
 		{
 			var planItemCollection = new TCollection();
 
-			while (reader.Read())
+			while (await reader.ReadAsynchronous(cancellationToken))
 			{
-				var item = CreatePlanItem(reader);
+				var item = await CreatePlanItem(reader, cancellationToken);
 
 				FillData(reader, item);
 
@@ -106,10 +111,10 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		protected virtual void FillData(IDataRecord reader, TItem item) { }
 
-		private static TItem CreatePlanItem(IDataRecord reader)
+		private static async Task<TItem> CreatePlanItem(OracleDataReader reader, CancellationToken cancellationToken)
 		{
 			var time = OracleReaderValueConvert.ToInt32(reader["TIME"]);
-			var otherData = OracleReaderValueConvert.ToString(reader["OTHER_XML"]);
+			var otherData = OracleReaderValueConvert.ToString(await reader.GetValueAsynchronous(reader.GetOrdinal("OTHER_XML"), cancellationToken));
 
 			return
 				new TItem

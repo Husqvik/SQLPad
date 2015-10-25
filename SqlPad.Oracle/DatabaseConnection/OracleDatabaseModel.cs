@@ -438,7 +438,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 									{
 										using (var reader = await command.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken))
 										{
-											updater.MapReaderData(reader);
+											await updater.MapReaderData(reader, cancellationToken);
 										}
 									}
 								}
@@ -470,6 +470,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 							await transaction.RollbackAsynchronous();
 							transaction.Dispose();
 						}
+
+						await connection.CloseAsynchronous(cancellationToken);
 					}
 				}
 			}

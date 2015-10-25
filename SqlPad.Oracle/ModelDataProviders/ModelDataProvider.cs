@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.DataDictionary;
 #if ORACLE_MANAGED_DATA_ACCESS_CLIENT
@@ -34,9 +36,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 			command.AddSimpleParameter("COLUMN_NAME", _columnName.Trim('"'));
 		}
 
-		public override void MapReaderData(OracleDataReader reader)
+		public override async Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 		{
-			if (!reader.Read())
+			if (!await reader.ReadAsynchronous(cancellationToken))
 			{
 				return;
 			}
@@ -83,9 +85,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 			command.InitialLONGFetchSize = 32767;
 		}
 
-		public override void MapReaderData(OracleDataReader reader)
+		public override async Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 		{
-			while (reader.Read())
+			while (await reader.ReadAsynchronous(cancellationToken))
 			{
 				var deleteRuleRaw = OracleReaderValueConvert.ToString(reader["DELETE_RULE"]);
 				var constraintDetail =
@@ -150,11 +152,11 @@ namespace SqlPad.Oracle.ModelDataProviders
 			command.AddSimpleParameter("COLUMN_NAME", _columnName.Trim('"'));
 		}
 
-		public override void MapReaderData(OracleDataReader reader)
+		public override async Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 		{
 			var histogramValues = new List<double>();
 
-			while (reader.Read())
+			while (await reader.ReadAsynchronous(cancellationToken))
 			{
 				histogramValues.Add(Convert.ToInt32(reader["ENDPOINT_NUMBER"]));
 			}
@@ -187,9 +189,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 			command.AddSimpleParameter("COLUMN_NAME", _columnName.Trim('"'));
 		}
 
-		public override void MapReaderData(OracleDataReader reader)
+		public override async Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 		{
-			if (!reader.Read())
+			if (!await reader.ReadAsynchronous(cancellationToken))
 			{
 				return;
 			}
@@ -225,9 +227,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
 		}
 
-		public override void MapReaderData(OracleDataReader reader)
+		public override async Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 		{
-			if (!reader.Read())
+			if (!await reader.ReadAsynchronous(cancellationToken))
 			{
 				return;
 			}
@@ -276,9 +278,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 			}
 		}
 
-		public override void MapReaderData(OracleDataReader reader)
+		public override async Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 		{
-			if (!reader.Read())
+			if (!await reader.ReadAsynchronous(cancellationToken))
 			{
 				return;
 			}
@@ -307,9 +309,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 			command.AddSimpleParameter("PARTITION_NAME", _partitionName.Trim('"'));
 		}
 
-		public override void MapReaderData(OracleDataReader reader)
+		public override async Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 		{
-			if (!reader.Read())
+			if (!await reader.ReadAsynchronous(cancellationToken))
 			{
 				return;
 			}
@@ -340,9 +342,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 			command.AddSimpleParameter("COLUMN_NAME", String.IsNullOrEmpty(_columnName) ? null : _columnName.Trim('"'));
 		}
 
-		public override void MapReaderData(OracleDataReader reader)
+		public override async Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 		{
-			while (reader.Read())
+			while (await reader.ReadAsynchronous(cancellationToken))
 			{
 				var degreeOfParallelismRaw = (string)reader["DEGREE"];
 				var indexDetails =
@@ -396,9 +398,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 			_indexes = DataModel.IndexDetails.ToDictionary(i => OracleObjectIdentifier.Create(i.Owner, i.Name));
 		}
 
-		public override void MapReaderData(OracleDataReader reader)
+		public override async Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 		{
-			while (reader.Read())
+			while (await reader.ReadAsynchronous(cancellationToken))
 			{
 				var indexOwner = (string)reader["INDEX_OWNER"];
 				var indexName = (string)reader["INDEX_NAME"];
@@ -459,9 +461,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 			command.AddSimpleParameter("NAME", _objectName);
 		}
 
-		public override void MapReaderData(OracleDataReader reader)
+		public override async Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 		{
-			while (reader.Read())
+			while (await reader.ReadAsynchronous(cancellationToken))
 			{
 				var error =
 					new CompilationError
@@ -503,9 +505,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 			command.AddSimpleParameter("SEGMENT_NAME", _objectIdentifier.Name.Trim('"'));
 		}
 
-		public override void MapReaderData(OracleDataReader reader)
+		public override async Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 		{
-			if (!reader.Read())
+			if (!await reader.ReadAsynchronous(cancellationToken))
 			{
 				return;
 			}
@@ -583,11 +585,11 @@ namespace SqlPad.Oracle.ModelDataProviders
 			command.AddSimpleParameter("CHILD_NUMBER", _childNumber);
 		}
 
-		public override void MapReaderData(OracleDataReader reader)
+		public override async Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 		{
 			var builder = new StringBuilder();
 
-			while (reader.Read())
+			while (await reader.ReadAsynchronous(cancellationToken))
 			{
 				builder.AppendLine(Convert.ToString(reader["PLAN_TABLE_OUTPUT"]));
 			}
@@ -615,12 +617,13 @@ namespace SqlPad.Oracle.ModelDataProviders
 			command.CommandText = _commandText;
 		}
 
-		public override void MapReaderData(OracleDataReader reader)
+		public override Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 		{
 			var columnNames = OracleConnectionAdapter.GetColumnHeadersFromReader(reader)
 				.Select(h => $"\"{h.Name}\"");
 
 			_columns.AddRange(columnNames);
+			return Task.FromResult(0);
 		}
 	}
 }

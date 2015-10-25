@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using SqlPad.Oracle.DatabaseConnection;
 #if ORACLE_MANAGED_DATA_ACCESS_CLIENT
 using Oracle.ManagedDataAccess.Client;
@@ -46,7 +48,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 			public override bool IsValid => _executionStart || DataModel.StatisticsKeys.Count > 0;
 
-		    public override void MapReaderData(OracleDataReader reader)
+		    public override async Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 			{
 				if (DataModel.StatisticsKeys.Count == 0)
 				{
@@ -58,7 +60,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 					throw new InvalidOperationException("Execution start statistics have not been set. ");
 				}
 
-				while (reader.Read())
+				while (await reader.ReadAsynchronous(cancellationToken))
 				{
 					var statisticsRecord =
 						new SessionExecutionStatisticsRecord

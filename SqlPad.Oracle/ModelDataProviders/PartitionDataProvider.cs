@@ -1,6 +1,8 @@
 using System;
 using System.Data;
 using System.Globalization;
+using System.Threading;
+using System.Threading.Tasks;
 using Oracle.DataAccess.Client;
 using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.DataDictionary;
@@ -91,9 +93,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 				command.AddSimpleParameter("PARTITION_NAME", _partitionDataModel?.Name);
 			}
 
-			public override void MapReaderData(OracleDataReader reader)
+			public override async Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 			{
-				while (reader.Read())
+				while (await reader.ReadAsynchronous(cancellationToken))
 				{
 					var partitionDetails = _partitionDataModel ??
 					                       new PartitionDetailsModel
@@ -150,9 +152,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 				command.AddSimpleParameter("SUBPARTITION_NAME", _subPartitionDataModel?.Name);
 			}
 
-			public override void MapReaderData(OracleDataReader reader)
+			public override async Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 			{
-				while (reader.Read())
+				while (await reader.ReadAsynchronous(cancellationToken))
 				{
 					var subPartitionDetails = _subPartitionDataModel ??
 					                          new SubPartitionDetailsModel

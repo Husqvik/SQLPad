@@ -1,4 +1,6 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 #if ORACLE_MANAGED_DATA_ACCESS_CLIENT
 using Oracle.ManagedDataAccess.Client;
 #else
@@ -11,7 +13,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 	{
 		void InitializeCommand(OracleCommand command);
 		
-		void MapReaderData(OracleDataReader reader);
+		Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken);
 
 		void MapScalarValue(object value);
 
@@ -31,7 +33,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public abstract void InitializeCommand(OracleCommand command);
 
-		public virtual void MapReaderData(OracleDataReader reader)
+		public virtual Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 		{
 			throw new NotSupportedException("Override this method if you want to map data from the reader. ");
 		}

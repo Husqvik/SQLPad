@@ -132,7 +132,7 @@
     </Compile>
     <Compile Include="DatabaseConnection\OracleDatabaseCommands.cs" />
     <Compile Include="DatabaseConnection\OracleDataDictionaryMapper.cs" />
-    <Compile Include="ModelDataProviders\DataModelUpdater.cs" />
+    <Compile Include="ModelDataProviders\ModelDataProvider.cs" />
     <Compile Include="DatabaseConnection\OracleClobValue.cs" />
     <Compile Include="OracleCodeCompletionItem.cs" />
     <Compile Include="OracleCodeCompletionProvider.cs" />

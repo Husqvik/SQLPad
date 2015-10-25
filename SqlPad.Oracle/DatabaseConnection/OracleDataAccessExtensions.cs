@@ -139,6 +139,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return ExecuteAsynchronous(reader.Close, reader.Read, cancellationToken);
 		}
 
+		public static Task<object> GetValueAsynchronous(this OracleDataReader reader, int index, CancellationToken cancellationToken)
+		{
+			return ExecuteAsynchronous(reader.Close, () => reader.GetValue(index), cancellationToken);
+		}
+
 		public static Task<int> ExecuteNonQueryAsynchronous(this OracleCommand command, CancellationToken cancellationToken)
 		{
 			return ExecuteAsynchronous(command.CancelIgnoreFailure, command.ExecuteNonQuery, cancellationToken);
