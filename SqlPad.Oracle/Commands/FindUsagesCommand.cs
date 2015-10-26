@@ -214,13 +214,21 @@ namespace SqlPad.Oracle.Commands
 				.Concat(nodes);
 		}
 
-		private static bool IsValidReference(OracleColumnReference columnReference, OracleColumnReference selectedColumnReference, OracleObjectWithColumnsReference objectReference)
+		private static bool IsValidReference(OracleColumnReference columnReference, OracleColumnReference selectedColumnReference, OracleObjectWithColumnsReference selectedObjectReference)
 		{
-			var isInnerModelClauseReference = selectedColumnReference.Placement == StatementPlacement.Model && selectedColumnReference.ValidObjectReference != objectReference.Owner.ModelReference;
 			return
 				columnReference.ColumnNodeObjectReferences.Count == 1 &&
-				(columnReference.ColumnNodeObjectReferences.First() == objectReference || isInnerModelClauseReference) &&
+				IsObjectReferenceMatched(columnReference.ColumnNodeObjectReferences.First(), selectedObjectReference) &&
 				String.Equals(columnReference.NormalizedName, selectedColumnReference.NormalizedName);
+		}
+
+		private static bool IsObjectReferenceMatched(OracleObjectWithColumnsReference columnObjectReference, OracleObjectWithColumnsReference selectedObjectReference)
+		{
+			var isSelectedObjectReferencePivotOrModel = selectedObjectReference is OraclePivotTableReference || selectedObjectReference is OracleSqlModelReference;
+			var isColumnObjectReferencePivorOrModel = columnObjectReference is OraclePivotTableReference || columnObjectReference is OracleSqlModelReference;
+			return columnObjectReference == selectedObjectReference ||
+			       (isSelectedObjectReferencePivotOrModel && ((OracleDataObjectReference)selectedObjectReference).IncludeInnerReferences.Any(o => o == selectedObjectReference)) ||
+			       (isColumnObjectReferencePivorOrModel && ((OracleDataObjectReference)columnObjectReference).IncludeInnerReferences.Any(o => o == selectedObjectReference));
 		}
 
 		private static IEnumerable<StatementGrammarNode> GetModelClauseAndPivotTableReferences(OracleReference columnReference, bool onlyAliasOrigin)
@@ -364,48 +372,54 @@ namespace SqlPad.Oracle.Commands
 		private static IEnumerable<StatementGrammarNode> GetChildQueryBlockColumnReferences(OracleObjectWithColumnsReference objectReference, OracleColumnReference columnReference, bool onlyAliasOrigin)
 		{
 			var nodes = Enumerable.Empty<StatementGrammarNode>();
-			if (objectReference.QueryBlocks.Count != 1)
+			var dataObjectReference = objectReference as OracleDataObjectReference;
+			var sourceObjectReferences = dataObjectReference == null ? Enumerable.Repeat(objectReference, 1) : dataObjectReference.IncludeInnerReferences;
+
+			foreach (var reference in sourceObjectReferences)
 			{
-				return nodes;
-			}
-
-			var childQueryBlock = objectReference.QueryBlocks.Single();
-			var childColumn = childQueryBlock.Columns.SingleOrDefault(c => String.Equals(c.NormalizedName, columnReference.NormalizedName));
-
-			if (childColumn == null)
-			{
-				return nodes;
-			}
-
-			if (childColumn.AliasNode != null && (!onlyAliasOrigin || childColumn.HasExplicitAlias))
-			{
-				nodes = nodes.Concat(Enumerable.Repeat(childColumn.AliasNode, 1));
-			}
-
-			if (childColumn.IsDirectReference && childColumn.ColumnReferences.Count > 0 && childColumn.ColumnReferences.All(cr => cr.ColumnNodeColumnReferences.Count == 1))
-			{
-				var childColumnReference = childColumn.ColumnReferences.Single();
-
-				if (onlyAliasOrigin)
+				if (reference.QueryBlocks.Count != 1)
 				{
-					var childColumnObjectReference = childColumnReference.ValidObjectReference;
-					if (childColumnObjectReference == null || childColumnObjectReference.QueryBlocks.Count != 1 || !String.Equals(childColumnReference.NormalizedName, childColumn.NormalizedName))
-					{
-						return nodes;
-					}
+					continue;
 				}
 
-				var childSelectColumnReferences = childQueryBlock.Columns.SelectMany(c => c.ColumnReferences)
-					.Where(c => !c.ReferencesAllColumns && c.ColumnNodeObjectReferences.Count == 1 && String.Equals(c.SelectListColumn.NormalizedName, columnReference.NormalizedName) && c.ColumnNode != childColumn.AliasNode)
-					.Select(c => c.ColumnNode);
+				var childQueryBlock = reference.QueryBlocks.First();
+				var childColumn = childQueryBlock.Columns.SingleOrDefault(c => String.Equals(c.NormalizedName, columnReference.NormalizedName));
 
-				nodes = nodes.Concat(childSelectColumnReferences);
-
-				nodes = nodes.Concat(childQueryBlock.ColumnReferences.Where(c => c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeObjectReferences.Single() == childColumnReference.ColumnNodeObjectReferences.Single() && String.Equals(c.NormalizedName, childColumnReference.NormalizedName)).Select(c => c.ColumnNode));
-
-				if (childColumnReference.ColumnNodeObjectReferences.Count == 1)
+				if (childColumn == null)
 				{
-					nodes = nodes.Concat(GetChildQueryBlockColumnReferences(childColumnReference.ColumnNodeObjectReferences.Single(), childColumnReference, onlyAliasOrigin));
+					continue;
+				}
+
+				if (childColumn.AliasNode != null && (!onlyAliasOrigin || childColumn.HasExplicitAlias))
+				{
+					nodes = nodes.Concat(Enumerable.Repeat(childColumn.AliasNode, 1));
+				}
+
+				if (childColumn.IsDirectReference && childColumn.ColumnReferences.Count > 0 && childColumn.ColumnReferences.All(cr => cr.ColumnNodeColumnReferences.Count == 1))
+				{
+					var childColumnReference = childColumn.ColumnReferences.Single();
+
+					if (onlyAliasOrigin)
+					{
+						var childColumnObjectReference = childColumnReference.ValidObjectReference;
+						if (childColumnObjectReference == null || childColumnObjectReference.QueryBlocks.Count != 1 || !String.Equals(childColumnReference.NormalizedName, childColumn.NormalizedName))
+						{
+							continue;
+						}
+					}
+
+					var childSelectColumnReferences = childQueryBlock.Columns.SelectMany(c => c.ColumnReferences)
+						.Where(c => !c.ReferencesAllColumns && c.ColumnNodeObjectReferences.Count == 1 && String.Equals(c.SelectListColumn.NormalizedName, columnReference.NormalizedName) && c.ColumnNode != childColumn.AliasNode)
+						.Select(c => c.ColumnNode);
+
+					nodes = nodes.Concat(childSelectColumnReferences);
+
+					nodes = nodes.Concat(childQueryBlock.ColumnReferences.Where(c => c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeObjectReferences.Single() == childColumnReference.ColumnNodeObjectReferences.Single() && String.Equals(c.NormalizedName, childColumnReference.NormalizedName)).Select(c => c.ColumnNode));
+
+					if (childColumnReference.ColumnNodeObjectReferences.Count == 1)
+					{
+						nodes = nodes.Concat(GetChildQueryBlockColumnReferences(childColumnReference.ColumnNodeObjectReferences.Single(), childColumnReference, onlyAliasOrigin));
+					}
 				}
 			}
 

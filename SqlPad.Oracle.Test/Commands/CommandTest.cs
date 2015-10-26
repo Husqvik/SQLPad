@@ -742,6 +742,45 @@ MODEL
 			foundSegments[3].Length.ShouldBe(3);
 		}
 
+		private const string PivotTableSql =
+@"SELECT
+    OBJECT_TYPE, HUSQVIK, SYSTEM, SYS, CTXSYS
+FROM
+(
+    SELECT
+        OBJECT_TYPE, OWNER
+    FROM
+        ALL_OBJECTS
+    WHERE
+        OWNER IN ('HUSQVIK', 'SYSTEM', 'SYS', 'CTXSYS')
+)
+PIVOT
+(
+    COUNT(OWNER)
+    FOR OWNER IN
+    (
+        'HUSQVIK' HUSQVIK,
+        'SYSTEM' SYSTEM,
+        'SYS' SYS,
+        'CTXSYS' CTXSYS
+    )
+)
+ORDER BY
+    OBJECT_TYPE";
+
+		[Test(Description = @""), STAThread]
+		public void TestFindPivotTableColumnUsages()
+		{
+			var foundSegments = FindUsagesOrdered(PivotTableSql, 12);
+			foundSegments.Count.ShouldBe(3);
+			foundSegments[0].IndextStart.ShouldBe(12);
+			foundSegments[0].Length.ShouldBe(11);
+			foundSegments[1].IndextStart.ShouldBe(84);
+			foundSegments[1].Length.ShouldBe(11);
+			foundSegments[2].IndextStart.ShouldBe(382);
+			foundSegments[2].Length.ShouldBe(11);
+		}
+
 		[Test(Description = @""), STAThread]
 		public void TestFindColumnUsagesOfComputedColumnAtUsage()
 		{
