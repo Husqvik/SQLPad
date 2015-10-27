@@ -286,6 +286,59 @@ FROM
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestAddColumnAliasWithNestedPivotTable()
+		{
+			_editor.Text =
+@"SELECT
+    DUMMY
+FROM
+(
+    SELECT
+        DUMMY, 1 VALUE
+    FROM
+        DUAL
+)
+PIVOT
+(
+    COUNT(*)
+    FOR VALUE IN
+    (
+        1 ONE
+    )
+)
+ORDER BY
+    DUMMY";
+
+			_editor.CaretOffset = 48;
+
+			CanExecuteCommand(OracleCommands.AddAlias).ShouldBe(true);
+			ExecuteCommand(OracleCommands.AddAlias, new TestCommandSettings(new CommandSettingsModel { Value = "C1" }));
+
+			const string expectedText =
+@"SELECT
+    C1
+FROM
+(
+    SELECT
+        DUMMY C1, 1 VALUE
+    FROM
+        DUAL
+)
+PIVOT
+(
+    COUNT(*)
+    FOR VALUE IN
+    (
+        1 ONE
+    )
+)
+ORDER BY
+    C1";
+
+			_editor.Text.ShouldBe(expectedText);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestBasicWrapAsInlineViewCommand()
 		{
 			_editor.Text = @"SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM SELECTION S";
@@ -772,6 +825,19 @@ ORDER BY
 		public void TestFindPivotTableColumnUsages()
 		{
 			var foundSegments = FindUsagesOrdered(PivotTableSql, 12);
+			foundSegments.Count.ShouldBe(3);
+			foundSegments[0].IndextStart.ShouldBe(12);
+			foundSegments[0].Length.ShouldBe(11);
+			foundSegments[1].IndextStart.ShouldBe(84);
+			foundSegments[1].Length.ShouldBe(11);
+			foundSegments[2].IndextStart.ShouldBe(382);
+			foundSegments[2].Length.ShouldBe(11);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestFindPivotTableColumnUsagesAtColumnWithinInnerSubquery()
+		{
+			var foundSegments = FindUsagesOrdered(PivotTableSql, 84);
 			foundSegments.Count.ShouldBe(3);
 			foundSegments[0].IndextStart.ShouldBe(12);
 			foundSegments[0].Length.ShouldBe(11);

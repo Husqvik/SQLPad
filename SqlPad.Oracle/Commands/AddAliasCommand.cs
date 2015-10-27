@@ -189,7 +189,13 @@ namespace SqlPad.Oracle.Commands
 		private void AddColumnAliasToQueryBlock(string columnName, string alias, OracleReference objectReference)
 		{
 			var parentObjectReferences = new HashSet<OracleDataObjectReference>();
-			var columnReferences = objectReference.Owner.AllColumnReferences.Where(c => c.ValidObjectReference == objectReference && c.NormalizedName == columnName);
+			var columnReferences = objectReference.Owner.AllColumnReferences
+				.Where(c =>
+					(c.ValidObjectReference == objectReference ||
+					 (c.Owner != null && c.ValidObjectReference?.QueryBlocks.FirstOrDefault() == c.Owner) ||
+					 (c.ValidObjectReference as OracleDataObjectReference)?.IncludeInnerReferences.Any(r => r == objectReference) == true) &&
+					String.Equals(c.NormalizedName, columnName));
+
 			foreach (var columnReference in columnReferences)
 			{
 				_executionContext.SegmentsToReplace.Add(

@@ -426,6 +426,15 @@ namespace SqlPad.Oracle.Commands
 			return nodes;
 		}
 
+		private static bool MatchesOwnerQueryBlock(OracleObjectWithColumnsReference objectReference, OracleQueryBlock ownerQueryBlock)
+		{
+			Func<OracleObjectWithColumnsReference, bool> ownerQueryBlockPredicate = r => r.QueryBlocks.Count == 1 && r.QueryBlocks.First() == ownerQueryBlock;
+			var dataObjectReference = objectReference as OracleDataObjectReference;
+			var matchesOwnerQueryBlock = dataObjectReference?.IncludeInnerReferences.Any(ownerQueryBlockPredicate) ?? ownerQueryBlockPredicate(objectReference);
+			var matchesOwnSelectColumn = objectReference.Owner != null && objectReference.QueryBlocks.FirstOrDefault() == objectReference.Owner;
+			return matchesOwnerQueryBlock || matchesOwnSelectColumn;
+		}
+
 		internal static IEnumerable<StatementGrammarNode> GetParentQueryBlockReferences(OracleSelectListColumn selectListColumn)
 		{
 			var nodes = Enumerable.Empty<StatementGrammarNode>();
@@ -441,9 +450,7 @@ namespace SqlPad.Oracle.Commands
 			{
 				var parentReferences = parentQueryBlock.AllColumnReferences
 					.Where(c => c.ColumnNodeColumnReferences.Count == 1 && c.ColumnNodeObjectReferences.Count == 1 &&
-					            ((c.ColumnNodeObjectReferences.First().QueryBlocks.Count == 1 && c.ColumnNodeObjectReferences.First().QueryBlocks.First() == selectListColumn.Owner) ||
-					             c.Placement.In(StatementPlacement.Model, StatementPlacement.PivotClause) ||
-								 (c.ColumnNodeObjectReferences.FirstOrDefault() == parentQueryBlock.ModelReference)) &&
+					            MatchesOwnerQueryBlock(c.ColumnNodeObjectReferences.First(), selectListColumn.Owner) &&
 					            String.Equals(c.NormalizedName, selectListColumn.NormalizedName))
 					.ToArray();
 
