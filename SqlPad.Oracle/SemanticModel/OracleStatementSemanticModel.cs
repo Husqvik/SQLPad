@@ -3030,7 +3030,7 @@ namespace SqlPad.Oracle.SemanticModel
 			{
 				parameterExpressionRootNodes = parameterList
 					.GetPathFilterDescendants(
-						n => !n.Id.In(NonTerminals.NestedQuery, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.AggregateFunctionCall, NonTerminals.AnalyticFunctionCall, NonTerminals.AnalyticClause),
+						n => !n.Id.In(NonTerminals.NestedQuery, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.AggregateFunctionCall, NonTerminals.AnalyticFunctionCall, NonTerminals.AnalyticClause, NonTerminals.Expression),
 						NonTerminals.ExpressionList, NonTerminals.OptionalParameterExpressionList)
 					.Select(n => n.ChildNodes.FirstOrDefault());
 			}

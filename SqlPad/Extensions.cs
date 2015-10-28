@@ -98,6 +98,13 @@ namespace SqlPad
 			return new string(characters);
 		}
 
+		public static string EnsureMaximumLength(this string text, int maximumLength)
+		{
+			return text.Length > maximumLength
+				? text.Substring(0, maximumLength)
+				: text;
+		}
+
 		public static HashSet<T> ToHashSet<T>(this IEnumerable<T> source)
 		{
 			return new HashSet<T>(source);

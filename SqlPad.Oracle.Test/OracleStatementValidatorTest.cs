@@ -3000,6 +3000,19 @@ END;";
 			invalidNonTerminals.Count.ShouldBe(1);
 			invalidNonTerminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.SelectIntoClauseAllowedOnlyInMainQueryBlockWithinPlSqlScope);
 			invalidNonTerminals[0].Node.LastTerminalNode.Token.Value.ShouldBe("y");
-        }
+		}
+
+		[Test(Description = @"")]
+		public void TestFunctionWithCaseAsParameter()
+		{
+			const string sqlText = @"SELECT NVL(CASE WHEN 1 IN (1) THEN NULL END, ', ') FROM DUAL";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			validationModel.ProgramNodeValidity.Count.ShouldBe(1);
+		}
 	}
 }

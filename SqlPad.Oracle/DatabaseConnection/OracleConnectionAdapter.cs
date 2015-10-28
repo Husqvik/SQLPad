@@ -1062,7 +1062,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					try
 					{
 						await connection.OpenAsynchronous(cancellationToken);
-						connection.ModuleName = $"{_moduleName}/BackgroundConnection";
+						connection.ModuleName = $"{_moduleName}/BackgroundConnection".EnsureMaximumLength(64);
 						connection.ActionName = "Fetch execution info";
 
 						using (var reader = await command.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken))
