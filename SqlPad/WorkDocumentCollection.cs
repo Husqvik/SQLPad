@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows;
+using ProtoBuf;
 using ProtoBuf.Meta;
 
 namespace SqlPad
@@ -24,44 +25,57 @@ namespace SqlPad
 
 		private Dictionary<string, DatabaseProviderConfiguration> _databaseProviderConfigurations = new Dictionary<string, DatabaseProviderConfiguration>();
 		private Dictionary<Guid, WorkDocument> _workingDocuments = new Dictionary<Guid, WorkDocument>();
+		private Dictionary<Type, WindowProperties> _windowConfigurations = new Dictionary<Type, WindowProperties>();
 		private int _activeDocumentIndex;
-		private WindowProperties _windowProperties;
+		private readonly WindowProperties _windowProperties; // TODO: Unused; compatability; remove after migration
 		private List<WorkDocument> _recentFiles = new List<WorkDocument>();
 
 		static WorkDocumentCollection()
 		{
 			ConfigureBackupFile();
 
-			Serializer = TypeModel.Create();
-			var workingDocumentCollectionType = Serializer.Add(typeof(WorkDocumentCollection), false);
-			workingDocumentCollectionType.UseConstructor = false;
-			workingDocumentCollectionType.Add("_workingDocuments", "_activeDocumentIndex", "_windowProperties", "_databaseProviderConfigurations", "_recentFiles");
+			Serializer = ConfigureSerializer(false);
+		}
 
-			var workingDocumentType = Serializer.Add(typeof(WorkDocument), false);
+		private static RuntimeTypeModel ConfigureSerializer(bool includeOldWindowProperties)
+		{
+			var serializer = TypeModel.Create();
+			var workingDocumentCollectionType = serializer.Add(typeof(WorkDocumentCollection), false);
+			workingDocumentCollectionType.UseConstructor = false;
+			workingDocumentCollectionType.Add(nameof(_workingDocuments), nameof(_activeDocumentIndex));
+			if (includeOldWindowProperties)
+			{
+				workingDocumentCollectionType.Add(nameof(_windowProperties));
+			}
+
+			workingDocumentCollectionType.Add(nameof(_databaseProviderConfigurations), nameof(_recentFiles), nameof(_windowConfigurations));
+
+			var workingDocumentType = serializer.Add(typeof(WorkDocument), false);
 			workingDocumentType.UseConstructor = false;
 			workingDocumentType.Add(nameof(WorkDocument.DocumentFileName), nameof(WorkDocument.DocumentId), nameof(WorkDocument.ConnectionName), nameof(WorkDocument.SchemaName), nameof(WorkDocument.CursorPosition),
 				nameof(WorkDocument.SelectionStart), nameof(WorkDocument.SelectionLength), nameof(WorkDocument.IsModified), nameof(WorkDocument.VisualLeft), nameof(WorkDocument.VisualTop), nameof(WorkDocument.EditorGridRowHeight),
 				nameof(WorkDocument.Text), nameof(WorkDocument.EditorGridColumnWidth), nameof(WorkDocument.TabIndex), "_foldingStates", nameof(WorkDocument.EnableDatabaseOutput), nameof(WorkDocument.KeepDatabaseOutputHistory),
 				nameof(WorkDocument.HeaderBackgroundColorCode), nameof(WorkDocument.DocumentTitle), "_fontSize", nameof(WorkDocument.WatchItems), nameof(WorkDocument.DebuggerViewDefaultTabIndex), "_breakpoints");
 
-			var windowPropertiesType = Serializer.Add(typeof(WindowProperties), false);
+			var windowPropertiesType = serializer.Add(typeof(WindowProperties), false);
 			windowPropertiesType.UseConstructor = false;
 			windowPropertiesType.Add(nameof(WindowProperties.Left), nameof(WindowProperties.Top), nameof(WindowProperties.Width), nameof(WindowProperties.Height), nameof(WindowProperties.State));
 
-			var sqlPadConfigurationType = Serializer.Add(typeof(DatabaseProviderConfiguration), false);
+			var sqlPadConfigurationType = serializer.Add(typeof(DatabaseProviderConfiguration), false);
 			sqlPadConfigurationType.UseConstructor = false;
 			sqlPadConfigurationType.Add("_bindVariables", nameof(DatabaseProviderConfiguration.ProviderName), "_statementExecutionHistory");
 
-			var bindVariableConfigurationType = Serializer.Add(typeof(BindVariableConfiguration), false);
+			var bindVariableConfigurationType = serializer.Add(typeof(BindVariableConfiguration), false);
 			bindVariableConfigurationType.Add(nameof(BindVariableConfiguration.Name), nameof(BindVariableConfiguration.DataType), "_internalValue", nameof(BindVariableConfiguration.IsFilePath));
 
-			var statementExecutionType = Serializer.Add(typeof(StatementExecutionHistoryEntry), false);
+			var statementExecutionType = serializer.Add(typeof(StatementExecutionHistoryEntry), false);
 			statementExecutionType.UseConstructor = false;
 			statementExecutionType.Add(nameof(StatementExecutionHistoryEntry.StatementText), nameof(StatementExecutionHistoryEntry.ExecutedAt), nameof(StatementExecutionHistoryEntry.Tags));
 
-			var breakpointDataType = Serializer.Add(typeof(BreakpointData), false);
+			var breakpointDataType = serializer.Add(typeof(BreakpointData), false);
 			breakpointDataType.UseConstructor = false;
 			breakpointDataType.Add("_programIdentifier", nameof(BreakpointData.LineNumber), nameof(BreakpointData.IsEnabled));
+			return serializer;
 		}
 
 		private WorkDocumentCollection() {}
@@ -99,6 +113,11 @@ namespace SqlPad
 				{
 					_instance._recentFiles = new List<WorkDocument>();
 				}
+
+				if (_instance._windowConfigurations == null)
+				{
+					_instance._windowConfigurations = new Dictionary<Type, WindowProperties>();
+				}
 			}
 
 			if (_instance._databaseProviderConfigurations == null)
@@ -118,7 +137,16 @@ namespace SqlPad
 			{
 				try
 				{
-					_instance = (WorkDocumentCollection)Serializer.Deserialize(file, _instance, typeof(WorkDocumentCollection));
+					try
+					{
+						_instance = (WorkDocumentCollection)Serializer.Deserialize(file, _instance, typeof (WorkDocumentCollection));
+					}
+					catch (ProtoException) // TODO: Temporary - remove after migration
+					{
+						file.Seek(0, SeekOrigin.Begin);
+						_instance = (WorkDocumentCollection)ConfigureSerializer(true).Deserialize(file, _instance, typeof(WorkDocumentCollection));
+					}
+
 					Trace.WriteLine($"WorkDocumentCollection ({_instance._workingDocuments.Count} document(s)) successfully loaded from '{fileName}'. ");
 					return true;
 				}
@@ -352,22 +380,25 @@ namespace SqlPad
 			}
 		}
 
-		public static void SetApplicationWindowProperties(Window window)
+		public static void StoreWindowProperties(Window window)
 		{
-			Instance._windowProperties = new WindowProperties(window);
+			Instance._windowConfigurations[window.GetType()] = new WindowProperties(window);
 		}
 
-		public static void RestoreApplicationWindowProperties(Window window)
+		public static void RestoreWindowProperties(Window window)
 		{
-			var properties = Instance._windowProperties;
-			if (properties == null)
+			var properties = Instance._windowConfigurations;
+			WindowProperties windowProperties;
+			if (!properties.TryGetValue(window.GetType(), out windowProperties))
+			{
 				return;
+			}
 
-			window.Left = properties.Left;
-			window.Top = properties.Top;
-			window.Width = properties.Width;
-			window.Height = properties.Height;
-			window.WindowState = properties.State;
+			window.Left = windowProperties.Left;
+			window.Top = windowProperties.Top;
+			window.Width = windowProperties.Width;
+			window.Height = windowProperties.Height;
+			window.WindowState = windowProperties.State;
 		}
 	}
 

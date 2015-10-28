@@ -42,6 +42,20 @@ namespace SqlPad
 		ITraceViewer CreateTraceViewer(IConnectionAdapter connectionAdapter);
 
 		IHelpProvider CreateHelpProvider();
+
+		IDatabaseMonitor CreateDatabaseMonitor(ConnectionStringSettings connectionString);
+	}
+
+	public interface IDatabaseMonitor
+	{
+		Task<DatabaseSessions> GetSessionAsync(CancellationToken cancellationToken);
+	}
+
+	public struct DatabaseSessions
+	{
+		public IReadOnlyList<ColumnHeader> ColumnHeaders { get; set; }
+
+		public IReadOnlyList<object[]> Rows { get; set; }
 	}
 
 	public interface IDataExportConverter

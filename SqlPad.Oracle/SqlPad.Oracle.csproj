@@ -146,6 +146,7 @@
     <Compile Include="DatabaseConnection\OracleConnectionAdapter.cs" />
     <Compile Include="DatabaseConnection\OracleDatabaseModelBase.cs" />
     <Compile Include="DataDictionary\OracleDataDictionary.cs" />
+    <Compile Include="OracleDatabaseMonitor.cs" />
     <Compile Include="OracleDataExportConverter.cs" />
     <Compile Include="DataDictionary\OracleDataType.cs" />
     <Compile Include="DatabaseConnection\OracleDebugger.cs" />

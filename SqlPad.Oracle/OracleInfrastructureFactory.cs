@@ -93,6 +93,11 @@ namespace SqlPad.Oracle
 		{
 			return new OracleHelpProvider();
 		}
+
+		public IDatabaseMonitor CreateDatabaseMonitor(ConnectionStringSettings connectionString)
+		{
+			return new OracleDatabaseMonitor(connectionString);
+		}
 		#endregion
 	}
 }

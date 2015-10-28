@@ -202,7 +202,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private void ExecuteActionAsync(Action action)
 		{
 			if (_isRefreshing)
+			{
 				return;
+			}
 
 			_backgroundTask = Task.Factory.StartNew(action);
 		}

@@ -104,6 +104,9 @@
     <Compile Include="Bookmarks\IconMargin.cs" />
     <Compile Include="CellValueConverter.cs" />
     <Compile Include="CSharpQueryClassGenerator.cs" />
+    <Compile Include="WindowDatabaseMonitor.xaml.cs">
+      <DependentUpon>WindowDatabaseMonitor.xaml</DependentUpon>
+    </Compile>
     <Compile Include="DataExport\ExcelDataExporter.cs" />
     <Compile Include="DataGridHelper.cs" />
     <Compile Include="DebuggerViewer.xaml.cs">
@@ -233,6 +236,10 @@
     <Compile Include="WorkDocumentCollection.cs" />
     <Compile Include="WpfExtensions.cs" />
     <Page Include="ComplexTypeViewer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="WindowDatabaseMonitor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

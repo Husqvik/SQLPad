@@ -23,10 +23,11 @@ namespace SqlPad
 	{
 		private const string TitleTemplate = "SQL Pad {0} ALPHA ({1})";
 
-		private readonly FindReplaceManager _findReplaceManager;
 		private readonly List<TextEditorAdapter> _editorAdapters = new List<TextEditorAdapter>();
-		private readonly ContextMenu _recentDocumentsMenu;
 
+		private readonly WindowDatabaseMonitor _windowDatabaseMonitor;
+		private readonly FindReplaceManager _findReplaceManager;
+		private readonly ContextMenu _recentDocumentsMenu;
 		private readonly DispatcherTimer _timerWorkingDocumentSave;
 
 		public MainWindow()
@@ -54,6 +55,8 @@ namespace SqlPad
 			Loaded += WindowLoadedHandler;
 			Closing += WindowClosingHandler;
 			Closed += WindowClosedHandler;
+
+			_windowDatabaseMonitor = new WindowDatabaseMonitor();
 		}
 
 		private void RecentDocumentsMenuClosedHandler(object sender, RoutedEventArgs routedEventArgs)
@@ -97,9 +100,12 @@ namespace SqlPad
 
 		private void WindowLoadedHandler(object sender, RoutedEventArgs e)
 		{
+			_windowDatabaseMonitor.Owner = this;
+
 			CommandBindings.Add(new CommandBinding(GenericCommands.SaveAll, SaveAllCommandExecutedHandler));
 
-			WorkDocumentCollection.RestoreApplicationWindowProperties(this);
+			WorkDocumentCollection.RestoreWindowProperties(this);
+			WorkDocumentCollection.RestoreWindowProperties(_windowDatabaseMonitor);
 
 			if (WorkDocumentCollection.WorkingDocuments.Count > 0)
 			{
@@ -317,7 +323,7 @@ namespace SqlPad
 				document.WorkDocument.TabIndex = DocumentTabControl.Items.IndexOf(document.TabItem);
 			}
 
-			WorkDocumentCollection.SetApplicationWindowProperties(this);
+			WorkDocumentCollection.StoreWindowProperties(this);
 			WorkDocumentCollection.Save();
 
 			Trace.WriteLine($"{DateTime.Now} - Working document collection saved. ");
@@ -468,6 +474,20 @@ namespace SqlPad
 		{
 			AddNewDocumentPage();
 		}
+
+		private void ShowDatabaseMonitorExecutedHandler(object sender, ExecutedRoutedEventArgs e)
+		{
+			if (_windowDatabaseMonitor.IsVisible)
+			{
+				_windowDatabaseMonitor.Focus();
+			}
+			else
+			{
+				_windowDatabaseMonitor.Show();
+			}
+
+			_windowDatabaseMonitor.CurrentConnection = ActiveDocument.CurrentConnection;
+		}
 	}
 
 	internal class RecentFileItem
@@ -484,10 +504,10 @@ namespace SqlPad
 
 		public int Index { get; private set; }
 
-		public WorkDocument WorkDocument { get; private set; }
+		public WorkDocument WorkDocument { get; }
 		
 		public string DocumentFileName { get; private set; }
 
-		public ICommand Command { get; private set; }
+		public ICommand Command { get; }
 	}
 }
