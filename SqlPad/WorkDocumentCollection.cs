@@ -42,13 +42,17 @@ namespace SqlPad
 			var serializer = TypeModel.Create();
 			var workingDocumentCollectionType = serializer.Add(typeof(WorkDocumentCollection), false);
 			workingDocumentCollectionType.UseConstructor = false;
-			workingDocumentCollectionType.Add(nameof(_workingDocuments), nameof(_activeDocumentIndex));
+			var fieldNumber = 1;
+			workingDocumentCollectionType.Add(fieldNumber++, nameof(_workingDocuments), new Dictionary<Guid, WorkDocument>());
+			workingDocumentCollectionType.Add(fieldNumber++, nameof(_activeDocumentIndex));
 			if (includeOldWindowProperties)
 			{
-				workingDocumentCollectionType.Add(nameof(_windowProperties));
+				workingDocumentCollectionType.Add(fieldNumber++, nameof(_windowProperties));
 			}
 
-			workingDocumentCollectionType.Add(nameof(_databaseProviderConfigurations), nameof(_recentFiles), nameof(_windowConfigurations));
+			workingDocumentCollectionType.Add(fieldNumber++, nameof(_databaseProviderConfigurations), new Dictionary<string, DatabaseProviderConfiguration>());
+			workingDocumentCollectionType.Add(fieldNumber++, nameof(_recentFiles), new List<WorkDocument>());
+			workingDocumentCollectionType.Add(fieldNumber, nameof(_windowConfigurations), new Dictionary<Type, WindowProperties>());
 
 			var workingDocumentType = serializer.Add(typeof(WorkDocument), false);
 			workingDocumentType.UseConstructor = false;
@@ -143,8 +147,7 @@ namespace SqlPad
 					}
 					catch (ProtoException) // TODO: Temporary - remove after migration
 					{
-						file.Seek(0, SeekOrigin.Begin);
-						_instance = (WorkDocumentCollection)ConfigureSerializer(true).Deserialize(file, _instance, typeof(WorkDocumentCollection));
+						MigrateWorkingDocuments(file);
 					}
 
 					Trace.WriteLine($"WorkDocumentCollection ({_instance._workingDocuments.Count} document(s)) successfully loaded from '{fileName}'. ");
@@ -157,6 +160,17 @@ namespace SqlPad
 			}
 
 			return false;
+		}
+
+		private static void MigrateWorkingDocuments(FileStream file)
+		{
+			file.Seek(0, SeekOrigin.Begin);
+			_instance = (WorkDocumentCollection)ConfigureSerializer(true).Deserialize(file, _instance, typeof (WorkDocumentCollection));
+
+			if (_instance._windowProperties != null)
+			{
+				_instance._windowConfigurations[typeof (MainWindow)] = _instance._windowProperties;
+			}
 		}
 
 		public static void Configure()
