@@ -283,7 +283,7 @@ namespace SqlPad.Oracle
 			}
 
 			DatabaseLink = TerminalCandidates.Contains(Terminals.DatabaseLinkIdentifier);
-			JoinType = !isCursorTouchingTwoTerminals && !isWithinExplicitPartitionClause && TerminalCandidates.Contains(Terminals.Join);
+			JoinType = (!isCursorTouchingTwoTerminals || nearestTerminal.Id.In(Terminals.Comma, Terminals.RightParenthesis)) && !isWithinExplicitPartitionClause && TerminalCandidates.Contains(Terminals.Join);
 			DataType = TerminalCandidates.Contains(Terminals.DataTypeIdentifier);
 
 			InQueryBlockFromClause = effectiveTerminal.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.QueryBlock), NonTerminals.FromClause) != null || (effectiveTerminal.Id == Terminals.From && effectiveTerminal.ParentNode.Id == NonTerminals.QueryBlock);

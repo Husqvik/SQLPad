@@ -2985,7 +2985,7 @@ namespace SqlPad.Oracle.SemanticModel
 							parameterNodes.Add(firstParameterExpression);
 							goto default;
 						default:
-							var nodes = parameterList.GetPathFilterDescendants(n => n != firstParameterExpression && !n.Id.In(NonTerminals.NestedQuery, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters), NonTerminals.ExpressionList, NonTerminals.OptionalParameterExpressionList)
+							var nodes = parameterList.GetPathFilterDescendants(n => n != firstParameterExpression && !n.Id.In(NonTerminals.NestedQuery, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.Expression), NonTerminals.ExpressionList, NonTerminals.OptionalParameterExpressionList)
 								.Select(n => n.ChildNodes.FirstOrDefault());
 							parameterNodes.AddRange(nodes);
 							break;

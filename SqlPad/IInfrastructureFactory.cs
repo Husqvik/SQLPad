@@ -48,7 +48,7 @@ namespace SqlPad
 
 	public interface IDatabaseMonitor
 	{
-		Task<DatabaseSessions> GetSessionAsync(CancellationToken cancellationToken);
+		Task<DatabaseSessions> GetAllSessionDataAsync(CancellationToken cancellationToken);
 	}
 
 	public struct DatabaseSessions

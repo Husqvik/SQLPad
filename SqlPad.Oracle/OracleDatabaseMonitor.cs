@@ -17,7 +17,7 @@ namespace SqlPad.Oracle
 			_connectionString = connectionString;
 		}
 
-		public async Task<DatabaseSessions> GetSessionAsync(CancellationToken cancellationToken)
+		public async Task<DatabaseSessions> GetAllSessionDataAsync(CancellationToken cancellationToken)
 		{
 			var databaseSessions = new DatabaseSessions();
 
@@ -25,7 +25,7 @@ namespace SqlPad.Oracle
 			{
 				using (var command = connection.CreateCommand())
 				{
-					command.CommandText = null;
+					command.CommandText = OracleDatabaseCommands.SelectBasicSessionInformationCommandText;
 
 					await connection.OpenAsynchronous(cancellationToken);
 

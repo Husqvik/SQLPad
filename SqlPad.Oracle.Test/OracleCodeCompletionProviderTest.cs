@@ -2169,6 +2169,14 @@ ON (EVENTS.ID = SRC.ID)";
 			Assert.DoesNotThrow(() => CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 43));
 		}
 
+		[Test(Description = @"")]
+		public void TestJoinCodeCompletionTypeAtClosingParenthesis()
+		{
+			const string statement = @"SELECT NULL FROM (SELECT NULL FROM RESPONDENTBUCKET J)";
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 53, true, OracleCodeCompletionCategory.JoinMethod).ToList();
+			items.Count.ShouldBeGreaterThan(0);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)

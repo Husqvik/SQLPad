@@ -5,10 +5,16 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SqlPad"
         xmlns:configuration="clr-namespace:System.Configuration;assembly=System.Configuration"
+        xmlns:commands="clr-namespace:SqlPad.Commands"
         mc:Ignorable="d"
         Closing="WindowClosingHandler"
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
         Title="Monitor" Height="400" Width="640">
+
+    <Window.CommandBindings>
+        <CommandBinding Command="commands:GenericCommands.RefreshDatabaseModel" CanExecute="RefreshCanExecuteHandler" Executed="RefreshExecutedHandler" />
+	</Window.CommandBindings>
+	
 	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto" />
@@ -39,9 +45,10 @@
 		</StackPanel>
 
 		<DataGrid x:Name="SessionDataGrid"
-			Grid.Row="1"
+				  CanUserSortColumns="True"
+		          Grid.Row="1"
 		          Style="{StaticResource ResultSetDataGrid}"
-		          ItemsSource="{Binding ResultRowItems, IsAsync=True}"
+		          ItemsSource="{Binding DatabaseSessions, IsAsync=True}"
 		          MaxColumnWidth="{Binding ElementName=ResultGrid, Path=ActualWidth}"
 		          DataGridColumnHeader.Click="ColumnHeaderMouseClickHandler" />
 	</Grid>
