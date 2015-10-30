@@ -415,7 +415,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		internal static string FormatValue(OracleDateTime dateTime, int nanoseconds, int fractionPrecision)
 		{
-			var fractionPart = nanoseconds.ToString(CultureInfo.InvariantCulture).PadRight(9, '0').Substring(0, fractionPrecision);
+			var fractionPart = nanoseconds.ToString(CultureInfo.InvariantCulture).PadLeft(9, '0').Substring(0, fractionPrecision);
 			return $"{dateTime}{(String.IsNullOrEmpty(fractionPart) ? null : $".{fractionPart}")}";
 		}
 

@@ -46,12 +46,13 @@
 					</DataTemplate>
 				</ComboBox.ItemTemplate>
 			</ComboBox>
-            <CheckBox VerticalAlignment="Center" Margin="8,0,0,0" Content="User sessions only" IsChecked="{Binding UserSessionOnly}" />
+			<CheckBox VerticalAlignment="Center" Margin="8,0,0,0" Content="User sessions only" IsChecked="{Binding UserSessionOnly}" />
 		</StackPanel>
 
 		<DataGrid x:Name="SessionDataGrid"
 		          CanUserSortColumns="True"
 		          Grid.Row="1"
+		          SelectionUnit="FullRow"
 		          Style="{StaticResource ResultSetDataGrid}"
 		          ItemsSource="{Binding Source={StaticResource FilteredDatabaseSessions}, IsAsync=True}"
 		          MaxColumnWidth="{Binding ElementName=ResultGrid, Path=ActualWidth}"

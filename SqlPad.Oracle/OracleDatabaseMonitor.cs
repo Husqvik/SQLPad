@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Oracle.DataAccess.Client;
@@ -33,16 +34,28 @@ namespace SqlPad.Oracle
 					using (var reader = await command.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken))
 					{
 						databaseSessions.ColumnHeaders = OracleConnectionAdapter.GetColumnHeadersFromReader(reader);
-						var rows = await OracleConnectionAdapter.FetchRecordsFromReader(reader, Int32.MaxValue, true).EnumerateAsync(cancellationToken);
 
-						var sessions = new List<DatabaseSession>();
-						foreach (var row in rows)
+						var sessions = new Dictionary<int, DatabaseSession>();
+						var columnCount = databaseSessions.ColumnHeaders.Count;
+						while (reader.Read())
 						{
-							var sessionType = (OracleSimpleValue)row[17];
-							sessions.Add(new DatabaseSession { Values = row, Type = String.Equals((string)sessionType.RawValue, "User") ? SessionType.User : SessionType.System });
+							var values = new object[columnCount];
+							reader.GetValues(values);
+							var sessionType = (string)values[17];
+							sessions.Add(Convert.ToInt32(values[1]), new DatabaseSession { Values = values, Type = String.Equals(sessionType, "User") ? SessionType.User : SessionType.System });
 						}
 
-						databaseSessions.Rows = sessions.AsReadOnly();
+						foreach (var session in sessions.Values)
+						{
+							DatabaseSession parentSession;
+							var parentSid = session.Values[53];
+							if (parentSid != DBNull.Value && sessions.TryGetValue(Convert.ToInt32(parentSid), out parentSession))
+							{
+								session.ParentSession = parentSession;
+							}
+						}
+
+						databaseSessions.Rows = sessions.Values.ToArray();
 					}
 				}
 

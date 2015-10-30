@@ -89,7 +89,7 @@ namespace SqlPad
 					new DataGridTextColumn
 					{
 						Binding = new Binding($"{nameof(DatabaseSession.Values)}[{columnHeader.ColumnIndex}]") { Converter = CellValueConverter.Instance },
-						EditingElementStyle = (Style)App.Current.Resources["CellTextBoxStyleReadOnly"]
+						EditingElementStyle = (Style)Application.Current.Resources["CellTextBoxStyleReadOnly"]
 					};
 
 				DataGridHelper.ApplyColumnStyle(column, columnHeader);
