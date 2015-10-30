@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Threading;
@@ -32,7 +33,16 @@ namespace SqlPad.Oracle
 					using (var reader = await command.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken))
 					{
 						databaseSessions.ColumnHeaders = OracleConnectionAdapter.GetColumnHeadersFromReader(reader);
-						databaseSessions.Rows = await OracleConnectionAdapter.FetchRecordsFromReader(reader, Int32.MaxValue, true).EnumerateAsync(cancellationToken);
+						var rows = await OracleConnectionAdapter.FetchRecordsFromReader(reader, Int32.MaxValue, true).EnumerateAsync(cancellationToken);
+
+						var sessions = new List<DatabaseSession>();
+						foreach (var row in rows)
+						{
+							var sessionType = (OracleSimpleValue)row[17];
+							sessions.Add(new DatabaseSession { Values = row, Type = String.Equals((string)sessionType.RawValue, "User") ? SessionType.User : SessionType.System });
+						}
+
+						databaseSessions.Rows = sessions.AsReadOnly();
 					}
 				}
 

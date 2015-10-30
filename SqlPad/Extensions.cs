@@ -105,6 +105,12 @@ namespace SqlPad
 				: text;
 		}
 
+		public static IEnumerable<T> Distinct<T>(this IEnumerable<T> source, Func<T, object> selector)
+		{
+			var uniqueObjects = new HashSet<object>();
+			return source.Where(o => uniqueObjects.Add(selector(o)));
+		}
+
 		public static HashSet<T> ToHashSet<T>(this IEnumerable<T> source)
 		{
 			return new HashSet<T>(source);

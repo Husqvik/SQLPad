@@ -1,23 +1,21 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Configuration;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 
 namespace SqlPad
 {
 	public partial class WindowDatabaseMonitor
 	{
-		public static readonly DependencyProperty CurrentConnectionProperty = DependencyProperty.Register(nameof(CurrentConnection), typeof(ConnectionStringSettings), typeof(WindowDatabaseMonitor), new FrameworkPropertyMetadata(CurrentConnectionPropertyChangedCallbackHandler));
-
-		private static void CurrentConnectionPropertyChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
-		{
-			var monitorWindow = (WindowDatabaseMonitor)dependencyObject;
-			monitorWindow.Initialize();
-		}
+		public static readonly DependencyProperty CurrentConnectionProperty = DependencyProperty.Register(nameof(CurrentConnection), typeof(ConnectionStringSettings), typeof(WindowDatabaseMonitor), new FrameworkPropertyMetadata(CurrentConnectionChangedCallbackHandler));
+		public static readonly DependencyProperty UserSessionOnlyProperty = DependencyProperty.Register(nameof(UserSessionOnly), typeof(bool), typeof(WindowDatabaseMonitor), new UIPropertyMetadata(true, UserSessionOnlyChangedCallbackHandler));
 
 		[Bindable(true)]
 		public ConnectionStringSettings CurrentConnection
@@ -26,12 +24,33 @@ namespace SqlPad
 			set { SetValue(CurrentConnectionProperty, value); }
 		}
 
-		private readonly ObservableCollection<object[]> _databaseSessions = new ObservableCollection<object[]>();
+		private static void CurrentConnectionChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
+		{
+			var monitorWindow = (WindowDatabaseMonitor)dependencyObject;
+			monitorWindow.Initialize();
+		}
+
+		[Bindable(true)]
+		public bool UserSessionOnly
+		{
+			get { return (bool)GetValue(UserSessionOnlyProperty); }
+			set { SetValue(UserSessionOnlyProperty, value); }
+		}
+
+		private static void UserSessionOnlyChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
+		{
+			var viewSource = (CollectionViewSource)((WindowDatabaseMonitor)dependencyObject).Resources["FilteredDatabaseSessions"];
+			viewSource.View.Refresh();
+		}
+
+		private readonly ObservableCollection<DatabaseSession> _databaseSessions = new ObservableCollection<DatabaseSession>();
 
 		private bool _isBusy;
 		private IDatabaseMonitor _databaseMonitor;
 
-		public IReadOnlyList<object[]> DatabaseSessions => _databaseSessions;
+		public IReadOnlyList<DatabaseSession> DatabaseSessions => _databaseSessions;
+
+		private EventHandler<DataGridBeginningEditEventArgs> DataGridBeginningEditCancelTextInputHandler => App.ResultGridBeginningEditCancelTextInputHandlerImplementation;
 
 		public WindowDatabaseMonitor()
 		{
@@ -62,8 +81,21 @@ namespace SqlPad
 				return;
 			}
 
+			SessionDataGrid.Columns.Clear();
 			var sessions = task.Result;
-            DataGridHelper.InitializeDataGridColumns(SessionDataGrid, sessions.ColumnHeaders, null, null);
+			foreach (var columnHeader in sessions.ColumnHeaders)
+			{
+				var column =
+					new DataGridTextColumn
+					{
+						Binding = new Binding($"{nameof(DatabaseSession.Values)}[{columnHeader.ColumnIndex}]") { Converter = CellValueConverter.Instance },
+						EditingElementStyle = (Style)App.Current.Resources["CellTextBoxStyleReadOnly"]
+					};
+
+				DataGridHelper.ApplyColumnStyle(column, columnHeader);
+				SessionDataGrid.Columns.Add(column);
+			}
+
 			_databaseSessions.AddRange(sessions.Rows);
 		}
 
@@ -87,6 +119,11 @@ namespace SqlPad
 		private void RefreshCanExecuteHandler(object sender, CanExecuteRoutedEventArgs e)
 		{
 			e.CanExecute = !_isBusy;
+		}
+
+		private void DatabaseSessionFilterHandler(object sender, FilterEventArgs e)
+		{
+			e.Accepted = !UserSessionOnly || ((DatabaseSession)e.Item).Type == SessionType.User;
 		}
 	}
 }

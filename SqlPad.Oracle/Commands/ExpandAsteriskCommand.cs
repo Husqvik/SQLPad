@@ -78,7 +78,7 @@ namespace SqlPad.Oracle.Commands
 				expandedColumns.AddRange(columnNames.Select(n => new ExpandedColumn { ColumnName = $"{databaseLinkReference.FullyQualifiedObjectName}.{n.ToSimpleIdentifier()}"}));
 			}
 
-			foreach (var expandedColumn in expandedColumns)
+			foreach (var expandedColumn in expandedColumns.Distinct(c => c.ColumnName))
 			{
 				var descriptionContent = new Grid();
 				descriptionContent.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });

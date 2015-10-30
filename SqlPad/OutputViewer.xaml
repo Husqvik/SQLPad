@@ -104,7 +104,7 @@
 
 				<DockPanel>
 					<CheckBox DockPanel.Dock="Right" Margin="4" Content="Show _All" IsChecked="{Binding ShowAllSessionExecutionStatistics}" />
-					<DataGrid ItemsSource="{Binding Source={StaticResource SortedSessionExecutionStatistics}}"
+					<DataGrid ItemsSource="{Binding Source={StaticResource SortedSessionExecutionStatistics}, IsAsync=True}"
 							  AutoGenerateColumns="False"
 							  CanUserDeleteRows="False"
 							  CanUserAddRows="False"

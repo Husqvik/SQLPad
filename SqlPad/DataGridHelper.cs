@@ -39,19 +39,25 @@ namespace SqlPad
 			var columnTemplate =
 				new DataGridTemplateColumn
 				{
-					Header = columnHeader,
 					CellTemplateSelector = new ResultSetDataGridTemplateSelector(statementValidator, connectionAdapter, columnHeader),
 					CellEditingTemplate = editingDataTemplate,
 					ClipboardContentBinding = valueBinding
 				};
+
+			ApplyColumnStyle(columnTemplate, columnHeader);
+
+			return columnTemplate;
+		}
+
+		public static void ApplyColumnStyle(DataGridColumn columnTemplate, ColumnHeader columnHeader)
+		{
+			columnTemplate.Header = columnHeader;
 
 			if (columnHeader.IsNumeric)
 			{
 				columnTemplate.HeaderStyle = (Style)Application.Current.Resources["HeaderStyleRightAlign"];
 				columnTemplate.CellStyle = (Style)Application.Current.Resources["CellStyleRightAlign"];
 			}
-
-			return columnTemplate;
 		}
 
 		public static bool CanBeRecycled(UIElement row)

@@ -1035,6 +1035,17 @@ FROM
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestExpandAsteriskCommandWithAmbiguousColumnName()
+		{
+			_editor.Text = "SELECT * FROM (SELECT * FROM DUAL T1, DUAL T2)";
+			_editor.CaretOffset = 7;
+
+			ExecuteCommand(OracleCommands.ExpandAsterisk, new TestCommandSettings(new CommandSettingsModel()));
+
+			_editor.Text.ShouldBe("SELECT DUMMY FROM (SELECT * FROM DUAL T1, DUAL T2)");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestExpandAsteriskCommandWithObjectReferenceOverDatabaseLink()
 		{
 			_editor.Text = "SELECT SELECTION.*, PROJECT.* FROM SELECTION, PROJECT@HQ_PDB_LOOPBACK";

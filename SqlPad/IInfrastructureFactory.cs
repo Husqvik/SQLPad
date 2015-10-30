@@ -55,7 +55,22 @@ namespace SqlPad
 	{
 		public IReadOnlyList<ColumnHeader> ColumnHeaders { get; set; }
 
-		public IReadOnlyList<object[]> Rows { get; set; }
+		public IReadOnlyList<DatabaseSession> Rows { get; set; }
+	}
+
+	public class DatabaseSession
+	{
+		public DatabaseSession ParentSession { get; set; }
+
+		public SessionType Type { get; set; }
+
+		public object[] Values { get; set; }
+	}
+
+	public enum SessionType
+	{
+		System,
+		User
 	}
 
 	public interface IDataExportConverter
