@@ -64,5 +64,10 @@ namespace SqlPad.Oracle
 
 			return databaseSessions;
 		}
+
+		public IDatabaseSessionDetailViewer CreateSessionDetailViewer()
+		{
+			return new OracleSessionDetailViewer();
+		}
 	}
 }

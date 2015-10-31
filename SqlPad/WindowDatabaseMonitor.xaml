@@ -23,6 +23,7 @@
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto" />
 			<RowDefinition Height="*" />
+			<RowDefinition Height="Auto" />
 		</Grid.RowDefinitions>
 
 		<StackPanel Orientation="Horizontal" Margin="2">
@@ -53,10 +54,14 @@
 		          CanUserSortColumns="True"
 		          Grid.Row="1"
 		          SelectionUnit="FullRow"
+		          SelectionMode="Single"
 		          Style="{StaticResource ResultSetDataGrid}"
 		          ItemsSource="{Binding Source={StaticResource FilteredDatabaseSessions}, IsAsync=True}"
 		          MaxColumnWidth="{Binding ElementName=ResultGrid, Path=ActualWidth}"
 		          BeginningEdit="DataGridBeginningEditCancelTextInputHandler"
+		          SelectionChanged="SessionDataGridSelectionChangedHandler"
 		          DataGridColumnHeader.Click="ColumnHeaderMouseClickHandler" />
+
+		<ContentControl x:Name="SessionDetailViewer" Grid.Row="2" />
 	</Grid>
 </Window>

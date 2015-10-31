@@ -47,6 +47,7 @@ namespace SqlPad
 
 		private bool _isBusy;
 		private IDatabaseMonitor _databaseMonitor;
+		private IDatabaseSessionDetailViewer _sessionDetailViewer;
 
 		public IReadOnlyList<DatabaseSession> DatabaseSessions => _databaseSessions;
 
@@ -62,6 +63,7 @@ namespace SqlPad
 			var connectionConfiguration = ConfigurationProvider.GetConnectionCofiguration(CurrentConnection.Name);
 			var infrastructureFactory = connectionConfiguration.InfrastructureFactory;
 			_databaseMonitor = infrastructureFactory.CreateDatabaseMonitor(CurrentConnection);
+			_sessionDetailViewer = _databaseMonitor.CreateSessionDetailViewer();
 
 			Refresh();
 		}
@@ -124,6 +126,13 @@ namespace SqlPad
 		private void DatabaseSessionFilterHandler(object sender, FilterEventArgs e)
 		{
 			e.Accepted = !UserSessionOnly || ((DatabaseSession)e.Item).Type == SessionType.User;
+		}
+
+		private void SessionDataGridSelectionChangedHandler(object sender, SelectionChangedEventArgs e)
+		{
+			SessionDetailViewer.Content = e.AddedItems.Count > 0
+				?_sessionDetailViewer.Control
+				: null;
 		}
 	}
 }

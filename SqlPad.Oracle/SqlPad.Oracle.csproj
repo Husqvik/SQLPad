@@ -153,6 +153,9 @@
     <Compile Include="OracleFoldingSectionProvider.cs" />
     <Compile Include="OracleFunctionMatcher.cs" />
     <Compile Include="OracleHelpProvider.cs" />
+    <Compile Include="OracleSessionDetailViewer.xaml.cs">
+      <DependentUpon>OracleSessionDetailViewer.xaml</DependentUpon>
+    </Compile>
     <Compile Include="SemanticModel\OracleColumnBuilderVisitor.cs" />
     <Compile Include="SemanticModel\OracleDataTypeReference.cs" />
     <Compile Include="SemanticModel\OracleLiteral.cs" />
@@ -312,6 +315,10 @@
   <ItemGroup />
   <ItemGroup>
     <Page Include="ExecutionPlan\ExecutionPlanViewer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="OracleSessionDetailViewer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
