@@ -11811,7 +11811,7 @@
           <Terminal Id="SubType" />
           <Terminal Id="DataTypeIdentifier" />
           <Terminal Id="Is" />
-          <NonTerminal Id="PlSqlDataTypeWithoutConstraint" />
+          <NonTerminal Id="PlSqlDataType" />
           <NonTerminal Id="SubTypeConstraintOrCharacterSet" IsOptional="true" />
           <NonTerminal Id="NotNull" IsOptional="true" />
           <Terminal Id="Semicolon" />

@@ -395,9 +395,14 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return remoteTableColumnDataProvider.Columns;
 		}
 
-		internal async Task UpdateModelAsync(CancellationToken cancellationToken, bool suppressException, params IModelDataProvider[] updaters)
+		internal Task UpdateModelAsync(CancellationToken cancellationToken, bool suppressException, params IModelDataProvider[] updaters)
 		{
-			using (var connection = new OracleConnection(_innerConnectionString))
+			return UpdateModelAsync(_innerConnectionString, _currentSchema, cancellationToken, suppressException, updaters);
+		}
+
+		internal static async Task UpdateModelAsync(string connectionString, string currentSchema, CancellationToken cancellationToken, bool suppressException, params IModelDataProvider[] updaters)
+		{
+			using (var connection = new OracleConnection(connectionString))
 			{
 				using (var command = connection.CreateCommand())
 				{
@@ -420,12 +425,15 @@ namespace SqlPad.Oracle.DatabaseConnection
 								{
 									if (await connection.EnsureConnectionOpen(cancellationToken))
 									{
-										connection.ModuleName = _moduleName;
+										connection.ModuleName = "SQLPad backround";
 										connection.ActionName = "Model data provider";
 
-										using (var setSchemaCommand = connection.CreateCommand())
+										if (!String.IsNullOrEmpty(currentSchema))
 										{
-											await setSchemaCommand.SetSchema(_currentSchema, cancellationToken);
+											using (var setSchemaCommand = connection.CreateCommand())
+											{
+												await setSchemaCommand.SetSchema(currentSchema, cancellationToken);
+											}
 										}
 
 										transaction = connection.BeginTransaction();

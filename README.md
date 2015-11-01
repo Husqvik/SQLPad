@@ -1,4 +1,4 @@
-SQLPad 0.4.0.14
+SQLPad 0.4.0.15
 ===============
 
 SQLPad is an experimental SQL editor focused to quick and comfortable work.

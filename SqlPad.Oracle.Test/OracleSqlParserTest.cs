@@ -3180,6 +3180,18 @@ END;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
+			[Test(Description = @"")]
+			public void TestSubType()
+			{
+				const string statement1 =
+@"CREATE OR REPLACE PACKAGE buggy_report IS
+  SUBTYPE t_id IS NUMBER(10);
+END buggy_report;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
+
 			public class Triggers
 			{
 				[Test(Description = @"")]

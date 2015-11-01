@@ -4,9 +4,10 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:SqlPad.Oracle"
+             xmlns:executionPlan="clr-namespace:SqlPad.Oracle.ExecutionPlan"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300">
+             d:DesignHeight="160" d:DesignWidth="240">
     <Grid>
-            
+        <executionPlan:ExecutionPlanTreeView x:Name="ExecutionPlanTreeView" />    
     </Grid>
 </UserControl>

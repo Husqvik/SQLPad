@@ -130,9 +130,15 @@ namespace SqlPad
 
 		private void SessionDataGridSelectionChangedHandler(object sender, SelectionChangedEventArgs e)
 		{
-			SessionDetailViewer.Content = e.AddedItems.Count > 0
-				?_sessionDetailViewer.Control
-				: null;
+			if (e.AddedItems.Count > 0)
+			{
+				SessionDetailViewer.Content = _sessionDetailViewer.Control;
+				_sessionDetailViewer.Initialize((DatabaseSession)e.AddedItems[0], CancellationToken.None);
+			}
+			else
+			{
+				SessionDetailViewer.Content = null;
+			}
 		}
 	}
 }

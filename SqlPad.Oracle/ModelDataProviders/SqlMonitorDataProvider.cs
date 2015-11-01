@@ -15,6 +15,8 @@ namespace SqlPad.Oracle.ModelDataProviders
 		private readonly int _executionId;
 		private readonly string _sqlId;
 
+		public SqlMonitorPlanItemCollection ItemCollection { get; private set; }
+
 		public SqlMonitorDataProvider(int sessionId, int executionId, string sqlId)
 			: base(null)
 		{
@@ -33,7 +35,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public async override Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 		{
-			await _sqlMonitorBuilder.Build(reader, cancellationToken);
+			ItemCollection = await _sqlMonitorBuilder.Build(reader, cancellationToken);
 		}
 	}
 

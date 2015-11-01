@@ -57,7 +57,7 @@
 		          SelectionMode="Single"
 		          Style="{StaticResource ResultSetDataGrid}"
 		          ItemsSource="{Binding Source={StaticResource FilteredDatabaseSessions}, IsAsync=True}"
-		          MaxColumnWidth="{Binding ElementName=ResultGrid, Path=ActualWidth}"
+		          MaxColumnWidth="{Binding ElementName=SessionDataGrid, Path=ActualWidth}"
 		          BeginningEdit="DataGridBeginningEditCancelTextInputHandler"
 		          SelectionChanged="SessionDataGridSelectionChangedHandler"
 		          DataGridColumnHeader.Click="ColumnHeaderMouseClickHandler" />

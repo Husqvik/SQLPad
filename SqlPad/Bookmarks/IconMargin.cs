@@ -398,7 +398,7 @@ namespace SqlPad.Bookmarks
 
 		private static void DrawLine(TextView textView, DrawingContext drawingContext, int? line, Brush brush)
 		{
-			if (line == null)
+			if (line == null || line == 0)
 			{
 				return;
 			}

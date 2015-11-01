@@ -30,6 +30,8 @@ namespace SqlPad.Oracle.ExecutionPlan
 
 		public Control Control => this;
 
+		public ItemCollection PlanItemCollection => ExecutionPlanTreeView?.TreeView.Items;
+
 		public ExecutionPlanViewer(OutputViewer outputViewer)
 		{
 			InitializeComponent();

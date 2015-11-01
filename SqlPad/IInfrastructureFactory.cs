@@ -56,6 +56,8 @@ namespace SqlPad
 	public interface IDatabaseSessionDetailViewer
 	{
 		Control Control { get; }
+
+		Task Initialize(DatabaseSession databaseSession, CancellationToken cancellationToken);
 	}
 
 	public struct DatabaseSessions

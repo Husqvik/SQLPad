@@ -100,11 +100,15 @@ namespace SqlPad
 			StackTrace.Clear();
 			StackTrace.AddRange(_debuggerSession.StackTrace);
 
-			var activeStackItem = _debuggerSession.StackTrace.Last();
-			DebuggerTabItem debuggerView;
-			if (!_viewers.TryGetValue(activeStackItem.Header, out debuggerView))
+			DebuggerTabItem debuggerView = null;
+			foreach (var stackItem in _debuggerSession.StackTrace)
 			{
-				debuggerView = new DebuggerTabItem(activeStackItem, _outputViewer);
+				if (_viewers.TryGetValue(stackItem.Header, out debuggerView))
+				{
+					continue;
+				}
+
+				debuggerView = new DebuggerTabItem(stackItem, _outputViewer);
 				debuggerView.BreakpointChanging += CodeViewerBreakpointChangingHandler;
 				debuggerView.BreakpointChanged += CodeViewerBreakpointChangedHandler;
 
@@ -113,12 +117,12 @@ namespace SqlPad
 					debuggerView.Loaded += DebuggerViewLoadedHandler;
 				}
 
-				await debuggerView.CodeViewer.LoadAsync(activeStackItem.ProgramText, cancellationToken);
+				await debuggerView.CodeViewer.LoadAsync(stackItem.ProgramText, cancellationToken);
 
-				_viewers.Add(activeStackItem.Header, debuggerView);
+				_viewers.Add(stackItem.Header, debuggerView);
 				TabSourceViewer.Items.Add(debuggerView);
 
-				foreach (var breakpointIdentifier in _breakpointIdentifiers.Where(kvp => kvp.Key.ProgramIdentifier.Equals(activeStackItem.ProgramIdentifier)).ToArray())
+				foreach (var breakpointIdentifier in _breakpointIdentifiers.Where(kvp => kvp.Key.ProgramIdentifier.Equals(stackItem.ProgramIdentifier)).ToArray())
 				{
 					debuggerView.AddBreakpoint(breakpointIdentifier.Key, breakpointIdentifier.Value);
 				}
