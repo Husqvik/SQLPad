@@ -117,6 +117,9 @@
       <DependentUpon>Documentation.xsd</DependentUpon>
     </Compile>
     <Compile Include="ExecutionPlan\ExecutionPlanItemCollection.cs" />
+    <Compile Include="ExecutionPlan\ExecutionPlanTreeView.xaml.cs">
+      <DependentUpon>ExecutionPlanTreeView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ExecutionPlan\ExecutionPlanViewer.xaml.cs">
       <DependentUpon>ExecutionPlanViewer.xaml</DependentUpon>
     </Compile>
@@ -125,6 +128,7 @@
     <Compile Include="ModelDataProviders\ExplainPlanDataProvider.cs" />
     <Compile Include="ModelDataProviders\IModelDataProvider.cs" />
     <Compile Include="ModelDataProviders\PartitionDataProvider.cs" />
+    <Compile Include="ModelDataProviders\SqlMonitorDataProvider.cs" />
     <Compile Include="ModelDataProviders\UserDataProvider.cs" />
     <Compile Include="OracleBindVariable.cs" />
     <Compile Include="OracleConfiguration.cs">
@@ -314,6 +318,10 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <Page Include="ExecutionPlan\ExecutionPlanTreeView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="ExecutionPlan\ExecutionPlanViewer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

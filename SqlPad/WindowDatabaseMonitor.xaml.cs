@@ -60,7 +60,7 @@ namespace SqlPad
 
 		private void Initialize()
 		{
-			var connectionConfiguration = ConfigurationProvider.GetConnectionCofiguration(CurrentConnection.Name);
+			var connectionConfiguration = ConfigurationProvider.GetConnectionConfiguration(CurrentConnection.Name);
 			var infrastructureFactory = connectionConfiguration.InfrastructureFactory;
 			_databaseMonitor = infrastructureFactory.CreateDatabaseMonitor(CurrentConnection);
 			_sessionDetailViewer = _databaseMonitor.CreateSessionDetailViewer();

@@ -397,7 +397,7 @@ namespace SqlPad
 
 		    ResetSchemas();
 
-			var connectionConfiguration = ConfigurationProvider.GetConnectionCofiguration(_connectionString.Name);
+			var connectionConfiguration = ConfigurationProvider.GetConnectionConfiguration(_connectionString.Name);
 			_providerConfiguration = WorkDocumentCollection.GetProviderConfiguration(_connectionString.ProviderName);
 
 			IsProductionConnection = connectionConfiguration.IsProduction;

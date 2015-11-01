@@ -412,7 +412,7 @@ WHERE
 		private static string GenerateExportFile(ResultViewer resultViewer, IDataExporter dataExporter)
 		{
 			var tempFileName = Path.GetTempFileName();
-			var connectionConfiguration = ConfigurationProvider.GetConnectionCofiguration(ConfigurationProvider.ConnectionStrings[0].Name);
+			var connectionConfiguration = ConfigurationProvider.GetConnectionConfiguration(ConfigurationProvider.ConnectionStrings[0].Name);
 			CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
 			dataExporter.ExportToFile(tempFileName, resultViewer, connectionConfiguration.InfrastructureFactory.DataExportConverter);
 			return tempFileName;

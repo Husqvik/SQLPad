@@ -16,7 +16,7 @@ namespace SqlPad.Test
 		{
 			_editor = new SqlTextEditor();
 
-			var connectionConfiguration = ConfigurationProvider.GetConnectionCofiguration(ConfigurationProvider.ConnectionStrings[0].Name);
+			var connectionConfiguration = ConfigurationProvider.GetConnectionConfiguration(ConfigurationProvider.ConnectionStrings[0].Name);
 			_infrastructureFactory = connectionConfiguration.InfrastructureFactory;
 		}
 
