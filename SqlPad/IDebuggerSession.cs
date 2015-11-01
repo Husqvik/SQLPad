@@ -15,6 +15,8 @@ namespace SqlPad
 
 		IReadOnlyList<DebugProgramItem> StackTrace { get; }
 
+		DatabaseExceptionInformation CurrentException { get; }
+
 		Task Start(CancellationToken cancellationToken);
 
 		Task Continue(CancellationToken cancellationToken);
@@ -56,5 +58,12 @@ namespace SqlPad
 		public object BreakpointIdentifier;
 
 		public bool IsSuccessful;
+	}
+
+	public class DatabaseExceptionInformation
+	{
+		public int ErrorCode { get; set; }
+
+		public string ErrorMessage { get; set; }
 	}
 }

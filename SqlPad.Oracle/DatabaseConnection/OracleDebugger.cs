@@ -42,9 +42,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private string _debuggerSessionId;
 		private Task<int> _debuggedAction;
 
-		public event EventHandler Detached;
-
 		public event EventHandler Attached;
+
+		public event EventHandler Detached;
 
 		public OracleObjectIdentifier ActiveObject => OracleObjectIdentifier.Create(_runtimeInfo.SourceLocation.Owner, _runtimeInfo.SourceLocation.Name);
 
@@ -55,6 +55,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 		internal OracleCommand DebuggedCommand { get; }
 
 		public IReadOnlyList<DebugProgramItem> StackTrace => _stackTrace;
+
+		public DatabaseExceptionInformation CurrentException { get; private set; }
 
 		public OracleDebuggerSession(OracleConnectionAdapter connectionAdapter, OracleCommand debuggedCommand, StatementExecutionBatchResult executionResult)
 		{
@@ -240,12 +242,35 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private async Task ContinueAndDetachIfTerminated(OracleDebugBreakFlags breakFlags, CancellationToken cancellationToken)
 		{
+			CurrentException = null;
+
 			await Continue(breakFlags, cancellationToken);
+
+			if (_runtimeInfo.Reason == OracleDebugReason.Exception)
+			{
+				CurrentException =
+					new DatabaseExceptionInformation
+					{
+						ErrorCode = _runtimeInfo.OerException.Value,
+						ErrorMessage = await GetOracleExceptionMessage(_runtimeInfo.OerException.Value, cancellationToken)
+					};
+			}
 
 			if (_runtimeInfo.IsTerminated == true)
 			{
 				await Detach(cancellationToken);
 			}
+		}
+
+		private async Task<string> GetOracleExceptionMessage(int errorCode, CancellationToken cancellationToken)
+		{
+			_debuggerSessionCommand.CommandText = "BEGIN :message := SQLERRM(:errorCode); END;";
+			_debuggerSessionCommand.Parameters.Clear();
+			_debuggerSessionCommand.AddSimpleParameter("ERRORCODE", -errorCode);
+			var messageParameter = _debuggerSessionCommand.AddSimpleParameter("MESSAGE", null, TerminalValues.Varchar2, 32767);
+
+			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
+			return OracleReaderValueConvert.ToString(((OracleString)messageParameter.Value).Value);
 		}
 
 		private async Task Continue(OracleDebugBreakFlags breakFlags, CancellationToken cancellationToken)
@@ -328,10 +353,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 			foreach (var item in stackTrace.Items)
 			{
 				var isAnonymousBlock = String.IsNullOrEmpty(item.Name);
-				var objectIdentifier = OracleObjectIdentifier.Create(_runtimeInfo.SourceLocation.Owner, _runtimeInfo.SourceLocation.Name);
+				var objectIdentifier = OracleObjectIdentifier.Create(item.Owner, item.Name);
 				var objectName = isAnonymousBlock
 					? PlSqlBlockTitle
-					: $"{_runtimeInfo.SourceLocation.Owner}.{_runtimeInfo.SourceLocation.Name}";
+					: $"{item.Owner}.{item.Name}";
 
 				string programText;
 				if (!_sources.TryGetValue(objectName, out programText))
@@ -389,7 +414,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private async Task<string> GetSources(OracleStackTraceItem activeItem, CancellationToken cancellationToken)
 		{
-			_debuggerSessionCommand.CommandText = "SELECT TYPE, LINE, TEXT FROM DBA_SOURCE WHERE OWNER = :OWNER AND NAME = :NAME AND TYPE IN ('FUNCTION', 'JAVA SOURCE', 'LIBRARY', 'PACKAGE BODY', 'PACKAGE', 'PROCEDURE', 'TRIGGER', 'TYPE BODY', 'TYPE') ORDER BY TYPE, LINE";
+			_debuggerSessionCommand.CommandText = "SELECT TYPE, LINE, TEXT FROM DBA_SOURCE WHERE OWNER = :OWNER AND NAME = :NAME AND TYPE IN ('FUNCTION', 'JAVA SOURCE', 'LIBRARY', 'PACKAGE BODY', 'PROCEDURE', 'TRIGGER', 'TYPE BODY', 'TYPE') ORDER BY TYPE, LINE";
 			_debuggerSessionCommand.Parameters.Clear();
 			_debuggerSessionCommand.AddSimpleParameter("OWNER", activeItem.Owner);
 			_debuggerSessionCommand.AddSimpleParameter("NAME", activeItem.Name);
@@ -529,25 +554,25 @@ namespace SqlPad.Oracle.DatabaseConnection
 		public Task Continue(CancellationToken cancellationToken)
 		{
 			_debuggerConnection.ActionName = "Continue";
-			return ContinueAndDetachIfTerminated(OracleDebugBreakFlags.Exception, cancellationToken);
+			return ContinueAndDetachIfTerminated(OracleDebugBreakFlags.Exception | OracleDebugBreakFlags.Exception, cancellationToken);
 		}
 
 		public Task StepOver(CancellationToken cancellationToken)
 		{
 			_debuggerConnection.ActionName = "Step next line";
-			return ContinueAndDetachIfTerminated(OracleDebugBreakFlags.NextLine, cancellationToken);
+			return ContinueAndDetachIfTerminated(OracleDebugBreakFlags.NextLine | OracleDebugBreakFlags.Exception, cancellationToken);
 		}
 
 		public async Task StepInto(CancellationToken cancellationToken)
 		{
 			_debuggerConnection.ActionName = "Step into";
-			await ContinueAndDetachIfTerminated(OracleDebugBreakFlags.AnyCall, cancellationToken);
+			await ContinueAndDetachIfTerminated(OracleDebugBreakFlags.AnyCall | OracleDebugBreakFlags.Exception, cancellationToken);
 		}
 
 		public Task StepOut(CancellationToken cancellationToken)
 		{
 			_debuggerConnection.ActionName = "Step out";
-			return ContinueAndDetachIfTerminated(OracleDebugBreakFlags.AnyReturn, cancellationToken);
+			return ContinueAndDetachIfTerminated(OracleDebugBreakFlags.AnyReturn | OracleDebugBreakFlags.Exception, cancellationToken);
 		}
 
 		public Task Abort(CancellationToken cancellationToken)
@@ -802,7 +827,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		IcdExit = 128, // reserved
 		ControlC = 256, // not supported
 		AnyReturn = 512,
-		Handler = 2048,
+		ExceptionHandler = 2048,
 		Rpc = 4096, // not supported
 		AbortExecution = 8192
 	}

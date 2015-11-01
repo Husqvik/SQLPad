@@ -14,6 +14,8 @@ namespace SqlPad
 {
 	public partial class DebuggerViewer
 	{
+		private static readonly int[] EmptyInt32Array = new int[0];
+
 		private readonly Dictionary<string, DebuggerTabItem> _viewers = new Dictionary<string, DebuggerTabItem>();
 		private readonly Dictionary<BreakpointData, object> _breakpointIdentifiers = new Dictionary<BreakpointData, object>();
 
@@ -132,6 +134,11 @@ namespace SqlPad
 
 			HighlightStackTraceLines();
 
+			if (_debuggerSession.CurrentException != null)
+			{
+				Messages.ShowError($"An exception has been raised: {Environment.NewLine}{_debuggerSession.CurrentException.ErrorMessage}", "Database Exception");
+			}
+
 			await RefreshWatchItemsAsync(cancellationToken);
 		}
 
@@ -193,9 +200,17 @@ namespace SqlPad
 				debuggerView.HighlightStackTraceLines(activeLineNumber, group);
 			}
 
+			foreach (var kvp in _viewers)
+			{
+				if (!inactiveItems.Contains(kvp.Key))
+				{
+					kvp.Value.HighlightStackTraceLines(null, EmptyInt32Array);
+				}
+			}
+
 			if (!activeItemHighlighted)
 			{
-				_viewers[activeStackItem.Header].HighlightStackTraceLines(activeStackItem.Line, Enumerable.Empty<int>());
+				_viewers[activeStackItem.Header].HighlightStackTraceLines(activeStackItem.Line, EmptyInt32Array);
 			}
 		}
 

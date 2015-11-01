@@ -397,7 +397,7 @@ EXCEPTION
 		:error_position := dbms_sql.last_error_position;
 END;";
 
-		public const string StartDebuggee = "BEGIN /*EXECUTE IMMEDIATE 'ALTER SESSION SET PLSQL_DEBUG=TRUE';*/ :debug_session_id := dbms_debug.initialize(diagnostics => 0); dbms_debug.debug_on; END;";
+		public const string StartDebuggee = "BEGIN EXECUTE IMMEDIATE 'ALTER SESSION SET PLSQL_DEBUG=TRUE'; :debug_session_id := dbms_debug.initialize(diagnostics => 0); dbms_debug.debug_on; END;";
 		public const string FinalizeDebuggee = "BEGIN dbms_debug.debug_off; END;";
 		public const string AttachDebugger =
 @"BEGIN
