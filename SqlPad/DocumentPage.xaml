@@ -224,6 +224,9 @@
 				                      PreviewKeyUp="EditorKeyUpHandler"
 				                      MouseMove="MouseMoveHandler">
 					<sqlPad:SqlTextEditor.CommandBindings>
+						<sqlPad:StaticResourceBinding ResourceKey="FindReplaceManager" Path="FindBinding" />
+						<sqlPad:StaticResourceBinding ResourceKey="FindReplaceManager" Path="ReplaceBinding" />
+						<sqlPad:StaticResourceBinding ResourceKey="FindReplaceManager" Path="FindNextBinding" />
 						<CommandBinding Command="commands:GenericCommands.FindUsages" Executed="FindUsages" />
 						<CommandBinding Command="commands:GenericCommands.FormatStatement" Executed="FormatStatement" />
 						<CommandBinding Command="commands:GenericCommands.FormatStatementAsSingleLine" Executed="FormatStatementAsSingleLine" />

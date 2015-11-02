@@ -3,7 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:SqlPad"
         xmlns:dragDrop="clr-namespace:SqlPad.DragDrop"
-        xmlns:findReplace="clr-namespace:SqlPad.FindReplace"
         xmlns:commands="clr-namespace:SqlPad.Commands"
         Height="640" Width="960"
         MinWidth="640" MinHeight="360"
@@ -51,9 +50,6 @@
 				<Rectangle Stroke="GreenYellow" Fill="Transparent" StrokeThickness="3"></Rectangle>
 			</VisualBrush.Visual>
 		</VisualBrush>-->
-
-		<findReplace:FindReplaceManager x:Key="FindReplaceManager" AllowReplace="True" />
-
 	</Window.Resources>
 
 	<Window.InputBindings>
@@ -61,9 +57,6 @@
 	</Window.InputBindings>
 
 	<Window.CommandBindings>
-		<local:StaticResourceBinding ResourceKey="FindReplaceManager" Path="FindBinding" />
-		<local:StaticResourceBinding ResourceKey="FindReplaceManager" Path="ReplaceBinding" />
-		<local:StaticResourceBinding ResourceKey="FindReplaceManager" Path="FindNextBinding" />
 		<CommandBinding Command="Open" Executed="OpenFileHandler" />
 		<CommandBinding Command="commands:GenericCommands.GoToNextEdit" Executed="GoToNextEditCommandExecutedHandler" />
 		<CommandBinding Command="commands:GenericCommands.GoToPreviousEdit" Executed="GoToPreviousEditCommandExecutedHandler" />

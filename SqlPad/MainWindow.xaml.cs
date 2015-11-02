@@ -46,7 +46,7 @@ namespace SqlPad
 			_recentDocumentsMenu.PlacementTarget = this;
 			_recentDocumentsMenu.Closed += RecentDocumentsMenuClosedHandler;
 
-			_findReplaceManager = (FindReplaceManager)Resources["FindReplaceManager"];
+			_findReplaceManager = (FindReplaceManager)Application.Current.Resources["FindReplaceManager"];
 			_findReplaceManager.OwnerWindow = this;
 			_findReplaceManager.Editors = _editorAdapters;
 

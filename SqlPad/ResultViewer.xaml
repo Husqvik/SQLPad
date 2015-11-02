@@ -45,17 +45,15 @@
 		<dataExport:XmlDataExporter x:Key="XmlDataExporter" />
 		<dataExport:ExcelDataExporter x:Key="ExcelDataExporter" />
 
-		<RoutedCommand x:Key="OpenSearchBar" />
 		<RoutedCommand x:Key="CloseSearchBar" />
 	</UserControl.Resources>
 
 	<UserControl.InputBindings>
-		<KeyBinding Key="F" Modifiers="Control" Command="{StaticResource OpenSearchBar}" />
 		<KeyBinding Key="Escape" Command="{StaticResource CloseSearchBar}" />
 	</UserControl.InputBindings>
 	
 	<UserControl.CommandBindings>
-		<CommandBinding Command="{StaticResource OpenSearchBar}" Executed="SearchPanelOpenClickHandler" />
+		<CommandBinding Command="ApplicationCommands.Find" Executed="SearchPanelOpenClickHandler" />
 		<CommandBinding Command="{StaticResource CloseSearchBar}" Executed="SearchPanelCloseClickHandler" />
 	</UserControl.CommandBindings>
 

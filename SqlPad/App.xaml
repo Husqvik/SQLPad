@@ -4,14 +4,17 @@
              xmlns:sqlPad="clr-namespace:SqlPad"
              xmlns:themes="clr-namespace:Xceed.Wpf.Toolkit.Themes;assembly=Xceed.Wpf.Toolkit"
              xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
+             xmlns:findReplace="clr-namespace:SqlPad.FindReplace"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
 		<sqlPad:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
 		<sqlPad:DateTimeLabelConverter x:Key="DateTimeConverter" />
-        <sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintNumericConverter" />
+		<sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintNumericConverter" />
 
-        <SolidColorBrush x:Key="PopupBackgroundBrush" Color="#F1F2F7"/>
+		<SolidColorBrush x:Key="PopupBackgroundBrush" Color="#F1F2F7"/>
 		<SolidColorBrush x:Key="PopupBorderBrush" Color="#767676"/>
+		
+		<findReplace:FindReplaceManager x:Key="FindReplaceManager" AllowReplace="True" />
 
 		<Style x:Key="CellTextBoxStyleReadOnly">
 			<Setter Property="TextBoxBase.IsReadOnly" Value="True" />
