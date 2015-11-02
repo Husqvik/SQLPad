@@ -3166,7 +3166,31 @@
         <Sequence>
           <NonTerminal Id="DropMaterializedView" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="DropType" />
+        </Sequence>
         <!-- TODO: Drop other objects -->
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="DropType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Type" />
+          <NonTerminal Id="SchemaObject" />
+          <NonTerminal Id="ForceOrValidate" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ForceOrValidate">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Force" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Validate" />
+        </Sequence>
       </Sequences>
     </Rule>
 

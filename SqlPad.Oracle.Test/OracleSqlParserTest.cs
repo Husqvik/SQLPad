@@ -4161,6 +4161,31 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 				}
 			}
 
+			public class DropType
+			{
+				[Test(Description = @"")]
+				public void TestDropType()
+				{
+					const string statementText = @"DROP TYPE TEST_SCHEMA.TEST_TYPE VALIDATE";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(6);
+
+					terminals[0].Id.ShouldBe(Terminals.Drop);
+					terminals[1].Id.ShouldBe(Terminals.Type);
+					terminals[2].Id.ShouldBe(Terminals.SchemaIdentifier);
+					terminals[3].Id.ShouldBe(Terminals.Dot);
+					terminals[4].Id.ShouldBe(Terminals.ObjectIdentifier);
+					terminals[5].Id.ShouldBe(Terminals.Validate);
+				}
+			}
+
 			public class DropOther
 			{
 				[Test(Description = @"")]

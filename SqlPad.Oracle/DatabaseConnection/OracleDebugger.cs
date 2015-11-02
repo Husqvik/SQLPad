@@ -58,6 +58,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public DatabaseExceptionInformation CurrentException { get; private set; }
 
+		public bool BreakOnExceptions { get; set; }
+
 		public OracleDebuggerSession(OracleConnectionAdapter connectionAdapter, OracleCommand debuggedCommand, StatementExecutionBatchResult executionResult)
 		{
 			_connectionAdapter = connectionAdapter;
@@ -551,28 +553,33 @@ namespace SqlPad.Oracle.DatabaseConnection
 				};
 		}
 
+		private OracleDebugBreakFlags GetEffectiveOracleDebugBreakFlags(OracleDebugBreakFlags baseFlags)
+		{
+			return BreakOnExceptions ? baseFlags | OracleDebugBreakFlags.Exception : baseFlags;
+		}
+
 		public Task Continue(CancellationToken cancellationToken)
 		{
 			_debuggerConnection.ActionName = "Continue";
-			return ContinueAndDetachIfTerminated(OracleDebugBreakFlags.Exception | OracleDebugBreakFlags.Exception, cancellationToken);
+			return ContinueAndDetachIfTerminated(GetEffectiveOracleDebugBreakFlags(OracleDebugBreakFlags.None), cancellationToken);
 		}
 
 		public Task StepOver(CancellationToken cancellationToken)
 		{
 			_debuggerConnection.ActionName = "Step next line";
-			return ContinueAndDetachIfTerminated(OracleDebugBreakFlags.NextLine | OracleDebugBreakFlags.Exception, cancellationToken);
+			return ContinueAndDetachIfTerminated(GetEffectiveOracleDebugBreakFlags(OracleDebugBreakFlags.NextLine), cancellationToken);
 		}
 
 		public async Task StepInto(CancellationToken cancellationToken)
 		{
 			_debuggerConnection.ActionName = "Step into";
-			await ContinueAndDetachIfTerminated(OracleDebugBreakFlags.AnyCall | OracleDebugBreakFlags.Exception, cancellationToken);
+			await ContinueAndDetachIfTerminated(GetEffectiveOracleDebugBreakFlags(OracleDebugBreakFlags.AnyCall), cancellationToken);
 		}
 
 		public Task StepOut(CancellationToken cancellationToken)
 		{
 			_debuggerConnection.ActionName = "Step out";
-			return ContinueAndDetachIfTerminated(OracleDebugBreakFlags.AnyReturn | OracleDebugBreakFlags.Exception, cancellationToken);
+			return ContinueAndDetachIfTerminated(GetEffectiveOracleDebugBreakFlags(OracleDebugBreakFlags.AnyReturn), cancellationToken);
 		}
 
 		public Task Abort(CancellationToken cancellationToken)

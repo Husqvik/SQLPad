@@ -215,27 +215,21 @@ namespace SqlPad
 			}
 
 			AutorefreshProgressBar.Value = remainingSeconds;
+			if (remainingSeconds > 10)
+			{
+				remainingSeconds = Math.Round(remainingSeconds);
+			}
+
 			AutorefreshProgressBar.ToolTip = remainingSeconds == 0
 				? "refreshing... "
-				: $"last refresh: {_lastRefresh}; remaining: {TimeSpan.FromSeconds(remainingSeconds).ToPrettyString()}";
+				: $"last refresh: {CellValueConverter.FormatDateTime(_lastRefresh)}; remaining: {TimeSpan.FromSeconds(remainingSeconds).ToPrettyString()}";
 		}
 
 		private void AdjustProgressBarRefreshInterval(double remainingSeconds)
 		{
-			TimeSpan interval;
-			if (remainingSeconds < 4)
-			{
-				interval = TimeSpan.FromSeconds(0.1);
-			}
-			else if (remainingSeconds < 60)
-			{
-				interval = TimeSpan.FromSeconds(0.25);
-			}
-			else
-			{
-				interval = TimeSpan.FromSeconds(1);
-			}
-
+			const double minimumRefreshIntervalSeconds = 0.1;
+			var refreshIntervalSeconds = AutorefreshProgressBar.ActualWidth == 0 ? minimumRefreshIntervalSeconds : Math.Max(remainingSeconds / AutorefreshProgressBar.ActualWidth, minimumRefreshIntervalSeconds);
+			var interval = TimeSpan.FromSeconds(refreshIntervalSeconds);
 			_refreshProgressBarTimer.Interval = interval;
 		}
 

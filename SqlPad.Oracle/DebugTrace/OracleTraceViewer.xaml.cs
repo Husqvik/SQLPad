@@ -100,7 +100,7 @@ namespace SqlPad.Oracle.DebugTrace
 					var selectedEvents = _traceEvents.Where(e => e.IsSelected).Select(e => e.TraceEvent).ToArray();
 					if (selectedEvents.Length == 0)
 					{
-						Messages.ShowError("Select an event first. ");
+						Messages.ShowInformation("Select an event first. ");
 						return;
 					}
 					

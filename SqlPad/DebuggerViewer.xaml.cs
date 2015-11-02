@@ -99,6 +99,8 @@ namespace SqlPad
 
 		public async Task Refresh(CancellationToken cancellationToken)
 		{
+			_debuggerSession.BreakOnExceptions = _outputViewer.BreakOnExceptions;
+
 			StackTrace.Clear();
 			StackTrace.AddRange(_debuggerSession.StackTrace);
 

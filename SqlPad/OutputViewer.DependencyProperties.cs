@@ -19,6 +19,7 @@ namespace SqlPad
 
 		public static readonly DependencyProperty IsDebuggerControlVisibleProperty = DependencyProperty.Register(nameof(IsDebuggerControlVisible), typeof(bool), typeof(OutputViewer), new UIPropertyMetadata(false));
 		public static readonly DependencyProperty IsDebuggerControlEnabledProperty = DependencyProperty.Register(nameof(IsDebuggerControlEnabled), typeof(bool), typeof(OutputViewer), new UIPropertyMetadata(true));
+		public static readonly DependencyProperty BreakOnExceptionsProperty = DependencyProperty.Register(nameof(BreakOnExceptions), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(BreakOnExceptionsChangedHandler));
 		public static readonly DependencyProperty IsTransactionControlEnabledProperty = DependencyProperty.Register(nameof(IsTransactionControlEnabled), typeof(bool), typeof(OutputViewer), new UIPropertyMetadata(true));
 		public static readonly DependencyProperty HasActiveTransactionProperty = DependencyProperty.Register(nameof(HasActiveTransaction), typeof(bool), typeof(OutputViewer), new UIPropertyMetadata(false));
 		#endregion
@@ -71,6 +72,19 @@ namespace SqlPad
 		{
 			get { return (bool)GetValue(IsDebuggerControlEnabledProperty); }
 			private set { SetValue(IsDebuggerControlEnabledProperty, value); }
+		}
+
+		[Bindable(true)]
+		public bool BreakOnExceptions
+		{
+			get { return (bool)GetValue(BreakOnExceptionsProperty); }
+			set { SetValue(BreakOnExceptionsProperty, value); }
+		}
+
+		private static void BreakOnExceptionsChangedHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
+		{
+			var outputViewer = (OutputViewer)dependencyObject;
+			outputViewer.DocumentPage.WorkDocument.BreakOnExceptions = (bool)args.NewValue;
 		}
 
 		[Bindable(true)]

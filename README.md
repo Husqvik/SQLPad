@@ -1,4 +1,4 @@
-SQLPad 0.4.0.16
+SQLPad 0.4.0.17
 ===============
 
 SQLPad is an experimental SQL editor focused to quick and comfortable work.
@@ -215,13 +215,13 @@ IsProduction - indicates connection to a production system using red label
 		<ResultGrid DateFormat="yyyy-MM-dd HH:mm:ss" NullPlaceholder="(null)" FetchRowsBatchSize="500" />
 	</Configuration>
 
-DataModelRefreshPeriod - data dictionary refresh period in minutes; refresh can forced any time using F5
+`DataModelRefreshPeriod` - data dictionary refresh period in minutes; refresh can forced any time using F5
 
-DateFormat - data grid date time format
+`DateFormat` - data grid date time format
 
-NullPlaceholder - data grid NULL value representation
+`NullPlaceholder` - data grid NULL value representation
 
-FetchRowsBatchSize - number of rows fetched in one batch
+`FetchRowsBatchSize` - number of rows fetched in one batch
 
 #####OracleConfiguration.xml
 
@@ -235,11 +235,11 @@ FetchRowsBatchSize - number of rows fetched in one batch
 		<RemoteTraceDirectory>\\coresrv01\c$\Oracle\diag\rdbms\orcl\orcl\trace</RemoteTraceDirectory>
 	</OracleConfiguration>
 
-StartupScript - optional initialization script executed when connection to database is established
+`StartupScript` - optional initialization script executed when connection to database is established
 
-RemoteTraceDirectory - remote database trace directory; enables access to remote trace files from SQL Pad
+`RemoteTraceDirectory` - remote database trace directory; enables access to remote trace files from SQL Pad
 
-TargetTable - table name used for EXPLAIN PLAN function; table is not created automatically and must be created manually using script:
+`TargetTable` - table name used for EXPLAIN PLAN function; table is not created automatically and must be created manually using script:
 
 	CREATE GLOBAL TEMPORARY TABLE EXPLAIN_PLAN
 	(

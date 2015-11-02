@@ -99,7 +99,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 				}
 			}
 
-			var preface =  $"EXECUTE IMMEDIATE 'ALTER SESSION SET TRACEFILE_IDENTIFIER = \"{traceIdentifier}\"';";
+			traceIdentifier = String.IsNullOrEmpty(traceIdentifier) ? "''''" : $"\"{traceIdentifier}\"";
+			var preface = $"EXECUTE IMMEDIATE 'ALTER SESSION SET TRACEFILE_IDENTIFIER = {traceIdentifier}';";
 			var commandText = BuildTraceEventActionStatement(_activeTraceEvents, () => preface, e => e.CommandTextEnable);
 
 			try

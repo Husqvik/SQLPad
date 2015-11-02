@@ -92,6 +92,8 @@ namespace SqlPad
 		
 		public string HeaderBackgroundColorCode { get; set; }
 
+		public bool BreakOnExceptions { get; set; }
+
 		public double FontSize
 		{
 			get

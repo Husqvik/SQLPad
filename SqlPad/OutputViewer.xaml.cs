@@ -102,6 +102,8 @@ namespace SqlPad
 
 			TraceViewer = DocumentPage.InfrastructureFactory.CreateTraceViewer(ConnectionAdapter);
 			TabTrace.Content = TraceViewer.Control;
+
+			BreakOnExceptions = DocumentPage.WorkDocument.BreakOnExceptions;
 		}
 
 		private void TimerExecutionMonitorTickHandler(object sender, EventArgs e)

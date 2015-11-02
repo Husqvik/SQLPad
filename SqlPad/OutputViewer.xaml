@@ -52,6 +52,7 @@
 			<Button Content="_Step into" Padding="6,1,6,1" Margin="0,2,2,2" Command="{x:Static commands:GenericCommands.DebugStepInto}" />
 			<Button Content="Step _over" Padding="6,1,6,1" Margin="0,2,2,2" Command="{x:Static commands:GenericCommands.DebugStepOver}" />
 			<Button Content="_Abort" Padding="6,1,6,1" Margin="0,2,0,2" Click="ButtonDebuggerAbortClickHandler" />
+			<CheckBox Content="_Break on exceptions" IsChecked="{Binding BreakOnExceptions}" Margin="4,1,0,0" VerticalAlignment="Center" />
 		</StackPanel>
 		
 		<TabControl x:Name="TabControlResult" GiveFeedback="TabControlResultGiveFeedbackHandler">

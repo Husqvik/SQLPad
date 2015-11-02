@@ -9,6 +9,8 @@ namespace SqlPad
 	{
 		int? ActiveLine { get; }
 
+		bool BreakOnExceptions { get; set; }
+
 		event EventHandler Attached;
 
 		event EventHandler Detached;
