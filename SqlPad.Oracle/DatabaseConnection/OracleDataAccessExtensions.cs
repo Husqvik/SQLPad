@@ -293,6 +293,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return value.IsNull() ? null : (DateTime?)Convert.ToDateTime(value);
 		}
 
+		public static TimeSpan? ToTimeSpanFromMicroseconds(object value)
+		{
+			return value.IsNull() ? null : (TimeSpan?)TimeSpan.FromTicks(Convert.ToInt64(value) * 10);
+		}
+
 		public static string ToString(object value)
 		{
 			return value.IsNull() ? String.Empty : (string)value;

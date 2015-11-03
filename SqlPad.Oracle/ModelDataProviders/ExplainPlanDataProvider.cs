@@ -93,7 +93,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 	{
 		public async Task<TCollection> Build(OracleDataReader reader, CancellationToken cancellationToken)
 		{
-			var planItemCollection = new TCollection();
+			var planItemCollection = InitializePlanItemCollection();
 
 			while (await reader.ReadAsynchronous(cancellationToken))
 			{
@@ -107,6 +107,11 @@ namespace SqlPad.Oracle.ModelDataProviders
 			planItemCollection.Freeze();
 
 			return planItemCollection;
+		}
+
+		protected virtual TCollection InitializePlanItemCollection()
+		{
+			return new TCollection();
 		}
 
 		protected virtual void FillData(IDataRecord reader, TItem item) { }

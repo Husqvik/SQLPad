@@ -2777,8 +2777,16 @@ END;";
 			[Test(Description = @"")]
 			public void TestCreateFunction()
 			{
-				const string statement1 =
-@"CREATE OR REPLACE EDITIONABLE FUNCTION TEST_FUNCTION RETURN VARCHAR2 RESULT_CACHE RELIES_ON (HUSQVIK.SELECTION, PROJECT) IS BEGIN RETURN NULL; END;";
+				const string statement1 = @"CREATE OR REPLACE EDITIONABLE FUNCTION TEST_FUNCTION RETURN VARCHAR2 RESULT_CACHE RELIES_ON (HUSQVIK.SELECTION, PROJECT) IS BEGIN RETURN NULL; END;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestCreateAggregateFunctionWithSemicolonTerminator()
+			{
+				const string statement1 = @"CREATE OR REPLACE FUNCTION string_agg(value VARCHAR2) RETURN VARCHAR2 PARALLEL_ENABLE AGGREGATE USING t_string_agg;";
 
 				var statement = Parser.Parse(statement1).Single().Validate();
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
@@ -2787,8 +2795,7 @@ END;";
 			[Test(Description = @"")]
 			public void TestCreateProcedure()
 			{
-				const string statement1 =
-@"CREATE OR REPLACE NONEDITIONABLE PROCEDURE TEST_PROCEDURE AUTHID DEFINER ACCESSIBLE BY (TYPE HUSQVIK.TEST_TYPE, TEST_FUNCTION) IS EXTERNAL;";
+				const string statement1 = @"CREATE OR REPLACE NONEDITIONABLE PROCEDURE TEST_PROCEDURE AUTHID DEFINER ACCESSIBLE BY (TYPE HUSQVIK.TEST_TYPE, TEST_FUNCTION) IS EXTERNAL;";
 
 				var statement = (OracleStatement)Parser.Parse(statement1).Single().Validate();
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);

@@ -1,4 +1,4 @@
-SQLPad 0.4.0.18
+SQLPad 0.4.0.19
 ===============
 
 SQLPad is an experimental SQL editor focused to quick and comfortable work.
@@ -305,3 +305,11 @@ SQLPad screenshots
 ![Database output](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/DatabaseOutput.png)
 ![Trace events](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/TraceEvents.png)
 ![Statement execution history](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/StatementExecutionHistory.png)
+
+Known issues
+------------
+
+ANYDATA data type not supported because Oracle Data Access does not support it. Possible use of Devart Oracle provider.
+
+Support for user defined types (UDT) is very cumbersome due to Oracle Data Access implementation. Devart Oracle provider also solves this.
+

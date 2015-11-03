@@ -11501,8 +11501,8 @@
         <Sequence>
           <NonTerminal Id="AggregateOrPipelined" />
           <Terminal Id="Using" />
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="Identifier" />
+          <NonTerminal Id="SchemaObject" />
+          <Terminal Id="Semicolon" />
         </Sequence>
         <Sequence>
           <Terminal Id="Pipelined" IsOptional="true" />
