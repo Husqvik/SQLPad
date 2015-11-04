@@ -11,6 +11,8 @@ namespace SqlPad
 	{
 		string SchemaLabel { get; }
 
+		string DefaultBindVariableType { get; }
+
 		IDataExportConverter DataExportConverter { get; }
 
 		ICommandFactory CommandFactory { get; }

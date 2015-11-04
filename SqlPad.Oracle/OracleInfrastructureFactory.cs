@@ -18,9 +18,12 @@ namespace SqlPad.Oracle
 		}
 
 		#region Implementation of IInfrastructureFactory
-		public string SchemaLabel => "Schema";
 
-	    public IDataExportConverter DataExportConverter => ExportConverter;
+		public string SchemaLabel { get; } = "Schema";
+
+		public string DefaultBindVariableType { get; } = OracleGrammarDescription.TerminalValues.Varchar2;
+
+		public IDataExportConverter DataExportConverter => ExportConverter;
 
 	    public ICommandFactory CommandFactory => _commandFactory;
 

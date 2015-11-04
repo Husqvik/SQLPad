@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows;
-using ProtoBuf;
 using ProtoBuf.Meta;
 
 namespace SqlPad
@@ -27,17 +27,16 @@ namespace SqlPad
 		private Dictionary<Guid, WorkDocument> _workingDocuments = new Dictionary<Guid, WorkDocument>();
 		private Dictionary<Type, WindowProperties> _windowConfigurations = new Dictionary<Type, WindowProperties>();
 		private int _activeDocumentIndex;
-		private readonly WindowProperties _windowProperties; // TODO: Unused; compatability; remove after migration
 		private List<WorkDocument> _recentFiles = new List<WorkDocument>();
 
 		static WorkDocumentCollection()
 		{
 			ConfigureBackupFile();
 
-			Serializer = ConfigureSerializer(false);
+			Serializer = ConfigureSerializer();
 		}
 
-		private static RuntimeTypeModel ConfigureSerializer(bool includeOldWindowProperties)
+		private static RuntimeTypeModel ConfigureSerializer()
 		{
 			var serializer = TypeModel.Create();
 			var workingDocumentCollectionType = serializer.Add(typeof(WorkDocumentCollection), false);
@@ -45,11 +44,6 @@ namespace SqlPad
 			var fieldNumber = 1;
 			workingDocumentCollectionType.Add(fieldNumber++, nameof(_workingDocuments), new Dictionary<Guid, WorkDocument>());
 			workingDocumentCollectionType.Add(fieldNumber++, nameof(_activeDocumentIndex));
-			if (includeOldWindowProperties)
-			{
-				workingDocumentCollectionType.Add(fieldNumber++, nameof(_windowProperties));
-			}
-
 			workingDocumentCollectionType.Add(fieldNumber++, nameof(_databaseProviderConfigurations), new Dictionary<string, DatabaseProviderConfiguration>());
 			workingDocumentCollectionType.Add(fieldNumber++, nameof(_recentFiles), new List<WorkDocument>());
 			workingDocumentCollectionType.Add(fieldNumber, nameof(_windowConfigurations), new Dictionary<Type, WindowProperties>());
@@ -142,14 +136,7 @@ namespace SqlPad
 			{
 				try
 				{
-					try
-					{
-						_instance = (WorkDocumentCollection)Serializer.Deserialize(file, _instance, typeof (WorkDocumentCollection));
-					}
-					catch (ProtoException) // TODO: Temporary - remove after migration
-					{
-						MigrateWorkingDocuments(file);
-					}
+					_instance = (WorkDocumentCollection)Serializer.Deserialize(file, _instance, typeof(WorkDocumentCollection));
 
 					Trace.WriteLine($"WorkDocumentCollection ({_instance._workingDocuments.Count} document(s)) successfully loaded from '{fileName}'. ");
 					return true;
@@ -161,17 +148,6 @@ namespace SqlPad
 			}
 
 			return false;
-		}
-
-		private static void MigrateWorkingDocuments(FileStream file)
-		{
-			file.Seek(0, SeekOrigin.Begin);
-			_instance = (WorkDocumentCollection)ConfigureSerializer(true).Deserialize(file, _instance, typeof (WorkDocumentCollection));
-
-			if (_instance._windowProperties != null)
-			{
-				_instance._windowConfigurations[typeof (MainWindow)] = _instance._windowProperties;
-			}
 		}
 
 		public static void Configure()
@@ -367,13 +343,18 @@ namespace SqlPad
 
 		private static void CleanEmptyBindVariables()
 		{
-			foreach (var configuration in Instance._databaseProviderConfigurations.Values)
+			var providerFactories = ConfigurationProvider.ConnectionStrings.Cast<ConnectionStringSettings>()
+				.Select(css => new { css.ProviderName, ConfigurationProvider.GetConnectionConfiguration(css.Name).InfrastructureFactory });
+
+			foreach (var providerFactory in providerFactories.Distinct(f => f.ProviderName))
 			{
-				foreach (var variable in configuration.BindVariables.ToArray())
+				var providerConfiguration = GetProviderConfiguration(providerFactory.ProviderName);
+				foreach (var variable in providerConfiguration.BindVariables.ToArray())
 				{
-					if (variable.Value == null || Equals(variable.Value, String.Empty) || Equals(variable.Value, DateTime.MinValue))
+					if (variable.DataType == providerFactory.InfrastructureFactory.DefaultBindVariableType &&
+						(variable.Value == null || Equals(variable.Value, String.Empty) || Equals(variable.Value, DateTime.MinValue)))
 					{
-						configuration.RemoveBindVariable(variable.Name);
+						providerConfiguration.RemoveBindVariable(variable.Name);
 					}
 				}
 			}

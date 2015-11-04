@@ -42,9 +42,15 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 	public class SqlMonitorPlanItemCollection : ExecutionPlanItemCollectionBase<SqlMonitorPlanItem>
 	{
-		public int SessionId { get; set; }
+		public SqlMonitorPlanItemCollection(int sessionId, int executionId)
+		{
+			SessionId = sessionId;
+			ExecutionId = executionId;
+		}
 
-		public int ExecutionId { get; set; }
+		public int SessionId { get; }
+
+		public int ExecutionId { get; }
 
 		public ObservableCollection<ActiveSessionHistoryItem> ActiveSessionHistoryItems { get; } = new ObservableCollection<ActiveSessionHistoryItem>();
 	}
@@ -129,12 +135,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		protected override SqlMonitorPlanItemCollection InitializePlanItemCollection()
 		{
-			return
-				new SqlMonitorPlanItemCollection
-				{
-					SessionId = _sessionId,
-					ExecutionId = _executionId
-				};
+			return new SqlMonitorPlanItemCollection(_sessionId, _executionId);
 		}
 	}
 

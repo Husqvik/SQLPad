@@ -45,6 +45,11 @@ namespace SqlPad.Oracle.ModelDataProviders
 	{
 		private static readonly TextInfo TextInfo = CultureInfo.CurrentUICulture.TextInfo;
 
+		protected override ExecutionStatisticsPlanItemCollection InitializePlanItemCollection()
+		{
+			return new ExecutionStatisticsPlanItemCollection();
+		}
+
 		protected override void FillData(IDataRecord reader, ExecutionStatisticsPlanItem item)
 		{
 			item.Timestamp = Convert.ToDateTime(reader["TIMESTAMP"]);

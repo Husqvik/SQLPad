@@ -672,12 +672,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 				await EnsureDatabaseOutput(cancellationToken);
 
-				var userCommand = _userConnection.CreateCommand();
-				userCommand.BindByName = true;
-				userCommand.AddToStatementCache = false;
-
-				userCommand.InitialLONGFetchSize = OracleDatabaseModel.InitialLongFetchSize;
-
 				if (batchExecutionModel.GatherExecutionStatistics)
 				{
 					_executionStatisticsDataProvider = new SessionExecutionStatisticsDataProvider(_databaseModel.StatisticsKeys, _userSessionId.Value);
@@ -699,7 +693,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 						_userTransactionIsolationLevel = isolationLevel;
 					}
 
-					userCommand.Parameters.Clear();
+					var userCommand = InitializeUserCommand();
 					userCommand.CommandText = executionModel.StatementText.Replace("\r\n", "\n");
 
 					foreach (var variable in executionModel.BindVariables)
@@ -861,6 +855,15 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_userTransaction = null;
 			_userSessionId = null;
 			return true;
+		}
+
+		private OracleCommand InitializeUserCommand()
+		{
+			var userCommand = _userConnection.CreateCommand();
+			userCommand.BindByName = true;
+			userCommand.AddToStatementCache = false;
+			userCommand.InitialLONGFetchSize = OracleDatabaseModel.InitialLongFetchSize;
+			return userCommand;
 		}
 
 		private static async Task<object> GetBindVariableValue(BindVariableModel variable, CancellationToken cancellationToken)
@@ -1118,7 +1121,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 		}
 
-		private struct CommandReader
+		private struct CommandReader : IDisposable
 		{
 			public OracleDataReader Reader;
 			public OracleCommand Command;

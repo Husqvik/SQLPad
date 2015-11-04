@@ -87,9 +87,15 @@ namespace SqlPad.Oracle.ModelDataProviders
 		}
 	}
 
-	internal class ExecutionPlanBuilder : ExecutionPlanBuilderBase<ExecutionPlanItemCollection, ExecutionPlanItem> { }
+	internal class ExecutionPlanBuilder : ExecutionPlanBuilderBase<ExecutionPlanItemCollection, ExecutionPlanItem>
+	{
+		protected override ExecutionPlanItemCollection InitializePlanItemCollection()
+		{
+			return new ExecutionPlanItemCollection();
+		}
+	}
 
-	internal abstract class ExecutionPlanBuilderBase<TCollection, TItem> where TCollection : ExecutionPlanItemCollectionBase<TItem>, new() where TItem : ExecutionPlanItem, new()
+	internal abstract class ExecutionPlanBuilderBase<TCollection, TItem> where TCollection : ExecutionPlanItemCollectionBase<TItem> where TItem : ExecutionPlanItem, new()
 	{
 		public async Task<TCollection> Build(OracleDataReader reader, CancellationToken cancellationToken)
 		{
@@ -109,10 +115,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			return planItemCollection;
 		}
 
-		protected virtual TCollection InitializePlanItemCollection()
-		{
-			return new TCollection();
-		}
+		protected abstract TCollection InitializePlanItemCollection();
 
 		protected virtual void FillData(IDataRecord reader, TItem item) { }
 
