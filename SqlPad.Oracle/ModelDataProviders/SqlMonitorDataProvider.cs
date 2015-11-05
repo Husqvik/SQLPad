@@ -19,12 +19,12 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public SqlMonitorPlanItemCollection ItemCollection { get; private set; }
 
-		public SqlMonitorDataProvider(int sessionId, int executionId, string sqlId, int childNumber)
+		public SqlMonitorDataProvider(int sessionId, DateTime executionStart, int executionId, string sqlId, int childNumber)
 			: base(null)
 		{
 			_sqlId = sqlId;
 			_childNumber = childNumber;
-			_sqlMonitorBuilder = new SqlMonitorBuilder(sessionId, executionId);
+			_sqlMonitorBuilder = new SqlMonitorBuilder(sessionId, _sqlId, executionStart, executionId);
 		}
 
 		public override void InitializeCommand(OracleCommand command)
@@ -42,19 +42,26 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 	public class SqlMonitorPlanItemCollection : ExecutionPlanItemCollectionBase<SqlMonitorPlanItem>
 	{
-		public SqlMonitorPlanItemCollection(int sessionId, int executionId)
+		public SqlMonitorPlanItemCollection(int sessionId, string sqlId, DateTime executionStart, int executionId)
 		{
 			SessionId = sessionId;
+			SqlId = sqlId;
+			ExecutionStart = executionStart;
 			ExecutionId = executionId;
 		}
 
 		public int SessionId { get; }
+
+		public string SqlId { get; }
+
+		public DateTime ExecutionStart { get; set; }
 
 		public int ExecutionId { get; }
 
 		public ObservableCollection<ActiveSessionHistoryItem> ActiveSessionHistoryItems { get; } = new ObservableCollection<ActiveSessionHistoryItem>();
 	}
 
+	[DebuggerDisplay("ActiveSessionHistoryItem (SessionId={SessionId}; SessionSerial={SessionSerial}; SampleTime={SampleTime})")]
 	public class ActiveSessionHistoryItem
 	{
 		public DateTime SampleTime { get; set; }
@@ -99,63 +106,121 @@ namespace SqlPad.Oracle.ModelDataProviders
 	[DebuggerDisplay("SqlMonitorPlanItem (Id={Id}; Operation={Operation}; Depth={Depth}; IsLeaf={IsLeaf}; ExecutionOrder={ExecutionOrder})")]
 	public class SqlMonitorPlanItem : ExecutionPlanItem
 	{
-		/*public ulong Starts { get; set; }
+		private long _starts;
+		private long _outputRows;
+		private long _ioInterconnectBytes;
+		private long _physicalReadRequests;
+		private long _physicalReadBytes;
+		private long _physicalWriteRequests;
+		private long _physicalWriteBytes;
+		private long? _workAreaMemoryBytes;
+		private long? _workAreaMemoryMaxBytes;
+		private long? _workAreaTempBytes;
+		private long? _workAreaTempMaxBytes;
 
-		public ulong OutputRows { get; set; }
+		public long Starts
+		{
+			get { return _starts; }
+			set { UpdateValueAndRaisePropertyChanged(ref _starts, value); }
+		}
 
-		public ulong IoInterconnectBytes { get; set; }
+		public long OutputRows
+		{
+			get { return _outputRows; }
+			set { UpdateValueAndRaisePropertyChanged(ref _outputRows, value); }
+		}
 
-		public ulong PhysicalReadRequests { get; set; }
+		public long IoInterconnectBytes
+		{
+			get { return _ioInterconnectBytes; }
+			set { UpdateValueAndRaisePropertyChanged(ref _ioInterconnectBytes, value); }
+		}
 
-		public ulong PhysicalReadBytes { get; set; }
+		public long PhysicalReadRequests
+		{
+			get { return _physicalReadRequests; }
+			set { UpdateValueAndRaisePropertyChanged(ref _physicalReadRequests, value); }
+		}
 
-		public ulong PhysicalWriteRequests { get; set; }
+		public long PhysicalReadBytes
+		{
+			get { return _physicalReadBytes; }
+			set { UpdateValueAndRaisePropertyChanged(ref _physicalReadBytes, value); }
+		}
 
-		public ulong PhysicalWriteBytes { get; set; }
+		public long PhysicalWriteRequests
+		{
+			get { return _physicalWriteRequests; }
+			set { UpdateValueAndRaisePropertyChanged(ref _physicalWriteRequests, value); }
+		}
 
-		public ulong WorkAreaMemoryBytes { get; set; }
+		public long PhysicalWriteBytes
+		{
+			get { return _physicalWriteBytes; }
+			set { UpdateValueAndRaisePropertyChanged(ref _physicalWriteBytes, value); }
+		}
 
-		public ulong WorkAreaMemoryMaxBytes { get; set; }
+		public long? WorkAreaMemoryBytes
+		{
+			get { return _workAreaMemoryBytes; }
+			set { UpdateValueAndRaisePropertyChanged(ref _workAreaMemoryBytes, value); }
+		}
 
-		public ulong WorkAreaTempBytes { get; set; }
+		public long? WorkAreaMemoryMaxBytes
+		{
+			get { return _workAreaMemoryMaxBytes; }
+			set { UpdateValueAndRaisePropertyChanged(ref _workAreaMemoryMaxBytes, value); }
+		}
 
-		public ulong WorkAreaTempMaxBytes { get; set; }*/
+		public long? WorkAreaTempBytes
+		{
+			get { return _workAreaTempBytes; }
+			set { UpdateValueAndRaisePropertyChanged(ref _workAreaTempBytes, value); }
+		}
+
+		public long? WorkAreaTempMaxBytes
+		{
+			get { return _workAreaTempMaxBytes; }
+			set { UpdateValueAndRaisePropertyChanged(ref _workAreaTempMaxBytes, value); }
+		}
 	}
 
 	internal class SqlMonitorBuilder : ExecutionPlanBuilderBase<SqlMonitorPlanItemCollection, SqlMonitorPlanItem>
 	{
 		private readonly int _sessionId;
+		private readonly string _sqlId;
+		private readonly DateTime _executionStart;
 		private readonly int _executionId;
 
-		public SqlMonitorBuilder(int sessionId, int executionId)
+		public SqlMonitorBuilder(int sessionId, string sqlId, DateTime executionStart, int executionId)
 		{
 			_sessionId = sessionId;
+			_sqlId = sqlId;
+			_executionStart = executionStart;
 			_executionId = executionId;
 		}
 
 		protected override SqlMonitorPlanItemCollection InitializePlanItemCollection()
 		{
-			return new SqlMonitorPlanItemCollection(_sessionId, _executionId);
+			return new SqlMonitorPlanItemCollection(_sessionId, _sqlId, _executionStart, _executionId);
 		}
 	}
 
-	internal class SqlMonitorActiveSessionHistoryDataProvider : ModelDataProvider<ModelBase>
+	internal class SqlMonitorActiveSessionHistoryDataProvider : ModelDataProvider<SqlMonitorPlanItemCollection>
 	{
-		private readonly SqlMonitorPlanItemCollection _sqlMonitorPlanItemCollection;
-
 		public SqlMonitorActiveSessionHistoryDataProvider(SqlMonitorPlanItemCollection sqlMonitorPlanItemCollection)
-			: base(null)
+			: base(sqlMonitorPlanItemCollection)
 		{
-			_sqlMonitorPlanItemCollection = sqlMonitorPlanItemCollection;
 		}
 
 		public override void InitializeCommand(OracleCommand command)
 		{
-			var lastSampleTime = _sqlMonitorPlanItemCollection.ActiveSessionHistoryItems.LastOrDefault()?.SampleTime ?? DateTime.MinValue;
+			var lastSampleTime = DataModel.ActiveSessionHistoryItems.LastOrDefault()?.SampleTime ?? DateTime.MinValue;
 			command.CommandText = OracleDatabaseCommands.SelectActiveSessionHistoryCommandText;
-			command.AddSimpleParameter("SID", _sqlMonitorPlanItemCollection.SessionId);
-			command.AddSimpleParameter("SQL_EXEC_ID", _sqlMonitorPlanItemCollection.ExecutionId);
+			command.AddSimpleParameter("SID", DataModel.SessionId);
+			command.AddSimpleParameter("SQL_EXEC_ID", DataModel.ExecutionId);
 			command.AddSimpleParameter("SAMPLE_TIME", lastSampleTime);
+			command.AddSimpleParameter("SQL_EXEC_START", DataModel.ExecutionStart);
 		}
 
 		public async override Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
@@ -187,8 +252,46 @@ namespace SqlPad.Oracle.ModelDataProviders
 						TempSpaceAllocated = Convert.ToInt64(reader["TEMP_SPACE_ALLOCATED"]),
 					};
 
-				_sqlMonitorPlanItemCollection.ActiveSessionHistoryItems.Add(historyItem);
-				historyItem.ActiveLine = _sqlMonitorPlanItemCollection.AllItems[planLineId];
+				DataModel.ActiveSessionHistoryItems.Add(historyItem);
+				historyItem.ActiveLine = DataModel.AllItems[planLineId];
+			}
+		}
+	}
+
+	internal class SqlMonitorPlanMonitorDataProvider : ModelDataProvider<SqlMonitorPlanItemCollection>
+	{
+		public SqlMonitorPlanMonitorDataProvider(SqlMonitorPlanItemCollection sqlMonitorPlanItemCollection)
+			: base(sqlMonitorPlanItemCollection)
+		{
+		}
+
+		public override void InitializeCommand(OracleCommand command)
+		{
+			command.CommandText = OracleDatabaseCommands.SelectSqlPlanMonitorCommandText;
+			command.AddSimpleParameter("SID", DataModel.SessionId);
+			command.AddSimpleParameter("SQL_ID", DataModel.SqlId);
+			command.AddSimpleParameter("SQL_EXEC_ID", DataModel.ExecutionId);
+			command.AddSimpleParameter("SQL_EXEC_START", DataModel.ExecutionStart);
+		}
+
+		public async override Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
+		{
+			while (await reader.ReadAsynchronous(cancellationToken))
+			{
+				var planLineId = Convert.ToInt32(reader["PLAN_LINE_ID"]);
+				var planItem = DataModel.AllItems[planLineId];
+
+				planItem.Starts = Convert.ToInt64(reader["Starts"]);
+				planItem.OutputRows = Convert.ToInt64(reader["OUTPUT_ROWS"]);
+				planItem.IoInterconnectBytes = Convert.ToInt64(reader["IO_INTERCONNECT_BYTES"]);
+				planItem.PhysicalReadRequests = Convert.ToInt64(reader["PHYSICAL_READ_REQUESTS"]);
+				planItem.PhysicalReadBytes = Convert.ToInt64(reader["PHYSICAL_READ_BYTES"]);
+				planItem.PhysicalWriteRequests = Convert.ToInt64(reader["PHYSICAL_WRITE_REQUESTS"]);
+				planItem.PhysicalWriteBytes = Convert.ToInt64(reader["PHYSICAL_WRITE_BYTES"]);
+				planItem.WorkAreaMemoryBytes = OracleReaderValueConvert.ToInt64(reader["WORKAREA_MEM"]);
+				planItem.WorkAreaMemoryMaxBytes = OracleReaderValueConvert.ToInt64(reader["WORKAREA_MAX_MEM"]);
+				planItem.WorkAreaTempBytes = OracleReaderValueConvert.ToInt64(reader["WORKAREA_TEMPSEG"]);
+				planItem.WorkAreaTempMaxBytes = OracleReaderValueConvert.ToInt64(reader["WORKAREA_MAX_TEMPSEG"]);
 			}
 		}
 	}

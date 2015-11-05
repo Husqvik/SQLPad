@@ -42,7 +42,8 @@ namespace SqlPad.Oracle
 							var values = new object[columnCount];
 							reader.GetValues(values);
 							var sessionType = (string)values[17];
-							sessions.Add(Convert.ToInt32(values[1]), new DatabaseSession { Values = values, Type = String.Equals(sessionType, "User") ? SessionType.User : SessionType.System });
+							var sessionId = Convert.ToInt32(values[1]);
+							sessions.Add(sessionId, new DatabaseSession { Values = values, Type = String.Equals(sessionType, "User") ? SessionType.User : SessionType.System });
 						}
 
 						foreach (var session in sessions.Values)

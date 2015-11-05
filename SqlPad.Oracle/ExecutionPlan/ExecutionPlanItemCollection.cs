@@ -117,7 +117,7 @@ namespace SqlPad.Oracle.ExecutionPlan
 
 
 	[DebuggerDisplay("ExecutionPlanItem (Id={Id}; Operation={Operation}; Depth={Depth}; IsLeaf={IsLeaf}; ExecutionOrder={ExecutionOrder})")]
-	public class ExecutionPlanItem
+	public class ExecutionPlanItem : ModelBase
 	{
 		private readonly List<ExecutionPlanItem> _childItems = new List<ExecutionPlanItem>();
 

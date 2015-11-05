@@ -31,7 +31,8 @@ namespace SqlPad.Oracle
 		private async Task RefreshActiveSessionHistory()
 		{
 			var activeSessionHistoryDataProvider = new SqlMonitorActiveSessionHistoryDataProvider(_planItemCollection);
-			await OracleDatabaseModel.UpdateModelAsync(_connectionString.ConnectionString, null, CancellationToken.None, false, activeSessionHistoryDataProvider);
+			var planMonitorDataProvider = new SqlMonitorPlanMonitorDataProvider(_planItemCollection);
+			await OracleDatabaseModel.UpdateModelAsync(_connectionString.ConnectionString, null, CancellationToken.None, false, activeSessionHistoryDataProvider, planMonitorDataProvider);
 		}
 
 		public async Task Initialize(DatabaseSession databaseSession, CancellationToken cancellationToken)
@@ -44,9 +45,10 @@ namespace SqlPad.Oracle
 			var sqlId = OracleReaderValueConvert.ToString(databaseSession.Values[18]);
 			if (!String.IsNullOrEmpty(sqlId))
 			{
-				var sessionId = Convert.ToInt32(databaseSession.Values[2]);
-				var executionId = Convert.ToInt32(databaseSession.Values[23]);
-				var monitorDataProvider = new SqlMonitorDataProvider(sessionId, executionId, sqlId, Convert.ToInt32(databaseSession.Values[19]));
+				var sessionId = Convert.ToInt32(databaseSession.Values[1]);
+				var executionId = Convert.ToInt32(databaseSession.Values[21]);
+				var executionStart = (DateTime)databaseSession.Values[20];
+				var monitorDataProvider = new SqlMonitorDataProvider(sessionId, executionStart, executionId, sqlId, Convert.ToInt32(databaseSession.Values[19]));
 				await OracleDatabaseModel.UpdateModelAsync(_connectionString.ConnectionString, null, cancellationToken, false, monitorDataProvider);
 
 				_planItemCollection = monitorDataProvider.ItemCollection;
