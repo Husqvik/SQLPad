@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
+using SqlPad.Oracle.ModelDataProviders;
 
 namespace SqlPad.Oracle.ExecutionPlan
 {
@@ -77,10 +78,23 @@ namespace SqlPad.Oracle.ExecutionPlan
 
 		public HierarchicalDataTemplate ExecutionStatisticsPlanItemTemplate { get; set; }
 
+		public HierarchicalDataTemplate ExecutionMonitorPlanItemTemplate { get; set; }
+
 		public override DataTemplate SelectTemplate(object item, DependencyObject container)
 		{
 			var executionStatisticsPlanItem = item as ExecutionStatisticsPlanItem;
-			return executionStatisticsPlanItem == null ? ExplainPlanTemplateTemplate : ExecutionStatisticsPlanItemTemplate;
+			if (executionStatisticsPlanItem != null)
+			{
+				return ExecutionStatisticsPlanItemTemplate;
+			}
+
+			var executionMonitorPlanItem = item as SqlMonitorPlanItem;
+			if (executionMonitorPlanItem != null)
+			{
+				return ExecutionMonitorPlanItemTemplate;
+			}
+
+			return ExplainPlanTemplateTemplate;
 		}
 	}
 }
