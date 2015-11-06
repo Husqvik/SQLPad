@@ -176,6 +176,54 @@ namespace SqlPad.Oracle
 							default:
 								return DefaultMessageCommandExecutedSuccessfully;
 						}
+					case NonTerminals.CallStatement:
+						return "Call completed. ";
+					case NonTerminals.CommentStatement:
+						return "Comment created. ";
+					case NonTerminals.CommitStatement:
+						return "Commit complete. ";
+					case NonTerminals.SavepointStatement:
+						return "Savepoint created.";
+					case NonTerminals.RollbackStatement:
+						return "Rollback complete. ";
+					case NonTerminals.RenameStatement:
+						return "Object renamed. ";
+					case NonTerminals.ExplainPlanStatement:
+						return "Explained. ";
+					case NonTerminals.SetConstraintStatement:
+						return "Constraint set. ";
+					case NonTerminals.GrantStatement:
+						return "Grant succeeded. ";
+					case NonTerminals.TruncateStatement:
+						return "Table truncated. ";
+					case NonTerminals.PurgeStatement:
+						switch (statementNode[NonTerminals.PurgeOption]?.FirstTerminalNode?.Id)
+						{
+							case Terminals.Table:
+								return "Table purged. ";
+							case Terminals.Index:
+								return "Index purged. ";
+							case Terminals.RecycleBin:
+								return "Recyclebin purged. ";
+							case Terminals.DbaRecycleBin:
+								return "DBA Recyclebin purged. ";
+							case Terminals.Tablespace:
+								return "Tablespace purged. ";
+							default:
+								return DefaultMessageCommandExecutedSuccessfully;
+						}
+					case NonTerminals.AnalyzeStatement:
+						switch (statementNode[NonTerminals.AnalyzedObject]?.FirstTerminalNode?.Id)
+						{
+							case Terminals.Table:
+								return "Table analyzed. ";
+							case Terminals.Index:
+								return "Index analyzed. ";
+							case Terminals.Cluster:
+								return "Cluster analyzed. ";
+							default:
+								return DefaultMessageCommandExecutedSuccessfully;
+						}
 					default:
 						return DefaultMessageCommandExecutedSuccessfully;
 				}

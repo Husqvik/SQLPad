@@ -541,34 +541,38 @@ namespace SqlPad
 
 		private async void ButtonCommitTransactionClickHandler(object sender, RoutedEventArgs e)
 		{
-			await ExecuteTransactionOperation(ConnectionAdapter.CommitTransaction);
+			await ExecuteTransactionOperation(ConnectionAdapter.CommitTransaction, "Commit");
 		}
 
 		private async void ButtonRollbackTransactionClickHandler(object sender, RoutedEventArgs e)
 		{
-			await ExecuteTransactionOperation(ConnectionAdapter.RollbackTransaction);
+			await ExecuteTransactionOperation(ConnectionAdapter.RollbackTransaction, "Rollback");
 		}
 
-		private async Task ExecuteTransactionOperation(Func<Task> transactionOperation)
+		private async Task ExecuteTransactionOperation(Func<Task> transactionOperation, string operation)
 		{
 			IsBusy = true;
 
 			var result = await SafeTimedActionAsync(transactionOperation);
+
 			UpdateTimerMessage(result.Elapsed, false);
 
+			IsBusy = false;
+
+			var elapsedString = result.Elapsed.ToPrettyString();
 			if (result.IsSuccessful)
 			{
 				HasActiveTransaction = false;
 				TransactionIdentifier = null;
+				AddExecutionLog(result.ExecutedAt, $"{operation} complete. ({elapsedString})");
+
+				DocumentPage.Editor.Focus();
 			}
 			else
 			{
+				AddExecutionLog(result.ExecutedAt, $"{operation} failed ({elapsedString}): {result.Exception.Message}");
 				Messages.ShowError(result.Exception.Message);
 			}
-
-			IsBusy = false;
-
-			DocumentPage.Editor.Focus();
 		}
 
 		private void WriteDatabaseOutput(string output)
