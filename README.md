@@ -1,4 +1,4 @@
-SQLPad 0.4.0.21
+SQLPad 0.4.0.22
 ===============
 
 SQLPad is an experimental SQL editor focused to quick and comfortable work.
@@ -206,7 +206,7 @@ Each connection string requires an infrastructure factory configuration record:
 		<!-- other connection configurations -->
 	</databaseConnectionConfiguration>
 
-IsProduction - indicates connection to a production system using red label
+`IsProduction` - indicates connection to a production system using red label
 
 #####Configuration.xml
 
@@ -311,5 +311,5 @@ Known issues
 
 ANYDATA data type not supported because Oracle Data Access does not support it. Possible use of Devart Oracle provider.
 
-Support for user defined types (UDT) is very cumbersome due to Oracle Data Access implementation. Devart Oracle provider also solves this.
+Support for user defined types (UDT) is very cumbersome (and not enabled by default) due to Oracle Data Access implementation. Devart Oracle provider also solves this.
 

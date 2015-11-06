@@ -271,6 +271,7 @@ namespace SqlPad
 			var actionResult = await SafeTimedActionAsync(() => innerTask = ConnectionAdapter.ExecuteStatementAsync(executionModel, _statementExecutionCancellationTokenSource.Token));
 
 			HasActiveTransaction = ConnectionAdapter.HasActiveTransaction;
+			TransactionIdentifier = ConnectionAdapter.TransanctionIdentifier;
 
 			if (!actionResult.IsSuccessful)
 			{
@@ -558,6 +559,7 @@ namespace SqlPad
 			if (result.IsSuccessful)
 			{
 				HasActiveTransaction = false;
+				TransactionIdentifier = null;
 			}
 			else
 			{

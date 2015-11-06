@@ -47,9 +47,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private int _userCommandChildNumber;
 		private OracleTransaction _userTransaction;
 		private int? _userSessionId;
-		private string _userTransactionId;
+		private TransactionInfo _userTransactionInfo;
 		private string _userTraceFileName = String.Empty;
-		private IsolationLevel _userTransactionIsolationLevel;
 		private bool _userCommandHasCompilationErrors;
 		private SessionExecutionStatisticsDataProvider _executionStatisticsDataProvider;
 		private OracleDebuggerSession _debuggerSession;
@@ -261,9 +260,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 			throw new ArgumentException($"Result '{resultInfo.ResultIdentifier}' ({resultInfo.Type}) does not exist. ");
 		}
 
-		public override bool HasActiveTransaction => !String.IsNullOrEmpty(_userTransactionId);
+		public override bool HasActiveTransaction => _userTransactionInfo != null;
 
-	    public override Task CommitTransaction()
+		public override string TransanctionIdentifier => _userTransactionInfo?.ToString();
+
+		public override Task CommitTransaction()
 		{
 			return ExecuteUserTransactionAction(async t => await t.CommitAsynchronous());
 		}
@@ -381,8 +382,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private void DisposeUserTransaction()
 		{
-			_userTransactionId = null;
-			_userTransactionIsolationLevel = IsolationLevel.Unspecified;
+			_userTransactionInfo = null;
 
 			if (_userTransaction != null)
 			{
@@ -690,7 +690,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 							: IsolationLevel.ReadCommitted;
 
 						_userTransaction = _userConnection.BeginTransaction(isolationLevel);
-						_userTransactionIsolationLevel = isolationLevel;
 					}
 
 					var userCommand = InitializeUserCommand();
@@ -1069,18 +1068,28 @@ namespace SqlPad.Oracle.DatabaseConnection
 						connection.ModuleName = $"{_moduleName}/BackgroundConnection".EnsureMaximumLength(64);
 						connection.ActionName = "Fetch execution info";
 
+						_userCommandSqlId = null;
+
 						using (var reader = await command.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken))
 						{
-							if (reader.Read())
+							if (!reader.Read())
 							{
-								_userCommandSqlId = OracleReaderValueConvert.ToString(reader["SQL_ID"]);
-								_userCommandChildNumber = OracleReaderValueConvert.ToInt32(reader["SQL_CHILD_NUMBER"]) ?? 0;
-								_userTransactionId = OracleReaderValueConvert.ToString(reader["TRANSACTION_ID"]);
-								_userTransactionIsolationLevel = (IsolationLevel)Convert.ToInt32(reader["TRANSACTION_ISOLATION_LEVEL"]);
+								return null;
 							}
-							else
+
+							_userCommandSqlId = OracleReaderValueConvert.ToString(reader["SQL_ID"]);
+							_userCommandChildNumber = OracleReaderValueConvert.ToInt32(reader["SQL_CHILD_NUMBER"]) ?? 0;
+							var undoSegmentNumber = OracleReaderValueConvert.ToInt32(reader["XIDUSN"]);
+							if (undoSegmentNumber.HasValue)
 							{
-								_userCommandSqlId = null;
+								_userTransactionInfo =
+									new TransactionInfo
+									{
+										UndoSegmentNumber = undoSegmentNumber.Value,
+										SlotNumber = Convert.ToInt32(reader["XIDSLOT"]),
+										SequnceNumber = Convert.ToInt32(reader["XIDSQN"]),
+										IsolationLevel = (IsolationLevel)Convert.ToInt32(reader["TRANSACTION_ISOLATION_LEVEL"])
+									};
 							}
 						}
 
@@ -1116,8 +1125,24 @@ namespace SqlPad.Oracle.DatabaseConnection
 			using (var command = _userConnection.CreateCommand())
 			{
 				command.CommandText = OracleDatabaseCommands.SelectLocalTransactionIdCommandText;
-				_userTransactionId = OracleReaderValueConvert.ToString(await command.ExecuteScalarAsynchronous(cancellationToken));
-				_userTransactionIsolationLevel = String.IsNullOrEmpty(_userTransactionId) ? IsolationLevel.Unspecified : IsolationLevel.ReadCommitted;
+				var transactionId  = OracleReaderValueConvert.ToString(await command.ExecuteScalarAsynchronous(cancellationToken));
+
+				if (String.IsNullOrEmpty(transactionId))
+				{
+					_userTransactionInfo = null;
+				}
+				else
+				{
+					var transactionElements = transactionId.Split('.');
+					_userTransactionInfo =
+						new TransactionInfo
+						{
+							UndoSegmentNumber = Convert.ToInt32(transactionElements[0]),
+							SlotNumber = Convert.ToInt32(transactionElements[1]),
+							SequnceNumber = Convert.ToInt32(transactionElements[2]),
+							IsolationLevel = IsolationLevel.Unspecified
+						};
+				}
 			}
 		}
 
@@ -1139,6 +1164,35 @@ namespace SqlPad.Oracle.DatabaseConnection
 			public string CursorName;
 			public OracleParameter Parameter;
 			public int? ImplicitCursorIndex;
+		}
+
+		private class TransactionInfo
+		{
+			public int UndoSegmentNumber;
+			public int SlotNumber;
+			public int SequnceNumber;
+			public IsolationLevel IsolationLevel;
+
+			public override string ToString()
+			{
+				return $"{UndoSegmentNumber}.{SlotNumber}.{SequnceNumber}{IsolationLevelPostfix}";
+			}
+
+			private string IsolationLevelPostfix
+			{
+				get
+				{
+					switch (IsolationLevel)
+					{
+						case IsolationLevel.ReadCommitted:
+							return " (read committed)";
+						case IsolationLevel.Serializable:
+							return " (serializable)";
+						default:
+							return String.Empty;
+					}
+				}
+			}
 		}
 	}
 }

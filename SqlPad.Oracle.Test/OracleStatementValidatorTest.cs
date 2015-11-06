@@ -1225,6 +1225,34 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test(Description = @"")]
+		public void TestAsteriskValidOrderByExpressionIndexValidityWithUnrecognizedObject()
+		{
+			const string sqlText = "SELECT * FROM DUAL, NOT_EXISTING_TABLE ORDER BY 1";
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var columnNodeValidity = nodeValidityDictionary.Values.ToList();
+			columnNodeValidity.Count.ShouldBe(1);
+		}
+
+		[Test(Description = @"")]
+		public void TestAsteriskInvalidOrderByExpressionIndexValidityWithUnrecognizedObject()
+		{
+			const string sqlText = "SELECT * FROM DUAL, NOT_EXISTING_TABLE ORDER BY 2";
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var nodeValidityDictionary = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var columnNodeValidity = nodeValidityDictionary.Values.ToList();
+			columnNodeValidity.Count.ShouldBe(1);
+		}
+
+		[Test(Description = @"")]
 		public void TestFunctionNodeValidityOverUndefinedDatabaseLink()
 		{
 			const string sqlText = "SELECT SQLPAD_FUNCTION@UNDEFINED_DB_LINK FROM DUAL";
@@ -2228,14 +2256,14 @@ SELECT * FROM CTE";
 
 			var validationModel = BuildValidationModel(sqlText, statement);
 
-			var programValidityItems = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
-			programValidityItems.Count.ShouldBe(5);
-			programValidityItems[3].IsRecognized.ShouldBe(true);
-			programValidityItems[3].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnIndex);
-			programValidityItems[3].Node.Token.Value.ShouldBe("3");
-			programValidityItems[4].IsRecognized.ShouldBe(true);
-			programValidityItems[4].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnIndex);
-			programValidityItems[4].Node.Token.Value.ShouldBe("4");
+			var validationData = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			validationData.Count.ShouldBe(5);
+			validationData[3].IsRecognized.ShouldBe(true);
+			validationData[3].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnIndex);
+			validationData[3].Node.Token.Value.ShouldBe("3");
+			validationData[4].IsRecognized.ShouldBe(true);
+			validationData[4].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnIndex);
+			validationData[4].Node.Token.Value.ShouldBe("4");
 		}
 
 		[Test(Description = @"")]

@@ -64,6 +64,8 @@ namespace SqlPad
 
 		bool HasActiveTransaction { get; }
 
+		string TransanctionIdentifier { get; }
+
 		Task CommitTransaction();
 
 		Task RollbackTransaction();

@@ -369,6 +369,106 @@
       </Sequences>
     </Rule>
 
+    <Rule StartingNonTerminal="AlterType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Type" />
+          <NonTerminal Id="SchemaObject" />
+          <NonTerminal Id="AlterTypeOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterTypeOption">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="EditionableOrNonEditionable" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="AlterTypeClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterTypeClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="TypeCompileClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="TypeReplaceClause" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Reset" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Not" IsOptional="true" />
+          <NonTerminal Id="InstantiableOrFinal" />
+        </Sequence>
+        <!--<Sequence>
+          <NonTerminal Id="AlterMethodSpecificaton" />
+          <NonTerminal Id="DependentHandlingClause" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="AlterAttributeDefinition" />
+          <NonTerminal Id="DependentHandlingClause" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="AlterCollectionClauses" />
+          <NonTerminal Id="DependentHandlingClause" IsOptional="true" />
+        </Sequence>-->
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="TypeCompileClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Compile" />
+          <Terminal Id="Debug" IsOptional="true" />
+          <NonTerminal Id="SpecificationOrBody" IsOptional="true" />
+          <NonTerminal Id="AlterSetOptionList" IsOptional="true" />
+          <NonTerminal Id="ReuseSettings" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="TypeReplaceClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Replace" />
+          <NonTerminal Id="CommonProgramModifier" IsOptional="true" />
+          <Terminal Id="As" />
+          <Terminal Id="Object" />
+          <Terminal Id="LeftParenthesis" />
+          <!--<NonTerminal Id="AttributeDataTypeList" />
+          <NonTerminal Id="CommaChainedElementSpecificationList" IsOptional="true" />-->
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SpecificationOrBody">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Specification" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Body" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="InstantiableOrFinal">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Instantiable" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Final" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
     <Rule StartingNonTerminal="AlterMaterializedView">
       <Sequences>
         <Sequence>
@@ -2616,10 +2716,7 @@
           <Terminal Id="Package" />
         </Sequence>
         <Sequence>
-          <Terminal Id="Specification" />
-        </Sequence>
-        <Sequence>
-          <Terminal Id="Body" />
+          <NonTerminal Id="SpecificationOrBody" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -19020,6 +19117,7 @@
     <Terminal Id="Clone" Value="CLONE" />
     <Terminal Id="Logoff" Value="LOGOFF" />
     <Terminal Id="Unplug" Value="UNPLUG" />
+    <Terminal Id="Instantiable" Value="INSTANTIABLE" />
     
     <!-- External table opaque format specification -->
     <Terminal Id="OracleLoader" Value="ORACLE_LOADER" />

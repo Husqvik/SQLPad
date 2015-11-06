@@ -22,6 +22,7 @@ namespace SqlPad
 		public static readonly DependencyProperty BreakOnExceptionsProperty = DependencyProperty.Register(nameof(BreakOnExceptions), typeof(bool), typeof(OutputViewer), new FrameworkPropertyMetadata(BreakOnExceptionsChangedHandler));
 		public static readonly DependencyProperty IsTransactionControlEnabledProperty = DependencyProperty.Register(nameof(IsTransactionControlEnabled), typeof(bool), typeof(OutputViewer), new UIPropertyMetadata(true));
 		public static readonly DependencyProperty HasActiveTransactionProperty = DependencyProperty.Register(nameof(HasActiveTransaction), typeof(bool), typeof(OutputViewer), new UIPropertyMetadata(false));
+		public static readonly DependencyProperty TransactionIdentifierProperty = DependencyProperty.Register(nameof(TransactionIdentifier), typeof(string), typeof(OutputViewer), new UIPropertyMetadata());
 		#endregion
 
 		#region dependency property accessors
@@ -51,6 +52,13 @@ namespace SqlPad
 		{
 			get { return (bool)GetValue(HasActiveTransactionProperty); }
 			private set { SetValue(HasActiveTransactionProperty, value); }
+		}
+
+		[Bindable(true)]
+		public string TransactionIdentifier
+		{
+			get { return (string)GetValue(TransactionIdentifierProperty); }
+			private set { SetValue(TransactionIdentifierProperty, value); }
 		}
 
 		[Bindable(true)]

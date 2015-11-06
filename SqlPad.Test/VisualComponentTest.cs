@@ -138,9 +138,11 @@ WHERE
 			outputViewer.ExecutionLog.Length.ShouldBe(84);
 			outputViewer.ExecutionLog.ShouldContain("Command executed successfully. (");
 			outputViewer.IsBusy.ShouldBe(false);
-			outputViewer.HasActiveTransaction.ShouldBe(false);
+			outputViewer.HasActiveTransaction.ShouldBe(true);
+			outputViewer.TransactionIdentifier.ShouldBe("1.2.3456 (read committed)");
 			outputViewer.SessionExecutionStatistics.Count.ShouldBeGreaterThan(0);
 			outputViewer.ActiveResultViewer.ShouldNotBe(null);
+			outputViewer.SetValue(OutputViewer.HasActiveTransactionProperty, false);
 
 			var statusInfo = outputViewer.StatusInfo;
 			statusInfo.ResultGridAvailable.ShouldBe(true);

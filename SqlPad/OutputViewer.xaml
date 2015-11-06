@@ -35,6 +35,9 @@
 			
 			<Button Content="_Commit" Padding="6,1,6,1" Margin="0,2,2,2" Click="ButtonCommitTransactionClickHandler" />
 			<Button Content="_Rollback" Padding="6,1,6,1" Margin="0,2,0,2" Click="ButtonRollbackTransactionClickHandler" />
+			<TextBlock Margin="4,0,0,0" VerticalAlignment="Center">
+				<Run Text="Transaction: " /><Run Text="{Binding TransactionIdentifier}" />
+			</TextBlock>
 		</StackPanel>
 
 		<StackPanel IsEnabled="{Binding IsDebuggerControlEnabled}" Orientation="Horizontal" DockPanel.Dock="Top">

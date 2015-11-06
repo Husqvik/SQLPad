@@ -33,6 +33,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public abstract bool HasActiveTransaction { get; }
 
+		public abstract string TransanctionIdentifier { get; }
+
 		public abstract Task CommitTransaction();
 
 		public abstract Task RollbackTransaction();

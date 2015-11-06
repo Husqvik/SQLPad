@@ -124,7 +124,9 @@ namespace SqlPad.Oracle.Test
 			return Task.FromResult(resultRow);
 		}
 
-		public override bool HasActiveTransaction { get; } = false;
+		public override bool HasActiveTransaction { get; } = true;
+
+		public override string TransanctionIdentifier { get; } = "1.2.3456 (read committed)";
 
 		public override Task CommitTransaction() => Task.FromResult(0);
 
