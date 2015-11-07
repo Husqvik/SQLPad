@@ -39,6 +39,8 @@ namespace SqlPad.Oracle
 			public const string AllOrQualifiedObjectIdentifierList = "AllOrQualifiedObjectIdentifierList";
 			public const string AllOrUpdated = "AllOrUpdated";
 			public const string AllowDisallowClustering = "AllowDisallowClustering";
+			public const string AlterAttributeDefinition = "AlterAttributeDefinition";
+			public const string AlterCollectionClauses = "AlterCollectionClauses";
 			public const string AlterFunction = "AlterFunction";
 			public const string AlterLibrary = "AlterLibrary";
 			public const string AlterMaterializedView = "AlterMaterializedView";
@@ -79,11 +81,11 @@ namespace SqlPad.Oracle
 			public const string AlterSystemResetClauseOption = "AlterSystemResetClauseOption";
 			public const string AlterSystemResetClauseOptions = "AlterSystemResetClauseOptions";
 			public const string AlterTable = "AlterTable";
+			public const string AlterTableChainedOption = "AlterTableChainedOption";
+			public const string AlterTableChainedOptions = "AlterTableChainedOptions";
 			public const string AlterTableColumnClauses = "AlterTableColumnClauses";
 			public const string AlterTableEnableDisableOption = "AlterTableEnableDisableOption";
 			public const string AlterTableEnableDisableOptions = "AlterTableEnableDisableOptions";
-			public const string AlterTableChainedOption = "AlterTableChainedOption";
-			public const string AlterTableChainedOptions = "AlterTableChainedOptions";
 			public const string AlterTableOption = "AlterTableOption";
 			public const string AlterTableProperties = "AlterTableProperties";
 			public const string AlterTablespace = "AlterTablespace";
@@ -92,6 +94,8 @@ namespace SqlPad.Oracle
 			public const string AlterTableStandardPropertyList = "AlterTableStandardPropertyList";
 			public const string AlterTrigger = "AlterTrigger";
 			public const string AlterTriggerOption = "AlterTriggerOption";
+			public const string AlterTypeClause = "AlterTypeClause";
+			public const string AlterTypeOption = "AlterTypeOption";
 			public const string AlterUser = "AlterUser";
 			public const string AlterView = "AlterView";
 			public const string AlterViewOption = "AlterViewOption";
@@ -119,8 +123,12 @@ namespace SqlPad.Oracle
 			public const string AsStringLiteral = "AsStringLiteral";
 			public const string AsSubquery = "AsSubquery";
 			public const string AsXmlAlias = "AsXmlAlias";
+			public const string AtributeDataType = "AtributeDataType";
 			public const string AttributeClusteringClause = "AttributeClusteringClause";
 			public const string AttributeClusteringJoinTableOnEquijoinConditionList = "AttributeClusteringJoinTableOnEquijoinConditionList";
+			public const string AttributeDataTypeList = "AttributeDataTypeList";
+			public const string AttributeDataTypeListChained = "AttributeDataTypeListChained";
+			public const string AttributeWithOptionalDataTypeOrParenthesisEnclosedAttributeDataTypeList = "AttributeWithOptionalDataTypeOrParenthesisEnclosedAttributeDataTypeList";
 			public const string AuthenticationRequired = "AuthenticationRequired";
 			public const string AutoExtendClause = "AutoExtendClause";
 			public const string AutoExtendOption = "AutoExtendOption";
@@ -162,6 +170,14 @@ namespace SqlPad.Oracle
 			public const string CastOrXmlCastFunction = "CastOrXmlCastFunction";
 			public const string CellAssignment = "CellAssignment";
 			public const string CellReferenceOptions = "CellReferenceOptions";
+			public const string ChainedCondition = "ChainedCondition";
+			public const string ChainedModifyColumnPropertiesOrModifyVirtualColumnPropertiesOrModifyColumnVisibility = "ChainedModifyColumnPropertiesOrModifyVirtualColumnPropertiesOrModifyColumnVisibility";
+			public const string ChainedVirtualColumnDefinitionOrColumnDefinition = "ChainedVirtualColumnDefinitionOrColumnDefinition";
+			public const string CharacterCodeFunction = "CharacterCodeFunction";
+			public const string CharacterCodeParameterClause = "CharacterCodeParameterClause";
+			public const string CharacterOrChar = "CharacterOrChar";
+			public const string CheckOrNoCheck = "CheckOrNoCheck";
+			public const string CheckpointNumber = "CheckpointNumber";
 			public const string ClusterClause = "ClusterClause";
 			public const string ClusterColumnDefinitionList = "ClusterColumnDefinitionList";
 			public const string ClusteringColumns = "ClusteringColumns";
@@ -171,6 +187,7 @@ namespace SqlPad.Oracle
 			public const string ClusterProperties = "ClusterProperties";
 			public const string ClusterProperty = "ClusterProperty";
 			public const string ClusterRangePartitions = "ClusterRangePartitions";
+			public const string CollectionLimitOrElementType = "CollectionLimitOrElementType";
 			public const string CollectionTypeDefinition = "CollectionTypeDefinition";
 			public const string ColonOrMinus = "ColonOrMinus";
 			public const string ColumnAsAlias = "ColumnAsAlias";
@@ -212,6 +229,7 @@ namespace SqlPad.Oracle
 			public const string CommaChainedRangePartitionList = "CommaChainedRangePartitionList";
 			public const string CommaChainedReferencePartitionDescriptionList = "CommaChainedReferencePartitionDescriptionList";
 			public const string CommaChainedRelationalProperty = "CommaChainedRelationalProperty";
+			public const string CommaChainedRestrictReferencesPragma = "CommaChainedRestrictReferencesPragma";
 			public const string CommaChainedSingleColumnForLoopList = "CommaChainedSingleColumnForLoopList";
 			public const string CommaChainedSupplementalLogColumn = "CommaChainedSupplementalLogColumn";
 			public const string CommaChainedSupplementalLogKeyList = "CommaChainedSupplementalLogKeyList";
@@ -250,6 +268,7 @@ namespace SqlPad.Oracle
 			public const string ConstraintReferencesClause = "ConstraintReferencesClause";
 			public const string ConstraintState = "ConstraintState";
 			public const string ConstraintStateExceptionClause = "ConstraintStateExceptionClause";
+			public const string ConstructorSpecification = "ConstructorSpecification";
 			public const string ContainerDatabaseOption = "ContainerDatabaseOption";
 			public const string ContainerDataClause = "ContainerDataClause";
 			public const string CountAsteriskParameter = "CountAsteriskParameter";
@@ -271,9 +290,9 @@ namespace SqlPad.Oracle
 			public const string CreateRollbackSegment = "CreateRollbackSegment";
 			public const string CreateRollbackSegmentOption = "CreateRollbackSegmentOption";
 			public const string CreateRollbackSegmentOptionList = "CreateRollbackSegmentOptionList";
+			public const string CreateSchemaAuthorization = "CreateSchemaAuthorization";
 			public const string CreateSequence = "CreateSequence";
 			public const string CreateServerParameterFile = "CreateServerParameterFile";
-			public const string CreateSchemaAuthorization = "CreateSchemaAuthorization";
 			public const string CreateSqlObjectClause = "CreateSqlObjectClause";
 			public const string CreateSqlStatement = "CreateSqlStatement";
 			public const string CreateSynonym = "CreateSynonym";
@@ -281,6 +300,7 @@ namespace SqlPad.Oracle
 			public const string CreateTablespace = "CreateTablespace";
 			public const string CreateTableTypeClause = "CreateTableTypeClause";
 			public const string CreateTrigger = "CreateTrigger";
+			public const string CreateType = "CreateType";
 			public const string CreateUser = "CreateUser";
 			public const string CreateUserIdentificationType = "CreateUserIdentificationType";
 			public const string CreateUserOption = "CreateUserOption";
@@ -351,6 +371,7 @@ namespace SqlPad.Oracle
 			public const string DeleteStatement = "DeleteStatement";
 			public const string DelimiterSpecification = "DelimiterSpecification";
 			public const string DemandOrCommit = "DemandOrCommit";
+			public const string DependentHandlingClause = "DependentHandlingClause";
 			public const string DepthOrBreadth = "DepthOrBreadth";
 			public const string DirectInputOutputOrNoDirectInputOutput = "DirectInputOutputOrNoDirectInputOutput";
 			public const string DirectoryPrefix = "DirectoryPrefix";
@@ -380,10 +401,14 @@ namespace SqlPad.Oracle
 			public const string DropSupplementalLogList = "DropSupplementalLogList";
 			public const string DropSupplementalLogListChained = "DropSupplementalLogListChained";
 			public const string DropTable = "DropTable";
+			public const string DropType = "DropType";
 			public const string DropView = "DropView";
 			public const string DynamicReturningClause = "DynamicReturningClause";
 			public const string EachRowOrStatement = "EachRowOrStatement";
 			public const string EditionableOrNonEditionable = "EditionableOrNonEditionable";
+			public const string ElementSpecification = "ElementSpecification";
+			public const string ElementSpecificationList = "ElementSpecificationList";
+			public const string ElementSpecificationListChained = "ElementSpecificationListChained";
 			public const string ElementType = "ElementType";
 			public const string EnableDisableClause = "EnableDisableClause";
 			public const string EnableDisableClauseList = "EnableDisableClauseList";
@@ -481,6 +506,8 @@ namespace SqlPad.Oracle
 			public const string FlashCachePoolType = "FlashCachePoolType";
 			public const string ForAllBoundsClause = "ForAllBoundsClause";
 			public const string ForAllIndicesBoundsBetweenCondition = "ForAllIndicesBoundsBetweenCondition";
+			public const string ForceExceptionsClause = "ForceExceptionsClause";
+			public const string ForceOrValidate = "ForceOrValidate";
 			public const string ForceTransactionIdentifier = "ForceTransactionIdentifier";
 			public const string ForContainerDataObject = "ForContainerDataObject";
 			public const string ForEachRow = "ForEachRow";
@@ -503,6 +530,7 @@ namespace SqlPad.Oracle
 			public const string FunctionHeading = "FunctionHeading";
 			public const string FunctionModifier = "FunctionModifier";
 			public const string FunctionModifiers = "FunctionModifiers";
+			public const string FunctionSpecification = "FunctionSpecification";
 			public const string FunctionTypeDefinition = "FunctionTypeDefinition";
 			public const string GeneratedAlways = "GeneratedAlways";
 			public const string GlobalTemporary = "GlobalTemporary";
@@ -538,14 +566,6 @@ namespace SqlPad.Oracle
 			public const string HierarchicalQueryClause = "HierarchicalQueryClause";
 			public const string HierarchicalQueryConnectByClause = "HierarchicalQueryConnectByClause";
 			public const string HierarchicalQueryStartWithClause = "HierarchicalQueryStartWithClause";
-			public const string ChainedCondition = "ChainedCondition";
-			public const string ChainedModifyColumnPropertiesOrModifyVirtualColumnPropertiesOrModifyColumnVisibility = "ChainedModifyColumnPropertiesOrModifyVirtualColumnPropertiesOrModifyColumnVisibility";
-			public const string ChainedVirtualColumnDefinitionOrColumnDefinition = "ChainedVirtualColumnDefinitionOrColumnDefinition";
-			public const string CharacterCodeFunction = "CharacterCodeFunction";
-			public const string CharacterCodeParameterClause = "CharacterCodeParameterClause";
-			public const string CharacterOrChar = "CharacterOrChar";
-			public const string CheckOrNoCheck = "CheckOrNoCheck";
-			public const string CheckpointNumber = "CheckpointNumber";
 			public const string IdentifiedByClause = "IdentifiedByClause";
 			public const string IdentifiedByDoubleQuotedStringLiteral = "IdentifiedByDoubleQuotedStringLiteral";
 			public const string IdentifierList = "IdentifierList";
@@ -568,6 +588,7 @@ namespace SqlPad.Oracle
 			public const string IncludeOrExclude = "IncludeOrExclude";
 			public const string IncludingData = "IncludingData";
 			public const string IncludingOrExcluding = "IncludingOrExcluding";
+			public const string IncludingTableDataOrConvertToSubstitutable = "IncludingTableDataOrConvertToSubstitutable";
 			public const string IncludingTables = "IncludingTables";
 			public const string IncrementOrDecrement = "IncrementOrDecrement";
 			public const string IndexAttribute = "IndexAttribute";
@@ -596,6 +617,9 @@ namespace SqlPad.Oracle
 			public const string InformationLifecycleManagementPolicyOption = "InformationLifecycleManagementPolicyOption";
 			public const string InformationLifecycleManagementPolicyPeriod = "InformationLifecycleManagementPolicyPeriod";
 			public const string InformationLifecycleManagementPolicyTrigger = "InformationLifecycleManagementPolicyTrigger";
+			public const string InheritanceClause = "InheritanceClause";
+			public const string InheritanceClauses = "InheritanceClauses";
+			public const string InheritanceOption = "InheritanceOption";
 			public const string InitialDeferrableState = "InitialDeferrableState";
 			public const string InitializationSpecification = "InitializationSpecification";
 			public const string InlineConstraintType = "InlineConstraintType";
@@ -624,6 +648,8 @@ namespace SqlPad.Oracle
 			public const string InsertValuesClause = "InsertValuesClause";
 			public const string InsertValuesOrSubquery = "InsertValuesOrSubquery";
 			public const string InstanceName = "InstanceName";
+			public const string InstantiableOrFinal = "InstantiableOrFinal";
+			public const string InstantiableOrFinalOptions = "InstantiableOrFinalOptions";
 			public const string InsteadOfDmlTrigger = "InsteadOfDmlTrigger";
 			public const string IntegerLiteralOrStringLiteral = "IntegerLiteralOrStringLiteral";
 			public const string IntegerLiteralOrUnlimitedOrDefault = "IntegerLiteralOrUnlimitedOrDefault";
@@ -637,6 +663,8 @@ namespace SqlPad.Oracle
 			public const string InvalidateAndOrCascadeConstraints = "InvalidateAndOrCascadeConstraints";
 			public const string InvokerRightsClause = "InvokerRightsClause";
 			public const string IsOrAs = "IsOrAs";
+			public const string IsOrAsCallSpecification = "IsOrAsCallSpecification";
+			public const string IsOrAsObjectOrUnderSuperType = "IsOrAsObjectOrUnderSuperType";
 			public const string Item1 = "Item1";
 			public const string Item1OrPragmaDefinition = "Item1OrPragmaDefinition";
 			public const string Item2 = "Item2";
@@ -806,6 +834,7 @@ namespace SqlPad.Oracle
 			public const string ObjectAsAlias = "ObjectAsAlias";
 			public const string ObjectAttributeProperty = "ObjectAttributeProperty";
 			public const string ObjectCommentOption = "ObjectCommentOption";
+			public const string ObjectIdClause = "ObjectIdClause";
 			public const string ObjectIdentifierOrDefault = "ObjectIdentifierOrDefault";
 			public const string ObjectPrefix = "ObjectPrefix";
 			public const string ObjectPrivilege = "ObjectPrivilege";
@@ -818,6 +847,7 @@ namespace SqlPad.Oracle
 			public const string ObjectTableObjectIdentifierIndexClause = "ObjectTableObjectIdentifierIndexClause";
 			public const string ObjectTableSubstitutionClause = "ObjectTableSubstitutionClause";
 			public const string ObjectTypeColumnProperties = "ObjectTypeColumnProperties";
+			public const string ObjectTypeDefinition = "ObjectTypeDefinition";
 			public const string ObjectTypeNestedFunctionCallChained = "ObjectTypeNestedFunctionCallChained";
 			public const string OfIdentifierList = "OfIdentifierList";
 			public const string OltpOrQueryOrArchiveOrAllOrDirectLoadOperations = "OltpOrQueryOrArchiveOrAllOrDirectLoadOperations";
@@ -904,6 +934,7 @@ namespace SqlPad.Oracle
 			public const string ParenthesisEnclosedStringLiteral = "ParenthesisEnclosedStringLiteral";
 			public const string ParenthesisEnclosedStringOrIntegerLiteralList = "ParenthesisEnclosedStringOrIntegerLiteralList";
 			public const string ParenthesisEnclosedTableSpaceIdentifier = "ParenthesisEnclosedTableSpaceIdentifier";
+			public const string ParethesisEnclosedObjectTypeDefinitionParameterList = "ParethesisEnclosedObjectTypeDefinitionParameterList";
 			public const string PartialOrFull = "PartialOrFull";
 			public const string PartitionCountOrReferencePartitionDescriptionList = "PartitionCountOrReferencePartitionDescriptionList";
 			public const string PartitionedIndex = "PartitionedIndex";
@@ -1000,6 +1031,7 @@ namespace SqlPad.Oracle
 			public const string PragmaDefinition = "PragmaDefinition";
 			public const string PragmaType = "PragmaType";
 			public const string PragmaTypeInline = "PragmaTypeInline";
+			public const string PragmaTypeRestrictReferences = "PragmaTypeRestrictReferences";
 			public const string PrecedingOnlyClause = "PrecedingOnlyClause";
 			public const string PrecedingOnlyOrBetweenPrecedingAndFollowing = "PrecedingOnlyOrBetweenPrecedingAndFollowing";
 			public const string PrecedingOrFollowing = "PrecedingOrFollowing";
@@ -1013,6 +1045,7 @@ namespace SqlPad.Oracle
 			public const string ProcedureDeclaration = "ProcedureDeclaration";
 			public const string ProcedureDefinition = "ProcedureDefinition";
 			public const string ProcedureHeading = "ProcedureHeading";
+			public const string ProcedureOrFunctionSpecification = "ProcedureOrFunctionSpecification";
 			public const string ProfileOptionList = "ProfileOptionList";
 			public const string ProgramBody = "ProgramBody";
 			public const string ProgramDeclareSection = "ProgramDeclareSection";
@@ -1073,6 +1106,7 @@ namespace SqlPad.Oracle
 			public const string RestrictionListChained = "RestrictionListChained";
 			public const string ResultCacheClause = "ResultCacheClause";
 			public const string RetentionOption = "RetentionOption";
+			public const string ReturnClause = "ReturnClause";
 			public const string ReturningClause = "ReturningClause";
 			public const string ReturningSequenceByRef = "ReturningSequenceByRef";
 			public const string ReturnOrReturning = "ReturnOrReturning";
@@ -1095,12 +1129,12 @@ namespace SqlPad.Oracle
 			public const string RowOrRows = "RowOrRows";
 			public const string RowPattern = "RowPattern";
 			public const string RowPatternAggregateFunction = "RowPatternAggregateFunction";
+			public const string RowPatternChained = "RowPatternChained";
 			public const string RowPatternClause = "RowPatternClause";
 			public const string RowPatternDefinition = "RowPatternDefinition";
 			public const string RowPatternDefinitionList = "RowPatternDefinitionList";
 			public const string RowPatternDefinitionListChained = "RowPatternDefinitionListChained";
 			public const string RowPatternFactor = "RowPatternFactor";
-			public const string RowPatternChained = "RowPatternChained";
 			public const string RowPatternList = "RowPatternList";
 			public const string RowPatternListChained = "RowPatternListChained";
 			public const string RowPatternMeasureColumn = "RowPatternMeasureColumn";
@@ -1130,6 +1164,14 @@ namespace SqlPad.Oracle
 			public const string SaveExceptions = "SaveExceptions";
 			public const string SavepointStatement = "SavepointStatement";
 			public const string Scale = "Scale";
+			public const string SchemaAuthorizationCreateObjectType = "SchemaAuthorizationCreateObjectType";
+			public const string SchemaAuthorizationCreateStatementList = "SchemaAuthorizationCreateStatementList";
+			public const string SchemaCheckOrNoSchemaCheck = "SchemaCheckOrNoSchemaCheck";
+			public const string SchemaObject = "SchemaObject";
+			public const string SchemaObjectList = "SchemaObjectList";
+			public const string SchemaObjectListChained = "SchemaObjectListChained";
+			public const string SchemaOrPluggableDatabase = "SchemaOrPluggableDatabase";
+			public const string SchemaPrefix = "SchemaPrefix";
 			public const string SearchedCaseExpressionBranch = "SearchedCaseExpressionBranch";
 			public const string SeedClause = "SeedClause";
 			public const string SegmentAttribute = "SegmentAttribute";
@@ -1160,14 +1202,6 @@ namespace SqlPad.Oracle
 			public const string SetTransactionStatement = "SetTransactionStatement";
 			public const string ShareOrExclusive = "ShareOrExclusive";
 			public const string ShrinkClause = "ShrinkClause";
-			public const string SchemaAuthorizationCreateObjectType = "SchemaAuthorizationCreateObjectType";
-			public const string SchemaAuthorizationCreateStatementList = "SchemaAuthorizationCreateStatementList";
-			public const string SchemaCheckOrNoSchemaCheck = "SchemaCheckOrNoSchemaCheck";
-			public const string SchemaObject = "SchemaObject";
-			public const string SchemaObjectList = "SchemaObjectList";
-			public const string SchemaObjectListChained = "SchemaObjectListChained";
-			public const string SchemaOrPluggableDatabase = "SchemaOrPluggableDatabase";
-			public const string SchemaPrefix = "SchemaPrefix";
 			public const string SimpleCaseExpressionBranch = "SimpleCaseExpressionBranch";
 			public const string SimpleDmlTrigger = "SimpleDmlTrigger";
 			public const string SimpleSchemaObject = "SimpleSchemaObject";
@@ -1184,6 +1218,8 @@ namespace SqlPad.Oracle
 			public const string SortOrder = "SortOrder";
 			public const string SortOrNoSort = "SortOrNoSort";
 			public const string SourceOrResource = "SourceOrResource";
+			public const string SpecificationOrBody = "SpecificationOrBody";
+			public const string SqlJavaObjectType = "SqlJavaObjectType";
 			public const string StandaloneStatement = "StandaloneStatement";
 			public const string StartPositionOrPositionIncrement = "StartPositionOrPositionIncrement";
 			public const string StartWithDateTimeExpression = "StartWithDateTimeExpression";
@@ -1209,6 +1245,8 @@ namespace SqlPad.Oracle
 			public const string SubpartitionClause = "SubpartitionClause";
 			public const string SubpartitionTemplate = "SubpartitionTemplate";
 			public const string SubpartitionType = "SubpartitionType";
+			public const string SubProgramOrConstructorOrMapOrderFunctionSpecification = "SubProgramOrConstructorOrMapOrderFunctionSpecification";
+			public const string SubProgramOrConstructorOrMapOrderFunctionSpecificationList = "SubProgramOrConstructorOrMapOrderFunctionSpecificationList";
 			public const string Subquery = "Subquery";
 			public const string SubqueryFactoringClause = "SubqueryFactoringClause";
 			public const string SubqueryFactoringCycleClause = "SubqueryFactoringCycleClause";
@@ -1229,9 +1267,9 @@ namespace SqlPad.Oracle
 			public const string SupplementalTableLogging = "SupplementalTableLogging";
 			public const string SynchronousOrAsynchronous = "SynchronousOrAsynchronous";
 			public const string SynchronousRefreshUsingStagingLogOrFastRefresh = "SynchronousRefreshUsingStagingLogOrFastRefresh";
-			public const string SystemGeneratedOrPrimaryKey = "SystemGeneratedOrPrimaryKey";
 			public const string SystemChangeNumberOrTimestamp = "SystemChangeNumberOrTimestamp";
 			public const string SystemChangeNumberOrTimestampOrPeriodFor = "SystemChangeNumberOrTimestampOrPeriodFor";
+			public const string SystemGeneratedOrPrimaryKey = "SystemGeneratedOrPrimaryKey";
 			public const string SystemPartitioning = "SystemPartitioning";
 			public const string SystemPrivilegeList = "SystemPrivilegeList";
 			public const string SystemPrivilegeListChained = "SystemPrivilegeListChained";
@@ -1303,8 +1341,11 @@ namespace SqlPad.Oracle
 			public const string TruncateStatement = "TruncateStatement";
 			public const string TruncateTableMaterializedViewLogOption = "TruncateTableMaterializedViewLogOption";
 			public const string TruncateTableStorageOption = "TruncateTableStorageOption";
+			public const string TypeCompileClause = "TypeCompileClause";
+			public const string TypeConstructorParameterDeclarationList = "TypeConstructorParameterDeclarationList";
 			public const string TypeDefinition = "TypeDefinition";
 			public const string TypeDefinitionSpecification = "TypeDefinitionSpecification";
+			public const string TypeReplaceClause = "TypeReplaceClause";
 			public const string UnconditionalOrConditional = "UnconditionalOrConditional";
 			public const string UndoTablespaceClause = "UndoTablespaceClause";
 			public const string UniqueDimensionOrSingleReference = "UniqueDimensionOrSingleReference";
@@ -1410,8 +1451,8 @@ namespace SqlPad.Oracle
 			public const string XmlTableColumn = "XmlTableColumn";
 			public const string XmlTableColumnDefinition = "XmlTableColumnDefinition";
 			public const string XmlTableColumnList = "XmlTableColumnList";
-			public const string XmlTableColumnListClause = "XmlTableColumnListClause";
 			public const string XmlTableColumnListChained = "XmlTableColumnListChained";
+			public const string XmlTableColumnListClause = "XmlTableColumnListClause";
 			public const string XmlTableColumnPathClause = "XmlTableColumnPathClause";
 			public const string XmlTableOptions = "XmlTableOptions";
 			public const string XmlTypeSequenceByRef = "XmlTypeSequenceByRef";
@@ -1450,9 +1491,9 @@ namespace SqlPad.Oracle
 			public const string Any = "Any";
 			public const string AnySchema = "AnySchema";
 			public const string Apply = "Apply";
-			public const string Are = "Are";
 			public const string Archival = "Archival";
 			public const string Archive = "Archive";
+			public const string Are = "Are";
 			public const string Array = "Array";
 			public const string As = "As";
 			public const string Asc = "Asc";
@@ -1463,6 +1504,7 @@ namespace SqlPad.Oracle
 			public const string Asynchronous = "Asynchronous";
 			public const string At = "At";
 			public const string AtCharacter = "AtCharacter";
+			public const string Attribute = "Attribute";
 			public const string Audit = "Audit";
 			public const string Authentication = "Authentication";
 			public const string Authorization = "Authorization";
@@ -1513,6 +1555,16 @@ namespace SqlPad.Oracle
 			public const string Case = "Case";
 			public const string Cast = "Cast";
 			public const string CellFlashCache = "CellFlashCache";
+			public const string Chained = "Chained";
+			public const string Change = "Change";
+			public const string Char = "Char";
+			public const string Character = "Character";
+			public const string CharacterCode = "CharacterCode";
+			public const string Characters = "Characters";
+			public const string CharacterSet = "CharacterSet";
+			public const string Check = "Check";
+			public const string Checkpoint = "Checkpoint";
+			public const string Chunk = "Chunk";
 			public const string CircumflexCharacter = "CircumflexCharacter";
 			public const string Client = "Client";
 			public const string Clob = "Clob";
@@ -1550,12 +1602,14 @@ namespace SqlPad.Oracle
 			public const string Constant = "Constant";
 			public const string Constraint = "Constraint";
 			public const string Constraints = "Constraints";
+			public const string Constructor = "Constructor";
 			public const string Container = "Container";
 			public const string ContainerData = "ContainerData";
 			public const string Content = "Content";
 			public const string Context = "Context";
 			public const string Continue = "Continue";
 			public const string ControlFile = "ControlFile";
+			public const string Convert = "Convert";
 			public const string Cost = "Cost";
 			public const string Count = "Count";
 			public const string Counted = "Counted";
@@ -1740,16 +1794,6 @@ namespace SqlPad.Oracle
 			public const string Hierarchy = "Hierarchy";
 			public const string High = "High";
 			public const string Hour = "Hour";
-			public const string Chained = "Chained";
-			public const string Change = "Change";
-			public const string Char = "Char";
-			public const string Character = "Character";
-			public const string CharacterCode = "CharacterCode";
-			public const string Characters = "Characters";
-			public const string CharacterSet = "CharacterSet";
-			public const string Check = "Check";
-			public const string Checkpoint = "Checkpoint";
-			public const string Chunk = "Chunk";
 			public const string Id = "Id";
 			public const string Identified = "Identified";
 			public const string Identifier = "Identifier";
@@ -1781,6 +1825,7 @@ namespace SqlPad.Oracle
 			public const string Insert = "Insert";
 			public const string Inserting = "Inserting";
 			public const string Instance = "Instance";
+			public const string Instantiable = "Instantiable";
 			public const string Instead = "Instead";
 			public const string Integer = "Integer";
 			public const string IntegerLiteral = "IntegerLiteral";
@@ -1860,9 +1905,13 @@ namespace SqlPad.Oracle
 			public const string Main = "Main";
 			public const string Management = "Management";
 			public const string Manual = "Manual";
+			public const string Map = "Map";
 			public const string Mapping = "Mapping";
 			public const string Mask = "Mask";
 			public const string Master = "Master";
+			public const string Match = "Match";
+			public const string Matched = "Matched";
+			public const string MatchRecognize = "MatchRecognize";
 			public const string Materialized = "Materialized";
 			public const string MathDivide = "MathDivide";
 			public const string MathEquals = "MathEquals";
@@ -1878,9 +1927,6 @@ namespace SqlPad.Oracle
 			public const string MathNotEqualsCircumflex = "MathNotEqualsCircumflex";
 			public const string MathNotEqualsSql = "MathNotEqualsSql";
 			public const string MathPlus = "MathPlus";
-			public const string Match = "Match";
-			public const string Matched = "Matched";
-			public const string MatchRecognize = "MatchRecognize";
 			public const string Max = "Max";
 			public const string MaximumExtents = "MaximumExtents";
 			public const string MaximumSize = "MaximumSize";
@@ -1917,16 +1963,17 @@ namespace SqlPad.Oracle
 			public const string National = "National";
 			public const string NationalCharacterSet = "NationalCharacterSet";
 			public const string Natural = "Natural";
+			public const string NChar = "NChar";
 			public const string NegationOrNull = "NegationOrNull";
 			public const string Nested = "Nested";
 			public const string New = "New";
 			public const string NewLine = "NewLine";
 			public const string Next = "Next";
-			public const string NChar = "NChar";
 			public const string No = "No";
 			public const string NoAudit = "NoAudit";
 			public const string NoBadFile = "NoBadFile";
 			public const string NoCache = "NoCache";
+			public const string NoCheck = "NoCheck";
 			public const string Nocompress = "Nocompress";
 			public const string NoCompress = "NoCompress";
 			public const string NoCopy = "NoCopy";
@@ -1935,7 +1982,6 @@ namespace SqlPad.Oracle
 			public const string NoDiscardFile = "NoDiscardFile";
 			public const string NoEntityEscaping = "NoEntityEscaping";
 			public const string NoGuarantee = "NoGuarantee";
-			public const string NoCheck = "NoCheck";
 			public const string NoKeep = "NoKeep";
 			public const string NoLogFile = "NoLogFile";
 			public const string NoLogging = "NoLogging";
@@ -1974,6 +2020,7 @@ namespace SqlPad.Oracle
 			public const string NVarchar2 = "NVarchar2";
 			public const string Object = "Object";
 			public const string ObjectAlias = "ObjectAlias";
+			public const string ObjectId = "ObjectId";
 			public const string ObjectIdentifier = "ObjectIdentifier";
 			public const string ObjectIdentifierIndex = "ObjectIdentifierIndex";
 			public const string Of = "Of";
@@ -2008,6 +2055,7 @@ namespace SqlPad.Oracle
 			public const string Over = "Over";
 			public const string Overflow = "Overflow";
 			public const string Override = "Override";
+			public const string Overriding = "Overriding";
 			public const string Package = "Package";
 			public const string Parallel = "Parallel";
 			public const string ParallelEnable = "ParallelEnable";
@@ -2027,14 +2075,14 @@ namespace SqlPad.Oracle
 			public const string PasswordReuseTime = "PasswordReuseTime";
 			public const string PasswordVerifyFunction = "PasswordVerifyFunction";
 			public const string Past = "Past";
-			public const string Path = "Path";
 			public const string Patch = "Patch";
+			public const string Path = "Path";
 			public const string Pattern = "Pattern";
 			public const string Pctfree = "Pctfree";
 			public const string Per = "Per";
 			public const string Percent = "Percent";
-			public const string PercentFree = "PercentFree";
 			public const string PercentCharacter = "PercentCharacter";
+			public const string PercentFree = "PercentFree";
 			public const string PercentileContinuousDistribution = "PercentileContinuousDistribution";
 			public const string PercentileDiscreteDistribution = "PercentileDiscreteDistribution";
 			public const string PercentIncrease = "PercentIncrease";
@@ -2117,6 +2165,7 @@ namespace SqlPad.Oracle
 			public const string Restore = "Restore";
 			public const string Restricted = "Restricted";
 			public const string RestrictReferences = "RestrictReferences";
+			public const string Result = "Result";
 			public const string ResultCache = "ResultCache";
 			public const string Resumable = "Resumable";
 			public const string Resume = "Resume";
@@ -2152,6 +2201,9 @@ namespace SqlPad.Oracle
 			public const string Sample = "Sample";
 			public const string Save = "Save";
 			public const string Savepoint = "Savepoint";
+			public const string Schema = "Schema";
+			public const string SchemaCheck = "SchemaCheck";
+			public const string SchemaIdentifier = "SchemaIdentifier";
 			public const string Scope = "Scope";
 			public const string Search = "Search";
 			public const string Second = "Second";
@@ -2159,6 +2211,7 @@ namespace SqlPad.Oracle
 			public const string Seed = "Seed";
 			public const string Segment = "Segment";
 			public const string Select = "Select";
+			public const string Self = "Self";
 			public const string Semicolon = "Semicolon";
 			public const string Sequence = "Sequence";
 			public const string Sequential = "Sequential";
@@ -2179,9 +2232,6 @@ namespace SqlPad.Oracle
 			public const string Show = "Show";
 			public const string Shrink = "Shrink";
 			public const string Shutdown = "Shutdown";
-			public const string Schema = "Schema";
-			public const string SchemaCheck = "SchemaCheck";
-			public const string SchemaIdentifier = "SchemaIdentifier";
 			public const string Siblings = "Siblings";
 			public const string Single = "Single";
 			public const string Size = "Size";
@@ -2204,6 +2254,7 @@ namespace SqlPad.Oracle
 			public const string Startup = "Startup";
 			public const string Statement = "Statement";
 			public const string StatementId = "StatementId";
+			public const string Static = "Static";
 			public const string Statistics = "Statistics";
 			public const string Stop = "Stop";
 			public const string Storage = "Storage";
@@ -2226,8 +2277,8 @@ namespace SqlPad.Oracle
 			public const string Synchronous = "Synchronous";
 			public const string Synonym = "Synonym";
 			public const string System = "System";
-			public const string SystemDate = "SystemDate";
 			public const string SystemChangeNumber = "SystemChangeNumber";
+			public const string SystemDate = "SystemDate";
 			public const string Table = "Table";
 			public const string Tables = "Tables";
 			public const string Tablespace = "Tablespace";
@@ -2267,6 +2318,7 @@ namespace SqlPad.Oracle
 			public const string TypeIdentifier = "TypeIdentifier";
 			public const string Unbounded = "Unbounded";
 			public const string Unconditional = "Unconditional";
+			public const string Under = "Under";
 			public const string Undo = "Undo";
 			public const string Uniform = "Uniform";
 			public const string Union = "Union";
@@ -2384,9 +2436,9 @@ namespace SqlPad.Oracle
 			public const string Any = "ANY";
 			public const string AnySchema = "ANYSCHEMA";
 			public const string Apply = "APPLY";
-			public const string Are = "ARE";
 			public const string Archival = "ARCHIVAL";
 			public const string Archive = "ARCHIVE";
+			public const string Are = "ARE";
 			public const string Array = "ARRAY";
 			public const string As = "AS";
 			public const string Asc = "ASC";
@@ -2397,6 +2449,7 @@ namespace SqlPad.Oracle
 			public const string Asynchronous = "ASYNCHRONOUS";
 			public const string At = "AT";
 			public const string AtCharacter = "@";
+			public const string Attribute = "ATTRIBUTE";
 			public const string Audit = "AUDIT";
 			public const string Authentication = "AUTHENTICATION";
 			public const string Authorization = "AUTHORIZATION";
@@ -2446,6 +2499,16 @@ namespace SqlPad.Oracle
 			public const string Case = "CASE";
 			public const string Cast = "CAST";
 			public const string CellFlashCache = "CELL_FLASH_CACHE";
+			public const string Chained = "CHAINED";
+			public const string Change = "CHANGE";
+			public const string Char = "CHAR";
+			public const string Character = "CHARACTER";
+			public const string CharacterCode = "CHR";
+			public const string Characters = "CHARACTERS";
+			public const string CharacterSet = "CHARACTERSET";
+			public const string Check = "CHECK";
+			public const string Checkpoint = "CHECKPOINT";
+			public const string Chunk = "CHUNK";
 			public const string CircumflexCharacter = "^";
 			public const string Client = "CLIENT";
 			public const string Clob = "CLOB";
@@ -2482,12 +2545,14 @@ namespace SqlPad.Oracle
 			public const string Constant = "CONSTANT";
 			public const string Constraint = "CONSTRAINT";
 			public const string Constraints = "CONSTRAINTS";
+			public const string Constructor = "CONSTRUCTOR";
 			public const string Container = "CONTAINER";
 			public const string ContainerData = "CONTAINER_DATA";
 			public const string Content = "CONTENT";
 			public const string Context = "CONTEXT";
 			public const string Continue = "CONTINUE";
 			public const string ControlFile = "CONTROLFILE";
+			public const string Convert = "CONVERT";
 			public const string Cost = "COST";
 			public const string Count = "COUNT";
 			public const string Counted = "COUNTED";
@@ -2667,16 +2732,6 @@ namespace SqlPad.Oracle
 			public const string Hierarchy = "HIERARCHY";
 			public const string High = "HIGH";
 			public const string Hour = "HOUR";
-			public const string Chained = "CHAINED";
-			public const string Change = "CHANGE";
-			public const string Char = "CHAR";
-			public const string Character = "CHARACTER";
-			public const string CharacterCode = "CHR";
-			public const string Characters = "CHARACTERS";
-			public const string CharacterSet = "CHARACTERSET";
-			public const string Check = "CHECK";
-			public const string Checkpoint = "CHECKPOINT";
-			public const string Chunk = "CHUNK";
 			public const string Id = "ID";
 			public const string Identified = "IDENTIFIED";
 			public const string Identity = "IDENTITY";
@@ -2706,6 +2761,7 @@ namespace SqlPad.Oracle
 			public const string Insert = "INSERT";
 			public const string Inserting = "INSERTING";
 			public const string Instance = "INSTANCE";
+			public const string Instantiable = "INSTANTIABLE";
 			public const string Instead = "INSTEAD";
 			public const string Integer = "INTEGER";
 			public const string Interleaved = "INTERLEAVED";
@@ -2783,9 +2839,13 @@ namespace SqlPad.Oracle
 			public const string Main = "MAIN";
 			public const string Management = "MANAGEMENT";
 			public const string Manual = "MANUAL";
+			public const string Map = "MAP";
 			public const string Mapping = "MAPPING";
 			public const string Mask = "MASK";
 			public const string Master = "MASTER";
+			public const string Match = "MATCH";
+			public const string Matched = "MATCHED";
+			public const string MatchRecognize = "MATCH_RECOGNIZE";
 			public const string Materialized = "MATERIALIZED";
 			public const string MathDivide = "/";
 			public const string MathEquals = "=";
@@ -2801,9 +2861,6 @@ namespace SqlPad.Oracle
 			public const string MathNotEqualsCircumflex = "^=";
 			public const string MathNotEqualsSql = "<>";
 			public const string MathPlus = "+";
-			public const string Match = "MATCH";
-			public const string Matched = "MATCHED";
-			public const string MatchRecognize = "MATCH_RECOGNIZE";
 			public const string Max = "MAX";
 			public const string MaximumExtents = "MAXEXTENTS";
 			public const string MaximumSize = "MAXSIZE";
@@ -2839,16 +2896,17 @@ namespace SqlPad.Oracle
 			public const string National = "NATIONAL";
 			public const string NationalCharacterSet = "NCHAR_CS";
 			public const string Natural = "NATURAL";
+			public const string NChar = "NCHAR";
 			public const string NegationOrNull = "LNNVL";
 			public const string Nested = "NESTED";
 			public const string New = "NEW";
 			public const string NewLine = "NEWLINE";
 			public const string Next = "NEXT";
-			public const string NChar = "NCHAR";
 			public const string No = "NO";
 			public const string NoAudit = "NOAUDIT";
 			public const string NoBadFile = "NOBADFILE";
 			public const string NoCache = "NOCACHE";
+			public const string NoCheck = "NOCHECK";
 			public const string Nocompress = "NOCOMPRESS";
 			public const string NoCompress = "NOCOMPRESS";
 			public const string NoCopy = "NOCOPY";
@@ -2857,7 +2915,6 @@ namespace SqlPad.Oracle
 			public const string NoDiscardFile = "NODISCARDFILE";
 			public const string NoEntityEscaping = "NOENTITYESCAPING";
 			public const string NoGuarantee = "NOGUARANTEE";
-			public const string NoCheck = "NOCHECK";
 			public const string NoKeep = "NOKEEP";
 			public const string NoLogFile = "NOLOGFILE";
 			public const string NoLogging = "NOLOGGING";
@@ -2894,6 +2951,7 @@ namespace SqlPad.Oracle
 			public const string NVarchar = "NVARCHAR";
 			public const string NVarchar2 = "NVARCHAR2";
 			public const string Object = "OBJECT";
+			public const string ObjectId = "OID";
 			public const string ObjectIdentifierIndex = "OIDINDEX";
 			public const string Of = "OF";
 			public const string Off = "OFF";
@@ -2927,6 +2985,7 @@ namespace SqlPad.Oracle
 			public const string Over = "OVER";
 			public const string Overflow = "OVERFLOW";
 			public const string Override = "OVERRIDE";
+			public const string Overriding = "OVERRIDING";
 			public const string Package = "PACKAGE";
 			public const string Parallel = "PARALLEL";
 			public const string ParallelEnable = "PARALLEL_ENABLE";
@@ -2945,14 +3004,14 @@ namespace SqlPad.Oracle
 			public const string PasswordReuseTime = "PASSWORD_REUSE_TIME";
 			public const string PasswordVerifyFunction = "PASSWORD_VERIFY_FUNCTION";
 			public const string Past = "PAST";
-			public const string Path = "PATH";
 			public const string Patch = "PATCH";
+			public const string Path = "PATH";
 			public const string Pattern = "PATTERN";
 			public const string Pctfree = "PCTFREE";
 			public const string Per = "PER";
 			public const string Percent = "PERCENT";
-			public const string PercentFree = "PCTFREE";
 			public const string PercentCharacter = "%";
+			public const string PercentFree = "PCTFREE";
 			public const string PercentileContinuousDistribution = "PERCENTILE_CONT";
 			public const string PercentileDiscreteDistribution = "PERCENTILE_DISC";
 			public const string PercentIncrease = "PCTINCREASE";
@@ -3034,6 +3093,7 @@ namespace SqlPad.Oracle
 			public const string Restore = "RESTORE";
 			public const string Restricted = "RESTRICTED";
 			public const string RestrictReferences = "RESTRICT_REFERENCES";
+			public const string Result = "RESULT";
 			public const string ResultCache = "RESULT_CACHE";
 			public const string Resumable = "RESUMABLE";
 			public const string Resume = "RESUME";
@@ -3069,6 +3129,8 @@ namespace SqlPad.Oracle
 			public const string Sample = "SAMPLE";
 			public const string Save = "SAVE";
 			public const string Savepoint = "SAVEPOINT";
+			public const string Schema = "SCHEMA";
+			public const string SchemaCheck = "SCHEMACHECK";
 			public const string Scope = "SCOPE";
 			public const string Search = "SEARCH";
 			public const string Second = "SECOND";
@@ -3076,6 +3138,7 @@ namespace SqlPad.Oracle
 			public const string Seed = "SEED";
 			public const string Segment = "SEGMENT";
 			public const string Select = "SELECT";
+			public const string Self = "SELF";
 			public const string Semicolon = ";";
 			public const string Sequence = "SEQUENCE";
 			public const string Sequential = "SEQUENTIAL";
@@ -3096,8 +3159,6 @@ namespace SqlPad.Oracle
 			public const string Show = "SHOW";
 			public const string Shrink = "SHRINK";
 			public const string Shutdown = "SHUTDOWN";
-			public const string Schema = "SCHEMA";
-			public const string SchemaCheck = "SCHEMACHECK";
 			public const string Siblings = "SIBLINGS";
 			public const string Single = "SINGLE";
 			public const string Size = "SIZE";
@@ -3119,6 +3180,7 @@ namespace SqlPad.Oracle
 			public const string Startup = "STARTUP";
 			public const string Statement = "STATEMENT";
 			public const string StatementId = "STATEMENT_ID";
+			public const string Static = "STATIC";
 			public const string Statistics = "STATISTICS";
 			public const string Stop = "STOP";
 			public const string Storage = "STORAGE";
@@ -3140,8 +3202,8 @@ namespace SqlPad.Oracle
 			public const string Synchronous = "SYNCHRONOUS";
 			public const string Synonym = "SYNONYM";
 			public const string System = "SYSTEM";
-			public const string SystemDate = "SYSDATE";
 			public const string SystemChangeNumber = "SCN";
+			public const string SystemDate = "SYSDATE";
 			public const string Table = "TABLE";
 			public const string Tables = "TABLES";
 			public const string Tablespace = "TABLESPACE";
@@ -3180,6 +3242,7 @@ namespace SqlPad.Oracle
 			public const string Type = "TYPE";
 			public const string Unbounded = "UNBOUNDED";
 			public const string Unconditional = "UNCONDITIONAL";
+			public const string Under = "UNDER";
 			public const string Undo = "UNDO";
 			public const string Uniform = "UNIFORM";
 			public const string Union = "UNION";
@@ -3265,11 +3328,11 @@ namespace SqlPad.Oracle
 			public const string ZoneMap = "ZONEMAP";
 		}
 
-		private static readonly ReadOnlyDictionary<string, string> AllTerminalsInternal = new ReadOnlyDictionary<string, string>(new Dictionary<string, string> { { Terminals.A, TerminalValues.A }, { Terminals.Access, TerminalValues.Access }, { Terminals.Accessible, TerminalValues.Accessible }, { Terminals.Account, TerminalValues.Account }, { Terminals.Add, TerminalValues.Add }, { Terminals.Admin, TerminalValues.Admin }, { Terminals.Advanced, TerminalValues.Advanced }, { Terminals.Advise, TerminalValues.Advise }, { Terminals.After, TerminalValues.After }, { Terminals.Aggregate, TerminalValues.Aggregate }, { Terminals.All, TerminalValues.All }, { Terminals.Allocate, TerminalValues.Allocate }, { Terminals.Allow, TerminalValues.Allow }, { Terminals.Alter, TerminalValues.Alter }, { Terminals.Always, TerminalValues.Always }, { Terminals.Analyze, TerminalValues.Analyze }, { Terminals.And, TerminalValues.And }, { Terminals.Any, TerminalValues.Any }, { Terminals.AnySchema, TerminalValues.AnySchema }, { Terminals.Apply, TerminalValues.Apply }, { Terminals.Are, TerminalValues.Are }, { Terminals.Archival, TerminalValues.Archival }, { Terminals.Archive, TerminalValues.Archive }, { Terminals.Array, TerminalValues.Array }, { Terminals.As, TerminalValues.As }, { Terminals.Asc, TerminalValues.Asc }, { Terminals.Ascii, TerminalValues.Ascii }, { Terminals.AssignmentOperator, TerminalValues.AssignmentOperator }, { Terminals.Associate, TerminalValues.Associate }, { Terminals.Asterisk, TerminalValues.Asterisk }, { Terminals.Asynchronous, TerminalValues.Asynchronous }, { Terminals.At, TerminalValues.At }, { Terminals.AtCharacter, TerminalValues.AtCharacter }, { Terminals.Audit, TerminalValues.Audit }, { Terminals.Authentication, TerminalValues.Authentication }, { Terminals.Authorization, TerminalValues.Authorization }, { Terminals.AuthorizationIdentity, TerminalValues.AuthorizationIdentity }, { Terminals.Auto, TerminalValues.Auto }, { Terminals.AutoAllocate, TerminalValues.AutoAllocate }, { Terminals.AutoExtend, TerminalValues.AutoExtend }, { Terminals.Automatic, TerminalValues.Automatic }, { Terminals.AutonomousTransaction, TerminalValues.AutonomousTransaction }, { Terminals.Avg, TerminalValues.Avg }, { Terminals.Backup, TerminalValues.Backup }, { Terminals.BadFile, TerminalValues.BadFile }, { Terminals.Basic, TerminalValues.Basic }, { Terminals.BasicFile, TerminalValues.BasicFile }, { Terminals.Batch, TerminalValues.Batch }, { Terminals.Before, TerminalValues.Before }, { Terminals.Begin, TerminalValues.Begin }, { Terminals.Beginning, TerminalValues.Beginning }, { Terminals.Bequeath, TerminalValues.Bequeath }, { Terminals.Between, TerminalValues.Between }, { Terminals.Big, TerminalValues.Big }, { Terminals.BigFile, TerminalValues.BigFile }, { Terminals.BinaryDouble, TerminalValues.BinaryDouble }, { Terminals.BinaryFloat, TerminalValues.BinaryFloat }, { Terminals.BinaryInteger, TerminalValues.BinaryInteger }, { Terminals.BindVariableIdentifier, null }, { Terminals.Bitmap, TerminalValues.Bitmap }, { Terminals.Blanks, TerminalValues.Blanks }, { Terminals.Blob, TerminalValues.Blob }, { Terminals.Block, TerminalValues.Block }, { Terminals.BlockSize, TerminalValues.BlockSize }, { Terminals.Body, TerminalValues.Body }, { Terminals.Both, TerminalValues.Both }, { Terminals.Breadth, TerminalValues.Breadth }, { Terminals.BufferCache, TerminalValues.BufferCache }, { Terminals.BufferPool, TerminalValues.BufferPool }, { Terminals.Bulk, TerminalValues.Bulk }, { Terminals.BulkRowCount, TerminalValues.BulkRowCount }, { Terminals.By, TerminalValues.By }, { Terminals.Byte, TerminalValues.Byte }, { Terminals.ByteOrderMark, TerminalValues.ByteOrderMark }, { Terminals.Bytes, TerminalValues.Bytes }, { Terminals.C, TerminalValues.C }, { Terminals.Cache, TerminalValues.Cache }, { Terminals.Call, TerminalValues.Call }, { Terminals.Capacity, TerminalValues.Capacity }, { Terminals.Cascade, TerminalValues.Cascade }, { Terminals.Case, TerminalValues.Case }, { Terminals.Cast, TerminalValues.Cast }, { Terminals.CellFlashCache, TerminalValues.CellFlashCache }, { Terminals.CircumflexCharacter, TerminalValues.CircumflexCharacter }, { Terminals.Client, TerminalValues.Client }, { Terminals.Clob, TerminalValues.Clob }, { Terminals.Clone, TerminalValues.Clone }, { Terminals.Close, TerminalValues.Close }, { Terminals.Cluster, TerminalValues.Cluster }, { Terminals.Clustering, TerminalValues.Clustering }, { Terminals.Coalesce, TerminalValues.Coalesce }, { Terminals.Collect, TerminalValues.Collect }, { Terminals.Colon, TerminalValues.Colon }, { Terminals.Column, TerminalValues.Column }, { Terminals.ColumnAlias, null }, { Terminals.Columns, TerminalValues.Columns }, { Terminals.Comma, TerminalValues.Comma }, { Terminals.CommaSeparatedValue, TerminalValues.CommaSeparatedValue }, { Terminals.Comment, TerminalValues.Comment }, { Terminals.Commit, TerminalValues.Commit }, { Terminals.Committed, TerminalValues.Committed }, { Terminals.Compact, TerminalValues.Compact }, { Terminals.Compatible, TerminalValues.Compatible }, { Terminals.Compile, TerminalValues.Compile }, { Terminals.Complete, TerminalValues.Complete }, { Terminals.CompositeLimit, TerminalValues.CompositeLimit }, { Terminals.Compound, TerminalValues.Compound }, { Terminals.Compress, TerminalValues.Compress }, { Terminals.Compression, TerminalValues.Compression }, { Terminals.Compute, TerminalValues.Compute }, { Terminals.Concat, TerminalValues.Concat }, { Terminals.Conditional, TerminalValues.Conditional }, { Terminals.Confirm, TerminalValues.Confirm }, { Terminals.Connect, TerminalValues.Connect }, { Terminals.ConnectByRoot, TerminalValues.ConnectByRoot }, { Terminals.ConnectTime, TerminalValues.ConnectTime }, { Terminals.Consider, TerminalValues.Consider }, { Terminals.Constant, TerminalValues.Constant }, { Terminals.Constraint, TerminalValues.Constraint }, { Terminals.Constraints, TerminalValues.Constraints }, { Terminals.Container, TerminalValues.Container }, { Terminals.ContainerData, TerminalValues.ContainerData }, { Terminals.Content, TerminalValues.Content }, { Terminals.Context, TerminalValues.Context }, { Terminals.Continue, TerminalValues.Continue }, { Terminals.ControlFile, TerminalValues.ControlFile }, { Terminals.Cost, TerminalValues.Cost }, { Terminals.Count, TerminalValues.Count }, { Terminals.Counted, TerminalValues.Counted }, { Terminals.CpuPerCall, TerminalValues.CpuPerCall }, { Terminals.CpuPerSession, TerminalValues.CpuPerSession }, { Terminals.Create, TerminalValues.Create }, { Terminals.Creation, TerminalValues.Creation }, { Terminals.Critical, TerminalValues.Critical }, { Terminals.Cross, TerminalValues.Cross }, { Terminals.CrossEdition, TerminalValues.CrossEdition }, { Terminals.Cube, TerminalValues.Cube }, { Terminals.CumulativeDistribution, TerminalValues.CumulativeDistribution }, { Terminals.Current, TerminalValues.Current }, { Terminals.CurrentUser, TerminalValues.CurrentUser }, { Terminals.Cursor, TerminalValues.Cursor }, { Terminals.CursorIdentifier, null }, { Terminals.Cycle, TerminalValues.Cycle }, { Terminals.Dangling, TerminalValues.Dangling }, { Terminals.Data, TerminalValues.Data }, { Terminals.Database, TerminalValues.Database }, { Terminals.DatabaseLinkIdentifier, null }, { Terminals.DatabaseRoleChange, TerminalValues.DatabaseRoleChange }, { Terminals.DatabaseTimezone, TerminalValues.DatabaseTimezone }, { Terminals.DataDefinitionLanguage, TerminalValues.DataDefinitionLanguage }, { Terminals.Datafile, TerminalValues.Datafile }, { Terminals.Datafiles, TerminalValues.Datafiles }, { Terminals.DataManipulationLanguage, TerminalValues.DataManipulationLanguage }, { Terminals.DataTypeIdentifier, null }, { Terminals.Date, TerminalValues.Date }, { Terminals.DateCache, TerminalValues.DateCache }, { Terminals.DateFormat, TerminalValues.DateFormat }, { Terminals.Day, TerminalValues.Day }, { Terminals.Days, TerminalValues.Days }, { Terminals.DayToSecond, TerminalValues.DayToSecond }, { Terminals.DbaRecycleBin, TerminalValues.DbaRecycleBin }, { Terminals.Deallocate, TerminalValues.Deallocate }, { Terminals.Debug, TerminalValues.Debug }, { Terminals.Dec, TerminalValues.Dec }, { Terminals.Decimal, TerminalValues.Decimal }, { Terminals.Declare, TerminalValues.Declare }, { Terminals.Decrement, TerminalValues.Decrement }, { Terminals.Decrypt, TerminalValues.Decrypt }, { Terminals.Deduplicate, TerminalValues.Deduplicate }, { Terminals.Default, TerminalValues.Default }, { Terminals.DefaultIf, TerminalValues.DefaultIf }, { Terminals.Defaults, TerminalValues.Defaults }, { Terminals.Deferrable, TerminalValues.Deferrable }, { Terminals.Deferred, TerminalValues.Deferred }, { Terminals.Define, TerminalValues.Define }, { Terminals.Definer, TerminalValues.Definer }, { Terminals.Delete, TerminalValues.Delete }, { Terminals.DeleteAll, TerminalValues.DeleteAll }, { Terminals.Deleting, TerminalValues.Deleting }, { Terminals.Delimited, TerminalValues.Delimited }, { Terminals.Demand, TerminalValues.Demand }, { Terminals.DenseRank, TerminalValues.DenseRank }, { Terminals.Depth, TerminalValues.Depth }, { Terminals.Desc, TerminalValues.Desc }, { Terminals.Deterministic, TerminalValues.Deterministic }, { Terminals.Dimension, TerminalValues.Dimension }, { Terminals.DirectInputOutput, TerminalValues.DirectInputOutput }, { Terminals.DirectLoad, TerminalValues.DirectLoad }, { Terminals.DirectNetworkFileSystemDisable, TerminalValues.DirectNetworkFileSystemDisable }, { Terminals.DirectNetworkFileSystemEnable, TerminalValues.DirectNetworkFileSystemEnable }, { Terminals.DirectNetworkFileSystemReadBuffers, TerminalValues.DirectNetworkFileSystemReadBuffers }, { Terminals.Directory, TerminalValues.Directory }, { Terminals.Disable, TerminalValues.Disable }, { Terminals.DisableAll, TerminalValues.DisableAll }, { Terminals.Disabled, TerminalValues.Disabled }, { Terminals.DisableDirectoryLinkCheck, TerminalValues.DisableDirectoryLinkCheck }, { Terminals.Disallow, TerminalValues.Disallow }, { Terminals.DiscardFile, TerminalValues.DiscardFile }, { Terminals.Disconnect, TerminalValues.Disconnect }, { Terminals.Dissociate, TerminalValues.Dissociate }, { Terminals.Distinct, TerminalValues.Distinct }, { Terminals.Distribute, TerminalValues.Distribute }, { Terminals.Distributed, TerminalValues.Distributed }, { Terminals.Document, TerminalValues.Document }, { Terminals.DollarCharacter, TerminalValues.DollarCharacter }, { Terminals.Dot, TerminalValues.Dot }, { Terminals.Double, TerminalValues.Double }, { Terminals.DoubleDotOperator, TerminalValues.DoubleDotOperator }, { Terminals.DoubleQuotedStringLiteral, null }, { Terminals.Drop, TerminalValues.Drop }, { Terminals.Duplicate, TerminalValues.Duplicate }, { Terminals.Each, TerminalValues.Each }, { Terminals.Edition, TerminalValues.Edition }, { Terminals.Editionable, TerminalValues.Editionable }, { Terminals.Editioning, TerminalValues.Editioning }, { Terminals.Editions, TerminalValues.Editions }, { Terminals.Element, TerminalValues.Element }, { Terminals.Else, TerminalValues.Else }, { Terminals.ElseIf, TerminalValues.ElseIf }, { Terminals.Embedded, TerminalValues.Embedded }, { Terminals.Empty, TerminalValues.Empty }, { Terminals.Enable, TerminalValues.Enable }, { Terminals.EnableAll, TerminalValues.EnableAll }, { Terminals.Enabled, TerminalValues.Enabled }, { Terminals.Enclosed, TerminalValues.Enclosed }, { Terminals.Encoding, TerminalValues.Encoding }, { Terminals.Encrypt, TerminalValues.Encrypt }, { Terminals.Encryption, TerminalValues.Encryption }, { Terminals.End, TerminalValues.End }, { Terminals.Endian, TerminalValues.Endian }, { Terminals.Enforced, TerminalValues.Enforced }, { Terminals.Enterprise, TerminalValues.Enterprise }, { Terminals.EntityEscaping, TerminalValues.EntityEscaping }, { Terminals.Error, TerminalValues.Error }, { Terminals.Errors, TerminalValues.Errors }, { Terminals.Escape, TerminalValues.Escape }, { Terminals.Evaluate, TerminalValues.Evaluate }, { Terminals.EvaluatedName, TerminalValues.EvaluatedName }, { Terminals.Events, TerminalValues.Events }, { Terminals.Exa, TerminalValues.Exa }, { Terminals.Except, TerminalValues.Except }, { Terminals.Exception, TerminalValues.Exception }, { Terminals.ExceptionIdentifier, null }, { Terminals.ExceptionInit, TerminalValues.ExceptionInit }, { Terminals.Exceptions, TerminalValues.Exceptions }, { Terminals.Exclude, TerminalValues.Exclude }, { Terminals.Excluding, TerminalValues.Excluding }, { Terminals.Exclusive, TerminalValues.Exclusive }, { Terminals.Execute, TerminalValues.Execute }, { Terminals.Exists, TerminalValues.Exists }, { Terminals.Exit, TerminalValues.Exit }, { Terminals.Expire, TerminalValues.Expire }, { Terminals.Explain, TerminalValues.Explain }, { Terminals.Extent, TerminalValues.Extent }, { Terminals.External, TerminalValues.External }, { Terminals.Externally, TerminalValues.Externally }, { Terminals.Extract, TerminalValues.Extract }, { Terminals.FailedLoginAttempts, TerminalValues.FailedLoginAttempts }, { Terminals.False, TerminalValues.False }, { Terminals.Fast, TerminalValues.Fast }, { Terminals.Fetch, TerminalValues.Fetch }, { Terminals.Field, TerminalValues.Field }, { Terminals.FieldNames, TerminalValues.FieldNames }, { Terminals.Fields, TerminalValues.Fields }, { Terminals.File, TerminalValues.File }, { Terminals.Files, TerminalValues.Files }, { Terminals.FileSystemLikeLogging, TerminalValues.FileSystemLikeLogging }, { Terminals.Final, TerminalValues.Final }, { Terminals.First, TerminalValues.First }, { Terminals.FirstValue, TerminalValues.FirstValue }, { Terminals.Fixed, TerminalValues.Fixed }, { Terminals.Flashback, TerminalValues.Flashback }, { Terminals.FlashCache, TerminalValues.FlashCache }, { Terminals.Float, TerminalValues.Float }, { Terminals.Flush, TerminalValues.Flush }, { Terminals.Following, TerminalValues.Following }, { Terminals.Follows, TerminalValues.Follows }, { Terminals.For, TerminalValues.For }, { Terminals.ForAll, TerminalValues.ForAll }, { Terminals.Force, TerminalValues.Force }, { Terminals.Foreign, TerminalValues.Foreign }, { Terminals.Format, TerminalValues.Format }, { Terminals.Forward, TerminalValues.Forward }, { Terminals.Found, TerminalValues.Found }, { Terminals.FreeList, TerminalValues.FreeList }, { Terminals.FreeLists, TerminalValues.FreeLists }, { Terminals.FreePools, TerminalValues.FreePools }, { Terminals.Fresh, TerminalValues.Fresh }, { Terminals.From, TerminalValues.From }, { Terminals.Full, TerminalValues.Full }, { Terminals.Function, TerminalValues.Function }, { Terminals.Generated, TerminalValues.Generated }, { Terminals.Giga, TerminalValues.Giga }, { Terminals.Global, TerminalValues.Global }, { Terminals.Globally, TerminalValues.Globally }, { Terminals.GoTo, TerminalValues.GoTo }, { Terminals.Grant, TerminalValues.Grant }, { Terminals.Group, TerminalValues.Group }, { Terminals.Grouping, TerminalValues.Grouping }, { Terminals.Groups, TerminalValues.Groups }, { Terminals.Guarantee, TerminalValues.Guarantee }, { Terminals.Guard, TerminalValues.Guard }, { Terminals.Hash, TerminalValues.Hash }, { Terminals.HashKeys, TerminalValues.HashKeys }, { Terminals.Having, TerminalValues.Having }, { Terminals.Heap, TerminalValues.Heap }, { Terminals.Hide, TerminalValues.Hide }, { Terminals.Hierarchy, TerminalValues.Hierarchy }, { Terminals.High, TerminalValues.High }, { Terminals.Hour, TerminalValues.Hour }, { Terminals.Chained, TerminalValues.Chained }, { Terminals.Change, TerminalValues.Change }, { Terminals.Char, TerminalValues.Char }, { Terminals.Character, TerminalValues.Character }, { Terminals.CharacterCode, TerminalValues.CharacterCode }, { Terminals.Characters, TerminalValues.Characters }, { Terminals.CharacterSet, TerminalValues.CharacterSet }, { Terminals.Check, TerminalValues.Check }, { Terminals.Checkpoint, TerminalValues.Checkpoint }, { Terminals.Chunk, TerminalValues.Chunk }, { Terminals.Id, TerminalValues.Id }, { Terminals.Identified, TerminalValues.Identified }, { Terminals.Identifier, null }, { Terminals.Identity, TerminalValues.Identity }, { Terminals.IdleTime, TerminalValues.IdleTime }, { Terminals.If, TerminalValues.If }, { Terminals.Ignore, TerminalValues.Ignore }, { Terminals.IgnoreCharactersAfterEndOfRecord, TerminalValues.IgnoreCharactersAfterEndOfRecord }, { Terminals.Immediate, TerminalValues.Immediate }, { Terminals.In, TerminalValues.In }, { Terminals.Include, TerminalValues.Include }, { Terminals.Including, TerminalValues.Including }, { Terminals.Increment, TerminalValues.Increment }, { Terminals.Indent, TerminalValues.Indent }, { Terminals.Index, TerminalValues.Index }, { Terminals.Indexing, TerminalValues.Indexing }, { Terminals.IndexType, TerminalValues.IndexType }, { Terminals.Indicator, TerminalValues.Indicator }, { Terminals.IndicatorVariableIdentifier, null }, { Terminals.Indices, TerminalValues.Indices }, { Terminals.InformationLifecycleManagement, TerminalValues.InformationLifecycleManagement }, { Terminals.Initial, TerminalValues.Initial }, { Terminals.Initially, TerminalValues.Initially }, { Terminals.InitialTransactions, TerminalValues.InitialTransactions }, { Terminals.Inline, TerminalValues.Inline }, { Terminals.InMemory, TerminalValues.InMemory }, { Terminals.Inner, TerminalValues.Inner }, { Terminals.InputOutputOptions, TerminalValues.InputOutputOptions }, { Terminals.Insert, TerminalValues.Insert }, { Terminals.Inserting, TerminalValues.Inserting }, { Terminals.Instance, TerminalValues.Instance }, { Terminals.Instead, TerminalValues.Instead }, { Terminals.Integer, TerminalValues.Integer }, { Terminals.IntegerLiteral, null }, { Terminals.Interleaved, TerminalValues.Interleaved }, { Terminals.Intersect, TerminalValues.Intersect }, { Terminals.Interval, TerminalValues.Interval }, { Terminals.Into, TerminalValues.Into }, { Terminals.Invalidate, TerminalValues.Invalidate }, { Terminals.Invisible, TerminalValues.Invisible }, { Terminals.Is, TerminalValues.Is }, { Terminals.Isolation, TerminalValues.Isolation }, { Terminals.IsOpen, TerminalValues.IsOpen }, { Terminals.Iterate, TerminalValues.Iterate }, { Terminals.Java, TerminalValues.Java }, { Terminals.Join, TerminalValues.Join }, { Terminals.Json, TerminalValues.Json }, { Terminals.JsonExists, TerminalValues.JsonExists }, { Terminals.JsonQuery, TerminalValues.JsonQuery }, { Terminals.JsonTable, TerminalValues.JsonTable }, { Terminals.JsonValue, TerminalValues.JsonValue }, { Terminals.Keep, TerminalValues.Keep }, { Terminals.KeepDuplicates, TerminalValues.KeepDuplicates }, { Terminals.Key, TerminalValues.Key }, { Terminals.Keys, TerminalValues.Keys }, { Terminals.Kill, TerminalValues.Kill }, { Terminals.Kilo, TerminalValues.Kilo }, { Terminals.LabelIdentifier, null }, { Terminals.Lag, TerminalValues.Lag }, { Terminals.Language, TerminalValues.Language }, { Terminals.LargeObject, TerminalValues.LargeObject }, { Terminals.LargeObjectFile, TerminalValues.LargeObjectFile }, { Terminals.Last, TerminalValues.Last }, { Terminals.LastValue, TerminalValues.LastValue }, { Terminals.Lateral, TerminalValues.Lateral }, { Terminals.Latest, TerminalValues.Latest }, { Terminals.Lax, TerminalValues.Lax }, { Terminals.Lead, TerminalValues.Lead }, { Terminals.Leading, TerminalValues.Leading }, { Terminals.Left, TerminalValues.Left }, { Terminals.LeftBrace, TerminalValues.LeftBrace }, { Terminals.LeftBracket, TerminalValues.LeftBracket }, { Terminals.LeftLabelMarker, TerminalValues.LeftLabelMarker }, { Terminals.LeftParenthesis, TerminalValues.LeftParenthesis }, { Terminals.LeftRightTrim, TerminalValues.LeftRightTrim }, { Terminals.LeftTrim, TerminalValues.LeftTrim }, { Terminals.Less, TerminalValues.Less }, { Terminals.Level, TerminalValues.Level }, { Terminals.Levels, TerminalValues.Levels }, { Terminals.Library, TerminalValues.Library }, { Terminals.Like, TerminalValues.Like }, { Terminals.LikeUcs2, TerminalValues.LikeUcs2 }, { Terminals.LikeUcs4, TerminalValues.LikeUcs4 }, { Terminals.LikeUnicode, TerminalValues.LikeUnicode }, { Terminals.Limit, TerminalValues.Limit }, { Terminals.Linear, TerminalValues.Linear }, { Terminals.Link, TerminalValues.Link }, { Terminals.List, TerminalValues.List }, { Terminals.ListAggregation, TerminalValues.ListAggregation }, { Terminals.Little, TerminalValues.Little }, { Terminals.Load, TerminalValues.Load }, { Terminals.Local, TerminalValues.Local }, { Terminals.Location, TerminalValues.Location }, { Terminals.Locator, TerminalValues.Locator }, { Terminals.Lock, TerminalValues.Lock }, { Terminals.Locked, TerminalValues.Locked }, { Terminals.Locking, TerminalValues.Locking }, { Terminals.Log, TerminalValues.Log }, { Terminals.LogFile, TerminalValues.LogFile }, { Terminals.Logging, TerminalValues.Logging }, { Terminals.LogicalReadsPerCall, TerminalValues.LogicalReadsPerCall }, { Terminals.LogicalReadsPerSession, TerminalValues.LogicalReadsPerSession }, { Terminals.Logoff, TerminalValues.Logoff }, { Terminals.Logon, TerminalValues.Logon }, { Terminals.Long, TerminalValues.Long }, { Terminals.Loop, TerminalValues.Loop }, { Terminals.Low, TerminalValues.Low }, { Terminals.Main, TerminalValues.Main }, { Terminals.Management, TerminalValues.Management }, { Terminals.Manual, TerminalValues.Manual }, { Terminals.Mapping, TerminalValues.Mapping }, { Terminals.Mask, TerminalValues.Mask }, { Terminals.Master, TerminalValues.Master }, { Terminals.Materialized, TerminalValues.Materialized }, { Terminals.MathDivide, TerminalValues.MathDivide }, { Terminals.MathEquals, TerminalValues.MathEquals }, { Terminals.MathFactor, TerminalValues.MathFactor }, { Terminals.MathGreatherThan, TerminalValues.MathGreatherThan }, { Terminals.MathGreatherThanOrEquals, TerminalValues.MathGreatherThanOrEquals }, { Terminals.MathInfinite, TerminalValues.MathInfinite }, { Terminals.MathLessThan, TerminalValues.MathLessThan }, { Terminals.MathLessThanOrEquals, TerminalValues.MathLessThanOrEquals }, { Terminals.MathMinus, TerminalValues.MathMinus }, { Terminals.MathNotANumber, TerminalValues.MathNotANumber }, { Terminals.MathNotEqualsC, TerminalValues.MathNotEqualsC }, { Terminals.MathNotEqualsCircumflex, TerminalValues.MathNotEqualsCircumflex }, { Terminals.MathNotEqualsSql, TerminalValues.MathNotEqualsSql }, { Terminals.MathPlus, TerminalValues.MathPlus }, { Terminals.Match, TerminalValues.Match }, { Terminals.Matched, TerminalValues.Matched }, { Terminals.MatchRecognize, TerminalValues.MatchRecognize }, { Terminals.Max, TerminalValues.Max }, { Terminals.MaximumExtents, TerminalValues.MaximumExtents }, { Terminals.MaximumSize, TerminalValues.MaximumSize }, { Terminals.MaximumTransactions, TerminalValues.MaximumTransactions }, { Terminals.MaximumValue, TerminalValues.MaximumValue }, { Terminals.Measures, TerminalValues.Measures }, { Terminals.Medium, TerminalValues.Medium }, { Terminals.Mega, TerminalValues.Mega }, { Terminals.Member, TerminalValues.Member }, { Terminals.MemberFunctionIdentifier, null }, { Terminals.Memory, TerminalValues.Memory }, { Terminals.MemoryCompression, TerminalValues.MemoryCompression }, { Terminals.Merge, TerminalValues.Merge }, { Terminals.Migrate, TerminalValues.Migrate }, { Terminals.Migration, TerminalValues.Migration }, { Terminals.Min, TerminalValues.Min }, { Terminals.Minimize, TerminalValues.Minimize }, { Terminals.Minimum, TerminalValues.Minimum }, { Terminals.MinimumExtents, TerminalValues.MinimumExtents }, { Terminals.MinimumValue, TerminalValues.MinimumValue }, { Terminals.Mining, TerminalValues.Mining }, { Terminals.Minute, TerminalValues.Minute }, { Terminals.Missing, TerminalValues.Missing }, { Terminals.Mode, TerminalValues.Mode }, { Terminals.Model, TerminalValues.Model }, { Terminals.Modification, TerminalValues.Modification }, { Terminals.Modify, TerminalValues.Modify }, { Terminals.Month, TerminalValues.Month }, { Terminals.Months, TerminalValues.Months }, { Terminals.Move, TerminalValues.Move }, { Terminals.Movement, TerminalValues.Movement }, { Terminals.Multiset, TerminalValues.Multiset }, { Terminals.Name, TerminalValues.Name }, { Terminals.National, TerminalValues.National }, { Terminals.NationalCharacterSet, TerminalValues.NationalCharacterSet }, { Terminals.Natural, TerminalValues.Natural }, { Terminals.NegationOrNull, TerminalValues.NegationOrNull }, { Terminals.Nested, TerminalValues.Nested }, { Terminals.New, TerminalValues.New }, { Terminals.NewLine, TerminalValues.NewLine }, { Terminals.Next, TerminalValues.Next }, { Terminals.NChar, TerminalValues.NChar }, { Terminals.No, TerminalValues.No }, { Terminals.NoAudit, TerminalValues.NoAudit }, { Terminals.NoBadFile, TerminalValues.NoBadFile }, { Terminals.NoCache, TerminalValues.NoCache }, { Terminals.Nocompress, TerminalValues.Nocompress }, { Terminals.NoCompress, TerminalValues.NoCompress }, { Terminals.NoCopy, TerminalValues.NoCopy }, { Terminals.NoCycle, TerminalValues.NoCycle }, { Terminals.NoDirectInputOutput, TerminalValues.NoDirectInputOutput }, { Terminals.NoDiscardFile, TerminalValues.NoDiscardFile }, { Terminals.NoEntityEscaping, TerminalValues.NoEntityEscaping }, { Terminals.NoGuarantee, TerminalValues.NoGuarantee }, { Terminals.NoCheck, TerminalValues.NoCheck }, { Terminals.NoKeep, TerminalValues.NoKeep }, { Terminals.NoLogFile, TerminalValues.NoLogFile }, { Terminals.NoLogging, TerminalValues.NoLogging }, { Terminals.NoMapping, TerminalValues.NoMapping }, { Terminals.NoMaximumValue, TerminalValues.NoMaximumValue }, { Terminals.NoMinimize, TerminalValues.NoMinimize }, { Terminals.NoMinimumValue, TerminalValues.NoMinimumValue }, { Terminals.NonAvailableValues, TerminalValues.NonAvailableValues }, { Terminals.None, TerminalValues.None }, { Terminals.NonEditionable, TerminalValues.NonEditionable }, { Terminals.NonSchema, TerminalValues.NonSchema }, { Terminals.NoNullIf, TerminalValues.NoNullIf }, { Terminals.NoOrder, TerminalValues.NoOrder }, { Terminals.NoParallel, TerminalValues.NoParallel }, { Terminals.NoPartition, TerminalValues.NoPartition }, { Terminals.NoRely, TerminalValues.NoRely }, { Terminals.NoReplay, TerminalValues.NoReplay }, { Terminals.Normal, TerminalValues.Normal }, { Terminals.NoRowDependencies, TerminalValues.NoRowDependencies }, { Terminals.NoSchemaCheck, TerminalValues.NoSchemaCheck }, { Terminals.NoSort, TerminalValues.NoSort }, { Terminals.NoSwitch, TerminalValues.NoSwitch }, { Terminals.Not, TerminalValues.Not }, { Terminals.NotFound, TerminalValues.NotFound }, { Terminals.Nothing, TerminalValues.Nothing }, { Terminals.NoTrim, TerminalValues.NoTrim }, { Terminals.NoValidate, TerminalValues.NoValidate }, { Terminals.Nowait, TerminalValues.Nowait }, { Terminals.Null, TerminalValues.Null }, { Terminals.NullIf, TerminalValues.NullIf }, { Terminals.Nulls, TerminalValues.Nulls }, { Terminals.Number, TerminalValues.Number }, { Terminals.NumberLiteral, null }, { Terminals.Numeric, TerminalValues.Numeric }, { Terminals.NVarchar, TerminalValues.NVarchar }, { Terminals.NVarchar2, TerminalValues.NVarchar2 }, { Terminals.Object, TerminalValues.Object }, { Terminals.ObjectAlias, null }, { Terminals.ObjectIdentifier, null }, { Terminals.ObjectIdentifierIndex, TerminalValues.ObjectIdentifierIndex }, { Terminals.Of, TerminalValues.Of }, { Terminals.Off, TerminalValues.Off }, { Terminals.Offline, TerminalValues.Offline }, { Terminals.Offset, TerminalValues.Offset }, { Terminals.Old, TerminalValues.Old }, { Terminals.Oltp, TerminalValues.Oltp }, { Terminals.On, TerminalValues.On }, { Terminals.One, TerminalValues.One }, { Terminals.Online, TerminalValues.Online }, { Terminals.Only, TerminalValues.Only }, { Terminals.Opaque, TerminalValues.Opaque }, { Terminals.Open, TerminalValues.Open }, { Terminals.Operations, TerminalValues.Operations }, { Terminals.Operator, TerminalValues.Operator }, { Terminals.OperatorConcatenation, TerminalValues.OperatorConcatenation }, { Terminals.Option, TerminalValues.Option }, { Terminals.Optionally, TerminalValues.Optionally }, { Terminals.OptionalParameterOperator, TerminalValues.OptionalParameterOperator }, { Terminals.Or, TerminalValues.Or }, { Terminals.OracleDataPump, TerminalValues.OracleDataPump }, { Terminals.OracleDate, TerminalValues.OracleDate }, { Terminals.OracleLoader, TerminalValues.OracleLoader }, { Terminals.OracleNumber, TerminalValues.OracleNumber }, { Terminals.Order, TerminalValues.Order }, { Terminals.Ordinality, TerminalValues.Ordinality }, { Terminals.Organization, TerminalValues.Organization }, { Terminals.Others, TerminalValues.Others }, { Terminals.Out, TerminalValues.Out }, { Terminals.Outer, TerminalValues.Outer }, { Terminals.Over, TerminalValues.Over }, { Terminals.Overflow, TerminalValues.Overflow }, { Terminals.Override, TerminalValues.Override }, { Terminals.Package, TerminalValues.Package }, { Terminals.Parallel, TerminalValues.Parallel }, { Terminals.ParallelEnable, TerminalValues.ParallelEnable }, { Terminals.ParameterFile, TerminalValues.ParameterFile }, { Terminals.ParameterIdentifier, null }, { Terminals.Parameters, TerminalValues.Parameters }, { Terminals.Parent, TerminalValues.Parent }, { Terminals.Partial, TerminalValues.Partial }, { Terminals.Partition, TerminalValues.Partition }, { Terminals.Partitions, TerminalValues.Partitions }, { Terminals.Passing, TerminalValues.Passing }, { Terminals.Password, TerminalValues.Password }, { Terminals.PasswordGraceTime, TerminalValues.PasswordGraceTime }, { Terminals.PasswordLifeTime, TerminalValues.PasswordLifeTime }, { Terminals.PasswordLockTime, TerminalValues.PasswordLockTime }, { Terminals.PasswordReuseMax, TerminalValues.PasswordReuseMax }, { Terminals.PasswordReuseTime, TerminalValues.PasswordReuseTime }, { Terminals.PasswordVerifyFunction, TerminalValues.PasswordVerifyFunction }, { Terminals.Past, TerminalValues.Past }, { Terminals.Path, TerminalValues.Path }, { Terminals.Patch, TerminalValues.Patch }, { Terminals.Pattern, TerminalValues.Pattern }, { Terminals.Pctfree, TerminalValues.Pctfree }, { Terminals.Per, TerminalValues.Per }, { Terminals.Percent, TerminalValues.Percent }, { Terminals.PercentFree, TerminalValues.PercentFree }, { Terminals.PercentCharacter, TerminalValues.PercentCharacter }, { Terminals.PercentileContinuousDistribution, TerminalValues.PercentileContinuousDistribution }, { Terminals.PercentileDiscreteDistribution, TerminalValues.PercentileDiscreteDistribution }, { Terminals.PercentIncrease, TerminalValues.PercentIncrease }, { Terminals.PercentThreshold, TerminalValues.PercentThreshold }, { Terminals.PercentUsed, TerminalValues.PercentUsed }, { Terminals.PercentVersion, TerminalValues.PercentVersion }, { Terminals.Period, TerminalValues.Period }, { Terminals.Permanent, TerminalValues.Permanent }, { Terminals.Permute, TerminalValues.Permute }, { Terminals.Peta, TerminalValues.Peta }, { Terminals.Pipe, TerminalValues.Pipe }, { Terminals.Pipelined, TerminalValues.Pipelined }, { Terminals.Pivot, TerminalValues.Pivot }, { Terminals.Plan, TerminalValues.Plan }, { Terminals.PlsInteger, TerminalValues.PlsInteger }, { Terminals.PlSqlIdentifier, null }, { Terminals.Pluggable, TerminalValues.Pluggable }, { Terminals.Point, TerminalValues.Point }, { Terminals.Policy, TerminalValues.Policy }, { Terminals.Position, TerminalValues.Position }, { Terminals.PostTransaction, TerminalValues.PostTransaction }, { Terminals.Pragma, TerminalValues.Pragma }, { Terminals.Precedes, TerminalValues.Precedes }, { Terminals.Preceding, TerminalValues.Preceding }, { Terminals.Precision, TerminalValues.Precision }, { Terminals.Preprocessor, TerminalValues.Preprocessor }, { Terminals.Preserve, TerminalValues.Preserve }, { Terminals.Pretty, TerminalValues.Pretty }, { Terminals.Previous, TerminalValues.Previous }, { Terminals.Primary, TerminalValues.Primary }, { Terminals.Prior, TerminalValues.Prior }, { Terminals.Priority, TerminalValues.Priority }, { Terminals.PrivateSystemGlobalArea, TerminalValues.PrivateSystemGlobalArea }, { Terminals.Privileges, TerminalValues.Privileges }, { Terminals.Procedure, TerminalValues.Procedure }, { Terminals.Profile, TerminalValues.Profile }, { Terminals.Public, TerminalValues.Public }, { Terminals.Purge, TerminalValues.Purge }, { Terminals.Query, TerminalValues.Query }, { Terminals.QuestionMark, TerminalValues.QuestionMark }, { Terminals.Quiesce, TerminalValues.Quiesce }, { Terminals.Quota, TerminalValues.Quota }, { Terminals.Raise, TerminalValues.Raise }, { Terminals.Range, TerminalValues.Range }, { Terminals.Rank, TerminalValues.Rank }, { Terminals.Raw, TerminalValues.Raw }, { Terminals.Read, TerminalValues.Read }, { Terminals.ReadNoDatabaseState, TerminalValues.ReadNoDatabaseState }, { Terminals.ReadNoPackageState, TerminalValues.ReadNoPackageState }, { Terminals.Reads, TerminalValues.Reads }, { Terminals.ReadSize, TerminalValues.ReadSize }, { Terminals.Record, TerminalValues.Record }, { Terminals.Records, TerminalValues.Records }, { Terminals.RecordsPerBlock, TerminalValues.RecordsPerBlock }, { Terminals.Recoverable, TerminalValues.Recoverable }, { Terminals.Recovery, TerminalValues.Recovery }, { Terminals.Recycle, TerminalValues.Recycle }, { Terminals.RecycleBin, TerminalValues.RecycleBin }, { Terminals.Redo, TerminalValues.Redo }, { Terminals.Ref, TerminalValues.Ref }, { Terminals.Reference, TerminalValues.Reference }, { Terminals.References, TerminalValues.References }, { Terminals.Referencing, TerminalValues.Referencing }, { Terminals.Refresh, TerminalValues.Refresh }, { Terminals.Register, TerminalValues.Register }, { Terminals.Reject, TerminalValues.Reject }, { Terminals.ReKey, TerminalValues.ReKey }, { Terminals.ReliesOn, TerminalValues.ReliesOn }, { Terminals.Relocate, TerminalValues.Relocate }, { Terminals.Rely, TerminalValues.Rely }, { Terminals.Remove, TerminalValues.Remove }, { Terminals.Rename, TerminalValues.Rename }, { Terminals.Repeat, TerminalValues.Repeat }, { Terminals.Replace, TerminalValues.Replace }, { Terminals.Required, TerminalValues.Required }, { Terminals.Reset, TerminalValues.Reset }, { Terminals.Resize, TerminalValues.Resize }, { Terminals.Resource, TerminalValues.Resource }, { Terminals.Respect, TerminalValues.Respect }, { Terminals.Restore, TerminalValues.Restore }, { Terminals.Restricted, TerminalValues.Restricted }, { Terminals.RestrictReferences, TerminalValues.RestrictReferences }, { Terminals.ResultCache, TerminalValues.ResultCache }, { Terminals.Resumable, TerminalValues.Resumable }, { Terminals.Resume, TerminalValues.Resume }, { Terminals.Retention, TerminalValues.Retention }, { Terminals.Return, TerminalValues.Return }, { Terminals.Returning, TerminalValues.Returning }, { Terminals.Reuse, TerminalValues.Reuse }, { Terminals.Reverse, TerminalValues.Reverse }, { Terminals.Revoke, TerminalValues.Revoke }, { Terminals.Rewrite, TerminalValues.Rewrite }, { Terminals.Right, TerminalValues.Right }, { Terminals.RightBrace, TerminalValues.RightBrace }, { Terminals.RightBracket, TerminalValues.RightBracket }, { Terminals.RightLabelMarker, TerminalValues.RightLabelMarker }, { Terminals.RightParenthesis, TerminalValues.RightParenthesis }, { Terminals.RightTrim, TerminalValues.RightTrim }, { Terminals.Role, TerminalValues.Role }, { Terminals.Roles, TerminalValues.Roles }, { Terminals.Rollback, TerminalValues.Rollback }, { Terminals.Rolling, TerminalValues.Rolling }, { Terminals.Rollup, TerminalValues.Rollup }, { Terminals.Row, TerminalValues.Row }, { Terminals.RowCount, TerminalValues.RowCount }, { Terminals.RowDependencies, TerminalValues.RowDependencies }, { Terminals.RowIdDataType, TerminalValues.RowIdDataType }, { Terminals.RowIdPseudoColumn, TerminalValues.RowIdPseudoColumn }, { Terminals.RowNumberPseudoColumn, TerminalValues.RowNumberPseudoColumn }, { Terminals.Rows, TerminalValues.Rows }, { Terminals.RowType, TerminalValues.RowType }, { Terminals.Rules, TerminalValues.Rules }, { Terminals.Running, TerminalValues.Running }, { Terminals.Salt, TerminalValues.Salt }, { Terminals.Sample, TerminalValues.Sample }, { Terminals.Save, TerminalValues.Save }, { Terminals.Savepoint, TerminalValues.Savepoint }, { Terminals.Scope, TerminalValues.Scope }, { Terminals.Search, TerminalValues.Search }, { Terminals.Second, TerminalValues.Second }, { Terminals.SecureFile, TerminalValues.SecureFile }, { Terminals.Seed, TerminalValues.Seed }, { Terminals.Segment, TerminalValues.Segment }, { Terminals.Select, TerminalValues.Select }, { Terminals.Semicolon, TerminalValues.Semicolon }, { Terminals.Sequence, TerminalValues.Sequence }, { Terminals.Sequential, TerminalValues.Sequential }, { Terminals.Serializable, TerminalValues.Serializable }, { Terminals.SeriallyReusable, TerminalValues.SeriallyReusable }, { Terminals.ServerError, TerminalValues.ServerError }, { Terminals.ServerParameterFile, TerminalValues.ServerParameterFile }, { Terminals.Session, TerminalValues.Session }, { Terminals.SessionId, TerminalValues.SessionId }, { Terminals.SessionsPerUser, TerminalValues.SessionsPerUser }, { Terminals.SessionTimezone, TerminalValues.SessionTimezone }, { Terminals.Set, TerminalValues.Set }, { Terminals.SetMinus, TerminalValues.SetMinus }, { Terminals.Sets, TerminalValues.Sets }, { Terminals.Settings, TerminalValues.Settings }, { Terminals.Share, TerminalValues.Share }, { Terminals.SharedPool, TerminalValues.SharedPool }, { Terminals.Show, TerminalValues.Show }, { Terminals.Shrink, TerminalValues.Shrink }, { Terminals.Shutdown, TerminalValues.Shutdown }, { Terminals.Schema, TerminalValues.Schema }, { Terminals.SchemaCheck, TerminalValues.SchemaCheck }, { Terminals.SchemaIdentifier, null }, { Terminals.Siblings, TerminalValues.Siblings }, { Terminals.Single, TerminalValues.Single }, { Terminals.Size, TerminalValues.Size }, { Terminals.Sizes, TerminalValues.Sizes }, { Terminals.Skip, TerminalValues.Skip }, { Terminals.SmallFile, TerminalValues.SmallFile }, { Terminals.Smallint, TerminalValues.Smallint }, { Terminals.Snapshot, TerminalValues.Snapshot }, { Terminals.Some, TerminalValues.Some }, { Terminals.Sort, TerminalValues.Sort }, { Terminals.Source, TerminalValues.Source }, { Terminals.Space, null }, { Terminals.Specification, TerminalValues.Specification }, { Terminals.SqlLoaderTrim, TerminalValues.SqlLoaderTrim }, { Terminals.SqlPlusTerminator, TerminalValues.SqlPlusTerminator }, { Terminals.Standalone, TerminalValues.Standalone }, { Terminals.StandardDeviation, TerminalValues.StandardDeviation }, { Terminals.Start, TerminalValues.Start }, { Terminals.StartOf, TerminalValues.StartOf }, { Terminals.Startup, TerminalValues.Startup }, { Terminals.Statement, TerminalValues.Statement }, { Terminals.StatementId, TerminalValues.StatementId }, { Terminals.Statistics, TerminalValues.Statistics }, { Terminals.Stop, TerminalValues.Stop }, { Terminals.Storage, TerminalValues.Storage }, { Terminals.Store, TerminalValues.Store }, { Terminals.Strict, TerminalValues.Strict }, { Terminals.String, TerminalValues.String }, { Terminals.StringLiteral, null }, { Terminals.Structure, TerminalValues.Structure }, { Terminals.SubMultiset, TerminalValues.SubMultiset }, { Terminals.Subpartition, TerminalValues.Subpartition }, { Terminals.Subpartitions, TerminalValues.Subpartitions }, { Terminals.Subset, TerminalValues.Subset }, { Terminals.Substitutable, TerminalValues.Substitutable }, { Terminals.SubType, TerminalValues.SubType }, { Terminals.Sum, TerminalValues.Sum }, { Terminals.Supplemental, TerminalValues.Supplemental }, { Terminals.Suspend, TerminalValues.Suspend }, { Terminals.Switch, TerminalValues.Switch }, { Terminals.Sync, TerminalValues.Sync }, { Terminals.Synchronous, TerminalValues.Synchronous }, { Terminals.Synonym, TerminalValues.Synonym }, { Terminals.System, TerminalValues.System }, { Terminals.SystemDate, TerminalValues.SystemDate }, { Terminals.SystemChangeNumber, TerminalValues.SystemChangeNumber }, { Terminals.Table, TerminalValues.Table }, { Terminals.Tables, TerminalValues.Tables }, { Terminals.Tablespace, TerminalValues.Tablespace }, { Terminals.Tempfile, TerminalValues.Tempfile }, { Terminals.Template, TerminalValues.Template }, { Terminals.Temporary, TerminalValues.Temporary }, { Terminals.Tera, TerminalValues.Tera }, { Terminals.Terminated, TerminalValues.Terminated }, { Terminals.Territory, TerminalValues.Territory }, { Terminals.Than, TerminalValues.Than }, { Terminals.The, TerminalValues.The }, { Terminals.Then, TerminalValues.Then }, { Terminals.These, TerminalValues.These }, { Terminals.Through, TerminalValues.Through }, { Terminals.Tier, TerminalValues.Tier }, { Terminals.Ties, TerminalValues.Ties }, { Terminals.Time, TerminalValues.Time }, { Terminals.Timeout, TerminalValues.Timeout }, { Terminals.Timestamp, TerminalValues.Timestamp }, { Terminals.TimezoneAbbreviation, TerminalValues.TimezoneAbbreviation }, { Terminals.TimezoneHour, TerminalValues.TimezoneHour }, { Terminals.TimezoneMinute, TerminalValues.TimezoneMinute }, { Terminals.TimezoneRegion, TerminalValues.TimezoneRegion }, { Terminals.To, TerminalValues.To }, { Terminals.Trailing, TerminalValues.Trailing }, { Terminals.Transaction, TerminalValues.Transaction }, { Terminals.Transforms, TerminalValues.Transforms }, { Terminals.Treat, TerminalValues.Treat }, { Terminals.Trigger, TerminalValues.Trigger }, { Terminals.Triggers, TerminalValues.Triggers }, { Terminals.Trim, TerminalValues.Trim }, { Terminals.True, TerminalValues.True }, { Terminals.Truncate, TerminalValues.Truncate }, { Terminals.Trust, TerminalValues.Trust }, { Terminals.Trusted, TerminalValues.Trusted }, { Terminals.Type, TerminalValues.Type }, { Terminals.TypeIdentifier, null }, { Terminals.Unbounded, TerminalValues.Unbounded }, { Terminals.Unconditional, TerminalValues.Unconditional }, { Terminals.Undo, TerminalValues.Undo }, { Terminals.Uniform, TerminalValues.Uniform }, { Terminals.Union, TerminalValues.Union }, { Terminals.Unique, TerminalValues.Unique }, { Terminals.UniversalRowId, TerminalValues.UniversalRowId }, { Terminals.Unlimited, TerminalValues.Unlimited }, { Terminals.Unlock, TerminalValues.Unlock }, { Terminals.Unpacked, TerminalValues.Unpacked }, { Terminals.Unpivot, TerminalValues.Unpivot }, { Terminals.Unplug, TerminalValues.Unplug }, { Terminals.Unquiesce, TerminalValues.Unquiesce }, { Terminals.Unrecoverable, TerminalValues.Unrecoverable }, { Terminals.Unsigned, TerminalValues.Unsigned }, { Terminals.Until, TerminalValues.Until }, { Terminals.Unusable, TerminalValues.Unusable }, { Terminals.Unused, TerminalValues.Unused }, { Terminals.Update, TerminalValues.Update }, { Terminals.Updated, TerminalValues.Updated }, { Terminals.Updating, TerminalValues.Updating }, { Terminals.Upgrade, TerminalValues.Upgrade }, { Terminals.Upsert, TerminalValues.Upsert }, { Terminals.Usable, TerminalValues.Usable }, { Terminals.Use, TerminalValues.Use }, { Terminals.User, TerminalValues.User }, { Terminals.UserDefinedFunction, TerminalValues.UserDefinedFunction }, { Terminals.Users, TerminalValues.Users }, { Terminals.Using, TerminalValues.Using }, { Terminals.Validate, TerminalValues.Validate }, { Terminals.Value, TerminalValues.Value }, { Terminals.Values, TerminalValues.Values }, { Terminals.Varchar, TerminalValues.Varchar }, { Terminals.Varchar2, TerminalValues.Varchar2 }, { Terminals.VarcharC, TerminalValues.VarcharC }, { Terminals.Variable, TerminalValues.Variable }, { Terminals.VariableElementArray, TerminalValues.VariableElementArray }, { Terminals.Variance, TerminalValues.Variance }, { Terminals.Varraw, TerminalValues.Varraw }, { Terminals.VarrawC, TerminalValues.VarrawC }, { Terminals.Varying, TerminalValues.Varying }, { Terminals.Version, TerminalValues.Version }, { Terminals.Versions, TerminalValues.Versions }, { Terminals.VerticalBarCharacter, TerminalValues.VerticalBarCharacter }, { Terminals.View, TerminalValues.View }, { Terminals.Virtual, TerminalValues.Virtual }, { Terminals.Visible, TerminalValues.Visible }, { Terminals.Wait, TerminalValues.Wait }, { Terminals.Wallet, TerminalValues.Wallet }, { Terminals.WellFormed, TerminalValues.WellFormed }, { Terminals.When, TerminalValues.When }, { Terminals.Where, TerminalValues.Where }, { Terminals.While, TerminalValues.While }, { Terminals.Whitespace, TerminalValues.Whitespace }, { Terminals.With, TerminalValues.With }, { Terminals.Within, TerminalValues.Within }, { Terminals.Without, TerminalValues.Without }, { Terminals.Work, TerminalValues.Work }, { Terminals.Wrapped, TerminalValues.Wrapped }, { Terminals.WrappedToken, null }, { Terminals.Wrapper, TerminalValues.Wrapper }, { Terminals.Write, TerminalValues.Write }, { Terminals.WriteNoDatabaseState, TerminalValues.WriteNoDatabaseState }, { Terminals.WriteNoPackageState, TerminalValues.WriteNoPackageState }, { Terminals.Xml, TerminalValues.Xml }, { Terminals.XmlAggregate, TerminalValues.XmlAggregate }, { Terminals.XmlAlias, null }, { Terminals.XmlAttributes, TerminalValues.XmlAttributes }, { Terminals.XmlCast, TerminalValues.XmlCast }, { Terminals.XmlColumnValue, TerminalValues.XmlColumnValue }, { Terminals.XmlElement, TerminalValues.XmlElement }, { Terminals.XmlExists, TerminalValues.XmlExists }, { Terminals.XmlForest, TerminalValues.XmlForest }, { Terminals.XmlNamespaces, TerminalValues.XmlNamespaces }, { Terminals.XmlParse, TerminalValues.XmlParse }, { Terminals.XmlQuery, TerminalValues.XmlQuery }, { Terminals.XmlRoot, TerminalValues.XmlRoot }, { Terminals.XmlSerialize, TerminalValues.XmlSerialize }, { Terminals.XmlTable, TerminalValues.XmlTable }, { Terminals.XmlType, TerminalValues.XmlType }, { Terminals.Year, TerminalValues.Year }, { Terminals.Years, TerminalValues.Years }, { Terminals.YearToMonth, TerminalValues.YearToMonth }, { Terminals.Yes, TerminalValues.Yes }, { Terminals.Zone, TerminalValues.Zone }, { Terminals.Zoned, TerminalValues.Zoned }, { Terminals.ZoneMap, TerminalValues.ZoneMap } });
+		private static readonly ReadOnlyDictionary<string, string> AllTerminalsInternal = new ReadOnlyDictionary<string, string>(new Dictionary<string, string> { { Terminals.A, TerminalValues.A }, { Terminals.Access, TerminalValues.Access }, { Terminals.Accessible, TerminalValues.Accessible }, { Terminals.Account, TerminalValues.Account }, { Terminals.Add, TerminalValues.Add }, { Terminals.Admin, TerminalValues.Admin }, { Terminals.Advanced, TerminalValues.Advanced }, { Terminals.Advise, TerminalValues.Advise }, { Terminals.After, TerminalValues.After }, { Terminals.Aggregate, TerminalValues.Aggregate }, { Terminals.All, TerminalValues.All }, { Terminals.Allocate, TerminalValues.Allocate }, { Terminals.Allow, TerminalValues.Allow }, { Terminals.Alter, TerminalValues.Alter }, { Terminals.Always, TerminalValues.Always }, { Terminals.Analyze, TerminalValues.Analyze }, { Terminals.And, TerminalValues.And }, { Terminals.Any, TerminalValues.Any }, { Terminals.AnySchema, TerminalValues.AnySchema }, { Terminals.Apply, TerminalValues.Apply }, { Terminals.Archival, TerminalValues.Archival }, { Terminals.Archive, TerminalValues.Archive }, { Terminals.Are, TerminalValues.Are }, { Terminals.Array, TerminalValues.Array }, { Terminals.As, TerminalValues.As }, { Terminals.Asc, TerminalValues.Asc }, { Terminals.Ascii, TerminalValues.Ascii }, { Terminals.AssignmentOperator, TerminalValues.AssignmentOperator }, { Terminals.Associate, TerminalValues.Associate }, { Terminals.Asterisk, TerminalValues.Asterisk }, { Terminals.Asynchronous, TerminalValues.Asynchronous }, { Terminals.At, TerminalValues.At }, { Terminals.AtCharacter, TerminalValues.AtCharacter }, { Terminals.Attribute, TerminalValues.Attribute }, { Terminals.Audit, TerminalValues.Audit }, { Terminals.Authentication, TerminalValues.Authentication }, { Terminals.Authorization, TerminalValues.Authorization }, { Terminals.AuthorizationIdentity, TerminalValues.AuthorizationIdentity }, { Terminals.Auto, TerminalValues.Auto }, { Terminals.AutoAllocate, TerminalValues.AutoAllocate }, { Terminals.AutoExtend, TerminalValues.AutoExtend }, { Terminals.Automatic, TerminalValues.Automatic }, { Terminals.AutonomousTransaction, TerminalValues.AutonomousTransaction }, { Terminals.Avg, TerminalValues.Avg }, { Terminals.Backup, TerminalValues.Backup }, { Terminals.BadFile, TerminalValues.BadFile }, { Terminals.Basic, TerminalValues.Basic }, { Terminals.BasicFile, TerminalValues.BasicFile }, { Terminals.Batch, TerminalValues.Batch }, { Terminals.Before, TerminalValues.Before }, { Terminals.Begin, TerminalValues.Begin }, { Terminals.Beginning, TerminalValues.Beginning }, { Terminals.Bequeath, TerminalValues.Bequeath }, { Terminals.Between, TerminalValues.Between }, { Terminals.Big, TerminalValues.Big }, { Terminals.BigFile, TerminalValues.BigFile }, { Terminals.BinaryDouble, TerminalValues.BinaryDouble }, { Terminals.BinaryFloat, TerminalValues.BinaryFloat }, { Terminals.BinaryInteger, TerminalValues.BinaryInteger }, { Terminals.BindVariableIdentifier, null }, { Terminals.Bitmap, TerminalValues.Bitmap }, { Terminals.Blanks, TerminalValues.Blanks }, { Terminals.Blob, TerminalValues.Blob }, { Terminals.Block, TerminalValues.Block }, { Terminals.BlockSize, TerminalValues.BlockSize }, { Terminals.Body, TerminalValues.Body }, { Terminals.Both, TerminalValues.Both }, { Terminals.Breadth, TerminalValues.Breadth }, { Terminals.BufferCache, TerminalValues.BufferCache }, { Terminals.BufferPool, TerminalValues.BufferPool }, { Terminals.Bulk, TerminalValues.Bulk }, { Terminals.BulkRowCount, TerminalValues.BulkRowCount }, { Terminals.By, TerminalValues.By }, { Terminals.Byte, TerminalValues.Byte }, { Terminals.ByteOrderMark, TerminalValues.ByteOrderMark }, { Terminals.Bytes, TerminalValues.Bytes }, { Terminals.C, TerminalValues.C }, { Terminals.Cache, TerminalValues.Cache }, { Terminals.Call, TerminalValues.Call }, { Terminals.Capacity, TerminalValues.Capacity }, { Terminals.Cascade, TerminalValues.Cascade }, { Terminals.Case, TerminalValues.Case }, { Terminals.Cast, TerminalValues.Cast }, { Terminals.CellFlashCache, TerminalValues.CellFlashCache }, { Terminals.Chained, TerminalValues.Chained }, { Terminals.Change, TerminalValues.Change }, { Terminals.Char, TerminalValues.Char }, { Terminals.Character, TerminalValues.Character }, { Terminals.CharacterCode, TerminalValues.CharacterCode }, { Terminals.Characters, TerminalValues.Characters }, { Terminals.CharacterSet, TerminalValues.CharacterSet }, { Terminals.Check, TerminalValues.Check }, { Terminals.Checkpoint, TerminalValues.Checkpoint }, { Terminals.Chunk, TerminalValues.Chunk }, { Terminals.CircumflexCharacter, TerminalValues.CircumflexCharacter }, { Terminals.Client, TerminalValues.Client }, { Terminals.Clob, TerminalValues.Clob }, { Terminals.Clone, TerminalValues.Clone }, { Terminals.Close, TerminalValues.Close }, { Terminals.Cluster, TerminalValues.Cluster }, { Terminals.Clustering, TerminalValues.Clustering }, { Terminals.Coalesce, TerminalValues.Coalesce }, { Terminals.Collect, TerminalValues.Collect }, { Terminals.Colon, TerminalValues.Colon }, { Terminals.Column, TerminalValues.Column }, { Terminals.ColumnAlias, null }, { Terminals.Columns, TerminalValues.Columns }, { Terminals.Comma, TerminalValues.Comma }, { Terminals.CommaSeparatedValue, TerminalValues.CommaSeparatedValue }, { Terminals.Comment, TerminalValues.Comment }, { Terminals.Commit, TerminalValues.Commit }, { Terminals.Committed, TerminalValues.Committed }, { Terminals.Compact, TerminalValues.Compact }, { Terminals.Compatible, TerminalValues.Compatible }, { Terminals.Compile, TerminalValues.Compile }, { Terminals.Complete, TerminalValues.Complete }, { Terminals.CompositeLimit, TerminalValues.CompositeLimit }, { Terminals.Compound, TerminalValues.Compound }, { Terminals.Compress, TerminalValues.Compress }, { Terminals.Compression, TerminalValues.Compression }, { Terminals.Compute, TerminalValues.Compute }, { Terminals.Concat, TerminalValues.Concat }, { Terminals.Conditional, TerminalValues.Conditional }, { Terminals.Confirm, TerminalValues.Confirm }, { Terminals.Connect, TerminalValues.Connect }, { Terminals.ConnectByRoot, TerminalValues.ConnectByRoot }, { Terminals.ConnectTime, TerminalValues.ConnectTime }, { Terminals.Consider, TerminalValues.Consider }, { Terminals.Constant, TerminalValues.Constant }, { Terminals.Constraint, TerminalValues.Constraint }, { Terminals.Constraints, TerminalValues.Constraints }, { Terminals.Constructor, TerminalValues.Constructor }, { Terminals.Container, TerminalValues.Container }, { Terminals.ContainerData, TerminalValues.ContainerData }, { Terminals.Content, TerminalValues.Content }, { Terminals.Context, TerminalValues.Context }, { Terminals.Continue, TerminalValues.Continue }, { Terminals.ControlFile, TerminalValues.ControlFile }, { Terminals.Convert, TerminalValues.Convert }, { Terminals.Cost, TerminalValues.Cost }, { Terminals.Count, TerminalValues.Count }, { Terminals.Counted, TerminalValues.Counted }, { Terminals.CpuPerCall, TerminalValues.CpuPerCall }, { Terminals.CpuPerSession, TerminalValues.CpuPerSession }, { Terminals.Create, TerminalValues.Create }, { Terminals.Creation, TerminalValues.Creation }, { Terminals.Critical, TerminalValues.Critical }, { Terminals.Cross, TerminalValues.Cross }, { Terminals.CrossEdition, TerminalValues.CrossEdition }, { Terminals.Cube, TerminalValues.Cube }, { Terminals.CumulativeDistribution, TerminalValues.CumulativeDistribution }, { Terminals.Current, TerminalValues.Current }, { Terminals.CurrentUser, TerminalValues.CurrentUser }, { Terminals.Cursor, TerminalValues.Cursor }, { Terminals.CursorIdentifier, null }, { Terminals.Cycle, TerminalValues.Cycle }, { Terminals.Dangling, TerminalValues.Dangling }, { Terminals.Data, TerminalValues.Data }, { Terminals.Database, TerminalValues.Database }, { Terminals.DatabaseLinkIdentifier, null }, { Terminals.DatabaseRoleChange, TerminalValues.DatabaseRoleChange }, { Terminals.DatabaseTimezone, TerminalValues.DatabaseTimezone }, { Terminals.DataDefinitionLanguage, TerminalValues.DataDefinitionLanguage }, { Terminals.Datafile, TerminalValues.Datafile }, { Terminals.Datafiles, TerminalValues.Datafiles }, { Terminals.DataManipulationLanguage, TerminalValues.DataManipulationLanguage }, { Terminals.DataTypeIdentifier, null }, { Terminals.Date, TerminalValues.Date }, { Terminals.DateCache, TerminalValues.DateCache }, { Terminals.DateFormat, TerminalValues.DateFormat }, { Terminals.Day, TerminalValues.Day }, { Terminals.Days, TerminalValues.Days }, { Terminals.DayToSecond, TerminalValues.DayToSecond }, { Terminals.DbaRecycleBin, TerminalValues.DbaRecycleBin }, { Terminals.Deallocate, TerminalValues.Deallocate }, { Terminals.Debug, TerminalValues.Debug }, { Terminals.Dec, TerminalValues.Dec }, { Terminals.Decimal, TerminalValues.Decimal }, { Terminals.Declare, TerminalValues.Declare }, { Terminals.Decrement, TerminalValues.Decrement }, { Terminals.Decrypt, TerminalValues.Decrypt }, { Terminals.Deduplicate, TerminalValues.Deduplicate }, { Terminals.Default, TerminalValues.Default }, { Terminals.DefaultIf, TerminalValues.DefaultIf }, { Terminals.Defaults, TerminalValues.Defaults }, { Terminals.Deferrable, TerminalValues.Deferrable }, { Terminals.Deferred, TerminalValues.Deferred }, { Terminals.Define, TerminalValues.Define }, { Terminals.Definer, TerminalValues.Definer }, { Terminals.Delete, TerminalValues.Delete }, { Terminals.DeleteAll, TerminalValues.DeleteAll }, { Terminals.Deleting, TerminalValues.Deleting }, { Terminals.Delimited, TerminalValues.Delimited }, { Terminals.Demand, TerminalValues.Demand }, { Terminals.DenseRank, TerminalValues.DenseRank }, { Terminals.Depth, TerminalValues.Depth }, { Terminals.Desc, TerminalValues.Desc }, { Terminals.Deterministic, TerminalValues.Deterministic }, { Terminals.Dimension, TerminalValues.Dimension }, { Terminals.DirectInputOutput, TerminalValues.DirectInputOutput }, { Terminals.DirectLoad, TerminalValues.DirectLoad }, { Terminals.DirectNetworkFileSystemDisable, TerminalValues.DirectNetworkFileSystemDisable }, { Terminals.DirectNetworkFileSystemEnable, TerminalValues.DirectNetworkFileSystemEnable }, { Terminals.DirectNetworkFileSystemReadBuffers, TerminalValues.DirectNetworkFileSystemReadBuffers }, { Terminals.Directory, TerminalValues.Directory }, { Terminals.Disable, TerminalValues.Disable }, { Terminals.DisableAll, TerminalValues.DisableAll }, { Terminals.Disabled, TerminalValues.Disabled }, { Terminals.DisableDirectoryLinkCheck, TerminalValues.DisableDirectoryLinkCheck }, { Terminals.Disallow, TerminalValues.Disallow }, { Terminals.DiscardFile, TerminalValues.DiscardFile }, { Terminals.Disconnect, TerminalValues.Disconnect }, { Terminals.Dissociate, TerminalValues.Dissociate }, { Terminals.Distinct, TerminalValues.Distinct }, { Terminals.Distribute, TerminalValues.Distribute }, { Terminals.Distributed, TerminalValues.Distributed }, { Terminals.Document, TerminalValues.Document }, { Terminals.DollarCharacter, TerminalValues.DollarCharacter }, { Terminals.Dot, TerminalValues.Dot }, { Terminals.Double, TerminalValues.Double }, { Terminals.DoubleDotOperator, TerminalValues.DoubleDotOperator }, { Terminals.DoubleQuotedStringLiteral, null }, { Terminals.Drop, TerminalValues.Drop }, { Terminals.Duplicate, TerminalValues.Duplicate }, { Terminals.Each, TerminalValues.Each }, { Terminals.Edition, TerminalValues.Edition }, { Terminals.Editionable, TerminalValues.Editionable }, { Terminals.Editioning, TerminalValues.Editioning }, { Terminals.Editions, TerminalValues.Editions }, { Terminals.Element, TerminalValues.Element }, { Terminals.Else, TerminalValues.Else }, { Terminals.ElseIf, TerminalValues.ElseIf }, { Terminals.Embedded, TerminalValues.Embedded }, { Terminals.Empty, TerminalValues.Empty }, { Terminals.Enable, TerminalValues.Enable }, { Terminals.EnableAll, TerminalValues.EnableAll }, { Terminals.Enabled, TerminalValues.Enabled }, { Terminals.Enclosed, TerminalValues.Enclosed }, { Terminals.Encoding, TerminalValues.Encoding }, { Terminals.Encrypt, TerminalValues.Encrypt }, { Terminals.Encryption, TerminalValues.Encryption }, { Terminals.End, TerminalValues.End }, { Terminals.Endian, TerminalValues.Endian }, { Terminals.Enforced, TerminalValues.Enforced }, { Terminals.Enterprise, TerminalValues.Enterprise }, { Terminals.EntityEscaping, TerminalValues.EntityEscaping }, { Terminals.Error, TerminalValues.Error }, { Terminals.Errors, TerminalValues.Errors }, { Terminals.Escape, TerminalValues.Escape }, { Terminals.Evaluate, TerminalValues.Evaluate }, { Terminals.EvaluatedName, TerminalValues.EvaluatedName }, { Terminals.Events, TerminalValues.Events }, { Terminals.Exa, TerminalValues.Exa }, { Terminals.Except, TerminalValues.Except }, { Terminals.Exception, TerminalValues.Exception }, { Terminals.ExceptionIdentifier, null }, { Terminals.ExceptionInit, TerminalValues.ExceptionInit }, { Terminals.Exceptions, TerminalValues.Exceptions }, { Terminals.Exclude, TerminalValues.Exclude }, { Terminals.Excluding, TerminalValues.Excluding }, { Terminals.Exclusive, TerminalValues.Exclusive }, { Terminals.Execute, TerminalValues.Execute }, { Terminals.Exists, TerminalValues.Exists }, { Terminals.Exit, TerminalValues.Exit }, { Terminals.Expire, TerminalValues.Expire }, { Terminals.Explain, TerminalValues.Explain }, { Terminals.Extent, TerminalValues.Extent }, { Terminals.External, TerminalValues.External }, { Terminals.Externally, TerminalValues.Externally }, { Terminals.Extract, TerminalValues.Extract }, { Terminals.FailedLoginAttempts, TerminalValues.FailedLoginAttempts }, { Terminals.False, TerminalValues.False }, { Terminals.Fast, TerminalValues.Fast }, { Terminals.Fetch, TerminalValues.Fetch }, { Terminals.Field, TerminalValues.Field }, { Terminals.FieldNames, TerminalValues.FieldNames }, { Terminals.Fields, TerminalValues.Fields }, { Terminals.File, TerminalValues.File }, { Terminals.Files, TerminalValues.Files }, { Terminals.FileSystemLikeLogging, TerminalValues.FileSystemLikeLogging }, { Terminals.Final, TerminalValues.Final }, { Terminals.First, TerminalValues.First }, { Terminals.FirstValue, TerminalValues.FirstValue }, { Terminals.Fixed, TerminalValues.Fixed }, { Terminals.Flashback, TerminalValues.Flashback }, { Terminals.FlashCache, TerminalValues.FlashCache }, { Terminals.Float, TerminalValues.Float }, { Terminals.Flush, TerminalValues.Flush }, { Terminals.Following, TerminalValues.Following }, { Terminals.Follows, TerminalValues.Follows }, { Terminals.For, TerminalValues.For }, { Terminals.ForAll, TerminalValues.ForAll }, { Terminals.Force, TerminalValues.Force }, { Terminals.Foreign, TerminalValues.Foreign }, { Terminals.Format, TerminalValues.Format }, { Terminals.Forward, TerminalValues.Forward }, { Terminals.Found, TerminalValues.Found }, { Terminals.FreeList, TerminalValues.FreeList }, { Terminals.FreeLists, TerminalValues.FreeLists }, { Terminals.FreePools, TerminalValues.FreePools }, { Terminals.Fresh, TerminalValues.Fresh }, { Terminals.From, TerminalValues.From }, { Terminals.Full, TerminalValues.Full }, { Terminals.Function, TerminalValues.Function }, { Terminals.Generated, TerminalValues.Generated }, { Terminals.Giga, TerminalValues.Giga }, { Terminals.Global, TerminalValues.Global }, { Terminals.Globally, TerminalValues.Globally }, { Terminals.GoTo, TerminalValues.GoTo }, { Terminals.Grant, TerminalValues.Grant }, { Terminals.Group, TerminalValues.Group }, { Terminals.Grouping, TerminalValues.Grouping }, { Terminals.Groups, TerminalValues.Groups }, { Terminals.Guarantee, TerminalValues.Guarantee }, { Terminals.Guard, TerminalValues.Guard }, { Terminals.Hash, TerminalValues.Hash }, { Terminals.HashKeys, TerminalValues.HashKeys }, { Terminals.Having, TerminalValues.Having }, { Terminals.Heap, TerminalValues.Heap }, { Terminals.Hide, TerminalValues.Hide }, { Terminals.Hierarchy, TerminalValues.Hierarchy }, { Terminals.High, TerminalValues.High }, { Terminals.Hour, TerminalValues.Hour }, { Terminals.Id, TerminalValues.Id }, { Terminals.Identified, TerminalValues.Identified }, { Terminals.Identifier, null }, { Terminals.Identity, TerminalValues.Identity }, { Terminals.IdleTime, TerminalValues.IdleTime }, { Terminals.If, TerminalValues.If }, { Terminals.Ignore, TerminalValues.Ignore }, { Terminals.IgnoreCharactersAfterEndOfRecord, TerminalValues.IgnoreCharactersAfterEndOfRecord }, { Terminals.Immediate, TerminalValues.Immediate }, { Terminals.In, TerminalValues.In }, { Terminals.Include, TerminalValues.Include }, { Terminals.Including, TerminalValues.Including }, { Terminals.Increment, TerminalValues.Increment }, { Terminals.Indent, TerminalValues.Indent }, { Terminals.Index, TerminalValues.Index }, { Terminals.Indexing, TerminalValues.Indexing }, { Terminals.IndexType, TerminalValues.IndexType }, { Terminals.Indicator, TerminalValues.Indicator }, { Terminals.IndicatorVariableIdentifier, null }, { Terminals.Indices, TerminalValues.Indices }, { Terminals.InformationLifecycleManagement, TerminalValues.InformationLifecycleManagement }, { Terminals.Initial, TerminalValues.Initial }, { Terminals.Initially, TerminalValues.Initially }, { Terminals.InitialTransactions, TerminalValues.InitialTransactions }, { Terminals.Inline, TerminalValues.Inline }, { Terminals.InMemory, TerminalValues.InMemory }, { Terminals.Inner, TerminalValues.Inner }, { Terminals.InputOutputOptions, TerminalValues.InputOutputOptions }, { Terminals.Insert, TerminalValues.Insert }, { Terminals.Inserting, TerminalValues.Inserting }, { Terminals.Instance, TerminalValues.Instance }, { Terminals.Instantiable, TerminalValues.Instantiable }, { Terminals.Instead, TerminalValues.Instead }, { Terminals.Integer, TerminalValues.Integer }, { Terminals.IntegerLiteral, null }, { Terminals.Interleaved, TerminalValues.Interleaved }, { Terminals.Intersect, TerminalValues.Intersect }, { Terminals.Interval, TerminalValues.Interval }, { Terminals.Into, TerminalValues.Into }, { Terminals.Invalidate, TerminalValues.Invalidate }, { Terminals.Invisible, TerminalValues.Invisible }, { Terminals.Is, TerminalValues.Is }, { Terminals.Isolation, TerminalValues.Isolation }, { Terminals.IsOpen, TerminalValues.IsOpen }, { Terminals.Iterate, TerminalValues.Iterate }, { Terminals.Java, TerminalValues.Java }, { Terminals.Join, TerminalValues.Join }, { Terminals.Json, TerminalValues.Json }, { Terminals.JsonExists, TerminalValues.JsonExists }, { Terminals.JsonQuery, TerminalValues.JsonQuery }, { Terminals.JsonTable, TerminalValues.JsonTable }, { Terminals.JsonValue, TerminalValues.JsonValue }, { Terminals.Keep, TerminalValues.Keep }, { Terminals.KeepDuplicates, TerminalValues.KeepDuplicates }, { Terminals.Key, TerminalValues.Key }, { Terminals.Keys, TerminalValues.Keys }, { Terminals.Kill, TerminalValues.Kill }, { Terminals.Kilo, TerminalValues.Kilo }, { Terminals.LabelIdentifier, null }, { Terminals.Lag, TerminalValues.Lag }, { Terminals.Language, TerminalValues.Language }, { Terminals.LargeObject, TerminalValues.LargeObject }, { Terminals.LargeObjectFile, TerminalValues.LargeObjectFile }, { Terminals.Last, TerminalValues.Last }, { Terminals.LastValue, TerminalValues.LastValue }, { Terminals.Lateral, TerminalValues.Lateral }, { Terminals.Latest, TerminalValues.Latest }, { Terminals.Lax, TerminalValues.Lax }, { Terminals.Lead, TerminalValues.Lead }, { Terminals.Leading, TerminalValues.Leading }, { Terminals.Left, TerminalValues.Left }, { Terminals.LeftBrace, TerminalValues.LeftBrace }, { Terminals.LeftBracket, TerminalValues.LeftBracket }, { Terminals.LeftLabelMarker, TerminalValues.LeftLabelMarker }, { Terminals.LeftParenthesis, TerminalValues.LeftParenthesis }, { Terminals.LeftRightTrim, TerminalValues.LeftRightTrim }, { Terminals.LeftTrim, TerminalValues.LeftTrim }, { Terminals.Less, TerminalValues.Less }, { Terminals.Level, TerminalValues.Level }, { Terminals.Levels, TerminalValues.Levels }, { Terminals.Library, TerminalValues.Library }, { Terminals.Like, TerminalValues.Like }, { Terminals.LikeUcs2, TerminalValues.LikeUcs2 }, { Terminals.LikeUcs4, TerminalValues.LikeUcs4 }, { Terminals.LikeUnicode, TerminalValues.LikeUnicode }, { Terminals.Limit, TerminalValues.Limit }, { Terminals.Linear, TerminalValues.Linear }, { Terminals.Link, TerminalValues.Link }, { Terminals.List, TerminalValues.List }, { Terminals.ListAggregation, TerminalValues.ListAggregation }, { Terminals.Little, TerminalValues.Little }, { Terminals.Load, TerminalValues.Load }, { Terminals.Local, TerminalValues.Local }, { Terminals.Location, TerminalValues.Location }, { Terminals.Locator, TerminalValues.Locator }, { Terminals.Lock, TerminalValues.Lock }, { Terminals.Locked, TerminalValues.Locked }, { Terminals.Locking, TerminalValues.Locking }, { Terminals.Log, TerminalValues.Log }, { Terminals.LogFile, TerminalValues.LogFile }, { Terminals.Logging, TerminalValues.Logging }, { Terminals.LogicalReadsPerCall, TerminalValues.LogicalReadsPerCall }, { Terminals.LogicalReadsPerSession, TerminalValues.LogicalReadsPerSession }, { Terminals.Logoff, TerminalValues.Logoff }, { Terminals.Logon, TerminalValues.Logon }, { Terminals.Long, TerminalValues.Long }, { Terminals.Loop, TerminalValues.Loop }, { Terminals.Low, TerminalValues.Low }, { Terminals.Main, TerminalValues.Main }, { Terminals.Management, TerminalValues.Management }, { Terminals.Manual, TerminalValues.Manual }, { Terminals.Map, TerminalValues.Map }, { Terminals.Mapping, TerminalValues.Mapping }, { Terminals.Mask, TerminalValues.Mask }, { Terminals.Master, TerminalValues.Master }, { Terminals.Match, TerminalValues.Match }, { Terminals.Matched, TerminalValues.Matched }, { Terminals.MatchRecognize, TerminalValues.MatchRecognize }, { Terminals.Materialized, TerminalValues.Materialized }, { Terminals.MathDivide, TerminalValues.MathDivide }, { Terminals.MathEquals, TerminalValues.MathEquals }, { Terminals.MathFactor, TerminalValues.MathFactor }, { Terminals.MathGreatherThan, TerminalValues.MathGreatherThan }, { Terminals.MathGreatherThanOrEquals, TerminalValues.MathGreatherThanOrEquals }, { Terminals.MathInfinite, TerminalValues.MathInfinite }, { Terminals.MathLessThan, TerminalValues.MathLessThan }, { Terminals.MathLessThanOrEquals, TerminalValues.MathLessThanOrEquals }, { Terminals.MathMinus, TerminalValues.MathMinus }, { Terminals.MathNotANumber, TerminalValues.MathNotANumber }, { Terminals.MathNotEqualsC, TerminalValues.MathNotEqualsC }, { Terminals.MathNotEqualsCircumflex, TerminalValues.MathNotEqualsCircumflex }, { Terminals.MathNotEqualsSql, TerminalValues.MathNotEqualsSql }, { Terminals.MathPlus, TerminalValues.MathPlus }, { Terminals.Max, TerminalValues.Max }, { Terminals.MaximumExtents, TerminalValues.MaximumExtents }, { Terminals.MaximumSize, TerminalValues.MaximumSize }, { Terminals.MaximumTransactions, TerminalValues.MaximumTransactions }, { Terminals.MaximumValue, TerminalValues.MaximumValue }, { Terminals.Measures, TerminalValues.Measures }, { Terminals.Medium, TerminalValues.Medium }, { Terminals.Mega, TerminalValues.Mega }, { Terminals.Member, TerminalValues.Member }, { Terminals.MemberFunctionIdentifier, null }, { Terminals.Memory, TerminalValues.Memory }, { Terminals.MemoryCompression, TerminalValues.MemoryCompression }, { Terminals.Merge, TerminalValues.Merge }, { Terminals.Migrate, TerminalValues.Migrate }, { Terminals.Migration, TerminalValues.Migration }, { Terminals.Min, TerminalValues.Min }, { Terminals.Minimize, TerminalValues.Minimize }, { Terminals.Minimum, TerminalValues.Minimum }, { Terminals.MinimumExtents, TerminalValues.MinimumExtents }, { Terminals.MinimumValue, TerminalValues.MinimumValue }, { Terminals.Mining, TerminalValues.Mining }, { Terminals.Minute, TerminalValues.Minute }, { Terminals.Missing, TerminalValues.Missing }, { Terminals.Mode, TerminalValues.Mode }, { Terminals.Model, TerminalValues.Model }, { Terminals.Modification, TerminalValues.Modification }, { Terminals.Modify, TerminalValues.Modify }, { Terminals.Month, TerminalValues.Month }, { Terminals.Months, TerminalValues.Months }, { Terminals.Move, TerminalValues.Move }, { Terminals.Movement, TerminalValues.Movement }, { Terminals.Multiset, TerminalValues.Multiset }, { Terminals.Name, TerminalValues.Name }, { Terminals.National, TerminalValues.National }, { Terminals.NationalCharacterSet, TerminalValues.NationalCharacterSet }, { Terminals.Natural, TerminalValues.Natural }, { Terminals.NChar, TerminalValues.NChar }, { Terminals.NegationOrNull, TerminalValues.NegationOrNull }, { Terminals.Nested, TerminalValues.Nested }, { Terminals.New, TerminalValues.New }, { Terminals.NewLine, TerminalValues.NewLine }, { Terminals.Next, TerminalValues.Next }, { Terminals.No, TerminalValues.No }, { Terminals.NoAudit, TerminalValues.NoAudit }, { Terminals.NoBadFile, TerminalValues.NoBadFile }, { Terminals.NoCache, TerminalValues.NoCache }, { Terminals.NoCheck, TerminalValues.NoCheck }, { Terminals.Nocompress, TerminalValues.Nocompress }, { Terminals.NoCompress, TerminalValues.NoCompress }, { Terminals.NoCopy, TerminalValues.NoCopy }, { Terminals.NoCycle, TerminalValues.NoCycle }, { Terminals.NoDirectInputOutput, TerminalValues.NoDirectInputOutput }, { Terminals.NoDiscardFile, TerminalValues.NoDiscardFile }, { Terminals.NoEntityEscaping, TerminalValues.NoEntityEscaping }, { Terminals.NoGuarantee, TerminalValues.NoGuarantee }, { Terminals.NoKeep, TerminalValues.NoKeep }, { Terminals.NoLogFile, TerminalValues.NoLogFile }, { Terminals.NoLogging, TerminalValues.NoLogging }, { Terminals.NoMapping, TerminalValues.NoMapping }, { Terminals.NoMaximumValue, TerminalValues.NoMaximumValue }, { Terminals.NoMinimize, TerminalValues.NoMinimize }, { Terminals.NoMinimumValue, TerminalValues.NoMinimumValue }, { Terminals.NonAvailableValues, TerminalValues.NonAvailableValues }, { Terminals.None, TerminalValues.None }, { Terminals.NonEditionable, TerminalValues.NonEditionable }, { Terminals.NonSchema, TerminalValues.NonSchema }, { Terminals.NoNullIf, TerminalValues.NoNullIf }, { Terminals.NoOrder, TerminalValues.NoOrder }, { Terminals.NoParallel, TerminalValues.NoParallel }, { Terminals.NoPartition, TerminalValues.NoPartition }, { Terminals.NoRely, TerminalValues.NoRely }, { Terminals.NoReplay, TerminalValues.NoReplay }, { Terminals.Normal, TerminalValues.Normal }, { Terminals.NoRowDependencies, TerminalValues.NoRowDependencies }, { Terminals.NoSchemaCheck, TerminalValues.NoSchemaCheck }, { Terminals.NoSort, TerminalValues.NoSort }, { Terminals.NoSwitch, TerminalValues.NoSwitch }, { Terminals.Not, TerminalValues.Not }, { Terminals.NotFound, TerminalValues.NotFound }, { Terminals.Nothing, TerminalValues.Nothing }, { Terminals.NoTrim, TerminalValues.NoTrim }, { Terminals.NoValidate, TerminalValues.NoValidate }, { Terminals.Nowait, TerminalValues.Nowait }, { Terminals.Null, TerminalValues.Null }, { Terminals.NullIf, TerminalValues.NullIf }, { Terminals.Nulls, TerminalValues.Nulls }, { Terminals.Number, TerminalValues.Number }, { Terminals.NumberLiteral, null }, { Terminals.Numeric, TerminalValues.Numeric }, { Terminals.NVarchar, TerminalValues.NVarchar }, { Terminals.NVarchar2, TerminalValues.NVarchar2 }, { Terminals.Object, TerminalValues.Object }, { Terminals.ObjectAlias, null }, { Terminals.ObjectId, TerminalValues.ObjectId }, { Terminals.ObjectIdentifier, null }, { Terminals.ObjectIdentifierIndex, TerminalValues.ObjectIdentifierIndex }, { Terminals.Of, TerminalValues.Of }, { Terminals.Off, TerminalValues.Off }, { Terminals.Offline, TerminalValues.Offline }, { Terminals.Offset, TerminalValues.Offset }, { Terminals.Old, TerminalValues.Old }, { Terminals.Oltp, TerminalValues.Oltp }, { Terminals.On, TerminalValues.On }, { Terminals.One, TerminalValues.One }, { Terminals.Online, TerminalValues.Online }, { Terminals.Only, TerminalValues.Only }, { Terminals.Opaque, TerminalValues.Opaque }, { Terminals.Open, TerminalValues.Open }, { Terminals.Operations, TerminalValues.Operations }, { Terminals.Operator, TerminalValues.Operator }, { Terminals.OperatorConcatenation, TerminalValues.OperatorConcatenation }, { Terminals.Option, TerminalValues.Option }, { Terminals.Optionally, TerminalValues.Optionally }, { Terminals.OptionalParameterOperator, TerminalValues.OptionalParameterOperator }, { Terminals.Or, TerminalValues.Or }, { Terminals.OracleDataPump, TerminalValues.OracleDataPump }, { Terminals.OracleDate, TerminalValues.OracleDate }, { Terminals.OracleLoader, TerminalValues.OracleLoader }, { Terminals.OracleNumber, TerminalValues.OracleNumber }, { Terminals.Order, TerminalValues.Order }, { Terminals.Ordinality, TerminalValues.Ordinality }, { Terminals.Organization, TerminalValues.Organization }, { Terminals.Others, TerminalValues.Others }, { Terminals.Out, TerminalValues.Out }, { Terminals.Outer, TerminalValues.Outer }, { Terminals.Over, TerminalValues.Over }, { Terminals.Overflow, TerminalValues.Overflow }, { Terminals.Override, TerminalValues.Override }, { Terminals.Overriding, TerminalValues.Overriding }, { Terminals.Package, TerminalValues.Package }, { Terminals.Parallel, TerminalValues.Parallel }, { Terminals.ParallelEnable, TerminalValues.ParallelEnable }, { Terminals.ParameterFile, TerminalValues.ParameterFile }, { Terminals.ParameterIdentifier, null }, { Terminals.Parameters, TerminalValues.Parameters }, { Terminals.Parent, TerminalValues.Parent }, { Terminals.Partial, TerminalValues.Partial }, { Terminals.Partition, TerminalValues.Partition }, { Terminals.Partitions, TerminalValues.Partitions }, { Terminals.Passing, TerminalValues.Passing }, { Terminals.Password, TerminalValues.Password }, { Terminals.PasswordGraceTime, TerminalValues.PasswordGraceTime }, { Terminals.PasswordLifeTime, TerminalValues.PasswordLifeTime }, { Terminals.PasswordLockTime, TerminalValues.PasswordLockTime }, { Terminals.PasswordReuseMax, TerminalValues.PasswordReuseMax }, { Terminals.PasswordReuseTime, TerminalValues.PasswordReuseTime }, { Terminals.PasswordVerifyFunction, TerminalValues.PasswordVerifyFunction }, { Terminals.Past, TerminalValues.Past }, { Terminals.Patch, TerminalValues.Patch }, { Terminals.Path, TerminalValues.Path }, { Terminals.Pattern, TerminalValues.Pattern }, { Terminals.Pctfree, TerminalValues.Pctfree }, { Terminals.Per, TerminalValues.Per }, { Terminals.Percent, TerminalValues.Percent }, { Terminals.PercentCharacter, TerminalValues.PercentCharacter }, { Terminals.PercentFree, TerminalValues.PercentFree }, { Terminals.PercentileContinuousDistribution, TerminalValues.PercentileContinuousDistribution }, { Terminals.PercentileDiscreteDistribution, TerminalValues.PercentileDiscreteDistribution }, { Terminals.PercentIncrease, TerminalValues.PercentIncrease }, { Terminals.PercentThreshold, TerminalValues.PercentThreshold }, { Terminals.PercentUsed, TerminalValues.PercentUsed }, { Terminals.PercentVersion, TerminalValues.PercentVersion }, { Terminals.Period, TerminalValues.Period }, { Terminals.Permanent, TerminalValues.Permanent }, { Terminals.Permute, TerminalValues.Permute }, { Terminals.Peta, TerminalValues.Peta }, { Terminals.Pipe, TerminalValues.Pipe }, { Terminals.Pipelined, TerminalValues.Pipelined }, { Terminals.Pivot, TerminalValues.Pivot }, { Terminals.Plan, TerminalValues.Plan }, { Terminals.PlsInteger, TerminalValues.PlsInteger }, { Terminals.PlSqlIdentifier, null }, { Terminals.Pluggable, TerminalValues.Pluggable }, { Terminals.Point, TerminalValues.Point }, { Terminals.Policy, TerminalValues.Policy }, { Terminals.Position, TerminalValues.Position }, { Terminals.PostTransaction, TerminalValues.PostTransaction }, { Terminals.Pragma, TerminalValues.Pragma }, { Terminals.Precedes, TerminalValues.Precedes }, { Terminals.Preceding, TerminalValues.Preceding }, { Terminals.Precision, TerminalValues.Precision }, { Terminals.Preprocessor, TerminalValues.Preprocessor }, { Terminals.Preserve, TerminalValues.Preserve }, { Terminals.Pretty, TerminalValues.Pretty }, { Terminals.Previous, TerminalValues.Previous }, { Terminals.Primary, TerminalValues.Primary }, { Terminals.Prior, TerminalValues.Prior }, { Terminals.Priority, TerminalValues.Priority }, { Terminals.PrivateSystemGlobalArea, TerminalValues.PrivateSystemGlobalArea }, { Terminals.Privileges, TerminalValues.Privileges }, { Terminals.Procedure, TerminalValues.Procedure }, { Terminals.Profile, TerminalValues.Profile }, { Terminals.Public, TerminalValues.Public }, { Terminals.Purge, TerminalValues.Purge }, { Terminals.Query, TerminalValues.Query }, { Terminals.QuestionMark, TerminalValues.QuestionMark }, { Terminals.Quiesce, TerminalValues.Quiesce }, { Terminals.Quota, TerminalValues.Quota }, { Terminals.Raise, TerminalValues.Raise }, { Terminals.Range, TerminalValues.Range }, { Terminals.Rank, TerminalValues.Rank }, { Terminals.Raw, TerminalValues.Raw }, { Terminals.Read, TerminalValues.Read }, { Terminals.ReadNoDatabaseState, TerminalValues.ReadNoDatabaseState }, { Terminals.ReadNoPackageState, TerminalValues.ReadNoPackageState }, { Terminals.Reads, TerminalValues.Reads }, { Terminals.ReadSize, TerminalValues.ReadSize }, { Terminals.Record, TerminalValues.Record }, { Terminals.Records, TerminalValues.Records }, { Terminals.RecordsPerBlock, TerminalValues.RecordsPerBlock }, { Terminals.Recoverable, TerminalValues.Recoverable }, { Terminals.Recovery, TerminalValues.Recovery }, { Terminals.Recycle, TerminalValues.Recycle }, { Terminals.RecycleBin, TerminalValues.RecycleBin }, { Terminals.Redo, TerminalValues.Redo }, { Terminals.Ref, TerminalValues.Ref }, { Terminals.Reference, TerminalValues.Reference }, { Terminals.References, TerminalValues.References }, { Terminals.Referencing, TerminalValues.Referencing }, { Terminals.Refresh, TerminalValues.Refresh }, { Terminals.Register, TerminalValues.Register }, { Terminals.Reject, TerminalValues.Reject }, { Terminals.ReKey, TerminalValues.ReKey }, { Terminals.ReliesOn, TerminalValues.ReliesOn }, { Terminals.Relocate, TerminalValues.Relocate }, { Terminals.Rely, TerminalValues.Rely }, { Terminals.Remove, TerminalValues.Remove }, { Terminals.Rename, TerminalValues.Rename }, { Terminals.Repeat, TerminalValues.Repeat }, { Terminals.Replace, TerminalValues.Replace }, { Terminals.Required, TerminalValues.Required }, { Terminals.Reset, TerminalValues.Reset }, { Terminals.Resize, TerminalValues.Resize }, { Terminals.Resource, TerminalValues.Resource }, { Terminals.Respect, TerminalValues.Respect }, { Terminals.Restore, TerminalValues.Restore }, { Terminals.Restricted, TerminalValues.Restricted }, { Terminals.RestrictReferences, TerminalValues.RestrictReferences }, { Terminals.Result, TerminalValues.Result }, { Terminals.ResultCache, TerminalValues.ResultCache }, { Terminals.Resumable, TerminalValues.Resumable }, { Terminals.Resume, TerminalValues.Resume }, { Terminals.Retention, TerminalValues.Retention }, { Terminals.Return, TerminalValues.Return }, { Terminals.Returning, TerminalValues.Returning }, { Terminals.Reuse, TerminalValues.Reuse }, { Terminals.Reverse, TerminalValues.Reverse }, { Terminals.Revoke, TerminalValues.Revoke }, { Terminals.Rewrite, TerminalValues.Rewrite }, { Terminals.Right, TerminalValues.Right }, { Terminals.RightBrace, TerminalValues.RightBrace }, { Terminals.RightBracket, TerminalValues.RightBracket }, { Terminals.RightLabelMarker, TerminalValues.RightLabelMarker }, { Terminals.RightParenthesis, TerminalValues.RightParenthesis }, { Terminals.RightTrim, TerminalValues.RightTrim }, { Terminals.Role, TerminalValues.Role }, { Terminals.Roles, TerminalValues.Roles }, { Terminals.Rollback, TerminalValues.Rollback }, { Terminals.Rolling, TerminalValues.Rolling }, { Terminals.Rollup, TerminalValues.Rollup }, { Terminals.Row, TerminalValues.Row }, { Terminals.RowCount, TerminalValues.RowCount }, { Terminals.RowDependencies, TerminalValues.RowDependencies }, { Terminals.RowIdDataType, TerminalValues.RowIdDataType }, { Terminals.RowIdPseudoColumn, TerminalValues.RowIdPseudoColumn }, { Terminals.RowNumberPseudoColumn, TerminalValues.RowNumberPseudoColumn }, { Terminals.Rows, TerminalValues.Rows }, { Terminals.RowType, TerminalValues.RowType }, { Terminals.Rules, TerminalValues.Rules }, { Terminals.Running, TerminalValues.Running }, { Terminals.Salt, TerminalValues.Salt }, { Terminals.Sample, TerminalValues.Sample }, { Terminals.Save, TerminalValues.Save }, { Terminals.Savepoint, TerminalValues.Savepoint }, { Terminals.Schema, TerminalValues.Schema }, { Terminals.SchemaCheck, TerminalValues.SchemaCheck }, { Terminals.SchemaIdentifier, null }, { Terminals.Scope, TerminalValues.Scope }, { Terminals.Search, TerminalValues.Search }, { Terminals.Second, TerminalValues.Second }, { Terminals.SecureFile, TerminalValues.SecureFile }, { Terminals.Seed, TerminalValues.Seed }, { Terminals.Segment, TerminalValues.Segment }, { Terminals.Select, TerminalValues.Select }, { Terminals.Self, TerminalValues.Self }, { Terminals.Semicolon, TerminalValues.Semicolon }, { Terminals.Sequence, TerminalValues.Sequence }, { Terminals.Sequential, TerminalValues.Sequential }, { Terminals.Serializable, TerminalValues.Serializable }, { Terminals.SeriallyReusable, TerminalValues.SeriallyReusable }, { Terminals.ServerError, TerminalValues.ServerError }, { Terminals.ServerParameterFile, TerminalValues.ServerParameterFile }, { Terminals.Session, TerminalValues.Session }, { Terminals.SessionId, TerminalValues.SessionId }, { Terminals.SessionsPerUser, TerminalValues.SessionsPerUser }, { Terminals.SessionTimezone, TerminalValues.SessionTimezone }, { Terminals.Set, TerminalValues.Set }, { Terminals.SetMinus, TerminalValues.SetMinus }, { Terminals.Sets, TerminalValues.Sets }, { Terminals.Settings, TerminalValues.Settings }, { Terminals.Share, TerminalValues.Share }, { Terminals.SharedPool, TerminalValues.SharedPool }, { Terminals.Show, TerminalValues.Show }, { Terminals.Shrink, TerminalValues.Shrink }, { Terminals.Shutdown, TerminalValues.Shutdown }, { Terminals.Siblings, TerminalValues.Siblings }, { Terminals.Single, TerminalValues.Single }, { Terminals.Size, TerminalValues.Size }, { Terminals.Sizes, TerminalValues.Sizes }, { Terminals.Skip, TerminalValues.Skip }, { Terminals.SmallFile, TerminalValues.SmallFile }, { Terminals.Smallint, TerminalValues.Smallint }, { Terminals.Snapshot, TerminalValues.Snapshot }, { Terminals.Some, TerminalValues.Some }, { Terminals.Sort, TerminalValues.Sort }, { Terminals.Source, TerminalValues.Source }, { Terminals.Space, null }, { Terminals.Specification, TerminalValues.Specification }, { Terminals.SqlLoaderTrim, TerminalValues.SqlLoaderTrim }, { Terminals.SqlPlusTerminator, TerminalValues.SqlPlusTerminator }, { Terminals.Standalone, TerminalValues.Standalone }, { Terminals.StandardDeviation, TerminalValues.StandardDeviation }, { Terminals.Start, TerminalValues.Start }, { Terminals.StartOf, TerminalValues.StartOf }, { Terminals.Startup, TerminalValues.Startup }, { Terminals.Statement, TerminalValues.Statement }, { Terminals.StatementId, TerminalValues.StatementId }, { Terminals.Static, TerminalValues.Static }, { Terminals.Statistics, TerminalValues.Statistics }, { Terminals.Stop, TerminalValues.Stop }, { Terminals.Storage, TerminalValues.Storage }, { Terminals.Store, TerminalValues.Store }, { Terminals.Strict, TerminalValues.Strict }, { Terminals.String, TerminalValues.String }, { Terminals.StringLiteral, null }, { Terminals.Structure, TerminalValues.Structure }, { Terminals.SubMultiset, TerminalValues.SubMultiset }, { Terminals.Subpartition, TerminalValues.Subpartition }, { Terminals.Subpartitions, TerminalValues.Subpartitions }, { Terminals.Subset, TerminalValues.Subset }, { Terminals.Substitutable, TerminalValues.Substitutable }, { Terminals.SubType, TerminalValues.SubType }, { Terminals.Sum, TerminalValues.Sum }, { Terminals.Supplemental, TerminalValues.Supplemental }, { Terminals.Suspend, TerminalValues.Suspend }, { Terminals.Switch, TerminalValues.Switch }, { Terminals.Sync, TerminalValues.Sync }, { Terminals.Synchronous, TerminalValues.Synchronous }, { Terminals.Synonym, TerminalValues.Synonym }, { Terminals.System, TerminalValues.System }, { Terminals.SystemChangeNumber, TerminalValues.SystemChangeNumber }, { Terminals.SystemDate, TerminalValues.SystemDate }, { Terminals.Table, TerminalValues.Table }, { Terminals.Tables, TerminalValues.Tables }, { Terminals.Tablespace, TerminalValues.Tablespace }, { Terminals.Tempfile, TerminalValues.Tempfile }, { Terminals.Template, TerminalValues.Template }, { Terminals.Temporary, TerminalValues.Temporary }, { Terminals.Tera, TerminalValues.Tera }, { Terminals.Terminated, TerminalValues.Terminated }, { Terminals.Territory, TerminalValues.Territory }, { Terminals.Than, TerminalValues.Than }, { Terminals.The, TerminalValues.The }, { Terminals.Then, TerminalValues.Then }, { Terminals.These, TerminalValues.These }, { Terminals.Through, TerminalValues.Through }, { Terminals.Tier, TerminalValues.Tier }, { Terminals.Ties, TerminalValues.Ties }, { Terminals.Time, TerminalValues.Time }, { Terminals.Timeout, TerminalValues.Timeout }, { Terminals.Timestamp, TerminalValues.Timestamp }, { Terminals.TimezoneAbbreviation, TerminalValues.TimezoneAbbreviation }, { Terminals.TimezoneHour, TerminalValues.TimezoneHour }, { Terminals.TimezoneMinute, TerminalValues.TimezoneMinute }, { Terminals.TimezoneRegion, TerminalValues.TimezoneRegion }, { Terminals.To, TerminalValues.To }, { Terminals.Trailing, TerminalValues.Trailing }, { Terminals.Transaction, TerminalValues.Transaction }, { Terminals.Transforms, TerminalValues.Transforms }, { Terminals.Treat, TerminalValues.Treat }, { Terminals.Trigger, TerminalValues.Trigger }, { Terminals.Triggers, TerminalValues.Triggers }, { Terminals.Trim, TerminalValues.Trim }, { Terminals.True, TerminalValues.True }, { Terminals.Truncate, TerminalValues.Truncate }, { Terminals.Trust, TerminalValues.Trust }, { Terminals.Trusted, TerminalValues.Trusted }, { Terminals.Type, TerminalValues.Type }, { Terminals.TypeIdentifier, null }, { Terminals.Unbounded, TerminalValues.Unbounded }, { Terminals.Unconditional, TerminalValues.Unconditional }, { Terminals.Under, TerminalValues.Under }, { Terminals.Undo, TerminalValues.Undo }, { Terminals.Uniform, TerminalValues.Uniform }, { Terminals.Union, TerminalValues.Union }, { Terminals.Unique, TerminalValues.Unique }, { Terminals.UniversalRowId, TerminalValues.UniversalRowId }, { Terminals.Unlimited, TerminalValues.Unlimited }, { Terminals.Unlock, TerminalValues.Unlock }, { Terminals.Unpacked, TerminalValues.Unpacked }, { Terminals.Unpivot, TerminalValues.Unpivot }, { Terminals.Unplug, TerminalValues.Unplug }, { Terminals.Unquiesce, TerminalValues.Unquiesce }, { Terminals.Unrecoverable, TerminalValues.Unrecoverable }, { Terminals.Unsigned, TerminalValues.Unsigned }, { Terminals.Until, TerminalValues.Until }, { Terminals.Unusable, TerminalValues.Unusable }, { Terminals.Unused, TerminalValues.Unused }, { Terminals.Update, TerminalValues.Update }, { Terminals.Updated, TerminalValues.Updated }, { Terminals.Updating, TerminalValues.Updating }, { Terminals.Upgrade, TerminalValues.Upgrade }, { Terminals.Upsert, TerminalValues.Upsert }, { Terminals.Usable, TerminalValues.Usable }, { Terminals.Use, TerminalValues.Use }, { Terminals.User, TerminalValues.User }, { Terminals.UserDefinedFunction, TerminalValues.UserDefinedFunction }, { Terminals.Users, TerminalValues.Users }, { Terminals.Using, TerminalValues.Using }, { Terminals.Validate, TerminalValues.Validate }, { Terminals.Value, TerminalValues.Value }, { Terminals.Values, TerminalValues.Values }, { Terminals.Varchar, TerminalValues.Varchar }, { Terminals.Varchar2, TerminalValues.Varchar2 }, { Terminals.VarcharC, TerminalValues.VarcharC }, { Terminals.Variable, TerminalValues.Variable }, { Terminals.VariableElementArray, TerminalValues.VariableElementArray }, { Terminals.Variance, TerminalValues.Variance }, { Terminals.Varraw, TerminalValues.Varraw }, { Terminals.VarrawC, TerminalValues.VarrawC }, { Terminals.Varying, TerminalValues.Varying }, { Terminals.Version, TerminalValues.Version }, { Terminals.Versions, TerminalValues.Versions }, { Terminals.VerticalBarCharacter, TerminalValues.VerticalBarCharacter }, { Terminals.View, TerminalValues.View }, { Terminals.Virtual, TerminalValues.Virtual }, { Terminals.Visible, TerminalValues.Visible }, { Terminals.Wait, TerminalValues.Wait }, { Terminals.Wallet, TerminalValues.Wallet }, { Terminals.WellFormed, TerminalValues.WellFormed }, { Terminals.When, TerminalValues.When }, { Terminals.Where, TerminalValues.Where }, { Terminals.While, TerminalValues.While }, { Terminals.Whitespace, TerminalValues.Whitespace }, { Terminals.With, TerminalValues.With }, { Terminals.Within, TerminalValues.Within }, { Terminals.Without, TerminalValues.Without }, { Terminals.Work, TerminalValues.Work }, { Terminals.Wrapped, TerminalValues.Wrapped }, { Terminals.WrappedToken, null }, { Terminals.Wrapper, TerminalValues.Wrapper }, { Terminals.Write, TerminalValues.Write }, { Terminals.WriteNoDatabaseState, TerminalValues.WriteNoDatabaseState }, { Terminals.WriteNoPackageState, TerminalValues.WriteNoPackageState }, { Terminals.Xml, TerminalValues.Xml }, { Terminals.XmlAggregate, TerminalValues.XmlAggregate }, { Terminals.XmlAlias, null }, { Terminals.XmlAttributes, TerminalValues.XmlAttributes }, { Terminals.XmlCast, TerminalValues.XmlCast }, { Terminals.XmlColumnValue, TerminalValues.XmlColumnValue }, { Terminals.XmlElement, TerminalValues.XmlElement }, { Terminals.XmlExists, TerminalValues.XmlExists }, { Terminals.XmlForest, TerminalValues.XmlForest }, { Terminals.XmlNamespaces, TerminalValues.XmlNamespaces }, { Terminals.XmlParse, TerminalValues.XmlParse }, { Terminals.XmlQuery, TerminalValues.XmlQuery }, { Terminals.XmlRoot, TerminalValues.XmlRoot }, { Terminals.XmlSerialize, TerminalValues.XmlSerialize }, { Terminals.XmlTable, TerminalValues.XmlTable }, { Terminals.XmlType, TerminalValues.XmlType }, { Terminals.Year, TerminalValues.Year }, { Terminals.Years, TerminalValues.Years }, { Terminals.YearToMonth, TerminalValues.YearToMonth }, { Terminals.Yes, TerminalValues.Yes }, { Terminals.Zone, TerminalValues.Zone }, { Terminals.Zoned, TerminalValues.Zoned }, { Terminals.ZoneMap, TerminalValues.ZoneMap } });
 			
 		private static readonly HashSet<string> IdentifiersInternal = new HashSet<string> { Terminals.BindVariableIdentifier, Terminals.CursorIdentifier, Terminals.DatabaseLinkIdentifier, Terminals.DataTypeIdentifier, Terminals.ExceptionIdentifier, Terminals.Identifier, Terminals.IndicatorVariableIdentifier, Terminals.LabelIdentifier, Terminals.MemberFunctionIdentifier, Terminals.ObjectIdentifier, Terminals.ObjectIdentifierIndex, Terminals.ParameterIdentifier, Terminals.PlSqlIdentifier, Terminals.SchemaIdentifier, Terminals.TypeIdentifier };
 
-		internal static readonly ICollection<string> ReservedWordsSql = new HashSet<string> { "ACCESS", "ADD", "ALL", "ALTER", "AND", "ANY", "ASC", "AUDIT", "BETWEEN", "BY", "CLUSTER", "COLUMN", "COMMENT", "COMPRESS", "CONNECT", "CREATE", "CURRENT", "DATE", "DECIMAL", "DEFAULT", "DELETE", "DESC", "DISTINCT", "DROP", "ELSE", "EXCLUSIVE", "EXISTS", "FILE", "FLOAT", "FOR", "FROM", "GRANT", "GROUP", "HAVING", "CHAR", "CHECK", "IDENTIFIED", "IMMEDIATE", "IN", "INDEX", "INITIAL", "INSERT", "INTEGER", "INTERSECT", "INTO", "IS", "LEVEL", "LIKE", "LOCK", "LONG", "MINUS", "MODE", "MODIFY", "NOAUDIT", "NOCOMPRESS", "NOT", "NOWAIT", "NULL", "NUMBER", "OF", "OFFLINE", "ON", "OPTION", "OR", "ORDER", "PCTFREE", "PRIOR", "PUBLIC", "RAW", "RENAME", "RESOURCE", "REVOKE", "ROW", "ROWID", "ROWNUM", "ROWS", "SELECT", "SET", "SHARE", "SIZE", "SMALLINT", "SOME", "START", "SYNONYM", "SYSDATE", "TABLE", "THEN", "TO", "TRIGGER", "UNION", "UNIQUE", "UPDATE", "USER", "VALUES", "VARCHAR", "VARCHAR2", "VIEW", "WHERE", "WITH" };
+		internal static readonly ICollection<string> ReservedWordsSql = new HashSet<string> { "ACCESS", "ADD", "ALL", "ALTER", "AND", "ANY", "ASC", "AUDIT", "BETWEEN", "BY", "CHAR", "CHECK", "CLUSTER", "COLUMN", "COMMENT", "COMPRESS", "CONNECT", "CREATE", "CURRENT", "DATE", "DECIMAL", "DEFAULT", "DELETE", "DESC", "DISTINCT", "DROP", "ELSE", "EXCLUSIVE", "EXISTS", "FILE", "FLOAT", "FOR", "FROM", "GRANT", "GROUP", "HAVING", "IDENTIFIED", "IMMEDIATE", "IN", "INDEX", "INITIAL", "INSERT", "INTEGER", "INTERSECT", "INTO", "IS", "LEVEL", "LIKE", "LOCK", "LONG", "MINUS", "MODE", "MODIFY", "NOAUDIT", "NOCOMPRESS", "NOT", "NOWAIT", "NULL", "NUMBER", "OF", "OFFLINE", "ON", "OPTION", "OR", "ORDER", "PCTFREE", "PRIOR", "PUBLIC", "RAW", "RENAME", "RESOURCE", "REVOKE", "ROW", "ROWID", "ROWNUM", "ROWS", "SELECT", "SET", "SHARE", "SIZE", "SMALLINT", "SOME", "START", "SYNONYM", "SYSDATE", "TABLE", "THEN", "TO", "TRIGGER", "UNION", "UNIQUE", "UPDATE", "USER", "VALUES", "VARCHAR", "VARCHAR2", "VIEW", "WHERE", "WITH" };
 		
 		internal static readonly ICollection<string> ReservedWordsPlSqlDeclaration = new HashSet<string> { "BEGIN", "CASE", "CURSOR", "DECLARE", "END", "EXCEPTION", "IF", "WHEN" };
 		

@@ -408,7 +408,7 @@
         <!--<Sequence>
           <NonTerminal Id="AlterMethodSpecificaton" />
           <NonTerminal Id="DependentHandlingClause" IsOptional="true" />
-        </Sequence>
+        </Sequence>-->
         <Sequence>
           <NonTerminal Id="AlterAttributeDefinition" />
           <NonTerminal Id="DependentHandlingClause" IsOptional="true" />
@@ -416,7 +416,129 @@
         <Sequence>
           <NonTerminal Id="AlterCollectionClauses" />
           <NonTerminal Id="DependentHandlingClause" IsOptional="true" />
-        </Sequence>-->
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterAttributeDefinition">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Add" />
+          <Terminal Id="Attribute" />
+          <NonTerminal Id="AttributeWithOptionalDataTypeOrParenthesisEnclosedAttributeDataTypeList" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Modify" />
+          <Terminal Id="Attribute" />
+          <NonTerminal Id="AttributeWithOptionalDataTypeOrParenthesisEnclosedAttributeDataTypeList" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Drop" />
+          <Terminal Id="Attribute" />
+          <NonTerminal Id="IdentifierOrParenthesisEnclosedIdentifierList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AttributeWithOptionalDataTypeOrParenthesisEnclosedAttributeDataTypeList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="DataType" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="AttributeDataTypeList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AttributeDataTypeList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="AtributeDataType" />
+          <NonTerminal Id="AttributeDataTypeListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AtributeDataType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="DataType" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AttributeDataTypeListChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="AttributeDataTypeList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterCollectionClauses">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Modify" />
+          <NonTerminal Id="CollectionLimitOrElementType" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CollectionLimitOrElementType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Limit" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Element" />
+          <Terminal Id="Type" />
+          <NonTerminal Id="DataType" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DependentHandlingClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Invalidate" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Cascade" />
+          <NonTerminal Id="IncludingTableDataOrConvertToSubstitutable" IsOptional="true" />
+          <NonTerminal Id="ForceExceptionsClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="IncludingTableDataOrConvertToSubstitutable">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Not" IsOptional="true" />
+          <Terminal Id="Including" />
+          <Terminal Id="Table" />
+          <Terminal Id="Data" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Convert" />
+          <Terminal Id="To" />
+          <Terminal Id="Substitutable" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ForceExceptionsClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Force" IsOptional="true" />
+          <NonTerminal Id="ConstraintStateExceptionClause" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -440,9 +562,208 @@
           <Terminal Id="As" />
           <Terminal Id="Object" />
           <Terminal Id="LeftParenthesis" />
-          <!--<NonTerminal Id="AttributeDataTypeList" />
-          <NonTerminal Id="CommaChainedElementSpecificationList" IsOptional="true" />-->
+          <NonTerminal Id="AttributeDataTypeList" />
+          <NonTerminal Id="ElementSpecificationListChained" IsOptional="true" />
           <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ElementSpecificationListChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="ElementSpecificationList"/>
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ElementSpecificationList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ElementSpecification" />
+          <NonTerminal Id="ElementSpecificationListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ElementSpecification">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="InheritanceClauses" IsOptional="true" />
+          <NonTerminal Id="SubProgramOrConstructorOrMapOrderFunctionSpecificationList" />
+          <NonTerminal Id="CommaChainedRestrictReferencesPragma" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="InheritanceClauses">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="InheritanceClause" />
+          <NonTerminal Id="InheritanceClauses" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="InheritanceClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Not" IsOptional="true" />
+          <NonTerminal Id="InheritanceOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="InheritanceOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Overriding" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Final" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Instantiable" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SubProgramOrConstructorOrMapOrderFunctionSpecificationList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="SubProgramOrConstructorOrMapOrderFunctionSpecification" />
+          <NonTerminal Id="SubProgramOrConstructorOrMapOrderFunctionSpecificationList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SubProgramOrConstructorOrMapOrderFunctionSpecification">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Member" />
+          <NonTerminal Id="ProcedureOrFunctionSpecification" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Static" />
+          <NonTerminal Id="ProcedureOrFunctionSpecification" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ConstructorSpecification" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Map" />
+          <Terminal Id="Member" />
+          <NonTerminal Id="FunctionSpecification" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Order" />
+          <Terminal Id="Member" />
+          <NonTerminal Id="FunctionSpecification" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ProcedureOrFunctionSpecification">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Procedure" />
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="ParenthesisEnclosedParameterDeclarationList" />
+          <NonTerminal Id="IsOrAsCallSpecification" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="FunctionSpecification" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="FunctionSpecification">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Function" />
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="ParenthesisEnclosedParameterDeclarationList" />
+          <NonTerminal Id="ReturnClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ReturnClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Return" />
+          <NonTerminal Id="PlSqlDataTypeWithoutConstraint" />
+          <NonTerminal Id="IsOrAsCallSpecification" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="SqlJavaObjectType" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SqlJavaObjectType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="External" />
+          <Terminal Id="Name" />
+          <Terminal Id="ObjectIdentifier" />
+          <Terminal Id="Language" />
+          <Terminal Id="Java" />
+          <Terminal Id="Using" />
+          <!-- TODO -->
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ConstructorSpecification">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Final" IsOptional="true" />
+          <Terminal Id="Instantiable" IsOptional="true" />
+          <Terminal Id="Constructor" />
+          <Terminal Id="Function" />
+          <NonTerminal Id="DataType" />
+          <NonTerminal Id="TypeConstructorParameterDeclarationList" IsOptional="true" />
+          <Terminal Id="Return" />
+          <Terminal Id="Self" />
+          <Terminal Id="As" />
+          <Terminal Id="Result" />
+          <NonTerminal Id="IsOrAsCallSpecification" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="TypeConstructorParameterDeclarationList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="Self" />
+          <Terminal Id="In" />
+          <Terminal Id="Out" />
+          <NonTerminal Id="DataType" />
+          <Terminal Id="Comma" />
+          <NonTerminal Id="ParameterDeclarationList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="IsOrAsCallSpecification">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="IsOrAs" />
+          <NonTerminal Id="CallSpecification" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="CommaChainedRestrictReferencesPragma">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <Terminal Id="Pragma" />
+          <NonTerminal Id="PragmaTypeRestrictReferences" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -9591,6 +9912,9 @@
         <Sequence>
           <NonTerminal Id="CreateTrigger" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="CreateType" />
+        </Sequence>
         <!-- TODO: Create other objects -->
       </Sequences>
     </Rule>
@@ -10921,6 +11245,80 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="PragmaDefinition" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <!-- CREATE TYPE -->
+    <Rule StartingNonTerminal="CreateType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Type" />
+          <NonTerminal Id="SchemaObject" />
+          <Terminal Id="Force" IsOptional="true" />
+          <NonTerminal Id="ObjectIdClause" IsOptional="true" />
+          <NonTerminal Id="ObjectTypeDefinition" IsOptional="true" />
+          <Terminal Id="Semicolon" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ObjectIdClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="ObjectId" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ObjectTypeDefinition">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="CommonProgramModifier" IsOptional="true" />
+          <NonTerminal Id="IsOrAsObjectOrUnderSuperType" />
+          <NonTerminal Id="SqlJavaObjectType" IsOptional="true" />
+          <NonTerminal Id="ParethesisEnclosedObjectTypeDefinitionParameterList" IsOptional="true" />
+          <NonTerminal Id="InstantiableOrFinalOptions" IsOptional="true" Comment="Obligatory in documentation" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="IsOrAs" IsOptional="true" />
+          <!--<NonTerminal Id="VaryingArrayOrNestedTableTypeDefinition" IsOptional="true" />-->
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ParethesisEnclosedObjectTypeDefinitionParameterList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="AttributeDataTypeList" />
+          <!-- TODO: SqlJavaObjectTypeAttribute -->
+          <NonTerminal Id="ElementSpecificationListChained" IsOptional="true" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="InstantiableOrFinalOptions">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Not" IsOptional="true" />
+          <NonTerminal Id="InstantiableOrFinal" />
+          <NonTerminal Id="InstantiableOrFinalOptions" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="IsOrAsObjectOrUnderSuperType">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="IsOrAs" />
+          <Terminal Id="Object" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Under" />
+          <NonTerminal Id="SchemaObject" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -12341,15 +12739,23 @@
           <Terminal Id="SeriallyReusable" />
         </Sequence>
         <Sequence>
+          <NonTerminal Id="PragmaTypeRestrictReferences" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="UserDefinedFunction" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PragmaTypeRestrictReferences">
+      <Sequences>
+        <Sequence>
           <Terminal Id="RestrictReferences" />
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="IdentifierOrDefault" />
           <Terminal Id="Comma" />
           <NonTerminal Id="RestrictionList" />
           <Terminal Id="RightParenthesis" />
-        </Sequence>
-        <Sequence>
-          <Terminal Id="UserDefinedFunction" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -19118,7 +19524,17 @@
     <Terminal Id="Logoff" Value="LOGOFF" />
     <Terminal Id="Unplug" Value="UNPLUG" />
     <Terminal Id="Instantiable" Value="INSTANTIABLE" />
-    
+    <Terminal Id="Attribute" Value="ATTRIBUTE" />
+    <Terminal Id="Convert" Value="CONVERT" />
+    <Terminal Id="Overriding" Value="OVERRIDING" />
+    <Terminal Id="Map" Value="MAP" />
+    <Terminal Id="Static" Value="STATIC" />
+    <Terminal Id="Constructor" Value="CONSTRUCTOR" />
+    <Terminal Id="Self" Value="SELF" />
+    <Terminal Id="Result" Value="RESULT" />
+    <Terminal Id="ObjectId" Value="OID" />
+    <Terminal Id="Under" Value="UNDER" />
+
     <!-- External table opaque format specification -->
     <Terminal Id="OracleLoader" Value="ORACLE_LOADER" />
     <Terminal Id="OracleDataPump" Value="ORACLE_DATAPUMP" />

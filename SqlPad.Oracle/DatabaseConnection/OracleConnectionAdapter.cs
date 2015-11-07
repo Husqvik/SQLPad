@@ -805,6 +805,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		internal async Task FinalizeBatchExecution(StatementExecutionBatchResult batchResult, CancellationToken cancellationToken)
 		{
+			_userTransactionInfo = null;
+
 			var exception = await ResolveExecutionPlanIdentifiersAndTransactionStatus(cancellationToken);
 			if (exception != null)
 			{
@@ -1127,11 +1129,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				command.CommandText = OracleDatabaseCommands.SelectLocalTransactionIdCommandText;
 				var transactionId  = OracleReaderValueConvert.ToString(await command.ExecuteScalarAsynchronous(cancellationToken));
 
-				if (String.IsNullOrEmpty(transactionId))
-				{
-					_userTransactionInfo = null;
-				}
-				else
+				if (!String.IsNullOrEmpty(transactionId))
 				{
 					var transactionElements = transactionId.Split('.');
 					_userTransactionInfo =

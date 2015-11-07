@@ -5645,6 +5645,30 @@ PURGE REPEAT INTERVAL '5' DAY";
 				}
 			}
 
+			public class CreateType
+			{
+				[Test(Description = @"")]
+				public void TestCreateType()
+				{
+					const string statementText =
+@"CREATE OR REPLACE TYPE t_string_agg AS OBJECT
+(
+	elements SYS.ODCIVARCHAR2LIST,
+	delimiter VARCHAR2(2),
+	STATIC FUNCTION ODCIAggregateInitialize(sctx IN OUT t_string_agg) RETURN NUMBER,
+	MEMBER FUNCTION ODCIAggregateIterate(self IN OUT t_string_agg, value IN VARCHAR2) RETURN NUMBER,
+	MEMBER FUNCTION ODCIAggregateTerminate(self IN t_string_agg, returnValue OUT VARCHAR2, flags IN NUMBER) RETURN NUMBER,
+	MEMBER FUNCTION ODCIAggregateMerge(self IN OUT t_string_agg, ctx2 IN t_string_agg) RETURN NUMBER
+)";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+			}
+
 			public class CreateAuthorizationSchema
 			{
 				[Test(Description = @""), Ignore]
