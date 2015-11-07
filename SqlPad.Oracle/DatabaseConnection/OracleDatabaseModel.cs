@@ -86,7 +86,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				}
 			}
 
-			_dataDictionaryMapper = new OracleDataDictionaryMapper(this);
+			_dataDictionaryMapper = new OracleDataDictionaryMapper(this, RaiseRefreshStatusChanged);
 
 			InternalRefreshStarted += InternalRefreshStartedHandler;
 			InternalRefreshCompleted += InternalRefreshCompletedHandler;
@@ -293,6 +293,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					Trace.WriteLine($"{DateTime.Now} - Cache for '{_connectionStringName}' is being loaded by other requester. Waiting until operation finishes. ");
 
 					RaiseEvent(RefreshStarted);
+					RaiseRefreshStatusChanged("Waiting for data dictionary metadata... ");
 					return taskCompletionSource.Task;
 				}
 			}
@@ -495,6 +496,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 		
 		public override event EventHandler RefreshStarted;
 
+		public override event EventHandler<DatabaseModelRefreshStatusChangedArgs> RefreshStatusChanged;
+
 		public override event EventHandler RefreshCompleted;
 
 		public override void Dispose()
@@ -529,6 +532,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			Disconnected = null;
 			InitializationFailed = null;
 			RefreshStarted = null;
+			RefreshStatusChanged = null;
 			RefreshCompleted = null;
 
 			foreach (var adapter in _connectionAdapters.ToArray())
@@ -816,6 +820,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				try
 				{
 					RaiseEvent(RefreshStarted);
+					RaiseRefreshStatusChanged("Loading data dictionary metadata cache... ");
 					Trace.WriteLine($"{DateTime.Now} - Attempt to load metadata for '{_connectionStringName}/{ConnectionIdentifier}' from cache. ");
 					var stopwatch = Stopwatch.StartNew();
 					_dataDictionary = CachedDataDictionaries[_connectionStringName] = OracleDataDictionary.Deserialize(stream);
@@ -860,7 +865,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private IEnumerable<OracleProgramMetadata> FilterFunctionsWithUnavailableMetadata(IEnumerable<OracleProgramMetadata> functions)
 		{
 			return functions.Where(m => m != null && m.Type != ProgramType.Procedure);
-		} 
+		}
+
+		private void RaiseRefreshStatusChanged(string message)
+		{
+			RefreshStatusChanged?.Invoke(this, new DatabaseModelRefreshStatusChangedArgs(message));
+		}
 
 		private void RaiseEvent(EventHandler eventHandler)
 		{

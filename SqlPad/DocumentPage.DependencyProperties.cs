@@ -24,6 +24,7 @@ namespace SqlPad
 		public static readonly DependencyProperty CurrentSchemaProperty = DependencyProperty.Register(nameof(CurrentSchema), typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(CurrentSchemaPropertyChangedCallbackHandler));
 		public static readonly DependencyProperty CurrentConnectionProperty = DependencyProperty.Register(nameof(CurrentConnection), typeof(ConnectionStringSettings), typeof(DocumentPage), new FrameworkPropertyMetadata(CurrentConnectionPropertyChangedCallbackHandler));
 		public static readonly DependencyProperty BindVariablesProperty = DependencyProperty.Register(nameof(BindVariables), typeof(IReadOnlyList<BindVariableModel>), typeof(DocumentPage), new FrameworkPropertyMetadata(new BindVariableModel[0]));
+		public static readonly DependencyProperty DatabaseModelRefreshStatusProperty = DependencyProperty.Register(nameof(DatabaseModelRefreshStatus), typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata());
 		#endregion
 
 		#region dependency property accessors
@@ -45,14 +46,14 @@ namespace SqlPad
 		public bool IsProductionConnection
 		{
 			get { return (bool)GetValue(IsProductionConnectionProperty); }
-			set { SetValue(IsProductionConnectionProperty, value); }
+			private set { SetValue(IsProductionConnectionProperty, value); }
 		}
 
 		[Bindable(true)]
 		public bool IsModified
 		{
 			get { return (bool)GetValue(IsModifiedProperty); }
-			set { SetValue(IsModifiedProperty, value); }
+			private set { SetValue(IsModifiedProperty, value); }
 		}
 
 		[Bindable(true)]
@@ -80,7 +81,7 @@ namespace SqlPad
 		public string DocumentHeaderBackgroundColorCode
 		{
 			get { return (string)GetValue(DocumentHeaderBackgroundColorCodeProperty); }
-			set { SetValue(DocumentHeaderBackgroundColorCodeProperty, value); }
+			private set { SetValue(DocumentHeaderBackgroundColorCodeProperty, value); }
 		}
 
 		private static void DocumentHeaderBackgroundColorCodePropertyChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
@@ -95,21 +96,21 @@ namespace SqlPad
 		public string DocumentHeaderToolTip
 		{
 			get { return (string)GetValue(DocumentHeaderToolTipProperty); }
-			set { SetValue(DocumentHeaderToolTipProperty, value); }
+			private set { SetValue(DocumentHeaderToolTipProperty, value); }
 		}
 
 		[Bindable(true)]
 		public string DateTimeFormat
 		{
 			get { return (string)GetValue(DateTimeFormatProperty); }
-			set { SetValue(DateTimeFormatProperty, value); }
+			private set { SetValue(DateTimeFormatProperty, value); }
 		}
 
 		[Bindable(true)]
 		public string DocumentHeader
 		{
 			get { return (string)GetValue(DocumentHeaderProperty); }
-			set { SetValue(DocumentHeaderProperty, value); }
+			private set { SetValue(DocumentHeaderProperty, value); }
 		}
 
 		private static void DocumentHeaderPropertyChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
@@ -190,7 +191,14 @@ namespace SqlPad
 		public IReadOnlyList<BindVariableModel> BindVariables
 		{
 			get { return (IReadOnlyList<BindVariableModel>)GetValue(BindVariablesProperty); }
-			set { SetValue(BindVariablesProperty, value); }
+			private set { SetValue(BindVariablesProperty, value); }
+		}
+
+		[Bindable(true)]
+		public string DatabaseModelRefreshStatus
+		{
+			get { return (string)GetValue(DatabaseModelRefreshStatusProperty); }
+			private set { SetValue(DatabaseModelRefreshStatusProperty, value); }
 		}
 		#endregion
 	}

@@ -393,9 +393,9 @@ namespace SqlPad
 		{
 			_connectionString = connectionString;
 
-		    DatabaseModel?.Dispose();
+			DatabaseModel?.Dispose();
 
-		    ResetSchemas();
+			ResetSchemas();
 
 			var connectionConfiguration = ConfigurationProvider.GetConnectionConfiguration(_connectionString.Name);
 			_providerConfiguration = WorkDocumentCollection.GetProviderConfiguration(_connectionString.ProviderName);
@@ -425,6 +425,7 @@ namespace SqlPad
 			DatabaseModel.Disconnected += DatabaseModelInitializationFailedHandler;
 			DatabaseModel.InitializationFailed += DatabaseModelInitializationFailedHandler;
 			DatabaseModel.RefreshStarted += DatabaseModelRefreshStartedHandler;
+			DatabaseModel.RefreshStatusChanged += DatabaseModelRefreshStatusChangedHandler;
 			DatabaseModel.RefreshCompleted += DatabaseModelRefreshCompletedHandler;
 
 			DatabaseModel.Initialize();
@@ -646,10 +647,16 @@ namespace SqlPad
 			Dispatcher.Invoke(() => ProgressBar.IsIndeterminate = true);
 		}
 
+		private void DatabaseModelRefreshStatusChangedHandler(object sender, DatabaseModelRefreshStatusChangedArgs args)
+		{
+			Dispatcher.Invoke(() => DatabaseModelRefreshStatus = args.Message);
+		}
+
 		private void DatabaseModelRefreshCompletedHandler(object sender, EventArgs eventArgs)
 		{
 			Dispatcher.Invoke(() =>
 			{
+				DatabaseModelRefreshStatus = null;
 				ProgressBar.IsIndeterminate = false;
 				SetSchemas(DatabaseModel.Schemas);
 			});

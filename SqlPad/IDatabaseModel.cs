@@ -33,6 +33,8 @@ namespace SqlPad
 
 		event EventHandler RefreshStarted;
 
+		event EventHandler<DatabaseModelRefreshStatusChangedArgs> RefreshStatusChanged;
+
 		event EventHandler RefreshCompleted;
 
 		IConnectionAdapter CreateConnectionAdapter();
@@ -104,7 +106,7 @@ namespace SqlPad
 
 	public class DatabaseModelConnectionErrorArgs : EventArgs
 	{
-		public Exception Exception { get; private set; }
+		public Exception Exception { get; }
 
 		public DatabaseModelConnectionErrorArgs(Exception exception)
 		{
@@ -114,6 +116,16 @@ namespace SqlPad
 			}
 			
 			Exception = exception;
+		}
+	}
+
+	public class DatabaseModelRefreshStatusChangedArgs : EventArgs
+	{
+		public string Message { get; }
+
+		public DatabaseModelRefreshStatusChangedArgs(string message)
+		{
+			Message = message;
 		}
 	}
 

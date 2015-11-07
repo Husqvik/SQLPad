@@ -24,7 +24,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		public const string BuiltInDataTypeIntervalDayToSecond = "INTERVAL DAY TO SECOND";
 		public const string BuiltInDataTypeTimestampWithTimeZone = "TIMESTAMP WITH TIME ZONE";
 		public const string BuiltInDataTypeTimestampWithLocalTimeZone = "TIMESTAMP WITH LOCAL TIME ZONE";
-		public const int VersionMajorOracle12c = 12;
+		public const int VersionMajorOracle12C = 12;
 		public const int DefaultMaxLengthVarchar = 4000;
 		public const int DefaultMaxLengthNVarchar = 2000;
 		public const int DefaultMaxLengthRaw = 2000;
@@ -112,6 +112,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 		public abstract event EventHandler<DatabaseModelConnectionErrorArgs> Disconnected;
 
 		public abstract event EventHandler RefreshStarted;
+
+		public abstract event EventHandler<DatabaseModelRefreshStatusChangedArgs> RefreshStatusChanged;
 
 		public abstract event EventHandler RefreshCompleted;
 

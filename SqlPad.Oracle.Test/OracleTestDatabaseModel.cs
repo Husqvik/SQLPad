@@ -24,7 +24,7 @@ namespace SqlPad.Oracle.Test
 
 		private static readonly HashSet<string> SchemasInternal = new HashSet<string> { SchemaSys, "\"SYSTEM\"", InitialSchema };
 		private static readonly Dictionary<string, OracleSchema> AllSchemasInternal =
-			new Dictionary<string, OracleSchema>()
+			new Dictionary<string, OracleSchema>
 			{
 				{ SchemaSys, new OracleSchema { Name = SchemaSys } },
 				{ SchemaSystem, new OracleSchema { Name = SchemaSystem } },
@@ -1063,6 +1063,7 @@ TABLESPACE ""TBS_HQ_PDB""";
 			Disconnected = null;
 			InitializationFailed = null;
 			RefreshStarted = null;
+			RefreshStatusChanged = null;
 			RefreshCompleted = null;
 		}
 
@@ -1075,6 +1076,8 @@ TABLESPACE ""TBS_HQ_PDB""";
 		public override event EventHandler<DatabaseModelConnectionErrorArgs> Disconnected;
 
 		public override event EventHandler RefreshStarted = delegate { };
+
+		public override event EventHandler<DatabaseModelRefreshStatusChangedArgs> RefreshStatusChanged;
 
 		public override event EventHandler RefreshCompleted = delegate { };
 

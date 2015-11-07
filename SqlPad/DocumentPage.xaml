@@ -362,7 +362,7 @@
 			</Grid.ColumnDefinitions>
 
 			<ListBox x:Name="OutputViewerList"
-			         ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType=sqlPad:DocumentPage}, Path=OutputViewers}"
+			         ItemsSource="{Binding OutputViewers}"
 			         Grid.Column="0">
 				<ListBox.ItemTemplate>
 					<DataTemplate>
@@ -398,7 +398,7 @@
 							<ColumnDefinition Width="Auto" />
 							<ColumnDefinition Width="Auto" />
 							<ColumnDefinition Width="*" />
-							<ColumnDefinition Width="232" />
+							<ColumnDefinition Width="252" />
 						</Grid.ColumnDefinitions>
 					</Grid>
 				</ItemsPanelTemplate>
@@ -438,7 +438,20 @@
 				</StackPanel>
 			</StatusBarItem>
 			<StatusBarItem VerticalContentAlignment="Stretch" Grid.Column="5">
-				<ProgressBar x:Name="ProgressBar" Minimum="0" Maximum="100" Width="220" />
+				<StatusBarItem.Style>
+					<Style>
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding ElementName=ProgressBar, Path=IsIndeterminate}" Value="False">
+								<Setter Property="StatusBarItem.Visibility" Value="Collapsed" />
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>	
+				</StatusBarItem.Style>
+				
+				<Grid>
+					<ProgressBar x:Name="ProgressBar" Minimum="0" Maximum="100" Width="240" />
+					<TextBlock Text="{Binding DatabaseModelRefreshStatus}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+				</Grid>
 			</StatusBarItem>
 		</StatusBar>
 	</Grid>
