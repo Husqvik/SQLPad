@@ -365,6 +365,9 @@
         <Sequence>
           <NonTerminal Id="AlterTrigger" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="AlterType" />
+        </Sequence>
         <!-- TODO: Add other objects -->
       </Sequences>
     </Rule>

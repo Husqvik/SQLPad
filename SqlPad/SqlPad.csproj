@@ -104,6 +104,7 @@
     <Compile Include="Bookmarks\IconMargin.cs" />
     <Compile Include="CellValueConverter.cs" />
     <Compile Include="CSharpQueryClassGenerator.cs" />
+    <Compile Include="ObservableDictionary.cs" />
     <Compile Include="WindowDatabaseMonitor.xaml.cs">
       <DependentUpon>WindowDatabaseMonitor.xaml</DependentUpon>
     </Compile>

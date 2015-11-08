@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
@@ -58,7 +59,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public int ExecutionId { get; }
 
-		public ObservableCollection<ActiveSessionHistoryItem> ActiveSessionHistoryItems { get; } = new ObservableCollection<ActiveSessionHistoryItem>();
+		public ObservableDictionary<int, List<ActiveSessionHistoryItem>> ActiveSessionHistoryItems { get; } = new ObservableDictionary<int, List<ActiveSessionHistoryItem>>();
 	}
 
 	[DebuggerDisplay("ActiveSessionHistoryItem (SessionId={SessionId}; SessionSerial={SessionSerial}; SampleTime={SampleTime})")]
@@ -105,6 +106,19 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 	[DebuggerDisplay("SqlMonitorPlanItem (Id={Id}; Operation={Operation}; Depth={Depth}; IsLeaf={IsLeaf}; ExecutionOrder={ExecutionOrder})")]
 	public class SqlMonitorPlanItem : ExecutionPlanItem
+	{
+		private SqlMonitorSessionItem _queryCoordinatorSessionItem;
+
+		public SqlMonitorSessionItem QueryCoordinatorSessionItem
+		{
+			get { return _queryCoordinatorSessionItem; }
+			set { UpdateValueAndRaisePropertyChanged(ref _queryCoordinatorSessionItem, value); }
+		}
+
+		public ObservableDictionary<int, SqlMonitorSessionItem> SessionItems { get; } = new ObservableDictionary<int, SqlMonitorSessionItem>();
+	}
+
+	public class SqlMonitorSessionItem : ModelBase
 	{
 		private long _starts;
 		private long _outputRows;
@@ -215,7 +229,11 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public override void InitializeCommand(OracleCommand command)
 		{
-			var lastSampleTime = DataModel.ActiveSessionHistoryItems.LastOrDefault()?.SampleTime ?? DateTime.MinValue;
+			List<ActiveSessionHistoryItem> activeSessionHistoryItems;
+			var lastSampleTime = DataModel.ActiveSessionHistoryItems.TryGetValue(DataModel.SessionId, out activeSessionHistoryItems)
+				? activeSessionHistoryItems.Last()?.SampleTime
+				: DateTime.MinValue;
+
 			command.CommandText = OracleDatabaseCommands.SelectActiveSessionHistoryCommandText;
 			command.AddSimpleParameter("SID", DataModel.SessionId);
 			command.AddSimpleParameter("SQL_EXEC_ID", DataModel.ExecutionId);
@@ -227,13 +245,18 @@ namespace SqlPad.Oracle.ModelDataProviders
 		{
 			while (await reader.ReadAsynchronous(cancellationToken))
 			{
-				var planLineId = Convert.ToInt32(reader["SQL_PLAN_LINE_ID"]);
+				var sessionId = Convert.ToInt32(reader["SESSION_ID"]);
+				List<ActiveSessionHistoryItem> activeSessionHistoryItems;
+				if (!DataModel.ActiveSessionHistoryItems.TryGetValue(sessionId, out activeSessionHistoryItems))
+				{
+					DataModel.ActiveSessionHistoryItems[sessionId] = activeSessionHistoryItems = new List<ActiveSessionHistoryItem>();
+				}
 
 				var historyItem =
 					new ActiveSessionHistoryItem
 					{
 						SampleTime = (DateTime)reader["SAMPLE_TIME"],
-						SessionId = Convert.ToInt32(reader["SESSION_ID"]),
+						SessionId = sessionId,
 						SessionSerial = Convert.ToInt32(reader["SESSION_SERIAL#"]),
 						WaitClass = OracleReaderValueConvert.ToString(reader["WAIT_CLASS"]),
 						WaitTime = TimeSpan.FromTicks(Convert.ToInt64(reader["WAIT_TIME"]) * 10),
@@ -252,7 +275,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 						TempSpaceAllocated = Convert.ToInt64(reader["TEMP_SPACE_ALLOCATED"]),
 					};
 
-				DataModel.ActiveSessionHistoryItems.Add(historyItem);
+				activeSessionHistoryItems.Add(historyItem);
+
+				var planLineId = Convert.ToInt32(reader["SQL_PLAN_LINE_ID"]);
 				historyItem.ActiveLine = DataModel.AllItems[planLineId];
 			}
 		}
@@ -281,17 +306,28 @@ namespace SqlPad.Oracle.ModelDataProviders
 				var planLineId = Convert.ToInt32(reader["PLAN_LINE_ID"]);
 				var planItem = DataModel.AllItems[planLineId];
 
-				planItem.Starts = Convert.ToInt64(reader["Starts"]);
-				planItem.OutputRows = Convert.ToInt64(reader["OUTPUT_ROWS"]);
-				planItem.IoInterconnectBytes = Convert.ToInt64(reader["IO_INTERCONNECT_BYTES"]);
-				planItem.PhysicalReadRequests = Convert.ToInt64(reader["PHYSICAL_READ_REQUESTS"]);
-				planItem.PhysicalReadBytes = Convert.ToInt64(reader["PHYSICAL_READ_BYTES"]);
-				planItem.PhysicalWriteRequests = Convert.ToInt64(reader["PHYSICAL_WRITE_REQUESTS"]);
-				planItem.PhysicalWriteBytes = Convert.ToInt64(reader["PHYSICAL_WRITE_BYTES"]);
-				planItem.WorkAreaMemoryBytes = OracleReaderValueConvert.ToInt64(reader["WORKAREA_MEM"]);
-				planItem.WorkAreaMemoryMaxBytes = OracleReaderValueConvert.ToInt64(reader["WORKAREA_MAX_MEM"]);
-				planItem.WorkAreaTempBytes = OracleReaderValueConvert.ToInt64(reader["WORKAREA_TEMPSEG"]);
-				planItem.WorkAreaTempMaxBytes = OracleReaderValueConvert.ToInt64(reader["WORKAREA_MAX_TEMPSEG"]);
+				SqlMonitorSessionItem sqlMonitorItem;
+				if (!planItem.SessionItems.TryGetValue(DataModel.SessionId, out sqlMonitorItem))
+				{
+					planItem.SessionItems[DataModel.SessionId] = sqlMonitorItem = new SqlMonitorSessionItem();
+
+					if (DataModel.SessionId == DataModel.SessionId)
+					{
+						planItem.QueryCoordinatorSessionItem = sqlMonitorItem;
+					}
+				}
+
+				sqlMonitorItem.Starts = Convert.ToInt64(reader["Starts"]);
+				sqlMonitorItem.OutputRows = Convert.ToInt64(reader["OUTPUT_ROWS"]);
+				sqlMonitorItem.IoInterconnectBytes = Convert.ToInt64(reader["IO_INTERCONNECT_BYTES"]);
+				sqlMonitorItem.PhysicalReadRequests = Convert.ToInt64(reader["PHYSICAL_READ_REQUESTS"]);
+				sqlMonitorItem.PhysicalReadBytes = Convert.ToInt64(reader["PHYSICAL_READ_BYTES"]);
+				sqlMonitorItem.PhysicalWriteRequests = Convert.ToInt64(reader["PHYSICAL_WRITE_REQUESTS"]);
+				sqlMonitorItem.PhysicalWriteBytes = Convert.ToInt64(reader["PHYSICAL_WRITE_BYTES"]);
+				sqlMonitorItem.WorkAreaMemoryBytes = OracleReaderValueConvert.ToInt64(reader["WORKAREA_MEM"]);
+				sqlMonitorItem.WorkAreaMemoryMaxBytes = OracleReaderValueConvert.ToInt64(reader["WORKAREA_MAX_MEM"]);
+				sqlMonitorItem.WorkAreaTempBytes = OracleReaderValueConvert.ToInt64(reader["WORKAREA_TEMPSEG"]);
+				sqlMonitorItem.WorkAreaTempMaxBytes = OracleReaderValueConvert.ToInt64(reader["WORKAREA_MAX_TEMPSEG"]);
 			}
 		}
 	}

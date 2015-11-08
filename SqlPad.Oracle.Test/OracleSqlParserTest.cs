@@ -6850,6 +6850,50 @@ END;";
 				}
 			}
 
+			public class AlterType
+			{
+				[Test(Description = @"")]
+				public void TestBasicAlterType()
+				{
+					const string statementText =
+@"ALTER TYPE data_t REPLACE AS OBJECT (
+	year NUMBER,
+	MEMBER FUNCTION  prod(invent NUMBER) RETURN NUMBER,
+	MEMBER FUNCTION  qtr(der_qtr DATE) RETURN CHAR
+);";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTypeCompileSpecification()
+				{
+					const string statementText = @"ALTER TYPE link2 COMPILE SPECIFICATION";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterTypeAddAttributeInvalidate()
+				{
+					const string statementText = @"ALTER type a ADD attribute (c NUMBER) INVALIDATE";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+			}
+
 			public class AlterMaterializedView
 			{
 				[Test(Description = @"")]

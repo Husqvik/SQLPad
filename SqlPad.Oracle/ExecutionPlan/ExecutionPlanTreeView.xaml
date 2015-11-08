@@ -489,48 +489,48 @@
 				<StackPanel Orientation="Horizontal">
 					<TextBlock Style="{StaticResource PlanStatisticValueStyle}">
 						<Run Text="Starts: " />
-						<Run Text="{Binding Starts, Converter={StaticResource PrettyPrintNumericConverter}}" />
+						<Run Text="{Binding QueryCoordinatorSessionItem.Starts, Converter={StaticResource PrettyPrintNumericConverter}}" />
 						<Run Text=" " />
 					</TextBlock>
 					<TextBlock Style="{StaticResource PlanStatisticValueStyle}">
 						<Run Text="Output rows: " />
-						<Run Text="{Binding OutputRows, Converter={StaticResource PrettyPrintNumericConverter}}" />
+						<Run Text="{Binding QueryCoordinatorSessionItem.OutputRows, Converter={StaticResource PrettyPrintNumericConverter}}" />
 						<Run Text=" " />
 					</TextBlock>
 					<TextBlock Style="{StaticResource PlanStatisticValueStyle}">
 						<Run Text="Physical read requests: " />
-						<Run Text="{Binding PhysicalReadRequests, Converter={StaticResource PrettyPrintNumericConverter}}" />
+						<Run Text="{Binding QueryCoordinatorSessionItem.PhysicalReadRequests, Converter={StaticResource PrettyPrintNumericConverter}}" />
 						<Run Text=" " />
 					</TextBlock>
 					<TextBlock Style="{StaticResource PlanStatisticValueStyle}">
 						<Run Text="Physical read: " />
-						<Run Text="{Binding PhysicalReadBytes, Converter={StaticResource DataSpaceConverter}}" />
+						<Run Text="{Binding QueryCoordinatorSessionItem.PhysicalReadBytes, Converter={StaticResource DataSpaceConverter}}" />
 						<Run Text=" " />
 					</TextBlock>
 					<TextBlock Style="{StaticResource PlanStatisticValueStyle}">
 						<Run Text="Physical write requests: " />
-						<Run Text="{Binding PhysicalWriteRequests, Converter={StaticResource PrettyPrintNumericConverter}}" />
+						<Run Text="{Binding QueryCoordinatorSessionItem.PhysicalWriteRequests, Converter={StaticResource PrettyPrintNumericConverter}}" />
 						<Run Text=" " />
 					</TextBlock>
 					<TextBlock Style="{StaticResource PlanStatisticValueStyle}">
 						<Run Text="Physical write: " />
-						<Run Text="{Binding PhysicalWriteBytes, Converter={StaticResource DataSpaceConverter}}" />
+						<Run Text="{Binding QueryCoordinatorSessionItem.PhysicalWriteBytes, Converter={StaticResource DataSpaceConverter}}" />
 						<Run Text=" " />
 					</TextBlock>
 					<TextBlock Style="{StaticResource PlanStatisticValueStyle}">
 						<Run Text="I/O interconnection: " />
-						<Run Text="{Binding IoInterconnectBytes, Converter={StaticResource PrettyPrintNumericConverter}}" />
+						<Run Text="{Binding QueryCoordinatorSessionItem.IoInterconnectBytes, Converter={StaticResource PrettyPrintNumericConverter}}" />
 						<Run Text=" " />
 					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaTempBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
+					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding QueryCoordinatorSessionItem.WorkAreaTempBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
 						<Run Text="Work area: " />
-						<Run Text="{Binding WorkAreaMemoryBytes, Converter={StaticResource DataSpaceConverter}}" />
-						<Run Text="(max: " /><Run Text="{Binding WorkAreaMemoryMaxBytes, Converter={StaticResource DataSpaceConverter}}" /><Run Text=") " />
+						<Run Text="{Binding QueryCoordinatorSessionItem.WorkAreaMemoryBytes, Converter={StaticResource DataSpaceConverter}}" />
+						<Run Text="(max: " /><Run Text="{Binding QueryCoordinatorSessionItem.WorkAreaMemoryMaxBytes, Converter={StaticResource DataSpaceConverter}}" /><Run Text=") " />
 					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaTempBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
+					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding QueryCoordinatorSessionItem.WorkAreaTempBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
 						<Run Text="Temp: " />
-						<Run Text="{Binding WorkAreaTempBytes, Converter={StaticResource DataSpaceConverter}}" />
-						<Run Text="(max: " /><Run Text="{Binding WorkAreaTempMaxBytes, Converter={StaticResource DataSpaceConverter}}" /><Run Text=") " />
+						<Run Text="{Binding QueryCoordinatorSessionItem.WorkAreaTempBytes, Converter={StaticResource DataSpaceConverter}}" />
+						<Run Text="(max: " /><Run Text="{Binding QueryCoordinatorSessionItem.WorkAreaTempMaxBytes, Converter={StaticResource DataSpaceConverter}}" /><Run Text=") " />
 					</TextBlock>
 				</StackPanel>
 			</StackPanel>
