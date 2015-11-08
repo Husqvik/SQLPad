@@ -656,7 +656,11 @@ namespace SqlPad
 		{
 			Dispatcher.Invoke(() =>
 			{
-				DatabaseModelRefreshStatus = null;
+				if (DatabaseModel.IsFresh)
+				{
+					DatabaseModelRefreshStatus = null;
+				}
+
 				ProgressBar.IsIndeterminate = false;
 				SetSchemas(DatabaseModel.Schemas);
 			});

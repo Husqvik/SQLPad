@@ -268,6 +268,7 @@ namespace SqlPad.Oracle
 			public const string ConstraintReferencesClause = "ConstraintReferencesClause";
 			public const string ConstraintState = "ConstraintState";
 			public const string ConstraintStateExceptionClause = "ConstraintStateExceptionClause";
+			public const string ConstructorDeclaration = "ConstructorDeclaration";
 			public const string ConstructorSpecification = "ConstructorSpecification";
 			public const string ContainerDatabaseOption = "ContainerDatabaseOption";
 			public const string ContainerDataClause = "ContainerDataClause";
@@ -301,6 +302,7 @@ namespace SqlPad.Oracle
 			public const string CreateTableTypeClause = "CreateTableTypeClause";
 			public const string CreateTrigger = "CreateTrigger";
 			public const string CreateType = "CreateType";
+			public const string CreateTypeBody = "CreateTypeBody";
 			public const string CreateUser = "CreateUser";
 			public const string CreateUserIdentificationType = "CreateUserIdentificationType";
 			public const string CreateUserOption = "CreateUserOption";
@@ -522,6 +524,7 @@ namespace SqlPad.Oracle
 			public const string FromClause = "FromClause";
 			public const string FromClauseChained = "FromClauseChained";
 			public const string FunctionDeclaration = "FunctionDeclaration";
+			public const string FunctionDeclarationInType = "FunctionDeclarationInType";
 			public const string FunctionDeclarationModifier = "FunctionDeclarationModifier";
 			public const string FunctionDeclarationModifiers = "FunctionDeclarationModifiers";
 			public const string FunctionDefinition = "FunctionDefinition";
@@ -529,6 +532,8 @@ namespace SqlPad.Oracle
 			public const string FunctionDefinitionModifiers = "FunctionDefinitionModifiers";
 			public const string FunctionHeading = "FunctionHeading";
 			public const string FunctionModifier = "FunctionModifier";
+			public const string FunctionModifierInType = "FunctionModifierInType";
+			public const string FunctionModifierListInType = "FunctionModifierListInType";
 			public const string FunctionModifiers = "FunctionModifiers";
 			public const string FunctionSpecification = "FunctionSpecification";
 			public const string FunctionTypeDefinition = "FunctionTypeDefinition";
@@ -744,6 +749,7 @@ namespace SqlPad.Oracle
 			public const string MainModel = "MainModel";
 			public const string MainModelName = "MainModelName";
 			public const string MandatoryAsXmlAlias = "MandatoryAsXmlAlias";
+			public const string MapOrderFunctionDeclaration = "MapOrderFunctionDeclaration";
 			public const string MaterializedViewLogForRefreshClause = "MaterializedViewLogForRefreshClause";
 			public const string MaterializedViewLogNewValuesClause = "MaterializedViewLogNewValuesClause";
 			public const string MaterializedViewLogProperties = "MaterializedViewLogProperties";
@@ -759,6 +765,7 @@ namespace SqlPad.Oracle
 			public const string MathPlusOrMinus = "MathPlusOrMinus";
 			public const string MaximumSizeClause = "MaximumSizeClause";
 			public const string MaximumValueOrNoMaximumValue = "MaximumValueOrNoMaximumValue";
+			public const string MemberOrStatic = "MemberOrStatic";
 			public const string MergeDeleteClause = "MergeDeleteClause";
 			public const string MergeInsertClause = "MergeInsertClause";
 			public const string MergeInsertValuesExpressionOrDefaultValueCommaChainedList = "MergeInsertValuesExpressionOrDefaultValueCommaChainedList";
@@ -890,7 +897,9 @@ namespace SqlPad.Oracle
 			public const string ParallelClause = "ParallelClause";
 			public const string ParallelDegree = "ParallelDegree";
 			public const string ParallelPartitionDefinition = "ParallelPartitionDefinition";
-			public const string ParallelPartitionType = "ParallelPartitionType";
+			public const string ParallelPartitionDefinitionInType = "ParallelPartitionDefinitionInType";
+			public const string ParallelPartitionKey = "ParallelPartitionKey";
+			public const string ParallelPartitionKeyInType = "ParallelPartitionKeyInType";
 			public const string ParameterDeclaration = "ParameterDeclaration";
 			public const string ParameterDeclarationList = "ParameterDeclarationList";
 			public const string ParameterDeclarationListChained = "ParameterDeclarationListChained";
@@ -933,6 +942,7 @@ namespace SqlPad.Oracle
 			public const string ParenthesisEnclosedRelationalProperties = "ParenthesisEnclosedRelationalProperties";
 			public const string ParenthesisEnclosedStringLiteral = "ParenthesisEnclosedStringLiteral";
 			public const string ParenthesisEnclosedStringOrIntegerLiteralList = "ParenthesisEnclosedStringOrIntegerLiteralList";
+			public const string ParenthesisEnclosedTableIndexExpressionList = "ParenthesisEnclosedTableIndexExpressionList";
 			public const string ParenthesisEnclosedTableSpaceIdentifier = "ParenthesisEnclosedTableSpaceIdentifier";
 			public const string ParethesisEnclosedObjectTypeDefinitionParameterList = "ParethesisEnclosedObjectTypeDefinitionParameterList";
 			public const string PartialOrFull = "PartialOrFull";
@@ -1043,11 +1053,13 @@ namespace SqlPad.Oracle
 			public const string PreserveTable = "PreserveTable";
 			public const string PreviousOrNext = "PreviousOrNext";
 			public const string ProcedureDeclaration = "ProcedureDeclaration";
+			public const string ProcedureDeclarationInType = "ProcedureDeclarationInType";
 			public const string ProcedureDefinition = "ProcedureDefinition";
 			public const string ProcedureHeading = "ProcedureHeading";
 			public const string ProcedureOrFunctionSpecification = "ProcedureOrFunctionSpecification";
 			public const string ProfileOptionList = "ProfileOptionList";
 			public const string ProgramBody = "ProgramBody";
+			public const string ProgramBodyInType = "ProgramBodyInType";
 			public const string ProgramDeclareSection = "ProgramDeclareSection";
 			public const string ProgramEnd = "ProgramEnd";
 			public const string ProgramImplentationDeclaration = "ProgramImplentationDeclaration";
@@ -1184,6 +1196,7 @@ namespace SqlPad.Oracle
 			public const string SelectList = "SelectList";
 			public const string SelectStatement = "SelectStatement";
 			public const string SelectStatementOrDynamicSqlString = "SelectStatementOrDynamicSqlString";
+			public const string SelfParameterDeclaration = "SelfParameterDeclaration";
 			public const string SequenceCacheOrNoCache = "SequenceCacheOrNoCache";
 			public const string SequenceOption = "SequenceOption";
 			public const string SequenceOptions = "SequenceOptions";
@@ -1232,6 +1245,7 @@ namespace SqlPad.Oracle
 			public const string StoreAsBasicFileOrSecureFile = "StoreAsBasicFileOrSecureFile";
 			public const string StoreInTableSpaceList = "StoreInTableSpaceList";
 			public const string StreamingClause = "StreamingClause";
+			public const string StreamingClauseInType = "StreamingClauseInType";
 			public const string StrictOrLax = "StrictOrLax";
 			public const string StringLiteralList = "StringLiteralList";
 			public const string StringLiteralListChained = "StringLiteralListChained";
@@ -1245,6 +1259,9 @@ namespace SqlPad.Oracle
 			public const string SubpartitionClause = "SubpartitionClause";
 			public const string SubpartitionTemplate = "SubpartitionTemplate";
 			public const string SubpartitionType = "SubpartitionType";
+			public const string SubProgramDeclarationInType = "SubProgramDeclarationInType";
+			public const string SubProgramDeclarationInTypeOrMapOrderFunctionDeclaration = "SubProgramDeclarationInTypeOrMapOrderFunctionDeclaration";
+			public const string SubProgramDeclarationInTypeOrMapOrderFunctionDeclarationList = "SubProgramDeclarationInTypeOrMapOrderFunctionDeclarationList";
 			public const string SubProgramOrConstructorOrMapOrderFunctionSpecification = "SubProgramOrConstructorOrMapOrderFunctionSpecification";
 			public const string SubProgramOrConstructorOrMapOrderFunctionSpecificationList = "SubProgramOrConstructorOrMapOrderFunctionSpecificationList";
 			public const string Subquery = "Subquery";

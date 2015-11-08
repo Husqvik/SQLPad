@@ -5668,6 +5668,53 @@ PURGE REPEAT INTERVAL '5' DAY";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 			}
+			public class CreateTypeBody
+			{
+				[Test(Description = @"")]
+				public void TestCreateTypeBody()
+				{
+					const string statementText =
+@"CREATE OR REPLACE TYPE BODY t_string_agg
+IS
+	STATIC FUNCTION ODCIAggregateInitialize(sctx IN OUT t_string_agg) RETURN NUMBER IS
+	BEGIN
+		sctx := t_string_agg(SYS.ODCIVARCHAR2LIST(), ', ');
+		RETURN ODCIConst.Success;
+	END;
+
+	MEMBER FUNCTION ODCIAggregateIterate(self IN OUT t_string_agg, value IN VARCHAR2) RETURN NUMBER
+	IS
+	BEGIN
+		SELF.elements.EXTEND(1);
+		SELF.elements(SELF.elements.COUNT) := value;
+		RETURN ODCIConst.Success;
+	END;
+
+	MEMBER FUNCTION ODCIAggregateTerminate(self IN t_string_agg, returnValue OUT VARCHAR2, flags IN NUMBER) RETURN NUMBER
+	IS
+	BEGIN
+		FOR r IN (SELECT ROWNUM i, value FROM (SELECT COLUMN_VALUE value FROM TABLE(SELF.elements) ORDER BY COLUMN_VALUE)) LOOP
+			IF r.i > 1 THEN returnValue := returnValue || SELF.delimiter; END IF;
+			returnValue := returnValue || r.value;
+		END LOOP;
+		RETURN ODCIConst.Success;
+	END;
+
+	MEMBER FUNCTION ODCIAggregateMerge(self IN OUT t_string_agg, ctx2 IN t_string_agg) RETURN NUMBER
+	IS
+	BEGIN
+		SELECT COLUMN_VALUE BULK COLLECT INTO self.elements FROM(SELECT COLUMN_VALUE FROM TABLE(self.elements) UNION ALL SELECT COLUMN_VALUE FROM TABLE(ctx2.elements));
+		RETURN ODCIConst.Success;
+	END;
+END;";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+			}
 
 			public class CreateAuthorizationSchema
 			{

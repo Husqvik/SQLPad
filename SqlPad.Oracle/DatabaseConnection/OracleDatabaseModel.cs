@@ -107,6 +107,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			_isRefreshing = true;
 			RaiseEvent(RefreshStarted);
+			RaiseRefreshStatusWaitingForModelBeingRefreshed();
 		}
 
 		private void InternalRefreshCompletedHandler(object sender, EventArgs eventArgs)
@@ -293,7 +294,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					Trace.WriteLine($"{DateTime.Now} - Cache for '{_connectionStringName}' is being loaded by other requester. Waiting until operation finishes. ");
 
 					RaiseEvent(RefreshStarted);
-					RaiseRefreshStatusChanged("Waiting for data dictionary metadata... ");
+					RaiseRefreshStatusWaitingForModelBeingRefreshed();
 					return taskCompletionSource.Task;
 				}
 			}
@@ -301,6 +302,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 			ExecuteActionAsync(() => LoadSchemaObjectMetadata(force));
 
 			return _backgroundTask;
+		}
+
+		private void RaiseRefreshStatusWaitingForModelBeingRefreshed()
+		{
+			RaiseRefreshStatusChanged("Waiting for data dictionary metadata... ");
 		}
 
 		public override IConnectionAdapter CreateConnectionAdapter()

@@ -59,6 +59,10 @@ namespace SqlPad.Oracle
 							return "Package created. ";
 						case NonTerminals.CreateTrigger:
 							return "Trigger created. ";
+						case NonTerminals.CreateTypeBody:
+							return "Type body created. ";
+						case NonTerminals.CreateType:
+							return "Type created. ";
 					}
 				}
 

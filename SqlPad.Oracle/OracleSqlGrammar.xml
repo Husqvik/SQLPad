@@ -638,14 +638,21 @@
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="SubProgramOrConstructorOrMapOrderFunctionSpecification">
+    <Rule StartingNonTerminal="MemberOrStatic">
       <Sequences>
         <Sequence>
           <Terminal Id="Member" />
-          <NonTerminal Id="ProcedureOrFunctionSpecification" />
         </Sequence>
         <Sequence>
           <Terminal Id="Static" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SubProgramOrConstructorOrMapOrderFunctionSpecification">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="MemberOrStatic" />
           <NonTerminal Id="ProcedureOrFunctionSpecification" />
         </Sequence>
         <Sequence>
@@ -738,13 +745,21 @@
       <Sequences>
         <Sequence>
           <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="SelfParameterDeclaration" IsOptional="true" />
+          <NonTerminal Id="ParameterDeclarationList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SelfParameterDeclaration">
+      <Sequences>
+        <Sequence>
           <Terminal Id="Self" />
           <Terminal Id="In" />
           <Terminal Id="Out" />
           <NonTerminal Id="DataType" />
           <Terminal Id="Comma" />
-          <NonTerminal Id="ParameterDeclarationList" />
-          <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -9913,6 +9928,9 @@
           <NonTerminal Id="CreateTrigger" />
         </Sequence>
         <Sequence>
+          <NonTerminal Id="CreateTypeBody" />
+        </Sequence>
+        <Sequence>
           <NonTerminal Id="CreateType" />
         </Sequence>
         <!-- TODO: Create other objects -->
@@ -11245,6 +11263,197 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="PragmaDefinition" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <!-- CREATE TYPE BODY -->
+    <Rule StartingNonTerminal="CreateTypeBody" Scope="PlSqlBody">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Type" />
+          <Terminal Id="Body" />
+          <NonTerminal Id="SchemaObject" />
+          <NonTerminal Id="IsOrAs" />
+          <NonTerminal Id="SubProgramDeclarationInTypeOrMapOrderFunctionDeclarationList" />
+          <Terminal Id="End" />
+          <Terminal Id="Semicolon" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SubProgramDeclarationInTypeOrMapOrderFunctionDeclarationList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="SubProgramDeclarationInTypeOrMapOrderFunctionDeclaration" />
+          <NonTerminal Id="SubProgramDeclarationInTypeOrMapOrderFunctionDeclarationList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SubProgramDeclarationInTypeOrMapOrderFunctionDeclaration">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="MemberOrStatic" />
+          <NonTerminal Id="SubProgramDeclarationInType" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="MapOrderFunctionDeclaration" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="MapOrderFunctionDeclaration">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Map" />
+          <Terminal Id="Member" />
+          <NonTerminal Id="FunctionDeclarationInType" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Order" />
+          <Terminal Id="Member" />
+          <NonTerminal Id="FunctionDeclarationInType" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SubProgramDeclarationInType">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ProcedureDeclarationInType" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="FunctionDeclarationInType" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ConstructorDeclaration" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="FunctionDeclarationInType">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="FunctionHeading" />
+          <NonTerminal Id="FunctionModifierListInType" IsOptional="true" />
+          <Terminal Id="Pipelined" IsOptional="true" />
+          <NonTerminal Id="IsOrAs" />
+          <NonTerminal Id="ProgramBodyInType" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="FunctionModifierListInType">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="FunctionModifierInType" />
+          <NonTerminal Id="FunctionModifierListInType" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="FunctionModifierInType">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="InvokerRightsClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="AccessibleByClause" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Deterministic" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="ParallelEnable" />
+          <NonTerminal Id="ParallelPartitionDefinitionInType" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="ResultCache" />
+          <NonTerminal Id="ReliesOnClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ParallelPartitionDefinitionInType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="Partition" />
+          <Terminal Id="Identifier" />
+          <Terminal Id="By" />
+          <NonTerminal Id="ParallelPartitionKeyInType" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ParallelPartitionKeyInType">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Any" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="HashOrRange" />
+          <NonTerminal Id="ParenthesisEnclosedIdentifierList" />
+          <NonTerminal Id="StreamingClauseInType" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Value" />
+          <Terminal Id="LeftParenthesis" />
+          <Terminal Id="Identifier" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="StreamingClauseInType">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="OrderOrCluster" />
+          <Terminal Id="By" />
+          <NonTerminal Id="ParenthesisEnclosedTableIndexExpressionList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ConstructorDeclaration">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Final" IsOptional="true" />
+          <Terminal Id="Instantiable" IsOptional="true" />
+          <Terminal Id="Constructor" />
+          <Terminal Id="Function" />
+          <NonTerminal Id="DataType" />
+          <NonTerminal Id="TypeConstructorParameterDeclarationList" IsOptional="true" />
+          <Terminal Id="Return" />
+          <Terminal Id="Self" />
+          <Terminal Id="As" />
+          <Terminal Id="Result" />
+          <NonTerminal Id="IsOrAs" />
+          <NonTerminal Id="ProgramBodyInType" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ProcedureDeclarationInType">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ProcedureHeading" />
+          <NonTerminal Id="IsOrAs" />
+          <NonTerminal Id="ProgramBodyInType" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ProgramBodyInType">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ProgramDeclareSection" IsOptional="true" />
+          <NonTerminal Id="ProgramBody" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="CallSpecification" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -12958,16 +13167,16 @@
       <Sequences>
         <Sequence>
           <Terminal Id="LeftParenthesis" />
-          <Terminal Id="Parallel" />
+          <Terminal Id="Partition" />
           <Terminal Id="Identifier" />
           <Terminal Id="By" />
-          <NonTerminal Id="ParallelPartitionType" />
+          <NonTerminal Id="ParallelPartitionKey" />
           <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
     </Rule>
     
-    <Rule StartingNonTerminal="ParallelPartitionType">
+    <Rule StartingNonTerminal="ParallelPartitionKey">
       <Sequences>
         <Sequence>
           <Terminal Id="Any" />
@@ -18679,10 +18888,18 @@
       <Sequences>
         <Sequence>
           <Terminal Id="ObjectAlias" IsOptional="true" />
+          <NonTerminal Id="ParenthesisEnclosedTableIndexExpressionList" />
+          <NonTerminal Id="IndexProperties" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ParenthesisEnclosedTableIndexExpressionList">
+      <Sequences>
+        <Sequence>
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="TableIndexExpressionList" />
           <Terminal Id="RightParenthesis" />
-          <NonTerminal Id="IndexProperties" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
