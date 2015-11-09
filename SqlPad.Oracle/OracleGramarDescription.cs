@@ -19,6 +19,7 @@ namespace SqlPad.Oracle
 			public const string AccessorListChained = "AccessorListChained";
 			public const string AddColumnClause = "AddColumnClause";
 			public const string AddConstraintClause = "AddConstraintClause";
+			public const string AddOrDropMethodSpecification = "AddOrDropMethodSpecification";
 			public const string AddPeriodClause = "AddPeriodClause";
 			public const string AddSupplementalLogList = "AddSupplementalLogList";
 			public const string AddSupplementalLogListChained = "AddSupplementalLogListChained";
@@ -48,6 +49,8 @@ namespace SqlPad.Oracle
 			public const string AlterMaterializedViewOptionList = "AlterMaterializedViewOptionList";
 			public const string AlterMaterializedViewRefreshOption = "AlterMaterializedViewRefreshOption";
 			public const string AlterMaterializedViewRefreshOptionList = "AlterMaterializedViewRefreshOptionList";
+			public const string AlterMethodSpecification = "AlterMethodSpecification";
+			public const string AlterMethodSpecificationChained = "AlterMethodSpecificationChained";
 			public const string AlterMultipleUsersProxyClause = "AlterMultipleUsersProxyClause";
 			public const string AlterMultipleUsersProxyClauseGrantOption = "AlterMultipleUsersProxyClauseGrantOption";
 			public const string AlterMultipleUsersProxyClauseRevokeOption = "AlterMultipleUsersProxyClauseRevokeOption";
@@ -94,6 +97,7 @@ namespace SqlPad.Oracle
 			public const string AlterTableStandardPropertyList = "AlterTableStandardPropertyList";
 			public const string AlterTrigger = "AlterTrigger";
 			public const string AlterTriggerOption = "AlterTriggerOption";
+			public const string AlterType = "AlterType";
 			public const string AlterTypeClause = "AlterTypeClause";
 			public const string AlterTypeOption = "AlterTypeOption";
 			public const string AlterUser = "AlterUser";
@@ -1264,6 +1268,7 @@ namespace SqlPad.Oracle
 			public const string SubProgramDeclarationInTypeOrMapOrderFunctionDeclarationList = "SubProgramDeclarationInTypeOrMapOrderFunctionDeclarationList";
 			public const string SubProgramOrConstructorOrMapOrderFunctionSpecification = "SubProgramOrConstructorOrMapOrderFunctionSpecification";
 			public const string SubProgramOrConstructorOrMapOrderFunctionSpecificationList = "SubProgramOrConstructorOrMapOrderFunctionSpecificationList";
+			public const string SubProgramOrMapOrderFunctionSpecification = "SubProgramOrMapOrderFunctionSpecification";
 			public const string Subquery = "Subquery";
 			public const string SubqueryFactoringClause = "SubqueryFactoringClause";
 			public const string SubqueryFactoringCycleClause = "SubqueryFactoringCycleClause";

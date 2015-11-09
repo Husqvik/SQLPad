@@ -32,7 +32,8 @@ namespace SqlPad.Oracle
 		{
 			var activeSessionHistoryDataProvider = new SqlMonitorActiveSessionHistoryDataProvider(_planItemCollection);
 			var planMonitorDataProvider = new SqlMonitorPlanMonitorDataProvider(_planItemCollection);
-			await OracleDatabaseModel.UpdateModelAsync(_connectionString.ConnectionString, null, CancellationToken.None, false, activeSessionHistoryDataProvider, planMonitorDataProvider);
+			var sessionLongOperationDataProvider = new SessionLongOperationPlanMonitorDataProvider(_planItemCollection);
+			await OracleDatabaseModel.UpdateModelAsync(_connectionString.ConnectionString, null, CancellationToken.None, false, activeSessionHistoryDataProvider, planMonitorDataProvider, sessionLongOperationDataProvider);
 		}
 
 		public async Task Initialize(DatabaseSession databaseSession, CancellationToken cancellationToken)

@@ -174,8 +174,16 @@ namespace SqlPad
 			TValue item;
 			if (Dictionary.TryGetValue(key, out item))
 			{
-				if (add) throw new ArgumentException("An item with the same key has already been added.");
-				if (Equals(item, value)) return;
+				if (add)
+				{
+					throw new ArgumentException("An item with the same key has already been added.");
+				}
+
+				if (Equals(item, value))
+				{
+					return;
+				}
+
 				Dictionary[key] = value;
 
 				OnCollectionChanged(NotifyCollectionChangedAction.Replace, new KeyValuePair<TKey, TValue>(key, value), new KeyValuePair<TKey, TValue>(key, item));

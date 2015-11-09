@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -104,7 +103,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 		public long TempSpaceAllocated { get; set; }
 	}
 
-	[DebuggerDisplay("SqlMonitorPlanItem (Id={Id}; Operation={Operation}; Depth={Depth}; IsLeaf={IsLeaf}; ExecutionOrder={ExecutionOrder})")]
+	[DebuggerDisplay("SqlMonitorPlanItem (Id={Id}; Operation={Operation}; ObjectName={ObjectName}; Depth={Depth}; IsLeaf={IsLeaf}; ExecutionOrder={ExecutionOrder})")]
 	public class SqlMonitorPlanItem : ExecutionPlanItem
 	{
 		private SqlMonitorSessionItem _queryCoordinatorSessionItem;
@@ -116,6 +115,101 @@ namespace SqlPad.Oracle.ModelDataProviders
 		}
 
 		public ObservableDictionary<int, SqlMonitorSessionItem> SessionItems { get; } = new ObservableDictionary<int, SqlMonitorSessionItem>();
+
+		public ObservableDictionary<int, SqlMonitorSessionLongOperationItem> SessionLongOperationItems { get; } = new ObservableDictionary<int, SqlMonitorSessionLongOperationItem>();
+	}
+
+	[DebuggerDisplay("SqlMonitorSessionLongOperationItem (SessionId={SessionId}; Message={_message})")]
+	public class SqlMonitorSessionLongOperationItem : ModelBase
+	{
+		private string _operationName;
+		private string _target;
+		private string _targetDescription;
+		private long _soFar;
+		private long _totalWork;
+		private string _units;
+		private DateTime _startTime;
+		private DateTime _lastUpdateTime;
+		private long _timeRemaining;
+		private TimeSpan _elapsed;
+		private long? _context;
+		private string _message;
+
+		public int SessionId { get; set; }
+
+		public SqlMonitorPlanItem PlanItem { get; set; }
+
+		public string OperationName
+		{
+			get { return _operationName; }
+			set { UpdateValueAndRaisePropertyChanged(ref _operationName, value); }
+		}
+
+		public string Target
+		{
+			get { return _target; }
+			set { UpdateValueAndRaisePropertyChanged(ref _target, value); }
+		}
+
+		public string TargetDescription
+		{
+			get { return _targetDescription; }
+			set { UpdateValueAndRaisePropertyChanged(ref _targetDescription, value); }
+		}
+
+		public long SoFar
+		{
+			get { return _soFar; }
+			set { UpdateValueAndRaisePropertyChanged(ref _soFar, value); }
+		}
+
+		public long TotalWork
+		{
+			get { return _totalWork; }
+			set { UpdateValueAndRaisePropertyChanged(ref _totalWork, value); }
+		}
+
+		public string Units
+		{
+			get { return _units; }
+			set { UpdateValueAndRaisePropertyChanged(ref _units, value); }
+		}
+
+		public DateTime StartTime
+		{
+			get { return _startTime; }
+			set { UpdateValueAndRaisePropertyChanged(ref _startTime, value); }
+		}
+
+		public DateTime LastUpdateTime
+		{
+			get { return _lastUpdateTime; }
+			set { UpdateValueAndRaisePropertyChanged(ref _lastUpdateTime, value); }
+		}
+
+		public long TimeRemaining
+		{
+			get { return _timeRemaining; }
+			set { UpdateValueAndRaisePropertyChanged(ref _timeRemaining, value); }
+		}
+
+		public TimeSpan Elapsed
+		{
+			get { return _elapsed; }
+			set { UpdateValueAndRaisePropertyChanged(ref _elapsed, value); }
+		}
+
+		public long? Context
+		{
+			get { return _context; }
+			set { UpdateValueAndRaisePropertyChanged(ref _context, value); }
+		}
+
+		public string Message
+		{
+			get { return _message; }
+			set { UpdateValueAndRaisePropertyChanged(ref _message, value); }
+		}
 	}
 
 	public class SqlMonitorSessionItem : ModelBase
@@ -292,7 +386,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public override void InitializeCommand(OracleCommand command)
 		{
-			command.CommandText = OracleDatabaseCommands.SelectSqlPlanMonitorCommandText;
+			command.CommandText = OracleDatabaseCommands.SelectPlanMonitorCommandText;
 			command.AddSimpleParameter("SID", DataModel.SessionId);
 			command.AddSimpleParameter("SQL_ID", DataModel.SqlId);
 			command.AddSimpleParameter("SQL_EXEC_ID", DataModel.ExecutionId);
@@ -303,21 +397,22 @@ namespace SqlPad.Oracle.ModelDataProviders
 		{
 			while (await reader.ReadAsynchronous(cancellationToken))
 			{
+				var sessionId = Convert.ToInt32(reader["SID"]);
 				var planLineId = Convert.ToInt32(reader["PLAN_LINE_ID"]);
 				var planItem = DataModel.AllItems[planLineId];
 
 				SqlMonitorSessionItem sqlMonitorItem;
-				if (!planItem.SessionItems.TryGetValue(DataModel.SessionId, out sqlMonitorItem))
+				if (!planItem.SessionItems.TryGetValue(sessionId, out sqlMonitorItem))
 				{
-					planItem.SessionItems[DataModel.SessionId] = sqlMonitorItem = new SqlMonitorSessionItem();
+					planItem.SessionItems[sessionId] = sqlMonitorItem = new SqlMonitorSessionItem();
 
-					if (DataModel.SessionId == DataModel.SessionId)
+					if (sessionId == DataModel.SessionId)
 					{
 						planItem.QueryCoordinatorSessionItem = sqlMonitorItem;
 					}
 				}
 
-				sqlMonitorItem.Starts = Convert.ToInt64(reader["Starts"]);
+				sqlMonitorItem.Starts = Convert.ToInt64(reader["STARTS"]);
 				sqlMonitorItem.OutputRows = Convert.ToInt64(reader["OUTPUT_ROWS"]);
 				sqlMonitorItem.IoInterconnectBytes = Convert.ToInt64(reader["IO_INTERCONNECT_BYTES"]);
 				sqlMonitorItem.PhysicalReadRequests = Convert.ToInt64(reader["PHYSICAL_READ_REQUESTS"]);
@@ -328,6 +423,57 @@ namespace SqlPad.Oracle.ModelDataProviders
 				sqlMonitorItem.WorkAreaMemoryMaxBytes = OracleReaderValueConvert.ToInt64(reader["WORKAREA_MAX_MEM"]);
 				sqlMonitorItem.WorkAreaTempBytes = OracleReaderValueConvert.ToInt64(reader["WORKAREA_TEMPSEG"]);
 				sqlMonitorItem.WorkAreaTempMaxBytes = OracleReaderValueConvert.ToInt64(reader["WORKAREA_MAX_TEMPSEG"]);
+			}
+		}
+	}
+
+	internal class SessionLongOperationPlanMonitorDataProvider : ModelDataProvider<SqlMonitorPlanItemCollection>
+	{
+		public SessionLongOperationPlanMonitorDataProvider(SqlMonitorPlanItemCollection sqlMonitorPlanItemCollection)
+			: base(sqlMonitorPlanItemCollection)
+		{
+		}
+
+		public override void InitializeCommand(OracleCommand command)
+		{
+			command.CommandText = OracleDatabaseCommands.SelectSessionLongOperationCommandText;
+			command.AddSimpleParameter("SID", DataModel.SessionId);
+			command.AddSimpleParameter("SQL_EXEC_ID", DataModel.ExecutionId);
+			command.AddSimpleParameter("SQL_EXEC_START", DataModel.ExecutionStart);
+		}
+
+		public async override Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
+		{
+			while (await reader.ReadAsynchronous(cancellationToken))
+			{
+				var sessionId = Convert.ToInt32(reader["SID"]);
+				var planLineId = Convert.ToInt32(reader["SQL_PLAN_LINE_ID"]);
+				var planItem = DataModel.AllItems[planLineId];
+
+				SqlMonitorSessionLongOperationItem longOperationItem;
+				if (!planItem.SessionLongOperationItems.TryGetValue(sessionId, out longOperationItem))
+				{
+					planItem.SessionLongOperationItems[sessionId] = longOperationItem =
+						new SqlMonitorSessionLongOperationItem
+						{
+							SessionId = sessionId,
+							PlanItem = planItem
+						};
+				}
+
+				longOperationItem.OperationName = (string)reader["OPNAME"];
+				longOperationItem.Target = OracleReaderValueConvert.ToString(reader["TARGET"]);
+				longOperationItem.TargetDescription = OracleReaderValueConvert.ToString(reader["TARGET_DESC"]);
+				longOperationItem.SoFar = Convert.ToInt64(reader["SOFAR"]);
+				longOperationItem.TotalWork = Convert.ToInt64(reader["TOTALWORK"]);
+				longOperationItem.Units = OracleReaderValueConvert.ToString(reader["UNITS"]);
+				longOperationItem.StartTime = (DateTime)reader["START_TIME"];
+				longOperationItem.LastUpdateTime = (DateTime)reader["LAST_UPDATE_TIME"];
+				var timestamp = reader["TIMESTAMP"];
+				longOperationItem.TimeRemaining = Convert.ToInt64(reader["TIME_REMAINING"]);
+				longOperationItem.Elapsed = TimeSpan.FromSeconds(Convert.ToInt64(reader["TIME_REMAINING"]));
+				longOperationItem.Context = Convert.ToInt64(reader["CONTEXT"]);
+				longOperationItem.Message = OracleReaderValueConvert.ToString(reader["MESSAGE"]);
 			}
 		}
 	}

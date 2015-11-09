@@ -200,6 +200,8 @@ namespace SqlPad.Oracle
 						return "Grant succeeded. ";
 					case NonTerminals.TruncateStatement:
 						return "Table truncated. ";
+					case NonTerminals.SetTransactionStatement:
+						return "Transaction set. ";
 					case NonTerminals.PurgeStatement:
 						switch (statementNode[NonTerminals.PurgeOption]?.FirstTerminalNode?.Id)
 						{

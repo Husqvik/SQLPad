@@ -69,7 +69,7 @@
 	<UserControl.CommandBindings>
 		<CommandBinding Command="commands:GenericCommands.ShowExecutionHistory" Executed="ShowExecutionHistoryExecutedHandler" />
 		<CommandBinding Command="commands:GenericCommands.CancelUserAction" Executed="CancelUserActionHandler" CanExecute="CanExecuteCancelUserActionHandler" />
-		<CommandBinding Command="commands:GenericCommands.RefreshDatabaseModel" Executed="RefreshDatabaseModel" />
+		<CommandBinding Command="commands:GenericCommands.RefreshContent" Executed="RefreshDatabaseModel" />
 	</UserControl.CommandBindings>
 
 	<Grid>
@@ -352,8 +352,7 @@
 			</Grid>
 		</DockPanel>
 
-		<GridSplitter Grid.Column="0" Grid.Row="2" Height="4" HorizontalAlignment="Stretch" ShowsPreview="True"
-		              VerticalAlignment="Center" Background="DimGray" />
+		<GridSplitter Grid.Column="0" Grid.Row="2" Height="4" HorizontalAlignment="Stretch" ShowsPreview="True" VerticalAlignment="Center" Background="DimGray" />
 
 		<Grid Grid.Column="0" Grid.Row="3">
 			<Grid.ColumnDefinitions>

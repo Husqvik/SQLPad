@@ -408,10 +408,10 @@
           <Terminal Id="Not" IsOptional="true" />
           <NonTerminal Id="InstantiableOrFinal" />
         </Sequence>
-        <!--<Sequence>
-          <NonTerminal Id="AlterMethodSpecificaton" />
+        <Sequence>
+          <NonTerminal Id="AlterMethodSpecification" />
           <NonTerminal Id="DependentHandlingClause" IsOptional="true" />
-        </Sequence>-->
+        </Sequence>
         <Sequence>
           <NonTerminal Id="AlterAttributeDefinition" />
           <NonTerminal Id="DependentHandlingClause" IsOptional="true" />
@@ -419,6 +419,37 @@
         <Sequence>
           <NonTerminal Id="AlterCollectionClauses" />
           <NonTerminal Id="DependentHandlingClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterMethodSpecification">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="AddOrDropMethodSpecification" />
+          <NonTerminal Id="AlterMethodSpecificationChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AddOrDropMethodSpecification">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Add" />
+          <NonTerminal Id="SubProgramOrMapOrderFunctionSpecification" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Drop" />
+          <NonTerminal Id="SubProgramOrMapOrderFunctionSpecification" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterMethodSpecificationChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="AlterMethodSpecification" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -655,11 +686,19 @@
     <Rule StartingNonTerminal="SubProgramOrConstructorOrMapOrderFunctionSpecification">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="MemberOrStatic" />
-          <NonTerminal Id="ProcedureOrFunctionSpecification" />
+          <NonTerminal Id="ConstructorSpecification" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="ConstructorSpecification" />
+          <NonTerminal Id="SubProgramOrMapOrderFunctionSpecification" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="SubProgramOrMapOrderFunctionSpecification">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="MemberOrStatic" />
+          <NonTerminal Id="ProcedureOrFunctionSpecification" />
         </Sequence>
         <Sequence>
           <Terminal Id="Map" />

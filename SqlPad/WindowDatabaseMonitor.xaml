@@ -16,7 +16,7 @@
 	</Window.Resources>
 
     <Window.CommandBindings>
-        <CommandBinding Command="commands:GenericCommands.RefreshDatabaseModel" CanExecute="RefreshCanExecuteHandler" Executed="RefreshExecutedHandler" />
+        <CommandBinding Command="commands:GenericCommands.RefreshContent" CanExecute="RefreshCanExecuteHandler" Executed="RefreshExecutedHandler" />
 	</Window.CommandBindings>
 	
 	<Grid>
@@ -24,6 +24,7 @@
 			<RowDefinition Height="Auto" />
 			<RowDefinition Height="*" />
 			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
 		</Grid.RowDefinitions>
 
 		<StackPanel Orientation="Horizontal" Margin="2">
@@ -61,7 +62,9 @@
 		          BeginningEdit="DataGridBeginningEditCancelTextInputHandler"
 		          SelectionChanged="SessionDataGridSelectionChangedHandler"
 		          DataGridColumnHeader.Click="ColumnHeaderMouseClickHandler" />
+		
+		<GridSplitter Grid.Row="2" Height="4" HorizontalAlignment="Stretch" ShowsPreview="True" VerticalAlignment="Center" Background="DimGray" />
 
-		<ContentControl x:Name="SessionDetailViewer" Grid.Row="2" />
+		<ContentControl x:Name="SessionDetailViewer" Grid.Row="3" />
 	</Grid>
 </Window>

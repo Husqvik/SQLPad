@@ -533,6 +533,19 @@
 						<Run Text="(max: " /><Run Text="{Binding QueryCoordinatorSessionItem.WorkAreaTempMaxBytes, Converter={StaticResource DataSpaceConverter}}" /><Run Text=") " />
 					</TextBlock>
 				</StackPanel>
+				
+				<ItemsControl ItemsSource="{Binding SessionLongOperationItems}">
+					<ItemsControl.ItemTemplate>
+						<DataTemplate>
+							<StackPanel Orientation="Horizontal">
+								<Border BorderBrush="Black" BorderThickness="1">
+									<ProgressBar Maximum="{Binding Value.TotalWork}" Value="{Binding Value.SoFar}" Width="120" />
+								</Border>
+								<TextBlock Text="{Binding Value.Message}" Style="{StaticResource OtherLabelStyle}" Margin="4,0,0,0" />
+							</StackPanel>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
 			</StackPanel>
 		</HierarchicalDataTemplate>
 

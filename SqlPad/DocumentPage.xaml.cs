@@ -428,6 +428,7 @@ namespace SqlPad
 			DatabaseModel.RefreshStatusChanged += DatabaseModelRefreshStatusChangedHandler;
 			DatabaseModel.RefreshCompleted += DatabaseModelRefreshCompletedHandler;
 
+			ProgressBar.IsIndeterminate = false;
 			DatabaseModel.Initialize();
 		}
 

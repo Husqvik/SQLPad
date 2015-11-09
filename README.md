@@ -1,4 +1,4 @@
-SQLPad 0.4.0.27
+SQLPad 0.4.0.28
 ===============
 
 SQLPad is an experimental SQL editor focused to quick and comfortable work.
@@ -187,7 +187,7 @@ Configuration
 
 #####SqlPad.exe.config
 
-Connection string must be Oracle ADO.NET compliant, see [http://www.oracle.com/technetwork/topics/dotnet/downloads/install121012-2088160.html](http://www.oracle.com/technetwork/topics/dotnet/downloads/install121012-2088160.html).
+Connection string must be Oracle ADO.NET compliant, see [http://www.oracle.com/technetwork/topics/dotnet/install121024-2704210.html](http://www.oracle.com/technetwork/topics/dotnet/install121024-2704210.html).
 
 	<connectionStrings>
 		<clear/>
