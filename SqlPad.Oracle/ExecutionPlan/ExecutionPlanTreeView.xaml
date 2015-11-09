@@ -487,6 +487,16 @@
 				</TextBlock>
 				
 				<StackPanel Orientation="Horizontal">
+					<StackPanel.Style>
+						<Style>
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding QueryCoordinatorSessionItem}" Value="{x:Null}">
+									<Setter Property="StackPanel.Visibility" Value="Collapsed" />
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</StackPanel.Style>
+					
 					<TextBlock Style="{StaticResource PlanStatisticValueStyle}">
 						<Run Text="Starts: " />
 						<Run Text="{Binding QueryCoordinatorSessionItem.Starts, Converter={StaticResource PrettyPrintNumericConverter}}" />
@@ -519,7 +529,7 @@
 					</TextBlock>
 					<TextBlock Style="{StaticResource PlanStatisticValueStyle}">
 						<Run Text="I/O interconnection: " />
-						<Run Text="{Binding QueryCoordinatorSessionItem.IoInterconnectBytes, Converter={StaticResource PrettyPrintNumericConverter}}" />
+						<Run Text="{Binding QueryCoordinatorSessionItem.IoInterconnectBytes, Converter={StaticResource DataSpaceConverter}}" />
 						<Run Text=" " />
 					</TextBlock>
 					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding QueryCoordinatorSessionItem.WorkAreaTempBytes, Converter={StaticResource ObjectToVisibilityConverter}}">

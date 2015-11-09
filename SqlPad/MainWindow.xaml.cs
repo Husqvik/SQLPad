@@ -105,7 +105,7 @@ namespace SqlPad
 			CommandBindings.Add(new CommandBinding(GenericCommands.SaveAll, SaveAllCommandExecutedHandler));
 
 			WorkDocumentCollection.RestoreWindowProperties(this);
-			WorkDocumentCollection.RestoreWindowProperties(_windowDatabaseMonitor);
+			_windowDatabaseMonitor.RestoreAppearance();
 
 			if (WorkDocumentCollection.WorkingDocuments.Count > 0)
 			{
@@ -140,14 +140,18 @@ namespace SqlPad
 		private void DropObjectHandler(object sender, DragEventArgs e)
 		{
 			if (!e.Data.GetDataPresent(DataFormats.FileDrop))
+			{
 				return;
+			}
 
 			var files = (string[])e.Data.GetData(DataFormats.FileDrop);
 			foreach (var file in files)
 			{
 				var fileInfo = new FileInfo(file);
 				if (!fileInfo.Exists)
+				{
 					continue;
+				}
 
 				OpenExistingFile(fileInfo.FullName);
 			}

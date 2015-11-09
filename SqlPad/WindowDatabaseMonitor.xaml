@@ -9,7 +9,7 @@
         mc:Ignorable="d"
         Closing="WindowClosingHandler"
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
-        Title="Monitor" Height="400" Width="640">
+        Title="Monitor" Height="400" Width="640" MinHeight="360">
 
 	<Window.Resources>
 		<CollectionViewSource x:Key="FilteredDatabaseSessions" Source="{Binding DatabaseSessions}" Filter="DatabaseSessionFilterHandler" />
@@ -22,9 +22,9 @@
 	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto" />
-			<RowDefinition Height="*" />
+			<RowDefinition Height="*" MinHeight="120" x:Name="RowDefinitionSessionDataGrid" />
 			<RowDefinition Height="Auto" />
-			<RowDefinition Height="*" />
+			<RowDefinition Height="*" MinHeight="120" />
 		</Grid.RowDefinitions>
 
 		<StackPanel Orientation="Horizontal" Margin="2">

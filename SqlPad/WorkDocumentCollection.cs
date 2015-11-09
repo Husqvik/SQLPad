@@ -58,7 +58,7 @@ namespace SqlPad
 
 			var windowPropertiesType = serializer.Add(typeof(WindowProperties), false);
 			windowPropertiesType.UseConstructor = false;
-			windowPropertiesType.Add(nameof(WindowProperties.Left), nameof(WindowProperties.Top), nameof(WindowProperties.Width), nameof(WindowProperties.Height), nameof(WindowProperties.State));
+			windowPropertiesType.Add(nameof(WindowProperties.Left), nameof(WindowProperties.Top), nameof(WindowProperties.Width), nameof(WindowProperties.Height), nameof(WindowProperties.State), nameof(WindowProperties.CustomProperties));
 
 			var sqlPadConfigurationType = serializer.Add(typeof(DatabaseProviderConfiguration), false);
 			sqlPadConfigurationType.UseConstructor = false;
@@ -376,18 +376,18 @@ namespace SqlPad
 			}
 		}
 
-		public static void StoreWindowProperties(Window window)
+		public static void StoreWindowProperties(Window window, IDictionary<string, double> customProperties = null)
 		{
-			Instance._windowConfigurations[window.GetType()] = new WindowProperties(window);
+			Instance._windowConfigurations[window.GetType()] = new WindowProperties(window, customProperties);
 		}
 
-		public static void RestoreWindowProperties(Window window)
+		public static IDictionary<string, double> RestoreWindowProperties(Window window)
 		{
 			var properties = Instance._windowConfigurations;
 			WindowProperties windowProperties;
 			if (!properties.TryGetValue(window.GetType(), out windowProperties))
 			{
-				return;
+				return null;
 			}
 
 			window.Left = windowProperties.Left;
@@ -395,18 +395,24 @@ namespace SqlPad
 			window.Width = windowProperties.Width;
 			window.Height = windowProperties.Height;
 			window.WindowState = windowProperties.State;
+			return windowProperties.CustomProperties;
 		}
 	}
 
 	internal class WindowProperties
 	{
-		public WindowProperties(Window window)
+		public WindowProperties(Window window, IDictionary<string, double> customProperties)
 		{
 			Left = window.Left;
 			Top = window.Top;
 			Width = window.Width;
 			Height = window.Height;
 			State = window.WindowState;
+
+			if (customProperties != null)
+			{
+				CustomProperties = new Dictionary<string, double>(customProperties);
+			}
 		}
 
 		public double Left { get; private set; }
@@ -414,6 +420,7 @@ namespace SqlPad
 		public double Width { get; private set; }
 		public double Height { get; private set; }
 		public WindowState State { get; private set; }
+		public Dictionary<string, double> CustomProperties { get; private set; } 
 	}
 
 	[DebuggerDisplay("BreakpointData (ObjectIdentifier={ProgramIdentifier}, Offset={LineNumber}, IsEnabled={IsEnabled})")]

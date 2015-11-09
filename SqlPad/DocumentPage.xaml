@@ -10,7 +10,7 @@
              xmlns:system="clr-namespace:System;assembly=mscorlib"
              Loaded="PageLoadedHandler"
              mc:Ignorable="d"
-             d:DesignHeight="320" d:DesignWidth="480" DataContext="{Binding RelativeSource={RelativeSource Self}}">
+             d:DesignHeight="320" d:DesignWidth="480" MinHeight="320" DataContext="{Binding RelativeSource={RelativeSource Self}}">
 	<UserControl.Resources>
 		<sqlPad:ColorCodeToColorConverter x:Key="ColorCodeToColorConverter" />
 
@@ -75,9 +75,9 @@
 	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto" />
-			<RowDefinition Height="*" x:Name="RowDefinitionEditor" />
+			<RowDefinition Height="*" MinHeight="120" x:Name="RowDefinitionEditor" />
 			<RowDefinition Height="Auto" />
-			<RowDefinition Height="*" />
+			<RowDefinition Height="*" MinHeight="120" />
 			<RowDefinition Height="24" />
 		</Grid.RowDefinitions>
 
@@ -210,9 +210,9 @@
 					<CommandBinding Command="commands:GenericCommands.ExplainPlan" Executed="ExecuteExplainPlanCommandHandler" CanExecute="CanExecuteDatabaseCommandHandler" />
 				</Grid.CommandBindings>
 				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="3*" x:Name="ColumnDefinitionEditor" />
+					<ColumnDefinition Width="3*" MinWidth="120" x:Name="ColumnDefinitionEditor" />
 					<ColumnDefinition Width="Auto" />
-					<ColumnDefinition Width="*" />
+					<ColumnDefinition Width="*" MinWidth="60" />
 				</Grid.ColumnDefinitions>
 				<sqlPad:SqlTextEditor x:Name="Editor"
 				                      FontFamily="Consolas"

@@ -43,6 +43,8 @@ namespace SqlPad
 			viewSource.View.Refresh();
 		}
 
+		private const string SessionDataGridHeightProperty = "SessionDataGridSplitter";
+
 		private readonly ObservableCollection<DatabaseSession> _databaseSessions = new ObservableCollection<DatabaseSession>();
 
 		private bool _isBusy;
@@ -56,6 +58,16 @@ namespace SqlPad
 		public WindowDatabaseMonitor()
 		{
 			InitializeComponent();
+		}
+
+		public void RestoreAppearance()
+		{
+			var customProperties = WorkDocumentCollection.RestoreWindowProperties(this);
+			double sessionDataGridHeight = 0;
+			if (customProperties?.TryGetValue(SessionDataGridHeightProperty, out sessionDataGridHeight) == true)
+			{
+				RowDefinitionSessionDataGrid.Height = new GridLength(sessionDataGridHeight);
+			}
 		}
 
 		private void Initialize()
@@ -110,7 +122,7 @@ namespace SqlPad
 		{
 			e.Cancel = true;
 			Hide();
-			WorkDocumentCollection.StoreWindowProperties(this);
+			WorkDocumentCollection.StoreWindowProperties(this, new Dictionary<string, double> { { SessionDataGridHeightProperty, RowDefinitionSessionDataGrid.ActualHeight } });
 		}
 
 		private void RefreshExecutedHandler(object sender, ExecutedRoutedEventArgs e)
