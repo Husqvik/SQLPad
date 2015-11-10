@@ -1221,6 +1221,7 @@ namespace SqlPad.Oracle
 			public const string ShrinkClause = "ShrinkClause";
 			public const string SimpleCaseExpressionBranch = "SimpleCaseExpressionBranch";
 			public const string SimpleDmlTrigger = "SimpleDmlTrigger";
+			public const string SimplePrecision = "SimplePrecision";
 			public const string SimpleSchemaObject = "SimpleSchemaObject";
 			public const string SingleColumnForLoop = "SingleColumnForLoop";
 			public const string SingleColumnForLoopList = "SingleColumnForLoopList";
@@ -1413,6 +1414,7 @@ namespace SqlPad.Oracle
 			public const string VariableElementArrayColumnPropertiesOrLargeObjectStorageClause = "VariableElementArrayColumnPropertiesOrLargeObjectStorageClause";
 			public const string VariableElementArrayStorageClause = "VariableElementArrayStorageClause";
 			public const string VaryingArray = "VaryingArray";
+			public const string VaryingArrayOrNestedTableTypeDefinition = "VaryingArrayOrNestedTableTypeDefinition";
 			public const string VaryingArrayTypeDefinition = "VaryingArrayTypeDefinition";
 			public const string VaryingCharacterOrRawDataType = "VaryingCharacterOrRawDataType";
 			public const string ViewBequeath = "ViewBequeath";

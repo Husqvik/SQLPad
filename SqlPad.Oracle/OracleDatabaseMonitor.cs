@@ -31,6 +31,8 @@ namespace SqlPad.Oracle
 
 					await connection.OpenAsynchronous(cancellationToken);
 
+					connection.ModuleName = "Database monitor";
+
 					using (var reader = await command.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken))
 					{
 						databaseSessions.ColumnHeaders = OracleConnectionAdapter.GetColumnHeadersFromReader(reader);
@@ -43,7 +45,15 @@ namespace SqlPad.Oracle
 							reader.GetValues(values);
 							var sessionType = (string)values[17];
 							var sessionId = Convert.ToInt32(values[1]);
-							sessions.Add(sessionId, new DatabaseSession { Values = values, Type = String.Equals(sessionType, "User") ? SessionType.User : SessionType.System });
+							var databaseSession =
+								new DatabaseSession
+								{
+									Values = values,
+									Type = String.Equals(sessionType, "User") ? SessionType.User : SessionType.System,
+									IsActive = Convert.ToString(values[9]) == "Active"
+								};
+
+							sessions.Add(sessionId, databaseSession);
 						}
 
 						foreach (var session in sessions.Values)

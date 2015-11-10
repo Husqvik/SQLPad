@@ -11534,7 +11534,25 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="IsOrAs" IsOptional="true" />
-          <!--<NonTerminal Id="VaryingArrayOrNestedTableTypeDefinition" IsOptional="true" />-->
+          <NonTerminal Id="VaryingArrayOrNestedTableTypeDefinition" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="VaryingArrayOrNestedTableTypeDefinition">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="VaryingArray" />
+          <NonTerminal Id="DataTypeSimplePrecision" />
+          <Terminal Id="Of" />
+          <NonTerminal Id="PlSqlDataType" />
+          <NonTerminal Id="NotNull" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Table" />
+          <Terminal Id="Of" />
+          <NonTerminal Id="PlSqlDataType" />
+          <NonTerminal Id="NotNull" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>

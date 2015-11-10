@@ -130,7 +130,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 		private string _units;
 		private DateTime _startTime;
 		private DateTime _lastUpdateTime;
-		private long _timeRemaining;
+		private TimeSpan? _timeRemaining;
 		private TimeSpan _elapsed;
 		private long? _context;
 		private string _message;
@@ -187,7 +187,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			set { UpdateValueAndRaisePropertyChanged(ref _lastUpdateTime, value); }
 		}
 
-		public long TimeRemaining
+		public TimeSpan? TimeRemaining
 		{
 			get { return _timeRemaining; }
 			set { UpdateValueAndRaisePropertyChanged(ref _timeRemaining, value); }
@@ -371,8 +371,11 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 				activeSessionHistoryItems.Add(historyItem);
 
-				var planLineId = Convert.ToInt32(reader["SQL_PLAN_LINE_ID"]);
-				historyItem.ActiveLine = DataModel.AllItems[planLineId];
+				var planLineId = OracleReaderValueConvert.ToInt32(reader["SQL_PLAN_LINE_ID"]);
+
+				historyItem.ActiveLine = planLineId.HasValue
+					? DataModel.AllItems[planLineId.Value]
+					: null;
 			}
 		}
 	}
@@ -470,8 +473,13 @@ namespace SqlPad.Oracle.ModelDataProviders
 				longOperationItem.StartTime = (DateTime)reader["START_TIME"];
 				longOperationItem.LastUpdateTime = (DateTime)reader["LAST_UPDATE_TIME"];
 				var timestamp = reader["TIMESTAMP"];
-				longOperationItem.TimeRemaining = Convert.ToInt64(reader["TIME_REMAINING"]);
-				longOperationItem.Elapsed = TimeSpan.FromSeconds(Convert.ToInt64(reader["TIME_REMAINING"]));
+				var secondsRemaining = OracleReaderValueConvert.ToInt64(reader["TIME_REMAINING"]);
+				if (secondsRemaining.HasValue)
+				{
+					longOperationItem.TimeRemaining = TimeSpan.FromSeconds(secondsRemaining.Value);
+				}
+
+				longOperationItem.Elapsed = TimeSpan.FromSeconds(Convert.ToInt64(reader["ELAPSED_SECONDS"]));
 				longOperationItem.Context = Convert.ToInt64(reader["CONTEXT"]);
 				longOperationItem.Message = OracleReaderValueConvert.ToString(reader["MESSAGE"]);
 			}

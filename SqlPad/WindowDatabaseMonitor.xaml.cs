@@ -15,7 +15,8 @@ namespace SqlPad
 	public partial class WindowDatabaseMonitor
 	{
 		public static readonly DependencyProperty CurrentConnectionProperty = DependencyProperty.Register(nameof(CurrentConnection), typeof(ConnectionStringSettings), typeof(WindowDatabaseMonitor), new FrameworkPropertyMetadata(CurrentConnectionChangedCallbackHandler));
-		public static readonly DependencyProperty UserSessionOnlyProperty = DependencyProperty.Register(nameof(UserSessionOnly), typeof(bool), typeof(WindowDatabaseMonitor), new UIPropertyMetadata(true, UserSessionOnlyChangedCallbackHandler));
+		public static readonly DependencyProperty UserSessionOnlyProperty = DependencyProperty.Register(nameof(UserSessionOnly), typeof(bool), typeof(WindowDatabaseMonitor), new UIPropertyMetadata(true, SessionFilterChangedCallbackHandler));
+		public static readonly DependencyProperty ActiveSessionOnlyProperty = DependencyProperty.Register(nameof(ActiveSessionOnly), typeof(bool), typeof(WindowDatabaseMonitor), new UIPropertyMetadata(true, SessionFilterChangedCallbackHandler));
 
 		[Bindable(true)]
 		public ConnectionStringSettings CurrentConnection
@@ -37,10 +38,17 @@ namespace SqlPad
 			set { SetValue(UserSessionOnlyProperty, value); }
 		}
 
-		private static void UserSessionOnlyChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
+		private static void SessionFilterChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
 		{
 			var viewSource = (CollectionViewSource)((WindowDatabaseMonitor)dependencyObject).Resources["FilteredDatabaseSessions"];
 			viewSource.View.Refresh();
+		}
+
+		[Bindable(true)]
+		public bool ActiveSessionOnly
+		{
+			get { return (bool)GetValue(ActiveSessionOnlyProperty); }
+			set { SetValue(ActiveSessionOnlyProperty, value); }
 		}
 
 		private const string SessionDataGridHeightProperty = "SessionDataGridSplitter";
@@ -137,7 +145,9 @@ namespace SqlPad
 
 		private void DatabaseSessionFilterHandler(object sender, FilterEventArgs e)
 		{
-			e.Accepted = !UserSessionOnly || ((DatabaseSession)e.Item).Type == SessionType.User;
+			var filterSystemSession = !UserSessionOnly || ((DatabaseSession)e.Item).Type == SessionType.User;
+			var filterInactiveSession = !ActiveSessionOnly || ((DatabaseSession)e.Item).IsActive;
+			e.Accepted = filterSystemSession && filterInactiveSession;
 		}
 
 		private void SessionDataGridSelectionChangedHandler(object sender, SelectionChangedEventArgs e)

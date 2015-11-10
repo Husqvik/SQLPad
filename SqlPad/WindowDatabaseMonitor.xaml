@@ -48,7 +48,8 @@
 					</DataTemplate>
 				</ComboBox.ItemTemplate>
 			</ComboBox>
-			<CheckBox VerticalAlignment="Center" Margin="8,0,0,0" Content="User sessions only" IsChecked="{Binding UserSessionOnly}" />
+			<CheckBox VerticalAlignment="Center" Margin="8,0,8,0" Content="User sessions only" IsChecked="{Binding UserSessionOnly}" />
+			<CheckBox VerticalAlignment="Center" Content="Active only" IsChecked="{Binding ActiveSessionOnly}" />
 		</StackPanel>
 
 		<DataGrid x:Name="SessionDataGrid"

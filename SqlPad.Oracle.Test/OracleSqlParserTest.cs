@@ -5667,6 +5667,30 @@ PURGE REPEAT INTERVAL '5' DAY";
 					var statement = result.Single();
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
+
+				[Test(Description = @"")]
+				public void TestCreateVaryingArrayType()
+				{
+					const string statementText = @"CREATE TYPE test_varray IS VARRAY(2147483648) OF NUMBER";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestCreateNestedTableType()
+				{
+					const string statementText = @"CREATE TYPE test_nested_table IS TABLE OF NUMBER(10) NOT NULL";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
 			}
 			public class CreateTypeBody
 			{

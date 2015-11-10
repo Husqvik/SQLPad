@@ -44,12 +44,12 @@ namespace SqlPad.Oracle
 
 			databaseSession = databaseSession.ParentSession ?? databaseSession;
 			var sqlId = OracleReaderValueConvert.ToString(databaseSession.Values[18]);
-			if (!String.IsNullOrEmpty(sqlId))
+			var executionId = OracleReaderValueConvert.ToInt32(databaseSession.Values[21]);
+			if (!String.IsNullOrEmpty(sqlId) && executionId.HasValue)
 			{
 				var sessionId = Convert.ToInt32(databaseSession.Values[1]);
-				var executionId = Convert.ToInt32(databaseSession.Values[21]);
 				var executionStart = (DateTime)databaseSession.Values[20];
-				var monitorDataProvider = new SqlMonitorDataProvider(sessionId, executionStart, executionId, sqlId, Convert.ToInt32(databaseSession.Values[19]));
+				var monitorDataProvider = new SqlMonitorDataProvider(sessionId, executionStart, executionId.Value, sqlId, Convert.ToInt32(databaseSession.Values[19]));
 				await OracleDatabaseModel.UpdateModelAsync(_connectionString.ConnectionString, null, cancellationToken, false, monitorDataProvider);
 
 				_planItemCollection = monitorDataProvider.ItemCollection;

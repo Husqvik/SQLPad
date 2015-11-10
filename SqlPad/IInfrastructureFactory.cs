@@ -75,6 +75,8 @@ namespace SqlPad
 
 		public SessionType Type { get; set; }
 
+		public bool IsActive { get; set; }
+
 		public object[] Values { get; set; }
 	}
 
