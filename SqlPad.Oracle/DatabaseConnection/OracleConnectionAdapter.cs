@@ -558,6 +558,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private async Task InitializeSession(CancellationToken cancellationToken)
 		{
+			_userConnection.ModuleName = _moduleName;
+			_userConnection.ActionName = "User query";
+
 			using (var command = _userConnection.CreateCommand())
 			{
 				await command.SetSchema(_currentSchema, cancellationToken);
@@ -615,10 +618,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 			if (isConnectionStateChanged)
 			{
 				Trace.WriteLine("User connection has been open. ");
+			}
 
-				_userConnection.ModuleName = _moduleName;
-				_userConnection.ActionName = "User query";
-
+			if (isConnectionStateChanged || _userSessionId == null)
+			{
 				await InitializeSession(cancellationToken);
 			}
 		}
