@@ -6,6 +6,8 @@
              xmlns:executionPlan="clr-namespace:SqlPad.Oracle.ExecutionPlan"
              xmlns:sqlPad="clr-namespace:SqlPad;assembly=SqlPad"
              xmlns:modelDataProviders="clr-namespace:SqlPad.Oracle.ModelDataProviders"
+             xmlns:generic="clr-namespace:System.Collections.Generic;assembly=mscorlib"
+             xmlns:system="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d"
              d:DesignHeight="160" d:DesignWidth="240">
 	<UserControl.Resources>
@@ -393,6 +395,80 @@
 			</StackPanel>
 		</HierarchicalDataTemplate>
 
+		<DataTemplate x:Key="SqlMonitorSingleSessionDataTemplate" DataType="modelDataProviders:SqlMonitorSessionItem">
+			<StackPanel Orientation="Horizontal">
+				<TextBlock>
+					<TextBlock.Style>
+						<Style BasedOn="{StaticResource PlanStatisticValueStyle}" TargetType="TextBlock">
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding SessionId}" Value="0">
+									<Setter Property="Visibility" Value="Collapsed" />
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</TextBlock.Style>
+					<Run Text="SID: " />
+					<Run Text="{Binding SessionId}" />
+					<Run Text=" " />
+				</TextBlock>
+				<TextBlock Style="{StaticResource PlanStatisticValueStyle}">
+					<Run Text="Starts: " />
+					<Run Text="{Binding Starts, Converter={StaticResource PrettyPrintNumericConverter}}" />
+					<Run Text=" " />
+				</TextBlock>
+				<TextBlock Style="{StaticResource PlanStatisticValueStyle}">
+					<Run Text="Output rows: " />
+					<Run Text="{Binding OutputRows, Converter={StaticResource PrettyPrintNumericConverter}}" />
+					<Run Text=" " />
+				</TextBlock>
+				<TextBlock Style="{StaticResource PlanStatisticValueStyle}">
+					<Run Text="Physical read requests: " />
+					<Run Text="{Binding PhysicalReadRequests, Converter={StaticResource PrettyPrintNumericConverter}}" />
+					<Run Text=" " />
+				</TextBlock>
+				<TextBlock Style="{StaticResource PlanStatisticValueStyle}">
+					<Run Text="Physical read: " />
+					<Run Text="{Binding PhysicalReadBytes, Converter={StaticResource DataSpaceConverter}}" />
+					<Run Text=" " />
+				</TextBlock>
+				<TextBlock Style="{StaticResource PlanStatisticValueStyle}">
+					<Run Text="Physical write requests: " />
+					<Run Text="{Binding PhysicalWriteRequests, Converter={StaticResource PrettyPrintNumericConverter}}" />
+					<Run Text=" " />
+				</TextBlock>
+				<TextBlock Style="{StaticResource PlanStatisticValueStyle}">
+					<Run Text="Physical write: " />
+					<Run Text="{Binding PhysicalWriteBytes, Converter={StaticResource DataSpaceConverter}}" />
+					<Run Text=" " />
+				</TextBlock>
+				<TextBlock Style="{StaticResource PlanStatisticValueStyle}">
+					<Run Text="I/O interconnection: " />
+					<Run Text="{Binding IoInterconnectBytes, Converter={StaticResource DataSpaceConverter}}" />
+					<Run Text=" " />
+				</TextBlock>
+				<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaTempBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
+					<Run Text="Work area: " />
+					<Run Text="{Binding WorkAreaMemoryBytes, Converter={StaticResource DataSpaceConverter}}" />
+					<Run Text="(max: " /><Run Text="{Binding WorkAreaMemoryMaxBytes, Converter={StaticResource DataSpaceConverter}}" /><Run Text=") " />
+				</TextBlock>
+				<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaTempBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
+					<Run Text="Temp: " />
+					<Run Text="{Binding WorkAreaTempBytes, Converter={StaticResource DataSpaceConverter}}" />
+					<Run Text="(max: " /><Run Text="{Binding WorkAreaTempMaxBytes, Converter={StaticResource DataSpaceConverter}}" /><Run Text=") " />
+				</TextBlock>
+			</StackPanel>
+		</DataTemplate>
+
+		<DataTemplate x:Key="SqlMonitorSessionListDataTemplate">
+			<ItemsControl ItemsSource="{Binding}">
+				<ItemsControl.ItemTemplate>
+					<DataTemplate DataType="{sqlPad:Type generic:KeyValuePair, system:Int32, modelDataProviders:SqlMonitorSessionItem}">
+						<ContentControl ContentTemplate="{StaticResource SqlMonitorSingleSessionDataTemplate}" Content="{Binding Value}" />
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
+		</DataTemplate>
+
 		<HierarchicalDataTemplate x:Key="ExecutionMonitorPlanItemDataTemplate" ItemsSource="{Binding ChildItems}" DataType="modelDataProviders:SqlMonitorPlanItem">
 			<StackPanel>
 				<StackPanel Orientation="Horizontal">
@@ -485,64 +561,26 @@
 					<Run Text="Filter Predicates:" />
 					<Run Text="{Binding FilterPredicates}" />
 				</TextBlock>
-				
-				<StackPanel Orientation="Horizontal">
-					<StackPanel.Style>
-						<Style>
+
+				<ContentControl>
+					<ContentControl.Style>
+						<Style TargetType="ContentControl">
 							<Style.Triggers>
-								<DataTrigger Binding="{Binding QueryCoordinatorSessionItem}" Value="{x:Null}">
-									<Setter Property="StackPanel.Visibility" Value="Collapsed" />
+								<DataTrigger Binding="{Binding}" Value="{x:Null}">
+									<Setter Property="Visibility" Value="Collapsed" />
+								</DataTrigger>
+								<DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=executionPlan:ExecutionPlanTreeView, AncestorLevel=1}, Path=ShowSessionDetails}" Value="True">
+									<Setter Property="ContentTemplate" Value="{StaticResource SqlMonitorSessionListDataTemplate}" />
+									<Setter Property="Content" Value="{Binding SessionItems}" />	
+								</DataTrigger>
+								<DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=executionPlan:ExecutionPlanTreeView, AncestorLevel=1}, Path=ShowSessionDetails}" Value="False">
+									<Setter Property="ContentTemplate" Value="{StaticResource SqlMonitorSingleSessionDataTemplate}" />
+									<Setter Property="Content" Value="{Binding AllSessionSummaryItem}" />	
 								</DataTrigger>
 							</Style.Triggers>
 						</Style>
-					</StackPanel.Style>
-					
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}">
-						<Run Text="Starts: " />
-						<Run Text="{Binding QueryCoordinatorSessionItem.Starts, Converter={StaticResource PrettyPrintNumericConverter}}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}">
-						<Run Text="Output rows: " />
-						<Run Text="{Binding QueryCoordinatorSessionItem.OutputRows, Converter={StaticResource PrettyPrintNumericConverter}}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}">
-						<Run Text="Physical read requests: " />
-						<Run Text="{Binding QueryCoordinatorSessionItem.PhysicalReadRequests, Converter={StaticResource PrettyPrintNumericConverter}}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}">
-						<Run Text="Physical read: " />
-						<Run Text="{Binding QueryCoordinatorSessionItem.PhysicalReadBytes, Converter={StaticResource DataSpaceConverter}}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}">
-						<Run Text="Physical write requests: " />
-						<Run Text="{Binding QueryCoordinatorSessionItem.PhysicalWriteRequests, Converter={StaticResource PrettyPrintNumericConverter}}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}">
-						<Run Text="Physical write: " />
-						<Run Text="{Binding QueryCoordinatorSessionItem.PhysicalWriteBytes, Converter={StaticResource DataSpaceConverter}}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}">
-						<Run Text="I/O interconnection: " />
-						<Run Text="{Binding QueryCoordinatorSessionItem.IoInterconnectBytes, Converter={StaticResource DataSpaceConverter}}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding QueryCoordinatorSessionItem.WorkAreaTempBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="Work area: " />
-						<Run Text="{Binding QueryCoordinatorSessionItem.WorkAreaMemoryBytes, Converter={StaticResource DataSpaceConverter}}" />
-						<Run Text="(max: " /><Run Text="{Binding QueryCoordinatorSessionItem.WorkAreaMemoryMaxBytes, Converter={StaticResource DataSpaceConverter}}" /><Run Text=") " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding QueryCoordinatorSessionItem.WorkAreaTempBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="Temp: " />
-						<Run Text="{Binding QueryCoordinatorSessionItem.WorkAreaTempBytes, Converter={StaticResource DataSpaceConverter}}" />
-						<Run Text="(max: " /><Run Text="{Binding QueryCoordinatorSessionItem.WorkAreaTempMaxBytes, Converter={StaticResource DataSpaceConverter}}" /><Run Text=") " />
-					</TextBlock>
-				</StackPanel>
+					</ContentControl.Style>
+				</ContentControl>
 				
 				<ItemsControl ItemsSource="{Binding SessionLongOperationItems}">
 					<ItemsControl.ItemTemplate>
@@ -551,7 +589,12 @@
 								<Border BorderBrush="Black" BorderThickness="1">
 									<ProgressBar Maximum="{Binding Value.TotalWork}" Value="{Binding Value.SoFar}" Width="120" />
 								</Border>
-								<TextBlock Text="{Binding Value.Message}" Style="{StaticResource OtherLabelStyle}" Margin="4,0,0,0" />
+								<StackPanel Orientation="Horizontal" Margin="4,0,0,0">
+									<TextBlock Style="{StaticResource OtherLabelStyle}">
+										<Run Text="SID " /><Run Text="{Binding Value.SessionId}" /><Run Text=":" />
+									</TextBlock>
+									<TextBlock Text="{Binding Value.Message}" Style="{StaticResource OtherLabelStyle}" />
+								</StackPanel>
 							</StackPanel>
 						</DataTemplate>
 					</ItemsControl.ItemTemplate>

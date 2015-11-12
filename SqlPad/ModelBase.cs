@@ -27,9 +27,12 @@ namespace SqlPad
 			return true;
 		}
 
-		protected void RaisePropertyChanged(string propertyName)
+		protected void RaisePropertyChanged(params string[] propertyNames)
 		{
-		    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+			foreach (var propertyName in propertyNames)
+			{
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+			}
 		}
 	}
 }

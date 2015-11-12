@@ -13,11 +13,18 @@ namespace SqlPad.Oracle.ExecutionPlan
 	public partial class ExecutionPlanTreeView
 	{
 		public static readonly DependencyProperty ShowCumulativeExecutionsProperty = DependencyProperty.Register(nameof(ShowCumulativeExecutions), typeof(bool), typeof(ExecutionPlanTreeView), new FrameworkPropertyMetadata());
+		public static readonly DependencyProperty ShowSessionDetailsProperty = DependencyProperty.Register(nameof(ShowSessionDetails), typeof(bool), typeof(ExecutionPlanTreeView), new FrameworkPropertyMetadata());
 
 		public bool ShowCumulativeExecutions
 		{
 			get { return (bool)GetValue(ShowCumulativeExecutionsProperty); }
 			set { SetValue(ShowCumulativeExecutionsProperty, value); }
+		}
+
+		public bool ShowSessionDetails
+		{
+			get { return (bool)GetValue(ShowSessionDetailsProperty); }
+			set { SetValue(ShowSessionDetailsProperty, value); }
 		}
 
 		public ExecutionPlanTreeView()

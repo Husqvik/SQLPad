@@ -106,12 +106,12 @@ namespace SqlPad.Oracle.ModelDataProviders
 	[DebuggerDisplay("SqlMonitorPlanItem (Id={Id}; Operation={Operation}; ObjectName={ObjectName}; Depth={Depth}; IsLeaf={IsLeaf}; ExecutionOrder={ExecutionOrder})")]
 	public class SqlMonitorPlanItem : ExecutionPlanItem
 	{
-		private SqlMonitorSessionItem _queryCoordinatorSessionItem;
+		private SqlMonitorSessionItem _allSessionSummaryItem;
 
-		public SqlMonitorSessionItem QueryCoordinatorSessionItem
+		public SqlMonitorSessionItem AllSessionSummaryItem
 		{
-			get { return _queryCoordinatorSessionItem; }
-			set { UpdateValueAndRaisePropertyChanged(ref _queryCoordinatorSessionItem, value); }
+			get { return _allSessionSummaryItem; }
+			set { UpdateValueAndRaisePropertyChanged(ref _allSessionSummaryItem, value); }
 		}
 
 		public ObservableDictionary<int, SqlMonitorSessionItem> SessionItems { get; } = new ObservableDictionary<int, SqlMonitorSessionItem>();
@@ -214,6 +214,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 	public class SqlMonitorSessionItem : ModelBase
 	{
+		private int _sessionId;
 		private long _starts;
 		private long _outputRows;
 		private long _ioInterconnectBytes;
@@ -225,6 +226,12 @@ namespace SqlPad.Oracle.ModelDataProviders
 		private long? _workAreaMemoryMaxBytes;
 		private long? _workAreaTempBytes;
 		private long? _workAreaTempMaxBytes;
+
+		public int SessionId
+		{
+			get { return _sessionId; }
+			set { UpdateValueAndRaisePropertyChanged(ref _sessionId, value); }
+		}
 
 		public long Starts
 		{
@@ -290,6 +297,73 @@ namespace SqlPad.Oracle.ModelDataProviders
 		{
 			get { return _workAreaTempMaxBytes; }
 			set { UpdateValueAndRaisePropertyChanged(ref _workAreaTempMaxBytes, value); }
+		}
+
+		public void Reset()
+		{
+			if (_sessionId != 0)
+			{
+				throw new InvalidOperationException("Only summary item can be reseted. ");
+			}
+
+			Starts = 0;
+			OutputRows = 0;
+			IoInterconnectBytes = 0;
+			PhysicalReadRequests = 0;
+			PhysicalReadBytes = 0;
+			PhysicalWriteRequests = 0;
+			PhysicalWriteBytes = 0;
+			WorkAreaMemoryBytes = null;
+			WorkAreaMemoryMaxBytes = null;
+			WorkAreaTempBytes = null;
+			WorkAreaTempMaxBytes = null;
+		}
+
+		public void MergeSessionItem(SqlMonitorSessionItem sessionItem)
+		{
+			Starts += sessionItem.Starts;
+			OutputRows += sessionItem.OutputRows;
+			IoInterconnectBytes += sessionItem.IoInterconnectBytes;
+			PhysicalReadRequests += sessionItem.PhysicalReadRequests;
+			PhysicalReadBytes += sessionItem.PhysicalReadBytes;
+			PhysicalWriteRequests += sessionItem.PhysicalWriteRequests;
+			PhysicalWriteBytes += sessionItem.PhysicalWriteBytes;
+
+			MergeNullableValue(ref _workAreaMemoryBytes, sessionItem._workAreaMemoryBytes);
+			MergeNullableValue(ref _workAreaMemoryMaxBytes, sessionItem._workAreaMemoryMaxBytes);
+			MergeNullableValue(ref _workAreaTempBytes, sessionItem._workAreaTempBytes);
+			MergeNullableValue(ref _workAreaTempMaxBytes, sessionItem._workAreaTempMaxBytes);
+		}
+
+		private static void MergeNullableValue(ref long? summaryValue, long? sessionValue)
+		{
+			if (sessionValue == null)
+			{
+				return;
+			}
+
+			if (summaryValue == null)
+			{
+				summaryValue = 0;
+			}
+
+			summaryValue += sessionValue.Value;
+		}
+
+		public void NotifyPropertyChanged()
+		{
+			RaisePropertyChanged(
+				nameof(Starts),
+				nameof(OutputRows),
+				nameof(IoInterconnectBytes),
+				nameof(PhysicalReadRequests),
+				nameof(PhysicalReadBytes),
+				nameof(PhysicalWriteRequests),
+				nameof(PhysicalWriteBytes),
+				nameof(WorkAreaMemoryBytes),
+				nameof(WorkAreaMemoryMaxBytes),
+				nameof(WorkAreaTempBytes),
+				nameof(WorkAreaTempMaxBytes));
 		}
 	}
 
@@ -407,12 +481,11 @@ namespace SqlPad.Oracle.ModelDataProviders
 				SqlMonitorSessionItem sqlMonitorItem;
 				if (!planItem.SessionItems.TryGetValue(sessionId, out sqlMonitorItem))
 				{
-					planItem.SessionItems[sessionId] = sqlMonitorItem = new SqlMonitorSessionItem();
-
-					if (sessionId == DataModel.SessionId)
-					{
-						planItem.QueryCoordinatorSessionItem = sqlMonitorItem;
-					}
+					planItem.SessionItems[sessionId] = sqlMonitorItem =
+						new SqlMonitorSessionItem
+						{
+							SessionId = sessionId
+						};
 				}
 
 				sqlMonitorItem.Starts = Convert.ToInt64(reader["STARTS"]);
@@ -426,6 +499,24 @@ namespace SqlPad.Oracle.ModelDataProviders
 				sqlMonitorItem.WorkAreaMemoryMaxBytes = OracleReaderValueConvert.ToInt64(reader["WORKAREA_MAX_MEM"]);
 				sqlMonitorItem.WorkAreaTempBytes = OracleReaderValueConvert.ToInt64(reader["WORKAREA_TEMPSEG"]);
 				sqlMonitorItem.WorkAreaTempMaxBytes = OracleReaderValueConvert.ToInt64(reader["WORKAREA_MAX_TEMPSEG"]);
+			}
+
+			foreach (var planItem in DataModel.AllItems.Values)
+			{
+				var summaryItem = planItem.AllSessionSummaryItem;
+				if (summaryItem == null)
+				{
+					planItem.AllSessionSummaryItem = summaryItem = new SqlMonitorSessionItem();
+				}
+
+				summaryItem.Reset();
+
+				foreach (var planSessionItem in planItem.SessionItems.Values)
+				{
+					summaryItem.MergeSessionItem(planSessionItem);
+				}
+
+				summaryItem.NotifyPropertyChanged();
 			}
 		}
 	}
