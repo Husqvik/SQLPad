@@ -6,8 +6,6 @@
              xmlns:executionPlan="clr-namespace:SqlPad.Oracle.ExecutionPlan"
              xmlns:sqlPad="clr-namespace:SqlPad;assembly=SqlPad"
              xmlns:modelDataProviders="clr-namespace:SqlPad.Oracle.ModelDataProviders"
-             xmlns:generic="clr-namespace:System.Collections.Generic;assembly=mscorlib"
-             xmlns:system="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d"
              d:DesignHeight="160" d:DesignWidth="240">
 	<UserControl.Resources>
@@ -462,7 +460,8 @@
 		<DataTemplate x:Key="SqlMonitorSessionListDataTemplate">
 			<ItemsControl ItemsSource="{Binding}">
 				<ItemsControl.ItemTemplate>
-					<DataTemplate DataType="{sqlPad:Type generic:KeyValuePair, system:Int32, modelDataProviders:SqlMonitorSessionItem}">
+					<!--<DataTemplate DataType="{sqlPad:Type generic:KeyValuePair, system:Int32, modelDataProviders:SqlMonitorSessionItem}">-->
+					<DataTemplate>
 						<ContentControl ContentTemplate="{StaticResource SqlMonitorSingleSessionDataTemplate}" Content="{Binding Value}" />
 					</DataTemplate>
 				</ItemsControl.ItemTemplate>
@@ -583,6 +582,19 @@
 				</ContentControl>
 				
 				<ItemsControl ItemsSource="{Binding SessionLongOperationItems}">
+					<ItemsControl.Style>
+						<Style>
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=executionPlan:ExecutionPlanTreeView, AncestorLevel=1}, Path=ShowSessionDetails}" Value="True">
+									<Setter Property="ItemsControl.ItemsSource" Value="{Binding SessionLongOperationItems}" />
+								</DataTrigger>
+								<DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=executionPlan:ExecutionPlanTreeView, AncestorLevel=1}, Path=ShowSessionDetails}" Value="False">
+									<Setter Property="ItemsControl.ItemsSource" Value="{Binding QueryCoordinatorLongOperations}" />
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</ItemsControl.Style>
+					
 					<ItemsControl.ItemTemplate>
 						<DataTemplate>
 							<StackPanel Orientation="Horizontal">

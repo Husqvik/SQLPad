@@ -1,16 +1,27 @@
 ﻿using System;
 using System.Configuration;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using SqlPad.Oracle.DatabaseConnection;
+using SqlPad.Oracle.ExecutionPlan;
 using SqlPad.Oracle.ModelDataProviders;
 
 namespace SqlPad.Oracle
 {
 	public partial class OracleSessionDetailViewer : IDatabaseSessionDetailViewer
 	{
+		public static readonly DependencyProperty EnableSessionDetailsProperty = DependencyProperty.Register(nameof(EnableSessionDetails), typeof(bool), typeof(ExecutionPlanTreeView), new FrameworkPropertyMetadata());
+
+		public bool EnableSessionDetails
+		{
+			get { return (bool)GetValue(EnableSessionDetailsProperty); }
+			private set { SetValue(EnableSessionDetailsProperty, value); }
+		}
+
 		private readonly ConnectionStringSettings _connectionString;
 		private readonly DispatcherTimer _refreshTimer;
 
@@ -34,6 +45,8 @@ namespace SqlPad.Oracle
 			var planMonitorDataProvider = new SqlMonitorPlanMonitorDataProvider(_planItemCollection);
 			var sessionLongOperationDataProvider = new SessionLongOperationPlanMonitorDataProvider(_planItemCollection);
 			await OracleDatabaseModel.UpdateModelAsync(_connectionString.ConnectionString, null, CancellationToken.None, false, activeSessionHistoryDataProvider, planMonitorDataProvider, sessionLongOperationDataProvider);
+
+			EnableSessionDetails = _planItemCollection.AllItems.Values.Any(i => i.SessionItems.Count > 1);
 		}
 
 		public async Task Initialize(DatabaseSession databaseSession, CancellationToken cancellationToken)
@@ -56,7 +69,7 @@ namespace SqlPad.Oracle
 
 				if (_planItemCollection.RootItem != null)
 				{
-					ExecutionPlanTreeView.TreeView.Items.Add(_planItemCollection.RootItem);
+					ExecutionPlanTreeView.RootItem = _planItemCollection.RootItem;
 					await RefreshActiveSessionHistory();
 					_refreshTimer.IsEnabled = true;
 				}
@@ -65,7 +78,7 @@ namespace SqlPad.Oracle
 
 		private void Clear()
 		{
-			ExecutionPlanTreeView.TreeView.Items.Clear();
+			ExecutionPlanTreeView.RootItem = null;
 		}
 	}
 }

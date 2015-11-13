@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -117,6 +118,8 @@ namespace SqlPad.Oracle.ModelDataProviders
 		public ObservableDictionary<int, SqlMonitorSessionItem> SessionItems { get; } = new ObservableDictionary<int, SqlMonitorSessionItem>();
 
 		public ObservableDictionary<int, SqlMonitorSessionLongOperationItem> SessionLongOperationItems { get; } = new ObservableDictionary<int, SqlMonitorSessionLongOperationItem>();
+
+		public ObservableCollection<SqlMonitorSessionLongOperationItem> QueryCoordinatorLongOperations { get; } = new ObservableCollection<SqlMonitorSessionLongOperationItem>();
 	}
 
 	[DebuggerDisplay("SqlMonitorSessionLongOperationItem (SessionId={SessionId}; Message={_message})")]
@@ -573,6 +576,17 @@ namespace SqlPad.Oracle.ModelDataProviders
 				longOperationItem.Elapsed = TimeSpan.FromSeconds(Convert.ToInt64(reader["ELAPSED_SECONDS"]));
 				longOperationItem.Context = Convert.ToInt64(reader["CONTEXT"]);
 				longOperationItem.Message = OracleReaderValueConvert.ToString(reader["MESSAGE"]);
+			}
+
+			foreach (var planItem in DataModel.AllItems.Values)
+			{
+				foreach (var longOperationItem in planItem.SessionLongOperationItems.Values)
+				{
+					if (longOperationItem.SessionId == DataModel.SessionId && !planItem.QueryCoordinatorLongOperations.Contains(longOperationItem))
+					{
+						planItem.QueryCoordinatorLongOperations.Add(longOperationItem);
+					}
+				}
 			}
 		}
 	}

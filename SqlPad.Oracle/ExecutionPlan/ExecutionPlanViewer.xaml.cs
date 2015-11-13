@@ -92,14 +92,14 @@ namespace SqlPad.Oracle.ExecutionPlan
 		{
 			TotalExecutions = null;
 			TextExecutionPlan = null;
-			ExecutionPlanTreeView.TreeView.Items.Clear();
+			ExecutionPlanTreeView.RootItem = null;
 		}
 
 		private void SetRootItem(ExecutionPlanItem rootItem)
 		{
 			if (rootItem != null)
 			{
-				ExecutionPlanTreeView.TreeView.Items.Add(rootItem);
+				ExecutionPlanTreeView.RootItem = rootItem;
 			}
 		}
 
