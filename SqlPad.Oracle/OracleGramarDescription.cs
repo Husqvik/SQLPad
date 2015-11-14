@@ -176,6 +176,7 @@ namespace SqlPad.Oracle
 			public const string CellReferenceOptions = "CellReferenceOptions";
 			public const string ChainedCondition = "ChainedCondition";
 			public const string ChainedModifyColumnPropertiesOrModifyVirtualColumnPropertiesOrModifyColumnVisibility = "ChainedModifyColumnPropertiesOrModifyVirtualColumnPropertiesOrModifyColumnVisibility";
+			public const string ChainedPlSqlBooleanExpression = "ChainedPlSqlBooleanExpression";
 			public const string ChainedVirtualColumnDefinitionOrColumnDefinition = "ChainedVirtualColumnDefinitionOrColumnDefinition";
 			public const string CharacterCodeFunction = "CharacterCodeFunction";
 			public const string CharacterCodeParameterClause = "CharacterCodeParameterClause";
@@ -985,6 +986,7 @@ namespace SqlPad.Oracle
 			public const string PlSqlBlockDeclareSection = "PlSqlBlockDeclareSection";
 			public const string PlSqlBlockStatement = "PlSqlBlockStatement";
 			public const string PlSqlBooleanExpression = "PlSqlBooleanExpression";
+			public const string PlSqlBooleanExpressionConditionExtension = "PlSqlBooleanExpressionConditionExtension";
 			public const string PlSqlBooleanLiteral = "PlSqlBooleanLiteral";
 			public const string PlSqlCaseExpressionElseBranch = "PlSqlCaseExpressionElseBranch";
 			public const string PlSqlCaseStatement = "PlSqlCaseStatement";
@@ -1221,7 +1223,6 @@ namespace SqlPad.Oracle
 			public const string ShrinkClause = "ShrinkClause";
 			public const string SimpleCaseExpressionBranch = "SimpleCaseExpressionBranch";
 			public const string SimpleDmlTrigger = "SimpleDmlTrigger";
-			public const string SimplePrecision = "SimplePrecision";
 			public const string SimpleSchemaObject = "SimpleSchemaObject";
 			public const string SingleColumnForLoop = "SingleColumnForLoop";
 			public const string SingleColumnForLoopList = "SingleColumnForLoopList";

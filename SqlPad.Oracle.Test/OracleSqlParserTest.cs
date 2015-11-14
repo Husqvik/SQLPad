@@ -3199,6 +3199,26 @@ END buggy_report;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
+			[Test(Description = @"")]
+			public void TestCursorNotFoundInConditionAndParentheses()
+			{
+				const string statement1 =
+@"DECLARE
+	CURSOR test_cursor IS SELECT dummy FROM dual;
+	test_variable VARCHAR2(1);
+BEGIN
+	OPEN test_cursor;
+
+    LOOP
+    	FETCH test_cursor INTO test_variable;
+    	EXIT WHEN test_cursor%NOTFOUND or (test_cursor%NOTFOUND IS NOT NULL AND (TRUE)) IS NOT NULL;
+	END LOOP;
+END;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
+
 			public class Triggers
 			{
 				[Test(Description = @"")]
@@ -5692,6 +5712,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 			}
+
 			public class CreateTypeBody
 			{
 				[Test(Description = @"")]

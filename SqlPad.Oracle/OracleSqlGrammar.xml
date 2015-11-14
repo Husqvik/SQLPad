@@ -6501,6 +6501,7 @@
           <NonTerminal Id="JsonExistsClause" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
+        
         <Sequence>
           <NonTerminal Id="PrefixedColumnReference" />
           <Terminal Id="Is" />
@@ -13926,19 +13927,53 @@
         <!--<Sequence>
           <NonTerminal Id="CollectionExists" />
         </Sequence>-->
-        <Sequence><!-- TODO: Add chaining -->
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="PlSqlBooleanExpression" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="PlSqlBooleanExpressionConditionExtension" IsOptional="true" />
+          <NonTerminal Id="ChainedPlSqlBooleanExpression" IsOptional="true" />
+        </Sequence>
+        <Sequence>
           <Terminal Id="CursorIdentifier" />
           <Terminal Id="PercentCharacter" />
           <NonTerminal Id="CursorBooleanFunction" />
+          <NonTerminal Id="PlSqlBooleanExpressionConditionExtension" IsOptional="true" />
+          <NonTerminal Id="ChainedPlSqlBooleanExpression" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="PlSqlBooleanLiteral" />
+          <NonTerminal Id="ChainedPlSqlBooleanExpression" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="PlSqlConditionalPredicate" />
+          <NonTerminal Id="ChainedPlSqlBooleanExpression" IsOptional="true" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="Condition" />
         </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PlSqlBooleanExpressionConditionExtension">
+      <Sequences>
         <Sequence>
-          <NonTerminal Id="PlSqlBooleanLiteral" />
+          <Terminal Id="Is" />
+          <Terminal Id="Not" IsOptional="true" />
+          <Terminal Id="Null" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="PlSqlConditionalPredicate" />
+          <NonTerminal Id="RelationalOperator" />
+          <NonTerminal Id="PlSqlBooleanExpression" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ChainedPlSqlBooleanExpression">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="LogicalOperator" />
+          <NonTerminal Id="PlSqlBooleanExpression" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -14079,7 +14114,7 @@
       </Sequences>
     </Rule>
     
-    <Rule StartingNonTerminal="PlSqlBlockDeclareSection">
+    <Rule StartingNonTerminal="PlSqlBlockDeclareSection" Scope="PlSqlDeclaration">
       <Sequences>
         <Sequence>
           <Terminal Id="Declare" />
