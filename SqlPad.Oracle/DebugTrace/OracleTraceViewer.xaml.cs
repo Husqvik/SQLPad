@@ -9,6 +9,11 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+#if ORACLE_MANAGED_DATA_ACCESS_CLIENT
+using Oracle.ManagedDataAccess.Client;
+#else
+using Oracle.DataAccess.Client;
+#endif
 using SqlPad.Oracle.DatabaseConnection;
 
 namespace SqlPad.Oracle.DebugTrace
@@ -19,6 +24,8 @@ namespace SqlPad.Oracle.DebugTrace
 		public static readonly DependencyProperty TraceFileNameProperty = DependencyProperty.Register(nameof(TraceFileName), typeof(string), typeof(OracleTraceViewer), new FrameworkPropertyMetadata(String.Empty));
 		public static readonly DependencyProperty TraceIdentifierProperty = DependencyProperty.Register(nameof(TraceIdentifier), typeof(string), typeof(OracleTraceViewer), new FrameworkPropertyMetadata(String.Empty));
 		public static readonly DependencyProperty SessionIdProperty = DependencyProperty.Register(nameof(SessionId), typeof(int?), typeof(OracleTraceViewer), new FrameworkPropertyMetadata());
+		public static readonly DependencyProperty TKProfEnabledProperty = DependencyProperty.Register(nameof(TKProfEnabled), typeof(bool), typeof(OracleTraceViewer), new FrameworkPropertyMetadata());
+		public static readonly DependencyProperty TKProfFileNameProperty = DependencyProperty.Register(nameof(TKProfFileName), typeof(string), typeof(OracleTraceViewer), new FrameworkPropertyMetadata(String.Empty));
 
 		[Bindable(true)]
 		public bool IsTracing
@@ -48,15 +55,33 @@ namespace SqlPad.Oracle.DebugTrace
 			set { SetValue(SessionIdProperty, value); }
 		}
 
+		[Bindable(true)]
+		public bool TKProfEnabled
+		{
+			get { return (bool)GetValue(TKProfEnabledProperty); }
+			private set { SetValue(TKProfEnabledProperty, value); }
+		}
+
+		[Bindable(true)]
+		public string TKProfFileName
+		{
+			get { return (string)GetValue(TKProfFileNameProperty); }
+			private set { SetValue(TKProfFileNameProperty, value); }
+		}
+
+		private const int TKProfTimeoutMilliseconds = 60000;
+
 		private readonly OracleConnectionAdapterBase _connectionAdapter;
 
 		private readonly ObservableCollection<OracleTraceEventModel> _traceEvents = new ObservableCollection<OracleTraceEventModel>();
 
 		public Control Control => this;
 
-	    public IReadOnlyCollection<OracleTraceEventModel> TraceEvents => _traceEvents;
+		public IReadOnlyCollection<OracleTraceEventModel> TraceEvents => _traceEvents;
 
-	    public OracleTraceViewer(OracleConnectionAdapterBase connectionAdapter)
+		private FileInfo TraceFileInfo => new FileInfo(_connectionAdapter.TraceFileName);
+
+		public OracleTraceViewer(OracleConnectionAdapterBase connectionAdapter)
 		{
 			InitializeComponent();
 
@@ -128,7 +153,9 @@ namespace SqlPad.Oracle.DebugTrace
 
 			TraceFileName = String.IsNullOrWhiteSpace(OracleConfiguration.Configuration.RemoteTraceDirectory)
 				? _connectionAdapter.TraceFileName
-				: Path.Combine(OracleConfiguration.Configuration.RemoteTraceDirectory, new FileInfo(_connectionAdapter.TraceFileName).Name);
+				: Path.Combine(OracleConfiguration.Configuration.RemoteTraceDirectory, TraceFileInfo.Name);
+
+			TKProfEnabled = !String.IsNullOrEmpty(OracleConfiguration.Configuration.TKProfPath);
 		}
 
 		private void TraceFileNameHyperlinkClickHandler(object sender, RoutedEventArgs e)
@@ -146,9 +173,50 @@ namespace SqlPad.Oracle.DebugTrace
 
 			var arguments = File.Exists(TraceFileName)
 				? $"/select,{TraceFileName}"
-			    : $"/root,{directoryName}";
+				: $"/root,{directoryName}";
 
 			Process.Start("explorer.exe", arguments);
+		}
+
+		private void TKProfClickHandler(object sender, RoutedEventArgs e)
+		{
+			var tkProfFileName = Path.Combine(Path.GetTempPath(), $"{TraceFileInfo.Name}.tkprof.txt");
+			var connectionStringBuilder = new OracleConnectionStringBuilder(_connectionAdapter.DatabaseModel.ConnectionString.ConnectionString);
+			var tkProfParameters = $"{TraceFileName} {tkProfFileName} explain={connectionStringBuilder.UserID}/{connectionStringBuilder.Password}@{connectionStringBuilder.DataSource} waits=yes sort=(exeela, fchela)";
+
+			var startInfo =
+				new ProcessStartInfo(OracleConfiguration.Configuration.TKProfPath, tkProfParameters)
+				{
+					RedirectStandardError = true,
+					UseShellExecute = false
+				};
+
+			Process process = null;
+			if (!App.SafeActionWithUserError(() => process = Process.Start(startInfo)))
+			{
+				return;
+			}
+
+			if (!process.WaitForExit(TKProfTimeoutMilliseconds))
+			{
+				Messages.ShowError($"Command '{OracleConfiguration.Configuration.TKProfPath} {tkProfParameters}' timed out. ");
+			}
+			else
+			{
+				if (process.ExitCode == 0)
+				{
+					TKProfFileName = tkProfFileName;
+				}
+				else
+				{
+					Messages.ShowError(process.StandardError.ReadToEnd());
+				}
+			}
+		}
+
+		private void TKProfFileNameHyperlinkClickHandler(object sender, RoutedEventArgs e)
+		{
+			App.SafeActionWithUserError(() => Process.Start(TKProfFileName));
 		}
 	}
 

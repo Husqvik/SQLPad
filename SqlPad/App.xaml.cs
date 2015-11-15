@@ -77,7 +77,7 @@ namespace SqlPad
 			}
 		}
 
-		internal static bool SafeActionWithUserError(Action action)
+		public static bool SafeActionWithUserError(Action action)
 		{
 			try
 			{

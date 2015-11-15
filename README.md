@@ -1,4 +1,4 @@
-SQLPad 0.4.0.34
+SQLPad 0.4.0.35
 ===============
 
 SQLPad is an experimental SQL editor focused to quick and comfortable work.
@@ -233,11 +233,14 @@ Each connection string requires an infrastructure factory configuration record:
 			-- Enter optional script to execute when database connection is established.
 		</StartupScript>
 		<RemoteTraceDirectory>\\coresrv01\c$\Oracle\diag\rdbms\orcl\orcl\trace</RemoteTraceDirectory>
+		<TKProfPath>c:\Oracle\product\12.1.0\dbhome_1\BIN\tkprof.exe</TKProfPath>
 	</OracleConfiguration>
 
 `StartupScript` - optional initialization script executed when connection to database is established
 
-`RemoteTraceDirectory` - remote database trace directory; enables access to remote trace files from SQL Pad
+`RemoteTraceDirectory` - optional remote database trace directory; enables access to remote trace files from SQL Pad
+
+`TKProfPath` - optional path to TKProf.exe; enables transient kernel profile output for extended SQL trace (10046) files.
 
 `TargetTable` - table name used for EXPLAIN PLAN function; table is not created automatically and must be created manually using script:
 

@@ -2,11 +2,17 @@
 			 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:sqlPad="clr-namespace:SqlPad;assembly=SqlPad"
 			 mc:Ignorable="d"
 			 DataContext="{Binding RelativeSource={RelativeSource Self}}"
 			 Loaded="ComponentLoadedHandler"
 			 d:DesignHeight="200" d:DesignWidth="300">
+	
+	<UserControl.Resources>
+		<sqlPad:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
+	</UserControl.Resources>
+	
 	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="*"/>
@@ -94,6 +100,7 @@
 					</TextBox.Style>
 				</TextBox>
 			</StackPanel>
+
 			<Button x:Name="ButtonTrace" HorizontalAlignment="Left" Width="60" Click="TraceBottonClickHandler">
 				<Button.Style>
 					<Style>
@@ -109,30 +116,17 @@
 				</Button.Style>
 			</Button>
 			
-			<TextBlock>
-				<TextBlock.Style>
-					<Style>
-						<Style.Triggers>
-							<DataTrigger Binding="{Binding SessionId}" Value="{x:Null}">
-								<Setter Property="TextBlock.Visibility" Value="Collapsed" />
-							</DataTrigger>
-						</Style.Triggers>
-					</Style>
-				</TextBlock.Style>
+			<TextBlock Visibility="{Binding SessionId, Converter={StaticResource ObjectToVisibilityConverter}}">
 				<Run Text="Session ID: "/><Run Text="{Binding SessionId}" />
 			</TextBlock>
-			
-			<TextBlock>
-				<TextBlock.Style>
-					<Style>
-						<Style.Triggers>
-							<DataTrigger Binding="{Binding TraceFileName}" Value="">
-								<Setter Property="TextBlock.Visibility" Value="Collapsed" />
-							</DataTrigger>
-						</Style.Triggers>
-					</Style>
-				</TextBlock.Style>
+
+			<TextBlock Visibility="{Binding TraceFileName, Converter={StaticResource ObjectToVisibilityConverter}}">
 				<Run Text="Trace file: " /><Hyperlink Click="TraceFileNameHyperlinkClickHandler"><Run Text="{Binding TraceFileName}" /></Hyperlink>
+			</TextBlock>
+
+			<Button Content="TKProf" Visibility="{Binding TKProfEnabled, Converter={StaticResource ObjectToVisibilityConverter}}" HorizontalAlignment="Left" Width="60" Click="TKProfClickHandler" />
+			<TextBlock Visibility="{Binding TKProfFileName, Converter={StaticResource ObjectToVisibilityConverter}}">
+				<Run Text="TKProf file: " /><Hyperlink Click="TKProfFileNameHyperlinkClickHandler"><Run Text="{Binding TKProfFileName}" /></Hyperlink>
 			</TextBlock>
 		</StackPanel>
 

@@ -17,6 +17,7 @@
         </xs:element>
         <xs:element minOccurs="0" maxOccurs="1" name="StartupScript" type="xs:string" />
         <xs:element minOccurs="0" maxOccurs="1" name="RemoteTraceDirectory" type="xs:string" />
+        <xs:element minOccurs="0" maxOccurs="1" name="TKProfPath" type="xs:string" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
