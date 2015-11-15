@@ -483,6 +483,11 @@ namespace SqlPad
 		{
 			if (_windowDatabaseMonitor.IsVisible)
 			{
+				if (_windowDatabaseMonitor.WindowState == WindowState.Minimized)
+				{
+					SystemCommands.RestoreWindow(_windowDatabaseMonitor);
+				}
+
 				_windowDatabaseMonitor.Focus();
 			}
 			else

@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Configuration;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace SqlPad
 {
@@ -53,7 +55,10 @@ namespace SqlPad
 
 		private const string SessionDataGridHeightProperty = "SessionDataGridSplitter";
 
+		private static readonly object LockObject = new object();
+
 		private readonly ObservableCollection<DatabaseSession> _databaseSessions = new ObservableCollection<DatabaseSession>();
+		private readonly DispatcherTimer _refreshTimer;
 
 		private bool _isBusy;
 		private IDatabaseMonitor _databaseMonitor;
@@ -66,6 +71,16 @@ namespace SqlPad
 		public WindowDatabaseMonitor()
 		{
 			InitializeComponent();
+
+			_refreshTimer = new DispatcherTimer(DispatcherPriority.Normal, Dispatcher) { Interval = TimeSpan.FromSeconds(10) };
+			_refreshTimer.Tick += RefreshTimerTickHandler;
+		}
+
+		private void RefreshTimerTickHandler(object sender, EventArgs e)
+		{
+			_refreshTimer.IsEnabled = false;
+			Refresh();
+			_refreshTimer.IsEnabled = true;
 		}
 
 		public void RestoreAppearance()
@@ -90,8 +105,15 @@ namespace SqlPad
 
 		public async void Refresh()
 		{
-			_isBusy = true;
-			_databaseSessions.Clear();
+			lock (LockObject)
+			{
+				if (_isBusy)
+				{
+					return;
+				}
+
+				_isBusy = true;
+			}
 
 			Task<DatabaseSessions> task = null;
 			var exception = await App.SafeActionAsync(() => task = _databaseMonitor.GetAllSessionDataAsync(CancellationToken.None));
@@ -103,22 +125,69 @@ namespace SqlPad
 				return;
 			}
 
-			SessionDataGrid.Columns.Clear();
 			var sessions = task.Result;
-			foreach (var columnHeader in sessions.ColumnHeaders)
-			{
-				var column =
-					new DataGridTextColumn
-					{
-						Binding = new Binding($"{nameof(DatabaseSession.Values)}[{columnHeader.ColumnIndex}]") { Converter = CellValueConverter.Instance },
-						EditingElementStyle = (Style)Application.Current.Resources["CellTextBoxStyleReadOnly"]
-					};
 
-				DataGridHelper.ApplyColumnStyle(column, columnHeader);
-				SessionDataGrid.Columns.Add(column);
+			if (!AreColumnHeadersEqual(sessions.ColumnHeaders))
+			{
+				SessionDataGrid.Columns.Clear();
+				foreach (var columnHeader in sessions.ColumnHeaders)
+				{
+					var column =
+						new DataGridTextColumn
+						{
+							Binding = new Binding($"{nameof(DatabaseSession.Values)}[{columnHeader.ColumnIndex}]") { Converter = CellValueConverter.Instance },
+							EditingElementStyle = (Style)Application.Current.Resources["CellTextBoxStyleReadOnly"]
+						};
+
+					DataGridHelper.ApplyColumnStyle(column, columnHeader);
+					SessionDataGrid.Columns.Add(column);
+				}
 			}
 
-			_databaseSessions.AddRange(sessions.Rows);
+			MergeRecords(_databaseSessions, sessions.Rows, r => r.Id, (o, n) => o.Values = n.Values);
+		}
+
+		public void MergeRecords<TRecord>(IList<TRecord> currentRecords, IEnumerable<TRecord> newRecords, Func<TRecord, object> getKeyFunction, Action<TRecord, TRecord> mergeAction)
+		{
+			var newRecordDictionary = newRecords.ToDictionary(getKeyFunction);
+
+			var currentKeys = new HashSet<object>();
+			for (var i = 0; i < currentRecords.Count; i++)
+			{
+				var currentRecord = currentRecords[i];
+				var key = getKeyFunction(currentRecord);
+				TRecord newRecord;
+				currentKeys.Add(key);
+				if (newRecordDictionary.TryGetValue(key, out newRecord))
+				{
+					mergeAction(currentRecord, newRecord);
+				}
+				else
+				{
+					currentRecords.RemoveAt(i);
+				}
+			}
+
+			currentRecords.AddRange(newRecordDictionary.Values.Where(r => !currentKeys.Contains(getKeyFunction(r))));
+		}
+
+		private bool AreColumnHeadersEqual(IReadOnlyList<ColumnHeader> columnHeaders)
+		{
+			if (columnHeaders.Count != SessionDataGrid.Columns.Count)
+			{
+				return false;
+			}
+
+			for (var i = 0; i < columnHeaders.Count; i++)
+			{
+				var gridHeader = (ColumnHeader)SessionDataGrid.Columns[i].Header;
+				if (!String.Equals(gridHeader.Name, columnHeaders[i].Name))
+				{
+					return false;
+				}
+			}
+
+			return true;
 		}
 
 		private void ColumnHeaderMouseClickHandler(object sender, RoutedEventArgs e)
@@ -140,7 +209,10 @@ namespace SqlPad
 
 		private void RefreshCanExecuteHandler(object sender, CanExecuteRoutedEventArgs e)
 		{
-			e.CanExecute = !_isBusy;
+			lock (LockObject)
+			{
+				e.CanExecute = !_isBusy;
+			}
 		}
 
 		private void DatabaseSessionFilterHandler(object sender, FilterEventArgs e)
@@ -161,6 +233,11 @@ namespace SqlPad
 			{
 				SessionDetailViewer.Content = null;
 			}
+		}
+
+		private void IsVisibleChangedHandler(object sender, DependencyPropertyChangedEventArgs args)
+		{
+			_refreshTimer.IsEnabled = (bool)args.NewValue;
 		}
 	}
 }

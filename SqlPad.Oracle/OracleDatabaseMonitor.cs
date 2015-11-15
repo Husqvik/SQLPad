@@ -48,6 +48,7 @@ namespace SqlPad.Oracle
 							var databaseSession =
 								new DatabaseSession
 								{
+									Id = sessionId,
 									Values = values,
 									Type = String.Equals(sessionType, "User") ? SessionType.User : SessionType.System,
 									IsActive = Convert.ToString(values[9]) == "Active"
@@ -63,6 +64,7 @@ namespace SqlPad.Oracle
 							if (parentSid != DBNull.Value && sessions.TryGetValue(Convert.ToInt32(parentSid), out parentSession))
 							{
 								session.ParentSession = parentSession;
+								parentSession.ChildSessions.Add(session);
 							}
 						}
 

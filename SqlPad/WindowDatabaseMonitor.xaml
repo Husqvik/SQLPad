@@ -8,6 +8,7 @@
         xmlns:commands="clr-namespace:SqlPad.Commands"
         mc:Ignorable="d"
         Closing="WindowClosingHandler"
+        IsVisibleChanged="IsVisibleChangedHandler"
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
         Title="Monitor" Height="400" Width="640" MinHeight="360">
 

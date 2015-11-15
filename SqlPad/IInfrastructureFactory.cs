@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Configuration;
 using System.Threading;
 using System.Threading.Tasks;
@@ -69,15 +70,25 @@ namespace SqlPad
 		public IReadOnlyList<DatabaseSession> Rows { get; set; }
 	}
 
-	public class DatabaseSession
+	public class DatabaseSession : ModelBase
 	{
+		private object[] _values;
+
+		public ObservableCollection<DatabaseSession> ChildSessions { get; } = new ObservableCollection<DatabaseSession>();
+
 		public DatabaseSession ParentSession { get; set; }
+
+		public int Id { get; set; }
 
 		public SessionType Type { get; set; }
 
 		public bool IsActive { get; set; }
 
-		public object[] Values { get; set; }
+		public object[] Values
+		{
+			get { return _values; }
+			set { UpdateValueAndRaisePropertyChanged(ref _values, value); }
+		}
 	}
 
 	public enum SessionType

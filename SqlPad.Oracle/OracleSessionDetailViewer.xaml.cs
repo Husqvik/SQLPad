@@ -36,10 +36,10 @@ namespace SqlPad.Oracle
 			_connectionString = connectionString;
 
 			_refreshTimer = new DispatcherTimer(DispatcherPriority.Normal, Dispatcher) { Interval = TimeSpan.FromSeconds(10) };
-			_refreshTimer.Tick += async delegate { await RefreshActiveSessionHistory(); };
+			_refreshTimer.Tick += async delegate { await RefreshSessionDetails(); };
 		}
 
-		private async Task RefreshActiveSessionHistory()
+		private async Task RefreshSessionDetails()
 		{
 			var activeSessionHistoryDataProvider = new SqlMonitorActiveSessionHistoryDataProvider(_planItemCollection);
 			var planMonitorDataProvider = new SqlMonitorPlanMonitorDataProvider(_planItemCollection);
@@ -70,7 +70,7 @@ namespace SqlPad.Oracle
 				if (_planItemCollection.RootItem != null)
 				{
 					ExecutionPlanTreeView.RootItem = _planItemCollection.RootItem;
-					await RefreshActiveSessionHistory();
+					await RefreshSessionDetails();
 					_refreshTimer.IsEnabled = true;
 				}
 			}
