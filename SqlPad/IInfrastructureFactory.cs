@@ -74,9 +74,9 @@ namespace SqlPad
 
 	public class DatabaseSession : ModelBase
 	{
-		private object[] _values;
 		private bool _isActive;
 		private SessionType _type;
+		private IDatabaseSessionValues _providerValues;
 
 		public ObservableCollection<DatabaseSession> ChildSessions { get; } = new ObservableCollection<DatabaseSession>();
 
@@ -96,11 +96,22 @@ namespace SqlPad
 			set { UpdateValueAndRaisePropertyChanged(ref _isActive, value); }
 		}
 
-		public object[] Values
+		public IDatabaseSessionValues ProviderValues
 		{
-			get { return _values; }
-			set { UpdateValueAndRaisePropertyChanged(ref _values, value); }
+			get { return _providerValues; }
+			set
+			{
+				_providerValues = value;
+				RaisePropertyChanged(nameof(Values));
+			}
 		}
+
+		public object[] Values => _providerValues.Values;
+	}
+
+	public interface IDatabaseSessionValues
+	{
+		object[] Values { get; }
 	}
 
 	public enum SessionType

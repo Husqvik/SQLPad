@@ -158,7 +158,7 @@ namespace SqlPad
 		{
 			current.IsActive = @new.IsActive;
 			current.Type = @new.Type;
-			current.Values = @new.Values;
+			current.ProviderValues = @new.ProviderValues;
 		}
 
 		public void MergeRecords<TRecord>(IList<TRecord> currentRecords, IEnumerable<TRecord> newRecords, Func<TRecord, object> getKeyFunction, Action<TRecord, TRecord> mergeAction)
@@ -207,6 +207,11 @@ namespace SqlPad
 		private void ColumnHeaderMouseClickHandler(object sender, RoutedEventArgs e)
 		{
 			
+		}
+
+		private void SessionDataGridMouseDoubleClickHandler(object sender, MouseButtonEventArgs e)
+		{
+			DataGridHelper.ShowLargeValueEditor(SessionDataGrid, r => ((DatabaseSession)r).Values);
 		}
 
 		private void WindowClosingHandler(object sender, CancelEventArgs e)

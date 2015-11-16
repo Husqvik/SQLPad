@@ -83,9 +83,12 @@ namespace SqlPad
 			return false;
 		}
 
-		public static void ShowLargeValueEditor(DataGrid dataGrid)
+		public static void ShowLargeValueEditor(DataGrid dataGrid, Func<object, object[]> getRowValuesFunction = null)
 		{
-			var currentRowValues = (object[])dataGrid.CurrentItem;
+			var currentRowValues = getRowValuesFunction == null
+				? (object[])dataGrid.CurrentItem
+				: getRowValuesFunction(dataGrid.CurrentItem);
+
 			if (currentRowValues == null || dataGrid.CurrentColumn == null)
 			{
 				return;
