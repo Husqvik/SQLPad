@@ -63,6 +63,87 @@ namespace SqlPad
 			}
 		}
 
+		public static async Task ExecuteExternalProcess(string fileName, string arguments, TimeSpan? timeout, Action successAction, Action timeoutAction, Action<string> errorAction, CancellationToken cancellationToken)
+		{
+			var startInfo =
+				new ProcessStartInfo(fileName, arguments)
+				{
+					RedirectStandardError = errorAction != null,
+					UseShellExecute = errorAction == null
+				};
+
+			Process process = null;
+
+			if (!SafeActionWithUserError(() => process = Process.Start(startInfo)))
+			{
+				return;
+			}
+
+			var completedWithinTimeout = await ExecuteAsynchronous(() => process.Kill(), () => process.WaitForExit(timeout == null ? -1 : (int)timeout.Value.TotalMilliseconds), cancellationToken);
+			if (completedWithinTimeout)
+			{
+				if (process.ExitCode == 0)
+				{
+					successAction?.Invoke();
+				}
+				else
+				{
+					errorAction?.Invoke(process.StandardError.ReadToEnd());
+				}
+			}
+			else
+			{
+				timeoutAction?.Invoke();
+			}
+		}
+
+		public static Task<T> ExecuteAsynchronous<T>(Action cancellationAction, Func<T> synchronousOperation, CancellationToken cancellationToken)
+		{
+			var source = new TaskCompletionSource<T>();
+			var registration = new CancellationTokenRegistration();
+
+			if (cancellationToken.CanBeCanceled)
+			{
+				if (cancellationToken.IsCancellationRequested)
+				{
+					source.SetCanceled();
+					return source.Task;
+				}
+
+				registration = cancellationToken.Register(cancellationAction);
+			}
+
+			try
+			{
+				Task.Factory.StartNew(synchronousOperation, cancellationToken)
+					.ContinueWith(t => AfterExecutionHandler(t, source, registration), CancellationToken.None);
+			}
+			catch (Exception exception)
+			{
+				source.SetException(exception);
+			}
+
+			return source.Task;
+		}
+
+		private static void AfterExecutionHandler<T>(Task<T> executionTask, TaskCompletionSource<T> source, CancellationTokenRegistration registration)
+		{
+			registration.Dispose();
+
+			if (executionTask.IsFaulted)
+			{
+				source.SetException(executionTask.Exception.InnerException);
+			}
+			else if (executionTask.IsCanceled)
+			{
+				source.SetCanceled();
+			}
+			else
+			{
+				source.SetResult(executionTask.Result);
+			}
+		}
+
 		internal static async Task<Exception> SafeActionAsync(Func<Task> action)
 		{
 			try

@@ -69,8 +69,6 @@ namespace SqlPad.Oracle.DebugTrace
 			private set { SetValue(TKProfFileNameProperty, value); }
 		}
 
-		private const int TKProfTimeoutMilliseconds = 60000;
-
 		private readonly OracleConnectionAdapterBase _connectionAdapter;
 
 		private readonly ObservableCollection<OracleTraceEventModel> _traceEvents = new ObservableCollection<OracleTraceEventModel>();
@@ -178,40 +176,20 @@ namespace SqlPad.Oracle.DebugTrace
 			Process.Start("explorer.exe", arguments);
 		}
 
-		private void TKProfClickHandler(object sender, RoutedEventArgs e)
+		private async void TKProfClickHandler(object sender, RoutedEventArgs e)
 		{
 			var tkProfFileName = Path.Combine(Path.GetTempPath(), $"{TraceFileInfo.Name}.tkprof.txt");
 			var connectionStringBuilder = new OracleConnectionStringBuilder(_connectionAdapter.DatabaseModel.ConnectionString.ConnectionString);
 			var tkProfParameters = $"{TraceFileName} {tkProfFileName} explain={connectionStringBuilder.UserID}/{connectionStringBuilder.Password}@{connectionStringBuilder.DataSource} waits=yes sort=(exeela, fchela)";
 
-			var startInfo =
-				new ProcessStartInfo(OracleConfiguration.Configuration.TKProfPath, tkProfParameters)
-				{
-					RedirectStandardError = true,
-					UseShellExecute = false
-				};
-
-			Process process = null;
-			if (!App.SafeActionWithUserError(() => process = Process.Start(startInfo)))
-			{
-				return;
-			}
-
-			if (!process.WaitForExit(TKProfTimeoutMilliseconds))
-			{
-				Messages.ShowError($"Command '{OracleConfiguration.Configuration.TKProfPath} {tkProfParameters}' timed out. ");
-			}
-			else
-			{
-				if (process.ExitCode == 0)
-				{
-					TKProfFileName = tkProfFileName;
-				}
-				else
-				{
-					Messages.ShowError(process.StandardError.ReadToEnd());
-				}
-			}
+			await App.ExecuteExternalProcess(
+				OracleConfiguration.Configuration.TKProfPath,
+				tkProfParameters,
+				TimeSpan.FromMinutes(1),
+				() => TKProfFileName = tkProfFileName,
+				() => Messages.ShowError($"Command '{OracleConfiguration.Configuration.TKProfPath} {tkProfParameters}' timed out. "),
+				errorMessage => Messages.ShowError(errorMessage),
+				CancellationToken.None);
 		}
 
 		private void TKProfFileNameHyperlinkClickHandler(object sender, RoutedEventArgs e)

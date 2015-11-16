@@ -136,62 +136,74 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public static Task<bool> ReadAsynchronous(this OracleDataReader reader, CancellationToken cancellationToken)
 		{
-			return ExecuteAsynchronous(reader.Close, reader.Read, cancellationToken);
+			return App.ExecuteAsynchronous(reader.Close, reader.Read, cancellationToken);
 		}
 
 		public static Task<object> GetValueAsynchronous(this OracleDataReader reader, int index, CancellationToken cancellationToken)
 		{
-			return ExecuteAsynchronous(reader.Close, () => reader.GetValue(index), cancellationToken);
+			return App.ExecuteAsynchronous(reader.Close, () => reader.GetValue(index), cancellationToken);
 		}
 
 		public static Task<int> ExecuteNonQueryAsynchronous(this OracleCommand command, CancellationToken cancellationToken)
 		{
-			return ExecuteAsynchronous(command.CancelIgnoreFailure, command.ExecuteNonQuery, cancellationToken);
+			return App.ExecuteAsynchronous(command.CancelIgnoreFailure, command.ExecuteNonQuery, cancellationToken);
 		}
 
 		public static Task<object> ExecuteScalarAsynchronous(this OracleCommand command, CancellationToken cancellationToken)
 		{
-			return ExecuteAsynchronous(command.CancelIgnoreFailure, command.ExecuteScalar, cancellationToken);
+			return App.ExecuteAsynchronous(command.CancelIgnoreFailure, command.ExecuteScalar, cancellationToken);
 		}
 
 		public static Task<OracleDataReader> ExecuteReaderAsynchronous(this OracleCommand command, CommandBehavior behavior, CancellationToken cancellationToken)
 		{
-			return ExecuteAsynchronous(command.CancelIgnoreFailure, () => command.ExecuteReader(behavior), cancellationToken);
+			return App.ExecuteAsynchronous(command.CancelIgnoreFailure, () => command.ExecuteReader(behavior), cancellationToken);
 		}
 
 		public static Task OpenAsynchronous(this OracleConnection connection, CancellationToken cancellationToken)
 		{
-			return ExecuteAsynchronous<object>(delegate { /* ODAC does not support cancellation of a connection being opened. */ }, delegate { connection.Open(); return null; }, cancellationToken);
+			return App.ExecuteAsynchronous<object>(delegate { /* ODAC does not support cancellation of a connection being opened. */ }, delegate { connection.Open(); return null; }, cancellationToken);
 		}
 
 		public static Task CloseAsynchronous(this OracleConnection connection, CancellationToken cancellationToken)
 		{
-			return ExecuteAsynchronous<object>(delegate { }, delegate { connection.Close(); return null; }, cancellationToken);
+			return App.ExecuteAsynchronous<object>(delegate { }, delegate { connection.Close(); return null; }, cancellationToken);
 		}
 
 		public static Task<int> ReadAsynchronous(this OracleBlob blob, byte[] buffer, int offset, int count, CancellationToken cancellationToken)
 		{
-			return ExecuteAsynchronous(delegate { }, () => blob.Read(buffer, offset, count), cancellationToken);
+			return App.ExecuteAsynchronous(delegate { }, () => blob.Read(buffer, offset, count), cancellationToken);
 		}
 
 		public static Task<int> ReadAsynchronous(this OracleClob clob, char[] buffer, int offset, int count, CancellationToken cancellationToken)
 		{
-			return ExecuteAsynchronous(delegate { }, () => clob.Read(buffer, offset, count), cancellationToken);
+			return App.ExecuteAsynchronous(delegate { }, () => clob.Read(buffer, offset, count), cancellationToken);
 		}
 
 		public static Task<int> ReadAsynchronous(this OracleXmlStream xmlStream, char[] buffer, int offset, int count, CancellationToken cancellationToken)
 		{
-			return ExecuteAsynchronous(delegate { }, () => xmlStream.Read(buffer, offset, count), cancellationToken);
+			return App.ExecuteAsynchronous(delegate { }, () => xmlStream.Read(buffer, offset, count), cancellationToken);
 		}
 
 		public static Task RollbackAsynchronous(this OracleTransaction transaction)
 		{
-			return ExecuteAsynchronous<object>(delegate { }, delegate { transaction.Rollback(); return null; }, CancellationToken.None);
+			return App.ExecuteAsynchronous<object>(delegate { }, delegate { transaction.Rollback(); return null; }, CancellationToken.None);
 		}
 
 		public static Task CommitAsynchronous(this OracleTransaction transaction)
 		{
-			return ExecuteAsynchronous<object>(delegate { }, delegate { transaction.Commit(); return null; }, CancellationToken.None);
+			return App.ExecuteAsynchronous<object>(delegate { }, delegate { transaction.Commit(); return null; }, CancellationToken.None);
+		}
+
+		private static void CancelIgnoreFailure(this OracleCommand command)
+		{
+			try
+			{
+				command.Cancel();
+			}
+			catch (Exception e)
+			{
+				Trace.WriteLine($"Command cancellation failed: {e}");
+			}
 		}
 
 		public static async Task<bool> EnsureConnectionOpen(this OracleConnection connection, CancellationToken cancellationToken)
@@ -209,65 +221,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			command.CommandText = $"ALTER SESSION SET CURRENT_SCHEMA = \"{schema}\"";
 			await command.ExecuteNonQueryAsynchronous(cancellationToken);
-		}
-
-		private static Task<T> ExecuteAsynchronous<T>(Action cancellationAction, Func<T> synchronousOperation, CancellationToken cancellationToken)
-		{
-			var source = new TaskCompletionSource<T>();
-			var registration = new CancellationTokenRegistration();
-
-			if (cancellationToken.CanBeCanceled)
-			{
-				if (cancellationToken.IsCancellationRequested)
-				{
-					source.SetCanceled();
-					return source.Task;
-				}
-
-				registration = cancellationToken.Register(cancellationAction);
-			}
-
-			try
-			{
-				Task.Factory.StartNew(synchronousOperation, cancellationToken)
-					.ContinueWith(t => AfterExecutionHandler(t, source, registration), CancellationToken.None);
-			}
-			catch (Exception exception)
-			{
-				source.SetException(exception);
-			}
-
-			return source.Task;
-		}
-
-		private static void AfterExecutionHandler<T>(Task<T> executionTask, TaskCompletionSource<T> source, CancellationTokenRegistration registration)
-		{
-			registration.Dispose();
-
-			if (executionTask.IsFaulted)
-			{
-				source.SetException(executionTask.Exception.InnerException);
-			}
-			else if (executionTask.IsCanceled)
-			{
-				source.SetCanceled();
-			}
-			else
-			{
-				source.SetResult(executionTask.Result);
-			}
-		}
-
-		private static void CancelIgnoreFailure(this OracleCommand command)
-		{
-			try
-			{
-				command.Cancel();
-			}
-			catch (Exception e)
-			{
-				Trace.WriteLine($"Command cancellation failed: {e}");
-			}
 		}
 	}
 

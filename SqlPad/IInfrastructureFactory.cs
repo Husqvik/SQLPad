@@ -61,6 +61,8 @@ namespace SqlPad
 		Control Control { get; }
 
 		Task Initialize(DatabaseSession databaseSession, CancellationToken cancellationToken);
+
+		Task Refresh(CancellationToken cancellationToken);
 	}
 
 	public struct DatabaseSessions
@@ -73,6 +75,8 @@ namespace SqlPad
 	public class DatabaseSession : ModelBase
 	{
 		private object[] _values;
+		private bool _isActive;
+		private SessionType _type;
 
 		public ObservableCollection<DatabaseSession> ChildSessions { get; } = new ObservableCollection<DatabaseSession>();
 
@@ -80,9 +84,17 @@ namespace SqlPad
 
 		public int Id { get; set; }
 
-		public SessionType Type { get; set; }
+		public SessionType Type
+		{
+			get { return _type; }
+			set { UpdateValueAndRaisePropertyChanged(ref _type, value); }
+		}
 
-		public bool IsActive { get; set; }
+		public bool IsActive
+		{
+			get { return _isActive; }
+			set { UpdateValueAndRaisePropertyChanged(ref _isActive, value); }
+		}
 
 		public object[] Values
 		{

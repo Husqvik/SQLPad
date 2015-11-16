@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Configuration;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -105,6 +106,11 @@ namespace SqlPad
 
 		public async void Refresh()
 		{
+			if (_isBusy)
+			{
+				return;
+			}
+
 			lock (LockObject)
 			{
 				if (_isBusy)
@@ -129,6 +135,7 @@ namespace SqlPad
 
 			if (!AreColumnHeadersEqual(sessions.ColumnHeaders))
 			{
+				_databaseSessions.Clear();
 				SessionDataGrid.Columns.Clear();
 				foreach (var columnHeader in sessions.ColumnHeaders)
 				{
@@ -144,7 +151,14 @@ namespace SqlPad
 				}
 			}
 
-			MergeRecords(_databaseSessions, sessions.Rows, r => r.Id, (o, n) => o.Values = n.Values);
+			MergeRecords(_databaseSessions, sessions.Rows, r => r.Id, MergeSessionRecordData);
+		}
+
+		private static void MergeSessionRecordData(DatabaseSession current, DatabaseSession @new)
+		{
+			current.IsActive = @new.IsActive;
+			current.Type = @new.Type;
+			current.Values = @new.Values;
 		}
 
 		public void MergeRecords<TRecord>(IList<TRecord> currentRecords, IEnumerable<TRecord> newRecords, Func<TRecord, object> getKeyFunction, Action<TRecord, TRecord> mergeAction)
@@ -222,12 +236,19 @@ namespace SqlPad
 			e.Accepted = filterSystemSession && filterInactiveSession;
 		}
 
-		private void SessionDataGridSelectionChangedHandler(object sender, SelectionChangedEventArgs e)
+		private async void SessionDataGridSelectionChangedHandler(object sender, SelectionChangedEventArgs e)
 		{
 			if (e.AddedItems.Count > 0)
 			{
-				SessionDetailViewer.Content = _sessionDetailViewer.Control;
-				_sessionDetailViewer.Initialize((DatabaseSession)e.AddedItems[0], CancellationToken.None);
+				var exception = await App.SafeActionAsync(() => _sessionDetailViewer.Initialize((DatabaseSession)e.AddedItems[0], CancellationToken.None));
+				if (exception == null)
+				{
+					SessionDetailViewer.Content = _sessionDetailViewer.Control;
+				}
+				else
+				{
+					Messages.ShowError(exception.Message, owner: this);
+				}
 			}
 			else
 			{
@@ -238,6 +259,8 @@ namespace SqlPad
 		private void IsVisibleChangedHandler(object sender, DependencyPropertyChangedEventArgs args)
 		{
 			_refreshTimer.IsEnabled = (bool)args.NewValue;
+			var timerState = _refreshTimer.IsEnabled ? "enabled" : "disabled";
+			Trace.WriteLine($"Session monitor auto-refresh has been {timerState}. ");
 		}
 	}
 }

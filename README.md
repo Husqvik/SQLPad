@@ -1,4 +1,4 @@
-SQLPad 0.4.0.35
+SQLPad 0.4.0.36
 ===============
 
 SQLPad is an experimental SQL editor focused to quick and comfortable work.
@@ -240,7 +240,7 @@ Each connection string requires an infrastructure factory configuration record:
 
 `RemoteTraceDirectory` - optional remote database trace directory; enables access to remote trace files from SQL Pad
 
-`TKProfPath` - optional path to TKProf.exe; enables transient kernel profile output for extended SQL trace (10046) files.
+`TKProfPath` - optional path to `TKProf.exe`; enables transient kernel profile output for extended SQL trace (10046) files.
 
 `TargetTable` - table name used for EXPLAIN PLAN function; table is not created automatically and must be created manually using script:
 
