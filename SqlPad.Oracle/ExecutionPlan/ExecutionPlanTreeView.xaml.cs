@@ -25,13 +25,16 @@ namespace SqlPad.Oracle.ExecutionPlan
 		private static void RootItemChangedHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
 		{
 			var treeView = ((ExecutionPlanTreeView)dependencyObject).TreeView;
-			if (args.NewValue == null)
+			lock (treeView)
 			{
-				treeView.Items.Clear();
-			}
-			else
-			{
-				treeView.Items.Add(args.NewValue);
+				if (args.NewValue == null)
+				{
+					treeView.Items.Clear();
+				}
+				else
+				{
+					treeView.Items.Add(args.NewValue);
+				}
 			}
 		}
 

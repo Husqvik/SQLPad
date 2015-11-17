@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -89,7 +90,7 @@ namespace SqlPad.Oracle
 									Program = (string)reader["PROGRAM"],
 									RemainingTimeMicroseconds = OracleReaderValueConvert.ToInt64(reader["TIME_REMAINING_MICRO"]),
 									ResourceConsumeGroup = OracleReaderValueConvert.ToString(reader["RESOURCE_CONSUMER_GROUP"]),
-									SchemaName = (string)reader["SCHEMANAME"],
+									SchemaName = OracleReaderValueConvert.ToString(reader["SCHEMANAME"]),
 									Serial = Convert.ToInt32(reader["SERIAL#"]),
 									Server = (string)reader["SERVER"],
 									ServiceName = (string)reader["SERVICE_NAME"],
@@ -143,6 +144,7 @@ namespace SqlPad.Oracle
 		}
 	}
 
+	[DebuggerDisplay("OracleSessionValues(Id={Id}, Serial={Serial}, SqlId={SqlId}, ChildNumber={ChildNumber}, ExecutionId={ExecutionId}, ExecutionStart={ExecutionStart})")]
 	public class OracleSessionValues : IDatabaseSessionValues
 	{
 		public object[] Values { get; } = new object[56];
@@ -475,6 +477,17 @@ namespace SqlPad.Oracle
 		{
 			get { return ((OracleSimpleValue)Values[54]).Value; }
 			set { Values[54] = new OracleSimpleValue(value); }
+		}
+
+		public OracleSessionValues Clone()
+		{
+			var clone = new OracleSessionValues();
+			for (var i = 0; i < Values.Length; i++)
+			{
+				clone.Values[i] = Values[i];
+			}
+
+			return clone;
 		}
 	}
 }

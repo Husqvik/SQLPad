@@ -973,10 +973,17 @@ namespace SqlPad
 
 		private void MultiNodeEditHandler(object sender, ExecutedRoutedEventArgs args)
 		{
-			if (_multiNodeEditor == null &&
-				MultiNodeEditor.TryCreateMultiNodeEditor(Editor, ActionExecutionContext.Create(Editor, _documentRepository), InfrastructureFactory.CreateMultiNodeEditorDataProvider(), out _multiNodeEditor))
+			try
 			{
-				RedrawMultiEditSegments();
+				if (_multiNodeEditor == null &&
+				    MultiNodeEditor.TryCreateMultiNodeEditor(Editor, ActionExecutionContext.Create(Editor, _documentRepository), InfrastructureFactory.CreateMultiNodeEditorDataProvider(), out _multiNodeEditor))
+				{
+					RedrawMultiEditSegments();
+				}
+			}
+			catch (Exception exception)
+			{
+				Messages.ShowError(exception.ToString());
 			}
 		}
 

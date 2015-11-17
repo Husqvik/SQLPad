@@ -42,6 +42,14 @@ namespace SqlPad
 			TextArea.CommandBindings.Add(new CommandBinding(GenericCommands.DuplicateText, GenericCommandHandler.DuplicateText, CanExecuteEditCommand));
 			TextArea.CommandBindings.Add(new CommandBinding(GenericCommands.BlockComment, GenericCommandHandler.HandleBlockComments, CanExecuteEditCommand));
 			TextArea.CommandBindings.Add(new CommandBinding(GenericCommands.LineComment, GenericCommandHandler.HandleLineComments, CanExecuteEditCommand));
+			TextArea.CommandBindings.Add(new CommandBinding(GenericCommands.DeleteAndCopyLine, DeleteAndCopyLineHandler, CanExecuteEditCommand));
+		}
+
+		private void DeleteAndCopyLineHandler(object sender, ExecutedRoutedEventArgs e)
+		{
+			var line = Document.GetLineByNumber(CurrentLine);
+			Clipboard.SetText(Document.GetText(line));
+			Document.Remove(line);
 		}
 
 		private void CanExecuteEditCommand(object sender, CanExecuteRoutedEventArgs e)
@@ -55,7 +63,7 @@ namespace SqlPad
 				.Single(b => b.Command == AvalonEditCommands.DeleteLine)
 				.Command;
 
-			deleteLineCommand.InputGestures[0] = new KeyGesture(Key.L, ModifierKeys.Control);
+			deleteLineCommand.InputGestures[0] = new KeyGesture(Key.L, ModifierKeys.Control | ModifierKeys.Shift);
 		}
 
 		private void TextAreaSelectionChangedHandler(object sender, EventArgs eventArgs)

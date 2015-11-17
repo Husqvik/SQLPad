@@ -29,8 +29,11 @@ namespace SqlPad.Oracle
 
 		private bool _isBusy;
 		private SqlMonitorPlanItemCollection _planItemCollection;
+		private OracleSessionValues _oracleSessionValues;
 
 		public Control Control => this;
+
+		public DatabaseSession DatabaseSession { get; private set; }
 
 		public OracleSessionDetailViewer(ConnectionStringSettings connectionString)
 		{
@@ -51,7 +54,7 @@ namespace SqlPad.Oracle
 
 			lock (LockObject)
 			{
-				if (_isBusy)
+				if (_isBusy || _planItemCollection == null)
 				{
 					return;
 				}
@@ -61,12 +64,17 @@ namespace SqlPad.Oracle
 
 			try
 			{
-				var activeSessionHistoryDataProvider = new SqlMonitorActiveSessionHistoryDataProvider(_planItemCollection);
-				var planMonitorDataProvider = new SqlMonitorPlanMonitorDataProvider(_planItemCollection);
-				var sessionLongOperationDataProvider = new SessionLongOperationPlanMonitorDataProvider(_planItemCollection);
+				var planItemCollection = _planItemCollection;
+				var activeSessionHistoryDataProvider = new SqlMonitorActiveSessionHistoryDataProvider(planItemCollection);
+				var planMonitorDataProvider = new SqlMonitorPlanMonitorDataProvider(planItemCollection);
+				var sessionLongOperationDataProvider = new SessionLongOperationPlanMonitorDataProvider(planItemCollection);
 				await OracleDatabaseModel.UpdateModelAsync(_connectionString.ConnectionString, null, cancellationToken, false, activeSessionHistoryDataProvider, planMonitorDataProvider, sessionLongOperationDataProvider);
+				if (planItemCollection != _planItemCollection)
+				{
+					return;
+				}
 
-				EnableSessionDetails = _planItemCollection.AllItems.Values.Any(i => i.SessionItems.Count > 1);
+				EnableSessionDetails = planItemCollection.AllItems.Values.Any(i => i.SessionItems.Count > 1);
 			}
 			finally
 			{
@@ -76,17 +84,25 @@ namespace SqlPad.Oracle
 
 		public async Task Initialize(DatabaseSession databaseSession, CancellationToken cancellationToken)
 		{
-			Clear();
+			databaseSession = databaseSession.ParentSession ?? databaseSession;
+			var oracleSessionValues = (OracleSessionValues)databaseSession.ProviderValues;
+			if (_oracleSessionValues != null && _oracleSessionValues.Id == oracleSessionValues.Id &&  _oracleSessionValues.SqlId == oracleSessionValues.SqlId && _oracleSessionValues.ExecutionId == oracleSessionValues.ExecutionId)
+			{
+				await Refresh(cancellationToken);
+				return;
+			}
 
-			_refreshTimer.IsEnabled = false;
+			Shutdown();
+
+			DatabaseSession = databaseSession;
 
 			try
 			{
-				databaseSession = databaseSession.ParentSession ?? databaseSession;
-				var oracleSession = (OracleSessionValues)databaseSession.ProviderValues;
-				if (!String.IsNullOrEmpty(oracleSession.SqlId) && oracleSession.ExecutionId.HasValue)
+				_oracleSessionValues = oracleSessionValues.Clone();
+
+				if (!String.IsNullOrEmpty(_oracleSessionValues.SqlId) && _oracleSessionValues.ExecutionId.HasValue)
 				{
-					var monitorDataProvider = new SqlMonitorDataProvider(oracleSession.Id, oracleSession.ExecutionStart.Value, oracleSession.ExecutionId.Value, oracleSession.SqlId, oracleSession.ChildNumber.Value);
+					var monitorDataProvider = new SqlMonitorDataProvider(_oracleSessionValues.Id, _oracleSessionValues.ExecutionStart.Value, _oracleSessionValues.ExecutionId.Value, _oracleSessionValues.SqlId, _oracleSessionValues.ChildNumber.Value);
 					await OracleDatabaseModel.UpdateModelAsync(_connectionString.ConnectionString, null, cancellationToken, false, monitorDataProvider);
 
 					_planItemCollection = monitorDataProvider.ItemCollection;
@@ -94,7 +110,6 @@ namespace SqlPad.Oracle
 					if (_planItemCollection.RootItem != null)
 					{
 						ExecutionPlanTreeView.RootItem = _planItemCollection.RootItem;
-						await Refresh(cancellationToken);
 					}
 				}
 			}
@@ -104,8 +119,16 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private void Clear()
+		public void Shutdown()
 		{
+			if (DatabaseSession != null)
+			{
+				DatabaseSession = null;
+				_oracleSessionValues = null;
+			}
+
+			_refreshTimer.IsEnabled = false;
+			_planItemCollection = null;
 			ExecutionPlanTreeView.RootItem = null;
 		}
 	}

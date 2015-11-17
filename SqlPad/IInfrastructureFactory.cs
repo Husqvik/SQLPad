@@ -60,9 +60,13 @@ namespace SqlPad
 	{
 		Control Control { get; }
 
+		DatabaseSession DatabaseSession { get; }
+
 		Task Initialize(DatabaseSession databaseSession, CancellationToken cancellationToken);
 
 		Task Refresh(CancellationToken cancellationToken);
+
+		void Shutdown();
 	}
 
 	public struct DatabaseSessions

@@ -154,11 +154,16 @@ namespace SqlPad
 			MergeRecords(_databaseSessions, sessions.Rows, r => r.Id, MergeSessionRecordData);
 		}
 
-		private static void MergeSessionRecordData(DatabaseSession current, DatabaseSession @new)
+		private void MergeSessionRecordData(DatabaseSession current, DatabaseSession @new)
 		{
 			current.IsActive = @new.IsActive;
 			current.Type = @new.Type;
 			current.ProviderValues = @new.ProviderValues;
+
+			if (_sessionDetailViewer.DatabaseSession == current)
+			{
+				_sessionDetailViewer.Initialize(current, CancellationToken.None);
+			}
 		}
 
 		public void MergeRecords<TRecord>(IList<TRecord> currentRecords, IEnumerable<TRecord> newRecords, Func<TRecord, object> getKeyFunction, Action<TRecord, TRecord> mergeAction)
@@ -243,6 +248,8 @@ namespace SqlPad
 
 		private async void SessionDataGridSelectionChangedHandler(object sender, SelectionChangedEventArgs e)
 		{
+			_sessionDetailViewer.Shutdown();
+
 			if (e.AddedItems.Count > 0)
 			{
 				var exception = await App.SafeActionAsync(() => _sessionDetailViewer.Initialize((DatabaseSession)e.AddedItems[0], CancellationToken.None));

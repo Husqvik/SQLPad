@@ -13,6 +13,7 @@ namespace SqlPad.Commands
 		public static RoutedCommand CollapseAllFoldings = new RoutedCommand("CollapseAllFoldings", typeof(ContextMenu));
 		public static RoutedCommand DebugStepInto = new RoutedCommand("DebugStepInto", typeof(OutputViewer), new InputGestureCollection { new KeyGesture(Key.F11) });
 		public static RoutedCommand DebugStepOver = new RoutedCommand("DebugStepOver", typeof(OutputViewer), new InputGestureCollection { new KeyGesture(Key.F10) });
+		public static RoutedCommand DeleteAndCopyLine = new RoutedCommand("DeleteAndCopyLine", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.L, ModifierKeys.Control) });
 		public static RoutedCommand ExpandAllFoldings = new RoutedCommand("ExpandAllFoldings", typeof(ContextMenu));
 		public static RoutedCommand ExplainPlan = new RoutedCommand("ExplainPlan", typeof(Grid), new InputGestureCollection { new KeyGesture(Key.E, ModifierKeys.Control) });
 		public static RoutedCommand GoToNextEdit = new RoutedCommand("GoToNextEdit", typeof(Window), new InputGestureCollection { new KeyGesture(Key.OemMinus, ModifierKeys.Control | ModifierKeys.Shift) });
