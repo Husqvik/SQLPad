@@ -18,8 +18,8 @@ namespace SqlPad
 	public partial class WindowDatabaseMonitor
 	{
 		public static readonly DependencyProperty CurrentConnectionProperty = DependencyProperty.Register(nameof(CurrentConnection), typeof(ConnectionStringSettings), typeof(WindowDatabaseMonitor), new FrameworkPropertyMetadata(CurrentConnectionChangedCallbackHandler));
-		public static readonly DependencyProperty UserSessionOnlyProperty = DependencyProperty.Register(nameof(UserSessionOnly), typeof(bool), typeof(WindowDatabaseMonitor), new UIPropertyMetadata(true, SessionFilterChangedCallbackHandler));
-		public static readonly DependencyProperty ActiveSessionOnlyProperty = DependencyProperty.Register(nameof(ActiveSessionOnly), typeof(bool), typeof(WindowDatabaseMonitor), new UIPropertyMetadata(true, SessionFilterChangedCallbackHandler));
+		public static readonly DependencyProperty UserSessionOnlyProperty = DependencyProperty.Register(nameof(UserSessionOnly), typeof(bool), typeof(WindowDatabaseMonitor), new UIPropertyMetadata(true, UserSessionOnlyChangedCallbackHandler));
+		public static readonly DependencyProperty ActiveSessionOnlyProperty = DependencyProperty.Register(nameof(ActiveSessionOnly), typeof(bool), typeof(WindowDatabaseMonitor), new UIPropertyMetadata(true, ActiveSessionOnlyChangedCallbackHandler));
 
 		[Bindable(true)]
 		public ConnectionStringSettings CurrentConnection
@@ -41,10 +41,10 @@ namespace SqlPad
 			set { SetValue(UserSessionOnlyProperty, value); }
 		}
 
-		private static void SessionFilterChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
+		private static void UserSessionOnlyChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
 		{
-			var viewSource = (CollectionViewSource)((WindowDatabaseMonitor)dependencyObject).Resources["FilteredDatabaseSessions"];
-			viewSource.View.Refresh();
+			var window = (WindowDatabaseMonitor)dependencyObject;
+			window.UpdateFilterSettings(c => c.UserSessionOnly = (bool)args.NewValue);
 		}
 
 		[Bindable(true)]
@@ -52,6 +52,12 @@ namespace SqlPad
 		{
 			get { return (bool)GetValue(ActiveSessionOnlyProperty); }
 			set { SetValue(ActiveSessionOnlyProperty, value); }
+		}
+
+		private static void ActiveSessionOnlyChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
+		{
+			var window = (WindowDatabaseMonitor)dependencyObject;
+			window.UpdateFilterSettings(c => c.ActiveSessionOnly = (bool)args.NewValue);
 		}
 
 		private const string SessionDataGridHeightProperty = "SessionDataGridSplitter";
@@ -69,12 +75,22 @@ namespace SqlPad
 
 		private EventHandler<DataGridBeginningEditEventArgs> DataGridBeginningEditCancelTextInputHandler => App.ResultGridBeginningEditCancelTextInputHandlerImplementation;
 
+		private CollectionViewSource SessionDataGridSource => (CollectionViewSource)Resources["FilteredDatabaseSessions"];
+
 		public WindowDatabaseMonitor()
 		{
 			InitializeComponent();
 
 			_refreshTimer = new DispatcherTimer(DispatcherPriority.Normal, Dispatcher) { Interval = TimeSpan.FromSeconds(10) };
 			_refreshTimer.Tick += RefreshTimerTickHandler;
+		}
+
+		private void UpdateFilterSettings(Action<DatabaseMonitorConfiguration> updateConfigurationAction)
+		{
+			var providerConfiguration = WorkDocumentCollection.GetProviderConfiguration(CurrentConnection.ProviderName);
+			updateConfigurationAction(providerConfiguration.DatabaseMonitorConfiguration);
+
+			SessionDataGridSource.View.Refresh();
 		}
 
 		private void RefreshTimerTickHandler(object sender, EventArgs e)
@@ -100,6 +116,13 @@ namespace SqlPad
 			var infrastructureFactory = connectionConfiguration.InfrastructureFactory;
 			_databaseMonitor = infrastructureFactory.CreateDatabaseMonitor(CurrentConnection);
 			_sessionDetailViewer = _databaseMonitor.CreateSessionDetailViewer();
+
+			var providerConfiguration = WorkDocumentCollection.GetProviderConfiguration(CurrentConnection.ProviderName);
+			ActiveSessionOnly = providerConfiguration.DatabaseMonitorConfiguration.ActiveSessionOnly;
+			UserSessionOnly = providerConfiguration.DatabaseMonitorConfiguration.UserSessionOnly;
+
+			SessionDataGridSource.SortDescriptions.Clear();
+			SessionDataGridSource.SortDescriptions.Add(new SortDescription(providerConfiguration.DatabaseMonitorConfiguration.SortMemberPath, providerConfiguration.DatabaseMonitorConfiguration.SortColumnOrder));
 
 			Refresh();
 		}
@@ -211,12 +234,22 @@ namespace SqlPad
 
 		private void ColumnHeaderMouseClickHandler(object sender, RoutedEventArgs e)
 		{
-			
+		}
+
+		private void SessionDataGridSortingHandler(object sender, DataGridSortingEventArgs e)
+		{
+			var sortDirection = e.Column.SortDirection == ListSortDirection.Ascending
+				? ListSortDirection.Descending
+				: ListSortDirection.Ascending;
+
+			var providerConfiguration = WorkDocumentCollection.GetProviderConfiguration(CurrentConnection.ProviderName);
+			providerConfiguration.DatabaseMonitorConfiguration.SortMemberPath = e.Column.SortMemberPath;
+			providerConfiguration.DatabaseMonitorConfiguration.SortColumnOrder = sortDirection;
 		}
 
 		private void SessionDataGridMouseDoubleClickHandler(object sender, MouseButtonEventArgs e)
 		{
-			DataGridHelper.ShowLargeValueEditor(SessionDataGrid, r => ((DatabaseSession)r).Values);
+			DataGridHelper.ShowLargeValueEditor(SessionDataGrid, r => ((DatabaseSession)r)?.Values);
 		}
 
 		private void WindowClosingHandler(object sender, CancelEventArgs e)

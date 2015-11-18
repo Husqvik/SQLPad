@@ -1184,6 +1184,18 @@ SELECT VAL FROM CTE";
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestUnnestCommandWithDirectColumnReference()
+		{
+			_editor.Text = @"SELECT EXPRESSION FROM (SELECT NVL(NULL, 0) - NVL(NULL, 0) EXPRESSION FROM dual)";
+			_editor.CaretOffset = 24;
+
+			CanExecuteCommand(OracleCommands.UnnestInlineView).ShouldBe(true);
+			ExecuteCommand(OracleCommands.UnnestInlineView);
+
+			_editor.Text.ShouldBe("SELECT NVL(NULL, 0) - NVL(NULL, 0) EXPRESSION FROM dual");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestUnnestCommandWithWhereClause()
 		{
 			_editor.Text = @"SELECT IV.TEST_COLUMN || ' ADDED' FROM PROJECT, (SELECT SELECTION.NAME || ' FROM INLINE_VIEW ' TEST_COLUMN FROM SELECTION WHERE SELECTION_ID = 123) IV, RESPONDENTBUCKET";

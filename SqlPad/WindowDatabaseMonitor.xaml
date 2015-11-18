@@ -63,6 +63,7 @@
 		          MaxColumnWidth="{Binding ElementName=SessionDataGrid, Path=ActualWidth}"
 		          BeginningEdit="DataGridBeginningEditCancelTextInputHandler"
 		          SelectionChanged="SessionDataGridSelectionChangedHandler"
+		          Sorting="SessionDataGridSortingHandler"
 		          DataGridColumnHeader.Click="ColumnHeaderMouseClickHandler"
 		          MouseDoubleClick="SessionDataGridMouseDoubleClickHandler" />
 		

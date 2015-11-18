@@ -41,9 +41,11 @@ namespace SqlPad.Oracle.Commands
 				            (c.SelectListColumn == null || (!c.SelectListColumn.IsAsterisk && c.SelectListColumn.HasExplicitDefinition))))
 			{
 				var indextStart = (columnReference.OwnerNode ?? columnReference.ObjectNode ?? columnReference.ColumnNode).SourcePosition.IndexStart;
-				var columnExpression = GetUnnestedColumnExpression(columnReference, ExecutionContext.StatementText);
+				var columnExpression = GetUnnestedColumnExpression(columnReference);
 				if (String.IsNullOrEmpty(columnExpression))
+				{
 					continue;
+				}
 
 				var segmentToReplace = new TextSegment
 				                       {
@@ -71,54 +73,55 @@ namespace SqlPad.Oracle.Commands
 			}
 
 			if (nodeToRemove.SourcePosition.IndexStart > 0 &&
-				!ExecutionContext.StatementText[nodeToRemove.SourcePosition.IndexStart - 1].In(' ', '\t', '\n'))
+				!ExecutionContext.StatementText[nodeToRemove.SourcePosition.IndexStart - 1].In(' ', '\t', '\n', '\u00A0'))
 			{
-				segmentToRemove.Text = " " + segmentToRemove.Text;
+				segmentToRemove.Text = $" {segmentToRemove.Text}";
 			}
 
 			ExecutionContext.SegmentsToReplace.Add(segmentToRemove);
 
-			var objectPrefixAsteriskColumns = _parentQueryBlock.AsteriskColumns.Where(c => c.ColumnReferences.Count == 1 && c.ColumnReferences[0].ObjectNode != null &&
-																				   c.ColumnReferences[0].ObjectNodeObjectReferences.Count == 1 && c.ColumnReferences[0].ObjectNodeObjectReferences.First().QueryBlocks.Count == 1 &&
-																				   c.ColumnReferences[0].ObjectNodeObjectReferences.First().QueryBlocks.First() == CurrentQueryBlock);
+			var objectPrefixAsteriskColumns = _parentQueryBlock.AsteriskColumns
+				.Where(c => c.ColumnReferences.Count == 1 && c.ColumnReferences[0].ObjectNode != null &&
+				            c.ColumnReferences[0].ObjectNodeObjectReferences.Count == 1 && c.ColumnReferences[0].ObjectNodeObjectReferences.First().QueryBlocks.Count == 1 &&
+				            c.ColumnReferences[0].ObjectNodeObjectReferences.First().QueryBlocks.First() == CurrentQueryBlock);
 
 			foreach (var objectPrefixAsteriskColumn in objectPrefixAsteriskColumns)
 			{
-				var asteriskToReplace = new TextSegment
-				                        {
-					                        IndextStart = objectPrefixAsteriskColumn.RootNode.SourcePosition.IndexStart,
-											Length = objectPrefixAsteriskColumn.RootNode.SourcePosition.Length,
-											Text = CurrentQueryBlock.SelectList.GetText(ExecutionContext.StatementText)
-				                        };
+				var asteriskToReplace =
+					new TextSegment
+					{
+						IndextStart = objectPrefixAsteriskColumn.RootNode.SourcePosition.IndexStart,
+						Length = objectPrefixAsteriskColumn.RootNode.SourcePosition.Length,
+						Text = CurrentQueryBlock.SelectList.GetText(ExecutionContext.StatementText)
+					};
 
 				ExecutionContext.SegmentsToReplace.Add(asteriskToReplace);
 			}
 
 			var whereCondition = String.Empty;
-			if (CurrentQueryBlock.WhereClause != null)
+			var whereConditionNode = CurrentQueryBlock.WhereClause?.ChildNodes.SingleOrDefault(n => String.Equals(n.Id, NonTerminals.Condition));
+			if (whereConditionNode != null)
 			{
-				var whereConditionNode = CurrentQueryBlock.WhereClause.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.Condition);
-				if (whereConditionNode != null)
-				{
-					whereCondition = whereConditionNode.GetText(ExecutionContext.StatementText);
-				}
+				whereCondition = whereConditionNode.GetText(ExecutionContext.StatementText);
 			}
 
 			if (String.IsNullOrEmpty(whereCondition))
+			{
 				return;
+			}
 			
 			var whereConditionSegment = new TextSegment();
 
 			if (_parentQueryBlock.WhereClause != null)
 			{
 				// TODO: Make proper condition resolution, if it's needed to encapsulate existing condition into parentheses to keep the logic
-				whereCondition = " AND " + whereCondition;
+				whereCondition = $" AND {whereCondition}";
 				whereConditionSegment.IndextStart = _parentQueryBlock.WhereClause.SourcePosition.IndexEnd + 1;
 			}
 			else
 			{
 				var targetFromClause = _parentQueryBlock.RootNode[NonTerminals.FromClause];
-				whereCondition = " WHERE " + whereCondition;
+				whereCondition = $" WHERE {whereCondition}";
 				whereConditionSegment.IndextStart = targetFromClause.SourcePosition.IndexEnd + 1;
 			}
 
@@ -126,19 +129,21 @@ namespace SqlPad.Oracle.Commands
 			ExecutionContext.SegmentsToReplace.Add(whereConditionSegment);
 		}
 
-		private string GetUnnestedColumnExpression(OracleColumnReference columnReference, string statementText)
+		private string GetUnnestedColumnExpression(OracleColumnReference columnReference)
 		{
 			return CurrentQueryBlock.Columns
-				.Where(c => !c.IsAsterisk && c.NormalizedName == columnReference.NormalizedName)
-				.Select(c => GetUnnestedColumnExpression(c, statementText))
+				.Where(c => !c.IsAsterisk && String.Equals(c.NormalizedName, columnReference.NormalizedName))
+				.Select(c => GetUnnestedColumnExpression(columnReference, c))
 				.FirstOrDefault();
 		}
 
-		private string GetUnnestedColumnExpression(OracleSelectListColumn column, string statementText)
+		private string GetUnnestedColumnExpression(OracleColumnReference sourceColumnReference, OracleSelectListColumn column)
 		{
 			if (column.HasExplicitDefinition)
 			{
-				var columnExpression = column.RootNode.GetDescendantsWithinSameQueryBlock(NonTerminals.Expression).First().GetText(statementText);
+				var isNonAliasedDirectReference = sourceColumnReference.SelectListColumn?.IsDirectReference == true && !sourceColumnReference.SelectListColumn.HasExplicitAlias;
+				var rootExpressionNode = column.RootNode.GetDescendantsWithinSameQueryBlock(isNonAliasedDirectReference ? NonTerminals.AliasedExpression : NonTerminals.Expression).First();
+				var columnExpression = rootExpressionNode.GetText(ExecutionContext.StatementText);
 				var offset = column.RootNode.SourcePosition.IndexStart;
 
 				foreach (var columnReference in column.ColumnReferences
@@ -148,7 +153,7 @@ namespace SqlPad.Oracle.Commands
 					var prefix = columnReference.ColumnNodeObjectReferences.First().FullyQualifiedObjectName.ToString();
 					if (!String.IsNullOrEmpty(prefix))
 					{
-						prefix += ".";
+						prefix = $"{prefix}.";
 					}
 
 					columnExpression = columnExpression.Remove(columnReference.ColumnNode.SourcePosition.IndexStart - offset, columnReference.ColumnNode.SourcePosition.Length).Insert(columnReference.ColumnNode.SourcePosition.IndexStart - offset, prefix + columnReference.Name);
@@ -158,10 +163,10 @@ namespace SqlPad.Oracle.Commands
 			}
 
 			var objectName = column.ColumnReferences.Count == 1 && column.ColumnReferences[0].ColumnNodeObjectReferences.Count == 1
-				? column.ColumnReferences[0].ColumnNodeObjectReferences.First().FullyQualifiedObjectName + "."
+				? $"{column.ColumnReferences[0].ColumnNodeObjectReferences.First().FullyQualifiedObjectName}."
 				: null;
 
-			return objectName + column.NormalizedName.ToSimpleIdentifier();
+			return $"{objectName}{column.NormalizedName.ToSimpleIdentifier()}";
 		}
 	}
 }

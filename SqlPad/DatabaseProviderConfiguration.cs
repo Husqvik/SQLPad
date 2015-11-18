@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -14,6 +15,7 @@ namespace SqlPad
 
 		private Dictionary<string, BindVariableConfiguration> _bindVariables;
 		private HashSet<StatementExecutionHistoryEntry> _statementExecutionHistory;
+		private DatabaseMonitorConfiguration _databaseMonitorConfiguration;
 
 		public DatabaseProviderConfiguration(string providerName)
 		{
@@ -25,6 +27,8 @@ namespace SqlPad
 		private IDictionary<string, BindVariableConfiguration> BindVariablesInternal => _bindVariables ?? (_bindVariables = new Dictionary<string, BindVariableConfiguration>());
 
 		public ICollection<StatementExecutionHistoryEntry> StatementExecutionHistory => _statementExecutionHistory ?? (_statementExecutionHistory = new HashSet<StatementExecutionHistoryEntry>());
+
+		public DatabaseMonitorConfiguration DatabaseMonitorConfiguration => _databaseMonitorConfiguration ?? (_databaseMonitorConfiguration = new DatabaseMonitorConfiguration { UserSessionOnly = true });
 
 		public ICollection<BindVariableConfiguration> BindVariables => BindVariablesInternal.Values;
 
@@ -71,6 +75,17 @@ namespace SqlPad
 		{
 			StatementExecutionHistory.Clear();
 		}
+	}
+
+	public class DatabaseMonitorConfiguration
+	{
+		public string SortMemberPath { get; set; }
+
+		public ListSortDirection SortColumnOrder { get; set; }
+
+		public bool ActiveSessionOnly { get; set; }
+
+		public bool UserSessionOnly { get; set; }
 	}
 
 	[DebuggerDisplay("StatementExecutionHistoryEntry (StatementText={StatementText}, ExecutedAt={ExecutedAt}, Tags={Tags})")]

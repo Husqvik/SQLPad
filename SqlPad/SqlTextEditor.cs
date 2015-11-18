@@ -49,8 +49,8 @@ namespace SqlPad
 		{
 			var line = Document.GetLineByNumber(CurrentLine);
 			Clipboard.SetText(Document.GetText(line));
-			Document.Remove(line);
-		}
+			AvalonEditCommands.DeleteLine.Execute(null, null);
+        }
 
 		private void CanExecuteEditCommand(object sender, CanExecuteRoutedEventArgs e)
 		{
