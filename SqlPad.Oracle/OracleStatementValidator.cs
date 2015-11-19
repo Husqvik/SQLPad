@@ -897,10 +897,10 @@ namespace SqlPad.Oracle
 					var mainQueryBlockOrderByClause = GetOrderByClauseIfWithinMainQueryBlock(sequenceReference);
 					var isWithinMainQueryBlockWithOrderByClause = mainQueryBlockOrderByClause != null;
 					if (isWithinMainQueryBlockWithOrderByClause || !sequenceReference.Placement.In(StatementPlacement.None, StatementPlacement.ValuesClause, StatementPlacement.SelectList) ||
-					    IsNotWithinMainQueryBlock(sequenceReference))
+					    IsNotWithinMainQueryBlock(sequenceReference) || sequenceReference.Owner?.HasDistinctResultSet == true)
 					{
 						validationModel.InvalidNonTerminals[sequenceReference.RootNode] =
-							new InvalidNodeValidationData(OracleSemanticErrorType.ObjectCannotBeUsed) { Node = sequenceReference.RootNode };
+							new InvalidNodeValidationData(OracleSemanticErrorType.SequenceNumberNotAllowedHere) { Node = sequenceReference.RootNode };
 
 						if (isWithinMainQueryBlockWithOrderByClause)
 						{

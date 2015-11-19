@@ -58,8 +58,6 @@ namespace SqlPad.Oracle.ModelDataProviders
 		public DateTime ExecutionStart { get; set; }
 
 		public int ExecutionId { get; }
-
-		public ObservableDictionary<int, List<ActiveSessionHistoryItem>> ActiveSessionHistoryItems { get; } = new ObservableDictionary<int, List<ActiveSessionHistoryItem>>();
 	}
 
 	[DebuggerDisplay("ActiveSessionHistoryItem (SessionId={SessionId}; SessionSerial={SessionSerial}; SampleTime={SampleTime})")]
@@ -108,6 +106,8 @@ namespace SqlPad.Oracle.ModelDataProviders
 	public class SqlMonitorPlanItem : ExecutionPlanItem
 	{
 		private SqlMonitorSessionItem _allSessionSummaryItem;
+		private bool _isBeingExecuted;
+		private DateTime? _lastSampleTime;
 
 		public SqlMonitorSessionItem AllSessionSummaryItem
 		{
@@ -120,6 +120,20 @@ namespace SqlPad.Oracle.ModelDataProviders
 		public ObservableDictionary<int, SqlMonitorSessionLongOperationItem> SessionLongOperationItems { get; } = new ObservableDictionary<int, SqlMonitorSessionLongOperationItem>();
 
 		public ObservableCollection<SqlMonitorSessionLongOperationItem> QueryCoordinatorLongOperations { get; } = new ObservableCollection<SqlMonitorSessionLongOperationItem>();
+
+		public ObservableDictionary<int, List<ActiveSessionHistoryItem>> ActiveSessionHistoryItems { get; } = new ObservableDictionary<int, List<ActiveSessionHistoryItem>>();
+
+		public bool IsBeingExecuted
+		{
+			get { return _isBeingExecuted; }
+			set { UpdateValueAndRaisePropertyChanged(ref _isBeingExecuted, value); }
+		}
+
+		public DateTime? LastSampleTime
+		{
+			get { return _lastSampleTime; }
+			set { UpdateValueAndRaisePropertyChanged(ref _lastSampleTime, value); }
+		}
 	}
 
 	[DebuggerDisplay("SqlMonitorSessionLongOperationItem (SessionId={SessionId}; Message={_message})")]
@@ -400,10 +414,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public override void InitializeCommand(OracleCommand command)
 		{
-			List<ActiveSessionHistoryItem> activeSessionHistoryItems;
-			var lastSampleTime = DataModel.ActiveSessionHistoryItems.TryGetValue(DataModel.SessionId, out activeSessionHistoryItems)
-				? activeSessionHistoryItems.Last()?.SampleTime
-				: DateTime.MinValue;
+			var lastSampleTime = DataModel.AllItems.Values.Max(i => i.LastSampleTime) ?? DateTime.MinValue;
 
 			command.CommandText = OracleDatabaseCommands.SelectActiveSessionHistoryCommandText;
 			command.AddSimpleParameter("SID", DataModel.SessionId);
@@ -414,13 +425,22 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public async override Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 		{
+			DateTime? lastSampleTime = null;
 			while (await reader.ReadAsynchronous(cancellationToken))
 			{
 				var sessionId = Convert.ToInt32(reader["SESSION_ID"]);
-				List<ActiveSessionHistoryItem> activeSessionHistoryItems;
-				if (!DataModel.ActiveSessionHistoryItems.TryGetValue(sessionId, out activeSessionHistoryItems))
+				var planLineId = OracleReaderValueConvert.ToInt32(reader["SQL_PLAN_LINE_ID"]);
+				if (planLineId == null)
 				{
-					DataModel.ActiveSessionHistoryItems[sessionId] = activeSessionHistoryItems = new List<ActiveSessionHistoryItem>();
+					continue;
+				}
+
+				var planLineItem = DataModel.AllItems[planLineId.Value];
+
+				List<ActiveSessionHistoryItem> activeSessionHistoryItems;
+				if (!planLineItem.ActiveSessionHistoryItems.TryGetValue(sessionId, out activeSessionHistoryItems))
+				{
+					planLineItem.ActiveSessionHistoryItems[sessionId] = activeSessionHistoryItems = new List<ActiveSessionHistoryItem>();
 				}
 
 				var historyItem =
@@ -448,11 +468,15 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 				activeSessionHistoryItems.Add(historyItem);
 
-				var planLineId = OracleReaderValueConvert.ToInt32(reader["SQL_PLAN_LINE_ID"]);
+				if (lastSampleTime == null || historyItem.SampleTime > lastSampleTime)
+				{
+					planLineItem.LastSampleTime = lastSampleTime = historyItem.SampleTime;
+				}
+			}
 
-				historyItem.ActiveLine = planLineId.HasValue
-					? DataModel.AllItems[planLineId.Value]
-					: null;
+			foreach (var planLineItem in DataModel.AllItems.Values)
+			{
+				planLineItem.IsBeingExecuted = lastSampleTime.HasValue && planLineItem.ActiveSessionHistoryItems.Values.Any(historyItems => historyItems.LastOrDefault()?.SampleTime >= lastSampleTime.Value.AddSeconds(-1));
 			}
 		}
 	}

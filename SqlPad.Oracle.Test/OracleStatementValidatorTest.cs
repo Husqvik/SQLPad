@@ -1145,8 +1145,8 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var nonTerminalValidity = nodeValidityDictionary.Values.ToList();
 			nonTerminalValidity.Count.ShouldBe(2);
 			nonTerminalValidity[0].IsRecognized.ShouldBe(true);
-			nonTerminalValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ObjectCannotBeUsed);
-			nonTerminalValidity[0].ToolTipText.ShouldBe(OracleSemanticErrorType.ObjectCannotBeUsed);
+			nonTerminalValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.SequenceNumberNotAllowedHere);
+			nonTerminalValidity[0].ToolTipText.ShouldBe(OracleSemanticErrorType.SequenceNumberNotAllowedHere);
 			nonTerminalValidity[0].Node.ShouldNotBe(null);
 			nonTerminalValidity[0].Node.TerminalCount.ShouldBe(3);
 			nonTerminalValidity[1].IsRecognized.ShouldBe(true);
@@ -1169,8 +1169,27 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var nonTerminalValidity = nodeValidityDictionary.Values.ToList();
 			nonTerminalValidity.Count.ShouldBe(1);
 			nonTerminalValidity[0].IsRecognized.ShouldBe(true);
-			nonTerminalValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ObjectCannotBeUsed);
-			nonTerminalValidity[0].ToolTipText.ShouldBe(OracleSemanticErrorType.ObjectCannotBeUsed);
+			nonTerminalValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.SequenceNumberNotAllowedHere);
+			nonTerminalValidity[0].ToolTipText.ShouldBe(OracleSemanticErrorType.SequenceNumberNotAllowedHere);
+			nonTerminalValidity[0].Node.ShouldNotBe(null);
+			nonTerminalValidity[0].Node.TerminalCount.ShouldBe(3);
+		}
+
+		[Test(Description = @"")]
+		public void TestSequenceWithDistinct()
+		{
+			const string sqlText = "SELECT DISTINCT TEST_SEQ.NEXTVAL FROM DUAL";
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var nodeValidityDictionary = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var nonTerminalValidity = nodeValidityDictionary.Values.ToList();
+			nonTerminalValidity.Count.ShouldBe(1);
+			nonTerminalValidity[0].IsRecognized.ShouldBe(true);
+			nonTerminalValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.SequenceNumberNotAllowedHere);
+			nonTerminalValidity[0].ToolTipText.ShouldBe(OracleSemanticErrorType.SequenceNumberNotAllowedHere);
 			nonTerminalValidity[0].Node.ShouldNotBe(null);
 			nonTerminalValidity[0].Node.TerminalCount.ShouldBe(3);
 		}
@@ -1188,14 +1207,14 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var nonTerminalValidity = nodeValidityDictionary.Values.ToList();
 			nonTerminalValidity.Count.ShouldBe(2);
 			nonTerminalValidity.ForEach(n => n.IsRecognized.ShouldBe(true));
-			nonTerminalValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ObjectCannotBeUsed);
-			nonTerminalValidity[0].ToolTipText.ShouldBe(OracleSemanticErrorType.ObjectCannotBeUsed);
+			nonTerminalValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.SequenceNumberNotAllowedHere);
+			nonTerminalValidity[0].ToolTipText.ShouldBe(OracleSemanticErrorType.SequenceNumberNotAllowedHere);
 			nonTerminalValidity[0].Node.ShouldNotBe(null);
 			nonTerminalValidity[0].Node.TerminalCount.ShouldBe(3);
 			nonTerminalValidity[0].Node.SourcePosition.IndexStart.ShouldBe(97);
 			nonTerminalValidity[0].Node.SourcePosition.Length.ShouldBe(18);
-			nonTerminalValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ObjectCannotBeUsed);
-			nonTerminalValidity[1].ToolTipText.ShouldBe(OracleSemanticErrorType.ObjectCannotBeUsed);
+			nonTerminalValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.SequenceNumberNotAllowedHere);
+			nonTerminalValidity[1].ToolTipText.ShouldBe(OracleSemanticErrorType.SequenceNumberNotAllowedHere);
 			nonTerminalValidity[1].Node.ShouldNotBe(null);
 			nonTerminalValidity[1].Node.TerminalCount.ShouldBe(3);
 			nonTerminalValidity[1].Node.SourcePosition.IndexStart.ShouldBe(118);
