@@ -21,7 +21,7 @@ namespace SqlPad.Oracle.Commands
 		public static readonly CommandExecutionHandler MakeLowerCase = new CommandExecutionHandler
 		{
 			Name = "MakeLowerCase",
-			DefaultGestures = new InputGestureCollection { new KeyGesture(Key.L, ModifierKeys.Control | ModifierKeys.Shift) },
+			DefaultGestures = new InputGestureCollection { new KeyGesture(Key.U, ModifierKeys.Control) },
 			ExecutionHandler = MakeLowerCaseHandler
 		};
 

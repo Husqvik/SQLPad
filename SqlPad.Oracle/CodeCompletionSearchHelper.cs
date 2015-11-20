@@ -83,8 +83,8 @@ namespace SqlPad.Oracle
 				                     String.Equals(o.ProgramMetadata.Parameters[o.CurrentParameterIndex + 1].DataType, "VARCHAR2"));
 			if (toCharFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(toCharFunctionOverload))
 			{
-				const string itemText = "NLS_NUMERIC_CHARACTERS = '<decimal separator><group separator>' NLS_CURRENCY = 'currency_symbol' NLS_ISO_CURRENCY = <territory>";
-				const string itemDescription = "NLS_NUMERIC_CHARACTERS = '<decimal separator><group separator>' NLS_CURRENCY = 'currency_symbol' NLS_ISO_CURRENCY = <territory>";
+				const string itemText = "NLS_NUMERIC_CHARACTERS = '<decimal separator><group separator>' NLS_CURRENCY = 'currency_symbol' NLS_ISO_CURRENCY = <territory> NLS_DATE_LANGUAGE = <language>";
+				const string itemDescription = "NLS_NUMERIC_CHARACTERS = '<decimal separator><group separator>' NLS_CURRENCY = 'currency_symbol' NLS_ISO_CURRENCY = <territory> NLS_DATE_LANGUAGE = <language>";
 				completionItems.Add(BuildParameterCompletionItem(currentNode, itemText, itemDescription));
 			}
 

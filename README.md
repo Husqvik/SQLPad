@@ -1,4 +1,4 @@
-SQLPad 0.4.0.40
+SQLPad 0.4.0.41
 ===============
 
 SQLPad is an experimental SQL editor focused to quick and comfortable work.
@@ -88,7 +88,7 @@ ALT + Delete               - Safe delete (column or object alias)
 
 CTRL + SHIFT + U           - Set text to upper case
 
-CTRL + SHIFT + L           - Set text to lower case
+CTRL + U                   - Set text to lower case
 
 CTRL + SHIFT + Comma       - Decrease editor font size
 
