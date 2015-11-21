@@ -3347,6 +3347,31 @@ END;";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 			}
+
+			public class ConditionalCompilation
+			{
+				[Test(Description = @"")]
+				public void TestConditionalCompilationSymbol()
+				{
+					const string statement1 = @"BEGIN DBMS_OUTPUT.PUT_LINE('$$PLSQL_UNIT = ' || $$PLSQL_UNIT); END;";
+
+					var statement = Parser.Parse(statement1).Single().Validate();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+				[Test(Description = @"")]
+				public void TestConditionalCompilationSymbolInSqlCommand()
+				{
+					const string statement1 =
+@"DECLARE
+	x VARCHAR2(30);
+BEGIN
+	SELECT $$PLSQL_UNIT INTO x FROM DUAL;
+END;";
+
+					var statement = Parser.Parse(statement1).Single().Validate();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+			}
 		}
 
 		public class IsRuleValid
@@ -3526,6 +3551,7 @@ END;";
 						Terminals.CharacterCode,
 						Terminals.Collect,
 						Terminals.Colon,
+						Terminals.ConditionalCompilationSymbol,
 						Terminals.ConnectByRoot,
 						Terminals.Count,
 						Terminals.CumulativeDistribution,

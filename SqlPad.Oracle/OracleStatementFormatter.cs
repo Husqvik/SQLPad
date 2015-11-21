@@ -124,7 +124,8 @@ namespace SqlPad.Oracle
 				Terminals.Dot,
 				Terminals.RightParenthesis,
 				Terminals.AtCharacter,
-				Terminals.Comma
+				Terminals.Comma,
+				Terminals.Semicolon
 			};
 
 		private static readonly HashSet<string> SingleLineNoSpaceAfterTerminals =
