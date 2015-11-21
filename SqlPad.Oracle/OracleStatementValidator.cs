@@ -806,7 +806,54 @@ namespace SqlPad.Oracle
 							new InvalidNodeValidationData(OracleSemanticErrorType.PartitionedTableOnBothSidesOfPartitionedOuterJoinNotSupported) { Node = joinDescription.SlavePartitionClause };
 					}
 				}
+
+				ValidateNestedAnalyticFunctions(queryBlock, validationModel);
 			}
+		}
+
+		private static void ValidateNestedAnalyticFunctions(OracleQueryBlock queryBlock, OracleValidationModel validationModel)
+		{
+			var analyticFunctionReferences = queryBlock.Columns
+				.SelectMany(c => c.ProgramReferences).Where(p => p.AnalyticClauseNode != null || p.Metadata?.IsAggregate == true)
+				.ToArray();
+
+			if (analyticFunctionReferences.Length == 0)
+			{
+				return;
+			}
+
+			var analyticFunctionExpressions = analyticFunctionReferences.Select(r => r.RootNode).ToHashSet();
+
+			foreach (var programReference in analyticFunctionReferences)
+			{
+				var parentFunctionRootNode = GetParentAggregateOrAnalyticFunctionRootNode(programReference.RootNode);
+				if (!analyticFunctionExpressions.Contains(parentFunctionRootNode))
+				{
+					continue;
+				}
+
+				string semanticError = null;
+				if (analyticFunctionExpressions.Contains(GetParentAggregateOrAnalyticFunctionRootNode(parentFunctionRootNode)))
+				{
+					semanticError = OracleSemanticErrorType.GroupFunctionNestedTooDeeply;
+				}
+				else if (programReference.AnalyticClauseNode != null)
+				{
+					semanticError = OracleSemanticErrorType.WindowFunctionsNotAllowedHere;
+				}
+
+				if (semanticError != null)
+				{
+					validationModel.InvalidNonTerminals[programReference.RootNode] =
+					   new InvalidNodeValidationData(semanticError) { Node = programReference.RootNode };
+				}
+			}
+		}
+
+		internal static StatementGrammarNode GetParentAggregateOrAnalyticFunctionRootNode(StatementGrammarNode programRootNode)
+		{
+			return programRootNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.AliasedExpression), NonTerminals.AnalyticFunctionCall)
+			       ?? programRootNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.AliasedExpression), NonTerminals.AggregateFunctionCall);
 		}
 
 		private static void ValidateConcatenatedQueryBlocks(OracleValidationModel validationModel, OracleQueryBlock queryBlock)

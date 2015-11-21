@@ -2609,6 +2609,16 @@ ORDER BY symbol, tstamp";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
+		[Test(Description = @"")]
+		public void TestOracle12ContainerFunction()
+		{
+			const string statement1 = @"SELECT * FROM CONTAINERS(DBA_DATA_FILES) ALIAS";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+		}
+
 		public class PlSql
 		{
 			[Test(Description = @"")]
@@ -7071,6 +7081,54 @@ END;";
 			public void TestAnalyzeClusterValidateStructureCascade()
 			{
 				const string statementText = @"ANALYZE CLUSTER personnel VALIDATE STRUCTURE CASCADE COMPLETE ONLINE";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestAnalyzeTableComputeStatisticsForTable()
+			{
+				const string statementText = @"ANALYZE TABLE test_table COMPUTE STATISTICS FOR TABLE";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestAnalyzeTableComputeStatisticsForAllIndexes()
+			{
+				const string statementText = @"ANALYZE TABLE test_table COMPUTE STATISTICS FOR ALL LOCAL INDEXES FOR ALL INDEXED COLUMNS SIZE 16";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestAnalyzeTableComputeStatisticsForColumns()
+			{
+				const string statementText = @"ANALYZE TABLE test_table COMPUTE STATISTICS FOR COLUMNS COLUMN1 SIZE 254 COLUMN2 COLUMN3 SIZE 16";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestAnalyzeTableEstimateStatisticsWithSample()
+			{
+				const string statementText = @"ANALYZE TABLE test_table ESTIMATE STATISTICS SAMPLE 10 PERCENT";
 
 				var result = Parser.Parse(statementText);
 

@@ -472,7 +472,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test(Description = @"")]
-		public void TestNestedAnalyticFuctionCall()
+		public void TestAnalyticFuctionAsParameter()
 		{
 			const string sqlText = "SELECT NULLIF(COUNT(DUMMY) OVER (), 1) FROM DUAL";
 			var statement = Parser.Parse(sqlText).Single();
@@ -487,6 +487,70 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 				.Select(cv => cv.Value.SemanticErrorType).ToArray();
 			
 			nodeValidity.Length.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestAnalyticFuctionAsAnalyticFuctionParameter()
+		{
+			const string sqlText = "SELECT COUNT(COUNT(DUMMY) OVER ()) OVER () FROM DUAL";
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			validationModel.InvalidNonTerminals.Count.ShouldBe(1);
+			var validationData = validationModel.InvalidNonTerminals.Values.First();
+			validationData.SemanticErrorType.ShouldBe(OracleSemanticErrorType.WindowFunctionsNotAllowedHere);
+			validationData.Node.SourcePosition.IndexStart.ShouldBe(13);
+			validationData.Node.SourcePosition.IndexEnd.ShouldBe(32);
+		}
+
+		[Test(Description = @"")]
+		public void TestAnalyticFuctionAsAggregationFuctionParameter()
+		{
+			const string sqlText = "SELECT COUNT(COUNT(DUMMY) OVER ()) FROM DUAL";
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			validationModel.InvalidNonTerminals.Count.ShouldBe(1);
+			var validationData = validationModel.InvalidNonTerminals.Values.First();
+			validationData.SemanticErrorType.ShouldBe(OracleSemanticErrorType.WindowFunctionsNotAllowedHere);
+			validationData.Node.SourcePosition.IndexStart.ShouldBe(13);
+			validationData.Node.SourcePosition.IndexEnd.ShouldBe(32);
+		}
+
+		[Test(Description = @"")]
+		public void TestAggregateFuctionAsAnalyticFuctionParameter()
+		{
+			const string sqlText = "SELECT COUNT(COUNT(DUMMY)) OVER () FROM DUAL";
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestTooDeeplyNestedAggregatedFunction()
+		{
+			const string sqlText = "SELECT COUNT(COUNT(COUNT(DUMMY))) FROM DUAL";
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			validationModel.InvalidNonTerminals.Count.ShouldBe(1);
+			var validationData = validationModel.InvalidNonTerminals.Values.First();
+			validationData.SemanticErrorType.ShouldBe(OracleSemanticErrorType.GroupFunctionNestedTooDeeply);
+			validationData.Node.SourcePosition.IndexStart.ShouldBe(19);
+			validationData.Node.SourcePosition.IndexEnd.ShouldBe(30);
 		}
 
 		[Test(Description = @"")]

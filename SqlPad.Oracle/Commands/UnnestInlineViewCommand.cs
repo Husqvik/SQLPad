@@ -16,22 +16,51 @@ namespace SqlPad.Oracle.Commands
 		private UnnestInlineViewCommand(ActionExecutionContext executionContext)
 			: base(executionContext)
 		{
-			_parentQueryBlock = SemanticModel == null
-				? null
-				: SemanticModel.QueryBlocks.Select(qb => qb.ObjectReferences.FirstOrDefault(o => o.Type == ReferenceType.InlineView && o.QueryBlocks.Count == 1 && o.QueryBlocks.First() == CurrentQueryBlock))
-					.Where(o => o != null)
-					.Select(o => o.Owner)
-					.FirstOrDefault();
+			_parentQueryBlock = SemanticModel?.QueryBlocks
+				.Select(qb => qb.ObjectReferences.FirstOrDefault(o => o.Type == ReferenceType.InlineView && o.QueryBlocks.Count == 1 && o.QueryBlocks.First() == CurrentQueryBlock))
+				.Where(o => o != null)
+				.Select(o => o.Owner)
+				.FirstOrDefault();
 		}
 
 		protected override CommandCanExecuteResult CanExecute()
 		{
 			var canExecute = CurrentNode != null && CurrentNode.Id == Terminals.Select && _parentQueryBlock != null &&
-				!CurrentQueryBlock.HasDistinctResultSet && CurrentQueryBlock.GroupByClause == null;
+				!CurrentQueryBlock.HasDistinctResultSet && CurrentQueryBlock.GroupByClause == null && !ContainConflictingAnalyticFunctions();
 
-			// TODO: Add other rules preventing unnesting, e. g., nested analytic clause
+			// TODO: Add other rules preventing unnesting
 
 			return canExecute;
+		}
+
+		private bool ContainConflictingAnalyticFunctions()
+		{
+			var parentAnalyticFunctionRootNodes = _parentQueryBlock.Columns
+				.Where(c => c.HasExplicitDefinition)
+				.SelectMany(c => c.ProgramReferences)
+				.Where(p => p.AnalyticClauseNode != null)
+				.Select(p => p.RootNode)
+				.ToHashSet();
+
+			var namedParentColumnReferences = _parentQueryBlock.Columns
+				.Where(c => c.HasExplicitDefinition)
+				.SelectMany(c => c.ColumnReferences)
+				.Where(c => c.ValidObjectReference?.QueryBlocks.FirstOrDefault() == CurrentQueryBlock)
+				.ToLookup(c => c.NormalizedName);
+
+			foreach (var columnWithAnalyticFunction in CurrentQueryBlock.Columns.Where(OracleQueryBlock.PredicateContainsAnalyticFuction))
+			{
+				foreach (var parentColumnReference in namedParentColumnReferences[columnWithAnalyticFunction.NormalizedName])
+				{
+					var parentAnalyticFunctionRootNode = OracleStatementValidator.GetParentAggregateOrAnalyticFunctionRootNode(parentColumnReference.RootNode);
+					if (parentAnalyticFunctionRootNodes.Contains(parentAnalyticFunctionRootNode))
+					{
+						return true;
+					}
+				}
+			}
+
+			return false;
 		}
 
 		protected override void Execute()
@@ -47,12 +76,13 @@ namespace SqlPad.Oracle.Commands
 					continue;
 				}
 
-				var segmentToReplace = new TextSegment
-				                       {
-					                       IndextStart = indextStart,
-					                       Length = columnReference.ColumnNode.SourcePosition.IndexEnd - indextStart + 1,
-					                       Text = columnExpression
-				                       };
+				var segmentToReplace =
+					new TextSegment
+					{
+						IndextStart = indextStart,
+						Length = columnReference.ColumnNode.SourcePosition.IndexEnd - indextStart + 1,
+						Text = columnExpression
+					};
 
 				ExecutionContext.SegmentsToReplace.Add(segmentToReplace);
 			}

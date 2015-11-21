@@ -197,6 +197,84 @@
           <Terminal Id="System" IsOptional="true" />
           <Terminal Id="Statistics" />
         </Sequence>
+        <Sequence>
+          <Terminal Id="Compute" />
+          <Terminal Id="System" IsOptional="true" />
+          <Terminal Id="Statistics" />
+          <NonTerminal Id="AnalyzeStatisticsForClause" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Estimate" />
+          <Terminal Id="System" IsOptional="true" />
+          <Terminal Id="Statistics" />
+          <NonTerminal Id="AnalyzeStatisticsForClause" IsOptional="true" />
+          <NonTerminal Id="EstimateStatisticsSampleClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AnalyzeStatisticsForClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="For" />
+          <NonTerminal Id="AnalyzeStatisticsForClauseOption" />
+          <NonTerminal Id="AnalyzeStatisticsForClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AnalyzeStatisticsForClauseOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Table" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="All" />
+          <Terminal Id="Local" IsOptional="true" />
+          <Terminal Id="Indexes" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="All" />
+          <Terminal Id="Indexed" IsOptional="true" />
+          <Terminal Id="Columns" />
+          <NonTerminal Id="SizeSpecification" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Columns" />
+          <NonTerminal Id="SizeSpecification" IsOptional="true" />
+          <NonTerminal Id="ColumnSizeSpecificationList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ColumnSizeSpecificationList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="SizeSpecification" IsOptional="true" />
+          <NonTerminal Id="ColumnSizeSpecificationList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="EstimateStatisticsSampleClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Sample" />
+          <Terminal Id="IntegerLiteral" />
+          <NonTerminal Id="RowsOrPercent" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="RowsOrPercent">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Rows" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Percent" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -6894,6 +6972,12 @@
           <NonTerminal Id="QueryTableExpression" />
           <Terminal Id="RightParenthesis" />
           <NonTerminal Id="FlashbackQueryClause" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Containers" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="SchemaObject" />
+          <Terminal Id="RightParenthesis" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="QueryTableExpression" />
@@ -20244,6 +20328,7 @@
     <!-- Oracle 12c specific -->
     <!-- Cross/outer apply clause -->
     <Terminal Id="Apply" Value="APPLY" />
+    <Terminal Id="Containers" Value="CONTAINERS" />
 
     <!-- Lateral join -->
     <Terminal Id="Lateral" Value="LATERAL" />
@@ -20257,6 +20342,9 @@
     <Terminal Id="Chained" Value="CHAINED" />
     <Terminal Id="Complete" Value="COMPLETE" />
     <Terminal Id="Dangling" Value="DANGLING" />
+    <Terminal Id="Estimate" Value="ESTIMATE" />
+    <Terminal Id="Indexed" Value="INDEXED" />
+    <Terminal Id="Indexes" Value="INDEXES" />
 
     <!-- Row limiting clause -->
     <Terminal Id="Offset" Value="OFFSET" />

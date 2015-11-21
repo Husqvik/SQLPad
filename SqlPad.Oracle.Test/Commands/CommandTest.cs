@@ -1244,6 +1244,30 @@ SELECT VAL FROM CTE";
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestUnnestCommandWithQueryBlocksContainingConflictingAnalyticsFunctions()
+		{
+			_editor.Text = @"SELECT COUNT(VALUE) OVER () FROM (SELECT COUNT(DUMMY) OVER () VALUE FROM DUAL)";
+			_editor.CaretOffset = 34;
+
+			CanExecuteCommand(OracleCommands.UnnestInlineView).ShouldBe(false);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestUnnestCommandWithQueryBlocksContainingNonConflictingAnalyticsFunctions()
+		{
+			_editor.Text =
+@"SELECT
+	COUNT(C1) OVER (),
+	C2
+FROM
+	(SELECT 1 C1, COUNT(*) OVER () C2 FROM DUAL) DUAL";
+
+			_editor.CaretOffset = 48;
+
+			CanExecuteCommand(OracleCommands.UnnestInlineView).ShouldBe(true);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestUnnestCommandWithWithInlineViewWithoutSpace()
 		{
 			_editor.Text = @"SELECT * FROM SELECTION JOIN(SELECT NAME FROM PROJECT) S ON SELECTION.NAME = S.NAME";
