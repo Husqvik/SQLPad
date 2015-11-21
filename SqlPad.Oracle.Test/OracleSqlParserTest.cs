@@ -3358,6 +3358,7 @@ END;";
 					var statement = Parser.Parse(statement1).Single().Validate();
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
+
 				[Test(Description = @"")]
 				public void TestConditionalCompilationSymbolInSqlCommand()
 				{
@@ -3366,6 +3367,26 @@ END;";
 	x VARCHAR2(30);
 BEGIN
 	SELECT $$PLSQL_UNIT INTO x FROM DUAL;
+END;";
+
+					var statement = Parser.Parse(statement1).Single().Validate();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestConditionalCompilationSelectionDirective()
+				{
+					const string statement1 =
+@"DECLARE
+	x VARCHAR2(30);
+BEGIN
+	$IF $$symbol1 $THEN
+		DBMS_OUTPUT.PUT_LINE('symbol 1');
+	$ELSIF $$symbol2 $THEN
+		DBMS_OUTPUT.PUT_LINE('symbol 2');
+	$ELSE
+		DBMS_OUTPUT.PUT_LINE('default');
+	$END
 END;";
 
 					var statement = Parser.Parse(statement1).Single().Validate();

@@ -1,4 +1,4 @@
-SQLPad 0.4.0.44
+SQLPad 0.4.0.45
 ===============
 
 SQLPad is an experimental SQL editor focused to quick and comfortable work.
@@ -287,7 +287,7 @@ Each connection string requires an infrastructure factory configuration record:
 
 	CREATE OR REPLACE PUBLIC SYNONYM EXPLAIN_PLAN FOR EXPLAIN_PLAN;
 
-SQLPad screenshots
+Screenshots
 ------------------
 #####Overview
 ![SQLPad overview 1](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/Overview1.png)

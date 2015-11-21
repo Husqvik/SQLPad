@@ -13456,7 +13456,7 @@
       </Sequences>
     </Rule>
     
-    <Rule StartingNonTerminal="PlSqlStatementType"><!-- TODO -->
+    <Rule StartingNonTerminal="PlSqlStatementType">
       <Sequences>
         <Sequence>
           <NonTerminal Id="PlSqlAssignmentStatement" />
@@ -13529,6 +13529,64 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="PlSqlProcedureCall" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="PlSqlConditionalCompilationSelectionDirective" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PlSqlConditionalCompilationSelectionDirective">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="PlSqlConditionalCompilationIf" />
+          <NonTerminal Id="PlSqlBooleanExpression" />
+          <Terminal Id="PlSqlConditionalCompilationThen" />
+          <NonTerminal Id="PlSqlStatementTypeOrPlSqlConditionalCompilationErrorDirective" />
+          <NonTerminal Id="PlSqlConditionalCompilationElseIfClause" IsOptional="true" />
+          <NonTerminal Id="PlSqlConditionalCompilationElseClause" IsOptional="true" />
+          <Terminal Id="PlSqlConditionalCompilationEnd" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PlSqlConditionalCompilationElseIfClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="PlSqlConditionalCompilationElseIf" />
+          <NonTerminal Id="PlSqlBooleanExpression" />
+          <Terminal Id="PlSqlConditionalCompilationThen" />
+          <NonTerminal Id="PlSqlStatementType" />
+          <NonTerminal Id="PlSqlConditionalCompilationElseIfClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PlSqlConditionalCompilationElseClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="PlSqlConditionalCompilationElse" />
+          <NonTerminal Id="PlSqlStatementType" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PlSqlStatementTypeOrPlSqlConditionalCompilationErrorDirective">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="PlSqlStatementType" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="PlSqlConditionalCompilationErrorDirective" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PlSqlConditionalCompilationErrorDirective">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="PlSqlConditionalCompilationError" />
+          <Terminal Id="StringLiteral" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -20332,9 +20390,17 @@
     <Terminal Id="ExceptionIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
     <Terminal Id="TypeIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
     <Terminal Id="PlSqlIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
-    <Terminal Id="PlSqlCompilationParameter" RegexValue="^\$\$[a-zA-Z][\w\d$#]*$" />
     <Terminal Id="WrappedToken" RegexValue="^(?!\n/\n).*$" />
-  
+    
+    <!-- PL/SQL conditional compilation -->
+    <Terminal Id="PlSqlCompilationParameter" RegexValue="^\$\$[a-zA-Z][\w\d$#]*$" />
+    <Terminal Id="PlSqlConditionalCompilationIf" RegexValue="\$IF" />
+    <Terminal Id="PlSqlConditionalCompilationThen" RegexValue="\$THEN" />
+    <Terminal Id="PlSqlConditionalCompilationElseIf" RegexValue="\$ELSIF" />
+    <Terminal Id="PlSqlConditionalCompilationElse" RegexValue="\$ELSE" />
+    <Terminal Id="PlSqlConditionalCompilationEnd" RegexValue="\$END" />
+    <Terminal Id="PlSqlConditionalCompilationError" RegexValue="\$ERROR" />
+
     <!-- Oracle 12c specific -->
     <!-- Cross/outer apply clause -->
     <Terminal Id="Apply" Value="APPLY" />
