@@ -1663,16 +1663,21 @@ namespace SqlPad.Oracle.SemanticModel
 					String.Equals(insertIntoClause.ParentNode.ParentNode.Id, NonTerminals.ConditionalInsertConditionBranch) &&
 					(condition = insertIntoClause.ParentNode.ParentNode[1]) != null && String.Equals(condition.Id, NonTerminals.Condition))
 				{
-					var identifiers = condition.GetDescendantsWithinSameQueryBlock(Terminals.Identifier);
+					var identifiers = condition.GetDescendantsWithinSameQueryBlock(Terminals.Identifier, Terminals.Level, Terminals.RowIdPseudoColumn, Terminals.User);
 					ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(null, sourceReferenceContainer, identifiers, StatementPlacement.None, null);
 					ResolveColumnObjectReferences(sourceReferenceContainer.ColumnReferences, sourceReferenceContainer.ObjectReferences, OracleDataObjectReference.EmptyArray);
+
+					var grammarSpecificFunctions = GetGrammarSpecificFunctionNodes(condition);
+					CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, null, sourceReferenceContainer.ProgramReferences, StatementPlacement.None, null);
+
+					ResolveFunctionReferences(sourceReferenceContainer.ProgramReferences);
 				}
 				
 				insertTarget.ObjectReferences.Add(dataObjectReference);
 				insertTarget.ColumnListNode = insertIntoClause[NonTerminals.ParenthesisEnclosedIdentifierList];
 				if (insertTarget.ColumnListNode != null)
 				{
-					var columnIdentiferNodes = insertTarget.ColumnListNode.GetDescendants(Terminals.Identifier, Terminals.Level);
+					var columnIdentiferNodes = insertTarget.ColumnListNode.GetDescendants(Terminals.Identifier);
 					ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(null, targetReferenceContainer, columnIdentiferNodes, StatementPlacement.None, null);
 					ResolveColumnObjectReferences(targetReferenceContainer.ColumnReferences, insertTarget.ObjectReferences, OracleDataObjectReference.EmptyArray);
 				}
@@ -1691,14 +1696,19 @@ namespace SqlPad.Oracle.SemanticModel
 				}
 				else
 				{
-					var identifiers = insertTarget.ValueList.GetDescendantsWithinSameQueryBlock(Terminals.Identifier);
+					var identifiers = insertTarget.ValueList.GetDescendantsWithinSameQueryBlock(Terminals.Identifier, Terminals.Level, Terminals.RowIdPseudoColumn, Terminals.User);
 					ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(null, insertTarget, identifiers, StatementPlacement.ValuesClause, null); // TODO: Fix root node is not set
+
+					var grammarSpecificFunctions = GetGrammarSpecificFunctionNodes(insertTarget.ValueList);
+					CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, null, insertTarget.ProgramReferences, StatementPlacement.ValuesClause, null);
+
 					ResolveColumnObjectReferences(insertTarget.ColumnReferences, sourceReferenceContainer.ObjectReferences, OracleDataObjectReference.EmptyArray);
 					ResolveFunctionReferences(insertTarget.ProgramReferences);
 				}
 
 				insertTarget.ColumnReferences.AddRange(targetReferenceContainer.ColumnReferences);
 				insertTarget.ColumnReferences.AddRange(sourceReferenceContainer.ColumnReferences);
+				insertTarget.ProgramReferences.AddRange(sourceReferenceContainer.ProgramReferences);
 
 				ResolveErrorLoggingObjectReference(insertIntoClause.ParentNode, insertTarget);
 

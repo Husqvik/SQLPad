@@ -2381,9 +2381,45 @@ SELECT * FROM CTE";
 		}
 
 		[Test(Description = @"")]
-		public void TestAggregateFunctionsOutsideQueryBlock()
+		public void TestAggregateFunctionsInUpdateSetClause()
 		{
 			const string sqlText = @"UPDATE DUAL SET DUMMY = COUNT(*) OVER (ORDER BY ROWNUM)";
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var programValidityNodes = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			programValidityNodes.Count.ShouldBe(1);
+			programValidityNodes[0].IsRecognized.ShouldBe(true);
+			programValidityNodes[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.GroupFunctionNotAllowed);
+		}
+
+		[Test(Description = @"")]
+		public void TestAggregateFunctionsInMultiInsert()
+		{
+			const string sqlText =
+@"INSERT
+    WHEN COUNT(NULL) = 1 THEN INTO DUAL
+SELECT NULL FROM DUAL;";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var programValidityNodes = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			programValidityNodes.Count.ShouldBe(1);
+			programValidityNodes[0].IsRecognized.ShouldBe(true);
+			programValidityNodes[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.GroupFunctionNotAllowed);
+		}
+
+		[Test(Description = @"")]
+		public void TestAggregateFunctionsInInsertValues()
+		{
+			const string sqlText = @"INSERT INTO DUAL (DUMMY) VALUES (COUNT(*))";
 			var statement = Parser.Parse(sqlText).Single();
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);

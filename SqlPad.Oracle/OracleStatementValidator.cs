@@ -1092,7 +1092,7 @@ namespace SqlPad.Oracle
 							validationModel.ProgramNodeValidity[programReference.ParameterListNode] = new InvalidNodeValidationData(parameterListSemanticError) { Node = programReference.ParameterListNode };
 						}
 
-						if (programReference.Placement.In(StatementPlacement.GroupBy, StatementPlacement.Where, StatementPlacement.Join, StatementPlacement.None) && (programReference.Metadata.IsAggregate || programReference.Metadata.IsAnalytic))
+						if (programReference.Placement.In(StatementPlacement.GroupBy, StatementPlacement.Where, StatementPlacement.Join, StatementPlacement.ValuesClause, StatementPlacement.None) && (programReference.Metadata.IsAggregate || programReference.Metadata.IsAnalytic))
 						{
 							semanticError = OracleSemanticErrorType.GroupFunctionNotAllowed;
 						}
