@@ -2624,6 +2624,16 @@ FROM (
 		}
 
 		[Test(Description = @"")]
+		public void TestModelBuildWithVectorConditionWithUnfinishedQueryBlock()
+		{
+			const string sqlText = @"SELECT NULL FROM DUAL WHERE (DUMMY, DUMMY) IN (SELECT )";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			Assert.DoesNotThrow(() => BuildValidationModel(sqlText, statement));
+		}
+
+		[Test(Description = @"")]
 		public void TestUnpivotInColumnDataTypeMismatch()
 		{
 			const string sqlText =
@@ -2897,6 +2907,39 @@ SELECT C1 FROM CTE";
 		}
 
 		[Test(Description = @"")]
+		public void TestInvalidColumnCountValidationInMultisetInClauseWithParenthesisWrappedSubquery()
+		{
+			const string sqlText = @"SELECT NULL FROM DUAL WHERE (DUMMY, DUMMY) IN ((SELECT DUMMY FROM DUAL))";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var invalidNonTerminalValidities = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			invalidNonTerminalValidities.Count.ShouldBe(2);
+			invalidNonTerminalValidities[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnCount);
+			invalidNonTerminalValidities[0].Node.Id.ShouldBe(NonTerminals.ExpressionList);
+			invalidNonTerminalValidities[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnCount);
+			invalidNonTerminalValidities[1].Node.Id.ShouldBe(NonTerminals.SelectList);
+		}
+
+		[Test(Description = @"")]
+		public void TestValidColumnCountValidationInMultisetInClauseWithParenthesisWrappedSubquery()
+		{
+			const string sqlText = @"SELECT NULL FROM DUAL WHERE (DUMMY, DUMMY) IN ((SELECT DUMMY, DUMMY FROM DUAL))";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
 		public void TestValidationModelBuildWhileTypingCastWithinTableExpression()
 		{
 			const string sqlText = @"SELECT * FROM TABLE(CAST())";
@@ -3092,6 +3135,34 @@ WHERE
 			var invalidNonTerminals = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
 			invalidNonTerminals.Count.ShouldBe(1);
 			invalidNonTerminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.SelectIntoClauseAllowedOnlyInMainQueryBlockWithinPlSqlScope);
+		}
+
+		[Test(Description = @"")]
+		public void TestConditionalCompilationSymbolOutsidePlSql()
+		{
+			const string sqlText = "SELECT $$compilation_symbol FROM DUAL";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var invalidNonTerminals = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			invalidNonTerminals.Count.ShouldBe(1);
+			invalidNonTerminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.PlSqlCompilationParameterAllowedOnlyWithinPlSqlScope);
+		}
+
+		[Test(Description = @"")]
+		public void TestConditionalCompilationSymbolInsidePlSql()
+		{
+			const string sqlText = "DECLARE x VARCHAR2(255); BEGIN SELECT $$compilation_symbol INTO x FROM DUAL; END;";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
 		}
 
 		[Test(Description = @"")]

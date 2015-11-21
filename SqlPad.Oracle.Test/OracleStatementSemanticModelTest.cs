@@ -1013,6 +1013,17 @@ SELECT * FROM DUAL";
 		}
 
 		[Test(Description = @"")]
+		public void TestUnusedColumnRedundantTerminalsInParenthesisWrappedSubqueryWhenInMultisetInClause()
+		{
+			const string query1 = @"SELECT NULL FROM DUAL WHERE (DUMMY, DUMMY) IN ((SELECT DUMMY, DUMMY FROM DUAL))";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
 		public void TestUnusedColumnRedundantTerminalsWithAsteriskReference()
 		{
 			const string query1 = @"SELECT * FROM (SELECT 1 C1, 2 C2 FROM DUAL)";

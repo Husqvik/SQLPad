@@ -748,7 +748,8 @@ namespace SqlPad.Oracle
 				}
 				else if (queryBlock.Type == QueryBlockType.ScalarSubquery && queryBlock.Columns.Count - queryBlock.AsteriskColumns.Count > 1)
 				{
-					validationModel.InvalidNonTerminals[queryBlock.SelectList] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = queryBlock.SelectList };
+					validationModel.InvalidNonTerminals[queryBlock.SelectList] =
+						new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = queryBlock.SelectList };
 				}
 
 				if (queryBlock.OrderByClause != null && (queryBlock.Type == QueryBlockType.CommonTableExpression || queryBlock.Type == QueryBlockType.Normal) &&
@@ -761,7 +762,7 @@ namespace SqlPad.Oracle
 					}
 				}
 
-				var supportsIntoClause = queryBlock.Type == QueryBlockType.Normal && !String.Equals(queryBlock.Statement.RootNode.Id, NonTerminals.StandaloneStatement) && queryBlock.RootNode.GetAncestor(NonTerminals.QueryBlock) == null;
+				var supportsIntoClause = queryBlock.Type == QueryBlockType.Normal && queryBlock.Statement.IsPlSql && queryBlock.RootNode.GetAncestor(NonTerminals.QueryBlock) == null;
 				var selectIntoClause = queryBlock.RootNode[NonTerminals.IntoVariableClause];
 				if (!supportsIntoClause && selectIntoClause != null)
 				{
@@ -769,13 +770,26 @@ namespace SqlPad.Oracle
 						new InvalidNodeValidationData(OracleSemanticErrorType.SelectIntoClauseAllowedOnlyInMainQueryBlockWithinPlSqlScope) { Node = selectIntoClause };
 				}
 
-				var nestedQuery = queryBlock.RootNode.GetAncestor(NonTerminals.NestedQuery);
-				if (String.Equals(nestedQuery.ParentNode.Id, NonTerminals.ExpressionListOrNestedQuery) ||
-					String.Equals(nestedQuery.ParentNode.Id, NonTerminals.GroupingExpressionListOrNestedQuery))
+				if (!queryBlock.Statement.IsPlSql)
 				{
-					var expressionListSourceNode = nestedQuery.ParentNode.ParentNode[0];
-					var expressionList = expressionListSourceNode[NonTerminals.ExpressionList]
-					                     ?? expressionListSourceNode[NonTerminals.ParenthesisEnclosedExpressionListWithMandatoryExpressions, NonTerminals.ExpressionList];
+					foreach (var conditionalCompilationSymbol in queryBlock.Terminals.Where(t => String.Equals(t.Id, Terminals.PlSqlCompilationParameter)))
+					{
+						validationModel.InvalidNonTerminals[conditionalCompilationSymbol] =
+							new InvalidNodeValidationData(OracleSemanticErrorType.PlSqlCompilationParameterAllowedOnlyWithinPlSqlScope) { Node = conditionalCompilationSymbol };
+					}
+				}
+
+				var nestedQuery = queryBlock.RootNode.GetAncestor(NonTerminals.NestedQuery);
+				var expressionSourceNode =
+					nestedQuery.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBlock, NonTerminals.ExpressionListOrNestedQuery)
+					?? nestedQuery.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBlock, NonTerminals.GroupingExpressionListOrNestedQuery);
+
+				if (queryBlock.SelectList != null && expressionSourceNode != null)
+				{
+					var expressionListSourceNode = expressionSourceNode.ParentNode[0];
+					var expressionList =
+						expressionListSourceNode[NonTerminals.ExpressionList]
+						?? expressionListSourceNode[NonTerminals.ParenthesisEnclosedExpressionListWithMandatoryExpressions, NonTerminals.ExpressionList];
 
 					var queryBlockColumnCount = queryBlock.Columns.Count - queryBlock.AsteriskColumns.Count;
 					if (expressionList != null)

@@ -5586,7 +5586,7 @@
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
-          <Terminal Id="ConditionalCompilationSymbol" />
+          <Terminal Id="PlSqlCompilationParameter" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -14016,7 +14016,7 @@
           <NonTerminal Id="CollectionExists" />
         </Sequence>-->
         <Sequence>
-          <Terminal Id="ConditionalCompilationSymbol" />
+          <Terminal Id="PlSqlCompilationParameter" />
           <NonTerminal Id="PlSqlBooleanExpressionConditionExtension" IsOptional="true" />
           <NonTerminal Id="ChainedPlSqlBooleanExpression" IsOptional="true" />
         </Sequence>
@@ -20332,7 +20332,7 @@
     <Terminal Id="ExceptionIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
     <Terminal Id="TypeIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
     <Terminal Id="PlSqlIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
-    <Terminal Id="ConditionalCompilationSymbol" RegexValue="^\$\$[a-zA-Z][\w\d$#]*$" />
+    <Terminal Id="PlSqlCompilationParameter" RegexValue="^\$\$[a-zA-Z][\w\d$#]*$" />
     <Terminal Id="WrappedToken" RegexValue="^(?!\n/\n).*$" />
   
     <!-- Oracle 12c specific -->

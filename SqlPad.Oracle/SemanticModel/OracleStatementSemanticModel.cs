@@ -255,8 +255,9 @@ namespace SqlPad.Oracle.SemanticModel
 					}
 					else
 					{
+						var isNotWithinExpressionList = queryBlockRoot.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.TableReference), NonTerminals.ExpressionList) == null;
 						var scalarSubqueryExpression = queryBlockRoot.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.TableReference), NonTerminals.Expression);
-						if (scalarSubqueryExpression != null)
+						if (isNotWithinExpressionList && scalarSubqueryExpression != null)
 						{
 							queryBlock.Type = scalarSubqueryExpression[Terminals.Cursor] == null
 								? QueryBlockType.ScalarSubquery
@@ -1269,8 +1270,11 @@ namespace SqlPad.Oracle.SemanticModel
 			foreach (var queryBlock in _queryBlockNodes.Values)
 			{
 				var nestedQuery = queryBlock.RootNode.GetAncestor(NonTerminals.NestedQuery);
-				if (String.Equals(nestedQuery.ParentNode.Id, NonTerminals.ExpressionListOrNestedQuery) ||
-					String.Equals(nestedQuery.ParentNode.Id, NonTerminals.GroupingExpressionListOrNestedQuery))
+				var groupingExpressionOrNestedQuery =
+					nestedQuery.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBlock, NonTerminals.ExpressionListOrNestedQuery)
+					?? nestedQuery.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBlock, NonTerminals.GroupingExpressionListOrNestedQuery);
+
+				if (groupingExpressionOrNestedQuery != null)
 				{
 					continue;
 				}

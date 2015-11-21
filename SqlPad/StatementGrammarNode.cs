@@ -324,10 +324,9 @@ namespace SqlPad
 
 		private int? GetAncestorDistance(string ancestorNodeId, int level)
 		{
-			if (String.Equals(Id, ancestorNodeId))
-				return level;
-			
-			return ParentNode?.GetAncestorDistance(ancestorNodeId, level + 1);
+			return String.Equals(Id, ancestorNodeId)
+				? level
+				: ParentNode?.GetAncestorDistance(ancestorNodeId, level + 1);
 		}
 
 		public bool HasAncestor(StatementGrammarNode node, bool includeSelf = false)
