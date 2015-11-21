@@ -309,8 +309,9 @@ namespace SqlPad.Oracle
 			Sequence = inMainQueryBlockOrMainObjectReference && (nearestTerminal.IsWithinSelectClause() || !nearestTerminal.IsWithinExpression() || nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.InsertValuesClause) != null);
 
 			var isWithinUpdateSetNonTerminal = String.Equals(nearestTerminal.ParentNode.Id, NonTerminals.PrefixedUpdatedColumnReference) || nearestTerminal.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBlock, NonTerminals.SetColumnListEqualsNestedQuery) != null;
-			var isAfterSetTerminal = String.Equals(nearestTerminal.Id, Terminals.Set) && isCursorAfterToken;
-			UpdateSetColumn = TerminalCandidates.Contains(Terminals.Identifier) && (isWithinUpdateSetNonTerminal || isAfterSetTerminal);
+			var isAfterSetTerminal = isCursorAfterToken && String.Equals(nearestTerminal.Id, Terminals.Set);
+			var isAfterCommaInChainedUpdateSetClause = isCursorAfterToken && String.Equals(nearestTerminal.Id, Terminals.Comma) && String.Equals(nearestTerminal.ParentNode.Id, NonTerminals.UpdateSetColumnOrColumnListChainedList);
+			UpdateSetColumn = TerminalCandidates.Contains(Terminals.Identifier) && (isWithinUpdateSetNonTerminal || isAfterSetTerminal || isAfterCommaInChainedUpdateSetClause);
 
 			ColumnAlias = Column && nearestTerminal.IsWithinOrderByClause();
 		}

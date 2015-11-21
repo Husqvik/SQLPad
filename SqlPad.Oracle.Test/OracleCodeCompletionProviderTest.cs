@@ -2170,10 +2170,18 @@ ON (EVENTS.ID = SRC.ID)";
 		}
 
 		[Test(Description = @"")]
-		public void TestJoinCodeCompletionTypeAtClosingParenthesis()
+		public void TestJoinCodeCompletionAtClosingParenthesis()
 		{
 			const string statement = @"SELECT NULL FROM (SELECT NULL FROM RESPONDENTBUCKET J)";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 53, true, OracleCodeCompletionCategory.JoinMethod).ToList();
+			items.Count.ShouldBeGreaterThan(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestColumnCodeCompletionTypeWhenStartingChainedSetClause()
+		{
+			const string statement = @"UPDATE DUAL SET DUMMY = NULL, ";
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 30, true, OracleCodeCompletionCategory.Column).ToList();
 			items.Count.ShouldBeGreaterThan(0);
 		}
 
