@@ -1165,6 +1165,35 @@ SELECT c FROM t2";
 		}
 
 		[Test(Description = @"")]
+		public void TestRedundantQualifierWithinPivotTableReferences()
+		{
+			const string query1 =
+@"SELECT
+    PT.DUMMY, PT.ONE
+FROM (
+    SELECT DUMMY, 1 VALUE FROM DUAL) T
+PIVOT (
+    COUNT(T.VALUE)
+    FOR VALUE IN (1 ONE)
+) PT";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.RedundantSymbolGroups.Count.ShouldBe(3);
+			var terminalGroups = semanticModel.RedundantSymbolGroups.ToArray();
+			terminalGroups[0].Count.ShouldBe(2);
+			terminalGroups[0][0].Token.Value.ShouldBe("PT");
+			terminalGroups[0][1].Id.ShouldBe(Terminals.Dot);
+			terminalGroups[1].Count.ShouldBe(2);
+			terminalGroups[1][0].Token.Value.ShouldBe("PT");
+			terminalGroups[1][1].Id.ShouldBe(Terminals.Dot);
+			terminalGroups[2].Count.ShouldBe(2);
+			terminalGroups[2][0].Token.Value.ShouldBe("T");
+			terminalGroups[2][1].Id.ShouldBe(Terminals.Dot);
+		}
+
+		[Test(Description = @"")]
 		public void TestRedundantColumnAlias()
 		{
 			const string query1 = @"SELECT DUAL.DUMMY DUMMY, DUMMY DUMMY FROM DUAL";
@@ -2504,7 +2533,7 @@ FROM (
 			programReferences[1].Name.ShouldBe("MAX");
 			programReferences[1].Metadata.ShouldNotBe(null);
 
-			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
+			semanticModel.RedundantSymbolGroups.Count.ShouldBe(1);
 		}
 
 		[Test(Description = @"")]

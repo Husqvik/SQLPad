@@ -1407,9 +1407,14 @@ namespace SqlPad.Oracle.SemanticModel
 					CreateRedundantTerminalGroup(new[] { reference.OwnerNode, reference.OwnerNode.FollowingTerminal }, RedundancyType.Qualifier);
 				}
 
-				foreach (var columnReference in queryBlock.AllColumnReferences.Where(c => c.ObjectNode != null && c.RootNode != null))
+				Func<OracleColumnReference, bool> objectPrefixedColumnFilter = c => c.ObjectNode != null && c.RootNode != null;
+                foreach (var columnReference in queryBlock.AllColumnReferences.Where(objectPrefixedColumnFilter))
 				{
-					var uniqueObjectReferenceCount = queryBlock.ObjectReferences.Where(o => o.Columns.Concat(o.PseudoColumns).Any(c => c.Name == columnReference.NormalizedName)).Distinct().Count();
+					var uniqueObjectReferenceCount = queryBlock.ObjectReferences
+						.Where(o => o.Columns.Concat(o.PseudoColumns).Any(c => String.Equals(c.Name, columnReference.NormalizedName)))
+						.Distinct()
+						.Count();
+
 					if (uniqueObjectReferenceCount != 1)
 					{
 						if (columnReference.OwnerNode != null && removedObjectReferenceOwners.Contains(columnReference.ValidObjectReference))
@@ -1424,6 +1429,16 @@ namespace SqlPad.Oracle.SemanticModel
 					var requiredNode = columnReference.IsCorrelated ? columnReference.ObjectNode : columnReference.ColumnNode;
 					var terminals = columnReference.RootNode.Terminals.TakeWhile(t => t != requiredNode);
 					CreateRedundantTerminalGroup(terminals, RedundancyType.Qualifier);
+				}
+
+				var innerPivotColumnReferences = queryBlock.ObjectReferences
+					.OfType<OraclePivotTableReference>()
+					.SelectMany(pt => pt.SourceReferenceContainer.ColumnReferences)
+					.Where(objectPrefixedColumnFilter);
+
+				foreach (var columnReference in innerPivotColumnReferences)
+				{
+					CreateRedundantTerminalGroup(columnReference.RootNode.Terminals.TakeWhile(t => t != columnReference.ColumnNode), RedundancyType.Qualifier);
 				}
 			}
 		}
