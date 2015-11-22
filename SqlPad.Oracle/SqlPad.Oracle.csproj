@@ -156,6 +156,11 @@
     <Compile Include="DatabaseConnection\OracleDebugger.cs" />
     <Compile Include="OracleFoldingSectionProvider.cs" />
     <Compile Include="OracleFunctionMatcher.cs" />
+    <Compile Include="OracleGrammarDescription.cs">
+      <DependentUpon>OracleGrammarDescription.tt</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
     <Compile Include="OracleHelpProvider.cs" />
     <Compile Include="OracleSessionDetailViewer.xaml.cs">
       <DependentUpon>OracleSessionDetailViewer.xaml</DependentUpon>
@@ -173,11 +178,6 @@
     <Compile Include="OracleContextActionProvider.cs" />
     <Compile Include="DatabaseConnection\OracleDatabaseModel.cs" />
     <Compile Include="OracleExtensions.cs" />
-    <Compile Include="OracleGramarDescription.cs">
-      <DependentUpon>OracleGramarDescription.tt</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <Compile Include="OracleIdentifierValidationRule.cs" />
     <Compile Include="OracleInfrastructureFactory.cs" />
     <Compile Include="OracleMultiNodeEditorDataProvider.cs" />
@@ -267,13 +267,13 @@
     <None Include="OracleConfiguration.xsd">
       <SubType>Designer</SubType>
     </None>
-    <None Include="OracleGramarDescription.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>OracleGramarDescription.cs</LastGenOutput>
-    </None>
     <EmbeddedResource Include="OracleSqlGrammar.xsd">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <None Include="OracleGrammarDescription.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>OracleGrammarDescription.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="CodeGenerationItems\CreatePackageBody.xml">

@@ -4710,7 +4710,7 @@
     </Rule>
 
     <!-- SELECT statement -->
-    <Rule StartingNonTerminal="SelectStatement">
+    <Rule StartingNonTerminal="SelectStatement" Scope="Sql">
       <Sequences>
         <Sequence>
           <NonTerminal Id="NestedQuery" />
@@ -19378,7 +19378,7 @@
       
   <Terminals>
     <Terminal Id="With" Value="WITH" ReservedWord="Sql" />
-    <Terminal Id="As" Value="AS" />
+    <Terminal Id="As" Value="AS" ReservedWord="PlSql" />
     <Terminal Id="Is" Value="IS" ReservedWord="Sql" />
     <Terminal Id="LeftParenthesis" Value="(" />
     <Terminal Id="RightParenthesis" Value=")" />
@@ -19631,7 +19631,7 @@
 	  <Terminal Id="Path" Value="PATH" />
 	  <Terminal Id="XmlType" Value="XMLTYPE" />
 	  <Terminal Id="Ordinality" Value="ORDINALITY" />
-	  <Terminal Id="Columns" Value="COLUMNS" />
+	  <Terminal Id="Columns" Value="COLUMNS" ReservedWord="PlSql" />
     <Terminal Id="XmlQuery" Value="XMLQUERY" />
     <Terminal Id="XmlExists" Value="XMLEXISTS" />
 	  <Terminal Id="Content" Value="CONTENT" />
@@ -19697,7 +19697,7 @@
     <Terminal Id="Default" Value="DEFAULT" ReservedWord="Sql" />
 
     <!-- Commit -->
-    <Terminal Id="Commit" Value="COMMIT" />
+    <Terminal Id="Commit" Value="COMMIT" ReservedWord="PlSqlBody" />
     <Terminal Id="Work" Value="WORK" />
     <Terminal Id="Comment" Value="COMMENT" ReservedWord="Sql" />
     <Terminal Id="Force" Value="FORCE" />
@@ -19706,20 +19706,20 @@
     <Terminal Id="Batch" Value="BATCH" />
     
     <!-- Rollback -->
-    <Terminal Id="Savepoint" Value="SAVEPOINT" />
+    <Terminal Id="Savepoint" Value="SAVEPOINT" ReservedWord="PlSqlBody" />
 
     <!-- Set Transaction -->
     <Terminal Id="Transaction" Value="TRANSACTION" />
     <Terminal Id="Isolation" Value="ISOLATION" />
     <Terminal Id="Serializable" Value="SERIALIZABLE" />
     <Terminal Id="Committed" Value="COMMITTED" />
-    <Terminal Id="Rollback" Value="ROLLBACK" />
+    <Terminal Id="Rollback" Value="ROLLBACK" ReservedWord="PlSqlBody" />
     <Terminal Id="Segment" Value="SEGMENT" />
     <Terminal Id="Name" Value="NAME" />
     <Terminal Id="Use" Value="USE" />
 
     <!-- Update -->
-    <Terminal Id="Return" Value="RETURN" />
+    <Terminal Id="Return" Value="RETURN" ReservedWord="PlSqlBody" />
     <Terminal Id="Returning" Value="RETURNING" />
     <Terminal Id="Into" Value="INTO" ReservedWord="Sql" />
     <Terminal Id="Log" Value="LOG" />
@@ -19749,8 +19749,8 @@
     <Terminal Id="Preserve" Value="PRESERVE" />
     <Terminal Id="Package" Value="PACKAGE" />
     <Terminal Id="Body" Value="BODY" />
-    <Terminal Id="Procedure" Value="PROCEDURE" />
-    <Terminal Id="Function" Value="FUNCTION" />
+    <Terminal Id="Procedure" Value="PROCEDURE" ReservedWord="PlSql" />
+    <Terminal Id="Function" Value="FUNCTION" ReservedWord="PlSqlDeclaration" />
     <Terminal Id="Context" Value="CONTEXT" />
     <Terminal Id="Tables" Value="TABLES" />
 
@@ -20109,7 +20109,7 @@
     <Terminal Id="Element" Value="ELEMENT" />
     <Terminal Id="Substitutable" Value="SUBSTITUTABLE" />
     <Terminal Id="Levels" Value="LEVELS" />
-    <Terminal Id="Type" Value="TYPE" />
+    <Terminal Id="Type" Value="TYPE" ReservedWord="PlSqlDeclaration" />
     <Terminal Id="Locator" Value="LOCATOR" />
     <Terminal Id="Nested" Value="NESTED" />
 
@@ -20228,7 +20228,7 @@
     
     <!-- Alter session -->
     <Terminal Id="Advise" Value="ADVISE" />
-    <Terminal Id="Close" Value="CLOSE" />
+    <Terminal Id="Close" Value="CLOSE" ReservedWord="PlSqlBody" />
     <Terminal Id="Sync" Value="SYNC" />
     <Terminal Id="Guard" Value="GUARD" />
     <Terminal Id="Resumable" Value="RESUMABLE" />
@@ -20306,7 +20306,7 @@
     <Terminal Id="Varchar" Value="VARCHAR" ReservedWord="Sql" />
     <Terminal Id="NVarchar" Value="NVARCHAR" />
     <Terminal Id="Interval" Value="INTERVAL" />
-    <Terminal Id="At" Value="AT" />
+    <Terminal Id="At" Value="AT" ReservedWord="PlSql" />
     <Terminal Id="Local" Value="LOCAL" />
     <Terminal Id="Time" Value="TIME" />
     <Terminal Id="Zone" Value="ZONE" />
@@ -20325,10 +20325,10 @@
     <Terminal Id="Begin" Value="BEGIN" ReservedWord="PlSql" />
     <Terminal Id="Loop" Value="LOOP" ReservedWord="PlSqlBody" />
     <Terminal Id="Continue" Value="CONTINUE" />
-    <Terminal Id="Exit" Value="EXIT" />
-    <Terminal Id="GoTo" Value="GOTO" />
-    <Terminal Id="Raise" Value="RAISE" />
-    <Terminal Id="While" Value="WHILE" />
+    <Terminal Id="Exit" Value="EXIT" ReservedWord="PlSqlBody" />
+    <Terminal Id="GoTo" Value="GOTO" ReservedWord="PlSql" />
+    <Terminal Id="Raise" Value="RAISE" ReservedWord="PlSqlBody" />
+    <Terminal Id="While" Value="WHILE" ReservedWord="PlSqlBody" />
     <Terminal Id="Exception" Value="EXCEPTION" ReservedWord="PlSql" />
     <Terminal Id="Pipe" Value="PIPE" />
     <Terminal Id="If" Value="IF" ReservedWord="PlSql" />
@@ -20351,7 +20351,7 @@
     <Terminal Id="Language" Value="LANGUAGE" />
     <Terminal Id="Java" Value="JAVA" />
     <Terminal Id="C" Value="C" />
-    <Terminal Id="Pragma" Value="PRAGMA" />
+    <Terminal Id="Pragma" Value="PRAGMA" ReservedWord="PlSql" />
     <Terminal Id="AutonomousTransaction" Value="AUTONOMOUS_TRANSACTION" />
     <Terminal Id="ExceptionInit" Value="EXCEPTION_INIT" />
     <Terminal Id="Inline" Value="INLINE" />
@@ -20366,12 +20366,12 @@
     <Terminal Id="Trust" Value="TRUST" />
     <Terminal Id="Execute" Value="EXECUTE" />
     <Terminal Id="NoCopy" Value="NOCOPY" />
-    <Terminal Id="Open" Value="OPEN" />
+    <Terminal Id="Open" Value="OPEN" ReservedWord="PlSqlBody" />
     <Terminal Id="RowType" Value="ROWTYPE" />
     <Terminal Id="Inserting" Value="INSERTING" />
     <Terminal Id="Updating" Value="UPDATING" />
     <Terminal Id="Deleting" Value="DELETING" />
-    <Terminal Id="SubType" Value="SUBTYPE" />
+    <Terminal Id="SubType" Value="SUBTYPE" ReservedWord="PlSqlDeclaration" />
     <Terminal Id="PlsInteger" Value="PLS_INTEGER" />
     <Terminal Id="BinaryInteger" Value="BINARY_INTEGER" />
     <Terminal Id="ReliesOn" Value="RELIES_ON" />
@@ -20394,12 +20394,12 @@
     
     <!-- PL/SQL conditional compilation -->
     <Terminal Id="PlSqlCompilationParameter" RegexValue="^\$\$[a-zA-Z][\w\d$#]*$" />
-    <Terminal Id="PlSqlConditionalCompilationIf" RegexValue="\$IF" />
-    <Terminal Id="PlSqlConditionalCompilationThen" RegexValue="\$THEN" />
-    <Terminal Id="PlSqlConditionalCompilationElseIf" RegexValue="\$ELSIF" />
-    <Terminal Id="PlSqlConditionalCompilationElse" RegexValue="\$ELSE" />
-    <Terminal Id="PlSqlConditionalCompilationEnd" RegexValue="\$END" />
-    <Terminal Id="PlSqlConditionalCompilationError" RegexValue="\$ERROR" />
+    <Terminal Id="PlSqlConditionalCompilationIf" Value="$IF" />
+    <Terminal Id="PlSqlConditionalCompilationThen" Value="$THEN" />
+    <Terminal Id="PlSqlConditionalCompilationElseIf" Value="$ELSIF" />
+    <Terminal Id="PlSqlConditionalCompilationElse" Value="$ELSE" />
+    <Terminal Id="PlSqlConditionalCompilationEnd" Value="$END" />
+    <Terminal Id="PlSqlConditionalCompilationError" Value="$ERROR" />
 
     <!-- Oracle 12c specific -->
     <!-- Cross/outer apply clause -->
@@ -20420,13 +20420,13 @@
     <Terminal Id="Dangling" Value="DANGLING" />
     <Terminal Id="Estimate" Value="ESTIMATE" />
     <Terminal Id="Indexed" Value="INDEXED" />
-    <Terminal Id="Indexes" Value="INDEXES" />
+    <Terminal Id="Indexes" Value="INDEXES" ReservedWord="PlSql" />
 
     <!-- Row limiting clause -->
     <Terminal Id="Offset" Value="OFFSET" />
     <Terminal Id="Ties" Value="TIES" />
     <Terminal Id="Next" Value="NEXT" />
-    <Terminal Id="Fetch" Value="FETCH" />
+    <Terminal Id="Fetch" Value="FETCH" ReservedWord="PlSql" />
     <Terminal Id="Percent" Value="PERCENT" />
   </Terminals>
 </SqlGrammar>

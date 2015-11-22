@@ -73,10 +73,7 @@ namespace SqlPad.Oracle
 
 #>
 			
-			public static IReadOnlyDictionary<string, string> AllTerminals
-			{
-				get { return AllTerminalsInternal; }
-			}
+			public static IReadOnlyDictionary<string, string> AllTerminals => AllTerminalsInternal;
 		}
 
 		/// <summary>
@@ -140,15 +137,9 @@ namespace SqlPad.Oracle
 				Terminals.OperatorConcatenation
 			};
 
-		public static ICollection<string> MathTerminals
-		{
-			get { return MathTerminalsInternal; }
-		}
+		public static ICollection<string> MathTerminals => MathTerminalsInternal;
 
-		public static ICollection<string> Identifiers
-		{
-			get { return IdentifiersInternal; }
-		}
+		public static ICollection<string> Identifiers => IdentifiersInternal;
 
 		public static bool IsReservedWord(this string value, ReservedWordScope scope = ReservedWordScope.Sql)
 		{
@@ -186,19 +177,19 @@ namespace SqlPad.Oracle
 	}
 }
 <#+
-    private bool IsPlSqlDeclarationReserved(XAttribute reservedWordAttribute)
-    {
+	private bool IsPlSqlDeclarationReserved(XAttribute reservedWordAttribute)
+	{
 		if (reservedWordAttribute == null)
 			return false;
 
-        return reservedWordAttribute.Value == "PlSql" || reservedWordAttribute.Value == "PlSqlDeclaration";
-    }
+		return reservedWordAttribute.Value == "PlSql" || reservedWordAttribute.Value == "PlSqlDeclaration";
+	}
 
 	private bool IsPlSqlBodyReserved(XAttribute reservedWordAttribute)
-    {
+	{
 		if (reservedWordAttribute == null)
 			return false;
 
-        return reservedWordAttribute.Value == "PlSql" || reservedWordAttribute.Value == "PlSqlBody";
-    }
+		return reservedWordAttribute.Value == "PlSql" || reservedWordAttribute.Value == "PlSqlBody";
+	}
 #>
