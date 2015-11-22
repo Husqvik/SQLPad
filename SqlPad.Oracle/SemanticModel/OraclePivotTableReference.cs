@@ -36,6 +36,8 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public override IReadOnlyList<OracleColumn> Columns => _columns ?? ResolvePivotClauseColumns();
 
+		public IReadOnlyList<OracleSelectListColumn> PivotColumns { get; private set; }
+
 		public OraclePivotTableReference(OracleStatementSemanticModel semanticModel, OracleDataObjectReference sourceReference, StatementGrammarNode pivotClause)
 			: base(ReferenceType.PivotTable)
 		{
@@ -136,8 +138,9 @@ namespace SqlPad.Oracle.SemanticModel
 		private IReadOnlyList<OracleColumn> ResolvePivotClauseColumns()
 		{
 			var columns = new List<OracleColumn>();
+			var pivotColumns = new List<OracleSelectListColumn>();
 
-		    var pivotForColumnList = PivotClause[NonTerminals.PivotForClause, NonTerminals.IdentifierOrParenthesisEnclosedIdentifierList];
+			var pivotForColumnList = PivotClause[NonTerminals.PivotForClause, NonTerminals.IdentifierOrParenthesisEnclosedIdentifierList];
 			if (pivotForColumnList != null)
 			{
 				var groupingColumns = pivotForColumnList
@@ -175,7 +178,8 @@ namespace SqlPad.Oracle.SemanticModel
 						}
 						else
 						{
-							columns.AddRange(ResolvePivotColumns());
+							pivotColumns.AddRange(ResolvePivotColumns());
+							columns.AddRange(pivotColumns.Select(c => c.ColumnDescription));
 						}
 
 						break;
@@ -235,10 +239,12 @@ namespace SqlPad.Oracle.SemanticModel
 				}
 			}
 
+			PivotColumns = pivotColumns.AsReadOnly();
+
 			return _columns = columns.AsReadOnly();
 		}
 
-		private IEnumerable<OracleColumn> ResolvePivotColumns()
+		private IEnumerable<OracleSelectListColumn> ResolvePivotColumns()
 		{
 			var columnDefinitions = PivotClause[NonTerminals.PivotInClause, NonTerminals.PivotExpressionsOrAnyListOrNestedQuery, NonTerminals.AliasedExpressionListOrAliasedGroupingExpressionList];
 			if (columnDefinitions == null)
@@ -267,11 +273,18 @@ namespace SqlPad.Oracle.SemanticModel
 					}
 
 					yield return
-						new OracleColumn
+						new OracleSelectListColumn(SourceReferenceContainer.SemanticModel, null)
 						{
-							Name = columnName,
-							DataType = OracleDataType.Empty,
-							Nullable = true
+							RootNode = aliasSourceNode,
+							AliasNode = columnAlias,
+							Owner = Owner,
+							ColumnDescription =
+								new OracleColumn
+								{
+									Name = columnName,
+									DataType = OracleDataType.Empty,
+									Nullable = true
+								}
 						};
 				}
 			}

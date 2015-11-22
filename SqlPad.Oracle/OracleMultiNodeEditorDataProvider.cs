@@ -124,12 +124,20 @@ namespace SqlPad.Oracle
 				case Terminals.ColumnAlias:
 					var selectListColumn = semanticModel.AllReferenceContainers
 						.OfType<OracleSelectListColumn>()
-						.Single(c => c.AliasNode == terminal);
+						.SingleOrDefault(c => c.AliasNode == terminal);
 
-					multiNodeData.SynchronizedSegments = FindUsagesCommand.GetParentQueryBlockReferences(selectListColumn)
-						.TakeWhile(t => String.Equals(t.Token.Value.ToQuotedIdentifier(), selectListColumn.NormalizedName))
-						.Select(t => t.SourcePosition)
-						.ToArray();
+					if (selectListColumn != null)
+					{
+						multiNodeData.SynchronizedSegments = FindUsagesCommand.GetParentQueryBlockReferences(selectListColumn)
+							.TakeWhile(t => String.Equals(t.Token.Value.ToQuotedIdentifier(), selectListColumn.NormalizedName))
+							.Select(t => t.SourcePosition)
+							.ToArray();
+					}
+					else
+					{
+						goto case Terminals.Identifier;
+					}
+
 					break;
 
 				case Terminals.Identifier:

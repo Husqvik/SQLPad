@@ -340,19 +340,39 @@ namespace SqlPad.Oracle.Commands
 				var queryBlock = semanticModel.GetQueryBlock(columnNode);
 				selectListColumn = queryBlock.Columns.SingleOrDefault(c => c.AliasNode == columnNode);
 
-				if (selectListColumn == null && queryBlock.ModelReference != null)
+				if (selectListColumn == null)
 				{
-					selectListColumn = queryBlock.ModelReference.ColumnDefinitions.SingleOrDefault(c => c.AliasNode == columnNode);
-					if (selectListColumn != null)
+					if (queryBlock.ModelReference != null)
 					{
-						columnReference = queryBlock.ModelReference.DimensionReferenceContainer.ColumnReferences
-							.Concat(queryBlock.ModelReference.MeasuresReferenceContainer.ColumnReferences)
-							.Concat(queryBlock.AllColumnReferences)
-							.FirstOrDefault(c => String.Equals(c.NormalizedName, selectListColumn.NormalizedName));
-
-						if (columnReference != null)
+						selectListColumn = queryBlock.ModelReference.ColumnDefinitions.SingleOrDefault(c => c.AliasNode == columnNode);
+						if (selectListColumn != null)
 						{
-							return GetColumnUsages(semanticModel, columnReference.ColumnNode, onlyAliasOrigin);
+							columnReference = queryBlock.ModelReference.DimensionReferenceContainer.ColumnReferences
+								.Concat(queryBlock.ModelReference.MeasuresReferenceContainer.ColumnReferences)
+								.Concat(queryBlock.AllColumnReferences)
+								.FirstOrDefault(c => String.Equals(c.NormalizedName, selectListColumn.NormalizedName));
+
+							if (columnReference != null)
+							{
+								return GetColumnUsages(semanticModel, columnReference.ColumnNode, onlyAliasOrigin);
+							}
+						}
+					}
+					else
+					{
+						var pivotTableColumn =
+							queryBlock.ObjectReferences.OfType<OraclePivotTableReference>()
+								.SelectMany(pt => pt.PivotColumns.Select(c => new { PivotTable = pt, Column = c }))
+								.SingleOrDefault(ptc => ptc.Column.AliasNode == columnNode);
+
+						if (pivotTableColumn != null)
+						{
+							selectListColumn = pivotTableColumn.Column;
+							var columnNodes = queryBlock.AllColumnReferences
+								.Where(c => c.ValidObjectReference == pivotTableColumn.PivotTable && c.HasExplicitDefinition && String.Equals(c.NormalizedName, selectListColumn.NormalizedName))
+								.Select(c => c.ColumnNode);
+
+							nodes = nodes.Concat(columnNodes);
 						}
 					}
 				}

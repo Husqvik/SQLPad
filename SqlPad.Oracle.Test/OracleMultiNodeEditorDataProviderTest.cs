@@ -89,6 +89,28 @@ FROM
 		}
 
 		[Test(Description = @"")]
+		public void TestAtPivotColumnAlias()
+		{
+			const string sqlText =
+@"SELECT
+    DUMMY, ONE
+FROM (
+    SELECT DUMMY, 1 VALUE FROM DUAL)
+PIVOT (
+    COUNT(*)
+    FOR VALUE IN (1 ONE)
+)";
+
+			var multiNodeEditorData = GetMultiNodeEditorData(sqlText, 113);
+
+			multiNodeEditorData.CurrentNode.ShouldNotBe(null);
+			multiNodeEditorData.CurrentNode.SourcePosition.IndexStart.ShouldBe(113);
+			multiNodeEditorData.SynchronizedSegments.Count.ShouldBe(1);
+			var segments = multiNodeEditorData.SynchronizedSegments.OrderBy(s => s.IndexStart).ToArray();
+			segments[0].IndexStart.ShouldBe(19);
+		}
+
+		[Test(Description = @"")]
 		public void TestObjectAliasNodesWithoutCte()
 		{
 			const string sqlText = @"SELECT ALIAS.DUMMY FROM DUAL ALIAS";
