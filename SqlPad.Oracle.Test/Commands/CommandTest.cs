@@ -641,6 +641,27 @@ FROM
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestFindColumnUsagesAtPivotColumnUsage()
+		{
+			const string sqlText =
+@"SELECT
+    DUMMY, ONE
+FROM (
+    SELECT DUMMY, 1 VALUE FROM DUAL)
+PIVOT (
+    COUNT(*)
+    FOR VALUE IN (1 ONE)
+)";
+
+			var foundSegments = FindUsagesOrdered(sqlText, 19);
+			foundSegments.Count.ShouldBe(2);
+			foundSegments[0].IndextStart.ShouldBe(19);
+			foundSegments[0].Length.ShouldBe(3);
+			foundSegments[1].IndextStart.ShouldBe(113);
+			foundSegments[1].Length.ShouldBe(3);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestFindColumnUsagesOfIndirectColumnReferenceAtColumnNode()
 		{
 			var foundSegments = FindUsagesOrdered(FindUsagesStatementText, 121);

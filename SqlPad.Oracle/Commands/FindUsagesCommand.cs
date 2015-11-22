@@ -298,6 +298,16 @@ namespace SqlPad.Oracle.Commands
 				var columnReferences = sourceColumnReferences.Where(c => IsValidReference(c, columnReference, objectReference)).ToArray();
 				nodes = columnReferences.Select(c => c.ColumnNode);
 
+				var pivotTableReference = objectReference as OraclePivotTableReference;
+				if (pivotTableReference != null)
+				{
+					var pivotColumnAliases = pivotTableReference.PivotColumns
+						.Where(c => c.AliasNode != null && String.Equals(c.NormalizedName, columnReference.NormalizedName))
+						.Select(c => c.AliasNode);
+
+					nodes = nodes.Concat(pivotColumnAliases);
+				}
+
 				bool searchChildren;
 				if (String.Equals(columnNode.Id, Terminals.Identifier))
 				{
