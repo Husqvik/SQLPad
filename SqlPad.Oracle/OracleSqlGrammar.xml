@@ -13925,7 +13925,25 @@
           <NonTerminal Id="PlSqlBooleanExpression" />
         </Sequence>
         <Sequence>
+          <NonTerminal Id="ExpressionBooleanNotExtension" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ExpressionBooleanNotExtension">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Not" />
+          <NonTerminal Id="ExpressionBooleanNotExtension" />
+        </Sequence>
+        <Sequence>
           <NonTerminal Id="Expression" />
+          <NonTerminal Id="ChainedPlSqlBooleanExpression" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="ExpressionBooleanNotExtension" />
+          <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -14102,6 +14120,10 @@
           <NonTerminal Id="ChainedPlSqlBooleanExpression" IsOptional="true" />
         </Sequence>
         <Sequence>
+          <Terminal Id="Not" />
+          <NonTerminal Id="PlSqlBooleanExpression" />
+        </Sequence>
+        <Sequence>
           <NonTerminal Id="Condition" />
         </Sequence>
       </Sequences>
@@ -14116,7 +14138,7 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="RelationalOperator" />
-          <NonTerminal Id="PlSqlBooleanExpression" />
+          <NonTerminal Id="PlSqlExpression" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -14125,7 +14147,7 @@
       <Sequences>
         <Sequence>
           <NonTerminal Id="LogicalOperator" />
-          <NonTerminal Id="PlSqlBooleanExpression" />
+          <NonTerminal Id="PlSqlExpression" />
         </Sequence>
       </Sequences>
     </Rule>

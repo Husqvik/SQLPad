@@ -3229,6 +3229,24 @@ END;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
+			[Test(Description = @"")]
+			public void TestBooleanExpressions()
+			{
+				const string statement1 =
+@"BEGIN
+	IF
+		DBMS_DB_VERSION.VER_LE_10_1 OR (DBMS_DB_VERSION.VER_LE_10_1) THEN NULL;
+	ELSIF
+		NOT DBMS_DB_VERSION.VER_LE_10_1 AND NOT (NOT DBMS_DB_VERSION.VER_LE_10_1 OR TRUE) THEN NULL;
+	ELSE
+		NULL;
+	END IF;
+END;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
+
 			public class Triggers
 			{
 				[Test(Description = @"")]
