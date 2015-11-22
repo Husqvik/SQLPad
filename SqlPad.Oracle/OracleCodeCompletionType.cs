@@ -76,7 +76,7 @@ namespace SqlPad.Oracle
 
 		public bool BindVariable { get; }
 		
-		public bool InsertIntoColumns { get; private set; }
+		public bool InsertIntoColumn { get; private set; }
 		
 		public bool InUnparsedData { get; private set; }
 
@@ -270,9 +270,10 @@ namespace SqlPad.Oracle
 			var isCurrentClauseSupported = EffectiveTerminal.IsWithinSelectClauseOrExpression() ||
 			                               EffectiveTerminal.ParentNode.Id.In(NonTerminals.WhereClause, NonTerminals.GroupByClause, NonTerminals.HavingClause, NonTerminals.OrderByClause) ||
 			                               EffectiveTerminal.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.NestedQuery), NonTerminals.WhereClause) != null;
+			var isCandidateIdentifier = TerminalCandidates.Contains(Terminals.Identifier);
 			if (isCurrentClauseSupported)
 			{
-				SchemaProgram = Column = TerminalCandidates.Contains(Terminals.Identifier) || isCursorBetweenTwoTerminalsWithPrecedingIdentifierWithoutPrefix;
+				SchemaProgram = Column = isCandidateIdentifier || isCursorBetweenTwoTerminalsWithPrecedingIdentifierWithoutPrefix;
 
 				var functionParameterOptionalExpression = EffectiveTerminal.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.OptionalParameterExpressionList), NonTerminals.OptionalParameterExpression);
 				if (functionParameterOptionalExpression != null)
@@ -303,7 +304,7 @@ namespace SqlPad.Oracle
 
 			SchemaDataObjectReference = !InQueryBlockFromClause && (TerminalCandidates.Contains(Terminals.ObjectIdentifier) || isCursorBetweenTwoTerminalsWithPrecedingIdentifierWithoutPrefix);
 
-			PackageFunction = !String.IsNullOrEmpty(ReferenceIdentifier.ObjectIdentifierOriginalValue) && TerminalCandidates.Contains(Terminals.Identifier);
+			PackageFunction = !String.IsNullOrEmpty(ReferenceIdentifier.ObjectIdentifierOriginalValue) && isCandidateIdentifier;
 
 			var inMainQueryBlockOrMainObjectReference = CurrentQueryBlock == SemanticModel.MainQueryBlock || (CurrentQueryBlock == null && SemanticModel.MainObjectReferenceContainer.MainObjectReference != null);
 			Sequence = inMainQueryBlockOrMainObjectReference && (nearestTerminal.IsWithinSelectClause() || !nearestTerminal.IsWithinExpression() || nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.InsertValuesClause) != null);
@@ -311,7 +312,9 @@ namespace SqlPad.Oracle
 			var isWithinUpdateSetNonTerminal = String.Equals(nearestTerminal.ParentNode.Id, NonTerminals.PrefixedUpdatedColumnReference) || nearestTerminal.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBlock, NonTerminals.SetColumnListEqualsNestedQuery) != null;
 			var isAfterSetTerminal = isCursorAfterToken && String.Equals(nearestTerminal.Id, Terminals.Set);
 			var isAfterCommaInChainedUpdateSetClause = isCursorAfterToken && String.Equals(nearestTerminal.Id, Terminals.Comma) && String.Equals(nearestTerminal.ParentNode.Id, NonTerminals.UpdateSetColumnOrColumnListChainedList);
-			UpdateSetColumn = TerminalCandidates.Contains(Terminals.Identifier) && (isWithinUpdateSetNonTerminal || isAfterSetTerminal || isAfterCommaInChainedUpdateSetClause);
+			UpdateSetColumn = isCandidateIdentifier && (isWithinUpdateSetNonTerminal || isAfterSetTerminal || isAfterCommaInChainedUpdateSetClause);
+			var columnList = nearestTerminal.GetAncestor(NonTerminals.ParenthesisEnclosedIdentifierList);
+			InsertIntoColumn = isCandidateIdentifier && String.Equals(columnList?.ParentNode.Id, NonTerminals.InsertIntoClause);
 
 			ColumnAlias = Column && nearestTerminal.IsWithinOrderByClause();
 		}
@@ -526,8 +529,11 @@ namespace SqlPad.Oracle
 			builder.Append("Bind variable: ");
 			builder.Append(BindVariable);
 			builder.Append("; ");
-			builder.Append("InsertIntoColumns: ");
-			builder.Append(InsertIntoColumns);
+			builder.Append("InsertIntoColumn: ");
+			builder.Append(InsertIntoColumn);
+			builder.Append("; ");
+			builder.Append("UpdateSetColumn: ");
+			builder.Append(UpdateSetColumn);
 			builder.Append("; ");
 			builder.Append("In comment: ");
 			builder.Append(InComment);

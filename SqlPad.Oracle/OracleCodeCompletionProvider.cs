@@ -333,7 +333,17 @@ namespace SqlPad.Oracle
 
 			if (completionType.UpdateSetColumn && semanticModel.MainObjectReferenceContainer.MainObjectReference != null)
 			{
-				completionItems = completionItems.Concat(GenerateUpdateSetColumnItems(semanticModel.MainObjectReferenceContainer.MainObjectReference, completionType));
+				completionItems = completionItems.Concat(GenerateSimpleColumnItems(semanticModel.MainObjectReferenceContainer.MainObjectReference, completionType));
+			}
+
+			if (completionType.InsertIntoColumn)
+			{
+				var columnList = currentTerminal.GetAncestor(NonTerminals.ParenthesisEnclosedIdentifierList);
+				var insertTarget = semanticModel.InsertTargets.SingleOrDefault(t => t.ColumnListNode == columnList && t.DataObjectReference != null);
+				if (insertTarget != null)
+				{
+					completionItems = completionItems.Concat(GenerateSimpleColumnItems(insertTarget.DataObjectReference, completionType));
+				}
 			}
 
 			if (completionType.DatabaseLink)
@@ -509,7 +519,7 @@ namespace SqlPad.Oracle
 					});
 		}
 
-		private IEnumerable<ICodeCompletionItem> GenerateUpdateSetColumnItems(OracleDataObjectReference targetDataObject, OracleCodeCompletionType completionType)
+		private IEnumerable<ICodeCompletionItem> GenerateSimpleColumnItems(OracleDataObjectReference targetDataObject, OracleCodeCompletionType completionType)
 		{
 			return targetDataObject.Columns
 				.Where(c => !String.Equals(completionType.TerminalValueUnderCursor.ToQuotedIdentifier(), c.Name) && CodeCompletionSearchHelper.IsMatch(c.Name, completionType.TerminalValuePartUntilCaret))
