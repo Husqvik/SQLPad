@@ -11,6 +11,7 @@ namespace SqlPad
 	internal class ActiveSnippet
 	{
 		private static readonly Regex RegexNewLine = new Regex(@"\r?\n", RegexOptions.CultureInvariant | RegexOptions.Compiled);
+		private static readonly Regex RegexEverythingExceptSpace = new Regex(@"[^\t]", RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
 		private readonly TextEditor _editor;
 		private readonly List<List<Tuple<TextAnchor, TextAnchor>>> _followingAnchorGroups = new List<List<Tuple<TextAnchor, TextAnchor>>>();
@@ -28,7 +29,7 @@ namespace SqlPad
 			if (lineBeginOffset < completionSegmentOffset)
 			{
 				var indentationText = editor.Document.GetText(lineBeginOffset, completionSegmentOffset - lineBeginOffset);
-				snippetBaseText = RegexNewLine.Replace(snippetBaseText, m => $"{m.Value}{indentationText}");
+				snippetBaseText = RegexNewLine.Replace(snippetBaseText, m => $"{m.Value}{RegexEverythingExceptSpace.Replace(indentationText, " ")}");
 			}
 
 			editor.Document.BeginUpdate();

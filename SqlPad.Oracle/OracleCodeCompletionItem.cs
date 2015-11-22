@@ -29,8 +29,8 @@ namespace SqlPad.Oracle
 			       Equals(StatementNode, other.StatementNode) &&
 			       Priority == other.Priority &&
 			       CategoryPriority == other.CategoryPriority &&
-				   InsertOffset == other.InsertOffset &&
-				   CaretOffset == other.CaretOffset &&
+			       InsertOffset == other.InsertOffset &&
+			       CaretOffset == other.CaretOffset &&
 			       String.Equals(Text, other.Text);
 		}
 
@@ -53,14 +53,14 @@ namespace SqlPad.Oracle
 		{
 			unchecked
 			{
-				var hashCode = (Category != null ? Category.GetHashCode() : 0);
-				hashCode = (hashCode * 397) ^ (Name != null ? Name.GetHashCode() : 0);
-				hashCode = (hashCode * 397) ^ (StatementNode != null ? StatementNode.GetHashCode() : 0);
+				var hashCode = Category?.GetHashCode() ?? 0;
+				hashCode = (hashCode * 397) ^ (Name?.GetHashCode() ?? 0);
+				hashCode = (hashCode * 397) ^ (StatementNode?.GetHashCode() ?? 0);
 				hashCode = (hashCode * 397) ^ Priority;
 				hashCode = (hashCode * 397) ^ CategoryPriority;
 				hashCode = (hashCode * 397) ^ InsertOffset;
 				hashCode = (hashCode * 397) ^ CaretOffset;
-				hashCode = (hashCode * 397) ^ (Text != null ? Text.GetHashCode() : 0);
+				hashCode = (hashCode * 397) ^ (Text?.GetHashCode() ?? 0);
 				return hashCode;
 			}
 		}
