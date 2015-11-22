@@ -1804,6 +1804,16 @@ FROM
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestCreateScriptCommandAtPackageSynonym()
+		{
+			const string statementText = @"SELECT DBMS_RANDOM.VALUE FROM DUAL";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 7;
+
+			CanExecuteCommand(OracleCommands.CreateScript).ShouldBe(true);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void AddInsertIntoColumnListCommand()
 		{
 			const string statementText = @"INSERT INTO SELECTION SELECT * FROM SELECTION";

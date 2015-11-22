@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -8,7 +7,6 @@ using System.Windows;
 using SqlPad.Commands;
 using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.DataDictionary;
-using SqlPad.Oracle.SemanticModel;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle.Commands
@@ -26,38 +24,23 @@ namespace SqlPad.Oracle.Commands
 
 		protected override CommandCanExecuteResult CanExecute()
 		{
-			if (CurrentNode == null || CurrentQueryBlock == null || !CurrentNode.Id.In(Terminals.ObjectIdentifier, Terminals.Identifier))
+			if (CurrentNode == null || !CurrentNode.Id.In(Terminals.ObjectIdentifier, Terminals.Identifier))
+			{
 				return false;
-
-			_objectReference = CurrentQueryBlock.AllColumnReferences
-				.Where(c => c.ObjectNode == CurrentNode && c.ValidObjectReference != null && c.ValidObjectReference.SchemaObject != null)
-				.Select(c => c.ValidObjectReference.SchemaObject)
-				.FirstOrDefault();
-
-			if (_objectReference == null)
-			{
-				_objectReference = ((IEnumerable<OracleObjectWithColumnsReference>)CurrentQueryBlock.ObjectReferences)
-					.Concat(CurrentQueryBlock.AllSequenceReferences)
-					.Where(o => o.ObjectNode == CurrentNode && o.SchemaObject != null)
-					.Select(o => o.SchemaObject)
-					.FirstOrDefault();
 			}
 
-			if (_objectReference == null)
-			{
-				_objectReference = CurrentQueryBlock.AllProgramReferences
-					.Where(p =>
-						(p.FunctionIdentifierNode == CurrentNode && p.SchemaObject.Type.In(OracleSchemaObjectType.Function, OracleSchemaObjectType.Procedure)) ||
-						(p.ObjectNode == CurrentNode && String.Equals(p.SchemaObject.Type, OracleSchemaObjectType.Package)))
-					.Select(p => p.SchemaObject)
-					.FirstOrDefault();
-			}
+			_objectReference = SemanticModel.AllReferenceContainers
+				.SelectMany(c => c.AllReferences)
+				.Where(c => c.ObjectNode == CurrentNode && c.SchemaObject != null)
+				.Select(c => c.SchemaObject)
+				.SingleOrDefault();
 
 			if (_objectReference == null)
 			{
-				_objectReference = CurrentQueryBlock.AllTypeReferences
-					.Where(p => p.ObjectNode == CurrentNode)
-					.Select(p => p.SchemaObject)
+				_objectReference = SemanticModel.AllReferenceContainers
+					.SelectMany(c => c.ColumnReferences)
+					.Where(c => c.ObjectNode == CurrentNode && c.ValidObjectReference?.SchemaObject != null)
+					.Select(c => c.ValidObjectReference.SchemaObject)
 					.FirstOrDefault();
 			}
 

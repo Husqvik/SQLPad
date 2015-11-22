@@ -262,7 +262,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query1 = @"INSERT INTO SELECTION SELECT * FROM SELECTION";
 
-			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 17).ToArray();
+			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 17).Where(a => a.Name == AddAliasCommand.Title).ToArray();
 			actions.Length.ShouldBe(0);
 		}
 
