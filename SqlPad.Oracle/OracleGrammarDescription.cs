@@ -1043,12 +1043,12 @@ namespace SqlPad.Oracle
 			public const string PlSqlSqlStatementType = "PlSqlSqlStatementType";
 			public const string PlSqlStatement = "PlSqlStatement";
 			public const string PlSqlStatementList = "PlSqlStatementList";
+			public const string PlSqlStatementListOrPlSqlConditionalCompilationErrorDirective = "PlSqlStatementListOrPlSqlConditionalCompilationErrorDirective";
 			public const string PlSqlStatementOrInlinePragma = "PlSqlStatementOrInlinePragma";
 			public const string PlSqlStatementOrInlinePragmaList = "PlSqlStatementOrInlinePragmaList";
 			public const string PlSqlStatementOrPragma = "PlSqlStatementOrPragma";
 			public const string PlSqlStatementOrPragmaList = "PlSqlStatementOrPragmaList";
 			public const string PlSqlStatementType = "PlSqlStatementType";
-			public const string PlSqlStatementTypeOrPlSqlConditionalCompilationErrorDirective = "PlSqlStatementTypeOrPlSqlConditionalCompilationErrorDirective";
 			public const string PlSqlWhenBooleanExpression = "PlSqlWhenBooleanExpression";
 			public const string PlSqlWhileLoopStatement = "PlSqlWhileLoopStatement";
 			public const string PositionIncrement = "PositionIncrement";

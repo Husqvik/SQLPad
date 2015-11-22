@@ -13540,9 +13540,9 @@
       <Sequences>
         <Sequence>
           <Terminal Id="PlSqlConditionalCompilationIf" />
-          <NonTerminal Id="PlSqlBooleanExpression" />
+          <NonTerminal Id="PlSqlExpression" />
           <Terminal Id="PlSqlConditionalCompilationThen" />
-          <NonTerminal Id="PlSqlStatementTypeOrPlSqlConditionalCompilationErrorDirective" />
+          <NonTerminal Id="PlSqlStatementListOrPlSqlConditionalCompilationErrorDirective" />
           <NonTerminal Id="PlSqlConditionalCompilationElseIfClause" IsOptional="true" />
           <NonTerminal Id="PlSqlConditionalCompilationElseClause" IsOptional="true" />
           <Terminal Id="PlSqlConditionalCompilationEnd" />
@@ -13554,9 +13554,9 @@
       <Sequences>
         <Sequence>
           <Terminal Id="PlSqlConditionalCompilationElseIf" />
-          <NonTerminal Id="PlSqlBooleanExpression" />
+          <NonTerminal Id="PlSqlExpression" />
           <Terminal Id="PlSqlConditionalCompilationThen" />
-          <NonTerminal Id="PlSqlStatementType" />
+          <NonTerminal Id="PlSqlStatementList" />
           <NonTerminal Id="PlSqlConditionalCompilationElseIfClause" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -13566,15 +13566,15 @@
       <Sequences>
         <Sequence>
           <Terminal Id="PlSqlConditionalCompilationElse" />
-          <NonTerminal Id="PlSqlStatementType" />
+          <NonTerminal Id="PlSqlStatementList" />
         </Sequence>
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="PlSqlStatementTypeOrPlSqlConditionalCompilationErrorDirective">
+    <Rule StartingNonTerminal="PlSqlStatementListOrPlSqlConditionalCompilationErrorDirective">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="PlSqlStatementType" />
+          <NonTerminal Id="PlSqlStatementList" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="PlSqlConditionalCompilationErrorDirective" />
@@ -13587,6 +13587,7 @@
         <Sequence>
           <Terminal Id="PlSqlConditionalCompilationError" />
           <Terminal Id="StringLiteral" />
+          <Terminal Id="PlSqlConditionalCompilationEnd" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -13711,7 +13712,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="When" />
-          <NonTerminal Id="PlSqlBooleanExpression" />
+          <NonTerminal Id="PlSqlExpression" />
           <Terminal Id="Then" />
           <NonTerminal Id="PlSqlStatementList" />
           <NonTerminal Id="PlSqlSearchedCaseExpressionBranch" IsOptional="true" />
@@ -13947,7 +13948,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="If" />
-          <NonTerminal Id="PlSqlBooleanExpression" />
+          <NonTerminal Id="PlSqlExpression" />
           <Terminal Id="Then" />
           <NonTerminal Id="PlSqlStatementList" />
           <NonTerminal Id="PlSqlElseIfClauseList" IsOptional="true" />
@@ -13972,7 +13973,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="ElseIf" />
-          <NonTerminal Id="PlSqlBooleanExpression" />
+          <NonTerminal Id="PlSqlExpression" />
           <Terminal Id="Then" />
           <NonTerminal Id="PlSqlStatementList" />
         </Sequence>
@@ -14288,7 +14289,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="While" />
-          <NonTerminal Id="PlSqlBooleanExpression" />
+          <NonTerminal Id="PlSqlExpression" />
           <NonTerminal Id="PlSqlBasicLoopStatement" />
         </Sequence>
       </Sequences>
@@ -14349,7 +14350,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="When" />
-          <NonTerminal Id="PlSqlBooleanExpression" />
+          <NonTerminal Id="PlSqlExpression" />
         </Sequence>
       </Sequences>
     </Rule>

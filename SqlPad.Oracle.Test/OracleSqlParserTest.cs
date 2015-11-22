@@ -3392,6 +3392,23 @@ END;";
 					var statement = Parser.Parse(statement1).Single().Validate();
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
+
+				[Test(Description = @"")]
+				public void TestConditionalCompilationSelectionDirectiveWithErrorDirectiveAndMultipleStatements()
+				{
+					const string statement1 =
+@"BEGIN
+	$IF DBMS_DB_VERSION.VER_LE_10_1 $THEN
+		$ERROR 'unsupported database release' $END
+	$ELSE
+		DBMS_OUTPUT.PUT_LINE('Release ' || DBMS_DB_VERSION.VERSION || '.' || DBMS_DB_VERSION.RELEASE || ' is supported.');	
+		COMMIT WRITE IMMEDIATE NOWAIT;
+	$END
+END;";
+
+					var statement = Parser.Parse(statement1).Single().Validate();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
 			}
 		}
 
