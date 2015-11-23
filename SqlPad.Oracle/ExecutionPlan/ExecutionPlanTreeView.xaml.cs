@@ -27,11 +27,9 @@ namespace SqlPad.Oracle.ExecutionPlan
 			var treeView = ((ExecutionPlanTreeView)dependencyObject).TreeView;
 			lock (treeView)
 			{
-				if (args.NewValue == null)
-				{
-					treeView.Items.Clear();
-				}
-				else
+				treeView.Items.Clear();
+
+				if (args.NewValue != null)
 				{
 					treeView.Items.Add(args.NewValue);
 				}

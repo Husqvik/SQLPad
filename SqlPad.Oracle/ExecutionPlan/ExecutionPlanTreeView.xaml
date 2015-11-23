@@ -395,6 +395,16 @@
 
 		<DataTemplate x:Key="SqlMonitorSingleSessionDataTemplate" DataType="modelDataProviders:SqlMonitorSessionItem">
 			<StackPanel Orientation="Horizontal">
+				<StackPanel.Style>
+					<Style>
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding}" Value="{x:Null}">
+								<Setter Property="StackPanel.Visibility" Value="Collapsed" />
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</StackPanel.Style>
+				
 				<TextBlock>
 					<TextBlock.Style>
 						<Style BasedOn="{StaticResource PlanStatisticValueStyle}" TargetType="TextBlock">

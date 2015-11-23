@@ -174,7 +174,10 @@ namespace SqlPad
 				}
 			}
 
-			MergeRecords(_databaseSessions, sessions.Rows, r => r.Id, MergeSessionRecordData);
+			lock (_databaseSessions)
+			{
+				MergeRecords(_databaseSessions, sessions.Rows, r => r.Id, MergeSessionRecordData);
+			}
 		}
 
 		private void MergeSessionRecordData(DatabaseSession current, DatabaseSession @new)

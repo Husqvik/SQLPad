@@ -16,8 +16,8 @@
 		<CollectionViewSource x:Key="FilteredDatabaseSessions" Source="{Binding DatabaseSessions}" Filter="DatabaseSessionFilterHandler" />
 	</Window.Resources>
 
-    <Window.CommandBindings>
-        <CommandBinding Command="commands:GenericCommands.RefreshContent" CanExecute="RefreshCanExecuteHandler" Executed="RefreshExecutedHandler" />
+	<Window.CommandBindings>
+		<CommandBinding Command="commands:GenericCommands.RefreshContent" CanExecute="RefreshCanExecuteHandler" Executed="RefreshExecutedHandler" />
 	</Window.CommandBindings>
 	
 	<Grid>

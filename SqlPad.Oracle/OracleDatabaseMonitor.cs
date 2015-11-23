@@ -56,7 +56,7 @@ namespace SqlPad.Oracle
 									Action = OracleReaderValueConvert.ToString(reader["ACTION"]),
 									State = (string)reader["STATE"],
 									Status = (string)reader["STATUS"],
-									AuditingSessionId = Convert.ToInt32(reader["AUDSID"]),
+									AuditingSessionId = Convert.ToInt64(reader["AUDSID"]),
 									ChildNumber = OracleReaderValueConvert.ToInt32(reader["SQL_CHILD_NUMBER"]),
 									ClientInfo = OracleReaderValueConvert.ToString(reader["CLIENT_INFO"]),
 									CurrentCommandText = OracleReaderValueConvert.ToString(await reader.GetValueAsynchronous(reader.GetOrdinal("CURRENT_COMMAND_TEXT"), cancellationToken)),
@@ -167,7 +167,7 @@ namespace SqlPad.Oracle
 			set { Values[2] = value; }
 		}
 
-		public int AuditingSessionId
+		public long AuditingSessionId
 		{
 			get { return (int)Values[3]; }
 			set { Values[3] = value; }
