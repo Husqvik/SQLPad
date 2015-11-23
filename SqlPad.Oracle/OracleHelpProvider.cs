@@ -118,12 +118,12 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			var firstThreeTerminals = terminal.RootNode.Terminals.Where(t => t.IsRequiredIncludingParent).Take(3).ToList();
-			if (!terminal.Id.IsIdentifierOrAlias() && firstThreeTerminals.IndexOf(terminal) != -1)
+			var firstFourTerminals = terminal.RootNode.Terminals.Where(t => t.IsRequiredIncludingParent).Take(4).ToList();
+			if (!terminal.Id.IsIdentifierOrAlias() && firstFourTerminals.IndexOf(terminal) != -1)
 			{
-				for (var i = 3; i > 0; i--)
+				for (var i = 4; i > 0; i--)
 				{
-					var statementDocumentationKey = String.Join(" ", firstThreeTerminals.Take(i).Select(t => ((OracleToken)t.Token).UpperInvariantValue));
+					var statementDocumentationKey = String.Join(" ", firstFourTerminals.Take(i).Select(t => ((OracleToken)t.Token).UpperInvariantValue));
 					foreach (var documentation in _statementDocumentation[statementDocumentationKey])
 					{
 						Process.Start(documentation.Url);

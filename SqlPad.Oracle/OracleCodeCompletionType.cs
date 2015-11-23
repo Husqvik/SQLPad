@@ -314,7 +314,7 @@ namespace SqlPad.Oracle
 			var isAfterCommaInChainedUpdateSetClause = isCursorAfterToken && String.Equals(nearestTerminal.Id, Terminals.Comma) && String.Equals(nearestTerminal.ParentNode.Id, NonTerminals.UpdateSetColumnOrColumnListChainedList);
 			UpdateSetColumn = isCandidateIdentifier && (isWithinUpdateSetNonTerminal || isAfterSetTerminal || isAfterCommaInChainedUpdateSetClause);
 			var columnList = nearestTerminal.GetAncestor(NonTerminals.ParenthesisEnclosedIdentifierList);
-			InsertIntoColumn = isCandidateIdentifier && String.Equals(columnList?.ParentNode.Id, NonTerminals.InsertIntoClause);
+			InsertIntoColumn = isCandidateIdentifier && String.Equals(columnList?.ParentNode?.Id, NonTerminals.InsertIntoClause);
 
 			ColumnAlias = Column && nearestTerminal.IsWithinOrderByClause();
 		}
