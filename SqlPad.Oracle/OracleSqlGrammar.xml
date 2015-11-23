@@ -6583,7 +6583,10 @@
           <NonTerminal Id="JsonExistsClause" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
-        
+        <Sequence>
+          <NonTerminal Id="CurrentOfCursorIdentifier" />
+          <NonTerminal Id="ChainedCondition" IsOptional="true" />
+        </Sequence>
         <Sequence>
           <NonTerminal Id="PrefixedColumnReference" />
           <Terminal Id="Is" />
@@ -6614,6 +6617,16 @@
           <Terminal Id="Of" IsOptional="true" />
           <NonTerminal Id="PrefixedColumnReference" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CurrentOfCursorIdentifier">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Current" />
+          <Terminal Id="Of" />
+          <Terminal Id="CursorIdentifier" />
         </Sequence>
       </Sequences>
     </Rule>

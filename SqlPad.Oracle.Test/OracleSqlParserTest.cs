@@ -2619,6 +2619,16 @@ ORDER BY symbol, tstamp";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
+		[Test(Description = @"")]
+		public void TestWhereCurrentOfCursorCondition()
+		{
+			const string statement1 = @"UPDATE test_table SET column1 = 0 WHERE CURRENT OF test_cursor";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+		}
+
 		public class PlSql
 		{
 			[Test(Description = @"")]

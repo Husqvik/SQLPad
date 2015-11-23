@@ -3205,6 +3205,23 @@ WHERE
 		}
 
 		[Test(Description = @"")]
+		public void TestWhereCurrentOfCursorConditionOutsidePlSql()
+		{
+			const string sqlText = "UPDATE dual SET dummy = NULL WHERE CURRENT OF test_cursor";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var invalidNonTerminals = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			invalidNonTerminals.Count.ShouldBe(1);
+			invalidNonTerminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.CurrentOfConditionAllowedOnlyWithinPlSqlScope);
+			invalidNonTerminals[0].Node.Id.ShouldBe(NonTerminals.CurrentOfCursorIdentifier);
+			invalidNonTerminals[0].Node.TerminalCount.ShouldBe(3);
+		}
+
+		[Test(Description = @"")]
 		public void TestConditionalCompilationSymbolInsidePlSql()
 		{
 			const string sqlText = "DECLARE x VARCHAR2(255); BEGIN SELECT $$compilation_symbol INTO x FROM DUAL; END;";

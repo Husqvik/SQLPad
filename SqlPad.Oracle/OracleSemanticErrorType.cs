@@ -43,6 +43,7 @@ namespace SqlPad.Oracle
 		public const string WindowFunctionsNotAllowedHere = "Window functions are not allowed here";
 		public const string GroupFunctionNestedTooDeeply = "Group function is nested too deeply";
 		public const string PlSqlCompilationParameterAllowedOnlyWithinPlSqlScope = "PL/SQL compilation parameter is allowed only within PL/SQL scope";
+		public const string CurrentOfConditionAllowedOnlyWithinPlSqlScope = "Current of <cursor> condition is allowed only within PL/SQL scope";
 	}
 
 	public static class OracleSemanticErrorTooltipText

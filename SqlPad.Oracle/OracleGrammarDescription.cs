@@ -320,6 +320,7 @@ namespace SqlPad.Oracle
 			public const string CrossOrOuter = "CrossOrOuter";
 			public const string CrossOrOuterApplyClause = "CrossOrOuterApplyClause";
 			public const string CurrentEditionOrSpecificEdition = "CurrentEditionOrSpecificEdition";
+			public const string CurrentOfCursorIdentifier = "CurrentOfCursorIdentifier";
 			public const string CurrentOrAll = "CurrentOrAll";
 			public const string CurrentUserOrDefiner = "CurrentUserOrDefiner";
 			public const string CursorBooleanFunction = "CursorBooleanFunction";
@@ -455,6 +456,7 @@ namespace SqlPad.Oracle
 			public const string ExpressionAsXmlAliasListChained = "ExpressionAsXmlAliasListChained";
 			public const string ExpressionAsXmlAliasWithMandatoryAsList = "ExpressionAsXmlAliasWithMandatoryAsList";
 			public const string ExpressionAsXmlAliasWithMandatoryAsListChained = "ExpressionAsXmlAliasWithMandatoryAsListChained";
+			public const string ExpressionBooleanNotExtension = "ExpressionBooleanNotExtension";
 			public const string ExpressionCommaChainedList = "ExpressionCommaChainedList";
 			public const string ExpressionIsNullNaNOrInfinite = "ExpressionIsNullNaNOrInfinite";
 			public const string ExpressionList = "ExpressionList";

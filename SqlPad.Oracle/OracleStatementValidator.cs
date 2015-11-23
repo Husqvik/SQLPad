@@ -203,11 +203,39 @@ namespace SqlPad.Oracle
 				}
 			}
 
+			ValidatePriorOperators(validationModel, validationModel.SemanticModel.NonQueryBlockTerminals);
+
 			ValidateQueryBlocks(validationModel);
 
 			ValidateLiterals(validationModel);
+
+			ValidateVariousClauseSupport(validationModel);
 			
 			return validationModel;
+		}
+
+		private void ValidateVariousClauseSupport(OracleValidationModel validationModel)
+		{
+			if (validationModel.Statement.IsPlSql)
+			{
+				return;
+			}
+
+			foreach (var terminal in validationModel.Statement.AllTerminals)
+			{
+				switch (terminal.Id)
+				{
+					case Terminals.PlSqlCompilationParameter:
+						validationModel.InvalidNonTerminals[terminal] =
+							new InvalidNodeValidationData(OracleSemanticErrorType.PlSqlCompilationParameterAllowedOnlyWithinPlSqlScope) { Node = terminal };
+						break;
+
+					case Terminals.CursorIdentifier:
+						validationModel.InvalidNonTerminals[terminal.ParentNode] =
+							new InvalidNodeValidationData(OracleSemanticErrorType.CurrentOfConditionAllowedOnlyWithinPlSqlScope) { Node = terminal.ParentNode };
+						break;
+				}
+			}
 		}
 
 		private void ResolveSuspiciousConditions(OracleValidationModel validationModel)
@@ -665,13 +693,11 @@ namespace SqlPad.Oracle
 
 		private static void ValidateQueryBlocks(OracleValidationModel validationModel)
 		{
-			AddInvalidPriorOperators(validationModel, validationModel.SemanticModel.NonQueryBlockTerminals);
-
 			foreach (var queryBlock in validationModel.SemanticModel.QueryBlocks)
 			{
 				if (queryBlock.HierarchicalQueryClause?[NonTerminals.HierarchicalQueryConnectByClause] == null)
 				{
-					AddInvalidPriorOperators(validationModel, queryBlock.Terminals);
+					ValidatePriorOperators(validationModel, queryBlock.Terminals);
 				}
 
 				ValidateConcatenatedQueryBlocks(validationModel, queryBlock);
@@ -768,15 +794,6 @@ namespace SqlPad.Oracle
 				{
 					validationModel.InvalidNonTerminals[selectIntoClause] =
 						new InvalidNodeValidationData(OracleSemanticErrorType.SelectIntoClauseAllowedOnlyInMainQueryBlockWithinPlSqlScope) { Node = selectIntoClause };
-				}
-
-				if (!queryBlock.Statement.IsPlSql)
-				{
-					foreach (var conditionalCompilationSymbol in queryBlock.Terminals.Where(t => String.Equals(t.Id, Terminals.PlSqlCompilationParameter)))
-					{
-						validationModel.InvalidNonTerminals[conditionalCompilationSymbol] =
-							new InvalidNodeValidationData(OracleSemanticErrorType.PlSqlCompilationParameterAllowedOnlyWithinPlSqlScope) { Node = conditionalCompilationSymbol };
-					}
 				}
 
 				var nestedQuery = queryBlock.RootNode.GetAncestor(NonTerminals.NestedQuery);
@@ -1005,7 +1022,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private static void AddInvalidPriorOperators(OracleValidationModel validationModel, IEnumerable<StatementGrammarNode> terminals)
+		private static void ValidatePriorOperators(OracleValidationModel validationModel, IEnumerable<StatementGrammarNode> terminals)
 		{
 			foreach (var terminal in terminals)
 			{
@@ -1414,7 +1431,9 @@ namespace SqlPad.Oracle
 
 		public OracleStatementSemanticModel SemanticModel { get; set; }
 
-		public StatementBase Statement => SemanticModel.Statement;
+		StatementBase IValidationModel.Statement => Statement;
+
+		public OracleStatement Statement => SemanticModel.Statement;
 
 		public IDictionary<StatementGrammarNode, INodeValidationData> ObjectNodeValidity => _objectNodeValidity;
 
