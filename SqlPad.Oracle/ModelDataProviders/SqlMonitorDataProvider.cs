@@ -117,7 +117,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public ObservableDictionary<int, SqlMonitorSessionItem> SessionItems { get; } = new ObservableDictionary<int, SqlMonitorSessionItem>();
 
-		public ObservableDictionary<int, SqlMonitorSessionLongOperationItem> SessionLongOperationItems { get; } = new ObservableDictionary<int, SqlMonitorSessionLongOperationItem>();
+		public ObservableDictionary<int, SqlMonitorSessionLongOperationItem> ActiveSessionLongOperationItems { get; } = new ObservableDictionary<int, SqlMonitorSessionLongOperationItem>();
+
+		public ObservableDictionary<int, ObservableCollection<SqlMonitorSessionLongOperationItem>> CompletedSessionLongOperationItems { get; } = new ObservableDictionary<int, ObservableCollection<SqlMonitorSessionLongOperationItem>>();
 
 		public ObservableCollection<SqlMonitorSessionLongOperationItem> QueryCoordinatorLongOperations { get; } = new ObservableCollection<SqlMonitorSessionLongOperationItem>();
 
@@ -572,9 +574,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 				var planItem = DataModel.AllItems[planLineId];
 
 				SqlMonitorSessionLongOperationItem longOperationItem;
-				if (!planItem.SessionLongOperationItems.TryGetValue(sessionId, out longOperationItem))
+				if (!planItem.ActiveSessionLongOperationItems.TryGetValue(sessionId, out longOperationItem))
 				{
-					planItem.SessionLongOperationItems[sessionId] = longOperationItem =
+					planItem.ActiveSessionLongOperationItems[sessionId] = longOperationItem =
 						new SqlMonitorSessionLongOperationItem
 						{
 							SessionId = sessionId,
@@ -604,7 +606,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 			foreach (var planItem in DataModel.AllItems.Values)
 			{
-				foreach (var longOperationItem in planItem.SessionLongOperationItems.Values)
+				foreach (var longOperationItem in planItem.ActiveSessionLongOperationItems.Values)
 				{
 					if (longOperationItem.SessionId == DataModel.SessionId && !planItem.QueryCoordinatorLongOperations.Contains(longOperationItem))
 					{

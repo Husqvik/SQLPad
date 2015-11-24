@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.ExecutionPlan;
+using SqlPad.Oracle.DebugTrace;
 using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
 namespace SqlPad.Oracle.Test

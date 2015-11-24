@@ -82,7 +82,7 @@ namespace SqlPad
 			InitializeComponent();
 
 			_refreshTimer = new DispatcherTimer(DispatcherPriority.Normal, Dispatcher) { Interval = TimeSpan.FromSeconds(10) };
-			_refreshTimer.Tick += RefreshTimerTickHandler;
+			_refreshTimer.Tick += delegate { Refresh(); };
 		}
 
 		private void UpdateFilterSettings(Action<DatabaseMonitorConfiguration> updateConfigurationAction)
@@ -91,13 +91,6 @@ namespace SqlPad
 			updateConfigurationAction(providerConfiguration.DatabaseMonitorConfiguration);
 
 			SessionDataGridSource.View.Refresh();
-		}
-
-		private void RefreshTimerTickHandler(object sender, EventArgs e)
-		{
-			_refreshTimer.IsEnabled = false;
-			Refresh();
-			_refreshTimer.IsEnabled = true;
 		}
 
 		public void RestoreAppearance()
@@ -144,6 +137,8 @@ namespace SqlPad
 				_isBusy = true;
 			}
 
+			_refreshTimer.IsEnabled = false;
+
 			Task<DatabaseSessions> task = null;
 			var exception = await App.SafeActionAsync(() => task = _databaseMonitor.GetAllSessionDataAsync(CancellationToken.None));
 			_isBusy = false;
@@ -153,6 +148,8 @@ namespace SqlPad
 				Messages.ShowError(exception.Message, owner: this);
 				return;
 			}
+
+			_refreshTimer.IsEnabled = true;
 
 			var sessions = task.Result;
 

@@ -591,12 +591,12 @@
 					</ContentControl.Style>
 				</ContentControl>
 				
-				<ItemsControl ItemsSource="{Binding SessionLongOperationItems}">
+				<ItemsControl ItemsSource="{Binding ActiveSessionLongOperationItems}">
 					<ItemsControl.Style>
 						<Style>
 							<Style.Triggers>
 								<DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=executionPlan:ExecutionPlanTreeView, AncestorLevel=1}, Path=ShowSessionDetails}" Value="True">
-									<Setter Property="ItemsControl.ItemsSource" Value="{Binding SessionLongOperationItems}" />
+									<Setter Property="ItemsControl.ItemsSource" Value="{Binding ActiveSessionLongOperationItems}" />
 								</DataTrigger>
 								<DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=executionPlan:ExecutionPlanTreeView, AncestorLevel=1}, Path=ShowSessionDetails}" Value="False">
 									<Setter Property="ItemsControl.ItemsSource" Value="{Binding QueryCoordinatorLongOperations}" />

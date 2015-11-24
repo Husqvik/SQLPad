@@ -155,7 +155,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 	}
 	#endif
 
-	public class OracleSimpleValue : ILargeTextValue
+	public class OracleSimpleValue : ILargeTextValue, IComparable
 	{
 		public OracleSimpleValue(object value)
 		{
@@ -210,6 +210,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 	    public override string ToString()
 		{
 			return Preview;
+		}
+
+		public int CompareTo(object obj)
+		{
+			return String.CompareOrdinal(Preview, Convert.ToString(obj));
 		}
 	}
 

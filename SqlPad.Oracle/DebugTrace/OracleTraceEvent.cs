@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SqlPad.Oracle.DatabaseConnection
+namespace SqlPad.Oracle.DebugTrace
 {
 	public class OracleTraceEvent
 	{

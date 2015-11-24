@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using SqlPad.Oracle.DebugTrace;
 using SqlPad.Oracle.ExecutionPlan;
 using SqlPad.Oracle.ModelDataProviders;
 #if ORACLE_MANAGED_DATA_ACCESS_CLIENT
