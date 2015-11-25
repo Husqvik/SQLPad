@@ -983,6 +983,7 @@ namespace SqlPad
 			}
 			catch (Exception exception)
 			{
+				App.CreateErrorLog(exception);
 				Messages.ShowError(exception.ToString());
 			}
 		}
@@ -1712,6 +1713,7 @@ namespace SqlPad
 				}
 				catch (Exception exception)
 				{
+					App.CreateErrorLog(exception);
 					Messages.ShowError(exception.ToString());
 				}
 

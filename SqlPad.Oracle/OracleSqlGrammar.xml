@@ -446,7 +446,32 @@
         <Sequence>
           <NonTerminal Id="AlterType" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="AlterSynonym" />
+        </Sequence>
         <!-- TODO: Add other objects -->
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterSynonym">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Public" IsOptional="true" />
+          <Terminal Id="Synonym" />
+          <NonTerminal Id="SchemaObject" />
+          <NonTerminal Id="AlterSynonymOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterSynonymOption">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="EditionableOrNonEditionable" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Compile" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -3722,7 +3747,21 @@
         <Sequence>
           <NonTerminal Id="DropType" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="DropSynonym" />
+        </Sequence>
         <!-- TODO: Drop other objects -->
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DropSynonym">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Public" IsOptional="true" />
+          <Terminal Id="Synonym" />
+          <NonTerminal Id="SchemaObject" />
+          <Terminal Id="Force" IsOptional="true" />
+        </Sequence>
       </Sequences>
     </Rule>
     
@@ -16884,10 +16923,21 @@
     <Rule StartingNonTerminal="ConstraintReferencesClause">
       <Sequences>
         <Sequence>
-          <Terminal Id="References" />
+          <NonTerminal Id="ReferencesOrReferencing" />
           <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="ParenthesisEnclosedIdentifierList" IsOptional="true" />
           <NonTerminal Id="ConstraintOnDeleteClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="ReferencesOrReferencing">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="References" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Referencing" />
         </Sequence>
       </Sequences>
     </Rule>

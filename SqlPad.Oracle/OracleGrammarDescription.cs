@@ -76,6 +76,8 @@ namespace SqlPad.Oracle
 			public const string AlterSingleUserOption = "AlterSingleUserOption";
 			public const string AlterSingleUserOptionList = "AlterSingleUserOptionList";
 			public const string AlterStatement = "AlterStatement";
+			public const string AlterSynonym = "AlterSynonym";
+			public const string AlterSynonymOption = "AlterSynonymOption";
 			public const string AlterSystem = "AlterSystem";
 			public const string AlterSystemFlushOption = "AlterSystemFlushOption";
 			public const string AlterSystemOption = "AlterSystemOption";
@@ -411,6 +413,7 @@ namespace SqlPad.Oracle
 			public const string DropSupplementalLoggingProperties = "DropSupplementalLoggingProperties";
 			public const string DropSupplementalLogList = "DropSupplementalLogList";
 			public const string DropSupplementalLogListChained = "DropSupplementalLogListChained";
+			public const string DropSynonym = "DropSynonym";
 			public const string DropTable = "DropTable";
 			public const string DropType = "DropType";
 			public const string DropView = "DropView";
@@ -1112,6 +1115,7 @@ namespace SqlPad.Oracle
 			public const string ReferenceModelList = "ReferenceModelList";
 			public const string ReferencePartitionDescriptionList = "ReferencePartitionDescriptionList";
 			public const string ReferencePartitioning = "ReferencePartitioning";
+			public const string ReferencesOrReferencing = "ReferencesOrReferencing";
 			public const string ReferencingClause = "ReferencingClause";
 			public const string RejectRowsWithAllNullFields = "RejectRowsWithAllNullFields";
 			public const string RelationalEquiOperator = "RelationalEquiOperator";

@@ -356,7 +356,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 						IsUnique = (string)reader["UNIQUENESS"] == "UNIQUE",
 						Compression = TextInfo.ToTitleCase(((string)reader["COMPRESSION"]).ToLowerInvariant()),
 						PrefixLength = OracleReaderValueConvert.ToInt32(reader["PREFIX_LENGTH"]),
-						Logging = (string)reader["LOGGING"] == "LOGGING",
+						Logging = OracleReaderValueConvert.ToString(reader["LOGGING"]) == "LOGGING",
 						ClusteringFactor = OracleReaderValueConvert.ToInt64(reader["CLUSTERING_FACTOR"]),
 						Status = TextInfo.ToTitleCase(((string)reader["STATUS"]).ToLowerInvariant()),
 						Rows = OracleReaderValueConvert.ToInt64(reader["NUM_ROWS"]),
@@ -539,7 +539,10 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public override void InitializeCommand(OracleCommand command)
 		{
-			command.CommandText = OracleDatabaseCommands.SelectObjectScriptCommandText;
+			command.CommandText = _schemaObject.Type.In(OracleSchemaObjectType.Table, OracleSchemaObjectType.View, OracleSchemaObjectType.MaterializedView)
+				? OracleDatabaseCommands.SelectComplexObjectScriptCommandText
+				: OracleDatabaseCommands.SelectSimpleObjectScriptCommandText;
+
 			command.AddSimpleParameter("OBJECT_TYPE", _schemaObject.Type.Replace(' ', '_').ToUpperInvariant());
 			command.AddSimpleParameter("NAME", _schemaObject.FullyQualifiedName.Name.Trim('"'));
 			command.AddSimpleParameter("SCHEMA", _schemaObject.FullyQualifiedName.Owner.Trim('"'));

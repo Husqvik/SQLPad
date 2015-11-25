@@ -138,6 +138,8 @@ namespace SqlPad.Oracle
 								return "System altered. ";
 							case NonTerminals.AlterTrigger:
 								return "Trigger altered. ";
+							case NonTerminals.AlterSynonym:
+								return "Synonym altered. ";
 							default:
 								return DefaultMessageCommandExecutedSuccessfully;
 						}
@@ -161,6 +163,8 @@ namespace SqlPad.Oracle
 								return "Materialized view log dropped. ";
 							case NonTerminals.DropMaterializedView:
 								return "Materialized view dropped. ";
+							case NonTerminals.DropSynonym:
+								return "Synonym dropped. ";
 							case NonTerminals.DropOther:
 								switch (rootDropClause?[0, 0]?.Id)
 								{

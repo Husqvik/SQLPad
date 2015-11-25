@@ -4315,6 +4315,32 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 				}
 			}
 
+			public class DropSynonym
+			{
+				[Test(Description = @"")]
+				public void TestDropSynonym()
+				{
+					const string statementText = @"DROP PUBLIC SYNONYM TEST_SCHEMA.TEST_SYNONYM FORCE";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(7);
+
+					terminals[0].Id.ShouldBe(Terminals.Drop);
+					terminals[1].Id.ShouldBe(Terminals.Public);
+					terminals[2].Id.ShouldBe(Terminals.Synonym);
+					terminals[3].Id.ShouldBe(Terminals.SchemaIdentifier);
+					terminals[4].Id.ShouldBe(Terminals.Dot);
+					terminals[5].Id.ShouldBe(Terminals.ObjectIdentifier);
+					terminals[6].Id.ShouldBe(Terminals.Force);
+				}
+			}
+
 			public class DropOther
 			{
 				[Test(Description = @"")]
@@ -5233,6 +5259,18 @@ TABLESPACE TBS_HQ_PDB";
 				public void TestInformationLifecycleManagementClause()
 				{
 					const string statementText = @"CREATE TABLE TEST_TABLE (C NUMBER) ILM ADD POLICY TIER TO TBS_HQ_PDB READ ONLY SEGMENT AFTER 2 YEARS OF CREATION";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestCreateTableWithUndocumentedReferencingKeywordWithinConstraintDefinition()
+				{
+					const string statementText = @"CREATE TABLE test_table (pk NUMBER PRIMARY KEY, fk NUMBER CONSTRAINT fk_test_table_self REFERENCING test_table(pk))";
 
 					var result = Parser.Parse(statementText);
 
@@ -6405,6 +6443,21 @@ END;";
 				public void TestAlterResourceCost()
 				{
 					const string statementText = @"ALTER RESOURCE COST PRIVATE_SGA 0 LOGICAL_READS_PER_SESSION 0 CONNECT_TIME 0 CPU_PER_SESSION 0";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+			}
+
+			public class AlterSynonym
+			{
+				[Test(Description = @"")]
+				public void TestAlterSynonym()
+				{
+					const string statementText = @"ALTER PUBLIC SYNONYM test_synonym COMPILE";
 
 					var result = Parser.Parse(statementText);
 
