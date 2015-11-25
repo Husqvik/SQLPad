@@ -1,8 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Documents;
+using System.Windows.Media;
 using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.DataDictionary;
 using SqlPad.Oracle.SemanticModel;
@@ -13,18 +18,62 @@ namespace SqlPad.Oracle
 {
 	public class OracleToolTipProvider : IToolTipProvider
 	{
+		private static readonly HashSet<string> TerminalCandidatesToSkip =
+			new HashSet<string>
+			{
+				Terminals.PlSqlCompilationParameter,
+				Terminals.CharacterCode,
+				Terminals.Avg,
+				Terminals.ConnectByRoot,
+				Terminals.Count,
+				Terminals.CumulativeDistribution,
+				Terminals.DenseRank,
+				Terminals.FirstValue,
+				Terminals.Lag,
+				Terminals.LastValue,
+				Terminals.Lead,
+				Terminals.Level,
+				Terminals.ListAggregation,
+				Terminals.NegationOrNull,
+				Terminals.Max,
+				Terminals.Min,
+				Terminals.PercentileContinuousDistribution,
+				Terminals.PercentileDiscreteDistribution,
+				Terminals.Rank,
+				Terminals.RowIdPseudoColumn,
+				Terminals.StandardDeviation,
+				Terminals.Sum,
+				Terminals.Time,
+				Terminals.Trim,
+				Terminals.User,
+				Terminals.Variance
+			};
+
 		public IToolTip GetToolTip(SqlDocumentRepository sqlDocumentRepository, int cursorPosition)
 		{
 			if (sqlDocumentRepository == null)
+			{
 				throw new ArgumentNullException(nameof(sqlDocumentRepository));
+			}
 
 			var node = sqlDocumentRepository.Statements.GetNodeAtPosition(cursorPosition);
 			if (node == null)
 			{
-				return null;
+				var statement = sqlDocumentRepository.Statements.GetStatementAtPosition(cursorPosition);
+				if (statement?.FirstUnparsedToken == null)
+				{
+					return null;
+				}
+
+				if (cursorPosition < statement.FirstUnparsedToken.Index || cursorPosition > statement.FirstUnparsedToken.Index + statement.FirstUnparsedToken.Value.Length)
+				{
+					return null;
+				}
+
+				return BuildExpectedTokenListToolTip(statement.LastTerminalNode);
 			}
 
-			var tip = node.Type == NodeType.Terminal ? node.Id : null;
+			var tip = node.Type == NodeType.Terminal && !node.Id.IsIdentifier() ? node.Id : null;
 
 			var validationModel = (OracleValidationModel)sqlDocumentRepository.ValidationModels[node.Statement];
 
@@ -46,9 +95,12 @@ namespace SqlPad.Oracle
 					case Terminals.DataTypeIdentifier:
 					case Terminals.ObjectIdentifier:
 						var objectReference = GetObjectReference(semanticModel, node);
-						return objectReference == null
-							? null
-							: BuildObjectTooltip(semanticModel.DatabaseModel, objectReference);
+						if (objectReference == null)
+						{
+							goto default;
+						}
+
+						return BuildObjectTooltip(semanticModel.DatabaseModel, objectReference);
 
 					case Terminals.Asterisk:
 						return BuildAsteriskToolTip(queryBlock, node);
@@ -103,10 +155,7 @@ namespace SqlPad.Oracle
 							if (typeToolTip != null)
 							{
 								tip = typeToolTip;
-							}
-							else
-							{
-								return null;
+								break;
 							}
 						}
 						else if (columnReference.ColumnDescription != null)
@@ -114,11 +163,13 @@ namespace SqlPad.Oracle
 							return BuildColumnToolTip(semanticModel.DatabaseModel, columnReference);
 						}
 						
-						break;
+						goto default;
 					case Terminals.DatabaseLinkIdentifier:
 						var databaseLink = GetDatabaseLink(queryBlock, node);
 						if (databaseLink == null)
+						{
 							return null;
+						}
 
 						tip = databaseLink.FullyQualifiedName + " (" + databaseLink.Host + ")";
 
@@ -127,10 +178,74 @@ namespace SqlPad.Oracle
 					case Terminals.ParameterIdentifier:
 						tip = GetParameterToolTip(semanticModel, node);
 						break;
+
+					default:
+						var missingTokenLookupTerminal = GetTerminalForCandidateLookup(node, node.LastTerminalNode);
+						if (missingTokenLookupTerminal != null)
+						{
+							return BuildExpectedTokenListToolTip(node);
+						}
+
+						break;
 				}
 			}
 
 			return String.IsNullOrEmpty(tip) ? null : new ToolTipObject { DataContext = tip };
+		}
+
+		private static ToolTipObject BuildExpectedTokenListToolTip(StatementGrammarNode node)
+		{
+			var candidates = OracleSqlParser.Instance.GetTerminalCandidates(node.LastTerminalNode)
+				.Where(c => !TerminalCandidatesToSkip.Contains(c.Id))
+				.ToArray();
+
+			if (candidates.Length == 0)
+			{
+				return null;
+			}
+
+			var candidateLabels = candidates
+				.Select(c => c.ToString())
+				.Distinct()
+				.OrderBy(l => l);
+
+			var candidateList = String.Join(Environment.NewLine, candidateLabels);
+			var stackPanel = new StackPanel();
+			stackPanel.Children.Add(new TextBlock(new Bold(new Run("Expecting one of the following: "))));
+			stackPanel.Children.Add(
+				new TextBox
+				{
+					Text = candidateList,
+					IsReadOnly = true,
+					IsReadOnlyCaretVisible = true,
+					Background = Brushes.Transparent,
+					BorderThickness = new Thickness()
+				});
+
+			return new ToolTipObject { Content = stackPanel };
+		}
+
+		private static StatementGrammarNode GetTerminalForCandidateLookup(StatementGrammarNode node, StatementGrammarNode sourceTerminal)
+		{
+			if (sourceTerminal == null)
+			{
+				return null;
+			}
+
+			while (true)
+			{
+				if (node == null)
+				{
+					return null;
+				}
+
+				if (!node.IsGrammarValid)
+				{
+					return node.LastTerminalNode == sourceTerminal ? sourceTerminal : null;
+				}
+
+				node = node.ParentNode;
+			}
 		}
 
 		private static IToolTip BuildSchemaTooltip(OracleDatabaseModelBase databaseModel, StatementNode terminal)

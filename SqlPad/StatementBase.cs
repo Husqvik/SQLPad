@@ -13,6 +13,8 @@ namespace SqlPad
 
 		public ParseStatus ParseStatus { get; set; }
 
+		public IToken FirstUnparsedToken { get; set; }
+
 		public StatementGrammarNode RootNode { get; set; }
 
 		public StatementGrammarNode TerminatorNode { get; set; }

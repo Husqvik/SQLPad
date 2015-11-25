@@ -466,6 +466,13 @@ namespace SqlPad.Oracle
 					if (lastTerminal == null ||
 					    !TerminatorIds.Contains(lastTerminal.Id) && tokenBuffer.Count > result.Nodes.Sum(n => n.TerminalCount))
 					{
+						if (lastTerminal != null)
+						{
+							var lastToken = result.BestCandidates.Last().LastTerminalNode.Token;
+							var parsedTerminalCount = result.BestCandidates.Sum(n => n.TerminalCount);
+							context.Statement.FirstUnparsedToken = tokenBuffer.Count > parsedTerminalCount ? tokenBuffer[parsedTerminalCount] : lastToken;
+						}
+
 						result.Status = ParseStatus.SequenceNotFound;
 					}
 
@@ -988,7 +995,7 @@ namespace SqlPad.Oracle
 
 		public override int GetHashCode()
 		{
-			return (Id != null ? Id.GetHashCode() : 0);
+			return Id?.GetHashCode() ?? 0;
 		}
 
 		public static implicit operator string(TerminalCandidate candidate)
@@ -999,6 +1006,40 @@ namespace SqlPad.Oracle
 		public static implicit operator TerminalCandidate(string id)
 		{
 			return new TerminalCandidate(id, null);
+		}
+
+		public override string ToString()
+		{
+			var builder = new StringBuilder(GetCandidateLabel(Id));
+			foreach (var id in FollowingMandatoryCandidates)
+			{
+				builder.Append(" ");
+				builder.Append(GetCandidateLabel(id));
+			}
+
+			return builder.ToString();
+		}
+
+		private static string GetCandidateLabel(string id)
+		{
+			if (id.IsIdentifierOrAlias())
+			{
+				return "<identifier>";
+			}
+
+			switch (id)
+			{
+				case OracleGrammarDescription.Terminals.IntegerLiteral:
+					return "<integer>";
+				case OracleGrammarDescription.Terminals.NumberLiteral:
+					return "<number>";
+				case OracleGrammarDescription.Terminals.StringLiteral:
+					return "<string>";
+				case OracleGrammarDescription.Terminals.DoubleQuotedStringLiteral:
+					return "<double quoted string>";
+				default:
+					return OracleGrammarDescription.Terminals.AllTerminals[id];
+			}
 		}
 	}
 }

@@ -117,7 +117,9 @@ namespace SqlPad
 		private void BuildLineNodeIndexes(ITextRunConstructionContext context)
 		{
 			if (_lineTerminals.Count > 0)
+			{
 				return;
+			}
 
 			ClearNodeIndexes();
 			
@@ -153,7 +155,7 @@ namespace SqlPad
 			var semanticErrorOrInvalidGrammarNodeEnumerator = _validationModels.Values
 				.SelectMany(vm => vm.SemanticErrors)
 				.Select(nv => nv.Node)
-				.Concat(_statements.SelectMany(s => s.InvalidGrammarNodes))
+				.Concat(_statements.Where(s => s.FirstUnparsedToken == null).SelectMany(s => s.InvalidGrammarNodes))
 				.OrderBy(n => n.SourcePosition.IndexStart)
 				.GetEnumerator();
 
@@ -204,7 +206,9 @@ namespace SqlPad
 			foreach (var line in context.Document.Lines)
 			{
 				if (!nodesAvailable)
+				{
 					break;
+				}
 
 				var singleLineTerminals = new List<TNode>();
 				dictionary.Add(line, singleLineTerminals);
@@ -212,12 +216,16 @@ namespace SqlPad
 				do
 				{
 					if (line.EndOffset < nodeEnumerator.Current.SourcePosition.IndexStart)
+					{
 						break;
+					}
 
 					singleLineTerminals.Add(nodeEnumerator.Current);
 
 					if (line.EndOffset < nodeEnumerator.Current.SourcePosition.IndexEnd)
+					{
 						break;
+					}
 
 					nodesAvailable = nodeEnumerator.MoveNext();
 				}
@@ -278,6 +286,12 @@ namespace SqlPad
 			var colorizeBackground = ColorizeBackground;
 			foreach (var statement in statementsAtLine)
 			{
+				if (statement.FirstUnparsedToken != null)
+				{
+					ProcessSegmentAtLine(line, SourcePosition.Create(statement.FirstUnparsedToken.Index, statement.FirstUnparsedToken.Index + statement.FirstUnparsedToken.Value.Length - 1),
+						element => element.TextRunProperties.SetTextDecorations(Resources.WaveErrorUnderline));
+				}
+
 				Brush backgroundBrush;
 				if (statement == ActiveStatement)
 				{
@@ -361,10 +375,10 @@ namespace SqlPad
 				return;
 			}
 
-			var errorColorStartOffset = Math.Max(line.Offset, segment.IndexStart);
-			var errorColorEndOffset = Math.Min(line.EndOffset, segment.IndexEnd + 1);
+			var startOffset = Math.Max(line.Offset, segment.IndexStart);
+			var endOffset = Math.Min(line.EndOffset, segment.IndexEnd + 1);
 
-			ChangeLinePart(errorColorStartOffset, errorColorEndOffset, visualElementAction);
+			ChangeLinePart(startOffset, endOffset, visualElementAction);
 		}
 	}
 }
