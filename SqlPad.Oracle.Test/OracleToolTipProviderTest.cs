@@ -1053,6 +1053,16 @@ SELECT * FROM data";
 			Assert.DoesNotThrow(() => _toolTipProvider.GetToolTip(_documentRepository, 12));
 		}
 
+		[Test(Description = @""), STAThread]
+		public void TestTooltipOverNamedParameterCombinedWithParameterlessFunction()
+		{
+			const string query = @"SELECT DBMS_RANDOM.VALUE(low => 0, high => 5) FROM DUAL WHERE ROWNUM = 1";
+
+			_documentRepository.UpdateStatements(query);
+
+			Assert.DoesNotThrow(() => _toolTipProvider.GetToolTip(_documentRepository, 25));
+		}
+
 		private static string GetTextFromTextBlock(TextBlock textBlock)
 		{
 			var inlines = textBlock.Inlines.Select(GetTextFromInline);

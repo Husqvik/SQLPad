@@ -152,7 +152,7 @@ namespace SqlPad.Oracle
 			var programReference = semanticModel.AllReferenceContainers
 				.SelectMany(c => c.AllReferences)
 				.OfType<OracleProgramReferenceBase>()
-				.SingleOrDefault(r => r.ParameterReferences.Any(parameterFilter));
+				.SingleOrDefault(r => r.ParameterReferences != null && r.ParameterReferences.Any(parameterFilter));
 
 			if (programReference?.Metadata == null)
 			{

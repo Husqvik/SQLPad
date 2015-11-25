@@ -1703,7 +1703,18 @@ namespace SqlPad
 			}
 			else
 			{
-				var toolTip = _toolTipProvider.GetToolTip(_documentRepository, offset);
+
+				IToolTip toolTip = null;
+
+				try
+				{
+					toolTip = _toolTipProvider.GetToolTip(_documentRepository, offset);
+				}
+				catch (Exception exception)
+				{
+					Messages.ShowError(exception.ToString());
+				}
+
 				if (toolTip == null)
 				{
 					return;
@@ -1713,7 +1724,7 @@ namespace SqlPad
 				toolTip.Control.FontFamily = new FontFamily("Segoe UI");
 				DynamicPopup.Child = toolTip.Control.AsPopupChild();
 			}
-			
+
 			DynamicPopup.Placement = PlacementMode.Mouse;
 			DynamicPopup.HorizontalOffset = 0;
 			DynamicPopup.VerticalOffset = 0;
