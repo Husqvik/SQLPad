@@ -732,7 +732,7 @@ namespace SqlPad.Oracle.SemanticModel
 				return;
 			}
 
-			var isSubPartition = objectReference.PartitionReference.RootNode.FirstTerminalNode.Id == Terminals.Subpartition;
+			var isSubPartition = String.Equals(objectReference.PartitionReference.RootNode.FirstTerminalNode.Id, Terminals.Subpartition);
 			if (isSubPartition)
 			{
 				OracleSubPartition subPartition = null;
@@ -2820,7 +2820,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private StatementGrammarNode GetPrefixNodeFromPrefixedColumnReference(StatementGrammarNode identifier)
 		{
-			var prefixedColumnReferenceNode = identifier.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference) ?? identifier.ParentNode;
+			var prefixedColumnReferenceNode = identifier.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.Expression), NonTerminals.PrefixedColumnReference) ?? identifier.ParentNode;
 			return prefixedColumnReferenceNode?[NonTerminals.Prefix];
 		}
 

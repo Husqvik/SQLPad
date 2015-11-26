@@ -114,9 +114,10 @@ namespace SqlPad.Oracle
 								continue;
 							}
 
-							while (aggregateExpression.ChildNodes.Count >= 2 && String.Equals(aggregateExpression[0].Id, Terminals.LeftParenthesis) && String.Equals(aggregateExpression[1].Id, NonTerminals.Expression))
+							StatementGrammarNode unwrappedExpression;
+							while ((unwrappedExpression = aggregateExpression[NonTerminals.ParenthesisEnclosedExpression, NonTerminals.Expression]) != null)
 							{
-								aggregateExpression = aggregateExpression[1];
+								aggregateExpression = unwrappedExpression;
 							}
 
 							if (aggregateExpression[NonTerminals.ExpressionMathOperatorChainedList] != null || aggregateExpression[NonTerminals.AggregateFunctionCall] == null)

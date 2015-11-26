@@ -5506,9 +5506,7 @@
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
-          <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="Expression" />
-          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ParenthesisEnclosedExpression" />
           <NonTerminal Id="TimestampAtTimeZone" IsOptional="true" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
@@ -6655,6 +6653,12 @@
           <Terminal Id="Member" />
           <Terminal Id="Of" IsOptional="true" />
           <NonTerminal Id="PrefixedColumnReference" />
+          <NonTerminal Id="ChainedCondition" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ParenthesisEnclosedExpressionListWithMandatoryExpressions" />
+          <Terminal Id="Overlaps" />
+          <NonTerminal Id="ParenthesisEnclosedExpressionListWithMandatoryExpressions" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -20486,11 +20490,15 @@
     <Terminal Id="PlSqlConditionalCompilationElse" Value="$ELSE" />
     <Terminal Id="PlSqlConditionalCompilationEnd" Value="$END" />
     <Terminal Id="PlSqlConditionalCompilationError" Value="$ERROR" />
+    
+    <!-- Undocumented -->
+    <Terminal Id="Overlaps" Value="OVERLAPS" />
 
     <!-- Oracle 12c specific -->
+    <Terminal Id="Containers" Value="CONTAINERS" />
+    
     <!-- Cross/outer apply clause -->
     <Terminal Id="Apply" Value="APPLY" />
-    <Terminal Id="Containers" Value="CONTAINERS" />
 
     <!-- Lateral join -->
     <Terminal Id="Lateral" Value="LATERAL" />

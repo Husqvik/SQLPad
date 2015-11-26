@@ -2629,6 +2629,16 @@ ORDER BY symbol, tstamp";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
+		[Test(Description = @"")]
+		public void TestUndocumentedOverlapsOperator()
+		{
+			const string statement1 = @"SELECT * FROM DUAL WHERE (DATE'2007-01-01' + 1, DATE'2008-01-01') OVERLAPS (DATE'2005-01-01', DATE'2006-01-01' + 1) AND 1 = 1";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+		}
+
 		public class PlSql
 		{
 			[Test(Description = @"")]

@@ -161,15 +161,14 @@ namespace SqlPad.Oracle.SemanticModel
 				return false;
 			}
 
-			StatementGrammarNode analyzedNode;
 			var isChainedExpression = expressionNode[NonTerminals.ExpressionMathOperatorChainedList] != null;
 			if (isChainedExpression)
 			{
 				return false;
 			}
 
-			if (expressionNode.ChildNodes.Count >= 2 && String.Equals(expressionNode.ChildNodes[0].Id, Terminals.LeftParenthesis) &&
-				String.Equals((analyzedNode = expressionNode.ChildNodes[1]).Id, NonTerminals.Expression))
+			var analyzedNode = expressionNode[NonTerminals.ParenthesisEnclosedExpression, NonTerminals.Expression];
+			if (analyzedNode != null)
 			{
 				return TryResolveDataTypeFromExpression(analyzedNode, column);
 			}
