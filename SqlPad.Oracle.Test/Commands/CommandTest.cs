@@ -1023,6 +1023,17 @@ FROM
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestOrderByUsageWhenAtColumnAlias()
+		{
+			const string statement = "SELECT NULL counter FROM DUAL ORDER BY counter";
+
+			var foundSegments = FindUsagesOrdered(statement, 12);
+			foundSegments.Count.ShouldBe(2);
+			foundSegments[0].IndextStart.ShouldBe(12);
+			foundSegments[1].IndextStart.ShouldBe(39);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestWrapCommonTableExpressionIntoAnotherCommonTableExpression()
 		{
 			_editor.Text = "WITH CTE1 AS (SELECT NAME FROM SELECTION) SELECT NAME FROM CTE1";

@@ -386,6 +386,13 @@ namespace SqlPad.Oracle.Commands
 						}
 					}
 				}
+				else
+				{
+					var orderByReferenceNodes = queryBlock.ColumnReferences
+						.Where(c => c.Placement == StatementPlacement.OrderBy && c.ValidObjectReference == queryBlock.SelfObjectReference && String.Equals(c.NormalizedName, selectListColumn.NormalizedName))
+						.Select(c => c.ColumnNode);
+					nodes = nodes.Concat(orderByReferenceNodes);
+				}
 			}
 
 			var parentNodes = GetParentQueryBlockReferences(selectListColumn);
