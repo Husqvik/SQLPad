@@ -3750,7 +3750,21 @@
         <Sequence>
           <NonTerminal Id="DropSynonym" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="DropDatabaseLink" />
+        </Sequence>
         <!-- TODO: Drop other objects -->
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DropDatabaseLink">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Public" IsOptional="true" />
+          <Terminal Id="Database" />
+          <Terminal Id="Link" />
+          <NonTerminal Id="DatabaseLinkName" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -10177,7 +10191,84 @@
         <Sequence>
           <NonTerminal Id="CreateServerParameterFile" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="CreateDatabaseLink" />
+        </Sequence>
         <!-- TODO: Create other objects -->
+      </Sequences>
+    </Rule>
+
+    <!-- CREATE DATABASE LINK -->
+    <Rule StartingNonTerminal="CreateDatabaseLink">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Shared" IsOptional="true" />
+          <Terminal Id="Public" IsOptional="true" />
+          <Terminal Id="Database" />
+          <Terminal Id="Link" />
+          <NonTerminal Id="DatabaseLinkName" />
+          <NonTerminal Id="DatabaseLinkOptionList" IsOptional="true" />
+          <NonTerminal Id="UsingConnectionString" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DatabaseLinkOptionList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="DatabaseLinkOption" />
+          <NonTerminal Id="DatabaseLinkOptionList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DatabaseLinkOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Connect" />
+          <Terminal Id="To" />
+          <NonTerminal Id="DatabaseLinkConnectToOption" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="DatabaseLinkAuthetication" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DatabaseLinkAuthetication">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Authenticated" />
+          <Terminal Id="By" />
+          <Terminal Id="Identifier" />
+          <Terminal Id="Identified" />
+          <Terminal Id="By" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DatabaseLinkConnectToOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="CurrentUser" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Identifier" />
+          <Terminal Id="Identified" />
+          <Terminal Id="By" />
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="DatabaseLinkAuthetication" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="UsingConnectionString">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Using" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>
       </Sequences>
     </Rule>
     
@@ -20087,6 +20178,8 @@
     <Terminal Id="Result" Value="RESULT" />
     <Terminal Id="ObjectId" Value="OID" />
     <Terminal Id="Under" Value="UNDER" />
+    <Terminal Id="Shared" Value="SHARED" />
+    <Terminal Id="Authenticated" Value="AUTHENTICATED" />
 
     <!-- External table opaque format specification -->
     <Terminal Id="OracleLoader" Value="ORACLE_LOADER" />
@@ -20492,7 +20585,7 @@
     <Terminal Id="PlSqlConditionalCompilationError" Value="$ERROR" />
     
     <!-- Undocumented -->
-    <Terminal Id="Overlaps" Value="OVERLAPS" />
+    <Terminal Id="Overlaps" Value="OVERLAPS" ReservedWord="PlSql" />
 
     <!-- Oracle 12c specific -->
     <Terminal Id="Containers" Value="CONTAINERS" />

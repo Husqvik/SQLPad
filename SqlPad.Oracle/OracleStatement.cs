@@ -100,6 +100,13 @@ namespace SqlPad.Oracle
 								return "Rollback segment created. ";
 							case NonTerminals.CreateRestorePoint:
 								return "Restore point created. ";
+							case NonTerminals.CreateSchemaAuthorization:
+								return "Schema created. ";
+							case NonTerminals.CreateDatabaseLink:
+								return "Database link created. ";
+							case NonTerminals.CreateParameterFile:
+							case NonTerminals.CreateServerParameterFile:
+								return "File created. ";
 							default:
 								return DefaultMessageCommandExecutedSuccessfully;
 						}
@@ -165,6 +172,10 @@ namespace SqlPad.Oracle
 								return "Materialized view dropped. ";
 							case NonTerminals.DropSynonym:
 								return "Synonym dropped. ";
+							case NonTerminals.DropType:
+								return "Type dropped. ";
+							case NonTerminals.DropDatabaseLink:
+								return "Database link dropped. ";
 							case NonTerminals.DropOther:
 								switch (rootDropClause?[0, 0]?.Id)
 								{

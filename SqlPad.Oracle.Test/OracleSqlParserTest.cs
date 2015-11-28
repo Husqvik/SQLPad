@@ -4300,6 +4300,21 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 				}
 			}
 
+			public class DropDatabaseLink
+			{
+				[Test(Description = @"")]
+				public void TestDropDatabaseLink()
+				{
+					const string statementText = @"DROP PUBLIC DATABASE LINK HQPDB@LOOPBACK";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+			}
+
 			public class DropType
 			{
 				[Test(Description = @"")]
@@ -5902,6 +5917,25 @@ IS
 		RETURN ODCIConst.Success;
 	END;
 END;";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+			}
+
+			public class CreateDatabaseLink
+			{
+				[Test(Description = @"")]
+				public void TestCreateDatabaseLink()
+				{
+					const string statementText =
+@"CREATE PUBLIC DATABASE LINK HQPDB@LOOPBACK
+CONNECT TO HUSQVIK
+IDENTIFIED BY oracle
+USING 'localhost:1521/hqpdb'";
 
 					var result = Parser.Parse(statementText);
 
