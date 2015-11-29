@@ -32,7 +32,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private static int _counter;
 
-		private readonly string _connectionString;
 		private readonly OracleDatabaseModel _databaseModel;
 		private readonly List<OracleTraceEvent> _activeTraceEvents = new List<OracleTraceEvent>();
 		private readonly Dictionary<ResultInfo, CommandReader> _commandReaders = new Dictionary<ResultInfo, CommandReader>();
@@ -71,8 +70,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 		public OracleConnectionAdapter(OracleDatabaseModel databaseModel)
 		{
 			_databaseModel = databaseModel;
-			var connectionStringBuilder = new OracleConnectionStringBuilder(databaseModel.ConnectionString.ConnectionString) { Pooling = false, SelfTuning = false };
-			_connectionString = connectionStringBuilder.ConnectionString;
 
 			var identifier = Convert.ToString(Interlocked.Increment(ref _counter));
 			UpdateModuleName(identifier);
@@ -198,7 +195,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			_databaseOutputEnabled = false;
 
-			_userConnection = new OracleConnection(_connectionString);
+			_userConnection = new OracleConnection();
 			_userConnection.InfoMessage += UserConnectionInfoMessageHandler;
 		}
 
@@ -615,7 +612,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private async Task EnsureUserConnectionOpen(CancellationToken cancellationToken)
 		{
-			var isConnectionStateChanged = await _userConnection.EnsureConnectionOpen(cancellationToken);
+			var connectionString = OracleConnectionStringRepository.GetUserConnectionString(_databaseModel.ConnectionString.ConnectionString);
+			var isConnectionStateChanged = await _userConnection.EnsureConnectionOpen(connectionString, cancellationToken);
 			if (isConnectionStateChanged)
 			{
 				Trace.WriteLine("User connection has been open. ");
@@ -763,7 +761,16 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 			catch (OracleException exception)
 			{
-				if (currentStatementResult != null)
+				if (currentStatementResult == null)
+				{
+					statementResults.Add(
+						new StatementExecutionResult
+						{
+							StatementModel = batchExecutionModel.Statements[0],
+							Exception = exception
+						});
+				}
+				else
 				{
 					currentStatementResult.Exception = exception;
 
@@ -822,7 +829,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private async Task<int?> GetSyntaxErrorIndex(string sqlText, CancellationToken cancellationToken)
 		{
-			using (var connection = new OracleConnection(_connectionString))
+			using (var connection = new OracleConnection(_databaseModel.BackgroundConnectionString))
 			{
 				using (var command = connection.CreateCommand())
 				{
@@ -1060,7 +1067,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private async Task<Exception> ResolveExecutionPlanIdentifiersAndTransactionStatus(CancellationToken cancellationToken)
 		{
-			using (var connection = new OracleConnection(_connectionString))
+			using (var connection = new OracleConnection(_databaseModel.BackgroundConnectionString))
 			{
 				using (var command = connection.CreateCommand())
 				{

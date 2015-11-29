@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -168,6 +170,11 @@ namespace SqlPad
 			{
 				return await reader.ReadToEndAsync();
 			}
+		}
+
+		public static string GetPlainText(this SecureString secureString)
+		{
+			return Marshal.PtrToStringUni(Marshal.SecureStringToGlobalAllocUnicode(secureString));
 		}
 	}
 

@@ -33,7 +33,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private readonly Timer _refreshTimer = new Timer();
 		private readonly HashSet<OracleConnectionAdapter> _connectionAdapters = new HashSet<OracleConnectionAdapter>();
 		private readonly string _connectionStringName;
-		private readonly OracleConnectionStringBuilder _oracleConnectionString;
 		private bool _isInitialized;
 		private bool _isDisposed;
 		private bool _isRefreshing;
@@ -43,7 +42,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private ILookup<OracleProgramIdentifier, OracleProgramMetadata> _allFunctionMetadata = Enumerable.Empty<OracleProgramMetadata>().ToLookup(m => m.Identifier);
 		private ILookup<OracleObjectIdentifier, OracleReferenceConstraint> _uniqueConstraintReferringReferenceConstraints = Enumerable.Empty<OracleReferenceConstraint>().ToLookup(m => m.FullyQualifiedName);
 		private readonly ConnectionStringSettings _connectionString;
-		private readonly string _innerConnectionString;
+
 		private readonly string _moduleName;
 		private HashSet<string> _schemas = new HashSet<string>();
 		private IReadOnlyDictionary<string, OracleSchema> _allSchemas = new Dictionary<string, OracleSchema>();
@@ -61,6 +60,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public string ConnectionIdentifier { get; }
 
+		internal string BackgroundConnectionString => OracleConnectionStringRepository.GetBackgroundConnectionString(_connectionString.ConnectionString);
+
 		private OracleDatabaseModel(ConnectionStringSettings connectionString, string identifier)
 		{
 			_connectionString = connectionString;
@@ -70,13 +71,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 				throw new ArgumentException("Connection string must contain USER ID");
 			}
 
-			_innerConnectionString = connectionStringBuilder.ConnectionString;
-
 			ConnectionIdentifier = identifier;
 			_moduleName = $"{ModuleNameSqlPadDatabaseModelBase}/{identifier}";
-			_oracleConnectionString = new OracleConnectionStringBuilder(connectionString.ConnectionString);
-			_currentSchema = _oracleConnectionString.UserID.ToQuotedIdentifier().Trim('"');
-			_connectionStringName = $"{_oracleConnectionString.DataSource}_{_currentSchema}";
+			_currentSchema = connectionStringBuilder.UserID.ToQuotedIdentifier().Trim('"');
+			_connectionStringName = $"{connectionStringBuilder.DataSource}_{_currentSchema}";
+
+			HasDbaPrivilege = String.Equals(connectionStringBuilder.DBAPrivilege.ToUpperInvariant(), "SYSDBA");
 
 			lock (ActiveDataModelRefresh)
 			{
@@ -224,7 +224,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override bool IsMetadataAvailable => _dataDictionary != OracleDataDictionary.EmptyDictionary;
 
-		public override bool HasDbaPrivilege => String.Equals(_oracleConnectionString.DBAPrivilege.ToUpperInvariant(), "SYSDBA");
+		public override bool HasDbaPrivilege { get; }
 
 		public override string CurrentSchema
 		{
@@ -404,12 +404,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		internal Task UpdateModelAsync(CancellationToken cancellationToken, bool suppressException, params IModelDataProvider[] updaters)
 		{
-			return UpdateModelAsync(_innerConnectionString, _currentSchema, cancellationToken, suppressException, updaters);
+			return UpdateModelAsync(BackgroundConnectionString, _currentSchema, cancellationToken, suppressException, updaters);
 		}
 
 		internal static async Task UpdateModelAsync(string connectionString, string currentSchema, CancellationToken cancellationToken, bool suppressException, params IModelDataProvider[] updaters)
 		{
-			using (var connection = new OracleConnection(connectionString))
+			using (var connection = new OracleConnection())
 			{
 				using (var command = connection.CreateCommand())
 				{
@@ -430,7 +430,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 							{
 								if (updater.IsValid)
 								{
-									if (await connection.EnsureConnectionOpen(cancellationToken))
+									if (await connection.EnsureConnectionOpen(connectionString, cancellationToken))
 									{
 										connection.ModuleName = "SQLPad backround";
 										connection.ActionName = "Model data provider";
@@ -495,7 +495,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 		}
 
 		public override event EventHandler Initialized;
-		
+
+		public override event EventHandler<DatabaseModelPasswordArgs> PasswordRequired;
+
 		public override event EventHandler<DatabaseModelConnectionErrorArgs> InitializationFailed;
 
 		public override event EventHandler<DatabaseModelConnectionErrorArgs> Disconnected;
@@ -535,6 +537,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 
 			Initialized = null;
+			PasswordRequired = null;
 			Disconnected = null;
 			InitializationFailed = null;
 			RefreshStarted = null;
@@ -589,7 +592,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			_isInitialized = false;
 
-		    Disconnected?.Invoke(this, new DatabaseModelConnectionErrorArgs(exception));
+			Disconnected?.Invoke(this, new DatabaseModelConnectionErrorArgs(exception));
 		}
 
 		private void EnsureDatabaseProperties()
@@ -600,7 +603,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				return;
 			}
 
-			using (var connection = new OracleConnection(_innerConnectionString))
+			using (var connection = new OracleConnection(BackgroundConnectionString))
 			{
 				connection.Open();
 
@@ -617,7 +620,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		internal IEnumerable<T> ExecuteReader<T>(Func<string> getCommandTextFunction, Func<OracleDataReader, T> formatFunction)
 		{
-			using (var connection = new OracleConnection(_innerConnectionString))
+			using (var connection = new OracleConnection(BackgroundConnectionString))
 			{
 				connection.Open();
 
@@ -883,6 +886,26 @@ namespace SqlPad.Oracle.DatabaseConnection
 			eventHandler?.Invoke(this, EventArgs.Empty);
 		}
 
+		private bool TryGetPassword()
+		{
+			if (PasswordRequired == null)
+			{
+				return false;
+			}
+
+			var args = new DatabaseModelPasswordArgs();
+			PasswordRequired(this, args);
+
+			if (args.CancelConnection)
+			{
+				return false;
+			}
+
+			OracleConnectionStringRepository.ModifyConnectionString(_connectionString.ConnectionString, b => b.Password = args.Password.GetPlainText());
+
+			return true;
+		}
+
 		public override Task Initialize()
 		{
 			return Task.Factory.StartNew(InitializeInternal);
@@ -892,15 +915,19 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			try
 			{
-				ResolveSchemas();
+				UpdateSchemas(OracleSchemaResolver.ResolveSchemas(this));
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				Trace.WriteLine($"Database model initialization failed: {e}");
 
 				InitializationFailed?.Invoke(this, new DatabaseModelConnectionErrorArgs(e));
 
 				return;
+			}
+			finally
+			{
+				OracleSchemaResolver.UnregisterActiveModel(this);
 			}
 			
 			_isInitialized = true;
@@ -917,12 +944,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 			SetRefreshTimerInterval();
 			_refreshTimer.Elapsed += RefreshTimerElapsedHandler;
 			_refreshTimer.Start();
-		}
-
-		private void ResolveSchemas()
-		{
-			var schemas = OracleSchemaResolver.ResolveSchemas(this);
-			UpdateSchemas(schemas);
 		}
 
 		private void UpdateSchemas(IEnumerable<OracleSchema> schemas)
@@ -949,9 +970,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private class OracleSchemaResolver
 		{
 			private static readonly Dictionary<string, OracleSchemaResolver> ActiveResolvers = new Dictionary<string, OracleSchemaResolver>();
+			private static readonly Dictionary<string, HashSet<OracleDatabaseModel>> ActiveDatabaseModels = new Dictionary<string, HashSet<OracleDatabaseModel>>();
 
 			private readonly OracleDatabaseModel _databaseModel;
 			private IReadOnlyCollection<OracleSchema> _schemas;
+
+			private bool _enablePasswordRetrieval = true;
 
 			private OracleSchemaResolver(OracleDatabaseModel databaseModel)
 			{
@@ -962,7 +986,25 @@ namespace SqlPad.Oracle.DatabaseConnection
 			{
 				lock (ActiveResolvers)
 				{
-					ActiveResolvers.Remove(databaseModel.ConnectionString.ConnectionString);
+					var connectionString = databaseModel.ConnectionString.ConnectionString;
+					ActiveResolvers.Remove(connectionString);
+					GetActiveModels(connectionString).Clear();
+				}
+			}
+
+			public static void UnregisterActiveModel(OracleDatabaseModel databaseModel)
+			{
+				lock (ActiveResolvers)
+				{
+					var connectionString = databaseModel.ConnectionString.ConnectionString;
+					var activeModels = GetActiveModels(connectionString);
+					activeModels.Remove(databaseModel);
+
+					OracleSchemaResolver resolver;
+					if (activeModels.Count == 0 && ActiveResolvers.TryGetValue(connectionString, out resolver))
+					{
+						resolver._enablePasswordRetrieval = true;
+					}
 				}
 			}
 
@@ -971,15 +1013,30 @@ namespace SqlPad.Oracle.DatabaseConnection
 				OracleSchemaResolver resolver;
 				lock (ActiveResolvers)
 				{
-					if (!ActiveResolvers.TryGetValue(databaseModel.ConnectionString.ConnectionString, out resolver))
+					var connectionString = databaseModel.ConnectionString.ConnectionString;
+
+					GetActiveModels(connectionString).Add(databaseModel);
+
+					if (!ActiveResolvers.TryGetValue(connectionString, out resolver))
 					{
 						resolver = new OracleSchemaResolver(databaseModel);
-						ActiveResolvers.Add(databaseModel.ConnectionString.ConnectionString, resolver);
+						ActiveResolvers.Add(connectionString, resolver);
 					}
 				}
 
 				resolver.ResolveSchemas();
 				return resolver._schemas;
+			}
+
+			private static HashSet<OracleDatabaseModel> GetActiveModels(string connectionString)
+			{
+				HashSet<OracleDatabaseModel> activeModels;
+				if (!ActiveDatabaseModels.TryGetValue(connectionString, out activeModels))
+				{
+					ActiveDatabaseModels.Add(connectionString, activeModels = new HashSet<OracleDatabaseModel>());
+				}
+
+				return activeModels;
 			}
 
 			private void ResolveSchemas()
@@ -991,7 +1048,27 @@ namespace SqlPad.Oracle.DatabaseConnection
 						return;
 					}
 
-					_databaseModel.EnsureDatabaseProperties();
+					do
+					{
+						try
+						{
+							_databaseModel.EnsureDatabaseProperties();
+							break;
+						}
+						catch (OracleException exception)
+						{
+							var exceptionCode = (OracleErrorCode)exception.Number;
+							if (_enablePasswordRetrieval &&
+							    exceptionCode.In(OracleErrorCode.NullPasswordGiven, OracleErrorCode.InvalidUsernameOrPassword) &&
+							    (_enablePasswordRetrieval = _databaseModel.TryGetPassword()))
+							{
+								continue;
+							}
+
+							throw;
+						}
+					} while (true);
+
 					_schemas = _databaseModel._dataDictionaryMapper.GetSchemaNames().ToList().AsReadOnly();
 					Trace.WriteLine("Schema metadata loaded. ");
 				}
@@ -999,9 +1076,59 @@ namespace SqlPad.Oracle.DatabaseConnection
 		}
 	}
 
+	internal static class OracleConnectionStringRepository
+	{
+		public static Dictionary<string, OracleConnectionStringBuilder> ConnectionStringBuilders { get; } = new Dictionary<string, OracleConnectionStringBuilder>();
+
+		public static void ModifyConnectionString(string connectionString, Action<OracleConnectionStringBuilder> modifyAction)
+		{
+			lock (ConnectionStringBuilders)
+			{
+				modifyAction(GetEntry(connectionString));
+			}
+		}
+
+		public static string GetUserConnectionString(string connectionString)
+		{
+			return
+				new OracleConnectionStringBuilder(GetEntry(connectionString).ConnectionString)
+				{
+					Pooling = false,
+					SelfTuning = false
+				}.ToString();
+		}
+
+		public static string GetBackgroundConnectionString(string connectionString)
+		{
+			return
+				new OracleConnectionStringBuilder(GetEntry(connectionString).ConnectionString)
+				{
+					SelfTuning = false,
+					MinPoolSize = 1,
+					IncrPoolSize = 1
+				}.ToString();
+		}
+
+		private static OracleConnectionStringBuilder GetEntry(string connectionString)
+		{
+			lock (ConnectionStringBuilders)
+			{
+				OracleConnectionStringBuilder connectionStringBuilder;
+				if (!ConnectionStringBuilders.TryGetValue(connectionString, out connectionStringBuilder))
+				{
+					ConnectionStringBuilders[connectionString] = connectionStringBuilder = new OracleConnectionStringBuilder(connectionString);
+				}
+
+				return connectionStringBuilder;
+			}
+		}
+	}
+
 	internal enum OracleErrorCode
 	{
+		NullPasswordGiven = 1005,
 		UserInvokedCancellation = 1013,
+		InvalidUsernameOrPassword = 1017,
 		NotConnectedToOracle = 3114,
 		EndOfFileOnCommunicationChannel = 3113,
 		TnsPacketWriterFailure = 12571,

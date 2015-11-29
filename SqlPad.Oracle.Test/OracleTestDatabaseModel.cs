@@ -1069,7 +1069,9 @@ TABLESPACE ""TBS_HQ_PDB""";
 
 		public override bool IsFresh => true;
 
-	    public override event EventHandler Initialized = delegate { };
+		public override event EventHandler Initialized = delegate { };
+
+		public override event EventHandler<DatabaseModelPasswordArgs> PasswordRequired;
 
 		public override event EventHandler<DatabaseModelConnectionErrorArgs> InitializationFailed;
 

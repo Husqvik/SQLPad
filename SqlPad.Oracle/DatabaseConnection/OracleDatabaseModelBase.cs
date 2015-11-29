@@ -107,6 +107,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public abstract event EventHandler Initialized;
 
+		public abstract event EventHandler<DatabaseModelPasswordArgs> PasswordRequired;
+
 		public abstract event EventHandler<DatabaseModelConnectionErrorArgs> InitializationFailed;
 
 		public abstract event EventHandler<DatabaseModelConnectionErrorArgs> Disconnected;

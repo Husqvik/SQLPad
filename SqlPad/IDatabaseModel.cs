@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
+using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,6 +27,8 @@ namespace SqlPad
 		Task Refresh(bool force);
 
 		event EventHandler Initialized;
+
+		event EventHandler<DatabaseModelPasswordArgs> PasswordRequired;
 
 		event EventHandler<DatabaseModelConnectionErrorArgs> InitializationFailed;
 
@@ -117,6 +120,13 @@ namespace SqlPad
 			
 			Exception = exception;
 		}
+	}
+
+	public class DatabaseModelPasswordArgs : EventArgs
+	{
+		public bool CancelConnection { get; set; }
+
+		public SecureString Password { get; set; }
 	}
 
 	public class DatabaseModelRefreshStatusChangedArgs : EventArgs

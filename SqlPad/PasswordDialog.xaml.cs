@@ -1,21 +1,37 @@
 ﻿using System;
+using System.Security;
 using System.Windows;
 
 namespace SqlPad
 {
 	public partial class PasswordDialog
 	{
-		public PasswordDialog(string label = null)
+		public string Password => TextPassword.Password;
+
+		private PasswordDialog(string label)
 		{
 			InitializeComponent();
 
-			if (String.IsNullOrEmpty(label))
-			{
-				Label.Text = label;
-			}
+			Label.Text = label;
 		}
 
-		public string Password { get { return TextPassword.Password; } }
+		public static SecureString AskForPassword(string label, Window owner)
+		{
+			SecureString secureString = null;
+			var passwordDialog = new PasswordDialog(label) { Owner = owner };
+			if (passwordDialog.ShowDialog() == true)
+			{
+				secureString = new SecureString();
+				foreach (var character in passwordDialog.Password)
+				{
+					secureString.AppendChar(character);
+				}
+			}
+
+			passwordDialog.TextPassword.Password = String.Empty;
+
+			return secureString;
+		}
 
 		private void ButtonConfirmPasswordClickHandler(object sender, RoutedEventArgs e)
 		{

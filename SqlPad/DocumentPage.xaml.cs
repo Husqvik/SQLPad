@@ -421,9 +421,10 @@ namespace SqlPad
 			DisposeOutputViewers();
 			AddNewOutputViewer();
 
-			DatabaseModel.Initialized += DatabaseModelInitializedHandler;
-			DatabaseModel.Disconnected += DatabaseModelInitializationFailedHandler;
-			DatabaseModel.InitializationFailed += DatabaseModelInitializationFailedHandler;
+			DatabaseModel.Initialized += delegate { Dispatcher.Invoke(DatabaseModelInitializedHandler); };
+			DatabaseModel.PasswordRequired += (sender, args) => Dispatcher.Invoke(() => DatabaseModelPasswordRequiredHandler(args));
+			DatabaseModel.Disconnected += (sender, args) => Dispatcher.Invoke(() => DatabaseModelInitializationFailedHandler(args.Exception));
+			DatabaseModel.InitializationFailed += (sender, args) => Dispatcher.Invoke(() => DatabaseModelInitializationFailedHandler(args.Exception));
 			DatabaseModel.RefreshStarted += DatabaseModelRefreshStartedHandler;
 			DatabaseModel.RefreshStatusChanged += DatabaseModelRefreshStatusChangedHandler;
 			DatabaseModel.RefreshCompleted += DatabaseModelRefreshCompletedHandler;
@@ -601,14 +602,10 @@ namespace SqlPad
 			UpdateDocumentHeaderToolTip();
 		}
 
-		private void DatabaseModelInitializedHandler(object sender, EventArgs args)
+		private void DatabaseModelInitializedHandler()
 		{
-			Dispatcher.Invoke(
-				() =>
-				{
-					ConnectionStatus = ConnectionStatus.Connected;
-					SetSchemas(DatabaseModel.Schemas);
-				});
+			ConnectionStatus = ConnectionStatus.Connected;
+			SetSchemas(DatabaseModel.Schemas);
 		}
 
 		private void ResetSchemas()
@@ -624,13 +621,20 @@ namespace SqlPad
 			CurrentSchema = DatabaseModel.CurrentSchema;
 		}
 
-		private void DatabaseModelInitializationFailedHandler(object sender, DatabaseModelConnectionErrorArgs args)
+		private void DatabaseModelPasswordRequiredHandler(DatabaseModelPasswordArgs args)
 		{
-			Dispatcher.Invoke(() =>
+			if (App.MainWindow.ActiveDocument.CurrentConnection.ConnectionString == CurrentConnection.ConnectionString)
 			{
-				ConnectionStatus = ConnectionStatus.Disconnected;
-				ConnectionErrorMessage = args.Exception.Message;
-			});
+				args.Password = PasswordDialog.AskForPassword("Password: ", App.MainWindow);
+			}
+
+			args.CancelConnection = args.Password == null;
+		}
+
+		private void DatabaseModelInitializationFailedHandler(Exception exception)
+		{
+			ConnectionStatus = ConnectionStatus.Disconnected;
+			ConnectionErrorMessage = exception.Message;
 		}
 
 		private void ButtonReconnectClickHandler(object sender, RoutedEventArgs e)

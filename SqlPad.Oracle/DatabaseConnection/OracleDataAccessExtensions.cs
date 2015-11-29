@@ -206,13 +206,14 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 		}
 
-		public static async Task<bool> EnsureConnectionOpen(this OracleConnection connection, CancellationToken cancellationToken)
+		public static async Task<bool> EnsureConnectionOpen(this OracleConnection connection, string connectionString, CancellationToken cancellationToken)
 		{
 			if (connection.State == ConnectionState.Open)
 			{
 				return false;
 			}
 
+			connection.ConnectionString = connectionString;
 			await connection.OpenAsynchronous(cancellationToken);
 			return true;
 		}

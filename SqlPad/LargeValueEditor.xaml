@@ -6,11 +6,10 @@
 		xmlns:sqlPad="clr-namespace:SqlPad"
 		xmlns:moonPdfLib="clr-namespace:MoonPdfLib;assembly=MoonPdfLib"
 		mc:Ignorable="d"
-		d:DesignHeight="640" d:DesignWidth="320"
-		Width="Auto" Height="Auto" MinHeight="320" MinWidth="480"
+		d:DesignHeight="160" d:DesignWidth="320"
+		Width="Auto" Height="Auto" MinHeight="160" MinWidth="320"
 		Loaded="LargeValueEditorLoadedHandler"
 		StateChanged="WindowStateChanged"
-		SizeToContent="WidthAndHeight"
 		WindowStartupLocation="CenterOwner" Icon="EmptyIcon.ico" ShowInTaskbar="False">
 
 	<Window.InputBindings>
@@ -52,10 +51,12 @@
 						</StatusBarItem>
 					</StatusBar>
 					<sqlPad:SqlTextEditor x:Name="TextEditor"
-										   FontFamily="Consolas"
-										   ShowLineNumbers="True"
-										   IsReadOnly="True"
-										   WordWrap="{Binding ElementName=CheckBoxWordWrap, Path=IsChecked}">
+					                      FontFamily="Consolas"
+					                      ShowLineNumbers="True"
+					                      IsReadOnly="True"
+					                      VerticalScrollBarVisibility="Auto"
+					                      HorizontalScrollBarVisibility="Auto"
+					                      WordWrap="{Binding ElementName=CheckBoxWordWrap, Path=IsChecked}">
 						<sqlPad:SqlTextEditor.ContextMenu>
 							<ContextMenu>
 								<MenuItem Command="Undo" />
@@ -75,7 +76,7 @@
 						<Button x:Name="ButtonSaveRawAs" Content="Save as..." Padding="6,0,6,0" Click="SaveRawAsClickHandler" Visibility="Collapsed" />
 					</StackPanel>
 					<Grid>
-						<sqlPad:SqlTextEditor x:Name="HexEditor" FontFamily="Consolas" IsReadOnly="True" />
+						<sqlPad:SqlTextEditor x:Name="HexEditor" FontFamily="Consolas" IsReadOnly="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" />
 						<StackPanel x:Name="LoadingNotification" VerticalAlignment="Center" Width="240" sqlPad:MarginSetter.Margin="0,8,0,8">
 							<TextBlock Text="Loading..." FontSize="16" HorizontalAlignment="Center" />
 							<ProgressBar x:Name="BinaryValueLoadingProgress" Height="24" IsIndeterminate="True" />

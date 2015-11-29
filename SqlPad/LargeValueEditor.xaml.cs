@@ -163,13 +163,13 @@ namespace SqlPad
 						Messages.ShowError("Invalid password");
 					}
 
-					var passwordDialog = new PasswordDialog("PDF password: ") { Owner = this };
-					if (passwordDialog.ShowDialog() != true)
+					var securePassword = PasswordDialog.AskForPassword("PDF password: ", this);
+					if (securePassword == null)
 					{
-						return true;
+						return false;
 					}
 
-					password = passwordDialog.Password;
+					password = securePassword.ToString();
 				}
 				catch
 				{
