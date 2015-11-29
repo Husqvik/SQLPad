@@ -839,14 +839,15 @@ namespace SqlPad.Oracle
 					}
 				}
 
-				ValidateNestedAnalyticFunctions(queryBlock, validationModel);
+				ValidateNestedAggregateAndAnalyticFunctions(queryBlock, validationModel);
 			}
 		}
 
-		private static void ValidateNestedAnalyticFunctions(OracleQueryBlock queryBlock, OracleValidationModel validationModel)
+		private static void ValidateNestedAggregateAndAnalyticFunctions(OracleQueryBlock queryBlock, OracleValidationModel validationModel)
 		{
 			var analyticFunctionReferences = queryBlock.Columns
-				.SelectMany(c => c.ProgramReferences).Where(p => p.AnalyticClauseNode != null || p.Metadata?.IsAggregate == true)
+				.SelectMany(c => c.ProgramReferences)
+				.Where(p => p.AnalyticClauseNode != null || p.Metadata?.IsAggregate == true)
 				.ToArray();
 
 			if (analyticFunctionReferences.Length == 0)
@@ -878,6 +879,54 @@ namespace SqlPad.Oracle
 				{
 					validationModel.InvalidNonTerminals[programReference.RootNode] =
 					   new InvalidNodeValidationData(semanticError) { Node = programReference.RootNode };
+				}
+			}
+
+			var orderByColumnAliasReferences = queryBlock.ColumnReferences
+				.Where(c => c.Placement == StatementPlacement.OrderBy && c.ValidObjectReference?.QueryBlocks.FirstOrDefault() == queryBlock);
+
+			foreach (var columnAliasReference in orderByColumnAliasReferences)
+			{
+				var aggregateFunctionCallNode = columnAliasReference.RootNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.OrderExpression), NonTerminals.AggregateFunctionCall);
+				if (aggregateFunctionCallNode == null)
+				{
+					continue;
+				}
+
+				var selectColumn = queryBlock.NamedColumns[columnAliasReference.NormalizedName].First();
+				var containsAggregateFunction = false;
+				var containsAnalyticFunction = false;
+				foreach (var functionReference in selectColumn.ProgramReferences)
+				{
+					var metadata = functionReference.Metadata;
+					if (metadata == null)
+					{
+						continue;
+					}
+
+					if (metadata.IsAggregate)
+					{
+						containsAggregateFunction = true;
+						break;
+					}
+
+					containsAnalyticFunction |= functionReference.AnalyticClauseNode != null;
+				}
+
+				string semanticError = null;
+				if (containsAggregateFunction)
+				{
+					semanticError = OracleSemanticErrorType.GroupFunctionNestedTooDeeply;
+				}
+				else if (containsAnalyticFunction)
+				{
+					semanticError = OracleSemanticErrorType.NotSingleGroupGroupFunction;
+				}
+
+				if (semanticError != null)
+				{
+					validationModel.InvalidNonTerminals[aggregateFunctionCallNode] =
+					   new InvalidNodeValidationData(semanticError) { Node = aggregateFunctionCallNode };
 				}
 			}
 		}

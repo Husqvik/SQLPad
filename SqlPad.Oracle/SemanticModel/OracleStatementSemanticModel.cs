@@ -1408,7 +1408,7 @@ namespace SqlPad.Oracle.SemanticModel
 				}
 
 				Func<OracleColumnReference, bool> objectPrefixedColumnFilter = c => c.ObjectNode != null && c.RootNode != null;
-                foreach (var columnReference in queryBlock.AllColumnReferences.Where(objectPrefixedColumnFilter))
+				foreach (var columnReference in queryBlock.AllColumnReferences.Where(objectPrefixedColumnFilter))
 				{
 					var uniqueObjectReferenceCount = queryBlock.ObjectReferences
 						.Where(o => o.Columns.Concat(o.PseudoColumns).Any(c => String.Equals(c.Name, columnReference.NormalizedName)))
@@ -1423,6 +1423,13 @@ namespace SqlPad.Oracle.SemanticModel
 							CreateRedundantTerminalGroup(redundantSchemaPrefixTerminals, RedundancyType.Qualifier);
 						}
 
+						continue;
+					}
+
+					if (columnReference.Placement == StatementPlacement.OrderBy &&
+						columnReference.ValidObjectReference?.QueryBlocks.FirstOrDefault() != queryBlock &&
+						queryBlock.NamedColumns[columnReference.NormalizedName].Any(c => !c.IsDirectReference))
+					{
 						continue;
 					}
 
@@ -2272,14 +2279,19 @@ namespace SqlPad.Oracle.SemanticModel
 			if (queryBlockNode == null)
 			{
 				OracleQueryBlock queryBlock = null;
-				var orderByClauseNode = node.GetPathFilterAncestor(n => n.Id != NonTerminals.NestedQuery, NonTerminals.OrderByClause, true);
+				Func<StatementGrammarNode, bool> queryBlockOrderByClausePredicate = n => String.Equals(n.Id, NonTerminals.OrderByClause) && String.Equals(n.ParentNode?.Id, NonTerminals.Subquery);
+
+				var orderByClauseNode = queryBlockOrderByClausePredicate(node)
+					? node
+					: node.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.NestedQuery), queryBlockOrderByClausePredicate);
+
 				if (orderByClauseNode != null)
 				{
 					queryBlock = _queryBlockNodes.Values.SingleOrDefault(qb => qb.OrderByClause == orderByClauseNode);
 				}
 				else
 				{
-					var explicitColumnListNode = node.GetPathFilterAncestor(n => n.Id != NonTerminals.NestedQuery, NonTerminals.ParenthesisEnclosedIdentifierList);
+					var explicitColumnListNode = node.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.NestedQuery), NonTerminals.ParenthesisEnclosedIdentifierList);
 					if (explicitColumnListNode != null)
 					{
 						queryBlock = _queryBlockNodes.Values.SingleOrDefault(qb => qb.AliasNode != null && qb.ExplicitColumnNameList == explicitColumnListNode);

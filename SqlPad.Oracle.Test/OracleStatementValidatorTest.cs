@@ -537,7 +537,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test(Description = @"")]
-		public void TestTooDeeplyNestedAggregatedFunction()
+		public void TestTooDeeplyNestedAggregateFunction()
 		{
 			const string sqlText = "SELECT COUNT(COUNT(COUNT(DUMMY))) FROM DUAL";
 			var statement = Parser.Parse(sqlText).Single();
@@ -551,6 +551,40 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			validationData.SemanticErrorType.ShouldBe(OracleSemanticErrorType.GroupFunctionNestedTooDeeply);
 			validationData.Node.SourcePosition.IndexStart.ShouldBe(19);
 			validationData.Node.SourcePosition.IndexEnd.ShouldBe(30);
+		}
+
+		[Test(Description = @"")]
+		public void TestTooDeeplyNestedAggregateFunctionInOrderByClause()
+		{
+			const string sqlText = "SELECT COUNT(DUMMY) DUMMY FROM DUAL ORDER BY COUNT(DUMMY)";
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			validationModel.InvalidNonTerminals.Count.ShouldBe(1);
+			var validationData = validationModel.InvalidNonTerminals.Values.First();
+			validationData.SemanticErrorType.ShouldBe(OracleSemanticErrorType.GroupFunctionNestedTooDeeply);
+			validationData.Node.SourcePosition.IndexStart.ShouldBe(45);
+			validationData.Node.SourcePosition.IndexEnd.ShouldBe(56);
+		}
+
+		[Test(Description = @"")]
+		public void TestNotSingleGroupGroupbyFunctionInOrderByClause()
+		{
+			const string sqlText = "SELECT COUNT(DUMMY) OVER () DUMMY FROM DUAL ORDER BY COUNT(DUMMY)";
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			validationModel.InvalidNonTerminals.Count.ShouldBe(1);
+			var validationData = validationModel.InvalidNonTerminals.Values.First();
+			validationData.SemanticErrorType.ShouldBe(OracleSemanticErrorType.NotSingleGroupGroupFunction);
+			validationData.Node.SourcePosition.IndexStart.ShouldBe(53);
+			validationData.Node.SourcePosition.IndexEnd.ShouldBe(64);
 		}
 
 		[Test(Description = @"")]

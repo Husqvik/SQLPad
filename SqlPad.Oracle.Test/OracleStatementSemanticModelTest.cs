@@ -1192,6 +1192,28 @@ PIVOT (
 			terminalGroups[2][0].Token.Value.ShouldBe("T");
 			terminalGroups[2][1].Id.ShouldBe(Terminals.Dot);
 		}
+		
+		[Test(Description = @"")]
+		public void TestRedundantQualifierInOrderByReferenceToIndirectColumnReference()
+		{
+			const string query1 = @"SELECT REVERSE(DUMMY) DUMMY FROM DUAL ORDER BY DUAL.DUMMY";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
+		public void TestRedundantQualifierInOrderByReferenceToDirectColumnReference()
+		{
+			const string query1 = @"SELECT DUMMY FROM DUAL ORDER BY DUAL.DUMMY";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.RedundantSymbolGroups.Count.ShouldBe(1);
+		}
 
 		[Test(Description = @"")]
 		public void TestRedundantColumnAlias()

@@ -2193,6 +2193,14 @@ ON (EVENTS.ID = SRC.ID)";
 			items.Count.ShouldBeGreaterThan(0);
 		}
 
+		[Test(Description = @"")]
+		public void TestColumnAliasSuggestionInPartitionByClauseInOrderByClause()
+		{
+			const string statement = @"SELECT COUNT(DUMMY) DUMMY FROM DUAL ORDER BY COUNT(DUAL.DUMMY) OVER (ORDER BY D)";
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 79, true, OracleCodeCompletionCategory.Column).ToList();
+			items.Count.ShouldBeGreaterThan(0);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)
