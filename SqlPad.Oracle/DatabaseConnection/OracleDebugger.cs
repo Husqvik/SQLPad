@@ -8,6 +8,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 using SqlPad.Oracle.DataDictionary;
 using OracleCollectionType = Oracle.DataAccess.Client.OracleCollectionType;
@@ -30,6 +31,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private const string PlSqlBlockTitle = "Anonymous PL/SQL block";
 
 		private static readonly XmlSerializer StackTraceSerializer = new XmlSerializer(typeof(OracleStackTrace));
+		private static readonly Regex RegexCursorStatus = new Regex(@"^flags:(?<Flags>\d+),\srowcount:(?<RowCount>\d+)(,\sknlflags:(?<KnlFlags>\d+))?$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
 		private readonly OracleConnectionAdapter _connectionAdapter;
 		private readonly OracleCommand _debuggedSessionCommand;
@@ -132,7 +134,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			if (result != ValueInfoStatus.ErrorIndexedTable)
 			{
-				watchItem.Value = result == ValueInfoStatus.ErrorNullValue ? "NULL" : value;
+				watchItem.Value = result == ValueInfoStatus.ErrorNullValue ? "NULL" : FormatIfCursorValue(value);
 				return;
 			}
 
@@ -157,6 +159,14 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 
 			watchItem.ChildItems = watchItems;
+		}
+
+		private static string FormatIfCursorValue(string value)
+		{
+			var match = RegexCursorStatus.Match(value);
+			return match.Success
+				? $"status: {((OracleCursorFlags)Convert.ToInt32(match.Groups["Flags"].Value)).ToPrettyString(formatFunction: e => e.ToString().SplitCamelCase().ToLowerInvariant())}; fetched rows: {Convert.ToInt64(match.Groups["RowCount"].Value)}"
+				: value;
 		}
 
 		private void SetupGetValueCommandParameters(string expression)
@@ -188,6 +198,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
 			var result = (ValueInfoStatus)GetValueFromOracleDecimal(_debuggerSessionCommand.Parameters["RESULT"]);
+
 			var entries = (OracleDecimal[])entriesParameter.Value;
 
 			Trace.WriteLine($"Get indexes '{variable}' result: {result}; indexes retrieved: {entries.Length}");
@@ -465,7 +476,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private static string GetValueFromOracleString(IDataParameter parameter)
 		{
 			var value = (OracleString)parameter.Value;
-			return value.IsNull ? null : value.Value;
+			return value.IsNull ? String.Empty : value.Value;
 		}
 
 		private static int GetValueFromOracleDecimal(IDataParameter parameter)
@@ -818,6 +829,21 @@ namespace SqlPad.Oracle.DatabaseConnection
 		PackageBody = 11,
 		Trigger = 12,
 		Unknown = -1
+	}
+
+	[Flags]
+	public enum OracleCursorFlags
+	{
+		None = 0,
+		Open = 1,
+		Found = 2,
+		NotFound = 4,
+		Uninitialized = 32,
+		Recursive = 128,
+		RefCursorBindVariable = 1024,
+		DynamicSql = 2048,
+		FirstIteration = 4096,
+		DynamicOpen = 16384
 	}
 
 	[Flags]

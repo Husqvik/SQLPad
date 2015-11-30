@@ -236,24 +236,24 @@ namespace SqlPad
 				return;
 			}
 
-			var watchItem = (WatchItem)args.Row.DataContext;
-			if (Equals(args.Column, ColumnDebugExpressionName))
-			{
-				_outputViewer.DocumentPage.WorkDocument.WatchItems = WatchItems.Select(i => i.Name).ToArray();
-
-				if (String.IsNullOrWhiteSpace(watchItem.Name))
-				{
-					watchItem.Value = null;
-					return;
-				}
-			}
-			else
-			{
-				await _debuggerSession.SetValue(watchItem, CancellationToken.None);
-			}
-
 			try
 			{
+				var watchItem = (WatchItem)args.Row.DataContext;
+				if (Equals(args.Column, ColumnDebugExpressionName))
+				{
+					_outputViewer.DocumentPage.WorkDocument.WatchItems = WatchItems.Select(i => i.Name).ToArray();
+
+					if (String.IsNullOrWhiteSpace(watchItem.Name))
+					{
+						watchItem.Value = null;
+						return;
+					}
+				}
+				else
+				{
+					await _debuggerSession.SetValue(watchItem, CancellationToken.None);
+				}
+
 				await _debuggerSession.GetValue(watchItem, CancellationToken.None);
 			}
 			catch (Exception exception)
@@ -264,9 +264,16 @@ namespace SqlPad
 
 		private async Task RefreshWatchItemsAsync(CancellationToken token)
 		{
-			foreach (var watchItem in WatchItems.Where(i => !String.IsNullOrWhiteSpace(i.Name)))
+			try
 			{
-				await _debuggerSession.GetValue(watchItem, token);
+				foreach (var watchItem in WatchItems.Where(i => !String.IsNullOrWhiteSpace(i.Name)))
+				{
+					await _debuggerSession.GetValue(watchItem, token);
+				}
+			}
+			catch (Exception exception)
+			{
+				Messages.ShowError(exception.Message);
 			}
 		}
 

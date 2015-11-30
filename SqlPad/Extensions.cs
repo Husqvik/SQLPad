@@ -5,6 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -175,6 +177,46 @@ namespace SqlPad
 		public static string GetPlainText(this SecureString secureString)
 		{
 			return Marshal.PtrToStringUni(Marshal.SecureStringToGlobalAllocUnicode(secureString));
+		}
+
+		public static string ToPrettyString(this Enum enumValue, string separator = " | ", Func<Enum, string> formatFunction = null)
+		{
+			var values = Enum.GetValues(enumValue.GetType());
+
+			if (formatFunction == null)
+			{
+				formatFunction = e => e.ToString();
+			}
+
+			var builder = new StringBuilder();
+			var flagFound = false;
+			foreach (Enum value in values)
+			{
+				if (!enumValue.HasFlag(value) || !Convert.ToBoolean(value))
+				{
+					continue;
+				}
+
+				if (flagFound)
+				{
+					builder.Append(separator);
+				}
+
+				builder.Append(formatFunction(value));
+				flagFound = true;
+			}
+
+			if (!flagFound)
+			{
+				builder.Append(formatFunction(enumValue));
+			}
+
+			return builder.ToString();
+		}
+
+		public static string SplitCamelCase(this string value, string separator = " ")
+		{
+			return Regex.Replace(value, @"(\p{Lu})", $"{separator}$1").Remove(0, separator.Length);
 		}
 	}
 
