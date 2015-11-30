@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Security;
 using System.Windows;
 
@@ -6,13 +7,34 @@ namespace SqlPad
 {
 	public partial class PasswordDialog
 	{
+		public static readonly DependencyProperty LabelProperty = DependencyProperty.Register(nameof(Label), typeof(string), typeof(PasswordDialog), new FrameworkPropertyMetadata(String.Empty));
+		public static readonly DependencyProperty IsCapsLockEnabledProperty = DependencyProperty.Register(nameof(IsCapsLockEnabled), typeof(bool), typeof(PasswordDialog), new FrameworkPropertyMetadata());
+
+		[Bindable(true)]
+		public string Label
+		{
+			get { return (string)GetValue(LabelProperty); }
+			private set { SetValue(LabelProperty, value); }
+		}
+
+		[Bindable(true)]
+		public bool IsCapsLockEnabled
+		{
+			get { return (bool)GetValue(IsCapsLockEnabledProperty); }
+			private set { SetValue(IsCapsLockEnabledProperty, value); }
+		}
+
 		public string Password => TextPassword.Password;
 
 		private PasswordDialog(string label)
 		{
 			InitializeComponent();
 
-			Label.Text = label;
+			ResolveCapsLockStatus();
+
+			TextPassword.KeyDown += delegate { ResolveCapsLockStatus(); };
+
+			Label = label;
 		}
 
 		public static SecureString AskForPassword(string label, Window owner)
@@ -42,6 +64,11 @@ namespace SqlPad
 		private void WindowLoadedHandler(object sender, RoutedEventArgs e)
 		{
 			TextPassword.Focus();
+		}
+
+		private void ResolveCapsLockStatus()
+		{
+			IsCapsLockEnabled = Console.CapsLock;
 		}
 	}
 }

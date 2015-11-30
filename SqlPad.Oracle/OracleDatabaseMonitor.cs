@@ -28,7 +28,7 @@ namespace SqlPad.Oracle
 		{
 			var databaseSessions = new DatabaseSessions();
 
-			using (var connection = new OracleConnection(_connectionString.ConnectionString))
+			using (var connection = new OracleConnection(OracleConnectionStringRepository.GetBackgroundConnectionString(_connectionString.ConnectionString)))
 			{
 				using (var command = connection.CreateCommand())
 				{

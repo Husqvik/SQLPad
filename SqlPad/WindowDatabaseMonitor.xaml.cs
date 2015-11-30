@@ -117,6 +117,11 @@ namespace SqlPad
 			SessionDataGridSource.SortDescriptions.Clear();
 			SessionDataGridSource.SortDescriptions.Add(new SortDescription(providerConfiguration.DatabaseMonitorConfiguration.SortMemberPath, providerConfiguration.DatabaseMonitorConfiguration.SortColumnOrder));
 
+			lock (_databaseSessions)
+			{
+				_databaseSessions.Clear();
+			}
+
 			Refresh();
 		}
 
@@ -155,7 +160,6 @@ namespace SqlPad
 
 			if (!AreColumnHeadersEqual(sessions.ColumnHeaders))
 			{
-				_databaseSessions.Clear();
 				SessionDataGrid.Columns.Clear();
 				foreach (var columnHeader in sessions.ColumnHeaders)
 				{
@@ -193,16 +197,15 @@ namespace SqlPad
 		{
 			var newRecordDictionary = newRecords.ToDictionary(getKeyFunction);
 
-			var currentKeys = new HashSet<object>();
-			for (var i = 0; i < currentRecords.Count; i++)
+			for (var i = currentRecords.Count - 1; i >= 0; i--)
 			{
 				var currentRecord = currentRecords[i];
 				var key = getKeyFunction(currentRecord);
 				TRecord newRecord;
-				currentKeys.Add(key);
 				if (newRecordDictionary.TryGetValue(key, out newRecord))
 				{
 					mergeAction(currentRecord, newRecord);
+					newRecordDictionary.Remove(key);
 				}
 				else
 				{
@@ -210,7 +213,7 @@ namespace SqlPad
 				}
 			}
 
-			currentRecords.AddRange(newRecordDictionary.Values.Where(r => !currentKeys.Contains(getKeyFunction(r))));
+			currentRecords.AddRange(newRecordDictionary.Values);
 		}
 
 		private bool AreColumnHeadersEqual(IReadOnlyList<ColumnHeader> columnHeaders)

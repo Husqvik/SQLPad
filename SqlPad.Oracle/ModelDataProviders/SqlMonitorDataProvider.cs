@@ -117,11 +117,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public ObservableDictionary<int, SqlMonitorSessionItem> SessionItems { get; } = new ObservableDictionary<int, SqlMonitorSessionItem>();
 
-		public ObservableDictionary<int, SqlMonitorSessionLongOperationItem> ActiveSessionLongOperationItems { get; } = new ObservableDictionary<int, SqlMonitorSessionLongOperationItem>();
+		public ObservableDictionary<int, SessionLongOperationCollection> SessionLongOperations { get; } = new ObservableDictionary<int, SessionLongOperationCollection>();
 
-		public ObservableDictionary<int, ObservableCollection<SqlMonitorSessionLongOperationItem>> CompletedSessionLongOperationItems { get; } = new ObservableDictionary<int, ObservableCollection<SqlMonitorSessionLongOperationItem>>();
-
-		public ObservableCollection<SqlMonitorSessionLongOperationItem> QueryCoordinatorLongOperations { get; } = new ObservableCollection<SqlMonitorSessionLongOperationItem>();
+		public SessionLongOperationCollection QueryCoordinatorLongOperations { get; } = new SessionLongOperationCollection();
 
 		public ObservableDictionary<int, List<ActiveSessionHistoryItem>> ActiveSessionHistoryItems { get; } = new ObservableDictionary<int, List<ActiveSessionHistoryItem>>();
 
@@ -138,7 +136,44 @@ namespace SqlPad.Oracle.ModelDataProviders
 		}
 	}
 
-	[DebuggerDisplay("SqlMonitorSessionLongOperationItem (SessionId={SessionId}; Message={_message})")]
+	[DebuggerDisplay("SessionLongOperationCollection (SessionId={SessionId})")]
+	public class SessionLongOperationCollection : ModelBase
+	{
+		private SqlMonitorSessionLongOperationItem _activeLongOperationItem;
+
+		public int SessionId { get; set; }
+
+		public SqlMonitorPlanItem PlanItem { get; set; }
+
+		public ObservableCollection<SqlMonitorSessionLongOperationItem> CompletedSessionLongOperationItems { get; } = new ObservableCollection<SqlMonitorSessionLongOperationItem>();
+
+		public SqlMonitorSessionLongOperationItem ActiveLongOperationItem
+		{
+			get { return _activeLongOperationItem; }
+			set { UpdateValueAndRaisePropertyChanged(ref _activeLongOperationItem, value); }
+		}
+
+		public void MergeItems(IList<SqlMonitorSessionLongOperationItem> items)
+		{
+			ActiveLongOperationItem = items.Last();
+			items.RemoveAt(items.Count - 1);
+
+			for (var i = 0; i < items.Count; i++)
+			{
+				var item = items[i];
+				if (CompletedSessionLongOperationItems.Count == i)
+				{
+					CompletedSessionLongOperationItems.Add(item);
+				}
+				else
+				{
+					CompletedSessionLongOperationItems[i] = item;
+				}
+			}
+		}
+	}
+
+	[DebuggerDisplay("SqlMonitorSessionLongOperationItem (Message={_message})")]
 	public class SqlMonitorSessionLongOperationItem : ModelBase
 	{
 		private string _operationName;
@@ -153,10 +188,6 @@ namespace SqlPad.Oracle.ModelDataProviders
 		private TimeSpan _elapsed;
 		private long? _context;
 		private string _message;
-
-		public int SessionId { get; set; }
-
-		public SqlMonitorPlanItem PlanItem { get; set; }
 
 		public string OperationName
 		{
@@ -567,23 +598,22 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public async override Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 		{
+			var sessionItems = new Dictionary<SessionPlanItem, List<SqlMonitorSessionLongOperationItem>>();
+
 			while (await reader.ReadAsynchronous(cancellationToken))
 			{
 				var sessionId = Convert.ToInt32(reader["SID"]);
 				var planLineId = Convert.ToInt32(reader["SQL_PLAN_LINE_ID"]);
 				var planItem = DataModel.AllItems[planLineId];
 
-				SqlMonitorSessionLongOperationItem longOperationItem;
-				if (!planItem.ActiveSessionLongOperationItems.TryGetValue(sessionId, out longOperationItem))
+				var key = new SessionPlanItem { PlanItem = planItem, SessionId = sessionId };
+				List<SqlMonitorSessionLongOperationItem> items;
+				if (!sessionItems.TryGetValue(key, out items))
 				{
-					planItem.ActiveSessionLongOperationItems[sessionId] = longOperationItem =
-						new SqlMonitorSessionLongOperationItem
-						{
-							SessionId = sessionId,
-							PlanItem = planItem
-						};
+					sessionItems.Add(key, items = new List<SqlMonitorSessionLongOperationItem>());
 				}
 
+				var longOperationItem = new SqlMonitorSessionLongOperationItem();
 				longOperationItem.OperationName = (string)reader["OPNAME"];
 				longOperationItem.Target = OracleReaderValueConvert.ToString(reader["TARGET"]);
 				longOperationItem.TargetDescription = OracleReaderValueConvert.ToString(reader["TARGET_DESC"]);
@@ -602,18 +632,33 @@ namespace SqlPad.Oracle.ModelDataProviders
 				longOperationItem.Elapsed = TimeSpan.FromSeconds(Convert.ToInt64(reader["ELAPSED_SECONDS"]));
 				longOperationItem.Context = Convert.ToInt64(reader["CONTEXT"]);
 				longOperationItem.Message = OracleReaderValueConvert.ToString(reader["MESSAGE"]);
+
+				items.Add(longOperationItem);
 			}
 
-			foreach (var planItem in DataModel.AllItems.Values)
+			foreach (var sessionPlanItem in sessionItems)
 			{
-				foreach (var longOperationItem in planItem.ActiveSessionLongOperationItems.Values)
+				var sessionId = sessionPlanItem.Key.SessionId;
+				var planItem = sessionPlanItem.Key.PlanItem;
+				SessionLongOperationCollection longOperationCollection;
+				if (!planItem.SessionLongOperations.TryGetValue(sessionId, out longOperationCollection))
 				{
-					if (longOperationItem.SessionId == DataModel.SessionId && !planItem.QueryCoordinatorLongOperations.Contains(longOperationItem))
-					{
-						planItem.QueryCoordinatorLongOperations.Add(longOperationItem);
-					}
+					planItem.SessionLongOperations.Add(sessionId, longOperationCollection = new SessionLongOperationCollection { SessionId = sessionId, PlanItem = planItem });
+				}
+
+				longOperationCollection.MergeItems(sessionPlanItem.Value);
+
+				if (sessionId == DataModel.SessionId)
+				{
+					planItem.QueryCoordinatorLongOperations.MergeItems(sessionPlanItem.Value);
 				}
 			}
+		}
+
+		private struct SessionPlanItem
+		{
+			public int SessionId;
+			public SqlMonitorPlanItem PlanItem;
 		}
 	}
 }

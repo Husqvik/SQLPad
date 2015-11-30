@@ -477,7 +477,35 @@
 				</ItemsControl.ItemTemplate>
 			</ItemsControl>
 		</DataTemplate>
+		
+		<DataTemplate x:Key="SessionLongOperationDataTemplate" DataType="modelDataProviders:SessionLongOperationCollection">
+			<StackPanel Orientation="Horizontal">
+				<StackPanel.Style>
+					<Style>
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding ActiveLongOperationItem}" Value="{x:Null}">
+								<Setter Property="StackPanel.Visibility" Value="Collapsed" />
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</StackPanel.Style>
+				
+				<Border BorderBrush="Black" BorderThickness="1">
+					<ProgressBar Maximum="{Binding ActiveLongOperationItem.TotalWork}" Value="{Binding ActiveLongOperationItem.SoFar}" Width="120" />
+				</Border>
+				<StackPanel Orientation="Horizontal" Margin="4,0,0,0">
+					<TextBlock Style="{StaticResource OtherLabelStyle}">
+						<Run Text="SID " /><Run Text="{Binding SessionId}" /><Run Text=":" />
+					</TextBlock>
+					<TextBlock Text="{Binding ActiveLongOperationItem.Message}" Style="{StaticResource OtherLabelStyle}" />
+				</StackPanel>
+			</StackPanel>
+		</DataTemplate>
 
+		<DataTemplate x:Key="SessionLongOperationListDataTemplate">
+			<ItemsControl ItemTemplate="{StaticResource SessionLongOperationDataTemplate}" ItemsSource="{Binding Values}" />
+		</DataTemplate>
+		
 		<HierarchicalDataTemplate x:Key="ExecutionMonitorPlanItemDataTemplate" ItemsSource="{Binding ChildItems}" DataType="modelDataProviders:SqlMonitorPlanItem">
 			<StackPanel>
 				<StackPanel Orientation="Horizontal">
@@ -591,12 +619,29 @@
 					</ContentControl.Style>
 				</ContentControl>
 				
-				<ItemsControl>
+				<ContentControl>
+					<ContentControl.Style>
+						<Style TargetType="ContentControl">
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=executionPlan:ExecutionPlanTreeView, AncestorLevel=1}, Path=ShowSessionDetails}" Value="True">
+									<Setter Property="ContentTemplate" Value="{StaticResource SessionLongOperationListDataTemplate}" />
+									<Setter Property="Content" Value="{Binding SessionLongOperations}" />	
+								</DataTrigger>
+								<DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=executionPlan:ExecutionPlanTreeView, AncestorLevel=1}, Path=ShowSessionDetails}" Value="False">
+									<Setter Property="ContentTemplate" Value="{StaticResource SessionLongOperationDataTemplate}" />
+									<Setter Property="Content" Value="{Binding QueryCoordinatorLongOperations}" />	
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</ContentControl.Style>
+				</ContentControl>
+				
+				<!--<ItemsControl ItemTemplate="{StaticResource SessionLongOperationDataTemplate}">
 					<ItemsControl.Style>
 						<Style>
 							<Style.Triggers>
 								<DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=executionPlan:ExecutionPlanTreeView, AncestorLevel=1}, Path=ShowSessionDetails}" Value="True">
-									<Setter Property="ItemsControl.ItemsSource" Value="{Binding ActiveSessionLongOperationItems}" />
+									<Setter Property="ItemsControl.ItemsSource" Value="{Binding SessionLongOperations}" />
 								</DataTrigger>
 								<DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=executionPlan:ExecutionPlanTreeView, AncestorLevel=1}, Path=ShowSessionDetails}" Value="False">
 									<Setter Property="ItemsControl.ItemsSource" Value="{Binding QueryCoordinatorLongOperations}" />
@@ -604,23 +649,7 @@
 							</Style.Triggers>
 						</Style>
 					</ItemsControl.Style>
-					
-					<ItemsControl.ItemTemplate>
-						<DataTemplate>
-							<StackPanel Orientation="Horizontal">
-								<Border BorderBrush="Black" BorderThickness="1">
-									<ProgressBar Maximum="{Binding Value.TotalWork}" Value="{Binding Value.SoFar}" Width="120" />
-								</Border>
-								<StackPanel Orientation="Horizontal" Margin="4,0,0,0">
-									<TextBlock Style="{StaticResource OtherLabelStyle}">
-										<Run Text="SID " /><Run Text="{Binding Value.SessionId}" /><Run Text=":" />
-									</TextBlock>
-									<TextBlock Text="{Binding Value.Message}" Style="{StaticResource OtherLabelStyle}" />
-								</StackPanel>
-							</StackPanel>
-						</DataTemplate>
-					</ItemsControl.ItemTemplate>
-				</ItemsControl>
+				</ItemsControl>-->
 			</StackPanel>
 		</HierarchicalDataTemplate>
 
