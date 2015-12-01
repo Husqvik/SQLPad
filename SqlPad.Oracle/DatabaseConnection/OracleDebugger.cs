@@ -135,6 +135,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			if (result != ValueInfoStatus.ErrorIndexedTable)
 			{
 				watchItem.Value = result == ValueInfoStatus.ErrorNullValue ? "NULL" : FormatIfCursorValue(value);
+				watchItem.ChildItems = null;
 				return;
 			}
 
@@ -165,7 +166,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			var match = RegexCursorStatus.Match(value);
 			return match.Success
-				? $"status: {((OracleCursorFlags)Convert.ToInt32(match.Groups["Flags"].Value)).ToPrettyString(formatFunction: e => e.ToString().SplitCamelCase().ToLowerInvariant())}; fetched rows: {Convert.ToInt64(match.Groups["RowCount"].Value)}"
+				? $"Cursor (status: {((OracleCursorFlags)Convert.ToInt32(match.Groups["Flags"].Value)).ToPrettyString(formatFunction: e => e.ToString().SplitCamelCase().ToLowerInvariant())}; fetched rows: {Convert.ToInt64(match.Groups["RowCount"].Value)})"
 				: value;
 		}
 
@@ -496,9 +497,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return value.IsNull ? (int?)null : Convert.ToInt32(value.Value);
 		}
 
-		public async Task<BreakpointActionResult> SetBreakpoint(object programInfo, int line, CancellationToken cancellationToken)
+		public Task<BreakpointActionResult> SetBreakpoint(object programInfo, int line, CancellationToken cancellationToken)
 		{
-			return await SetBreakpoint((OracleObjectIdentifier)programInfo, line, cancellationToken);
+			return SetBreakpoint((OracleObjectIdentifier)programInfo, line, cancellationToken);
 		}
 
 		public async Task<BreakpointActionResult> SetBreakpoint(OracleObjectIdentifier objectIdentifier, int line, CancellationToken cancellationToken)

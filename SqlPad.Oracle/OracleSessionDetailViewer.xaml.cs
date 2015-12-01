@@ -84,7 +84,7 @@ namespace SqlPad.Oracle
 
 		public async Task Initialize(DatabaseSession databaseSession, CancellationToken cancellationToken)
 		{
-			databaseSession = databaseSession.ParentSession ?? databaseSession;
+			databaseSession = databaseSession.Owner ?? databaseSession;
 			var oracleSessionValues = (OracleSessionValues)databaseSession.ProviderValues;
 			if (_oracleSessionValues != null && _oracleSessionValues.Id == oracleSessionValues.Id &&  _oracleSessionValues.SqlId == oracleSessionValues.SqlId && _oracleSessionValues.ExecutionId == oracleSessionValues.ExecutionId)
 			{

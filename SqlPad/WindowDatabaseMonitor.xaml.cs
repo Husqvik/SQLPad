@@ -20,6 +20,7 @@ namespace SqlPad
 		public static readonly DependencyProperty CurrentConnectionProperty = DependencyProperty.Register(nameof(CurrentConnection), typeof(ConnectionStringSettings), typeof(WindowDatabaseMonitor), new FrameworkPropertyMetadata(CurrentConnectionChangedCallbackHandler));
 		public static readonly DependencyProperty UserSessionOnlyProperty = DependencyProperty.Register(nameof(UserSessionOnly), typeof(bool), typeof(WindowDatabaseMonitor), new UIPropertyMetadata(true, UserSessionOnlyChangedCallbackHandler));
 		public static readonly DependencyProperty ActiveSessionOnlyProperty = DependencyProperty.Register(nameof(ActiveSessionOnly), typeof(bool), typeof(WindowDatabaseMonitor), new UIPropertyMetadata(true, ActiveSessionOnlyChangedCallbackHandler));
+		public static readonly DependencyProperty MasterSessionOnlyProperty = DependencyProperty.Register(nameof(MasterSessionOnly), typeof(bool), typeof(WindowDatabaseMonitor), new UIPropertyMetadata(true, MasterSessionOnlyChangedCallbackHandler));
 
 		[Bindable(true)]
 		public ConnectionStringSettings CurrentConnection
@@ -58,6 +59,19 @@ namespace SqlPad
 		{
 			var window = (WindowDatabaseMonitor)dependencyObject;
 			window.UpdateFilterSettings(c => c.ActiveSessionOnly = (bool)args.NewValue);
+		}
+
+		[Bindable(true)]
+		public bool MasterSessionOnly
+		{
+			get { return (bool)GetValue(MasterSessionOnlyProperty); }
+			set { SetValue(MasterSessionOnlyProperty, value); }
+		}
+
+		private static void MasterSessionOnlyChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
+		{
+			var window = (WindowDatabaseMonitor)dependencyObject;
+			window.UpdateFilterSettings(c => c.MasterSessionOnly = (bool)args.NewValue);
 		}
 
 		private const string SessionDataGridHeightProperty = "SessionDataGridSplitter";
@@ -113,6 +127,7 @@ namespace SqlPad
 			var providerConfiguration = WorkDocumentCollection.GetProviderConfiguration(CurrentConnection.ProviderName);
 			ActiveSessionOnly = providerConfiguration.DatabaseMonitorConfiguration.ActiveSessionOnly;
 			UserSessionOnly = providerConfiguration.DatabaseMonitorConfiguration.UserSessionOnly;
+			MasterSessionOnly = providerConfiguration.DatabaseMonitorConfiguration.MasterSessionOnly;
 
 			SessionDataGridSource.SortDescriptions.Clear();
 			SessionDataGridSource.SortDescriptions.Add(new SortDescription(providerConfiguration.DatabaseMonitorConfiguration.SortMemberPath, providerConfiguration.DatabaseMonitorConfiguration.SortColumnOrder));
@@ -235,10 +250,6 @@ namespace SqlPad
 			return true;
 		}
 
-		private void ColumnHeaderMouseClickHandler(object sender, RoutedEventArgs e)
-		{
-		}
-
 		private void SessionDataGridSortingHandler(object sender, DataGridSortingEventArgs e)
 		{
 			var sortDirection = e.Column.SortDirection == ListSortDirection.Ascending
@@ -277,9 +288,11 @@ namespace SqlPad
 
 		private void DatabaseSessionFilterHandler(object sender, FilterEventArgs e)
 		{
-			var filterSystemSession = !UserSessionOnly || ((DatabaseSession)e.Item).Type == SessionType.User;
-			var filterInactiveSession = !ActiveSessionOnly || ((DatabaseSession)e.Item).IsActive;
-			e.Accepted = filterSystemSession && filterInactiveSession;
+			var session = (DatabaseSession)e.Item;
+			var filterSystemSession = !UserSessionOnly || session.Type == SessionType.User;
+			var filterInactiveSession = !ActiveSessionOnly || session.IsActive;
+			var filterChildSession = MasterSessionOnly || session.Owner == null;
+			e.Accepted = filterSystemSession && filterInactiveSession && filterChildSession;
 		}
 
 		private async void SessionDataGridSelectionChangedHandler(object sender, SelectionChangedEventArgs e)

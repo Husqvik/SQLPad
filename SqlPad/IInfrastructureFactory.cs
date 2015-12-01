@@ -84,7 +84,7 @@ namespace SqlPad
 
 		public ObservableCollection<DatabaseSession> ChildSessions { get; } = new ObservableCollection<DatabaseSession>();
 
-		public DatabaseSession ParentSession { get; set; }
+		public DatabaseSession Owner { get; set; }
 
 		public int Id { get; set; }
 

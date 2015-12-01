@@ -65,7 +65,7 @@ namespace SqlPad
 			sqlPadConfigurationType.Add("_bindVariables", nameof(DatabaseProviderConfiguration.ProviderName), "_statementExecutionHistory", "_databaseMonitorConfiguration");
 
 			var databaseMonitorConfigurationType = serializer.Add(typeof(DatabaseMonitorConfiguration), false);
-			databaseMonitorConfigurationType.Add(nameof(DatabaseMonitorConfiguration.ActiveSessionOnly), nameof(DatabaseMonitorConfiguration.UserSessionOnly), nameof(DatabaseMonitorConfiguration.SortMemberPath), nameof(DatabaseMonitorConfiguration.SortColumnOrder));
+			databaseMonitorConfigurationType.Add(nameof(DatabaseMonitorConfiguration.ActiveSessionOnly), nameof(DatabaseMonitorConfiguration.UserSessionOnly), nameof(DatabaseMonitorConfiguration.SortMemberPath), nameof(DatabaseMonitorConfiguration.SortColumnOrder), nameof(DatabaseMonitorConfiguration.MasterSessionOnly));
 
 			var bindVariableConfigurationType = serializer.Add(typeof(BindVariableConfiguration), false);
 			bindVariableConfigurationType.Add(nameof(BindVariableConfiguration.Name), nameof(BindVariableConfiguration.DataType), "_internalValue", nameof(BindVariableConfiguration.IsFilePath));

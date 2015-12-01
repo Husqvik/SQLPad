@@ -1132,6 +1132,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		NotConnectedToOracle = 3114,
 		EndOfFileOnCommunicationChannel = 3113,
 		TnsPacketWriterFailure = 12571,
-		SuccessWithCompilationError = 24344
+		SuccessWithCompilationError = 24344,
+		SessionTerminatedByDebugger = 30687
 	}
 }

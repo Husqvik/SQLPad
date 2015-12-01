@@ -849,7 +849,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private bool TryHandleNetworkError(OracleException exception)
 		{
 			var errorCode = (OracleErrorCode)exception.Number;
-			if (!errorCode.In(OracleErrorCode.EndOfFileOnCommunicationChannel, OracleErrorCode.NotConnectedToOracle, OracleErrorCode.TnsPacketWriterFailure))
+			if (!errorCode.In(OracleErrorCode.EndOfFileOnCommunicationChannel, OracleErrorCode.NotConnectedToOracle, OracleErrorCode.TnsPacketWriterFailure, OracleErrorCode.SessionTerminatedByDebugger))
 			{
 				return false;
 			}

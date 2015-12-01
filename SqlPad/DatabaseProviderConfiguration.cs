@@ -86,6 +86,8 @@ namespace SqlPad
 		public bool ActiveSessionOnly { get; set; }
 
 		public bool UserSessionOnly { get; set; }
+
+		public bool MasterSessionOnly { get; set; }
 	}
 
 	[DebuggerDisplay("StatementExecutionHistoryEntry (StatementText={StatementText}, ExecutedAt={ExecutedAt}, Tags={Tags})")]

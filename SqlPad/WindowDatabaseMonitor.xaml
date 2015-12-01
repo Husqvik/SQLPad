@@ -49,8 +49,9 @@
 					</DataTemplate>
 				</ComboBox.ItemTemplate>
 			</ComboBox>
-			<CheckBox VerticalAlignment="Center" Margin="8,0,8,0" Content="User sessions only" IsChecked="{Binding UserSessionOnly}" />
+			<CheckBox VerticalAlignment="Center" Margin="8,0" Content="User sessions only" IsChecked="{Binding UserSessionOnly}" />
 			<CheckBox VerticalAlignment="Center" Content="Active only" IsChecked="{Binding ActiveSessionOnly}" />
+			<CheckBox VerticalAlignment="Center" Margin="8,0" Content="Master sessions only" IsChecked="{Binding MasterSessionOnly}" />
 		</StackPanel>
 
 		<DataGrid x:Name="SessionDataGrid"
@@ -64,7 +65,6 @@
 		          BeginningEdit="DataGridBeginningEditCancelTextInputHandler"
 		          SelectionChanged="SessionDataGridSelectionChangedHandler"
 		          Sorting="SessionDataGridSortingHandler"
-		          DataGridColumnHeader.Click="ColumnHeaderMouseClickHandler"
 		          MouseDoubleClick="SessionDataGridMouseDoubleClickHandler" />
 		
 		<GridSplitter Grid.Row="2" Height="4" HorizontalAlignment="Stretch" ShowsPreview="True" VerticalAlignment="Center" Background="DimGray" />
