@@ -6147,6 +6147,10 @@
           <NonTerminal Id="ObjectRowType" />
         </Sequence>
         <Sequence>
+          <NonTerminal Id="Prefix" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+        <Sequence>
           <NonTerminal Id="DataType" />
         </Sequence>
       </Sequences>

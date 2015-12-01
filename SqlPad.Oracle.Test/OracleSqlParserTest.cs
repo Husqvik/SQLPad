@@ -3267,6 +3267,20 @@ END;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
+			[Test(Description = @"")]
+			public void TestVariableDeclarationWithFullyQualifiedPackageType()
+			{
+				const string statement1 =
+@"DECLARE
+	results sys.dbms_debug.vc2_table;
+BEGIN
+	NULL;
+END;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
+
 			public class Triggers
 			{
 				[Test(Description = @"")]
