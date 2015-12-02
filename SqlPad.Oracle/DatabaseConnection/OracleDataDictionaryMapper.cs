@@ -161,7 +161,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				}
 
 				var referencedUniqueConstraint = (OracleUniqueConstraint)constraints[constraintPair.Value];
-				referenceConstraint.TargetObject = referencedUniqueConstraint.Owner;
+				referenceConstraint.TargetObject = referencedUniqueConstraint.OwnerObject;
 				referenceConstraint.ReferenceConstraint = referencedUniqueConstraint;
 			}
 
@@ -511,7 +511,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var rely = OracleReaderValueConvert.ToString(reader["RELY"]);
 			var constraint = OracleObjectFactory.CreateConstraint((string)reader["CONSTRAINT_TYPE"], owner, QualifyStringObject(reader["CONSTRAINT_NAME"]), (string)reader["STATUS"] == "ENABLED", (string)reader["VALIDATED"] == "VALIDATED", (string)reader["DEFERRABLE"] == "DEFERRABLE", rely == "RELY");
 			var dataObject = (OracleDataObject)ownerObject;
-			constraint.Owner = dataObject;
+			constraint.OwnerObject = dataObject;
 			dataObject.Constraints.Add(constraint);
 
 			var referenceConstraint = constraint as OracleReferenceConstraint;

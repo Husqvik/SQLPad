@@ -7,7 +7,7 @@ namespace SqlPad.Oracle.DataDictionary
 	{
 		public abstract ConstraintType Type { get; }
 
-		public OracleSchemaObject Owner { get; set; }
+		public OracleSchemaObject OwnerObject { get; set; }
 
 		public IList<string> Columns { get; set; }
 

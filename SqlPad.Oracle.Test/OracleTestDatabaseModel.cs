@@ -121,43 +121,29 @@ namespace SqlPad.Oracle.Test
 				new OracleSynonym
 				{
 					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, TableNameDual),
-					SchemaObject = AllObjectsInternal.Single(o => o.Name == TableNameDual && o.Owner == SchemaSys),
+					SchemaObject = AllObjectsInternal.Single(o => String.Equals(o.Name, TableNameDual) && String.Equals(o.Owner, SchemaSys)),
 					IsValid = true
 				};
 			
 			synonym.SchemaObject.Synonyms.Add(synonym);
-			
-			AllObjectsInternal.Add(synonym);
 
-			synonym =
+			/*synonym =
 				new OracleSynonym
 				{
-					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "\"V$SESSION\""),
-					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"V_$SESSION\"" && o.Owner == SchemaSys),
+					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "SYNONYM_TO_HQ_PDB_LOOPBACK"),
+					SchemaObject = DatabaseLinksInternal.Single(o => String.Equals(o.Name, "\"HQ_PDB_LOOPBACK\"") && String.Equals(o.Owner, SchemaSys)),
 					IsValid = true
 				};
-			
-			synonym.SchemaObject.Synonyms.Add(synonym);
 
-			AllObjectsInternal.Add(synonym);
-
-			synonym =
-				new OracleSynonym
-				{
-					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "\"XMLTYPE\""),
-					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"XMLTYPE\"" && o.Owner == SchemaSys),
-					IsValid = true
-				};
-			
-			synonym.SchemaObject.Synonyms.Add(synonym);
+			synonym.SchemaObject.Synonyms.Add(synonym);*/
 
 			AllObjectsInternal.Add(synonym);
 
 			synonym =
 				new OracleSynonym
 				{
-					FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"SYNONYM_TO_TEST_SEQ\""),
-					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"TEST_SEQ\"" && o.Owner == InitialSchema),
+					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "V$SESSION"),
+					SchemaObject = AllObjectsInternal.Single(o => String.Equals(o.Name, "\"V_$SESSION\"") && String.Equals(o.Owner, SchemaSys)),
 					IsValid = true
 				};
 			
@@ -168,8 +154,8 @@ namespace SqlPad.Oracle.Test
 			synonym =
 				new OracleSynonym
 				{
-					FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"SYNONYM_TO_SELECTION\""),
-					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"SELECTION\"" && o.Owner == InitialSchema),
+					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "XMLTYPE"),
+					SchemaObject = AllObjectsInternal.Single(o => String.Equals(o.Name, "\"XMLTYPE\"") && String.Equals(o.Owner, SchemaSys)),
 					IsValid = true
 				};
 			
@@ -180,8 +166,8 @@ namespace SqlPad.Oracle.Test
 			synonym =
 				new OracleSynonym
 				{
-					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "\"PUBLIC_SYNONYM_TO_SELECTION\""),
-					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"SELECTION\"" && o.Owner == InitialSchema),
+					FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "SYNONYM_TO_TEST_SEQ"),
+					SchemaObject = AllObjectsInternal.Single(o => String.Equals(o.Name, "\"TEST_SEQ\"") && String.Equals(o.Owner, InitialSchema)),
 					IsValid = true
 				};
 			
@@ -192,8 +178,32 @@ namespace SqlPad.Oracle.Test
 			synonym =
 				new OracleSynonym
 				{
-					FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"RAWLIST\""),
-					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"ODCIRAWLIST\"" && o.Owner == SchemaSys),
+					FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "SYNONYM_TO_SELECTION"),
+					SchemaObject = AllObjectsInternal.Single(o => String.Equals(o.Name, "\"SELECTION\"") && String.Equals(o.Owner, InitialSchema)),
+					IsValid = true
+				};
+			
+			synonym.SchemaObject.Synonyms.Add(synonym);
+
+			AllObjectsInternal.Add(synonym);
+
+			synonym =
+				new OracleSynonym
+				{
+					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "PUBLIC_SYNONYM_TO_SELECTION"),
+					SchemaObject = AllObjectsInternal.Single(o => String.Equals(o.Name, "\"SELECTION\"") && String.Equals(o.Owner, InitialSchema)),
+					IsValid = true
+				};
+			
+			synonym.SchemaObject.Synonyms.Add(synonym);
+
+			AllObjectsInternal.Add(synonym);
+
+			synonym =
+				new OracleSynonym
+				{
+					FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "RAWLIST"),
+					SchemaObject = AllObjectsInternal.Single(o => String.Equals(o.Name, "\"ODCIRAWLIST\"") && String.Equals(o.Owner, SchemaSys)),
 					IsValid = true
 				};
 			
@@ -203,7 +213,7 @@ namespace SqlPad.Oracle.Test
 			#endregion
 
 			#region SYS.DBMS_RANDOM
-			var dbmsRandom = (OraclePackage)AllObjectsInternal.Single(o => o.Name == PackageDbmsRandom && o.Owner == SchemaSys);
+			var dbmsRandom = (OraclePackage)AllObjectsInternal.Single(o => o.Name == PackageDbmsRandom && String.Equals(o.Owner, SchemaSys));
 			var randomStringFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, IdentifierDbmsRandomString, false, false, false, false, true, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
 			randomStringFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
 			randomStringFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"OPT\"", 1, 1, 0, ParameterDirection.Input, "CHAR", OracleObjectIdentifier.Empty, false));
@@ -228,7 +238,7 @@ namespace SqlPad.Oracle.Test
 			synonym =
 				new OracleSynonym
 				{
-					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "\"DBMS_RANDOM\""),
+					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "DBMS_RANDOM"),
 					SchemaObject = dbmsRandom,
 					IsValid = true
 				};
@@ -238,7 +248,7 @@ namespace SqlPad.Oracle.Test
 			#endregion
 
 			#region SYS.DBMS_XPLAN
-			var dbmsXPlan = (OraclePackage)AllObjectsInternal.Single(o => o.Name == "\"DBMS_XPLAN\"" && o.Owner == SchemaSys);
+			var dbmsXPlan = (OraclePackage)AllObjectsInternal.Single(o => String.Equals(o.Name, "\"DBMS_XPLAN\"") && String.Equals(o.Owner, SchemaSys));
 			var displayCursorFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("SYS", "DBMS_XPLAN", "DISPLAY_CURSOR"), false, false, true, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, false);
 			displayCursorFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, OracleTypeCollection.OracleCollectionTypeNestedTable, OracleObjectIdentifier.Create(SchemaSys, "DBMS_XPLAN_TYPE_TABLE"), false));
 			displayCursorFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 1, 1, 1, ParameterDirection.ReturnValue, OracleTypeBase.TypeCodeObject, OracleObjectIdentifier.Create(SchemaSys, "DBMS_XPLAN_TYPE"), false));
@@ -251,7 +261,7 @@ namespace SqlPad.Oracle.Test
 			synonym =
 				new OracleSynonym
 				{
-					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "\"DBMS_XPLAN\""),
+					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "DBMS_XPLAN"),
 					SchemaObject = dbmsXPlan,
 					IsValid = true
 				};
@@ -261,7 +271,7 @@ namespace SqlPad.Oracle.Test
 			#endregion
 
 			#region SYS.DBMS_CRYPTO
-			var dbmsCrypto = (OraclePackage)AllObjectsInternal.Single(o => o.Name == "\"DBMS_CRYPTO\"" && o.Owner == SchemaSys);
+			var dbmsCrypto = (OraclePackage)AllObjectsInternal.Single(o => String.Equals(o.Name, "\"DBMS_CRYPTO\"") && String.Equals(o.Owner, SchemaSys));
 			var randomBytesFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("SYS", "DBMS_CRYPTO", "RANDOMBYTES"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
 			randomBytesFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Raw, OracleObjectIdentifier.Empty, false));
 			randomBytesFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"NUMBER_BYTES\"", 1, 1, 0, ParameterDirection.Input, "BINARY_INTEGER", OracleObjectIdentifier.Empty, false));
@@ -277,7 +287,7 @@ namespace SqlPad.Oracle.Test
 			synonym =
 				new OracleSynonym
 				{
-					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "\"DBMS_CRYPTO\""),
+					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "DBMS_CRYPTO"),
 					SchemaObject = dbmsCrypto,
 					IsValid = true
 				};
@@ -286,23 +296,23 @@ namespace SqlPad.Oracle.Test
 			AllObjectsInternal.Add(synonym);
 			#endregion
 
-			var uncompilableFunction = (OracleFunction)AllObjectsInternal.Single(o => o.Name == "\"UNCOMPILABLE_FUNCTION\"" && o.Owner == InitialSchema);
+			var uncompilableFunction = (OracleFunction)AllObjectsInternal.Single(o => String.Equals(o.Name, "\"UNCOMPILABLE_FUNCTION\"") && String.Equals(o.Owner, InitialSchema));
 			uncompilableFunction.Metadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "UNCOMPILABLE_FUNCTION"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
 			uncompilableFunction.Metadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
 			uncompilableFunction.Metadata.Owner = uncompilableFunction;
 
-			var uncompilablePackage = (OraclePackage)AllObjectsInternal.Single(o => o.Name == "\"UNCOMPILABLE_PACKAGE\"" && o.Owner == InitialSchema);
+			var uncompilablePackage = (OraclePackage)AllObjectsInternal.Single(o => String.Equals(o.Name, "\"UNCOMPILABLE_PACKAGE\"") && String.Equals(o.Owner, InitialSchema));
 			var uncompilablePackageFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), "UNCOMPILABLE_PACKAGE", "FUNCTION"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
 			uncompilablePackageFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
 			uncompilablePackage.Functions.Add(uncompilablePackageFunctionMetadata);
 			uncompilablePackageFunctionMetadata.Owner = uncompilablePackage;
 
-			var userCountFunction = (OracleFunction)AllObjectsInternal.Single(o => o.Name == "\"COUNT\"" && o.Owner == InitialSchema);
+			var userCountFunction = (OracleFunction)AllObjectsInternal.Single(o => String.Equals(o.Name, "\"COUNT\"") && String.Equals(o.Owner, InitialSchema));
 			userCountFunction.Metadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "COUNT"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
 			userCountFunction.Metadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
 			userCountFunction.Metadata.Owner = userCountFunction;
 
-			var sqlPadFunction = (OracleFunction)AllObjectsInternal.Single(o => o.Name == "\"SQLPAD_FUNCTION\"" && o.Owner == InitialSchema);
+			var sqlPadFunction = (OracleFunction)AllObjectsInternal.Single(o => String.Equals(o.Name, "\"SQLPAD_FUNCTION\"") && String.Equals(o.Owner, InitialSchema));
 			sqlPadFunction.Metadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "SQLPAD_FUNCTION"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
 			sqlPadFunction.Metadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
 			sqlPadFunction.Metadata.Owner = sqlPadFunction;
@@ -310,8 +320,8 @@ namespace SqlPad.Oracle.Test
 			synonym =
 				new OracleSynonym
 				{
-					FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"SYNONYM_TO_SQLPAD_FUNCTION\""),
-					SchemaObject = AllObjectsInternal.Single(o => o.Name == "\"SQLPAD_FUNCTION\"" && o.Owner == InitialSchema),
+					FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "SYNONYM_TO_SQLPAD_FUNCTION"),
+					SchemaObject = AllObjectsInternal.Single(o => String.Equals(o.Name, "\"SQLPAD_FUNCTION\"") && String.Equals(o.Owner, InitialSchema)),
 					IsValid = true
 				};
 			
@@ -319,13 +329,13 @@ namespace SqlPad.Oracle.Test
 
 			AllObjectsInternal.Add(synonym);
 
-			var testFunction = (OracleFunction)AllObjectsInternal.Single(o => o.Name == "\"TESTFUNC\"" && o.Owner == InitialSchema);
+			var testFunction = (OracleFunction)AllObjectsInternal.Single(o => String.Equals(o.Name, "\"TESTFUNC\"") && String.Equals(o.Owner, InitialSchema));
 			testFunction.Metadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "TESTFUNC"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
 			testFunction.Metadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
 			testFunction.Metadata.AddParameter(new OracleProgramParameterMetadata("\"PARAM\"", 1, 1, 0, ParameterDirection.ReturnValue, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
 			testFunction.Metadata.Owner = testFunction;
 
-			var sqlPadPackage = (OraclePackage)AllObjectsInternal.Single(o => o.Name == "\"SQLPAD\"" && o.Owner == InitialSchema);
+			var sqlPadPackage = (OraclePackage)AllObjectsInternal.Single(o => String.Equals(o.Name, "\"SQLPAD\"") && String.Equals(o.Owner, InitialSchema));
 			var packageSqlPadFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), "SQLPAD", "SQLPAD_FUNCTION"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
 			packageSqlPadFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
 			packageSqlPadFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"P\"", 1, 1, 0, ParameterDirection.Input, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
@@ -546,7 +556,7 @@ namespace SqlPad.Oracle.Test
 			                                 {
 				                                 FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"PK_PROJECT\""),
 				                                 Columns = new[] { "\"PROJECT_ID\"" },
-				                                 Owner = projectTable
+				                                 OwnerObject = projectTable
 			                                 };
 			
 			projectTable.Constraints = new List<OracleConstraint>{ projectPrimaryKey }.AsReadOnly();
@@ -560,7 +570,7 @@ namespace SqlPad.Oracle.Test
 						FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"FK_TARGETGROUP_PROJECT\""),
 						Columns = new[] { "\"PROJECT_ID\"" },
 						ReferenceConstraint = projectPrimaryKey,
-						Owner = sourceObject,
+						OwnerObject = sourceObject,
 						TargetObject = projectTable
 					}
 				};
@@ -570,7 +580,7 @@ namespace SqlPad.Oracle.Test
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"PK_INVOICES\""),
 				Columns = new[] { "\"ID\"" },
-				Owner = invoiceTable
+				OwnerObject = invoiceTable
 			};
 
 			invoiceTable.Constraints = new List<OracleConstraint> { invoicePrimaryKey }.AsReadOnly();
@@ -584,7 +594,7 @@ namespace SqlPad.Oracle.Test
 						FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"FK_INVOICELINES_INVOICES\""),
 						Columns = new[] { "\"INVOICE_ID\"" },
 						ReferenceConstraint = invoicePrimaryKey,
-						Owner = sourceObject,
+						OwnerObject = sourceObject,
 						TargetObject = invoiceTable
 					}
 				}.AsReadOnly();
@@ -594,7 +604,7 @@ namespace SqlPad.Oracle.Test
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"PK_TARGETGROUP\""),
 				Columns = new[] { "\"TARGETGROUP_ID\"" },
-				Owner = targetGroupTable
+				OwnerObject = targetGroupTable
 			};
 
 			targetGroupTable.Constraints.Add(targetGroupPrimaryKey);
@@ -608,7 +618,7 @@ namespace SqlPad.Oracle.Test
 						FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"FK_RESPONDENTBUCKET_TARGETGROUP\""),
 						Columns = new[] { "\"TARGETGROUP_ID\"" },
 						ReferenceConstraint = targetGroupPrimaryKey,
-						Owner = sourceObject,
+						OwnerObject = sourceObject,
 						TargetObject = targetGroupTable
 					},
 					new OracleReferenceConstraint
@@ -616,7 +626,7 @@ namespace SqlPad.Oracle.Test
 						FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"FK_RESPONDENTBUCKET_PROJECT\""),
 						Columns = new[] { "\"PROJECT_ID\"" },
 						ReferenceConstraint = projectPrimaryKey,
-						Owner = sourceObject,
+						OwnerObject = sourceObject,
 						TargetObject = projectTable
 					}
 				};
@@ -626,7 +636,7 @@ namespace SqlPad.Oracle.Test
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"PK_RESPONDENTBUCKET\""),
 				Columns = new[] { "\"RESPONDENTBUCKET_ID\"" },
-				Owner = respondentBucketTable
+				OwnerObject = respondentBucketTable
 			};
 
 			respondentBucketTable.Constraints.Add(respondentBucketPrimaryKey);
@@ -640,7 +650,7 @@ namespace SqlPad.Oracle.Test
 						FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"FK_SELECTION_RESPONDENTBUCKET\""),
 						Columns = new[] { "\"RESPONDENTBUCKET_ID\"" },
 						ReferenceConstraint = respondentBucketPrimaryKey,
-						Owner = sourceObject,
+						OwnerObject = sourceObject,
 						TargetObject = respondentBucketTable
 					},
 					new OracleReferenceConstraint
@@ -648,7 +658,7 @@ namespace SqlPad.Oracle.Test
 						FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"FK_SELECTION_PROJECT\""),
 						Columns = new[] { "\"PROJECT_ID\"" },
 						ReferenceConstraint = projectPrimaryKey,
-						Owner = sourceObject,
+						OwnerObject = sourceObject,
 						TargetObject = projectTable
 					}
 				}.AsReadOnly();

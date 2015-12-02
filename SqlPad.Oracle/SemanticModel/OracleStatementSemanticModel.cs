@@ -3201,10 +3201,10 @@ namespace SqlPad.Oracle.SemanticModel
 				foreach (var remoteReferenceConstraint in remoteReferenceConstraints)
 				{
 					var predicate = String.Join(" AND ", remoteReferenceConstraint.Columns.Select((c, i) => $"{c} = :KEY{i}"));
-					var statementText = StatementText = $"SELECT * FROM {remoteReferenceConstraint.Owner.FullyQualifiedName} WHERE {predicate}";
-					var objectName = remoteReferenceConstraint.Owner.FullyQualifiedName.ToString();
+					var statementText = StatementText = $"SELECT * FROM {remoteReferenceConstraint.OwnerObject.FullyQualifiedName} WHERE {predicate}";
+					var objectName = remoteReferenceConstraint.OwnerObject.FullyQualifiedName.ToString();
 					var constraintName = remoteReferenceConstraint.FullyQualifiedName.ToString();
-					var dataObject = (OracleDataObject)remoteReferenceConstraint.Owner;
+					var dataObject = (OracleDataObject)remoteReferenceConstraint.OwnerObject;
 
 					var incompatibleDataFound = false;
 					var dataTypes = new List<string>();
@@ -3243,7 +3243,7 @@ namespace SqlPad.Oracle.SemanticModel
 		{
 			string originalColumnName;
 			var sourceObject = GetSourceObject(selectColumn, out originalColumnName);
-			return sourceObject == constraint.Owner &&
+			return sourceObject == constraint.OwnerObject &&
 			       constraint.Columns.Any(c => String.Equals(c, originalColumnName));
 		}
 

@@ -100,7 +100,7 @@ namespace SqlPad.Oracle.DataDictionary
 
 			var oracleConstraintType = Serializer.Add(typeof(OracleConstraint), false);
 			oracleConstraintType.AsReferenceDefault = true;
-			oracleConstraintType.Add(nameof(OracleConstraint.Owner), nameof(OracleConstraint.Columns), nameof(OracleConstraint.IsEnabled), nameof(OracleConstraint.IsDeferrable), nameof(OracleConstraint.IsValidated), nameof(OracleConstraint.IsRelied));
+			oracleConstraintType.Add(nameof(OracleConstraint.OwnerObject), nameof(OracleConstraint.Columns), nameof(OracleConstraint.IsEnabled), nameof(OracleConstraint.IsDeferrable), nameof(OracleConstraint.IsValidated), nameof(OracleConstraint.IsRelied));
 
 			oracleConstraintType.AddSubType(101, typeof(OracleCheckConstraint));
 			oracleConstraintType.AddSubType(102, typeof(OracleUniqueConstraint));
