@@ -2805,7 +2805,7 @@ namespace SqlPad.Oracle.SemanticModel
 		private OracleReference ResolveColumnFunctionOrDataTypeReferenceFromIdentifier(OracleQueryBlock queryBlock, OracleReferenceContainer referenceContainer, StatementGrammarNode identifier, StatementPlacement placement, OracleSelectListColumn selectListColumn, Func<StatementGrammarNode, StatementGrammarNode> getPrefixNonTerminalFromIdentiferFunction = null)
 		{
 			var hasNotDatabaseLink = OracleReferenceBuilder.GetDatabaseLinkFromIdentifier(identifier) == null;
-			if (String.Equals(identifier.ParentNode.Id, NonTerminals.DataType))
+			if (String.Equals(identifier.ParentNode.ParentNode.Id, NonTerminals.DataType))
 			{
 				var dataTypeReference = _referenceBuilder.CreateDataTypeReference(queryBlock, selectListColumn, placement, identifier);
 				referenceContainer.DataTypeReferences.Add(dataTypeReference);
@@ -2883,7 +2883,7 @@ namespace SqlPad.Oracle.SemanticModel
 				var columnExpressions = StatementGrammarNode.GetAllChainedClausesByPath(queryBlock.SelectList[NonTerminals.AliasedExpressionOrAllTableColumns], n => n.ParentNode, NonTerminals.SelectExpressionExpressionChainedList, NonTerminals.AliasedExpressionOrAllTableColumns);
 				var columnExpressionsIdentifierLookup = queryBlock.Terminals
 					.Where(t => t.SourcePosition.IndexStart >= queryBlock.SelectList.SourcePosition.IndexStart && t.SourcePosition.IndexEnd <= queryBlock.SelectList.SourcePosition.IndexEnd &&
-					            (StandardIdentifierIds.Contains(t.Id) || t.ParentNode.Id.In(NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, NonTerminals.WithinGroupAggregationFunction, NonTerminals.DataType)))
+					            (StandardIdentifierIds.Contains(t.Id) || t.ParentNode.Id.In(NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, NonTerminals.WithinGroupAggregationFunction) || String.Equals(t.ParentNode.ParentNode.Id, NonTerminals.DataType)))
 					.ToLookup(t => t.GetAncestor(NonTerminals.AliasedExpressionOrAllTableColumns));
 				
 				foreach (var columnExpression in columnExpressions)
@@ -2920,7 +2920,7 @@ namespace SqlPad.Oracle.SemanticModel
 					else
 					{
 						var columnExpressionIdentifiers = columnExpressionsIdentifierLookup[columnExpression].ToArray();
-						var identifiers = columnExpressionIdentifiers.Where(t => t.Id.In(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level, Terminals.RowNumberPseudoColumn, Terminals.User) || String.Equals(t.ParentNode.Id, NonTerminals.DataType)).ToArray();
+						var identifiers = columnExpressionIdentifiers.Where(t => t.Id.In(Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level, Terminals.RowNumberPseudoColumn, Terminals.User) || String.Equals(t.ParentNode.ParentNode.Id, NonTerminals.DataType)).ToArray();
 
 						var previousColumnReferences = column.ColumnReferences.Count;
 						ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(queryBlock, column, identifiers, StatementPlacement.SelectList, column);

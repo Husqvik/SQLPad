@@ -19,12 +19,12 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public OracleDataTypeReference CreateDataTypeReference(OracleQueryBlock queryBlock, OracleSelectListColumn selectListColumn, StatementPlacement placement, StatementGrammarNode typeIdentifier)
 		{
-			var dataTypeNode = typeIdentifier.ParentNode;
+			var dataTypeNode = typeIdentifier.ParentNode.ParentNode;
 			var dataTypeReference =
 				new OracleDataTypeReference
 				{
 					RootNode = dataTypeNode,
-					OwnerNode = dataTypeNode[NonTerminals.SchemaPrefix, Terminals.SchemaIdentifier],
+					OwnerNode = dataTypeNode[NonTerminals.SchemaDatatype, NonTerminals.SchemaPrefix, Terminals.SchemaIdentifier],
 					ObjectNode = typeIdentifier,
 					DatabaseLinkNode = String.Equals(typeIdentifier.Id, Terminals.DataTypeIdentifier) ? GetDatabaseLinkFromIdentifier(typeIdentifier) : null,
 					Placement = placement,
@@ -118,26 +118,28 @@ namespace SqlPad.Oracle.DataDictionary
 
 			var dataType = dataTypeReference.ResolvedDataType = new OracleDataType();
 
-			string name;
-			if (String.IsNullOrEmpty(owner))
-			{
-				var isVarying = dataTypeNode[Terminals.Varying] != null;
+			var builtInDataTypeNode = dataTypeNode[NonTerminals.BuiltInDataType];
 
-				switch (dataTypeNode.FirstTerminalNode.Id)
+			string name;
+			if (builtInDataTypeNode != null && String.IsNullOrEmpty(owner))
+			{
+				var isVarying = builtInDataTypeNode[Terminals.Varying] != null;
+
+				switch (builtInDataTypeNode.FirstTerminalNode.Id)
 				{
 					case Terminals.Double:
 						name = TerminalValues.BinaryDouble;
 						break;
 					case Terminals.Long:
-						name = dataTypeNode.ChildNodes.Count > 1 && String.Equals(dataTypeNode.ChildNodes[1].Id, Terminals.Raw)
+						name = builtInDataTypeNode.ChildNodes.Count > 1 && String.Equals(builtInDataTypeNode.ChildNodes[1].Id, Terminals.Raw)
 							? "LONG RAW"
 							: TerminalValues.Long;
 						break;
 					case Terminals.Interval:
-						var yearToMonthNode = dataTypeNode[NonTerminals.YearToMonthOrDayToSecond, NonTerminals.IntervalYearToMonth];
+						var yearToMonthNode = builtInDataTypeNode[NonTerminals.YearToMonthOrDayToSecond, NonTerminals.IntervalYearToMonth];
 						if (yearToMonthNode == null)
 						{
-							var dayToSecondNode = dataTypeNode[NonTerminals.YearToMonthOrDayToSecond, NonTerminals.IntervalDayToSecond];
+							var dayToSecondNode = builtInDataTypeNode[NonTerminals.YearToMonthOrDayToSecond, NonTerminals.IntervalDayToSecond];
 							name = dayToSecondNode == null ? String.Empty : OracleDatabaseModelBase.BuiltInDataTypeIntervalDayToSecond;
 						}
 						else
@@ -153,7 +155,7 @@ namespace SqlPad.Oracle.DataDictionary
 						name = isVarying ? TerminalValues.Varchar2 : TerminalValues.Char;
 						break;
 					default:
-						name = ((OracleToken)dataTypeNode.FirstTerminalNode.Token).UpperInvariantValue;
+						name = ((OracleToken)builtInDataTypeNode.FirstTerminalNode.Token).UpperInvariantValue;
 						break;
 				}
 
@@ -161,7 +163,7 @@ namespace SqlPad.Oracle.DataDictionary
 				if (String.Equals(name, OracleDatabaseModelBase.BuiltInDataTypeIntervalDayToSecond) ||
 				    String.Equals(name, OracleDatabaseModelBase.BuiltInDataTypeIntervalYearToMonth))
 				{
-					var intervalPrecisions = dataTypeNode.GetDescendants(NonTerminals.DataTypeSimplePrecision).ToArray();
+					var intervalPrecisions = builtInDataTypeNode.GetDescendants(NonTerminals.DataTypeSimplePrecision).ToArray();
 					if (intervalPrecisions.Length > 0)
 					{
 						dataType.Precision = GetSimplePrecisionValue(intervalPrecisions[0], out precisionNode);
@@ -176,7 +178,7 @@ namespace SqlPad.Oracle.DataDictionary
 				}
 				else
 				{
-					var simplePrecisionNode = dataTypeNode.GetSingleDescendant(NonTerminals.DataTypeSimplePrecision);
+					var simplePrecisionNode = builtInDataTypeNode.GetSingleDescendant(NonTerminals.DataTypeSimplePrecision);
 					var precisionValue = GetSimplePrecisionValue(simplePrecisionNode, out precisionNode);
 
 					switch (name)
@@ -192,14 +194,14 @@ namespace SqlPad.Oracle.DataDictionary
 							break;
 					}
 
-					TryResolveVarcharDetails(dataTypeReference, dataTypeNode);
+					TryResolveVarcharDetails(dataTypeReference, builtInDataTypeNode);
 
-					TryResolveNumericPrecisionAndScale(dataTypeReference, dataTypeNode);
+					TryResolveNumericPrecisionAndScale(dataTypeReference, builtInDataTypeNode);
 				}
 			}
 			else
 			{
-				var identifier = dataTypeNode[Terminals.DataTypeIdentifier];
+				var identifier = dataTypeNode[NonTerminals.SchemaDatatype, Terminals.DataTypeIdentifier];
 				name = identifier == null ? String.Empty : identifier.Token.Value;
 			}
 

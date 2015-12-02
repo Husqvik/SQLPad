@@ -161,6 +161,7 @@ namespace SqlPad.Oracle
 			public const string BindVariableExpressionOrPlSqlTarget = "BindVariableExpressionOrPlSqlTarget";
 			public const string BlockSizeClause = "BlockSizeClause";
 			public const string BufferPoolType = "BufferPoolType";
+			public const string BuiltInDataType = "BuiltInDataType";
 			public const string BulkCollect = "BulkCollect";
 			public const string ByteOrChar = "ByteOrChar";
 			public const string BytesOrCharacters = "BytesOrCharacters";
@@ -1207,6 +1208,7 @@ namespace SqlPad.Oracle
 			public const string SchemaAuthorizationCreateObjectType = "SchemaAuthorizationCreateObjectType";
 			public const string SchemaAuthorizationCreateStatementList = "SchemaAuthorizationCreateStatementList";
 			public const string SchemaCheckOrNoSchemaCheck = "SchemaCheckOrNoSchemaCheck";
+			public const string SchemaDatatype = "SchemaDatatype";
 			public const string SchemaObject = "SchemaObject";
 			public const string SchemaObjectList = "SchemaObjectList";
 			public const string SchemaObjectListChained = "SchemaObjectListChained";

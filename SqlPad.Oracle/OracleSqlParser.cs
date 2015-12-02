@@ -170,11 +170,11 @@ namespace SqlPad.Oracle
 		private static bool IsRuleValid(string nonTerminalId, IEnumerable<OracleToken> tokens)
 		{
 			var context =
-						new ParseContext
-						{
-							Statement = new OracleStatement(),
-							TokenBuffer = new List<OracleToken>(tokens)
-						};
+				new ParseContext
+				{
+					Statement = new OracleStatement(),
+					TokenBuffer = new List<OracleToken>(tokens)
+				};
 
 			var nonTerminal = CreateInitialNonTerminal(nonTerminalId);
 			var result = ProceedNonTerminal(context, nonTerminal, 0, 0, false, nonTerminal.TargetRule.Scope);

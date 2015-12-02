@@ -6138,24 +6138,40 @@
           <NonTerminal Id="DataTypeVarcharSimplePrecision" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="AssignmentStatementTarget" />
-          <NonTerminal Id="RecordType" />
-        </Sequence>
-        <Sequence>
           <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="ObjectRowType" />
         </Sequence>
-        <!--<Sequence>
-          <NonTerminal Id="Prefix" />
-          <Terminal Id="Identifier" />
-        </Sequence>-->
         <Sequence>
-          <NonTerminal Id="DataType" />
+          <NonTerminal Id="AssignmentStatementTarget" />
+          <NonTerminal Id="PercentCharacterTypeOrRowType" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="BuiltInDataType" />
         </Sequence>
       </Sequences>
     </Rule>
 
     <Rule StartingNonTerminal="DataType">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="BuiltInDataType" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="SchemaDatatype" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="SchemaDatatype">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
+          <Terminal Id="DataTypeIdentifier" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="BuiltInDataType">
       <Sequences>
         <Sequence>
           <Terminal Id="Raw" />
@@ -6261,10 +6277,6 @@
         </Sequence>
         <Sequence>
           <Terminal Id="Table" />
-        </Sequence>
-        <Sequence>
-          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
-          <Terminal Id="DataTypeIdentifier" />
         </Sequence>
       </Sequences>
     </Rule>

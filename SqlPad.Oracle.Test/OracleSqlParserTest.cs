@@ -3273,6 +3273,8 @@ END;";
 				const string statement1 =
 @"DECLARE
 	results sys.dbms_debug.vc2_table;
+	u z.p1.p1.p1.p1%TYPE;
+	u z.p1.p1.p1.p2%ROWTYPE;
 	var SYS.ODCIVARCHAR2LIST;
 BEGIN
 	var := NULL;
