@@ -22,7 +22,7 @@ namespace SqlPad.Oracle.Test
 			using (var reader = File.OpenText(@"TestFiles\SqlStatements1.sql"))
 			{
 				var statements = Parser.Parse(OracleTokenReader.Create(reader));
-				statements.Count.ShouldBe(18);
+				statements.Count.ShouldBe(20);
 
 				statements.ToList().ForEach(s => s.ParseStatus.ShouldBe(ParseStatus.Success));
 			}
@@ -3273,8 +3273,9 @@ END;";
 				const string statement1 =
 @"DECLARE
 	results sys.dbms_debug.vc2_table;
+	var SYS.ODCIVARCHAR2LIST;
 BEGIN
-	NULL;
+	var := NULL;
 END;";
 
 				var statement = Parser.Parse(statement1).Single().Validate();

@@ -252,5 +252,55 @@ WHERE
 
 			AssertFormattedResult(executionContext, expectedFormat);
 		}
+
+		[Test(Description = @"")]
+		public void TestBasicPlSqlFormatting()
+		{
+			const string sourceFormat = "DECLARE x NUMBER; TYPE tx IS RECORD (p1 NUMBER); TYPE ty IS RECORD (p1 tx); TYPE tz IS RECORD (p1 ty); TYPE tw IS RECORD (p1 tz); z tw; t x%TYPE; t z.p1.p1.p1%TYPE; results dbms_debug.vc2_table; PROCEDURE procedure1 (p1 NUMBER) IS x NUMBER; BEGIN NULL; END; FUNCTION function1 (p1 NUMBER) RETURN NUMBER IS x NUMBER; BEGIN RETURN x; END; BEGIN NULL; NULL; NULL; END;";
+			var executionContext = ExecuteFormatCommand(sourceFormat);
+
+			const string expectedFormat =
+@"DECLARE
+	x NUMBER;
+	TYPE tx IS RECORD (p1 NUMBER);
+	TYPE ty IS RECORD (p1 tx);
+	TYPE tz IS RECORD (p1 ty);
+	TYPE tw IS RECORD (p1 tz);
+	z tw;
+	t x%TYPE;
+	t z.p1.p1.p1%TYPE;
+	results dbms_debug.vc2_table;
+	PROCEDURE procedure1 (p1 NUMBER) IS
+		x NUMBER;
+	BEGIN
+		NULL;
+	END;
+	FUNCTION function1 (p1 NUMBER) RETURN NUMBER IS
+		x NUMBER;
+	BEGIN
+		RETURN x;
+	END;
+BEGIN
+	NULL;
+	NULL;
+	NULL;
+END;";
+
+			AssertFormattedResult(executionContext, expectedFormat);
+		}
+
+		[Test(Description = @"")]
+		public void TestPlSqlWithoutDeclareSectionFormatting()
+		{
+			const string sourceFormat = "BEGIN NULL; END;";
+			var executionContext = ExecuteFormatCommand(sourceFormat);
+
+			const string expectedFormat =
+@"BEGIN
+	NULL;
+END;";
+
+			AssertFormattedResult(executionContext, expectedFormat);
+		}
 	}
 }

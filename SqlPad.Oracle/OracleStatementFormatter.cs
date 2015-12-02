@@ -61,7 +61,17 @@ namespace SqlPad.Oracle
 				new LineBreakSettings { NonTerminalId = NonTerminals.ConcatenatedSubquery, ChildNodeId = NonTerminals.SetOperation, BreakPosition = n => LineBreakPosition.BeforeNode | LineBreakPosition.AfterNode, GetIndentationBefore = n => -1 },
 				new LineBreakSettings { NonTerminalId = NonTerminals.QueryTableExpression, ChildNodeId = Terminals.RightParenthesis, BreakPosition = n => LineBreakPosition.BeforeNode, GetIndentationBefore = n => -1 },
 				new LineBreakSettings { NonTerminalId = NonTerminals.Condition, ChildNodeId = Terminals.RightParenthesis, GetIndentationAfter = GetAfterConditionClosingParenthesisIndentation },
-				new LineBreakSettings { NonTerminalId = NonTerminals.ParenthesisEnclosedNestedQuery, ChildNodeId = Terminals.RightParenthesis, GetIndentationAfter = GetAfterExpressionClosingParenthesisIndentation }
+				new LineBreakSettings { NonTerminalId = NonTerminals.ParenthesisEnclosedNestedQuery, ChildNodeId = Terminals.RightParenthesis, GetIndentationAfter = GetAfterExpressionClosingParenthesisIndentation },
+				// PL/SQL
+				new LineBreakSettings { NonTerminalId = NonTerminals.PlSqlStatementType, ChildNodeId = null, BreakPosition = n => LineBreakPosition.BeforeNode },
+				new LineBreakSettings { NonTerminalId = NonTerminals.InlinePragma, ChildNodeId = null, BreakPosition = n => LineBreakPosition.BeforeNode },
+				new LineBreakSettings { NonTerminalId = NonTerminals.Item1, ChildNodeId = null, BreakPosition = n => LineBreakPosition.BeforeNode },
+				new LineBreakSettings { NonTerminalId = NonTerminals.Item2, ChildNodeId = null, BreakPosition = n => LineBreakPosition.BeforeNode },
+				new LineBreakSettings { NonTerminalId = NonTerminals.PlSqlLabel, ChildNodeId = null, BreakPosition = n => LineBreakPosition.BeforeNode },
+				new LineBreakSettings { NonTerminalId = NonTerminals.PlSqlBlockDeclareSection, ChildNodeId = Terminals.Declare, GetIndentationAfter = n => 1 },
+				new LineBreakSettings { NonTerminalId = NonTerminals.ProgramBody, ChildNodeId = Terminals.Begin, BreakPosition = n => LineBreakPosition.BeforeNode, GetIndentationBefore = n => -1, GetIndentationAfter = n => 1 },
+				new LineBreakSettings { NonTerminalId = NonTerminals.ProgramEnd, ChildNodeId = Terminals.End, BreakPosition = n => LineBreakPosition.BeforeNode, GetIndentationBefore = n => -1 },
+				new LineBreakSettings { NonTerminalId = NonTerminals.IsOrAs, ChildNodeId = null, GetIndentationAfter = n => 1 },
 			};
 
 		private static int GetAfterConditionClosingParenthesisIndentation(StatementGrammarNode node)
@@ -116,6 +126,7 @@ namespace SqlPad.Oracle
 				NonTerminals.FromClause,
 				NonTerminals.WhereClause,
 				NonTerminals.OrderByClause,
+				Terminals.PercentCharacter
 			};
 
 		private static readonly HashSet<string> SingleLineNoSpaceBeforeTerminals =
@@ -125,7 +136,8 @@ namespace SqlPad.Oracle
 				Terminals.RightParenthesis,
 				Terminals.AtCharacter,
 				Terminals.Comma,
-				Terminals.Semicolon
+				Terminals.Semicolon,
+				Terminals.PercentCharacter
 			};
 
 		private static readonly HashSet<string> SingleLineNoSpaceAfterTerminals =
@@ -134,7 +146,8 @@ namespace SqlPad.Oracle
 				Terminals.Colon,
 				Terminals.Dot,
 				Terminals.LeftParenthesis,
-				Terminals.AtCharacter
+				Terminals.AtCharacter,
+				Terminals.PercentCharacter
 			};
 
 		private static readonly HashSet<string> SingleCharacterTerminals =
@@ -145,7 +158,8 @@ namespace SqlPad.Oracle
 				Terminals.Semicolon,
 				Terminals.Dot,
 				Terminals.AtCharacter,
-				Terminals.Colon
+				Terminals.Colon,
+				Terminals.PercentCharacter
 			};
 
 		public OracleStatementFormatter(SqlFormatterOptions options)
@@ -325,7 +339,7 @@ namespace SqlPad.Oracle
 					var breakBeforeSettingsFound = breakSettingsFound && (!String.IsNullOrEmpty(lineBreakSettings.ChildNodeId) || childIndex == 0);
 					if (breakBeforeSettingsFound)
 					{
-						var indentationBefore = lineBreakSettings.GetIndentationBefore == null ? 0 : lineBreakSettings.GetIndentationBefore(grammarNode);
+						var indentationBefore = lineBreakSettings.GetIndentationBefore?.Invoke(grammarNode) ?? 0;
 						if (indentationBefore > 0)
 						{
 							indentation += new String('\t', indentationBefore);
@@ -335,7 +349,7 @@ namespace SqlPad.Oracle
 							indentation = indentation.Remove(0, Math.Min(-indentationBefore, indentation.Length));
 						}
 
-						breakBefore = lineBreakSettings.BreakPosition != null && (lineBreakSettings.BreakPosition(grammarNode) & LineBreakPosition.BeforeNode) != LineBreakPosition.None;
+						breakBefore = stringBuilder.Length > 0 && lineBreakSettings.BreakPosition != null && lineBreakSettings.BreakPosition(grammarNode).HasFlag(LineBreakPosition.BeforeNode);
 						if (breakBefore)
 						{
 							stringBuilder.Append(Environment.NewLine);
@@ -353,7 +367,7 @@ namespace SqlPad.Oracle
 						if ((!breakSettingsFound || !breakBefore) &&
 							(!SingleCharacterTerminals.Contains(grammarNode.Id) ||
 							 OracleGrammarDescription.MathTerminals.Contains(grammarNode.Id) ||
-							 grammarNode.Id == Terminals.Colon) &&
+							 grammarNode.Id.In(Terminals.Colon)) &&
 							!skipSpaceBeforeToken && stringBuilder.Length > 0)
 						{
 							stringBuilder.Append(' ');
@@ -376,7 +390,7 @@ namespace SqlPad.Oracle
 					var breakAfterSettingsFound = breakSettingsFound && (!String.IsNullOrEmpty(lineBreakSettings.ChildNodeId) || childIndex + 1 == startNode.ChildNodes.Count);
 					if (breakAfterSettingsFound)
 					{
-						var indentationAfter = lineBreakSettings.GetIndentationAfter == null ? 0 : lineBreakSettings.GetIndentationAfter(grammarNode);
+						var indentationAfter = lineBreakSettings.GetIndentationAfter?.Invoke(grammarNode) ?? 0;
 						if (indentationAfter > 0)
 						{
 							indentation += new String('\t', indentationAfter);
@@ -386,7 +400,7 @@ namespace SqlPad.Oracle
 							indentation = indentation.Remove(0, Math.Min(-indentationAfter, indentation.Length));
 						}
 
-						if (lineBreakSettings.BreakPosition != null && (lineBreakSettings.BreakPosition(grammarNode) & LineBreakPosition.AfterNode) != LineBreakPosition.None)
+						if (lineBreakSettings.BreakPosition != null && lineBreakSettings.BreakPosition(grammarNode).HasFlag(LineBreakPosition.AfterNode))
 						{
 							stringBuilder.Append(Environment.NewLine);
 							skipSpaceBeforeToken = true;

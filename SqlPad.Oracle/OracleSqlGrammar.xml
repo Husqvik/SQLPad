@@ -6138,18 +6138,17 @@
           <NonTerminal Id="DataTypeVarcharSimplePrecision" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="Prefix" IsOptional="true" />
-          <Terminal Id="Identifier" />
+          <NonTerminal Id="AssignmentStatementTarget" />
           <NonTerminal Id="RecordType" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="ObjectRowType" />
         </Sequence>
-        <Sequence>
+        <!--<Sequence>
           <NonTerminal Id="Prefix" />
           <Terminal Id="Identifier" />
-        </Sequence>
+        </Sequence>-->
         <Sequence>
           <NonTerminal Id="DataType" />
         </Sequence>
