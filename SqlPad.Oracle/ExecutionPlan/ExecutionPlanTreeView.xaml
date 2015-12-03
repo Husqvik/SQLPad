@@ -14,6 +14,103 @@
 		<sqlPad:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
 		<executionPlan:LastExecutionWorkAreaInfoConverter x:Key="LastExecutionWorkAreaInfoConverter" />
 		<executionPlan:CumulativeExecutionWorkAreaInfoConverter x:Key="CumulativeExecutionWorkAreaInfoConverter" />
+		
+		<!-- Toggle Button -->
+		<ControlTemplate x:Key="TreeNodeExpandButtonTemplate" TargetType="ToggleButton">
+			<Grid Width="15" Height="17" SnapsToDevicePixels="True">
+				<Rectangle x:Name="Border" Width="13" Height="13" Stroke="#919191" SnapsToDevicePixels="true">
+					<Rectangle.Fill>
+						<LinearGradientBrush EndPoint="0.5,2" StartPoint="0.5,0">
+							<GradientStop Color="White" Offset="0" />
+							<GradientStop Color="Silver" Offset="0.5" />
+							<GradientStop Color="LightGray" Offset="1" />
+						</LinearGradientBrush>
+					</Rectangle.Fill>
+				</Rectangle>
+				<Rectangle x:Name="ExpandPath" Width="1" Height="9" Stroke="Black" SnapsToDevicePixels="true" />
+				<Rectangle x:Name="HorizontalStreak" Width="9" Height="1" Stroke="Black" SnapsToDevicePixels="true" />
+			</Grid>
+			<ControlTemplate.Triggers>
+				<Trigger Property="IsChecked" Value="True">
+					<Setter Property="Visibility" TargetName="ExpandPath" Value="Collapsed" />
+				</Trigger>
+				<Trigger Property="IsMouseOver" Value="true">
+					<Setter Property="Stroke" Value="Black" TargetName="Border" />
+				</Trigger>
+				<Trigger Property="IsPressed" Value="true">
+					<Setter Property="Stroke" Value="Red" TargetName="Border" />
+					<Setter Property="Stroke" Value="Red" TargetName="HorizontalStreak" />
+					<Setter Property="Stroke" Value="Red" TargetName="ExpandPath" />
+				</Trigger>
+			</ControlTemplate.Triggers>
+		</ControlTemplate>
+
+		<Style x:Key="ExpandCollapseToggleStyle" TargetType="ToggleButton">
+			<Setter Property="Focusable" Value="False" />
+			<Setter Property="Template" Value="{StaticResource TreeNodeExpandButtonTemplate}" />
+		</Style>
+
+		<ControlTemplate x:Key="ExpanderButtonControlTemplate" TargetType="{x:Type ToggleButton}">
+			<Border x:Name="ExpanderButtonBorder"
+			        Background="{TemplateBinding Background}"
+			        BorderBrush="{TemplateBinding BorderBrush}"
+			        BorderThickness="{TemplateBinding BorderThickness}"
+			        Padding="{TemplateBinding Padding}">
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto" />
+						<ColumnDefinition Width="*" />
+					</Grid.ColumnDefinitions>
+					<Rectangle Fill="Transparent" Grid.ColumnSpan="2" />
+					<Rectangle x:Name="Border" Grid.Column="0" Width="13" Height="13" Stroke="#919191" SnapsToDevicePixels="true">
+						<Rectangle.Fill>
+							<LinearGradientBrush EndPoint="0.5,2" StartPoint="0.5,0">
+								<GradientStop Color="White" Offset="0" />
+								<GradientStop Color="Silver" Offset="0.5" />
+								<GradientStop Color="LightGray" Offset="1" />
+							</LinearGradientBrush>
+						</Rectangle.Fill>
+					</Rectangle>
+					<Rectangle Grid.Column="0" x:Name="ExpandPath" Width="1" Height="9" Stroke="Black" SnapsToDevicePixels="true" />
+					<Rectangle x:Name="HorizontalStreak" Grid.Column="0" Width="9" Height="1" Stroke="Black" SnapsToDevicePixels="true" />
+					<ContentPresenter x:Name="HeaderContent" Grid.Column="1" Margin="4,0,0,0" ContentSource="Content" VerticalAlignment="Center" />
+				</Grid>
+			</Border>
+			<ControlTemplate.Triggers>
+				<Trigger Property="IsChecked" Value="True">
+					<Setter Property="Visibility" TargetName="ExpandPath" Value="Collapsed" />
+				</Trigger>
+				<Trigger Property="IsMouseOver" Value="true">
+					<Setter Property="Stroke" Value="Black" TargetName="Border" />
+				</Trigger>
+				<Trigger Property="IsPressed" Value="true">
+					<Setter Property="Stroke" Value="Red" TargetName="Border" />
+					<Setter Property="Stroke" Value="Red" TargetName="HorizontalStreak" />
+					<Setter Property="Stroke" Value="Red" TargetName="ExpandPath" />
+				</Trigger>
+			</ControlTemplate.Triggers>
+		</ControlTemplate>
+
+		<!-- Simple Expander Template-->
+		<ControlTemplate x:Key="ExpanderTemplate" TargetType="{x:Type Expander}">
+			<DockPanel>
+				<ToggleButton x:Name="ExpanderButton"
+				              DockPanel.Dock="Top"
+				              Template="{StaticResource ExpanderButtonControlTemplate}"
+				              Content="{TemplateBinding Header}"
+				              IsChecked="{Binding Path=IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
+				              OverridesDefaultStyle="True"
+				              Padding="1.5,0" />
+				<ContentPresenter x:Name="ExpanderContent"
+				                  Visibility="Collapsed"
+				                  DockPanel.Dock="Bottom" />
+			</DockPanel>
+			<ControlTemplate.Triggers>
+				<Trigger Property="IsExpanded" Value="True">
+					<Setter TargetName="ExpanderContent" Property="Visibility" Value="Visible" />
+				</Trigger>
+			</ControlTemplate.Triggers>
+		</ControlTemplate>
 
 		<Style x:Key="PlanItemBaseStyle" TargetType="TextBlock">
 			<Style.Setters>
@@ -632,6 +729,7 @@
 										<Setter Property="Expander.Visibility" Value="Collapsed" />
 									</DataTrigger>
 								</Style.Triggers>
+								<Setter Property="Expander.Template" Value="{StaticResource ExpanderTemplate}" />
 							</Style>
 						</Expander.Style>
 					</Expander>
@@ -647,34 +745,6 @@
 		                                        ExecutionStatisticsPlanItemTemplate="{StaticResource ExecutionStatisticsPlanItemDataTemplate}"
 		                                        ExecutionMonitorPlanItemTemplate="{StaticResource ExecutionMonitorPlanItemDataTemplate}" />
 
-		<!-- Toggle Button -->
-		<Style x:Key="ExpandCollapseToggleStyle" TargetType="ToggleButton">
-			<Setter Property="Focusable" Value="False" />
-			<Setter Property="Template">
-				<Setter.Value>
-					<ControlTemplate TargetType="ToggleButton">
-						<Grid Width="15" Height="17" SnapsToDevicePixels="True">
-							<Rectangle Width="13" Height="13" Stroke="#919191" SnapsToDevicePixels="true">
-								<Rectangle.Fill>
-									<LinearGradientBrush EndPoint="0.5,2" StartPoint="0.5,0">
-										<GradientStop Color="White" Offset="0" />
-										<GradientStop Color="Silver" Offset="0.5" />
-										<GradientStop Color="LightGray" Offset="1" />
-									</LinearGradientBrush>
-								</Rectangle.Fill>
-							</Rectangle>
-							<Rectangle x:Name="ExpandPath" Width="1" Height="9" Stroke="Black" SnapsToDevicePixels="true" />
-							<Rectangle Width="9" Height="1" Stroke="Black" SnapsToDevicePixels="true" />
-						</Grid>
-						<ControlTemplate.Triggers>
-							<Trigger Property="IsChecked" Value="True">
-								<Setter Property="Visibility" TargetName="ExpandPath" Value="Collapsed" />
-							</Trigger>
-						</ControlTemplate.Triggers>
-					</ControlTemplate>
-				</Setter.Value>
-			</Setter>
-		</Style>
 
 		<!-- TreeViewItem -->
 		<Style TargetType="{x:Type TreeViewItem}">
@@ -767,7 +837,7 @@
 			</Setter>
 		</Style>
 	</UserControl.Resources>
-
+	
 	<TreeView x:Name="TreeView" ItemTemplateSelector="{StaticResource PlanItemTemplateSelector}">
 		<TreeView.Resources>
 			<RoutedCommand x:Key="CommandSaveContentAsPng" />
