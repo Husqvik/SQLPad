@@ -302,5 +302,40 @@ END;";
 
 			AssertFormattedResult(executionContext, expectedFormat);
 		}
+
+		[Test(Description = @"")]
+		public void TestUpdateFormatting()
+		{
+			const string sourceFormat = "UPDATE TEST_DATA SET OWNER = NULL, OBJECT_NAME = NULL, SUBOBJECT_NAME = NULL, OBJECT_ID = NULL, DATA_OBJECT_ID = NULL, OBJECT_TYPE = NULL, CREATED = NULL, LAST_DDL_TIME = NULL, TIMESTAMP = NULL, STATUS = NULL, TEMPORARY = NULL, GENERATED = NULL, SECONDARY = NULL, NAMESPACE = NULL, EDITION_NAME = NULL, SHARING = NULL, EDITIONABLE = NULL, ORACLE_MAINTAINED = NULL WHERE 1 = 1 AND 0 = 0";
+			var executionContext = ExecuteFormatCommand(sourceFormat);
+
+			const string expectedFormat =
+@"UPDATE
+	TEST_DATA
+SET
+	OWNER = NULL,
+	OBJECT_NAME = NULL,
+	SUBOBJECT_NAME = NULL,
+	OBJECT_ID = NULL,
+	DATA_OBJECT_ID = NULL,
+	OBJECT_TYPE = NULL,
+	CREATED = NULL,
+	LAST_DDL_TIME = NULL,
+	TIMESTAMP = NULL,
+	STATUS = NULL,
+	TEMPORARY = NULL,
+	GENERATED = NULL,
+	SECONDARY = NULL,
+	NAMESPACE = NULL,
+	EDITION_NAME = NULL,
+	SHARING = NULL,
+	EDITIONABLE = NULL,
+	ORACLE_MAINTAINED = NULL
+WHERE
+	1 = 1
+	AND 0 = 0";
+
+			AssertFormattedResult(executionContext, expectedFormat);
+		}
 	}
 }

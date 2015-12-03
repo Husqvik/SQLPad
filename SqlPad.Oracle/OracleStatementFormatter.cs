@@ -62,6 +62,17 @@ namespace SqlPad.Oracle
 				new LineBreakSettings { NonTerminalId = NonTerminals.QueryTableExpression, ChildNodeId = Terminals.RightParenthesis, BreakPosition = n => LineBreakPosition.BeforeNode, GetIndentationBefore = n => -1 },
 				new LineBreakSettings { NonTerminalId = NonTerminals.Condition, ChildNodeId = Terminals.RightParenthesis, GetIndentationAfter = GetAfterConditionClosingParenthesisIndentation },
 				new LineBreakSettings { NonTerminalId = NonTerminals.ParenthesisEnclosedNestedQuery, ChildNodeId = Terminals.RightParenthesis, GetIndentationAfter = GetAfterExpressionClosingParenthesisIndentation },
+				
+				// Insert
+				new LineBreakSettings { NonTerminalId = NonTerminals.InsertValuesOrSubquery, ChildNodeId = null, BreakPosition = n => LineBreakPosition.BeforeNode },
+
+				// Update
+				new LineBreakSettings { NonTerminalId = NonTerminals.UpdateStatement, ChildNodeId = Terminals.Update, BreakPosition = n => LineBreakPosition.AfterNode, GetIndentationAfter = n => 1 },
+				new LineBreakSettings { NonTerminalId = NonTerminals.UpdateSetClause, ChildNodeId = Terminals.Set, BreakPosition = n => LineBreakPosition.BeforeNode, GetIndentationBefore = n => -1, GetIndentationAfter = n => 1 },
+				new LineBreakSettings { NonTerminalId = NonTerminals.UpdateSetColumnOrColumnList, ChildNodeId = null, BreakPosition = n => LineBreakPosition.BeforeNode },
+				new LineBreakSettings { NonTerminalId = NonTerminals.ReturningClause, ChildNodeId = null, BreakPosition = n => LineBreakPosition.BeforeNode },
+				new LineBreakSettings { NonTerminalId = NonTerminals.ErrorLoggingClause, ChildNodeId = null, BreakPosition = n => LineBreakPosition.BeforeNode },
+
 				// PL/SQL
 				new LineBreakSettings { NonTerminalId = NonTerminals.PlSqlStatementType, ChildNodeId = null, BreakPosition = n => LineBreakPosition.BeforeNode },
 				new LineBreakSettings { NonTerminalId = NonTerminals.InlinePragma, ChildNodeId = null, BreakPosition = n => LineBreakPosition.BeforeNode },
