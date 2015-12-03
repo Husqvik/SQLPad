@@ -229,7 +229,7 @@ namespace SqlPad
 		{
 			const double minimumRefreshIntervalSeconds = 0.1;
 			var refreshIntervalSeconds = AutorefreshProgressBar.ActualWidth == 0 ? minimumRefreshIntervalSeconds : Math.Max(remainingSeconds / AutorefreshProgressBar.ActualWidth, minimumRefreshIntervalSeconds);
-			var interval = TimeSpan.FromSeconds(refreshIntervalSeconds);
+			var interval = TimeSpan.FromSeconds(Math.Min(refreshIntervalSeconds, 1));
 			_refreshProgressBarTimer.Interval = interval;
 		}
 

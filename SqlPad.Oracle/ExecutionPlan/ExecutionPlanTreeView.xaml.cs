@@ -14,7 +14,6 @@ namespace SqlPad.Oracle.ExecutionPlan
 	{
 		public static readonly DependencyProperty RootItemProperty = DependencyProperty.Register(nameof(RootItem), typeof(ExecutionPlanItem), typeof(ExecutionPlanTreeView), new FrameworkPropertyMetadata(RootItemChangedHandler));
 		public static readonly DependencyProperty ShowCumulativeExecutionsProperty = DependencyProperty.Register(nameof(ShowCumulativeExecutions), typeof(bool), typeof(ExecutionPlanTreeView), new FrameworkPropertyMetadata());
-		public static readonly DependencyProperty ShowSessionDetailsProperty = DependencyProperty.Register(nameof(ShowSessionDetails), typeof(bool), typeof(ExecutionPlanTreeView), new FrameworkPropertyMetadata());
 
 		public ExecutionPlanItem RootItem
 		{
@@ -40,12 +39,6 @@ namespace SqlPad.Oracle.ExecutionPlan
 		{
 			get { return (bool)GetValue(ShowCumulativeExecutionsProperty); }
 			set { SetValue(ShowCumulativeExecutionsProperty, value); }
-		}
-
-		public bool ShowSessionDetails
-		{
-			get { return (bool)GetValue(ShowSessionDetailsProperty); }
-			set { SetValue(ShowSessionDetailsProperty, value); }
 		}
 
 		public ExecutionPlanTreeView()

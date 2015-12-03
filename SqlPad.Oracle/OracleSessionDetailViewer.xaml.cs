@@ -42,7 +42,16 @@ namespace SqlPad.Oracle
 			_connectionString = connectionString;
 
 			_refreshTimer = new DispatcherTimer(DispatcherPriority.Normal, Dispatcher) { Interval = TimeSpan.FromSeconds(10) };
-			_refreshTimer.Tick += async delegate { await Refresh(CancellationToken.None); };
+			_refreshTimer.Tick += RefreshTimerTickHandler;
+		}
+
+		private async void RefreshTimerTickHandler(object sender, EventArgs eventArgs)
+		{
+			var exception = await App.SafeActionAsync(() => Refresh(CancellationToken.None));
+			if (exception != null)
+			{
+				Messages.ShowError(exception.Message, owner: Window.GetWindow(this));
+			}
 		}
 
 		public async Task Refresh(CancellationToken cancellationToken)

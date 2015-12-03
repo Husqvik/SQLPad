@@ -619,26 +619,24 @@
 					<Run Text="{Binding FilterPredicates}" />
 				</TextBlock>
 
-				<ContentControl>
-					<ContentControl.Style>
-						<Style TargetType="ContentControl">
-							<Style.Triggers>
-								<DataTrigger Binding="{Binding}" Value="{x:Null}">
-									<Setter Property="Visibility" Value="Collapsed" />
-								</DataTrigger>
-								<DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=executionPlan:ExecutionPlanTreeView, AncestorLevel=1}, Path=ShowSessionDetails}" Value="True">
-									<Setter Property="ContentTemplate" Value="{StaticResource SqlMonitorSessionListDataTemplate}" />
-									<Setter Property="Content" Value="{Binding SessionItems}" />	
-								</DataTrigger>
-								<DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=executionPlan:ExecutionPlanTreeView, AncestorLevel=1}, Path=ShowSessionDetails}" Value="False">
-									<Setter Property="ContentTemplate" Value="{StaticResource SqlMonitorSingleSessionDataTemplate}" />
-									<Setter Property="Content" Value="{Binding AllSessionSummaryItem}" />	
-								</DataTrigger>
-							</Style.Triggers>
-						</Style>
-					</ContentControl.Style>
-				</ContentControl>
-
+				<StackPanel>
+					<ContentControl Content="{Binding AllSessionSummaryItem}" ContentTemplate="{StaticResource SqlMonitorSingleSessionDataTemplate}" />
+					<Expander Header="Session details" IsExpanded="False" Content="{Binding SessionItems}" ContentTemplate="{StaticResource SqlMonitorSessionListDataTemplate}">
+						<Expander.Style>
+							<Style>
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding AllSessionSummaryItem}" Value="{x:Null}">
+										<Setter Property="Expander.Visibility" Value="Collapsed" />
+									</DataTrigger>
+									<DataTrigger Binding="{Binding SessionItems.Count}" Value="1">
+										<Setter Property="Expander.Visibility" Value="Collapsed" />
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</Expander.Style>
+					</Expander>
+				</StackPanel>
+				
 				<ContentControl Content="{Binding SessionLongOperations}" ContentTemplate="{StaticResource SessionLongOperationListDataTemplate}" />
 			</StackPanel>
 		</HierarchicalDataTemplate>

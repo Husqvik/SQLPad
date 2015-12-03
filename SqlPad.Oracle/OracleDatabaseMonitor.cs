@@ -66,7 +66,7 @@ namespace SqlPad.Oracle
 									FailoverType = (string)reader["FAILOVER_TYPE"],
 									LockWait = OracleReaderValueConvert.ToString(reader["LOCKWAIT"]),
 									LogonTime = (DateTime)reader["LOGON_TIME"],
-									Machine = (string)reader["MACHINE"],
+									Machine = OracleReaderValueConvert.ToString(reader["MACHINE"]),
 									Module = OracleReaderValueConvert.ToString(reader["MODULE"]),
 									OperatingSystemUser = (string)reader["OSUSER"],
 									ParallelDdlStatus = (string)reader["PDDL_STATUS"],

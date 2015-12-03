@@ -144,7 +144,7 @@ namespace SqlPad
 			}
 		}
 
-		internal static async Task<Exception> SafeActionAsync(Func<Task> action)
+		public static async Task<Exception> SafeActionAsync(Func<Task> action)
 		{
 			try
 			{

@@ -291,7 +291,7 @@ namespace SqlPad
 			var session = (DatabaseSession)e.Item;
 			var filterSystemSession = !UserSessionOnly || session.Type == SessionType.User;
 			var filterInactiveSession = !ActiveSessionOnly || session.IsActive;
-			var filterChildSession = MasterSessionOnly || session.Owner == null;
+			var filterChildSession = !MasterSessionOnly || session.Owner == null;
 			e.Accepted = filterSystemSession && filterInactiveSession && filterChildSession;
 		}
 
