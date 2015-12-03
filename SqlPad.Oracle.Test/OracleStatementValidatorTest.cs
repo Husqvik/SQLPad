@@ -3299,5 +3299,22 @@ END;";
 			var validationModel = BuildValidationModel(sqlText, statement);
 			validationModel.ProgramNodeValidity.Count.ShouldBe(1);
 		}
+
+		[Test(Description = @"")]
+		public void TestInsertionIntoVirtualColumn()
+		{
+			const string sqlText = @"INSERT INTO ""CaseSensitiveTable"" (HIDDEN_COLUMN, VIRTUAL_COLUMN) VALUES (NULL, NULL)";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var invalidNonTerminals = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			invalidNonTerminals.Count.ShouldBe(1);
+			invalidNonTerminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InsertOperationDisallowedOnVirtualColumns);
+			invalidNonTerminals[0].Node.Token.Value.ShouldBe("VIRTUAL_COLUMN");
+		}
 	}
 }

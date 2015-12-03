@@ -173,6 +173,15 @@ namespace SqlPad.Oracle
 			foreach (var insertTarget in oracleSemanticModel.InsertTargets)
 			{
 				var dataObjectReference = insertTarget.DataObjectReference;
+				foreach (var columnReference in insertTarget.ColumnReferences)
+				{
+					if (columnReference.ValidObjectReference != null && columnReference.ColumnDescription.Virtual)
+					{
+						validationModel.InvalidNonTerminals[columnReference.ColumnNode] =
+							new InvalidNodeValidationData(OracleSemanticErrorType.InsertOperationDisallowedOnVirtualColumns) { Node = columnReference.ColumnNode };
+					}
+				}
+
 				var dataSourceSpecified = insertTarget.RowSource != null || insertTarget.ValueList != null;
 				if (dataObjectReference != null && dataSourceSpecified &&
 				    (dataObjectReference.Type == ReferenceType.InlineView ||
@@ -193,13 +202,15 @@ namespace SqlPad.Oracle
 
 					if (insertTarget.ColumnListNode != null)
 					{
-						validationModel.InvalidNonTerminals[insertTarget.ColumnListNode] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = insertTarget.ColumnListNode };
+						validationModel.InvalidNonTerminals[insertTarget.ColumnListNode] =
+							new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = insertTarget.ColumnListNode };
 					}
 
 					var sourceDataNode = insertTarget.ValueList ?? insertTarget.RowSource.SelectList;
 					if (sourceDataNode != null)
 					{
-						validationModel.InvalidNonTerminals[sourceDataNode] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = sourceDataNode };
+						validationModel.InvalidNonTerminals[sourceDataNode] =
+							new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = sourceDataNode };
 					}
 				}
 			}

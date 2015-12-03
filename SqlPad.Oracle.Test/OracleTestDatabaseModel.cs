@@ -803,7 +803,8 @@ namespace SqlPad.Oracle.Test
 					new Dictionary<string, OracleColumn>
 					{
 						{ "\"CaseSensitiveColumn\"", new OracleColumn { Name = "\"CaseSensitiveColumn\"", DataType = BuildPrimitiveDataType(TerminalValues.Raw, 4000) } },
-						{ "\"HIDDEN_COLUMN\"", new OracleColumn { Name = "\"HIDDEN_COLUMN\"", DataType = BuildPrimitiveDataType(TerminalValues.Varchar2, 50, dataUnit: DataUnit.Byte), CharacterSize = 50, Hidden = true } }
+						{ "\"HIDDEN_COLUMN\"", new OracleColumn { Name = "\"HIDDEN_COLUMN\"", DataType = BuildPrimitiveDataType(TerminalValues.Varchar2, 50, dataUnit: DataUnit.Byte), CharacterSize = 50, Hidden = true } },
+						{ "\"VIRTUAL_COLUMN\"", new OracleColumn { Name = "\"VIRTUAL_COLUMN\"", DataType = BuildPrimitiveDataType(TerminalValues.Varchar2, 50, dataUnit: DataUnit.Byte), CharacterSize = 50, Virtual = true } }
 					}
 			},
 			new OracleView

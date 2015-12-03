@@ -45,6 +45,7 @@ namespace SqlPad.Oracle
 		public const string NotSingleGroupGroupFunction = "Not a single-group group function";
 		public const string PlSqlCompilationParameterAllowedOnlyWithinPlSqlScope = "PL/SQL compilation parameter is allowed only within PL/SQL scope";
 		public const string CurrentOfConditionAllowedOnlyWithinPlSqlScope = "Current of <cursor> condition is allowed only within PL/SQL scope";
+		public const string InsertOperationDisallowedOnVirtualColumns = "INSERT operation disallowed on virtual columns";
 	}
 
 	public static class OracleSemanticErrorTooltipText

@@ -1063,7 +1063,7 @@ FROM
 
 			ExecuteCommand(OracleCommands.ExpandAsterisk, new TestCommandSettings(new CommandSettingsModel()));
 
-			_editor.Text.ShouldBe("SELECT T.\"CaseSensitiveColumn\" FROM \"CaseSensitiveTable\" T");
+			_editor.Text.ShouldBe("SELECT T.\"CaseSensitiveColumn\", T.VIRTUAL_COLUMN FROM \"CaseSensitiveTable\" T");
 		}
 
 		[Test(Description = @""), STAThread]
