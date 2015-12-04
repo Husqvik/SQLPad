@@ -115,7 +115,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			set { UpdateValueAndRaisePropertyChanged(ref _allSessionSummaryItem, value); }
 		}
 
-		public ObservableDictionary<int, SqlMonitorSessionItem> SessionItems { get; } = new ObservableDictionary<int, SqlMonitorSessionItem>();
+		public ObservableDictionary<int, SqlMonitorSessionItem> ParallelSlaveSessionItems { get; } = new ObservableDictionary<int, SqlMonitorSessionItem>();
 
 		public ObservableDictionary<int, SessionLongOperationCollection> SessionLongOperations { get; } = new ObservableDictionary<int, SessionLongOperationCollection>();
 
@@ -264,7 +264,6 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 	public class SqlMonitorSessionItem : ModelBase
 	{
-		private int _sessionId;
 		private long _starts;
 		private long _outputRows;
 		private long _ioInterconnectBytes;
@@ -277,11 +276,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 		private long? _workAreaTempBytes;
 		private long? _workAreaTempMaxBytes;
 
-		public int SessionId
-		{
-			get { return _sessionId; }
-			set { UpdateValueAndRaisePropertyChanged(ref _sessionId, value); }
-		}
+		public int SessionId { get; set; }
 
 		public long Starts
 		{
@@ -351,7 +346,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public void Reset()
 		{
-			if (_sessionId != 0)
+			if (SessionId != 0)
 			{
 				throw new InvalidOperationException("Only summary item can be reseted. ");
 			}
@@ -532,6 +527,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public async override Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 		{
+			var queryCoordinatorSessionItems = new Dictionary<int, SqlMonitorSessionItem>();
 			while (await reader.ReadAsynchronous(cancellationToken))
 			{
 				var sessionId = Convert.ToInt32(reader["SID"]);
@@ -539,13 +535,14 @@ namespace SqlPad.Oracle.ModelDataProviders
 				var planItem = DataModel.AllItems[planLineId];
 
 				SqlMonitorSessionItem sqlMonitorItem;
-				if (!planItem.SessionItems.TryGetValue(sessionId, out sqlMonitorItem))
+				if (sessionId == DataModel.SessionId)
 				{
-					planItem.SessionItems[sessionId] = sqlMonitorItem =
-						new SqlMonitorSessionItem
-						{
-							SessionId = sessionId
-						};
+					sqlMonitorItem = GetAndAddIfMissing(queryCoordinatorSessionItems, planLineId);
+				}
+				else if (!planItem.ParallelSlaveSessionItems.TryGetValue(sessionId, out sqlMonitorItem))
+				{
+					sqlMonitorItem = GetAndAddIfMissing(planItem.ParallelSlaveSessionItems, sessionId);
+					sqlMonitorItem.SessionId = sessionId;
 				}
 
 				sqlMonitorItem.Starts = Convert.ToInt64(reader["STARTS"]);
@@ -571,13 +568,30 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 				summaryItem.Reset();
 
-				foreach (var planSessionItem in planItem.SessionItems.Values)
+				SqlMonitorSessionItem masterSessionItem;
+				if (queryCoordinatorSessionItems.TryGetValue(planItem.Id, out masterSessionItem))
+				{
+					summaryItem.MergeSessionItem(masterSessionItem);
+				}
+
+				foreach (var planSessionItem in planItem.ParallelSlaveSessionItems.Values)
 				{
 					summaryItem.MergeSessionItem(planSessionItem);
 				}
 
 				summaryItem.NotifyPropertyChanged();
 			}
+		}
+
+		private TValue GetAndAddIfMissing<TKey, TValue>(IDictionary<TKey, TValue> dictionary, TKey key) where TValue : new()
+		{
+			TValue value;
+			if (!dictionary.TryGetValue(key, out value))
+			{
+				dictionary[key] = value = new TValue();
+			}
+
+			return value;
 		}
 	}
 

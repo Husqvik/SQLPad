@@ -83,7 +83,7 @@ namespace SqlPad.Oracle
 					return;
 				}
 
-				EnableSessionDetails = planItemCollection.AllItems.Values.Any(i => i.SessionItems.Count > 1);
+				EnableSessionDetails = planItemCollection.AllItems.Values.Any(i => i.ParallelSlaveSessionItems.Count > 0);
 			}
 			finally
 			{

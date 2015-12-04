@@ -491,81 +491,81 @@
 		</HierarchicalDataTemplate>
 
 		<DataTemplate x:Key="SqlMonitorSingleSessionDataTemplate" DataType="modelDataProviders:SqlMonitorSessionItem">
-			<StackPanel Orientation="Horizontal">
-				<StackPanel.Style>
-					<Style>
+			<Grid>
+				<Grid.Resources>
+					<Style x:Key="HideIfSessionIdEqualsZero" BasedOn="{StaticResource PlanStatisticValueStyle}" TargetType="TextBlock">
 						<Style.Triggers>
-							<DataTrigger Binding="{Binding}" Value="{x:Null}">
-								<Setter Property="StackPanel.Visibility" Value="Collapsed" />
+							<DataTrigger Binding="{Binding SessionId}" Value="0">
+								<Setter Property="Visibility" Value="Collapsed" />
 							</DataTrigger>
 						</Style.Triggers>
 					</Style>
-				</StackPanel.Style>
+				</Grid.Resources>
 				
-				<TextBlock>
-					<TextBlock.Style>
-						<Style BasedOn="{StaticResource PlanStatisticValueStyle}" TargetType="TextBlock">
-							<Style.Triggers>
-								<DataTrigger Binding="{Binding SessionId}" Value="0">
-									<Setter Property="Visibility" Value="Collapsed" />
-								</DataTrigger>
-							</Style.Triggers>
-						</Style>
-					</TextBlock.Style>
-					<Run Text="SID: " />
-					<Run Text="{Binding SessionId}" />
-					<Run Text=" " />
-				</TextBlock>
-				<TextBlock Style="{StaticResource PlanStatisticValueStyle}">
-					<Run Text="Starts: " />
-					<Run Text="{Binding Starts, Converter={StaticResource PrettyPrintNumericConverter}}" />
-					<Run Text=" " />
-				</TextBlock>
-				<TextBlock Style="{StaticResource PlanStatisticValueStyle}">
-					<Run Text="Output rows: " />
-					<Run Text="{Binding OutputRows, Converter={StaticResource PrettyPrintNumericConverter}}" />
-					<Run Text=" " />
-				</TextBlock>
-				<TextBlock Style="{StaticResource PlanStatisticValueStyle}">
-					<Run Text="Physical read requests: " />
-					<Run Text="{Binding PhysicalReadRequests, Converter={StaticResource PrettyPrintNumericConverter}}" />
-					<Run Text=" " />
-				</TextBlock>
-				<TextBlock Style="{StaticResource PlanStatisticValueStyle}">
-					<Run Text="Physical read: " />
-					<Run Text="{Binding PhysicalReadBytes, Converter={StaticResource DataSpaceConverter}}" />
-					<Run Text=" " />
-				</TextBlock>
-				<TextBlock Style="{StaticResource PlanStatisticValueStyle}">
-					<Run Text="Physical write requests: " />
-					<Run Text="{Binding PhysicalWriteRequests, Converter={StaticResource PrettyPrintNumericConverter}}" />
-					<Run Text=" " />
-				</TextBlock>
-				<TextBlock Style="{StaticResource PlanStatisticValueStyle}">
-					<Run Text="Physical write: " />
-					<Run Text="{Binding PhysicalWriteBytes, Converter={StaticResource DataSpaceConverter}}" />
-					<Run Text=" " />
-				</TextBlock>
-				<TextBlock Style="{StaticResource PlanStatisticValueStyle}">
-					<Run Text="I/O interconnection: " />
-					<Run Text="{Binding IoInterconnectBytes, Converter={StaticResource DataSpaceConverter}}" />
-					<Run Text=" " />
-				</TextBlock>
-				<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaTempBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
-					<Run Text="Work area: " />
+				<Grid.Style>
+					<Style>
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding}" Value="{x:Null}">
+								<Setter Property="Grid.Visibility" Value="Collapsed" />
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</Grid.Style>
+				
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleSID" />
+					<ColumnDefinition Width="Auto" SharedSizeGroup="SID" />
+					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleStarts" />
+					<ColumnDefinition Width="Auto" SharedSizeGroup="Starts" />
+					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleOutputRows" />
+					<ColumnDefinition Width="Auto" SharedSizeGroup="OutputRows" />
+					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleReadRequests" />
+					<ColumnDefinition Width="Auto" SharedSizeGroup="ReadRequests" />
+					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleReadBytes" />
+					<ColumnDefinition Width="Auto" SharedSizeGroup="ReadBytes" />
+					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleWriteRequests" />
+					<ColumnDefinition Width="Auto" SharedSizeGroup="WriteRequests" />
+					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleWriteBytes" />
+					<ColumnDefinition Width="Auto" SharedSizeGroup="WriteBytes" />
+					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleIoInterconnectBytes" />
+					<ColumnDefinition Width="Auto" SharedSizeGroup="IoInterconnectBytes" />
+					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleWorkAreaMemory" />
+					<ColumnDefinition Width="Auto" SharedSizeGroup="WorkAreaMemory" />
+					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleWorkAreaTemp" />
+					<ColumnDefinition Width="Auto" SharedSizeGroup="WorkAreaTemp" />
+				</Grid.ColumnDefinitions>
+
+				<TextBlock Grid.Column="0" Text="SID: " Style="{StaticResource HideIfSessionIdEqualsZero}" />
+				<TextBlock Grid.Column="1" Text="{Binding SessionId}" Style="{StaticResource HideIfSessionIdEqualsZero}" TextAlignment="Right" />
+				<TextBlock Grid.Column="2" Text="Starts: " Margin="4,0,0,0" Style="{StaticResource PlanStatisticValueStyle}" />
+				<TextBlock Grid.Column="3" Text="{Binding Starts, Converter={StaticResource PrettyPrintNumericConverter}}" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
+				<TextBlock Grid.Column="4" Text="Output rows: " Style="{StaticResource PlanStatisticValueStyle}" />
+				<TextBlock Grid.Column="5" Text="{Binding OutputRows, Converter={StaticResource PrettyPrintNumericConverter}}" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
+				<TextBlock Grid.Column="6" Text="Physical read requests: " Margin="4,0,0,0" Style="{StaticResource PlanStatisticValueStyle}" />
+				<TextBlock Grid.Column="7" Text="{Binding PhysicalReadRequests, Converter={StaticResource PrettyPrintNumericConverter}}" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
+				<TextBlock Grid.Column="8" Text="Physical read: " Style="{StaticResource PlanStatisticValueStyle}" />
+				<TextBlock Grid.Column="9" Text="{Binding PhysicalReadBytes, Converter={StaticResource DataSpaceConverter}}" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
+				<TextBlock Grid.Column="10" Text="Physical write requests: " Margin="4,0,0,0" Style="{StaticResource PlanStatisticValueStyle}" />
+				<TextBlock Grid.Column="11" Text="{Binding PhysicalWriteRequests, Converter={StaticResource PrettyPrintNumericConverter}}" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
+				<TextBlock Grid.Column="12" Text="Physical write: " Style="{StaticResource PlanStatisticValueStyle}" />
+				<TextBlock Grid.Column="13" Text="{Binding PhysicalWriteBytes, Converter={StaticResource DataSpaceConverter}}" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
+				<TextBlock Grid.Column="14" Text="I/O interconnection: " Margin="4,0,0,0" Style="{StaticResource PlanStatisticValueStyle}" />
+				<TextBlock Grid.Column="15" Text="{Binding IoInterconnectBytes, Converter={StaticResource DataSpaceConverter}}" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
+				<TextBlock Grid.Column="16" Text="Work area: " Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaTempBytes, Converter={StaticResource ObjectToVisibilityConverter}}" />
+				<TextBlock Grid.Column="17" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaTempBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
 					<Run Text="{Binding WorkAreaMemoryBytes, Converter={StaticResource DataSpaceConverter}}" />
-					<Run Text="(max: " /><Run Text="{Binding WorkAreaMemoryMaxBytes, Converter={StaticResource DataSpaceConverter}}" /><Run Text=") " />
+					<Run Text="(max: " /><Run Text="{Binding WorkAreaMemoryMaxBytes, Converter={StaticResource DataSpaceConverter}}" /><Run Text=")" />
 				</TextBlock>
-				<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaTempBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
-					<Run Text="Temp: " />
+				<TextBlock Grid.Column="18" Text="Temp: " Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaTempBytes, Converter={StaticResource ObjectToVisibilityConverter}}" />
+				<TextBlock Grid.Column="19" Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaTempBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
 					<Run Text="{Binding WorkAreaTempBytes, Converter={StaticResource DataSpaceConverter}}" />
-					<Run Text="(max: " /><Run Text="{Binding WorkAreaTempMaxBytes, Converter={StaticResource DataSpaceConverter}}" /><Run Text=") " />
+					<Run Text="(max: " /><Run Text="{Binding WorkAreaTempMaxBytes, Converter={StaticResource DataSpaceConverter}}" /><Run Text=")" />
 				</TextBlock>
-			</StackPanel>
+			</Grid>
 		</DataTemplate>
 
 		<DataTemplate x:Key="SqlMonitorSessionListDataTemplate">
-			<ItemsControl ItemsSource="{Binding}">
+			<ItemsControl ItemsSource="{Binding}" Grid.IsSharedSizeScope="True">
 				<ItemsControl.ItemTemplate>
 					<!--<DataTemplate DataType="{sqlPad:Type generic:KeyValuePair, system:Int32, modelDataProviders:SqlMonitorSessionItem}">-->
 					<DataTemplate>
@@ -576,8 +576,8 @@
 		</DataTemplate>
 		
 		<DataTemplate x:Key="SessionLongOperationDataTemplate" DataType="modelDataProviders:SessionLongOperationCollection">
-			<StackPanel Orientation="Horizontal">
-				<StackPanel.Style>
+			<Grid>
+				<Grid.Style>
 					<Style>
 						<Style.Triggers>
 							<DataTrigger Binding="{Binding ActiveLongOperationItem}" Value="{x:Null}">
@@ -585,36 +585,42 @@
 							</DataTrigger>
 						</Style.Triggers>
 					</Style>
-				</StackPanel.Style>
+				</Grid.Style>
 				
-				<Border BorderBrush="Black" BorderThickness="1">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto" SharedSizeGroup="Progress" />
+					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleSID" />
+					<ColumnDefinition Width="Auto" SharedSizeGroup="SID" />
+					<ColumnDefinition Width="Auto" SharedSizeGroup="Message" />
+					<ColumnDefinition Width="Auto" SharedSizeGroup="Completed" />
+				</Grid.ColumnDefinitions>
+				
+				<Border Grid.Column="0" BorderBrush="Black" BorderThickness="1">
 					<ProgressBar Maximum="{Binding ActiveLongOperationItem.TotalWork}" Value="{Binding ActiveLongOperationItem.SoFar}" Width="120" />
 				</Border>
-				<StackPanel Orientation="Horizontal" Margin="4,0,0,0">
-					<TextBlock Style="{StaticResource OtherLabelStyle}">
-						<Run Text="SID " /><Run Text="{Binding SessionId, Mode=OneWay}" /><Run Text=":" />
-						<Run Text="{Binding ActiveLongOperationItem.Message}" />
-					</TextBlock>
-					<TextBlock>
-						<TextBlock.Style>
-							<Style TargetType="TextBlock" BasedOn="{StaticResource OtherLabelStyle}">
-								<Style.Triggers>
-									<DataTrigger Binding="{Binding CompletedSessionLongOperationItems.Count}" Value="0">
-										<Setter Property="Visibility" Value="Collapsed" />
-									</DataTrigger>
-								</Style.Triggers>
-							</Style>
-						</TextBlock.Style>
-						<Run Text=" (+" />
-						<Run Text="{Binding CompletedSessionLongOperationItems.Count, Mode=OneWay}" />
-						<Run Text="completed operation(s))" />
-					</TextBlock>
-				</StackPanel>
-			</StackPanel>
+				
+				<TextBlock Grid.Column="1" Text="SID: " Margin="4,0,4,0" Style="{StaticResource OtherLabelStyle}" />
+				<TextBlock Grid.Column="2" Text="{Binding SessionId, Mode=OneWay}" Style="{StaticResource OtherLabelStyle}" TextAlignment="Right" />
+				<TextBlock Grid.Column="3" Text="{Binding ActiveLongOperationItem.Message}" Margin="4,0,4,0" Style="{StaticResource OtherLabelStyle}" />
+				<TextBlock Grid.Column="4">
+					<TextBlock.Style>
+						<Style TargetType="TextBlock" BasedOn="{StaticResource OtherLabelStyle}">
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding CompletedSessionLongOperationItems.Count}" Value="0">
+									<Setter Property="Visibility" Value="Collapsed" />
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</TextBlock.Style>
+					<Run Text="(+" />
+					<Run Text="{Binding CompletedSessionLongOperationItems.Count, Mode=OneWay}" />
+					<Run Text="completed operation(s))" />
+				</TextBlock>
+			</Grid>
 		</DataTemplate>
 
 		<DataTemplate x:Key="SessionLongOperationListDataTemplate">
-			<ItemsControl ItemsSource="{Binding}">
+			<ItemsControl ItemsSource="{Binding}" Grid.IsSharedSizeScope="True">
 				<ItemsControl.ItemTemplate>
 					<DataTemplate>
 						<ContentControl ContentTemplate="{StaticResource SessionLongOperationDataTemplate}" Content="{Binding Value}" />
@@ -718,18 +724,17 @@
 
 				<StackPanel>
 					<ContentControl Content="{Binding AllSessionSummaryItem}" ContentTemplate="{StaticResource SqlMonitorSingleSessionDataTemplate}" />
-					<Expander Header="Session details" IsExpanded="False" Content="{Binding SessionItems}" ContentTemplate="{StaticResource SqlMonitorSessionListDataTemplate}">
+					<Expander Header="Parallel slaves" IsExpanded="False"
+							  Content="{Binding ParallelSlaveSessionItems}"
+							  ContentTemplate="{StaticResource SqlMonitorSessionListDataTemplate}"
+							  Template="{StaticResource ExpanderTemplate}">
 						<Expander.Style>
 							<Style>
 								<Style.Triggers>
-									<DataTrigger Binding="{Binding AllSessionSummaryItem}" Value="{x:Null}">
-										<Setter Property="Expander.Visibility" Value="Collapsed" />
-									</DataTrigger>
-									<DataTrigger Binding="{Binding SessionItems.Count}" Value="1">
+									<DataTrigger Binding="{Binding ParallelSlaveSessionItems.Count}" Value="0">
 										<Setter Property="Expander.Visibility" Value="Collapsed" />
 									</DataTrigger>
 								</Style.Triggers>
-								<Setter Property="Expander.Template" Value="{StaticResource ExpanderTemplate}" />
 							</Style>
 						</Expander.Style>
 					</Expander>
