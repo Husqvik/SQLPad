@@ -477,6 +477,20 @@ namespace SqlPad.Oracle.Test
 			nextDayFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"RIGHT\"", 2, 2, 0, ParameterDirection.Input, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
 			nextDayFunctionMetadata.Owner = builtInFunctionPackage;
 			builtInFunctionPackage.Functions.Add(nextDayFunctionMetadata);
+
+			var numberToYearToMonthInterval = new OracleProgramMetadata(ProgramType.Function, IdentifierBuiltInProgramNumberToYearToMonthInterval, false, false, false, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeParenthesis, true);
+			numberToYearToMonthInterval.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, OracleDatabaseModelBase.BuiltInDataTypeIntervalYearToMonth, OracleObjectIdentifier.Empty, false));
+			numberToYearToMonthInterval.AddParameter(new OracleProgramParameterMetadata("\"NUMERATOR\"", 1, 1, 0, ParameterDirection.Input, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
+			numberToYearToMonthInterval.AddParameter(new OracleProgramParameterMetadata("\"UNITS\"", 2, 2, 0, ParameterDirection.Input, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
+			numberToYearToMonthInterval.Owner = builtInFunctionPackage;
+			builtInFunctionPackage.Functions.Add(numberToYearToMonthInterval);
+
+			var numberToDayToSecondInterval = new OracleProgramMetadata(ProgramType.Function, IdentifierBuiltInProgramNumberToDayToSecondInterval, false, false, false, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeParenthesis, true);
+			numberToDayToSecondInterval.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, OracleDatabaseModelBase.BuiltInDataTypeIntervalYearToMonth, OracleObjectIdentifier.Empty, false));
+			numberToDayToSecondInterval.AddParameter(new OracleProgramParameterMetadata("\"NUMERATOR\"", 1, 1, 0, ParameterDirection.Input, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
+			numberToDayToSecondInterval.AddParameter(new OracleProgramParameterMetadata("\"UNITS\"", 2, 2, 0, ParameterDirection.Input, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
+			numberToDayToSecondInterval.Owner = builtInFunctionPackage;
+			builtInFunctionPackage.Functions.Add(numberToDayToSecondInterval);
 			#endregion
 
 			AllObjectDictionary = AllObjectsInternal.ToDictionary(o => o.FullyQualifiedName, o => o);

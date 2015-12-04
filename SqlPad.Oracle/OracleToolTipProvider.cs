@@ -171,9 +171,10 @@ namespace SqlPad.Oracle
 							return null;
 						}
 
-						tip = databaseLink.FullyQualifiedName + " (" + databaseLink.Host + ")";
-
-						break;
+						var stackPanel = new StackPanel();
+						stackPanel.Children.Add(new TextBlock(new Bold(new Run("Database link"))));
+						stackPanel.Children.Add(new TextBlock { Text = $"{databaseLink.FullyQualifiedName} ({databaseLink.Host})" });
+						return new ToolTipObject { Content = stackPanel };
 
 					case Terminals.ParameterIdentifier:
 						tip = GetParameterToolTip(semanticModel, node);

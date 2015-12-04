@@ -26,6 +26,8 @@ namespace SqlPad.Oracle
 				OracleDatabaseModelBase.IdentifierBuiltInProgramToTimestampWithTimeZone,
 				OracleDatabaseModelBase.IdentifierBuiltInProgramSysContext,
 				OracleDatabaseModelBase.IdentifierBuiltInProgramNextDay,
+				OracleDatabaseModelBase.IdentifierBuiltInProgramNumberToYearToMonthInterval,
+				OracleDatabaseModelBase.IdentifierBuiltInProgramNumberToDayToSecondInterval,
 				OracleDatabaseModelBase.IdentifierDbmsRandomString,
 				OracleDatabaseModelBase.IdentifierDbmsCryptoHash
 			};
@@ -118,6 +120,24 @@ namespace SqlPad.Oracle
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "4", "4 - DBMS_CRYPTO.HASH_SH256 - SH256", false));
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "5", "5 - DBMS_CRYPTO.HASH_SH384 - SH384", false));
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "6", "6 - DBMS_CRYPTO.HASH_SH512 - SH512", false));
+			}
+
+			var numberToYearToMonthIntervalFunctionOverload = specificFunctionOverloads
+				.FirstOrDefault(o => o.CurrentParameterIndex == 1 && o.ProgramMetadata.Identifier.In(OracleDatabaseModelBase.IdentifierBuiltInProgramNumberToYearToMonthInterval));
+			if (numberToYearToMonthIntervalFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(numberToYearToMonthIntervalFunctionOverload))
+			{
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "MONTH", "MONTH"));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "YEAR", "YEAR"));
+			}
+
+			var numberToDayToSecondIntervalFunctionOverload = specificFunctionOverloads
+				.FirstOrDefault(o => o.CurrentParameterIndex == 1 && o.ProgramMetadata.Identifier.In(OracleDatabaseModelBase.IdentifierBuiltInProgramNumberToDayToSecondInterval));
+			if (numberToDayToSecondIntervalFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(numberToDayToSecondIntervalFunctionOverload))
+			{
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "SECOND", "SECOND"));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "MINUTE", "MINUTE"));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "HOUR", "HOUR"));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "DAY", "DAY"));
 			}
 
 			var nextDayFunctionOverload = specificFunctionOverloads.FirstOrDefault(o => o.ProgramMetadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramNextDay);

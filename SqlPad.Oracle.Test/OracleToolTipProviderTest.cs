@@ -488,7 +488,7 @@ SELECT * FROM CTE";
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 30);
 
 			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
-			toolTip.Control.DataContext.ShouldBe("\"PUBLIC\".HQ_PDB_LOOPBACK (localhost:1521/hq_pdb)");
+			((TextBlock)((StackPanel)((ContentControl)toolTip.Control).Content).Children[1]).Text.ShouldBe("\"PUBLIC\".HQ_PDB_LOOPBACK (localhost:1521/hq_pdb)");
 		}
 
 		[Test(Description = @""), STAThread]

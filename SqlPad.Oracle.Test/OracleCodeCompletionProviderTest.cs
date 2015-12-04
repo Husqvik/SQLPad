@@ -950,6 +950,40 @@ se";
 		}
 
 		[Test(Description = @"")]
+		public void TestNumberToYearToMonthIntervalFunctionSpecialParameterCompletion()
+		{
+			const string statement = @"SELECT NUMTOYMINTERVAL(1, '') FROM DUAL";
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 27).ToList();
+			items.Count.ShouldBe(2);
+			items[0].Name.ShouldBe("MONTH");
+			items[0].Text.ShouldBe("'MONTH'");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+			items[1].Name.ShouldBe("YEAR");
+			items[1].Text.ShouldBe("'YEAR'");
+			items[1].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+		}
+
+		[Test(Description = @"")]
+		public void TestNumberToDayToSecondIntervalFunctionSpecialParameterCompletion()
+		{
+			const string statement = @"SELECT NUMTODSINTERVAL(1, '') FROM DUAL";
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 27).ToList();
+			items.Count.ShouldBe(4);
+			items[0].Name.ShouldBe("DAY");
+			items[0].Text.ShouldBe("'DAY'");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+			items[1].Name.ShouldBe("HOUR");
+			items[1].Text.ShouldBe("'HOUR'");
+			items[1].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+			items[2].Name.ShouldBe("MINUTE");
+			items[2].Text.ShouldBe("'MINUTE'");
+			items[2].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+			items[3].Name.ShouldBe("SECOND");
+			items[3].Text.ShouldBe("'SECOND'");
+			items[3].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+		}
+
+		[Test(Description = @"")]
 		public void TestRoundFunctionSpecialParameterCompletion()
 		{
 			const string statement = @"SELECT ROUND(SYSDATE, 'IW') FROM DUAL";
