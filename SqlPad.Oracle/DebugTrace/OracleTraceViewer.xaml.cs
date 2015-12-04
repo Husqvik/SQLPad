@@ -178,6 +178,12 @@ namespace SqlPad.Oracle.DebugTrace
 
 		private async void TKProfClickHandler(object sender, RoutedEventArgs e)
 		{
+			if (!File.Exists(TraceFileName))
+			{
+				Messages.ShowError($"File '{TraceFileName}' does not exist. ");
+				return;
+			}
+
 			var tkProfFileName = Path.Combine(Path.GetTempPath(), $"{TraceFileInfo.Name}.tkprof.txt");
 			var connectionStringBuilder = new OracleConnectionStringBuilder(_connectionAdapter.DatabaseModel.ConnectionString.ConnectionString);
 			var tkProfParameters = $"{TraceFileName} {tkProfFileName} explain={connectionStringBuilder.UserID}/{connectionStringBuilder.Password}@{connectionStringBuilder.DataSource} waits=yes sort=(exeela, fchela)";
@@ -188,7 +194,7 @@ namespace SqlPad.Oracle.DebugTrace
 				TimeSpan.FromMinutes(1),
 				() => TKProfFileName = tkProfFileName,
 				() => Messages.ShowError($"Command '{OracleConfiguration.Configuration.TKProfPath} {tkProfParameters}' timed out. "),
-				errorMessage => Messages.ShowError(errorMessage),
+				(exitCode, errorMessage) => Messages.ShowError(String.IsNullOrEmpty(errorMessage) ? $"Command '{OracleConfiguration.Configuration.TKProfPath} {tkProfParameters}' terminated with exit code {exitCode}. " : errorMessage),
 				CancellationToken.None);
 		}
 

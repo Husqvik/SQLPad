@@ -74,10 +74,11 @@ namespace SqlPad.Oracle
 			try
 			{
 				var planItemCollection = _planItemCollection;
+				var sessionMonitorDataProvider = new SessionMonitorDataProvider(planItemCollection);
 				var activeSessionHistoryDataProvider = new SqlMonitorActiveSessionHistoryDataProvider(planItemCollection);
-				var planMonitorDataProvider = new SqlMonitorPlanMonitorDataProvider(planItemCollection);
+				var planMonitorDataProvider = new SqlMonitorSessionPlanMonitorDataProvider(planItemCollection);
 				var sessionLongOperationDataProvider = new SessionLongOperationPlanMonitorDataProvider(planItemCollection);
-				await OracleDatabaseModel.UpdateModelAsync(OracleConnectionStringRepository.GetBackgroundConnectionString(_connectionString.ConnectionString), null, cancellationToken, false, activeSessionHistoryDataProvider, planMonitorDataProvider, sessionLongOperationDataProvider);
+				await OracleDatabaseModel.UpdateModelAsync(OracleConnectionStringRepository.GetBackgroundConnectionString(_connectionString.ConnectionString), null, cancellationToken, false, sessionMonitorDataProvider, activeSessionHistoryDataProvider, planMonitorDataProvider, sessionLongOperationDataProvider);
 				if (planItemCollection != _planItemCollection)
 				{
 					return;

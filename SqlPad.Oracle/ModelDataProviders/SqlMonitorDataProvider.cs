@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Oracle.DataAccess.Client;
 using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.ExecutionPlan;
@@ -43,6 +44,8 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 	public class SqlMonitorPlanItemCollection : ExecutionPlanItemCollectionBase<SqlMonitorPlanItem>
 	{
+		private readonly Dictionary<int, SqlMonitorSessionItem> _sessionItemMapping = new Dictionary<int, SqlMonitorSessionItem>();
+
 		public SqlMonitorPlanItemCollection(int sessionId, string sqlId, DateTime executionStart, int executionId)
 		{
 			SessionId = sessionId;
@@ -58,6 +61,39 @@ namespace SqlPad.Oracle.ModelDataProviders
 		public DateTime ExecutionStart { get; set; }
 
 		public int ExecutionId { get; }
+
+		public ObservableCollection<SqlMonitorSessionItem> SessionItems { get; } = new ObservableCollection<SqlMonitorSessionItem>();
+
+		public void MergeSessionItem(SqlMonitorSessionItem newSessionItem)
+		{
+			SqlMonitorSessionItem currentSessionItem;
+			if (_sessionItemMapping.TryGetValue(newSessionItem.SessionId, out currentSessionItem))
+			{
+				currentSessionItem.ApplicationWaitTime = newSessionItem.ApplicationWaitTime;
+				currentSessionItem.BufferGets = newSessionItem.BufferGets;
+				currentSessionItem.ClusterWaitTime = newSessionItem.ClusterWaitTime;
+				currentSessionItem.ConcurrencyWaitTime = newSessionItem.ConcurrencyWaitTime;
+				currentSessionItem.CpuTime = newSessionItem.CpuTime;
+				currentSessionItem.DiskReads = newSessionItem.DiskReads;
+				currentSessionItem.DirectWrites = newSessionItem.DirectWrites;
+				currentSessionItem.ElapsedTime = newSessionItem.ElapsedTime;
+				currentSessionItem.Fetches = newSessionItem.Fetches;
+				currentSessionItem.IoInterconnectBytes = newSessionItem.IoInterconnectBytes;
+				currentSessionItem.JavaExecutionTime = newSessionItem.JavaExecutionTime;
+				currentSessionItem.PhysicalReadBytes = newSessionItem.PhysicalReadBytes;
+				currentSessionItem.PhysicalReadRequests = newSessionItem.PhysicalReadRequests;
+				currentSessionItem.PhysicalWriteBytes = newSessionItem.PhysicalWriteBytes;
+				currentSessionItem.PhysicalWriteRequests = newSessionItem.PhysicalWriteRequests;
+				currentSessionItem.PlSqlExecutionTime = newSessionItem.PlSqlExecutionTime;
+				currentSessionItem.QueingTime = newSessionItem.QueingTime;
+				currentSessionItem.UserIoWaitTime = newSessionItem.UserIoWaitTime;
+			}
+			else
+			{
+				_sessionItemMapping.Add(newSessionItem.SessionId, newSessionItem);
+				SessionItems.Add(newSessionItem);
+			}
+		}
 	}
 
 	[DebuggerDisplay("ActiveSessionHistoryItem (SessionId={SessionId}; SessionSerial={SessionSerial}; SampleTime={SampleTime})")]
@@ -105,17 +141,17 @@ namespace SqlPad.Oracle.ModelDataProviders
 	[DebuggerDisplay("SqlMonitorPlanItem (Id={Id}; Operation={Operation}; ObjectName={ObjectName}; Depth={Depth}; IsLeaf={IsLeaf}; ExecutionOrder={ExecutionOrder})")]
 	public class SqlMonitorPlanItem : ExecutionPlanItem
 	{
-		private SqlMonitorSessionItem _allSessionSummaryItem;
+		private SqlMonitorSessionPlanItem _allSessionSummaryPlanItem;
 		private bool _isBeingExecuted;
 		private DateTime? _lastSampleTime;
 
-		public SqlMonitorSessionItem AllSessionSummaryItem
+		public SqlMonitorSessionPlanItem AllSessionSummaryPlanItem
 		{
-			get { return _allSessionSummaryItem; }
-			set { UpdateValueAndRaisePropertyChanged(ref _allSessionSummaryItem, value); }
+			get { return _allSessionSummaryPlanItem; }
+			set { UpdateValueAndRaisePropertyChanged(ref _allSessionSummaryPlanItem, value); }
 		}
 
-		public ObservableDictionary<int, SqlMonitorSessionItem> ParallelSlaveSessionItems { get; } = new ObservableDictionary<int, SqlMonitorSessionItem>();
+		public ObservableDictionary<int, SqlMonitorSessionPlanItem> ParallelSlaveSessionItems { get; } = new ObservableDictionary<int, SqlMonitorSessionPlanItem>();
 
 		public ObservableDictionary<int, SessionLongOperationCollection> SessionLongOperations { get; } = new ObservableDictionary<int, SessionLongOperationCollection>();
 
@@ -262,7 +298,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 		}
 	}
 
-	public class SqlMonitorSessionItem : ModelBase
+	public class SqlMonitorSessionPlanItem : ModelBase
 	{
 		private long _starts;
 		private long _outputRows;
@@ -364,20 +400,20 @@ namespace SqlPad.Oracle.ModelDataProviders
 			WorkAreaTempMaxBytes = null;
 		}
 
-		public void MergeSessionItem(SqlMonitorSessionItem sessionItem)
+		public void MergeSessionItem(SqlMonitorSessionPlanItem sessionPlanItem)
 		{
-			Starts += sessionItem.Starts;
-			OutputRows += sessionItem.OutputRows;
-			IoInterconnectBytes += sessionItem.IoInterconnectBytes;
-			PhysicalReadRequests += sessionItem.PhysicalReadRequests;
-			PhysicalReadBytes += sessionItem.PhysicalReadBytes;
-			PhysicalWriteRequests += sessionItem.PhysicalWriteRequests;
-			PhysicalWriteBytes += sessionItem.PhysicalWriteBytes;
+			Starts += sessionPlanItem.Starts;
+			OutputRows += sessionPlanItem.OutputRows;
+			IoInterconnectBytes += sessionPlanItem.IoInterconnectBytes;
+			PhysicalReadRequests += sessionPlanItem.PhysicalReadRequests;
+			PhysicalReadBytes += sessionPlanItem.PhysicalReadBytes;
+			PhysicalWriteRequests += sessionPlanItem.PhysicalWriteRequests;
+			PhysicalWriteBytes += sessionPlanItem.PhysicalWriteBytes;
 
-			MergeNullableValue(ref _workAreaMemoryBytes, sessionItem._workAreaMemoryBytes);
-			MergeNullableValue(ref _workAreaMemoryMaxBytes, sessionItem._workAreaMemoryMaxBytes);
-			MergeNullableValue(ref _workAreaTempBytes, sessionItem._workAreaTempBytes);
-			MergeNullableValue(ref _workAreaTempMaxBytes, sessionItem._workAreaTempMaxBytes);
+			MergeNullableValue(ref _workAreaMemoryBytes, sessionPlanItem._workAreaMemoryBytes);
+			MergeNullableValue(ref _workAreaMemoryMaxBytes, sessionPlanItem._workAreaMemoryMaxBytes);
+			MergeNullableValue(ref _workAreaTempBytes, sessionPlanItem._workAreaTempBytes);
+			MergeNullableValue(ref _workAreaTempMaxBytes, sessionPlanItem._workAreaTempMaxBytes);
 		}
 
 		private static void MergeNullableValue(ref long? summaryValue, long? sessionValue)
@@ -509,9 +545,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 		}
 	}
 
-	internal class SqlMonitorPlanMonitorDataProvider : ModelDataProvider<SqlMonitorPlanItemCollection>
+	internal class SqlMonitorSessionPlanMonitorDataProvider : ModelDataProvider<SqlMonitorPlanItemCollection>
 	{
-		public SqlMonitorPlanMonitorDataProvider(SqlMonitorPlanItemCollection sqlMonitorPlanItemCollection)
+		public SqlMonitorSessionPlanMonitorDataProvider(SqlMonitorPlanItemCollection sqlMonitorPlanItemCollection)
 			: base(sqlMonitorPlanItemCollection)
 		{
 		}
@@ -527,51 +563,51 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public async override Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 		{
-			var queryCoordinatorSessionItems = new Dictionary<int, SqlMonitorSessionItem>();
+			var queryCoordinatorSessionItems = new Dictionary<int, SqlMonitorSessionPlanItem>();
 			while (await reader.ReadAsynchronous(cancellationToken))
 			{
 				var sessionId = Convert.ToInt32(reader["SID"]);
 				var planLineId = Convert.ToInt32(reader["PLAN_LINE_ID"]);
 				var planItem = DataModel.AllItems[planLineId];
 
-				SqlMonitorSessionItem sqlMonitorItem;
+				SqlMonitorSessionPlanItem sqlMonitorPlanItem;
 				if (sessionId == DataModel.SessionId)
 				{
-					sqlMonitorItem = GetAndAddIfMissing(queryCoordinatorSessionItems, planLineId);
+					sqlMonitorPlanItem = queryCoordinatorSessionItems.GetAndAddIfMissing(planLineId);
 				}
-				else if (!planItem.ParallelSlaveSessionItems.TryGetValue(sessionId, out sqlMonitorItem))
+				else if (!planItem.ParallelSlaveSessionItems.TryGetValue(sessionId, out sqlMonitorPlanItem))
 				{
-					sqlMonitorItem = GetAndAddIfMissing(planItem.ParallelSlaveSessionItems, sessionId);
-					sqlMonitorItem.SessionId = sessionId;
+					sqlMonitorPlanItem = planItem.ParallelSlaveSessionItems.GetAndAddIfMissing(sessionId);
+					sqlMonitorPlanItem.SessionId = sessionId;
 				}
 
-				sqlMonitorItem.Starts = Convert.ToInt64(reader["STARTS"]);
-				sqlMonitorItem.OutputRows = Convert.ToInt64(reader["OUTPUT_ROWS"]);
-				sqlMonitorItem.IoInterconnectBytes = Convert.ToInt64(reader["IO_INTERCONNECT_BYTES"]);
-				sqlMonitorItem.PhysicalReadRequests = Convert.ToInt64(reader["PHYSICAL_READ_REQUESTS"]);
-				sqlMonitorItem.PhysicalReadBytes = Convert.ToInt64(reader["PHYSICAL_READ_BYTES"]);
-				sqlMonitorItem.PhysicalWriteRequests = Convert.ToInt64(reader["PHYSICAL_WRITE_REQUESTS"]);
-				sqlMonitorItem.PhysicalWriteBytes = Convert.ToInt64(reader["PHYSICAL_WRITE_BYTES"]);
-				sqlMonitorItem.WorkAreaMemoryBytes = OracleReaderValueConvert.ToInt64(reader["WORKAREA_MEM"]);
-				sqlMonitorItem.WorkAreaMemoryMaxBytes = OracleReaderValueConvert.ToInt64(reader["WORKAREA_MAX_MEM"]);
-				sqlMonitorItem.WorkAreaTempBytes = OracleReaderValueConvert.ToInt64(reader["WORKAREA_TEMPSEG"]);
-				sqlMonitorItem.WorkAreaTempMaxBytes = OracleReaderValueConvert.ToInt64(reader["WORKAREA_MAX_TEMPSEG"]);
+				sqlMonitorPlanItem.Starts = Convert.ToInt64(reader["STARTS"]);
+				sqlMonitorPlanItem.OutputRows = Convert.ToInt64(reader["OUTPUT_ROWS"]);
+				sqlMonitorPlanItem.IoInterconnectBytes = Convert.ToInt64(reader["IO_INTERCONNECT_BYTES"]);
+				sqlMonitorPlanItem.PhysicalReadRequests = Convert.ToInt64(reader["PHYSICAL_READ_REQUESTS"]);
+				sqlMonitorPlanItem.PhysicalReadBytes = Convert.ToInt64(reader["PHYSICAL_READ_BYTES"]);
+				sqlMonitorPlanItem.PhysicalWriteRequests = Convert.ToInt64(reader["PHYSICAL_WRITE_REQUESTS"]);
+				sqlMonitorPlanItem.PhysicalWriteBytes = Convert.ToInt64(reader["PHYSICAL_WRITE_BYTES"]);
+				sqlMonitorPlanItem.WorkAreaMemoryBytes = OracleReaderValueConvert.ToInt64(reader["WORKAREA_MEM"]);
+				sqlMonitorPlanItem.WorkAreaMemoryMaxBytes = OracleReaderValueConvert.ToInt64(reader["WORKAREA_MAX_MEM"]);
+				sqlMonitorPlanItem.WorkAreaTempBytes = OracleReaderValueConvert.ToInt64(reader["WORKAREA_TEMPSEG"]);
+				sqlMonitorPlanItem.WorkAreaTempMaxBytes = OracleReaderValueConvert.ToInt64(reader["WORKAREA_MAX_TEMPSEG"]);
 			}
 
 			foreach (var planItem in DataModel.AllItems.Values)
 			{
-				var summaryItem = planItem.AllSessionSummaryItem;
+				var summaryItem = planItem.AllSessionSummaryPlanItem;
 				if (summaryItem == null)
 				{
-					planItem.AllSessionSummaryItem = summaryItem = new SqlMonitorSessionItem();
+					planItem.AllSessionSummaryPlanItem = summaryItem = new SqlMonitorSessionPlanItem();
 				}
 
 				summaryItem.Reset();
 
-				SqlMonitorSessionItem masterSessionItem;
-				if (queryCoordinatorSessionItems.TryGetValue(planItem.Id, out masterSessionItem))
+				SqlMonitorSessionPlanItem masterSessionPlanItem;
+				if (queryCoordinatorSessionItems.TryGetValue(planItem.Id, out masterSessionPlanItem))
 				{
-					summaryItem.MergeSessionItem(masterSessionItem);
+					summaryItem.MergeSessionItem(masterSessionPlanItem);
 				}
 
 				foreach (var planSessionItem in planItem.ParallelSlaveSessionItems.Values)
@@ -581,17 +617,6 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 				summaryItem.NotifyPropertyChanged();
 			}
-		}
-
-		private TValue GetAndAddIfMissing<TKey, TValue>(IDictionary<TKey, TValue> dictionary, TKey key) where TValue : new()
-		{
-			TValue value;
-			if (!dictionary.TryGetValue(key, out value))
-			{
-				dictionary[key] = value = new TValue();
-			}
-
-			return value;
 		}
 	}
 
@@ -673,6 +698,252 @@ namespace SqlPad.Oracle.ModelDataProviders
 		{
 			public int SessionId;
 			public SqlMonitorPlanItem PlanItem;
+		}
+	}
+
+	internal class SessionMonitorDataProvider : ModelDataProvider<SqlMonitorPlanItemCollection>
+	{
+		public SessionMonitorDataProvider(SqlMonitorPlanItemCollection sqlMonitorPlanItemCollection)
+			: base(sqlMonitorPlanItemCollection)
+		{
+		}
+
+		public override void InitializeCommand(OracleCommand command)
+		{
+			command.CommandText = OracleDatabaseCommands.SelectSessionMonitorCommandText;
+			command.AddSimpleParameter("SID", DataModel.SessionId);
+			command.AddSimpleParameter("SQL_EXEC_ID", DataModel.ExecutionId);
+			command.AddSimpleParameter("SQL_EXEC_START", DataModel.ExecutionStart);
+		}
+
+		public async override Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
+		{
+			var parallelSlaves = new List<SqlMonitorSessionItem>();
+			SqlMonitorSessionItem queryCoordinatorSessionItem = null;
+
+			while (await reader.ReadAsynchronous(cancellationToken))
+			{
+				//var bindXml = OracleReaderValueConvert.ToString(await reader.GetValueAsynchronous(reader.GetOrdinal("BINDS_XML"), cancellationToken));
+				//var otherXml = OracleReaderValueConvert.ToString(await reader.GetValueAsynchronous(reader.GetOrdinal("OTHER_XML"), cancellationToken));
+
+				var isCrossInstanceRaw = OracleReaderValueConvert.ToString(reader["PX_IS_CROSS_INSTANCE"]);
+
+				var sessionItem =
+					new SqlMonitorSessionItem
+					{
+						MaxDegreeOfParallelism = OracleReaderValueConvert.ToInt32(reader["PX_MAXDOP"]),
+						MaxDegreeOfParallelismInstances = OracleReaderValueConvert.ToInt32(reader["PX_MAXDOP_INSTANCES"]),
+						ParallelServersRequested = OracleReaderValueConvert.ToInt32(reader["PX_SERVERS_REQUESTED"]),
+						ParallelServersAllocated = OracleReaderValueConvert.ToInt32(reader["PX_SERVERS_ALLOCATED"]),
+						ParallelServerNumber = OracleReaderValueConvert.ToInt32(reader["PX_SERVER#"]),
+						ParallelServerGroup = OracleReaderValueConvert.ToInt32(reader["PX_SERVER_GROUP"]),
+						ParallelServerSet = OracleReaderValueConvert.ToInt32(reader["PX_SERVER_SET"]),
+						ParallelServerQueryCoordinatorInstanceId = OracleReaderValueConvert.ToInt32(reader["PX_QCINST_ID"]),
+						IsCrossInstance = String.IsNullOrEmpty(isCrossInstanceRaw) ? (bool?)null : String.Equals(isCrossInstanceRaw, "Y"),
+						//Binds = String.IsNullOrEmpty(bindXml) ? null : XDocument.Parse(bindXml),
+						//Other = String.IsNullOrEmpty(otherXml) ? null : XDocument.Parse(otherXml),
+						SessionId = Convert.ToInt32(reader["SID"]),
+						ApplicationWaitTime = TimeSpan.FromTicks(Convert.ToInt64(reader["APPLICATION_WAIT_TIME"]) * 10),
+						BufferGets = Convert.ToInt64(reader["BUFFER_GETS"]),
+						ClusterWaitTime = TimeSpan.FromTicks(Convert.ToInt64(reader["CLUSTER_WAIT_TIME"]) * 10),
+						ConcurrencyWaitTime = TimeSpan.FromTicks(Convert.ToInt64(reader["CONCURRENCY_WAIT_TIME"]) * 10),
+						CpuTime = TimeSpan.FromTicks(Convert.ToInt64(reader["CPU_TIME"]) * 10),
+						DiskReads = Convert.ToInt64(reader["DISK_READS"]),
+						DirectWrites = Convert.ToInt64(reader["DIRECT_WRITES"]),
+						ElapsedTime = TimeSpan.FromTicks(Convert.ToInt64(reader["ELAPSED_TIME"]) * 10),
+						Fetches = Convert.ToInt64(reader["FETCHES"]),
+						IoInterconnectBytes = Convert.ToInt64(reader["IO_INTERCONNECT_BYTES"]),
+						JavaExecutionTime = TimeSpan.FromTicks(Convert.ToInt64(reader["JAVA_EXEC_TIME"]) * 10),
+						PhysicalReadBytes = Convert.ToInt64(reader["PHYSICAL_READ_BYTES"]),
+						PhysicalReadRequests = Convert.ToInt64(reader["PHYSICAL_READ_REQUESTS"]),
+						PhysicalWriteBytes = Convert.ToInt64(reader["PHYSICAL_WRITE_BYTES"]),
+						PhysicalWriteRequests = Convert.ToInt64(reader["PHYSICAL_WRITE_REQUESTS"]),
+						PlSqlExecutionTime = TimeSpan.FromTicks(Convert.ToInt64(reader["PLSQL_EXEC_TIME"]) * 10),
+						QueingTime = TimeSpan.FromTicks(Convert.ToInt64(reader["QUEUING_TIME"]) * 10),
+						UserIoWaitTime = TimeSpan.FromTicks(Convert.ToInt64(reader["USER_IO_WAIT_TIME"]) * 10)
+					};
+
+				//var queryCoordinatorSessionId = Convert.ToInt32(reader["QC_SID"]);
+
+				if (sessionItem.SessionId == DataModel.SessionId)
+				{
+					queryCoordinatorSessionItem = sessionItem;
+				}
+				else
+				{
+					parallelSlaves.Add(sessionItem);
+				}
+			}
+
+			if (queryCoordinatorSessionItem == null)
+			{
+				return;
+			}
+
+			DataModel.MergeSessionItem(queryCoordinatorSessionItem);
+
+			foreach (var parallelSlave in parallelSlaves)
+			{
+				parallelSlave.QueryCoordinatorSession = queryCoordinatorSessionItem;
+				DataModel.MergeSessionItem(parallelSlave);
+			}
+		}
+	}
+
+	[DebuggerDisplay("SqlMonitorSessionItem (SessionId={SessionId})")]
+	public class SqlMonitorSessionItem : ModelBase
+	{
+		private TimeSpan _elapsedTime;
+		private TimeSpan _queingTime;
+		private TimeSpan _cpuTime;
+		private TimeSpan _applicationWaitTime;
+		private TimeSpan _concurrencyWaitTime;
+		private TimeSpan _clusterWaitTime;
+		private TimeSpan _userIoWaitTime;
+		private TimeSpan _plSqlExecutionTime;
+		private TimeSpan _javaExecutionTime;
+		private long _fetches;
+		private long _bufferGets;
+		private long _diskReads;
+		private long _directWrites;
+		private long _ioInterconnectBytes;
+		private long _physicalReadRequests;
+		private long _physicalReadBytes;
+		private long _physicalWriteRequests;
+		private long _physicalWriteBytes;
+
+		public int SessionId { get; set; }
+
+		public SqlMonitorSessionItem QueryCoordinatorSession { get; set; }
+
+		public bool? IsCrossInstance { get; set; }
+
+		public int? MaxDegreeOfParallelism { get; set; }
+
+		public int? MaxDegreeOfParallelismInstances { get; set; }
+
+		public int? ParallelServersRequested { get; set; }
+
+		public int? ParallelServersAllocated { get; set; }
+
+		public int? ParallelServerNumber { get; set; }
+
+		public int? ParallelServerGroup { get; set; }
+
+		public int? ParallelServerSet { get; set; }
+
+		public int? ParallelServerQueryCoordinatorInstanceId { get; set; }
+
+		public XDocument Binds { get; set; }
+
+		public XDocument Other { get; set; }
+
+		public TimeSpan ElapsedTime
+		{
+			get { return _elapsedTime; }
+			set { UpdateValueAndRaisePropertyChanged(ref _elapsedTime, value); }
+		}
+
+		public TimeSpan QueingTime
+		{
+			get { return _queingTime; }
+			set { UpdateValueAndRaisePropertyChanged(ref _queingTime, value); }
+		}
+
+		public TimeSpan CpuTime
+		{
+			get { return _cpuTime; }
+			set { UpdateValueAndRaisePropertyChanged(ref _cpuTime, value); }
+		}
+
+		public long Fetches
+		{
+			get { return _fetches; }
+			set { UpdateValueAndRaisePropertyChanged(ref _fetches, value); }
+		}
+
+		public long BufferGets
+		{
+			get { return _bufferGets; }
+			set { UpdateValueAndRaisePropertyChanged(ref _bufferGets, value); }
+		}
+
+		public long DiskReads
+		{
+			get { return _diskReads; }
+			set { UpdateValueAndRaisePropertyChanged(ref _diskReads, value); }
+		}
+
+		public long DirectWrites
+		{
+			get { return _directWrites; }
+			set { UpdateValueAndRaisePropertyChanged(ref _directWrites, value); }
+		}
+
+		public long IoInterconnectBytes
+		{
+			get { return _ioInterconnectBytes; }
+			set { UpdateValueAndRaisePropertyChanged(ref _ioInterconnectBytes, value); }
+		}
+
+		public long PhysicalReadRequests
+		{
+			get { return _physicalReadRequests; }
+			set { UpdateValueAndRaisePropertyChanged(ref _physicalReadRequests, value); }
+		}
+
+		public long PhysicalReadBytes
+		{
+			get { return _physicalReadBytes; }
+			set { UpdateValueAndRaisePropertyChanged(ref _physicalReadBytes, value); }
+		}
+
+		public long PhysicalWriteRequests
+		{
+			get { return _physicalWriteRequests; }
+			set { UpdateValueAndRaisePropertyChanged(ref _physicalWriteRequests, value); }
+		}
+
+		public long PhysicalWriteBytes
+		{
+			get { return _physicalWriteBytes; }
+			set { UpdateValueAndRaisePropertyChanged(ref _physicalWriteBytes, value); }
+		}
+
+		public TimeSpan ApplicationWaitTime
+		{
+			get { return _applicationWaitTime; }
+			set { UpdateValueAndRaisePropertyChanged(ref _applicationWaitTime, value); }
+		}
+
+		public TimeSpan ConcurrencyWaitTime
+		{
+			get { return _concurrencyWaitTime; }
+			set { UpdateValueAndRaisePropertyChanged(ref _concurrencyWaitTime, value); }
+		}
+
+		public TimeSpan ClusterWaitTime
+		{
+			get { return _clusterWaitTime; }
+			set { UpdateValueAndRaisePropertyChanged(ref _clusterWaitTime, value); }
+		}
+
+		public TimeSpan UserIoWaitTime
+		{
+			get { return _userIoWaitTime; }
+			set { UpdateValueAndRaisePropertyChanged(ref _userIoWaitTime, value); }
+		}
+
+		public TimeSpan PlSqlExecutionTime
+		{
+			get { return _plSqlExecutionTime; }
+			set { UpdateValueAndRaisePropertyChanged(ref _plSqlExecutionTime, value); }
+		}
+
+		public TimeSpan JavaExecutionTime
+		{
+			get { return _javaExecutionTime; }
+			set { UpdateValueAndRaisePropertyChanged(ref _javaExecutionTime, value); }
 		}
 	}
 }

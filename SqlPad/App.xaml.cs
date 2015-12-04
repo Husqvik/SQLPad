@@ -63,7 +63,7 @@ namespace SqlPad
 			}
 		}
 
-		public static async Task ExecuteExternalProcess(string fileName, string arguments, TimeSpan? timeout, Action successAction, Action timeoutAction, Action<string> errorAction, CancellationToken cancellationToken)
+		public static async Task ExecuteExternalProcess(string fileName, string arguments, TimeSpan? timeout, Action successAction, Action timeoutAction, Action<int, string> errorAction, CancellationToken cancellationToken)
 		{
 			var startInfo =
 				new ProcessStartInfo(fileName, arguments)
@@ -88,7 +88,7 @@ namespace SqlPad
 				}
 				else
 				{
-					errorAction?.Invoke(process.StandardError.ReadToEnd());
+					errorAction?.Invoke(process.ExitCode, process.StandardError.ReadToEnd());
 				}
 			}
 			else

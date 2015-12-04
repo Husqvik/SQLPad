@@ -490,7 +490,7 @@
 			</StackPanel>
 		</HierarchicalDataTemplate>
 
-		<DataTemplate x:Key="SqlMonitorSingleSessionDataTemplate" DataType="modelDataProviders:SqlMonitorSessionItem">
+		<DataTemplate x:Key="SqlMonitorSingleSessionDataTemplate" DataType="modelDataProviders:SqlMonitorSessionPlanItem">
 			<Grid>
 				<Grid.Resources>
 					<Style x:Key="HideIfSessionIdEqualsZero" BasedOn="{StaticResource PlanStatisticValueStyle}" TargetType="TextBlock">
@@ -723,7 +723,7 @@
 				</TextBlock>
 
 				<StackPanel>
-					<ContentControl Content="{Binding AllSessionSummaryItem}" ContentTemplate="{StaticResource SqlMonitorSingleSessionDataTemplate}" />
+					<ContentControl Content="{Binding AllSessionSummaryPlanItem}" ContentTemplate="{StaticResource SqlMonitorSingleSessionDataTemplate}" />
 					<Expander Header="Parallel slaves" IsExpanded="False"
 							  Content="{Binding ParallelSlaveSessionItems}"
 							  ContentTemplate="{StaticResource SqlMonitorSessionListDataTemplate}"
