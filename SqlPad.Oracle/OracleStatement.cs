@@ -140,7 +140,7 @@ namespace SqlPad.Oracle
 							case NonTerminals.AlterUser:
 								return "User altered. ";
 							case NonTerminals.AlterMaterializedView:
-								return "Alter materialized view altered. ";
+								return "Materialized view altered. ";
 							case NonTerminals.AlterSystem:
 								return "System altered. ";
 							case NonTerminals.AlterTrigger:

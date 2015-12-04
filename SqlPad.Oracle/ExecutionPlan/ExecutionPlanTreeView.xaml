@@ -536,8 +536,8 @@
 				</Grid.ColumnDefinitions>
 
 				<TextBlock Grid.Column="0" Text="SID: " Style="{StaticResource HideIfSessionIdEqualsZero}" />
-				<TextBlock Grid.Column="1" Text="{Binding SessionId}" Style="{StaticResource HideIfSessionIdEqualsZero}" TextAlignment="Right" />
-				<TextBlock Grid.Column="2" Text="Starts: " Margin="4,0,0,0" Style="{StaticResource PlanStatisticValueStyle}" />
+				<TextBlock Grid.Column="1" Text="{Binding SessionId}" Style="{StaticResource HideIfSessionIdEqualsZero}" Margin="0,0,4,0" TextAlignment="Right" />
+				<TextBlock Grid.Column="2" Text="Starts: " Style="{StaticResource PlanStatisticValueStyle}" />
 				<TextBlock Grid.Column="3" Text="{Binding Starts, Converter={StaticResource PrettyPrintNumericConverter}}" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
 				<TextBlock Grid.Column="4" Text="Output rows: " Style="{StaticResource PlanStatisticValueStyle}" />
 				<TextBlock Grid.Column="5" Text="{Binding OutputRows, Converter={StaticResource PrettyPrintNumericConverter}}" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
