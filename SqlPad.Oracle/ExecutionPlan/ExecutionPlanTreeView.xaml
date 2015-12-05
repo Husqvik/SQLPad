@@ -6,6 +6,7 @@
              xmlns:executionPlan="clr-namespace:SqlPad.Oracle.ExecutionPlan"
              xmlns:sqlPad="clr-namespace:SqlPad;assembly=SqlPad"
              xmlns:modelDataProviders="clr-namespace:SqlPad.Oracle.ModelDataProviders"
+             xmlns:componentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
              mc:Ignorable="d"
              d:DesignHeight="160" d:DesignWidth="240">
 	<UserControl.Resources>
@@ -576,7 +577,7 @@
 					<Run Text="(max: " /><Run Text="{Binding WorkAreaTempMaxBytes, Converter={StaticResource DataSpaceConverter}}" /><Run Text=")" />
 				</TextBlock>
 
-				<TextBlock Grid.Column="20" Text="Parallel Group/Set/Server: " Style="{StaticResource HideIfParallelPropertiesNotAvailable}" />
+				<TextBlock Grid.Column="20" Text="Parallel group/set/server#: " Style="{StaticResource HideIfParallelPropertiesNotAvailable}" />
 				<TextBlock Grid.Column="21" Style="{StaticResource HideIfParallelPropertiesNotAvailable}" TextAlignment="Right">
 					<Run Text="{Binding SessionItem.ParallelServerGroup}" /><Run Text="/" /><Run Text="{Binding SessionItem.ParallelServerSet}" /><Run Text="/" /><Run Text="{Binding SessionItem.ParallelServerNumber}" />
 				</TextBlock>
@@ -584,14 +585,26 @@
 		</DataTemplate>
 
 		<DataTemplate x:Key="SqlMonitorSessionListDataTemplate">
-			<ItemsControl ItemsSource="{Binding}" Grid.IsSharedSizeScope="True">
-				<ItemsControl.ItemTemplate>
-					<!--<DataTemplate DataType="{sqlPad:Type generic:KeyValuePair, system:Int32, modelDataProviders:SqlMonitorSessionItem}">-->
-					<DataTemplate>
-						<ContentControl ContentTemplate="{StaticResource SqlMonitorSingleSessionDataTemplate}" Content="{Binding Value}" />
-					</DataTemplate>
-				</ItemsControl.ItemTemplate>
-			</ItemsControl>
+			<Viewbox>
+				<Viewbox.Resources>
+					<CollectionViewSource x:Key="ParallelSlaveSessionItems" Source="{Binding}">
+						<CollectionViewSource.SortDescriptions>
+							<componentModel:SortDescription PropertyName="Value.SessionItem.ParallelServerGroup" />
+							<componentModel:SortDescription PropertyName="Value.SessionItem.ParallelServerSet" />
+							<componentModel:SortDescription PropertyName="Value.SessionItem.ParallelServerNumber" />
+						</CollectionViewSource.SortDescriptions>
+					</CollectionViewSource>
+				</Viewbox.Resources>
+
+				<ItemsControl ItemsSource="{Binding Source={StaticResource ParallelSlaveSessionItems}}" Grid.IsSharedSizeScope="True">
+					<ItemsControl.ItemTemplate>
+						<!--<DataTemplate DataType="{sqlPad:Type generic:KeyValuePair, system:Int32, modelDataProviders:SqlMonitorSessionItem}">-->
+						<DataTemplate>
+							<ContentControl ContentTemplate="{StaticResource SqlMonitorSingleSessionDataTemplate}" Content="{Binding Value}" />
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+			</Viewbox>
 		</DataTemplate>
 		
 		<DataTemplate x:Key="SessionLongOperationDataTemplate" DataType="modelDataProviders:SessionLongOperationCollection">
@@ -638,16 +651,6 @@
 			</Grid>
 		</DataTemplate>
 
-		<DataTemplate x:Key="SessionLongOperationListDataTemplate">
-			<ItemsControl ItemsSource="{Binding}" Grid.IsSharedSizeScope="True">
-				<ItemsControl.ItemTemplate>
-					<DataTemplate>
-						<ContentControl ContentTemplate="{StaticResource SessionLongOperationDataTemplate}" Content="{Binding Value}" />
-					</DataTemplate>
-				</ItemsControl.ItemTemplate>
-			</ItemsControl>
-		</DataTemplate>
-		
 		<HierarchicalDataTemplate x:Key="ExecutionMonitorPlanItemDataTemplate" ItemsSource="{Binding ChildItems}" DataType="modelDataProviders:SqlMonitorPlanItem">
 			<StackPanel>
 				<StackPanel.Style>
@@ -797,8 +800,35 @@
 						</Expander.Header>
 					</Expander>
 				</StackPanel>
-				
-				<ContentControl Content="{Binding SessionLongOperations}" ContentTemplate="{StaticResource SessionLongOperationListDataTemplate}" />
+
+				<StackPanel>
+					<StackPanel.Resources>
+						<CollectionViewSource x:Key="SessionLongOperations" Source="{Binding SessionLongOperations}">
+							<CollectionViewSource.SortDescriptions>
+								<componentModel:SortDescription PropertyName="Value.SessionId" />
+							</CollectionViewSource.SortDescriptions>
+						</CollectionViewSource>
+					</StackPanel.Resources>
+					
+					<StackPanel.Style>
+						<Style>
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding SessionLongOperations.Count}" Value="0">
+									<Setter Property="StackPanel.Visibility" Value="Collapsed" />
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</StackPanel.Style>
+					
+					<TextBlock Text="Long operations" />
+					<ItemsControl ItemsSource="{Binding Source={StaticResource SessionLongOperations}}" Grid.IsSharedSizeScope="True">
+						<ItemsControl.ItemTemplate>
+							<DataTemplate>
+								<ContentControl ContentTemplate="{StaticResource SessionLongOperationDataTemplate}" Content="{Binding Value}" />
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+				</StackPanel>
 			</StackPanel>
 		</HierarchicalDataTemplate>
 

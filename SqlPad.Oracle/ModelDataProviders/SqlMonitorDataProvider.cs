@@ -202,9 +202,8 @@ namespace SqlPad.Oracle.ModelDataProviders
 		public void MergeItems(IList<SqlMonitorSessionLongOperationItem> items)
 		{
 			ActiveLongOperationItem = items.Last();
-			items.RemoveAt(items.Count - 1);
 
-			for (var i = 0; i < items.Count; i++)
+			for (var i = 0; i < items.Count - 1; i++)
 			{
 				var item = items[i];
 				if (CompletedSessionLongOperationItems.Count == i)
@@ -326,7 +325,6 @@ namespace SqlPad.Oracle.ModelDataProviders
 		public int SessionId { get; set; }
 
 		public SqlMonitorSessionItem SessionItem
-
 		{
 			get { return _sessionItem; }
 			set { UpdateValueAndRaisePropertyChanged(ref _sessionItem, value); }
