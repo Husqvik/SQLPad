@@ -500,6 +500,17 @@
 							</DataTrigger>
 						</Style.Triggers>
 					</Style>
+
+					<Style x:Key="HideIfParallelPropertiesNotAvailable" BasedOn="{StaticResource PlanStatisticValueStyle}" TargetType="TextBlock">
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding SessionItem}" Value="{x:Null}">
+								<Setter Property="Visibility" Value="Collapsed" />
+							</DataTrigger>
+							<DataTrigger Binding="{Binding SessionItem.ParallelServerNumber}" Value="{x:Null}">
+								<Setter Property="Visibility" Value="Collapsed" />
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
 				</Grid.Resources>
 				
 				<Grid.Style>
@@ -533,6 +544,9 @@
 					<ColumnDefinition Width="Auto" SharedSizeGroup="WorkAreaMemory" />
 					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleWorkAreaTemp" />
 					<ColumnDefinition Width="Auto" SharedSizeGroup="WorkAreaTemp" />
+
+					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleParallelProperties" />
+					<ColumnDefinition Width="Auto" SharedSizeGroup="ParallelProperties" />
 				</Grid.ColumnDefinitions>
 
 				<TextBlock Grid.Column="0" Text="SID: " Style="{StaticResource HideIfSessionIdEqualsZero}" />
@@ -560,6 +574,11 @@
 				<TextBlock Grid.Column="19" Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaTempBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
 					<Run Text="{Binding WorkAreaTempBytes, Converter={StaticResource DataSpaceConverter}}" />
 					<Run Text="(max: " /><Run Text="{Binding WorkAreaTempMaxBytes, Converter={StaticResource DataSpaceConverter}}" /><Run Text=")" />
+				</TextBlock>
+
+				<TextBlock Grid.Column="20" Text="Parallel Group/Set/Server: " Style="{StaticResource HideIfParallelPropertiesNotAvailable}" />
+				<TextBlock Grid.Column="21" Style="{StaticResource HideIfParallelPropertiesNotAvailable}" TextAlignment="Right">
+					<Run Text="{Binding SessionItem.ParallelServerGroup}" /><Run Text="/" /><Run Text="{Binding SessionItem.ParallelServerSet}" /><Run Text="/" /><Run Text="{Binding SessionItem.ParallelServerNumber}" />
 				</TextBlock>
 			</Grid>
 		</DataTemplate>
@@ -631,6 +650,16 @@
 		
 		<HierarchicalDataTemplate x:Key="ExecutionMonitorPlanItemDataTemplate" ItemsSource="{Binding ChildItems}" DataType="modelDataProviders:SqlMonitorPlanItem">
 			<StackPanel>
+				<StackPanel.Style>
+					<Style>
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding IsBeingExecuted}" Value="True">
+								<Setter Property="StackPanel.Background" Value="Chartreuse" />
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</StackPanel.Style>
+				
 				<StackPanel Orientation="Horizontal">
 					<TextBlock Style="{StaticResource ColoredItemHeaderBold}">
 						<Run Text="{Binding Operation}" />
@@ -724,7 +753,7 @@
 
 				<StackPanel>
 					<ContentControl Content="{Binding AllSessionSummaryPlanItem}" ContentTemplate="{StaticResource SqlMonitorSingleSessionDataTemplate}" />
-					<Expander Header="Parallel slaves" IsExpanded="False"
+					<Expander IsExpanded="False"
 							  Content="{Binding ParallelSlaveSessionItems}"
 							  ContentTemplate="{StaticResource SqlMonitorSessionListDataTemplate}"
 							  Template="{StaticResource ExpanderTemplate}">
@@ -737,6 +766,35 @@
 								</Style.Triggers>
 							</Style>
 						</Expander.Style>
+						<Expander.Header>
+							<StackPanel Orientation="Horizontal">
+								<TextBlock Text="Parallel slaves (" />
+								<TextBlock Text="{Binding AllSessionSummaryPlanItem.SessionItem.ParallelServersAllocated}">
+									<TextBlock.Style>
+										<Style>
+											<Style.Triggers>
+												<DataTrigger Binding="{Binding AllSessionSummaryPlanItem.SessionItem.ParallelServersDegraded}" Value="True">
+													<Setter Property="TextBlock.Visibility" Value="Collapsed" />
+												</DataTrigger>
+											</Style.Triggers>
+										</Style>
+									</TextBlock.Style>
+								</TextBlock>
+								<TextBlock>
+									<TextBlock.Style>
+										<Style>
+											<Style.Triggers>
+												<DataTrigger Binding="{Binding AllSessionSummaryPlanItem.SessionItem.ParallelServersDegraded}" Value="False">
+													<Setter Property="TextBlock.Visibility" Value="Collapsed" />
+												</DataTrigger>
+											</Style.Triggers>
+										</Style>
+									</TextBlock.Style>
+									<Run Text="{Binding AllSessionSummaryPlanItem.SessionItem.ParallelServersAllocated}" /><Run Text=" allocated/" /><Run Text="{Binding AllSessionSummaryPlanItem.SessionItem.ParallelServersRequested}" /><Run Text=" requested" />
+								</TextBlock>
+								<TextBlock Text=")" />
+							</StackPanel>
+						</Expander.Header>
 					</Expander>
 				</StackPanel>
 				

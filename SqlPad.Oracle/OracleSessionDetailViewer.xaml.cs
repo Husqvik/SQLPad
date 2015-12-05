@@ -23,6 +23,7 @@ namespace SqlPad.Oracle
 		}
 
 		private static readonly object LockObject = new object();
+		private static readonly TimeSpan DefaultRefreshPeriod = TimeSpan.FromSeconds(10);
 
 		private readonly ConnectionStringSettings _connectionString;
 		private readonly DispatcherTimer _refreshTimer;
@@ -41,7 +42,7 @@ namespace SqlPad.Oracle
 
 			_connectionString = connectionString;
 
-			_refreshTimer = new DispatcherTimer(DispatcherPriority.Normal, Dispatcher) { Interval = TimeSpan.FromSeconds(10) };
+			_refreshTimer = new DispatcherTimer(DispatcherPriority.Normal, Dispatcher) { Interval = DefaultRefreshPeriod };
 			_refreshTimer.Tick += RefreshTimerTickHandler;
 		}
 
@@ -116,6 +117,7 @@ namespace SqlPad.Oracle
 					await OracleDatabaseModel.UpdateModelAsync(OracleConnectionStringRepository.GetBackgroundConnectionString(_connectionString.ConnectionString), null, cancellationToken, false, monitorDataProvider);
 
 					_planItemCollection = monitorDataProvider.ItemCollection;
+					_planItemCollection.RefreshPeriod = DefaultRefreshPeriod;
 
 					if (_planItemCollection.RootItem != null)
 					{

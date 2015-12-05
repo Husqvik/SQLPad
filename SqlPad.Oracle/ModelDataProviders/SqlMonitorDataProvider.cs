@@ -52,6 +52,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			SqlId = sqlId;
 			ExecutionStart = executionStart;
 			ExecutionId = executionId;
+			RefreshPeriod = TimeSpan.FromSeconds(1);
 		}
 
 		public int SessionId { get; }
@@ -62,7 +63,16 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public int ExecutionId { get; }
 
+		public TimeSpan RefreshPeriod { get; set; }
+
 		public ObservableCollection<SqlMonitorSessionItem> SessionItems { get; } = new ObservableCollection<SqlMonitorSessionItem>();
+
+		public SqlMonitorSessionItem GetSessionItem(int sessionId)
+		{
+			SqlMonitorSessionItem sessionItem;
+			_sessionItemMapping.TryGetValue(sessionId, out sessionItem);
+			return sessionItem;
+		}
 
 		public void MergeSessionItem(SqlMonitorSessionItem newSessionItem)
 		{
@@ -311,8 +321,16 @@ namespace SqlPad.Oracle.ModelDataProviders
 		private long? _workAreaMemoryMaxBytes;
 		private long? _workAreaTempBytes;
 		private long? _workAreaTempMaxBytes;
+		private SqlMonitorSessionItem _sessionItem;
 
 		public int SessionId { get; set; }
+
+		public SqlMonitorSessionItem SessionItem
+
+		{
+			get { return _sessionItem; }
+			set { UpdateValueAndRaisePropertyChanged(ref _sessionItem, value); }
+		}
 
 		public long Starts
 		{
@@ -540,7 +558,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 			foreach (var planLineItem in DataModel.AllItems.Values)
 			{
-				planLineItem.IsBeingExecuted = lastSampleTime.HasValue && planLineItem.ActiveSessionHistoryItems.Values.Any(historyItems => historyItems.LastOrDefault()?.SampleTime >= lastSampleTime.Value.AddSeconds(-1));
+				planLineItem.IsBeingExecuted = lastSampleTime.HasValue && planLineItem.ActiveSessionHistoryItems.Values.Any(historyItems => historyItems.LastOrDefault()?.SampleTime >= lastSampleTime.Value.Add(-DataModel.RefreshPeriod));
 			}
 		}
 	}
@@ -581,6 +599,11 @@ namespace SqlPad.Oracle.ModelDataProviders
 					sqlMonitorPlanItem.SessionId = sessionId;
 				}
 
+				if (sqlMonitorPlanItem.SessionItem == null)
+				{
+					sqlMonitorPlanItem.SessionItem = DataModel.GetSessionItem(sessionId);
+				}
+
 				sqlMonitorPlanItem.Starts = Convert.ToInt64(reader["STARTS"]);
 				sqlMonitorPlanItem.OutputRows = Convert.ToInt64(reader["OUTPUT_ROWS"]);
 				sqlMonitorPlanItem.IoInterconnectBytes = Convert.ToInt64(reader["IO_INTERCONNECT_BYTES"]);
@@ -600,6 +623,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 				if (summaryItem == null)
 				{
 					planItem.AllSessionSummaryPlanItem = summaryItem = new SqlMonitorSessionPlanItem();
+					summaryItem.SessionItem = DataModel.GetSessionItem(DataModel.SessionId);
 				}
 
 				summaryItem.Reset();
@@ -825,6 +849,8 @@ namespace SqlPad.Oracle.ModelDataProviders
 		public int? ParallelServersRequested { get; set; }
 
 		public int? ParallelServersAllocated { get; set; }
+
+		public bool ParallelServersDegraded => ParallelServersAllocated < ParallelServersRequested;
 
 		public int? ParallelServerNumber { get; set; }
 
