@@ -1,25 +1,31 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Configuration;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using SqlPad.Oracle.DatabaseConnection;
-using SqlPad.Oracle.ExecutionPlan;
 using SqlPad.Oracle.ModelDataProviders;
 
 namespace SqlPad.Oracle
 {
 	public partial class OracleSessionDetailViewer : IDatabaseSessionDetailViewer
 	{
-		public static readonly DependencyProperty EnableSessionDetailsProperty = DependencyProperty.Register(nameof(EnableSessionDetails), typeof(bool), typeof(ExecutionPlanTreeView), new FrameworkPropertyMetadata());
+		public static readonly DependencyProperty IsParallelProperty = DependencyProperty.Register(nameof(IsParallel), typeof(bool), typeof(OracleSessionDetailViewer), new FrameworkPropertyMetadata());
+		public static readonly DependencyProperty SessionItemsProperty = DependencyProperty.Register(nameof(SessionItems), typeof(ObservableCollection<SqlMonitorSessionItem>), typeof(OracleSessionDetailViewer), new FrameworkPropertyMetadata());
 
-		public bool EnableSessionDetails
+		public bool IsParallel
 		{
-			get { return (bool)GetValue(EnableSessionDetailsProperty); }
-			private set { SetValue(EnableSessionDetailsProperty, value); }
+			get { return (bool)GetValue(IsParallelProperty); }
+			private set { SetValue(IsParallelProperty, value); }
+		}
+
+		public ObservableCollection<SqlMonitorSessionItem> SessionItems
+		{
+			get { return (ObservableCollection<SqlMonitorSessionItem>)GetValue(SessionItemsProperty); }
+			private set { SetValue(SessionItemsProperty, value); }
 		}
 
 		private static readonly object LockObject = new object();
@@ -85,7 +91,7 @@ namespace SqlPad.Oracle
 					return;
 				}
 
-				EnableSessionDetails = planItemCollection.AllItems.Values.Any(i => i.ParallelSlaveSessionItems.Count > 0);
+				IsParallel = planItemCollection.SessionItems.Count > 1;
 			}
 			finally
 			{
@@ -122,6 +128,7 @@ namespace SqlPad.Oracle
 					if (_planItemCollection.RootItem != null)
 					{
 						ExecutionPlanTreeView.RootItem = _planItemCollection.RootItem;
+						SessionItems = _planItemCollection.SessionItems;
 					}
 				}
 			}
@@ -141,7 +148,10 @@ namespace SqlPad.Oracle
 
 			_refreshTimer.IsEnabled = false;
 			_planItemCollection = null;
+			SessionItems = null;
+			IsParallel = false;
 			ExecutionPlanTreeView.RootItem = null;
+			TabExecutionPlan.IsSelected = true;
 		}
 	}
 }
