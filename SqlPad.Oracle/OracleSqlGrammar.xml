@@ -3820,7 +3820,43 @@
         <Sequence>
           <NonTerminal Id="DropDatabaseLink" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="DropTablespace" />
+        </Sequence>
         <!-- TODO: Drop other objects -->
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DropTablespace">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="TablespaceIdentifier" />
+          <NonTerminal Id="DropTablespaceIncludingContentsClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DropTablespaceIncludingContentsClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Including" />
+          <Terminal Id="Contents" />
+          <NonTerminal Id="AndOrKeepDatafiles" IsOptional="true" />
+          <NonTerminal Id="CascadeConstraints" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AndOrKeepDatafiles">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="And" />
+          <Terminal Id="Datafiles" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Keep" />
+          <Terminal Id="Datafiles" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -20588,6 +20624,7 @@
     <Terminal Id="NationalCharacterSet" Value="NCHAR_CS" />
     <Terminal Id="The" Value="THE" />
     <Terminal Id="Truncate" Value="TRUNCATE" />
+    <Terminal Id="Contents" Value="CONTENTS" />
     
     <!-- PL/SQL -->
     <Terminal Id="Bulk" Value="BULK" />

@@ -4332,6 +4332,21 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 				}
 			}
 
+			public class DropTablespace
+			{
+				[Test(Description = @"")]
+				public void TestDropTablespace()
+				{
+					const string statementText = @"DROP TABLESPACE test_tablespace INCLUDING CONTENTS AND DATAFILES CASCADE CONSTRAINTS;";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+			}
+
 			public class DropType
 			{
 				[Test(Description = @"")]
