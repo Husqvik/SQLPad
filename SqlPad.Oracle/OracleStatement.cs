@@ -219,6 +219,8 @@ namespace SqlPad.Oracle
 						return "Table truncated. ";
 					case NonTerminals.SetTransactionStatement:
 						return "Transaction set. ";
+					case NonTerminals.FlashbackStatement:
+						return "Flashback complete. ";
 					case NonTerminals.PurgeStatement:
 						switch (statementNode[NonTerminals.PurgeOption]?.FirstTerminalNode?.Id)
 						{

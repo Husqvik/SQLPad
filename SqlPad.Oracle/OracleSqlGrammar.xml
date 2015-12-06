@@ -102,6 +102,65 @@
         <Sequence>
           <NonTerminal Id="TruncateStatement" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="FlashbackStatement" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <!-- FLASHBACK -->
+    <Rule StartingNonTerminal="FlashbackStatement">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Flashback" />
+          <NonTerminal Id="FlashbackOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="FlashbackOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Table" />
+          <NonTerminal Id="SchemaObjectList" />
+          <Terminal Id="To" />
+          <NonTerminal Id="FlashbackTableOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="FlashbackTableOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="SystemChangeNumber" />
+          <NonTerminal Id="Expression" />
+          <NonTerminal Id="EnableOrDisableTriggers" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Timestamp" />
+          <NonTerminal Id="Expression" />
+          <NonTerminal Id="EnableOrDisableTriggers" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Restore" />
+          <Terminal Id="Point" />
+          <Terminal Id="Identifier" />
+          <NonTerminal Id="EnableOrDisableTriggers" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Before" />
+          <Terminal Id="Drop" />
+          <NonTerminal Id="RenameToObjectIdentifier" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="EnableOrDisableTriggers">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="EnableOrDisable" />
+          <Terminal Id="Triggers" />
+        </Sequence>
       </Sequences>
     </Rule>
     
@@ -1956,9 +2015,7 @@
           <NonTerminal Id="KeepSize" IsOptional="true"/>
         </Sequence>
         <Sequence>
-          <Terminal Id="Rename" />
-          <Terminal Id="To" />
-          <Terminal Id="ObjectIdentifier" />
+          <NonTerminal Id="RenameToObjectIdentifier" />
         </Sequence>
         <Sequence>
           <Terminal Id="Begin" />
@@ -1993,6 +2050,16 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="TablespaceRetentionClause" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="RenameToObjectIdentifier">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Rename" />
+          <Terminal Id="To" />
+          <Terminal Id="ObjectIdentifier" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -10708,7 +10775,7 @@
           <Terminal Id="ObjectIdentifier" />
           <Terminal Id="Identified" />
           <NonTerminal Id="CreateUserIdentificationType" />
-          <NonTerminal Id="CreateUserOptionList" />
+          <NonTerminal Id="CreateUserOptionList" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>

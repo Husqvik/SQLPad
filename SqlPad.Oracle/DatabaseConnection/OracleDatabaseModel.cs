@@ -637,7 +637,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					{
 						try
 						{
-							task.Wait();
+							task.Wait(_backgroundTaskCancellationTokenSource.Token);
 						}
 						catch (AggregateException)
 						{

@@ -437,6 +437,7 @@ namespace SqlPad.Oracle
 			public const string EnabledOrDisabled = "EnabledOrDisabled";
 			public const string EnableOrDisable = "EnableOrDisable";
 			public const string EnableOrDisableOrForce = "EnableOrDisableOrForce";
+			public const string EnableOrDisableTriggers = "EnableOrDisableTriggers";
 			public const string EnclosedByClause = "EnclosedByClause";
 			public const string EncryptionKeyOption = "EncryptionKeyOption";
 			public const string EncryptionSalt = "EncryptionSalt";
@@ -523,8 +524,11 @@ namespace SqlPad.Oracle
 			public const string FlashbackMaximumValue = "FlashbackMaximumValue";
 			public const string FlashbackMinimumValue = "FlashbackMinimumValue";
 			public const string FlashbackModeClause = "FlashbackModeClause";
+			public const string FlashbackOption = "FlashbackOption";
 			public const string FlashbackPeriodFor = "FlashbackPeriodFor";
 			public const string FlashbackQueryClause = "FlashbackQueryClause";
+			public const string FlashbackStatement = "FlashbackStatement";
+			public const string FlashbackTableOption = "FlashbackTableOption";
 			public const string FlashbackVersionsClause = "FlashbackVersionsClause";
 			public const string FlashCachePoolType = "FlashCachePoolType";
 			public const string ForAllBoundsClause = "ForAllBoundsClause";
@@ -1135,6 +1139,7 @@ namespace SqlPad.Oracle
 			public const string RelyOrNoRely = "RelyOrNoRely";
 			public const string RenameColumnClause = "RenameColumnClause";
 			public const string RenameStatement = "RenameStatement";
+			public const string RenameToObjectIdentifier = "RenameToObjectIdentifier";
 			public const string ResourceCostOption = "ResourceCostOption";
 			public const string ResourceCostOptionList = "ResourceCostOptionList";
 			public const string ResourceParameters = "ResourceParameters";

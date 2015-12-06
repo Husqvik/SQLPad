@@ -3543,7 +3543,7 @@ END;";
 			{
 				var terminalCandidates = Parser.GetTerminalCandidates(null).Select(c => c.Id).OrderBy(t => t).ToArray();
 
-				var expectedTerminals = new[] { Terminals.Alter, Terminals.Analyze, Terminals.Begin, Terminals.Call, Terminals.Comment, Terminals.Commit, Terminals.Create, Terminals.Declare, Terminals.Delete, Terminals.Drop, Terminals.Explain, Terminals.Grant, Terminals.Insert, Terminals.LeftLabelMarker, Terminals.LeftParenthesis, Terminals.Lock, Terminals.Merge, Terminals.Purge, Terminals.Rename, Terminals.Rollback, Terminals.Savepoint, Terminals.Select, Terminals.Set, Terminals.Truncate, Terminals.Update, Terminals.With };
+				var expectedTerminals = new[] { Terminals.Alter, Terminals.Analyze, Terminals.Begin, Terminals.Call, Terminals.Comment, Terminals.Commit, Terminals.Create, Terminals.Declare, Terminals.Delete, Terminals.Drop, Terminals.Explain, Terminals.Flashback, Terminals.Grant, Terminals.Insert, Terminals.LeftLabelMarker, Terminals.LeftParenthesis, Terminals.Lock, Terminals.Merge, Terminals.Purge, Terminals.Rename, Terminals.Rollback, Terminals.Savepoint, Terminals.Select, Terminals.Set, Terminals.Truncate, Terminals.Update, Terminals.With };
 				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 
@@ -4584,6 +4584,48 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 				terminals[1].Id.ShouldBe(Terminals.ObjectIdentifier);
 				terminals[2].Id.ShouldBe(Terminals.To);
 				terminals[3].Id.ShouldBe(Terminals.ObjectIdentifier);
+			}
+		}
+
+		public class Flashback
+		{
+			public class FlashbackTable
+			{
+				[Test(Description = @"")]
+				public void TestFlashbackTableToTimestamp()
+				{
+					const string statementText = @"FLASHBACK TABLE test_table1, husqvik.test_table2 TO TIMESTAMP TIMESTAMP'2015-12-05 20:33:53' DISABLE TRIGGERS";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestFlashbackTableToRestorePoint()
+				{
+					const string statementText = @"FLASHBACK TABLE test_table1 TO RESTORE POINT test_restore_point";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestFlashbackTableToBeforeDrop()
+				{
+					const string statementText = @"FLASHBACK TABLE test_table1 TO BEFORE DROP RENAME TO restored_table";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
 			}
 		}
 
@@ -5744,6 +5786,18 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 			public class CreateUser
 			{
+				[Test(Description = @"")]
+				public void TestSimpleCreateUser()
+				{
+					const string statementText = @"CREATE USER test_user IDENTIFIED BY oracle";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
 				[Test(Description = @"")]
 				public void TestCreateUser()
 				{
