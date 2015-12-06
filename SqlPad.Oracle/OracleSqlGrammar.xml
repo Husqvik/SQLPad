@@ -126,6 +126,51 @@
           <Terminal Id="To" />
           <NonTerminal Id="FlashbackTableOption" />
         </Sequence>
+        <Sequence>
+          <Terminal Id="Standby" IsOptional="true" />
+          <Terminal Id="Database" />
+          <Terminal Id="ObjectIdentifier" />
+          <Terminal Id="To" />
+          <NonTerminal Id="FlashbackDatabaseOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="FlashbackDatabaseOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="SystemChangeNumber" />
+          <NonTerminal Id="Expression" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Timestamp" />
+          <NonTerminal Id="Expression" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Restore" />
+          <Terminal Id="Point" />
+          <Terminal Id="Identifier" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Before" />
+          <NonTerminal Id="FlashbackDatabaseBeforeOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="FlashbackDatabaseBeforeOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="SystemChangeNumber" />
+          <NonTerminal Id="Expression" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Timestamp" />
+          <NonTerminal Id="Expression" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="ResetLogs" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -1606,6 +1651,11 @@
           <NonTerminal Id="EnableOrDisable" />
           <Terminal Id="Restricted" />
           <Terminal Id="Session" />
+        </Sequence>
+        <Sequence Comment="Not documented">
+          <Terminal Id="Set" />
+          <Terminal Id="Events" />
+          <Terminal Id="StringLiteral" />
         </Sequence>
         <Sequence>
           <Terminal Id="Set" />
@@ -20625,6 +20675,8 @@
     <Terminal Id="The" Value="THE" />
     <Terminal Id="Truncate" Value="TRUNCATE" />
     <Terminal Id="Contents" Value="CONTENTS" />
+    <Terminal Id="Standby" Value="STANDBY" />
+    <Terminal Id="ResetLogs" Value="RESETLOGS" />
     
     <!-- PL/SQL -->
     <Terminal Id="Bulk" Value="BULK" />

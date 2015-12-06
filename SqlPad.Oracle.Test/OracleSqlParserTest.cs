@@ -4642,6 +4642,33 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 			}
+
+			public class FlashbackDatabase
+			{
+				[Test(Description = @"")]
+				public void TestFlashbackDatabaseToRestorePoint()
+				{
+					const string statementText = @"FLASHBACK DATABASE test_database TO RESTORE POINT test_restore_point";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestFlashbackDatabaseToBeforeResetLogs()
+				{
+					const string statementText = @"FLASHBACK DATABASE test_database TO BEFORE RESETLOGS";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+			}
 		}
 
 		public class Comment
@@ -6337,6 +6364,18 @@ USING 'localhost:1521/hqpdb'";
 				public void TestAlterSystemKillSession()
 				{
 					const string statementText = @"ALTER SYSTEM KILL SESSION 'SID, SERIAL#, @1' NOREPLAY";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void TestAlterSystemSetEvents()
+				{
+					const string statementText = @"ALTER SYSTEM SET EVENTS '12500 trace name context off'";
 
 					var result = Parser.Parse(statementText);
 
