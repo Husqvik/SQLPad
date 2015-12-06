@@ -189,6 +189,8 @@ namespace SqlPad.Oracle
 										return "Directory dropped. ";
 									case Terminals.Trigger:
 										return "Trigger dropped. ";
+									case Terminals.Restore:
+										return "Restore point dropped. ";
 									default:
 										return DefaultMessageCommandExecutedSuccessfully;
 								}

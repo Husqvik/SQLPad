@@ -4504,6 +4504,26 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 					terminals[1].Id.ShouldBe(Terminals.Trigger);
 					terminals[2].Id.ShouldBe(Terminals.ObjectIdentifier);
 				}
+
+				[Test(Description = @"")]
+				public void TestDropRestorePoint()
+				{
+					const string statementText = @"DROP RESTORE POINT test_restore_point";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(4);
+
+					terminals[0].Id.ShouldBe(Terminals.Drop);
+					terminals[1].Id.ShouldBe(Terminals.Restore);
+					terminals[2].Id.ShouldBe(Terminals.Point);
+					terminals[3].Id.ShouldBe(Terminals.ObjectIdentifier);
+				}
 			}
 		}
 

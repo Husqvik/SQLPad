@@ -3906,6 +3906,10 @@
         <Sequence>
           <Terminal Id="Trigger" />
         </Sequence>
+        <Sequence>
+          <Terminal Id="Restore" />
+          <Terminal Id="Point" />
+        </Sequence>
       </Sequences>
     </Rule>
 
