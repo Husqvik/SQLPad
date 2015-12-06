@@ -227,14 +227,12 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Preserve" />
-          <Terminal Id="Materialized" />
-          <Terminal Id="View" />
+          <NonTerminal Id="MaterializedViewOrSnapshot" />
           <Terminal Id="Log" />
         </Sequence>
         <Sequence>
           <Terminal Id="Purge" />
-          <Terminal Id="Materialized" />
-          <Terminal Id="View" />
+          <NonTerminal Id="MaterializedViewOrSnapshot" />
           <Terminal Id="Log" />
         </Sequence>
       </Sequences>
@@ -4100,8 +4098,7 @@
     <Rule StartingNonTerminal="DropMaterializedViewLog">
       <Sequences>
         <Sequence>
-          <Terminal Id="Materialized" />
-          <Terminal Id="View" />
+          <NonTerminal Id="MaterializedViewOrSnapshot" />
           <Terminal Id="Log" />
           <Terminal Id="On" />
           <NonTerminal Id="SchemaObject" />
@@ -11317,8 +11314,7 @@
     <Rule StartingNonTerminal="CreateMaterializedViewLog">
       <Sequences>
         <Sequence>
-          <Terminal Id="Materialized" />
-          <Terminal Id="View" />
+          <NonTerminal Id="MaterializedViewOrSnapshot" />
           <Terminal Id="Log" />
           <Terminal Id="On" />
           <NonTerminal Id="SchemaObject" />

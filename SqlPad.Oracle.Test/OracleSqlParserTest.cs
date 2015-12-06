@@ -4315,6 +4315,18 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 					terminals[6].Id.ShouldBe(Terminals.Dot);
 					terminals[7].Id.ShouldBe(Terminals.ObjectIdentifier);
 				}
+
+				[Test(Description = @"")]
+				public void TestObsoleteDropSnapshotLog()
+				{
+					const string statementText = @"DROP SNAPSHOT LOG ON HUSQVIK.TEST_CLUSTER";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
 			}
 
 			public class DropDatabaseLink
@@ -5640,6 +5652,18 @@ PURGE REPEAT INTERVAL '5' DAY";
 				public void CreateMaterializedViewLogForSynchronousRefreshClause()
 				{
 					const string statementText = @"CREATE MATERIALIZED VIEW LOG ON TEST_TABLE FOR SYNCHRONOUS REFRESH USING TEST_STAGING_LOG";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
+				public void ObsoleteCreateSnapshotLog()
+				{
+					const string statementText = @"CREATE SNAPSHOT LOG ON test_table";
 
 					var result = Parser.Parse(statementText);
 
@@ -7364,6 +7388,18 @@ USING 'localhost:1521/hqpdb'";
 			public void TestTruncateTableMaximal()
 			{
 				const string statementText = @"TRUNCATE TABLE TEST_SCHEMA.TEST_TABLE PURGE MATERIALIZED VIEW LOG REUSE STORAGE CASCADE;";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestTruncateTableWithObsoletePurgeSnapshotLog()
+			{
+				const string statementText = @"TRUNCATE TABLE test_table PURGE SNAPSHOT LOG";
 
 				var result = Parser.Parse(statementText);
 
