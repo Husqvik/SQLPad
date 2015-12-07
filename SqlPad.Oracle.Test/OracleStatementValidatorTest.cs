@@ -507,7 +507,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test(Description = @"")]
-		public void TestAnalyticFuctionAsAggregationFuctionParameter()
+		public void TestAnalyticFuctionAsAggregateFuctionParameter()
 		{
 			const string sqlText = "SELECT COUNT(COUNT(DUMMY) OVER ()) FROM DUAL";
 			var statement = Parser.Parse(sqlText).Single();
@@ -1664,7 +1664,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test(Description = @"")]
-		public void TestAggregationFunctionWithinAnalyticFunctionWithScalarFunction()
+		public void TestAggregateFunctionWithinAnalyticFunctionWithScalarFunction()
 		{
 			const string sqlText = "SELECT ROUND(RATIO_TO_REPORT(COUNT(*)) OVER (PARTITION BY TRUNC(NULL, 'HH')) * 100, 2) PERCENT FROM DUAL";
 			var statement = Parser.Parse(sqlText).Single();
@@ -2608,7 +2608,7 @@ SELECT DUMMY1, DUMMY2, DUMMY3, DUMMY4 FROM CTE";
 		}
 
 		[Test(Description = @"")]
-		public void TestInvalidPivotAggregationExpression()
+		public void TestInvalidPivotAggregateExpression()
 		{
 			const string sqlText =
 @"SELECT
@@ -3029,6 +3029,16 @@ SELECT C1 FROM CTE";
 		public void TestValidationModelBuildWhileTypingCastWithinTableExpression()
 		{
 			const string sqlText = @"SELECT * FROM TABLE(CAST())";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			Assert.DoesNotThrow(() => BuildValidationModel(sqlText, statement));
+		}
+
+		[Test(Description = @"")]
+		public void TestValidationModelBuildWhileTypingAggregateFunctionInFrontOfOtherAggregateFunction()
+		{
+			const string sqlText = @"SELECT MAX MAX(flag) FROM dual";
 
 			var statement = Parser.Parse(sqlText).Single();
 

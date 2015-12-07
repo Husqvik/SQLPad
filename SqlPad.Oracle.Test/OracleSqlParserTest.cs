@@ -1260,8 +1260,8 @@ FROM SELECTION";
 			// TODO: Precise assertions
 		}
 
-		[Test(Description = @"Tests LISTAGG aggregation function. ")]
-		public void TestListaggAggregationFunction()
+		[Test(Description = @"Tests LISTAGG aggregate function. ")]
+		public void TestListaggAggregateFunction()
 		{
 			const string query1 = @"SELECT LISTAGG(NAME || '*') WITHIN GROUP (ORDER BY NULL) || 'Postfix' FROM SELECTION";
 			var result = Parser.Parse(query1);
