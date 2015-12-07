@@ -9,6 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Input;
 using System.Windows.Threading;
 using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.ModelDataProviders;
@@ -53,6 +55,8 @@ namespace SqlPad.Oracle
 		public Control Control => this;
 
 		public DatabaseSession DatabaseSession { get; private set; }
+
+		private SortDescriptionCollection DefaultSortDescriptions => ((CollectionViewSource)Resources["SortedSessionItems"]).SortDescriptions;
 
 		public OracleSessionDetailViewer(ConnectionStringSettings connectionString)
 		{
@@ -211,6 +215,21 @@ namespace SqlPad.Oracle
 		}
 
 		private EventHandler<DataGridBeginningEditEventArgs> SessionDataGridBeginningEditCancelTextInputHandler => App.DataGridBeginningEditCancelTextInputHandlerImplementation;
+
+		private void SessionDataGridSortingHandler(object sender, DataGridSortingEventArgs e)
+		{
+			var dataGrid = (DataGrid)sender;
+			if (e.Column.SortDirection != ListSortDirection.Descending || Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+			{
+				return;
+			}
+
+			e.Column.SortDirection = null;
+			dataGrid.Items.SortDescriptions.Clear();
+			dataGrid.Items.SortDescriptions.AddRange(DefaultSortDescriptions);
+			dataGrid.Items.Refresh();
+			e.Handled = true;
+		}
 	}
 
 	public class SessionSummaryCollection : List<SqlMonitorSessionItem>

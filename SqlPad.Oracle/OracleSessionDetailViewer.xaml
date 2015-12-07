@@ -5,14 +5,22 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:executionPlan="clr-namespace:SqlPad.Oracle.ExecutionPlan"
              xmlns:sqlPad="clr-namespace:SqlPad;assembly=SqlPad"
-             xmlns:componentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
              xmlns:oracle="clr-namespace:SqlPad.Oracle"
+             xmlns:componentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
              mc:Ignorable="d"
              d:DesignHeight="160" d:DesignWidth="240"
              DataContext="{Binding RelativeSource={RelativeSource Self}}">
 	<UserControl.Resources>
 		<sqlPad:DataSpaceConverter x:Key="DataSpaceConverter" />
 		<oracle:SessionIdSummaryConverter x:Key="SessionIdSummaryConverter" />
+
+		<CollectionViewSource x:Key="SortedSessionItems" Source="{Binding SessionItems}">
+			<CollectionViewSource.SortDescriptions>
+				<componentModel:SortDescription PropertyName="ParallelServerGroup" />
+				<componentModel:SortDescription PropertyName="ParallelServerSet" />
+				<componentModel:SortDescription PropertyName="ParallelServerNumber" />
+			</CollectionViewSource.SortDescriptions>
+		</CollectionViewSource>
 		
 		<Style x:Key="CellRealOnlyRightJustification">
 			<Setter Property="TextBoxBase.IsReadOnly" Value="True" />
@@ -27,16 +35,6 @@
 			<executionPlan:ExecutionPlanTreeView x:Name="ExecutionPlanTreeView" />
 		</TabItem>
 		<TabItem Header="_Parallel execution">
-			<TabItem.Resources>
-				<CollectionViewSource x:Key="SortedSessionItems" Source="{Binding SessionItems}">
-					<CollectionViewSource.SortDescriptions>
-						<componentModel:SortDescription PropertyName="ParallelServerGroup" />
-						<componentModel:SortDescription PropertyName="ParallelServerSet" />
-						<componentModel:SortDescription PropertyName="ParallelServerNumber" />
-					</CollectionViewSource.SortDescriptions>
-				</CollectionViewSource>
-			</TabItem.Resources>
-			
 			<TabItem.Style>
 				<Style>
 					<Style.Triggers>
@@ -62,6 +60,7 @@
 							  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
 							  ItemsSource="{Binding Source={StaticResource SortedSessionItems}}"
 							  MaxColumnWidth="{Binding ElementName=SessionDataGrid, Path=ActualWidth}"
+							  Sorting="SessionDataGridSortingHandler"
 							  BeginningEdit="SessionDataGridBeginningEditCancelTextInputHandler">
 						<DataGrid.Columns>
 							<DataGridTextColumn Header="SID" Binding="{Binding SessionId, Converter={StaticResource SessionIdSummaryConverter}}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
@@ -73,9 +72,9 @@
 							<DataGridTextColumn Header="Disk reads" Binding="{Binding DiskReads}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
 							<DataGridTextColumn Header="Direct writes" Binding="{Binding DirectWrites}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
 							<DataGridTextColumn Header="I/O interconnection" Binding="{Binding IoInterconnectBytes, Converter={StaticResource DataSpaceConverter}}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
-							<DataGridTextColumn Header="Physical read requests" Binding="{Binding PhysicalReadRequests}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Header="Read requests" Binding="{Binding PhysicalReadRequests}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
 							<DataGridTextColumn Header="Physical read" Binding="{Binding PhysicalReadBytes, Converter={StaticResource DataSpaceConverter}}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
-							<DataGridTextColumn Header="Physical write requests" Binding="{Binding PhysicalWriteRequests}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Header="Write requests" Binding="{Binding PhysicalWriteRequests}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
 							<DataGridTextColumn Header="Physical write" Binding="{Binding PhysicalWriteBytes, Converter={StaticResource DataSpaceConverter}}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
 							<DataGridTextColumn Header="Elapsed" Binding="{Binding ElapsedTime}" />
 							<DataGridTextColumn Header="CPU time" Binding="{Binding CpuTime}" />

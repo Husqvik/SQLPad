@@ -73,11 +73,11 @@ namespace SqlPad.Oracle
 									ParallelDmlEnabled = (string)reader["PDML_ENABLED"],
 									ParallelDmlStatus = (string)reader["PDML_STATUS"],
 									ParallelQueryStatus = (string)reader["PQ_STATUS"],
-									Parameter1 = Convert.ToInt64(reader["P1"]),
+									Parameter1 = Convert.ToDecimal(reader["P1"]),
 									Parameter1Text = OracleReaderValueConvert.ToString(reader["P1TEXT"]),
-									Parameter2 = Convert.ToInt64(reader["P2"]),
+									Parameter2 = Convert.ToDecimal(reader["P2"]),
 									Parameter2Text = OracleReaderValueConvert.ToString(reader["P2TEXT"]),
-									Parameter3 = Convert.ToInt64(reader["P3"]),
+									Parameter3 = Convert.ToDecimal(reader["P3"]),
 									Parameter3Text = OracleReaderValueConvert.ToString(reader["P3TEXT"]),
 									OwnerSessionId = OracleReaderValueConvert.ToInt32(reader["OWNER_SID"]),
 									Port = OracleReaderValueConvert.ToInt32(reader["PORT"]),
@@ -389,9 +389,9 @@ namespace SqlPad.Oracle
 			set { Values[39] = value; }
 		}
 
-		public long Parameter1
+		public decimal Parameter1
 		{
-			get { return (long)Values[40]; }
+			get { return (decimal)Values[40]; }
 			set { Values[40] = value; }
 		}
 
@@ -401,9 +401,9 @@ namespace SqlPad.Oracle
 			set { Values[41] = value; }
 		}
 
-		public long Parameter2
+		public decimal Parameter2
 		{
-			get { return (long)Values[42]; }
+			get { return (decimal)Values[42]; }
 			set { Values[42] = value; }
 		}
 
@@ -413,9 +413,9 @@ namespace SqlPad.Oracle
 			set { Values[43] = value; }
 		}
 
-		public long Parameter3
+		public decimal Parameter3
 		{
-			get { return (long)Values[44]; }
+			get { return (decimal)Values[44]; }
 			set { Values[44] = value; }
 		}
 
