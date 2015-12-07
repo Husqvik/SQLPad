@@ -279,7 +279,7 @@ namespace SqlPad
 			AddChildReferenceColumns(ResultGrid, childReferenceDataSources);
 		}
 
-		private EventHandler<DataGridBeginningEditEventArgs> ResultGridBeginningEditCancelTextInputHandler => App.ResultGridBeginningEditCancelTextInputHandlerImplementation;
+		private EventHandler<DataGridBeginningEditEventArgs> ResultGridBeginningEditCancelTextInputHandler => App.DataGridBeginningEditCancelTextInputHandlerImplementation;
 
 		private void CanExportDataHandler(object sender, CanExecuteRoutedEventArgs args)
 		{
@@ -425,7 +425,7 @@ namespace SqlPad
 				};
 
 			childRecordDataGrid.AddHandler(VirtualizingStackPanel.CleanUpVirtualizedItemEvent, (CleanUpVirtualizedItemEventHandler)CleanUpVirtualizedItemHandler);
-			childRecordDataGrid.BeginningEdit += App.ResultGridBeginningEditCancelTextInputHandlerImplementation;
+			childRecordDataGrid.BeginningEdit += App.DataGridBeginningEditCancelTextInputHandlerImplementation;
 			childRecordDataGrid.MouseDoubleClick += ResultGridMouseDoubleClickHandler;
 
 			var columnHeaders = executionResult.ResultInfoColumnHeaders.Values.Last();

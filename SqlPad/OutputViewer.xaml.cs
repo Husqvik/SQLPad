@@ -76,7 +76,7 @@ namespace SqlPad
 
 		public DocumentPage DocumentPage { get; }
 
-		private EventHandler<DataGridBeginningEditEventArgs> ResultGridBeginningEditCancelTextInputHandler => App.ResultGridBeginningEditCancelTextInputHandlerImplementation;
+		private EventHandler<DataGridBeginningEditEventArgs> ResultGridBeginningEditCancelTextInputHandler => App.DataGridBeginningEditCancelTextInputHandlerImplementation;
 
 		public OutputViewer(DocumentPage documentPage)
 		{

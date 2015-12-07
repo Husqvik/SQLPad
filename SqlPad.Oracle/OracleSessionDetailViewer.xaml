@@ -6,11 +6,13 @@
              xmlns:executionPlan="clr-namespace:SqlPad.Oracle.ExecutionPlan"
              xmlns:sqlPad="clr-namespace:SqlPad;assembly=SqlPad"
              xmlns:componentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+             xmlns:oracle="clr-namespace:SqlPad.Oracle"
              mc:Ignorable="d"
              d:DesignHeight="160" d:DesignWidth="240"
              DataContext="{Binding RelativeSource={RelativeSource Self}}">
 	<UserControl.Resources>
 		<sqlPad:DataSpaceConverter x:Key="DataSpaceConverter" />
+		<oracle:SessionIdSummaryConverter x:Key="SessionIdSummaryConverter" />
 		
 		<Style x:Key="CellRealOnlyRightJustification">
 			<Setter Property="TextBoxBase.IsReadOnly" Value="True" />
@@ -45,47 +47,101 @@
 				</Style>
 			</TabItem.Style>
 
-			<DataGrid x:Name="SessionDataGrid"
-			          CanUserDeleteRows="False"
-			          CanUserAddRows="False"
-			          SelectionUnit="FullRow"
-			          SelectionMode="Single"
-			          HorizontalGridLinesBrush="LightGray"
-			          VerticalGridLinesBrush="LightGray"
-			          AutoGenerateColumns="False"
-			          ItemsSource="{Binding Source={StaticResource SortedSessionItems}}"
-			          MaxColumnWidth="{Binding ElementName=SessionDataGrid, Path=ActualWidth}">
-				<DataGrid.Columns>
-					<DataGridTextColumn Header="SID" Binding="{Binding SessionId}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
-					<DataGridTextColumn Header="PX server group" Binding="{Binding ParallelServerGroup}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
-					<DataGridTextColumn Header="PX server set" Binding="{Binding ParallelServerSet}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
-					<DataGridTextColumn Header="PX server#" Binding="{Binding ParallelServerNumber}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
-					<DataGridTextColumn Header="Fetches" Binding="{Binding Fetches}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
-					<DataGridTextColumn Header="Buffer gets" Binding="{Binding BufferGets}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
-					<DataGridTextColumn Header="Disk reads" Binding="{Binding DiskReads}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
-					<DataGridTextColumn Header="Direct writes" Binding="{Binding DirectWrites}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
-					<DataGridTextColumn Header="I/O interconnection" Binding="{Binding IoInterconnectBytes, Converter={StaticResource DataSpaceConverter}}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
-					<DataGridTextColumn Header="Physical read requests" Binding="{Binding PhysicalReadRequests}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
-					<DataGridTextColumn Header="Physical read" Binding="{Binding PhysicalReadBytes, Converter={StaticResource DataSpaceConverter}}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
-					<DataGridTextColumn Header="Physical write requests" Binding="{Binding PhysicalWriteRequests}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
-					<DataGridTextColumn Header="Physical write" Binding="{Binding PhysicalWriteBytes, Converter={StaticResource DataSpaceConverter}}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
-					<DataGridTextColumn Header="Elapsed" Binding="{Binding ElapsedTime}" />
-					<DataGridTextColumn Header="CPU time" Binding="{Binding CpuTime}" />
-					<DataGridTextColumn Header="Concurrency wait" Binding="{Binding ConcurrencyWaitTime}" />
-					<DataGridTextColumn Header="Application wait" Binding="{Binding ApplicationWaitTime}" />
-					<DataGridTextColumn Header="Cluster wait" Binding="{Binding ClusterWaitTime}" />
-					<DataGridTextColumn Header="PL/SQL execution" Binding="{Binding PlSqlExecutionTime}" />
-					<DataGridTextColumn Header="Java execution" Binding="{Binding JavaExecutionTime}" />
-					<DataGridTextColumn Header="Queing" Binding="{Binding QueingTime}" />
-					<DataGridTextColumn Header="User I/O" Binding="{Binding UserIoWaitTime}" />
-					<DataGridTextColumn Header="Max DOP" Binding="{Binding MaxDegreeOfParallelism}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
-					<DataGridTextColumn Header="Max DOP instances" Binding="{Binding MaxDegreeOfParallelismInstances}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
-					<DataGridTextColumn Header="PX servers allocated" Binding="{Binding ParallelServersAllocated}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
-					<DataGridTextColumn Header="PX servers requested" Binding="{Binding ParallelServersRequested}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
-					<DataGridCheckBoxColumn Header="Cross instance" Binding="{Binding IsCrossInstance}" IsReadOnly="True" />
-					<DataGridTextColumn Header="QC instance ID" Binding="{Binding ParallelServerQueryCoordinatorInstanceId}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
-				</DataGrid.Columns>
-            </DataGrid>
+			<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+				<StackPanel>
+					<DataGrid x:Name="SessionDataGrid"
+							  CanUserDeleteRows="False"
+							  CanUserAddRows="False"
+							  CanUserResizeRows="False"
+							  SelectionUnit="FullRow"
+							  SelectionMode="Single"
+							  HorizontalGridLinesBrush="LightGray"
+							  VerticalGridLinesBrush="LightGray"
+							  AutoGenerateColumns="False"
+							  RowHeaderWidth="0"
+							  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+							  ItemsSource="{Binding Source={StaticResource SortedSessionItems}}"
+							  MaxColumnWidth="{Binding ElementName=SessionDataGrid, Path=ActualWidth}"
+							  BeginningEdit="SessionDataGridBeginningEditCancelTextInputHandler">
+						<DataGrid.Columns>
+							<DataGridTextColumn Header="SID" Binding="{Binding SessionId, Converter={StaticResource SessionIdSummaryConverter}}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Header="PX server group" Binding="{Binding ParallelServerGroup}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Header="PX server set" Binding="{Binding ParallelServerSet}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Header="PX server#" Binding="{Binding ParallelServerNumber}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Header="Fetches" Binding="{Binding Fetches}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Header="Buffer gets" Binding="{Binding BufferGets}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Header="Disk reads" Binding="{Binding DiskReads}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Header="Direct writes" Binding="{Binding DirectWrites}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Header="I/O interconnection" Binding="{Binding IoInterconnectBytes, Converter={StaticResource DataSpaceConverter}}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Header="Physical read requests" Binding="{Binding PhysicalReadRequests}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Header="Physical read" Binding="{Binding PhysicalReadBytes, Converter={StaticResource DataSpaceConverter}}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Header="Physical write requests" Binding="{Binding PhysicalWriteRequests}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Header="Physical write" Binding="{Binding PhysicalWriteBytes, Converter={StaticResource DataSpaceConverter}}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Header="Elapsed" Binding="{Binding ElapsedTime}" />
+							<DataGridTextColumn Header="CPU time" Binding="{Binding CpuTime}" />
+							<DataGridTextColumn Header="Concurrency wait" Binding="{Binding ConcurrencyWaitTime}" />
+							<DataGridTextColumn Header="Application wait" Binding="{Binding ApplicationWaitTime}" />
+							<DataGridTextColumn Header="Cluster wait" Binding="{Binding ClusterWaitTime}" />
+							<DataGridTextColumn Header="PL/SQL execution" Binding="{Binding PlSqlExecutionTime}" />
+							<DataGridTextColumn Header="Java execution" Binding="{Binding JavaExecutionTime}" />
+							<DataGridTextColumn Header="Queing" Binding="{Binding QueingTime}" />
+							<DataGridTextColumn Header="User I/O" Binding="{Binding UserIoWaitTime}" />
+							<DataGridTextColumn Header="Max DOP" Binding="{Binding MaxDegreeOfParallelism}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Header="Max DOP instances" Binding="{Binding MaxDegreeOfParallelismInstances}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Header="PX servers allocated" Binding="{Binding ParallelServersAllocated}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Header="PX servers requested" Binding="{Binding ParallelServersRequested}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridCheckBoxColumn Header="Cross instance" Binding="{Binding IsCrossInstance}" IsReadOnly="True" />
+							<DataGridTextColumn Header="QC instance ID" Binding="{Binding ParallelServerQueryCoordinatorInstanceId}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+						</DataGrid.Columns>
+					</DataGrid>
+					<DataGrid x:Name="SummaryDataGrid"
+							  CanUserDeleteRows="False"
+							  CanUserSortColumns="False"
+							  CanUserAddRows="False"
+							  CanUserResizeRows="False"
+							  SelectionUnit="FullRow"
+							  SelectionMode="Single"
+							  HorizontalGridLinesBrush="LightGray"
+							  VerticalGridLinesBrush="LightGray"
+							  AutoGenerateColumns="False"
+							  HeadersVisibility="None"
+							  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+							  ItemsSource="{Binding SummarySession}"
+							  Width="{Binding ElementName=SessionDataGrid, Path=ActualWidth}"
+							  BeginningEdit="SessionDataGridBeginningEditCancelTextInputHandler">
+						<DataGrid.Columns>
+							<DataGridTextColumn Binding="{Binding SessionId, Converter={StaticResource SessionIdSummaryConverter}}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" Width="0" />
+							<DataGridTextColumn ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Binding="{Binding Fetches}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Binding="{Binding BufferGets}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Binding="{Binding DiskReads}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Binding="{Binding DirectWrites}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Binding="{Binding IoInterconnectBytes, Converter={StaticResource DataSpaceConverter}}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Binding="{Binding PhysicalReadRequests}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Binding="{Binding PhysicalReadBytes, Converter={StaticResource DataSpaceConverter}}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Binding="{Binding PhysicalWriteRequests}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Binding="{Binding PhysicalWriteBytes, Converter={StaticResource DataSpaceConverter}}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Binding="{Binding ElapsedTime}" />
+							<DataGridTextColumn Binding="{Binding CpuTime}" />
+							<DataGridTextColumn Binding="{Binding ConcurrencyWaitTime}" />
+							<DataGridTextColumn Binding="{Binding ApplicationWaitTime}" />
+							<DataGridTextColumn Binding="{Binding ClusterWaitTime}" />
+							<DataGridTextColumn Binding="{Binding PlSqlExecutionTime}" />
+							<DataGridTextColumn Binding="{Binding JavaExecutionTime}" />
+							<DataGridTextColumn Binding="{Binding QueingTime}" />
+							<DataGridTextColumn Binding="{Binding UserIoWaitTime}" />
+							<DataGridTextColumn Binding="{Binding MaxDegreeOfParallelism}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Binding="{Binding MaxDegreeOfParallelismInstances}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Binding="{Binding ParallelServersAllocated}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Binding="{Binding ParallelServersRequested}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridCheckBoxColumn Binding="{Binding IsCrossInstance}" IsReadOnly="True" />
+							<DataGridTextColumn ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+						</DataGrid.Columns>
+					</DataGrid>
+				</StackPanel>
+			</ScrollViewer>
 		</TabItem>
 	</TabControl>
 </UserControl>

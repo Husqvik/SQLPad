@@ -54,7 +54,7 @@ namespace SqlPad
 			Trace.WriteLine($"Minimum of {requiredThreads} threads required to handle active documents. Thread pool minimum size adjusted to {minSize}. ");
 		}
 
-		internal static void ResultGridBeginningEditCancelTextInputHandlerImplementation(object sender, DataGridBeginningEditEventArgs e)
+		public static void DataGridBeginningEditCancelTextInputHandlerImplementation(object sender, DataGridBeginningEditEventArgs e)
 		{
 			var textCompositionArgs = e.EditingEventArgs as TextCompositionEventArgs;
 			if (textCompositionArgs != null)

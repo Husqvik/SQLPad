@@ -141,7 +141,7 @@ namespace SqlPad
 					CanUserSortColumns = true
 				};
 
-			referenceDataGrid.BeginningEdit += App.ResultGridBeginningEditCancelTextInputHandlerImplementation;
+			referenceDataGrid.BeginningEdit += App.DataGridBeginningEditCancelTextInputHandlerImplementation;
 			referenceDataGrid.Sorting += (sender, args) => args.Handled = args.Column.DisplayIndex != 0;
 			referenceDataGrid.MouseDoubleClick += ReferenceDataGridOnMouseDoubleClickHandler;
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -165,6 +166,12 @@ namespace SqlPad
 					contentPresenter.Tag = tag;
 				}
 			}
+		}
+
+		public static void AddValueChanged(this DependencyProperty property, object sourceObject, EventHandler handler)
+		{
+			var propertyDescriptor = DependencyPropertyDescriptor.FromProperty(property, property.OwnerType);
+			propertyDescriptor.AddValueChanged(sourceObject, handler);
 		}
 	}
 

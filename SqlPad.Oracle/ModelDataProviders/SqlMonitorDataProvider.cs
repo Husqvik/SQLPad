@@ -559,6 +559,8 @@ namespace SqlPad.Oracle.ModelDataProviders
 				planLineItem.IsBeingExecuted = lastSampleTime.HasValue && planLineItem.ActiveSessionHistoryItems.Values.Any(historyItems => historyItems.LastOrDefault()?.SampleTime >= lastSampleTime.Value.Add(-DataModel.RefreshPeriod));
 			}
 		}
+
+		public override bool IsValid => DataModel.AllItems.Count > 0;
 	}
 
 	internal class SqlMonitorSessionPlanMonitorDataProvider : ModelDataProvider<SqlMonitorPlanItemCollection>
@@ -640,6 +642,8 @@ namespace SqlPad.Oracle.ModelDataProviders
 				summaryItem.NotifyPropertyChanged();
 			}
 		}
+
+		public override bool IsValid => DataModel.AllItems.Count > 0;
 	}
 
 	internal class SessionLongOperationPlanMonitorDataProvider : ModelDataProvider<SqlMonitorPlanItemCollection>
@@ -715,6 +719,8 @@ namespace SqlPad.Oracle.ModelDataProviders
 				}
 			}
 		}
+
+		public override bool IsValid => DataModel.AllItems.Count > 0;
 
 		private struct SessionPlanItem
 		{
@@ -810,6 +816,8 @@ namespace SqlPad.Oracle.ModelDataProviders
 				DataModel.MergeSessionItem(parallelSlave);
 			}
 		}
+
+		public override bool IsValid => DataModel.AllItems.Count > 0;
 	}
 
 	[DebuggerDisplay("SqlMonitorSessionItem (SessionId={SessionId})")]

@@ -87,7 +87,7 @@ namespace SqlPad
 
 		public IReadOnlyList<DatabaseSession> DatabaseSessions => _databaseSessions;
 
-		private EventHandler<DataGridBeginningEditEventArgs> DataGridBeginningEditCancelTextInputHandler => App.ResultGridBeginningEditCancelTextInputHandlerImplementation;
+		private EventHandler<DataGridBeginningEditEventArgs> DataGridBeginningEditCancelTextInputHandler => App.DataGridBeginningEditCancelTextInputHandlerImplementation;
 
 		private CollectionViewSource SessionDataGridSource => (CollectionViewSource)Resources["FilteredDatabaseSessions"];
 

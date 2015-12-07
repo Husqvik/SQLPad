@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Configuration;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -15,6 +19,7 @@ namespace SqlPad.Oracle
 	{
 		public static readonly DependencyProperty IsParallelProperty = DependencyProperty.Register(nameof(IsParallel), typeof(bool), typeof(OracleSessionDetailViewer), new FrameworkPropertyMetadata());
 		public static readonly DependencyProperty SessionItemsProperty = DependencyProperty.Register(nameof(SessionItems), typeof(ObservableCollection<SqlMonitorSessionItem>), typeof(OracleSessionDetailViewer), new FrameworkPropertyMetadata());
+		public static readonly DependencyProperty SummarySessionProperty = DependencyProperty.Register(nameof(SummarySession), typeof(SessionSummaryCollection), typeof(OracleSessionDetailViewer), new FrameworkPropertyMetadata(new SessionSummaryCollection()));
 
 		public bool IsParallel
 		{
@@ -28,6 +33,12 @@ namespace SqlPad.Oracle
 			private set { SetValue(SessionItemsProperty, value); }
 		}
 
+		public SessionSummaryCollection SummarySession
+		{
+			get { return (SessionSummaryCollection)GetValue(SummarySessionProperty); }
+			private set { SetValue(SummarySessionProperty, value); }
+		}
+
 		private static readonly object LockObject = new object();
 		private static readonly TimeSpan DefaultRefreshPeriod = TimeSpan.FromSeconds(10);
 
@@ -35,6 +46,7 @@ namespace SqlPad.Oracle
 		private readonly DispatcherTimer _refreshTimer;
 
 		private bool _isBusy;
+		private bool isSynchronizing;
 		private SqlMonitorPlanItemCollection _planItemCollection;
 		private OracleSessionValues _oracleSessionValues;
 
@@ -50,6 +62,48 @@ namespace SqlPad.Oracle
 
 			_refreshTimer = new DispatcherTimer(DispatcherPriority.Normal, Dispatcher) { Interval = DefaultRefreshPeriod };
 			_refreshTimer.Tick += RefreshTimerTickHandler;
+
+			SetupColumnSynchronization();
+		}
+
+		private void SetupColumnSynchronization()
+		{
+			var summaryColumnMapping = new Dictionary<DataGridColumn, DataGridColumn>();
+
+			for (var i = 0; i < SummaryDataGrid.Columns.Count; i++)
+			{
+				var sourceColumn = SessionDataGrid.Columns[i];
+				var summaryColumn = SummaryDataGrid.Columns[i];
+
+				summaryColumnMapping.Add(sourceColumn, summaryColumn);
+
+				DataGridColumn.WidthProperty.AddValueChanged(
+					sourceColumn,
+					delegate
+					{
+						if (isSynchronizing) return;
+						isSynchronizing = true;
+						summaryColumn.Width = sourceColumn.Width;
+						isSynchronizing = false;
+					});
+
+				DataGridColumn.WidthProperty.AddValueChanged(
+					summaryColumn,
+					delegate
+					{
+						if (isSynchronizing) return;
+						isSynchronizing = true;
+						sourceColumn.Width = summaryColumn.Width;
+						isSynchronizing = false;
+					});
+			}
+
+			SessionDataGrid.ColumnDisplayIndexChanged +=
+				(sender, args) =>
+				{
+					var summaryColumn = summaryColumnMapping[args.Column];
+					summaryColumn.DisplayIndex = args.Column.DisplayIndex;
+				};
 		}
 
 		private async void RefreshTimerTickHandler(object sender, EventArgs eventArgs)
@@ -129,6 +183,7 @@ namespace SqlPad.Oracle
 					{
 						ExecutionPlanTreeView.RootItem = _planItemCollection.RootItem;
 						SessionItems = _planItemCollection.SessionItems;
+						SummarySession.Inititalize(_planItemCollection);
 					}
 				}
 			}
@@ -149,9 +204,137 @@ namespace SqlPad.Oracle
 			_refreshTimer.IsEnabled = false;
 			_planItemCollection = null;
 			SessionItems = null;
+			SummarySession.Clear();
 			IsParallel = false;
 			ExecutionPlanTreeView.RootItem = null;
 			TabExecutionPlan.IsSelected = true;
+		}
+
+		private EventHandler<DataGridBeginningEditEventArgs> SessionDataGridBeginningEditCancelTextInputHandler => App.DataGridBeginningEditCancelTextInputHandlerImplementation;
+	}
+
+	public class SessionSummaryCollection : List<SqlMonitorSessionItem>
+	{
+		private ObservableCollection<SqlMonitorSessionItem> _items;
+		private int _queryCoordinatorSessionId;
+
+		private SqlMonitorSessionItem SummaryItem { get; } = new SqlMonitorSessionItem();
+
+		public void Inititalize(SqlMonitorPlanItemCollection planItemCollection)
+		{
+			Clear();
+
+			if (_items != null)
+			{
+				_items.CollectionChanged -= ItemsCollectionChangedHandler;
+
+				foreach (var oldItem in _items)
+				{
+					oldItem.PropertyChanged -= ItemPropertyChangedHandler;
+				}
+			}
+
+			_items = planItemCollection.SessionItems;
+			_queryCoordinatorSessionId = planItemCollection.SessionId;
+
+			_items.CollectionChanged += ItemsCollectionChangedHandler;
+		}
+
+		private void ItemsCollectionChangedHandler(object sender, NotifyCollectionChangedEventArgs args)
+		{
+			foreach (SqlMonitorSessionItem newItem in args.NewItems)
+			{
+				if (_queryCoordinatorSessionId == newItem.SessionId)
+				{
+					SummaryItem.IsCrossInstance = newItem.IsCrossInstance;
+					SummaryItem.ParallelServersAllocated = newItem.ParallelServersAllocated;
+					SummaryItem.ParallelServersRequested = newItem.ParallelServersRequested;
+					SummaryItem.MaxDegreeOfParallelism = newItem.MaxDegreeOfParallelism;
+					SummaryItem.MaxDegreeOfParallelismInstances = newItem.MaxDegreeOfParallelismInstances;
+
+					Add(SummaryItem);
+				}
+
+				newItem.PropertyChanged += ItemPropertyChangedHandler;
+			}
+
+			Update();
+		}
+
+		private void ItemPropertyChangedHandler(object o, PropertyChangedEventArgs eventArgs)
+		{
+			Update();
+		}
+
+		public void Update()
+		{
+			var elapsedTime = TimeSpan.Zero;
+			var queingTime = TimeSpan.Zero;
+			var cpuTime = TimeSpan.Zero;
+			var applicationWaitTime = TimeSpan.Zero;
+			var concurrencyWaitTime = TimeSpan.Zero;
+			var clusterWaitTime = TimeSpan.Zero;
+			var userIoWaitTime = TimeSpan.Zero;
+			var plSqlExecutionTime = TimeSpan.Zero;
+			var javaExecutionTime = TimeSpan.Zero;
+			var fetches = 0L;
+			var bufferGets = 0L;
+			var diskReads = 0L;
+			var directWrites = 0L;
+			var ioInterconnectBytes = 0L;
+			var physicalReadRequests = 0L;
+			var physicalReadBytes = 0L;
+			var physicalWriteRequests = 0L;
+			var physicalWriteBytes = 0L;
+
+			foreach (var item in _items)
+			{
+				elapsedTime += item.ElapsedTime;
+				queingTime += item.QueingTime;
+				cpuTime += item.CpuTime;
+				applicationWaitTime += item.ApplicationWaitTime;
+				concurrencyWaitTime += item.ConcurrencyWaitTime;
+				clusterWaitTime += item.ClusterWaitTime;
+				userIoWaitTime += item.UserIoWaitTime;
+				plSqlExecutionTime += item.PlSqlExecutionTime;
+				javaExecutionTime += item.JavaExecutionTime;
+				fetches += item.Fetches;
+				bufferGets += item.BufferGets;
+				diskReads += item.DiskReads;
+				directWrites += item.DirectWrites;
+				ioInterconnectBytes += item.IoInterconnectBytes;
+				physicalReadRequests += item.PhysicalReadRequests;
+				physicalReadBytes += item.PhysicalReadBytes;
+				physicalWriteRequests += item.PhysicalWriteRequests;
+				physicalWriteBytes += item.PhysicalWriteBytes;
+			}
+
+			SummaryItem.ElapsedTime = elapsedTime;
+			SummaryItem.QueingTime = queingTime;
+			SummaryItem.CpuTime = cpuTime;
+			SummaryItem.ApplicationWaitTime = applicationWaitTime;
+			SummaryItem.ConcurrencyWaitTime = concurrencyWaitTime;
+			SummaryItem.ClusterWaitTime = clusterWaitTime;
+			SummaryItem.UserIoWaitTime = userIoWaitTime;
+			SummaryItem.PlSqlExecutionTime = plSqlExecutionTime;
+			SummaryItem.JavaExecutionTime = javaExecutionTime;
+			SummaryItem.Fetches = fetches;
+			SummaryItem.BufferGets = bufferGets;
+			SummaryItem.DiskReads = diskReads;
+			SummaryItem.DirectWrites = directWrites;
+			SummaryItem.IoInterconnectBytes = ioInterconnectBytes;
+			SummaryItem.PhysicalReadRequests = physicalReadRequests;
+			SummaryItem.PhysicalReadBytes = physicalReadBytes;
+			SummaryItem.PhysicalWriteRequests = physicalWriteRequests;
+			SummaryItem.PhysicalWriteBytes = physicalWriteBytes;
+		}
+	}
+
+	public class SessionIdSummaryConverter : ValueConverterBase
+	{
+		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			return Equals(value, 0) ? "Total" : value;
 		}
 	}
 }
