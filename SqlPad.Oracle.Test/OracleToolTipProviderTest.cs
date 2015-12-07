@@ -859,6 +859,7 @@ SELECT * FROM CTE";
 			columns[0].FullTypeName.ShouldBe("NUMBER");
 			columns[0].RowSourceName.ShouldBe("CTE");
 			columns[0].ColumnIndex.ShouldBe(1);
+			columns[0].Nullable.ShouldBe(false);
 		}
 		
 		[Test(Description = @""), STAThread]
@@ -876,6 +877,7 @@ SELECT * FROM CTE";
 			columns[0].FullTypeName.ShouldBe("NUMBER");
 			columns[0].RowSourceName.ShouldBe("SUBQUERY");
 			columns[0].ColumnIndex.ShouldBe(1);
+			columns[0].Nullable.ShouldBe(false);
 		}
 
 		[Test(Description = @""), STAThread]
@@ -893,6 +895,7 @@ SELECT * FROM CTE";
 			columns[0].FullTypeName.ShouldBe(String.Empty);
 			columns[0].RowSourceName.ShouldBe("T");
 			columns[0].ColumnIndex.ShouldBe(1);
+			columns[0].Nullable.ShouldBe(true);
 		}
 
 		[Test(Description = @""), STAThread]

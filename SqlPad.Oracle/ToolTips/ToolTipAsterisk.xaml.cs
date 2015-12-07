@@ -56,6 +56,8 @@ namespace SqlPad.Oracle.ToolTips
 		
 		public string FullTypeName { get; set; }
 
+		public bool? Nullable { get; set; }
+
 		public string RowSourceName { get; set; }
 	}
 
@@ -75,6 +77,7 @@ namespace SqlPad.Oracle.ToolTips
 				{
 					ColumnIndex = model.ColumnIndex,
 					FullTypeName = model.FullTypeName,
+					Nullable = model.Nullable,
 					Name = model.Name.ToSimpleIdentifier(),
 					RowSourceName = model.RowSourceName
 				};

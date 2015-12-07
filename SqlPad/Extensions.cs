@@ -229,6 +229,16 @@ namespace SqlPad
 		{
 			return Regex.Replace(value, @"(\p{Lu})", $"{separator}$1").Remove(0, separator.Length);
 		}
+
+		public static string ToString(this Boolean? value, string @true, string @false, string @null)
+		{
+			if (value == null)
+			{
+				return @null;
+			}
+
+			return value.Value ? @true : @false;
+		}
 	}
 
 	public class StaticResourceBindingExtension : StaticResourceExtension

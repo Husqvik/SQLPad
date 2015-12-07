@@ -81,8 +81,9 @@ namespace SqlPad.Oracle.Commands
 			foreach (var expandedColumn in expandedColumns.Distinct(c => c.ColumnName))
 			{
 				var descriptionContent = new Grid();
-				descriptionContent.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-				descriptionContent.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+				descriptionContent.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star), SharedSizeGroup = "ColumnName" });
+				descriptionContent.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto, SharedSizeGroup = "DataType" });
+				descriptionContent.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto, SharedSizeGroup = "Nullable" });
 
 				var columnNameLabel = new TextBlock();
 				descriptionContent.Children.Add(columnNameLabel);
@@ -95,19 +96,33 @@ namespace SqlPad.Oracle.Commands
 						Margin = new Thickness(20, 0, 0, 0)
 					};
 
-				descriptionContent.Children.Add(dataTypeLabel);
 				Grid.SetColumn(dataTypeLabel, 1);
+				descriptionContent.Children.Add(dataTypeLabel);
+
+				var nullableLabel =
+					new TextBlock
+					{
+						HorizontalAlignment = HorizontalAlignment.Right,
+						Margin = new Thickness(4, 0, 0, 0)
+					};
+
+				if (expandedColumn.Nullable.HasValue)
+				{
+					nullableLabel.Text = expandedColumn.Nullable.Value ? "NULL" : "NOT NULL";
+					Grid.SetColumn(nullableLabel, 2);
+					descriptionContent.Children.Add(nullableLabel);
+				}
 
 				string extraInformation = null;
 				if (expandedColumn.IsPseudoColumn)
 				{
 					extraInformation = " (pseudocolumn)";
-					columnNameLabel.Foreground = dataTypeLabel.Foreground = Brushes.CornflowerBlue;
+					columnNameLabel.Foreground = dataTypeLabel.Foreground = nullableLabel.Foreground = Brushes.CornflowerBlue;
 				}
 				else if (expandedColumn.IsHidden)
 				{
 					extraInformation = " (invisible)";
-					columnNameLabel.Foreground = dataTypeLabel.Foreground = Brushes.DimGray;
+					columnNameLabel.Foreground = dataTypeLabel.Foreground = nullableLabel.Foreground = Brushes.DimGray;
 				}
 
 				columnNameLabel.Text = $"{expandedColumn.ColumnName}{extraInformation}";
@@ -117,7 +132,7 @@ namespace SqlPad.Oracle.Commands
 					{
 						OptionIdentifier = expandedColumn.ColumnName,
 						DescriptionContent = descriptionContent,
-						Value = (!expandedColumn.IsPseudoColumn && !expandedColumn.IsHidden) && useDefaultSettings,
+						Value = !expandedColumn.IsPseudoColumn && !expandedColumn.IsHidden && useDefaultSettings,
 						Tag = expandedColumn
 					});
 			}
@@ -233,7 +248,19 @@ namespace SqlPad.Oracle.Commands
 
 		private static ExpandedColumn GetExpandedColumn(OracleReference objectReference, OracleColumn column, bool isPseudoColumn)
 		{
-			return new ExpandedColumn { ColumnName = GetColumnName(objectReference, OracleCodeCompletionProvider.GetPrettyColumnName(column.Name)), DataType = column.FullTypeName, IsPseudoColumn = isPseudoColumn, IsHidden = column.Hidden };
+			var nullable = objectReference.SchemaObject.GetTargetSchemaObject() is OracleView
+				? (bool?)null
+				: column.Nullable;
+
+			return
+				new ExpandedColumn
+				{
+					ColumnName = GetColumnName(objectReference, OracleCodeCompletionProvider.GetPrettyColumnName(column.Name)),
+					DataType = column.FullTypeName,
+					Nullable = nullable,
+					IsPseudoColumn = isPseudoColumn,
+					IsHidden = column.Hidden
+				};
 		}
 
 		private static string GetColumnName(OracleReference objectReference, string columnName)
@@ -260,6 +287,8 @@ namespace SqlPad.Oracle.Commands
 			public bool IsPseudoColumn { get; set; }
 
 			public bool IsHidden { get; set; }
+
+			public bool? Nullable { get; set; }
 		}
 	}
 }

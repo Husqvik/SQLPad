@@ -1402,22 +1402,25 @@ namespace SqlPad
 		{
 			if (Editor.IsReadOnly)
 			{
-				TimedNotificationMessage = "Debugger attached. Detach debugger before any changes. ";
+				TimedNotificationMessage = "Editor is read only please wait until the action is finished. ";
 				_timerTimedNotification.Start();
 				e.Handled = true;
 			}
 
-			if (NextPairCharacterExists(e.Text, ')', ')') || NextPairCharacterExists(e.Text, '\'', '\'') || NextPairCharacterExists(e.Text, '"', '"'))
+			if (!Editor.IsMultiSelectionActive)
 			{
-				Editor.CaretOffset++;
-				e.Handled = true;
-				return;
-			}
+				if (NextPairCharacterExists(e.Text, ')', ')') || NextPairCharacterExists(e.Text, '\'', '\'') || NextPairCharacterExists(e.Text, '"', '"'))
+				{
+					Editor.CaretOffset++;
+					e.Handled = true;
+					return;
+				}
 
-			if (HandlePairCharacterInsertion(e.Text))
-			{
-				e.Handled = true;
-				return;
+				if (HandlePairCharacterInsertion(e.Text))
+				{
+					e.Handled = true;
+					return;
+				}
 			}
 
 			if (_multiNodeEditor != null && !_multiNodeEditor.Replace(e.Text))

@@ -15,23 +15,41 @@
 				<DataTemplate x:Key="ColumnModelDataTemplate" DataType="toolTips:OracleColumnModel">
 					<Grid>
 						<Grid.ColumnDefinitions>
-							<ColumnDefinition SharedSizeGroup="ColumnIndex" Width="Auto" />
+							<ColumnDefinition Width="Auto" SharedSizeGroup="ColumnIndex" />
 							<ColumnDefinition Width="*" />
-							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="Auto" SharedSizeGroup="DataType" />
+							<ColumnDefinition Width="Auto" SharedSizeGroup="Nullable" />
 						</Grid.ColumnDefinitions>
 
 						<TextBlock Grid.Column="0" Margin="4,0,0,0" HorizontalAlignment="Right">
-							<Run Text="{Binding Path=ColumnIndex, Mode=OneWay}"/><Run Text=". "/>
+							<Run Text="{Binding ColumnIndex, Mode=OneWay}"/><Run Text=". "/>
 						</TextBlock>
 
 						<StackPanel Orientation="Horizontal" Grid.Column="1">
-							<TextBlock Visibility="{Binding Path=RowSourceName, Converter={StaticResource ObjectToVisibilityConverter}}">
-								<Run Text="{Binding Path=RowSourceName, Mode=OneWay}"/><Run Text="."/>
+							<TextBlock Visibility="{Binding RowSourceName, Converter={StaticResource ObjectToVisibilityConverter}}">
+								<Run Text="{Binding RowSourceName, Mode=OneWay}"/><Run Text="."/>
 							</TextBlock>
-							<TextBlock Text="{Binding Path=Name}" />
+							<TextBlock Text="{Binding Name}" />
 						</StackPanel>
 
-						<TextBlock Text="{Binding Path=FullTypeName}" HorizontalAlignment="Right" Grid.Column="2" Margin="12,0,4,0" />
+						<TextBlock Text="{Binding FullTypeName}" HorizontalAlignment="Right" Grid.Column="2" Margin="12,0,4,0" />
+						<TextBlock Grid.Column="3" Margin="0,0,4,0" HorizontalAlignment="Right">
+							<TextBlock.Style>
+								<Style>
+									<Style.Triggers>
+										<DataTrigger Binding="{Binding Nullable}" Value="{x:Null}">
+											<Setter Property="TextBlock.Visibility" Value="Collapsed" />
+										</DataTrigger>
+										<DataTrigger Binding="{Binding Nullable}" Value="True">
+											<Setter Property="TextBlock.Text" Value="NULL" />
+										</DataTrigger>
+										<DataTrigger Binding="{Binding Nullable}" Value="False">
+											<Setter Property="TextBlock.Text" Value="NOT NULL" />
+										</DataTrigger>
+									</Style.Triggers>
+								</Style>
+							</TextBlock.Style>
+						</TextBlock>
 					</Grid>
 				</DataTemplate>
 				
@@ -42,14 +60,14 @@
 		
 			<ItemsControl.ItemTemplate>
 				<DataTemplate DataType="toolTips:OracleColumnModel">
-					<ContentControl Content="{Binding}">
+					<ContentControl Content="{Binding}" d:DataContext="{d:DesignInstance toolTips:OracleColumnViewModel}">
 						<ContentControl.Style>
 							<Style TargetType="ContentControl">
 								<Style.Triggers>
-									<DataTrigger Binding="{Binding Path=IsSeparator}" Value="true">
+									<DataTrigger Binding="{Binding IsSeparator}" Value="true">
 										<Setter Property="ContentTemplate" Value="{StaticResource SeparatorTemplate}" />
 									</DataTrigger>
-									<DataTrigger Binding="{Binding Path=IsSeparator}" Value="false">
+									<DataTrigger Binding="{Binding IsSeparator}" Value="false">
 										<Setter Property="ContentTemplate" Value="{StaticResource ColumnModelDataTemplate}" />
 									</DataTrigger>
 								</Style.Triggers>

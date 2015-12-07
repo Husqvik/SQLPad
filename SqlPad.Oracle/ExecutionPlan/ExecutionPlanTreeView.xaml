@@ -102,9 +102,7 @@
 				              IsChecked="{Binding Path=IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
 				              OverridesDefaultStyle="True"
 				              Padding="1.5,0" />
-				<ContentPresenter x:Name="ExpanderContent"
-				                  Visibility="Collapsed"
-				                  DockPanel.Dock="Bottom" />
+				<ContentPresenter x:Name="ExpanderContent" Visibility="Collapsed" HorizontalAlignment="Left" />
 			</DockPanel>
 			<ControlTemplate.Triggers>
 				<Trigger Property="IsExpanded" Value="True">
@@ -577,7 +575,7 @@
 					<Run Text="(max: " /><Run Text="{Binding WorkAreaTempMaxBytes, Converter={StaticResource DataSpaceConverter}}" /><Run Text=")" />
 				</TextBlock>
 
-				<TextBlock Grid.Column="20" Text="Parallel group/set/server#: " Style="{StaticResource HideIfParallelPropertiesNotAvailable}" />
+				<TextBlock Grid.Column="20" Text="PX group/set/server#: " Style="{StaticResource HideIfParallelPropertiesNotAvailable}" />
 				<TextBlock Grid.Column="21" Style="{StaticResource HideIfParallelPropertiesNotAvailable}" TextAlignment="Right">
 					<Run Text="{Binding SessionItem.ParallelServerGroup}" /><Run Text="/" /><Run Text="{Binding SessionItem.ParallelServerSet}" /><Run Text="/" /><Run Text="{Binding SessionItem.ParallelServerNumber}" />
 				</TextBlock>

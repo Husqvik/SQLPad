@@ -295,7 +295,10 @@ namespace SqlPad.Oracle
 			var columns = queryBlock.Columns.Where(c => c.AsteriskColumn == asteriskColumn)
 				.Select((c, i) =>
 				{
-					var validObjectReference = c.ColumnReferences.Single().ValidObjectReference;
+					var validObjectReference = c.ColumnReferences[0].ValidObjectReference;
+					var nullable = validObjectReference.SchemaObject.GetTargetSchemaObject() is OracleView
+						? (bool?)null
+						: c.ColumnDescription.Nullable;
 
 					return
 						new OracleColumnModel
@@ -304,6 +307,7 @@ namespace SqlPad.Oracle
 								? OracleSelectListColumn.BuildNonAliasedColumnName(c.RootNode.Terminals)
 								: c.ColumnDescription.Name,
 							FullTypeName = c.ColumnDescription.FullTypeName,
+							Nullable = nullable,
 							ColumnIndex = i + 1,
 							RowSourceName = validObjectReference?.FullyQualifiedObjectName.ToString() ?? String.Empty
 						};

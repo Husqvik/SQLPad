@@ -26,6 +26,8 @@ namespace SqlPad
 
 		public int? CurrentSelectionLength => (int?)GetValue(CurrentSelectionLengthKey.DependencyProperty);
 
+		public bool IsMultiSelectionActive => TextArea.Selection.Segments.Skip(1).Any();
+
 		protected override void OnInitialized(EventArgs e)
 		{
 			base.OnInitialized(e);
