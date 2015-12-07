@@ -1687,6 +1687,55 @@
           <Terminal Id="Client" />
           <Terminal Id="StringLiteral" />
         </Sequence>
+        <Sequence Comment="Not documented">
+          <Terminal Id="Dump" />
+          <NonTerminal Id="AlterSystemDumpOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AlterSystemDumpOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Datafile" />
+          <NonTerminal Id="IntegerLiteralOrStringLiteral" />
+          <NonTerminal Id="DumpBlockSpecification" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Tempfile" />
+          <NonTerminal Id="IntegerLiteralOrStringLiteral" />
+          <NonTerminal Id="DumpBlockSpecification" />
+        </Sequence>
+        <!-- TODO -->
+        <!--<Sequence>
+          <Terminal Id="LogFile" />
+          <Terminal Id="StringLiteral" />
+        </Sequence>-->
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DumpBlockSpecification">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Block" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="DumpMinBlock" IsOptional="true" />
+          <Terminal Id="Max" />
+          <Terminal Id="Block" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DumpMinBlock">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Min" />
+          <Terminal Id="Block" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
       </Sequences>
     </Rule>
     
@@ -20673,6 +20722,7 @@
     <Terminal Id="Contents" Value="CONTENTS" />
     <Terminal Id="Standby" Value="STANDBY" />
     <Terminal Id="ResetLogs" Value="RESETLOGS" />
+    <Terminal Id="Dump" Value="DUMP" />
     
     <!-- PL/SQL -->
     <Terminal Id="Bulk" Value="BULK" />

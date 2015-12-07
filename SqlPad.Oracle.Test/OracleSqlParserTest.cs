@@ -6408,6 +6408,31 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
+				[Test(Description = @"")]
+				public void TestAlterSystemDumpDatafile()
+				{
+					const string statementText = @"ALTER SYSTEM DUMP DATAFILE 1 BLOCK 1";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+
+				[Test(Description = @"")]
+				public void TestAlterSystemDumpTempfile()
+				{
+					const string statementText = @"ALTER SYSTEM DUMP TEMPFILE 'c:\oracle\temp.dbf' MIN BLOCK 1 MAX BLOCK 2";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
 				// TODO: Missing tests
 			}
 
