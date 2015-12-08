@@ -6433,6 +6433,18 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
+				[Test(Description = @"")]
+				public void TestAlterSystemDumpLogFilefile()
+				{
+					const string statementText = @"ALTER SYSTEM DUMP LOGFILE 'c:\oracle\redo.dbf' LAYER 11 OPCODE 3";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
 				// TODO: Missing tests
 			}
 

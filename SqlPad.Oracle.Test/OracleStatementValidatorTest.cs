@@ -3326,5 +3326,24 @@ END;";
 			invalidNonTerminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InsertOperationDisallowedOnVirtualColumns);
 			invalidNonTerminals[0].Node.Token.Value.ShouldBe("VIRTUAL_COLUMN");
 		}
+
+		[Test(Description = @"")]
+		public void TestSameExplicitColumnNamesInCommonTableExpressionDefinition()
+		{
+			const string sqlText = @"WITH sample (value1, value2, value1) AS (SELECT 1, 1, 1 FROM dual) SELECT 1 FROM sample";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var invalidNonTerminals = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			invalidNonTerminals.Count.ShouldBe(2);
+			invalidNonTerminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.DuplicateNameFoundInColumnAliasListForWithClause);
+			invalidNonTerminals[0].Node.Token.Value.ShouldBe("value1");
+			invalidNonTerminals[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.DuplicateNameFoundInColumnAliasListForWithClause);
+			invalidNonTerminals[1].Node.Token.Value.ShouldBe("value1");
+		}
 	}
 }

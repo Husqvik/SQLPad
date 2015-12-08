@@ -81,7 +81,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public StatementGrammarNode ExplicitColumnNameList { get; set; }
 
-		public IReadOnlyList<string> ExplicitColumnNames { get; set; }
+		public IReadOnlyDictionary<StatementGrammarNode, string> ExplicitColumnNames { get; set; }
 
 		public StatementGrammarNode RecursiveSearchClause { get; set; }
 		

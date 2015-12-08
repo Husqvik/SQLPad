@@ -950,11 +950,6 @@ namespace SqlPad.Oracle
 
 		private static void ValidateConcatenatedQueryBlocks(OracleValidationModel validationModel, OracleQueryBlock queryBlock)
 		{
-			if (queryBlock.PrecedingConcatenatedQueryBlock != null || queryBlock.FollowingConcatenatedQueryBlock == null)
-			{
-				return;
-			}
-
 			var referenceColumnCount = queryBlock.Columns.Count - queryBlock.AsteriskColumns.Count - queryBlock.AttachedColumns.Count;
 			var validityNode = queryBlock.SelectList;
 			if (queryBlock.Type == QueryBlockType.CommonTableExpression && queryBlock.ExplicitColumnNameList != null && queryBlock.ExplicitColumnNames != null)
@@ -964,7 +959,25 @@ namespace SqlPad.Oracle
 				{
 					referenceColumnCount = explicitColumnCount;
 					validityNode = queryBlock.ExplicitColumnNameList;
+
+					foreach (var names in queryBlock.ExplicitColumnNames.ToLookup(kvp => kvp.Value, kvp => kvp.Key))
+					{
+						var duplicateNameNodes = names.ToArray();
+						if (duplicateNameNodes.Length > 1)
+						{
+							foreach (var duplicateNameNode in duplicateNameNodes)
+							{
+								validationModel.InvalidNonTerminals[duplicateNameNode] =
+									new InvalidNodeValidationData(OracleSemanticErrorType.DuplicateNameFoundInColumnAliasListForWithClause) { Node = duplicateNameNode };
+							}
+						}
+					}
 				}
+			}
+
+			if (queryBlock.PrecedingConcatenatedQueryBlock != null || queryBlock.FollowingConcatenatedQueryBlock == null)
+			{
+				return;
 			}
 
 			foreach (var concatenatedQueryBlock in queryBlock.AllFollowingConcatenatedQueryBlocks)
@@ -975,19 +988,22 @@ namespace SqlPad.Oracle
 					continue;
 				}
 
-				validationModel.InvalidNonTerminals[validityNode] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = validityNode };
+				validationModel.InvalidNonTerminals[validityNode] =
+					new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = validityNode };
 
 				if (String.Equals(validityNode.Id, NonTerminals.SelectList))
 				{
 					foreach (var invalidColumnCountQueryBlock in queryBlock.AllFollowingConcatenatedQueryBlocks)
 					{
-						validationModel.InvalidNonTerminals[invalidColumnCountQueryBlock.SelectList] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = invalidColumnCountQueryBlock.SelectList };
+						validationModel.InvalidNonTerminals[invalidColumnCountQueryBlock.SelectList] =
+							new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = invalidColumnCountQueryBlock.SelectList };
 					}
 
 					break;
 				}
 				
-				validationModel.InvalidNonTerminals[concatenatedQueryBlock.SelectList] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = concatenatedQueryBlock.SelectList };
+				validationModel.InvalidNonTerminals[concatenatedQueryBlock.SelectList] =
+					new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = concatenatedQueryBlock.SelectList };
 			}
 		}
 

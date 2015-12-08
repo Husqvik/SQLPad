@@ -46,6 +46,7 @@ namespace SqlPad.Oracle
 		public const string PlSqlCompilationParameterAllowedOnlyWithinPlSqlScope = "PL/SQL compilation parameter is allowed only within PL/SQL scope";
 		public const string CurrentOfConditionAllowedOnlyWithinPlSqlScope = "Current of <cursor> condition is allowed only within PL/SQL scope";
 		public const string InsertOperationDisallowedOnVirtualColumns = "INSERT operation disallowed on virtual columns";
+		public const string DuplicateNameFoundInColumnAliasListForWithClause = "Duplicate name found in column alias list for WITH clause";
 	}
 
 	public static class OracleSemanticErrorTooltipText

@@ -41,7 +41,7 @@ namespace SqlPad.Oracle
 
 					var objectQualifiedColumnSynchronizedSegments = semanticModel.AllReferenceContainers
 						.SelectMany(c => c.ColumnReferences)
-						.Where(c => c.ObjectNode != null && c.ValidObjectReference != null && (c.ValidObjectReference == objectReference || (c.ValidObjectReference.QueryBlocks.Count == 1 && c.ValidObjectReference.QueryBlocks.First() == cteQueryBlock)))
+						.Where(c => c.ObjectNode != null && c.ValidObjectReference != null && (c.ValidObjectReference == objectReference || IsCommonTableExpressionColumnReference(cteQueryBlock, c)))
 						.Concat(GetCommonTableExpressionObjectPrefixedColumnReferences(cteQueryBlock))
 						.Select(c => c.ObjectNode.SourcePosition);
 
@@ -96,7 +96,7 @@ namespace SqlPad.Oracle
 
 					foreach (var dataObjectReference in objectReferences)
 					{
-						if (dataObjectReference.AliasNode != null)
+						if (dataObjectReference.AliasNode != null && columnReference != null)
 						{
 							editNodes.Add(dataObjectReference.AliasNode.SourcePosition);
 						}
@@ -105,12 +105,15 @@ namespace SqlPad.Oracle
 							editNodes.Add(dataObjectReference.ObjectNode.SourcePosition);
 						}
 
-						var editNodesSource = semanticModel.AllReferenceContainers
-							.SelectMany(c => c.ColumnReferences)
-							.Where(r => r.ObjectNode != null && r != columnReference && r.ValidObjectReference == dataObjectReference)
-							.Select(r => r.ObjectNode.SourcePosition);
+						if (dataObjectReference.AliasNode == null || columnReference != null)
+						{
+							var editNodesSource = semanticModel.AllReferenceContainers
+								.SelectMany(c => c.ColumnReferences)
+								.Where(r => r.ObjectNode != null && r != columnReference && r.ValidObjectReference == dataObjectReference)
+								.Select(r => r.ObjectNode.SourcePosition);
 
-						editNodes.AddRange(editNodesSource);
+							editNodes.AddRange(editNodesSource);
+						}
 					}
 
 					multiNodeData.SynchronizedSegments = editNodes.AsReadOnly();
@@ -149,6 +152,12 @@ namespace SqlPad.Oracle
 			}
 
 			return multiNodeData;
+		}
+
+		private static bool IsCommonTableExpressionColumnReference(OracleQueryBlock cteQueryBlock, OracleColumnReference columnReference)
+		{
+			var objectReference = columnReference.ValidObjectReference;
+			return objectReference.QueryBlocks.Count == 1 && (objectReference as OracleDataObjectReference)?.AliasNode == null && objectReference.QueryBlocks.First() == cteQueryBlock;
 		}
 
 		private IEnumerable<OracleReference> GetCommonTableExpressionObjectPrefixedColumnReferences(OracleQueryBlock cteQueryBlock)

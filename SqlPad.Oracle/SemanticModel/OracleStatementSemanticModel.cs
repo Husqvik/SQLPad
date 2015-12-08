@@ -1206,22 +1206,24 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 		}
 
-		private void ApplyExplicitCommonTableExpressionColumnNames(OracleQueryBlock queryBlock)
+		private static void ApplyExplicitCommonTableExpressionColumnNames(OracleQueryBlock queryBlock)
 		{
 			if (queryBlock.Type != QueryBlockType.CommonTableExpression || queryBlock.ExplicitColumnNames == null)
 			{
 				return;
 			}
 
-			var columnIndex = 0;
-			foreach (var column in queryBlock.Columns.Where(c => !c.IsAsterisk))
+			var columnEnumerator = queryBlock.Columns.Where(c => !c.IsAsterisk).GetEnumerator();
+			foreach (var name in queryBlock.ExplicitColumnNames.Values)
 			{
-				if (queryBlock.ExplicitColumnNames.Count == columnIndex)
+				if (columnEnumerator.MoveNext())
+				{
+					columnEnumerator.Current.ExplicitNormalizedName = name;
+				}
+				else
 				{
 					break;
 				}
-
-				column.ExplicitNormalizedName = queryBlock.ExplicitColumnNames[columnIndex++];
 			}
 		}
 
@@ -2853,11 +2855,9 @@ namespace SqlPad.Oracle.SemanticModel
 				queryBlock.ExplicitColumnNameList = queryBlock.AliasNode.ParentNode[NonTerminals.ParenthesisEnclosedIdentifierList];
 				if (queryBlock.ExplicitColumnNameList != null)
 				{
-					var explicitColumnNameList = new List<string>(
+					queryBlock.ExplicitColumnNames =
 						queryBlock.ExplicitColumnNameList.GetDescendants(Terminals.Identifier)
-							.Select(t => t.Token.Value.ToQuotedIdentifier()));
-
-					queryBlock.ExplicitColumnNames = explicitColumnNameList.AsReadOnly();
+							.ToDictionary(t => t, t => t.Token.Value.ToQuotedIdentifier());
 				}
 			}
 

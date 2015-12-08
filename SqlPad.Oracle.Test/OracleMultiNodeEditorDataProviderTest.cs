@@ -118,5 +118,61 @@ PIVOT (
 			multiNodeEditorData.CurrentNode.ShouldNotBe(null);
 			multiNodeEditorData.SynchronizedSegments.Count.ShouldBe(1);
 		}
+
+		[Test(Description = @"")]
+		public void TestMultipleAliasedCteUsages()
+		{
+			const string sqlText =
+@"WITH data (val) AS (
+    SELECT 1 FROM DUAL
+)
+SELECT
+    *
+FROM
+    data A
+WHERE
+    EXISTS (
+        SELECT
+            NULL
+        FROM
+            data B
+        WHERE
+            A.val = B.val
+    )";
+			var multiNodeEditorData = GetMultiNodeEditorData(sqlText, 5);
+			multiNodeEditorData.CurrentNode.ShouldNotBe(null);
+			multiNodeEditorData.SynchronizedSegments.Count.ShouldBe(2);
+			var segments = multiNodeEditorData.SynchronizedSegments.OrderBy(s => s.IndexStart).ToArray();
+			segments[0].IndexStart.ShouldBe(74);
+			segments[1].IndexStart.ShouldBe(163);
+		}
+
+		[Test(Description = @"")]
+		public void TestMultipleAliasedCteUsagesAtUsage()
+		{
+			const string sqlText =
+@"WITH data (val) AS (
+    SELECT 1 FROM DUAL
+)
+SELECT
+    *
+FROM
+    data A
+WHERE
+    EXISTS (
+        SELECT
+            NULL
+        FROM
+            data B
+        WHERE
+            A.val = B.val
+    )";
+			var multiNodeEditorData = GetMultiNodeEditorData(sqlText, 74);
+			multiNodeEditorData.CurrentNode.ShouldNotBe(null);
+			multiNodeEditorData.SynchronizedSegments.Count.ShouldBe(2);
+			var segments = multiNodeEditorData.SynchronizedSegments.OrderBy(s => s.IndexStart).ToArray();
+			segments[0].IndexStart.ShouldBe(5);
+			segments[1].IndexStart.ShouldBe(163);
+		}
 	}
 }

@@ -1706,11 +1706,58 @@
           <NonTerminal Id="IntegerLiteralOrStringLiteral" />
           <NonTerminal Id="DumpBlockSpecification" />
         </Sequence>
-        <!-- TODO -->
-        <!--<Sequence>
+        <Sequence>
           <Terminal Id="LogFile" />
           <Terminal Id="StringLiteral" />
-        </Sequence>-->
+          <NonTerminal Id="DumpLogfileOption" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DumpLogfileOption">
+      <Sequences>
+        <Sequence Comment="Data block address range">
+          <Terminal Id="DataBlockAddress" />
+          <Terminal Id="Min" />
+          <Terminal Id="IntegerLiteral" />
+          <Terminal Id="IntegerLiteral" />
+          <Terminal Id="DataBlockAddress" />
+          <Terminal Id="Max" />
+          <Terminal Id="IntegerLiteral" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence Comment="Redo block address range">
+          <Terminal Id="RedoBlockAddress" />
+          <Terminal Id="Min" />
+          <Terminal Id="IntegerLiteral" />
+          <Terminal Id="IntegerLiteral" />
+          <Terminal Id="RedoBlockAddress" />
+          <Terminal Id="Max" />
+          <Terminal Id="IntegerLiteral" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence Comment="System change number range">
+          <Terminal Id="SystemChangeNumber" />
+          <Terminal Id="Min" />
+          <Terminal Id="IntegerLiteral" />
+          <Terminal Id="SystemChangeNumber" />
+          <Terminal Id="Max" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence Comment="Time range">
+          <Terminal Id="Time" />
+          <Terminal Id="Min" />
+          <Terminal Id="IntegerLiteral" />
+          <Terminal Id="Time" />
+          <Terminal Id="Max" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
+        <Sequence Comment="Layer and operation code">
+          <Terminal Id="Layer" />
+          <Terminal Id="IntegerLiteral" />
+          <Terminal Id="OperationCode" />
+          <Terminal Id="IntegerLiteral" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -20807,6 +20854,12 @@
     
     <!-- Undocumented -->
     <Terminal Id="Overlaps" Value="OVERLAPS" ReservedWord="PlSql" />
+
+    <!-- Dump log file -->
+    <Terminal Id="DataBlockAddress" Value="DBA" />
+    <Terminal Id="RedoBlockAddress" Value="RBA" />
+    <Terminal Id="Layer" Value="LAYER" />
+    <Terminal Id="OperationCode" Value="OPCODE" />
 
     <!-- Oracle 12c specific -->
     <Terminal Id="Containers" Value="CONTAINERS" />
