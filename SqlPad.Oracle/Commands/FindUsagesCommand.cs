@@ -176,7 +176,7 @@ namespace SqlPad.Oracle.Commands
 			return Enumerable.Repeat(objectReference, 1);
 		}
 
-		private static IEnumerable<StatementGrammarNode> GetObjectReferenceUsage(OracleObjectWithColumnsReference objectReference)
+		private IEnumerable<StatementGrammarNode> GetObjectReferenceUsage(OracleObjectWithColumnsReference objectReference)
 		{
 			var nodes = new List<StatementGrammarNode>();
 			if (objectReference.Type != ReferenceType.InlineView)
@@ -209,7 +209,18 @@ namespace SqlPad.Oracle.Commands
 				}
 			}
 
-			return objectReference.Owner.AllColumnReferences.Where(c => c.ObjectNode != null && c.ObjectNodeObjectReferences.Count == 1 && c.ObjectNodeObjectReferences.Single() == objectReference)
+			var queryBlock = objectReference.Owner;
+			var columnReferences = queryBlock.AllColumnReferences.Where(c => c.ObjectNode != null && c.ObjectNodeObjectReferences.Count == 1 && c.ObjectNodeObjectReferences.First() == objectReference);
+
+			foreach (var correlatedQueryBlock in _semanticModel.QueryBlocks.Where(qb => qb.OuterCorrelatedQueryBlock == queryBlock))
+			{
+				var correlatedColumnReferences = correlatedQueryBlock.AllColumnReferences
+					.Where(c => c.ObjectNode != null && c.ValidObjectReference == objectReference);
+
+				columnReferences = columnReferences.Concat(correlatedColumnReferences);
+			}
+
+			return columnReferences
 				.Select(c => c.ObjectNode)
 				.Concat(nodes);
 		}

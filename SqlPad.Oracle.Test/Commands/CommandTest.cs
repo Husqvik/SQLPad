@@ -988,6 +988,40 @@ FROM
 			foundSegments[1].DisplayOptions.ShouldBe(DisplayOptions.Usage);
 		}
 
+		[Test(Description = @""), STAThread]
+		public void TestFindObjectUsagesInCorrelatedSubquery()
+		{
+			const string sql =
+@"WITH data (val) AS (
+    SELECT 1 FROM DUAL
+)
+SELECT
+    *
+FROM
+    data
+WHERE
+    EXISTS (
+        SELECT
+            NULL
+        FROM
+            data B
+        WHERE
+            data.val = B.val
+    )";
+
+			var foundSegments = FindUsagesOrdered(sql, 74);
+			foundSegments.Count.ShouldBe(3);
+			foundSegments[0].IndextStart.ShouldBe(5);
+			foundSegments[0].Length.ShouldBe(4);
+			foundSegments[0].DisplayOptions.ShouldBe(DisplayOptions.Definition);
+			foundSegments[1].IndextStart.ShouldBe(74);
+			foundSegments[1].Length.ShouldBe(4);
+			foundSegments[1].DisplayOptions.ShouldBe(DisplayOptions.Usage);
+			foundSegments[2].IndextStart.ShouldBe(196);
+			foundSegments[2].Length.ShouldBe(4);
+			foundSegments[2].DisplayOptions.ShouldBe(DisplayOptions.Usage);
+		}
+
 		private void ValidateCommonResults1(IList<TextSegment> foundSegments)
 		{
 			foundSegments.Count.ShouldBe(6);

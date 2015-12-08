@@ -740,6 +740,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 		{
 			command.CommandText = OracleDatabaseCommands.SelectSessionMonitorCommandText;
 			command.AddSimpleParameter("SID", DataModel.SessionId);
+			command.AddSimpleParameter("SQL_ID", DataModel.SqlId);
 			command.AddSimpleParameter("SQL_EXEC_ID", DataModel.ExecutionId);
 			command.AddSimpleParameter("SQL_EXEC_START", DataModel.ExecutionStart);
 		}
