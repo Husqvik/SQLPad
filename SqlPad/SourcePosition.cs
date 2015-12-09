@@ -19,13 +19,18 @@ namespace SqlPad
 
 		public int IndexStart { get; set; }
 
-        public int IndexEnd { get; set; }
+		public int IndexEnd { get; set; }
 
-        public int Length => IndexEnd - IndexStart + 1;
+		public int Length => IndexEnd - IndexStart + 1;
 
-	    public bool ContainsIndex(int index, bool acceptNextCharacter = true)
+		public bool ContainsIndex(int index, bool acceptNextCharacter = true)
 		{
 			return IndexStart <= index && index <= IndexEnd + (acceptNextCharacter ? 1 : 0);
+		}
+
+		public bool Contains(SourcePosition sourcePosition)
+		{
+			return IndexStart <= sourcePosition.IndexStart && IndexEnd >= sourcePosition.IndexEnd;
 		}
 
 		public bool Equals(SourcePosition other)

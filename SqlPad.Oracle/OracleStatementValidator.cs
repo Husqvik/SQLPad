@@ -187,9 +187,9 @@ namespace SqlPad.Oracle
 				    (dataObjectReference.Type == ReferenceType.InlineView ||
 				     validationModel.ObjectNodeValidity[dataObjectReference.ObjectNode].IsRecognized))
 				{
-					var insertColumnCount = insertTarget.ColumnListNode == null
+					var insertColumnCount = insertTarget.Columns == null
 						? dataObjectReference.Columns.Count
-						: insertTarget.ColumnListNode.GetDescendants(Terminals.Identifier).Count();
+						: insertTarget.Columns.Count;
 
 					var rowSourceColumnCount = insertTarget.RowSource == null
 						? insertTarget.ValueList.GetDescendantsWithinSameQueryBlock(NonTerminals.ExpressionOrDefaultValue).Count()

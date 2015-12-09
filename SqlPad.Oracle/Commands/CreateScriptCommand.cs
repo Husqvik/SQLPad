@@ -79,10 +79,11 @@ namespace SqlPad.Oracle.Commands
 				return;
 			}
 
-			var indextStart = CurrentQueryBlock.Statement.LastTerminalNode.SourcePosition.IndexEnd + 1;
+			var statement = ExecutionContext.DocumentRepository.Statements.GetStatementAtPosition(ExecutionContext.CaretOffset);
+			var indextStart = statement.LastTerminalNode.SourcePosition.IndexEnd + 1;
 
 			var builder = new StringBuilder();
-			if (CurrentQueryBlock.Statement.TerminatorNode == null)
+			if (statement.TerminatorNode == null)
 			{
 				builder.Append(';');
 			}

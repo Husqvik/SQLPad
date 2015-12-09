@@ -11,7 +11,7 @@ namespace SqlPad.Oracle
 {
 	public class OracleNavigationService : INavigationService
 	{
-		private static readonly SourcePosition[] EmptyPosition = new SourcePosition[0];
+		private static readonly SourcePosition[] EmptyPositionArray = new SourcePosition[0];
 
 		public int? NavigateToQueryBlockRoot(ActionExecutionContext executionContext)
 		{
@@ -55,14 +55,112 @@ namespace SqlPad.Oracle
 
 		public IReadOnlyCollection<SourcePosition> FindCorrespondingSegments(ActionExecutionContext executionContext)
 		{
-			var terminal = executionContext.DocumentRepository.Statements.GetTerminalAtPosition(executionContext.CaretOffset, n => !String.Equals(n.Id, Terminals.Semicolon));
-			if (terminal == null || !terminal.Id.In(Terminals.Case, Terminals.End, Terminals.If, Terminals.Loop, Terminals.Begin) ||
-			    !terminal.ParentNode.Id.In(NonTerminals.CaseExpression, NonTerminals.PlSqlBasicLoopStatement, NonTerminals.PlSqlIfStatement, NonTerminals.PlSqlCaseStatement, NonTerminals.ProgramEnd, NonTerminals.PackageBodyInitializeSection, NonTerminals.ProgramBody))
+			var terminal = executionContext.DocumentRepository.Statements.GetTerminalAtPosition(executionContext.CaretOffset, n => !n.Id.In(Terminals.Semicolon, Terminals.Comma));
+			if (terminal == null)
 			{
-				return EmptyPosition;
+				return EmptyPositionArray;
 			}
 
+			var correlatedSegments = FindCorrespondingBeginIfAndCaseTerminals(terminal);
+			var semanticModel = (OracleStatementSemanticModel)executionContext.DocumentRepository.ValidationModels[terminal.Statement].SemanticModel;
+			correlatedSegments.AddRange(FindCorrespondingInsertColumnAndExpression(semanticModel, terminal));
+
+			return correlatedSegments.AsReadOnly();
+		}
+
+		private static IEnumerable<SourcePosition> FindCorrespondingInsertColumnAndExpression(OracleStatementSemanticModel semanticModel, StatementGrammarNode terminal)
+		{
+			foreach (var insertTarget in semanticModel.InsertTargets)
+			{
+				if (insertTarget.Columns == null)
+				{
+					continue;
+				}
+
+				int columnIndex;
+				if (insertTarget.ValueList != null && insertTarget.ValueList.SourcePosition.Contains(terminal.SourcePosition))
+				{
+					var valueExpression = FindItemAndIndexIndex(insertTarget.ValueExpressions, e => e.SourcePosition.Contains(terminal.SourcePosition), out columnIndex);
+					if (valueExpression != null && insertTarget.Columns.Count > columnIndex)
+					{
+						yield return valueExpression.SourcePosition;
+						yield return GetInsertTargetColumnAtPosition(insertTarget, columnIndex);
+					}
+
+					continue;
+				}
+
+				Func<OracleSelectListColumn, bool> explicitColumnFilter = c => !c.IsAsterisk && c.HasExplicitDefinition;
+				OracleSelectListColumn selectColumn;
+				if (insertTarget.ColumnListNode.SourcePosition.Contains(terminal.SourcePosition))
+				{
+					var columnNode = FindItemAndIndexIndex(insertTarget.Columns.Keys, t => t == terminal, out columnIndex);
+					if (columnNode == null)
+					{
+						continue;
+					}
+
+					if (insertTarget.ValueExpressions?.Count > columnIndex)
+					{
+						yield return columnNode.SourcePosition;
+						yield return insertTarget.ValueExpressions[columnIndex].SourcePosition;
+					}
+					else
+					{
+						selectColumn = insertTarget.RowSource?.Columns.Where(explicitColumnFilter).Skip(columnIndex).FirstOrDefault();
+						if (selectColumn != null)
+						{
+							yield return columnNode.SourcePosition;
+							yield return selectColumn.RootNode.SourcePosition;
+						}
+					}
+
+					continue;
+				}
+
+				if (insertTarget.RowSource != null)
+				{
+					selectColumn = FindItemAndIndexIndex(insertTarget.RowSource.Columns.Where(explicitColumnFilter), c => c.RootNode.SourcePosition.Contains(terminal.SourcePosition), out columnIndex);
+					if (selectColumn != null)
+					{
+						yield return GetInsertTargetColumnAtPosition(insertTarget, columnIndex);
+						yield return selectColumn.RootNode.SourcePosition;
+					}
+				}
+			}
+		}
+
+		private static SourcePosition GetInsertTargetColumnAtPosition(OracleInsertTarget insertTarget, int columnIndex)
+		{
+			return insertTarget.Columns.Keys.Skip(columnIndex).First().SourcePosition;
+		}
+
+		private static T FindItemAndIndexIndex<T>(IEnumerable<T> nodes, Func<T, bool> predicate, out int index)
+		{
+			index = 0;
+
+			foreach (var node in nodes)
+			{
+				if (predicate(node))
+				{
+					return node;
+				}
+
+				index++;
+			}
+
+			return default(T);
+		}
+
+		private static List<SourcePosition> FindCorrespondingBeginIfAndCaseTerminals(StatementGrammarNode terminal)
+		{
 			var correlatedSegments = new List<SourcePosition>();
+
+			if (!terminal.Id.In(Terminals.Case, Terminals.End, Terminals.If, Terminals.Loop, Terminals.Begin) ||
+				!terminal.ParentNode.Id.In(NonTerminals.CaseExpression, NonTerminals.PlSqlBasicLoopStatement, NonTerminals.PlSqlIfStatement, NonTerminals.PlSqlCaseStatement, NonTerminals.ProgramEnd, NonTerminals.PackageBodyInitializeSection, NonTerminals.ProgramBody))
+			{
+				return correlatedSegments;
+			}
 
 			var includePreviousChild = false;
 			foreach (var child in terminal.ParentNode.ChildNodes)
@@ -112,7 +210,7 @@ namespace SqlPad.Oracle
 				correlatedSegments.Clear();
 			}
 
-			return correlatedSegments.AsReadOnly();
+			return correlatedSegments;
 		}
 
 		public void FindUsages(ActionExecutionContext executionContext)

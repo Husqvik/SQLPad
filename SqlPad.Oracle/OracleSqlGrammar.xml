@@ -4502,35 +4502,35 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Values" />
-          <NonTerminal Id="ParenthesisEnclosedExpressionOrOrDefaultValueList" />
+          <NonTerminal Id="ParenthesisEnclosedExpressionOrDefaultValueList" />
         </Sequence>
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="ParenthesisEnclosedExpressionOrOrDefaultValueList">
+    <Rule StartingNonTerminal="ParenthesisEnclosedExpressionOrDefaultValueList">
       <Sequences>
         <Sequence>
           <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="ExpressionOrOrDefaultValueList" />
+          <NonTerminal Id="ExpressionOrDefaultValueList" />
           <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="ExpressionOrOrDefaultValueList">
+    <Rule StartingNonTerminal="ExpressionOrDefaultValueList">
       <Sequences>
         <Sequence>
           <NonTerminal Id="ExpressionOrDefaultValue" />
-          <NonTerminal Id="ExpressionOrOrDefaultValueListChained" IsOptional="true" />
+          <NonTerminal Id="ExpressionOrDefaultValueListChained" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="ExpressionOrOrDefaultValueListChained">
+    <Rule StartingNonTerminal="ExpressionOrDefaultValueListChained">
       <Sequences>
         <Sequence>
           <Terminal Id="Comma" />
-          <NonTerminal Id="ExpressionOrOrDefaultValueList" />
+          <NonTerminal Id="ExpressionOrDefaultValueList" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -4921,14 +4921,14 @@
           <Terminal Id="Then" />
           <Terminal Id="Update" />
           <Terminal Id="Set" />
-          <NonTerminal Id="MergeSetColumnEqualsExpressionOrOrDefaultValueList" />
+          <NonTerminal Id="MergeSetColumnEqualsExpressionOrDefaultValueList" />
           <NonTerminal Id="WhereClause" IsOptional="true" />
           <NonTerminal Id="MergeDeleteClause" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="MergeSetColumnEqualsExpressionOrOrDefaultValueList">
+    <Rule StartingNonTerminal="MergeSetColumnEqualsExpressionOrDefaultValueList">
       <Sequences>
         <Sequence>
           <NonTerminal Id="PrefixedUpdatedColumnReference" />
@@ -4943,7 +4943,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Comma" />
-          <NonTerminal Id="MergeSetColumnEqualsExpressionOrOrDefaultValueList" />
+          <NonTerminal Id="MergeSetColumnEqualsExpressionOrDefaultValueList" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -13870,9 +13870,6 @@
     <Rule StartingNonTerminal="PlSqlStatementType">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="PlSqlAssignmentStatement" />
-        </Sequence>
-        <Sequence>
           <NonTerminal Id="PlSqlBasicLoopStatement" />
         </Sequence>
         <Sequence>
@@ -13939,10 +13936,13 @@
           <NonTerminal Id="PlSqlWhileLoopStatement" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="PlSqlProcedureCall" />
+          <NonTerminal Id="PlSqlConditionalCompilationSelectionDirective" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="PlSqlConditionalCompilationSelectionDirective" />
+          <NonTerminal Id="PlSqlAssignmentStatement" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="PlSqlProcedureCall" />
         </Sequence>
       </Sequences>
     </Rule>

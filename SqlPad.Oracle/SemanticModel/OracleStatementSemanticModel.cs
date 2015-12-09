@@ -1668,7 +1668,6 @@ namespace SqlPad.Oracle.SemanticModel
 
 				var dataObjectReference = CreateDataObjectReference(dmlTableExpressionClause, objectIdentifier, objectReferenceAlias);
 
-				var targetReferenceContainer = new OracleMainObjectReferenceContainer(this);
 				var insertTarget =
 					new OracleInsertTarget(this)
 					{
@@ -1696,18 +1695,22 @@ namespace SqlPad.Oracle.SemanticModel
 
 					ResolveFunctionReferences(sourceReferenceContainer.ProgramReferences);
 				}
-				
+
+				var targetReferenceContainer = new OracleMainObjectReferenceContainer(this);
 				insertTarget.ObjectReferences.Add(dataObjectReference);
 				insertTarget.ColumnListNode = insertIntoClause[NonTerminals.ParenthesisEnclosedIdentifierList];
 				if (insertTarget.ColumnListNode != null)
 				{
 					var columnIdentiferNodes = insertTarget.ColumnListNode.GetDescendants(Terminals.Identifier);
 					ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(null, targetReferenceContainer, columnIdentiferNodes, StatementPlacement.None, null);
+
+					insertTarget.Columns = targetReferenceContainer.ColumnReferences.ToDictionary(c => c.ColumnNode, c => c.NormalizedName).AsReadOnly();
+
 					ResolveColumnObjectReferences(targetReferenceContainer.ColumnReferences, insertTarget.ObjectReferences, OracleDataObjectReference.EmptyArray);
 				}
 
-				insertTarget.ValueList = insertIntoClause.ParentNode[NonTerminals.InsertValuesClause, NonTerminals.ParenthesisEnclosedExpressionOrOrDefaultValueList]
-				                         ?? insertIntoClause.ParentNode[NonTerminals.InsertValuesOrSubquery, NonTerminals.InsertValuesClause, NonTerminals.ParenthesisEnclosedExpressionOrOrDefaultValueList];
+				insertTarget.ValueList = insertIntoClause.ParentNode[NonTerminals.InsertValuesClause, NonTerminals.ParenthesisEnclosedExpressionOrDefaultValueList]
+				                         ?? insertIntoClause.ParentNode[NonTerminals.InsertValuesOrSubquery, NonTerminals.InsertValuesClause, NonTerminals.ParenthesisEnclosedExpressionOrDefaultValueList];
 
 				if (insertTarget.ValueList == null)
 				{
@@ -1720,6 +1723,8 @@ namespace SqlPad.Oracle.SemanticModel
 				}
 				else
 				{
+					insertTarget.ValueExpressions = insertTarget.ValueList.GetDescendantsWithinSameQueryBlock(NonTerminals.ExpressionOrDefaultValue).ToArray();
+
 					var identifiers = insertTarget.ValueList.GetDescendantsWithinSameQueryBlock(Terminals.Identifier, Terminals.Level, Terminals.RowIdPseudoColumn, Terminals.User);
 					ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(null, insertTarget, identifiers, StatementPlacement.ValuesClause, null); // TODO: Fix root node is not set
 
@@ -3438,6 +3443,10 @@ namespace SqlPad.Oracle.SemanticModel
 		public StatementGrammarNode ColumnListNode { get; set; }
 		
 		public StatementGrammarNode ValueList { get; set; }
+
+		public IReadOnlyList<StatementGrammarNode> ValueExpressions { get; set; }
+
+		public IReadOnlyDictionary<StatementGrammarNode, string> Columns { get; set; } 
 
 		public OracleQueryBlock RowSource { get; set; }
 

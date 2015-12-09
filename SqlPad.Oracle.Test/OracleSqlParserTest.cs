@@ -3464,6 +3464,22 @@ END;";
 					var statement = Parser.Parse(statement1).Single().Validate();
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
+
+				[Test(Description = @"")]
+				public void TestPlSqlBodyReservedWordAsNonStartingTerminal()
+				{
+					const string statement1 =
+@"DECLARE
+	x NUMBER;
+	FUNCTION open RETURN NUMBER IS BEGIN RETURN 0; END;
+BEGIN
+	x := open;
+	DBMS_LOB.OPEN(xmlData, DBMS_LOB.LOB_READWRITE);
+END;";
+
+					var statement = Parser.Parse(statement1).Single().Validate();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
 			}
 		}
 

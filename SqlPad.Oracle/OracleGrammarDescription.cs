@@ -481,11 +481,11 @@ namespace SqlPad.Oracle
 			public const string ExpressionListOrNestedQuery = "ExpressionListOrNestedQuery";
 			public const string ExpressionMathOperatorChainedList = "ExpressionMathOperatorChainedList";
 			public const string ExpressionOrDefaultValue = "ExpressionOrDefaultValue";
+			public const string ExpressionOrDefaultValueList = "ExpressionOrDefaultValueList";
+			public const string ExpressionOrDefaultValueListChained = "ExpressionOrDefaultValueListChained";
 			public const string ExpressionOrMultiset = "ExpressionOrMultiset";
 			public const string ExpressionOrNestedQuery = "ExpressionOrNestedQuery";
 			public const string ExpressionOrNestedQueryOrDefaultValue = "ExpressionOrNestedQueryOrDefaultValue";
-			public const string ExpressionOrOrDefaultValueList = "ExpressionOrOrDefaultValueList";
-			public const string ExpressionOrOrDefaultValueListChained = "ExpressionOrOrDefaultValueListChained";
 			public const string ExpressionOrParenthesisEnclosedExpressionListWithMandatoryExpressions = "ExpressionOrParenthesisEnclosedExpressionListWithMandatoryExpressions";
 			public const string ExpressionOrUnlimitedOrDefault = "ExpressionOrUnlimitedOrDefault";
 			public const string ExtentManagementClause = "ExtentManagementClause";
@@ -805,7 +805,7 @@ namespace SqlPad.Oracle
 			public const string MergeInsertValuesExpressionOrDefaultValueCommaChainedList = "MergeInsertValuesExpressionOrDefaultValueCommaChainedList";
 			public const string MergeInsertValuesExpressionOrDefaultValueList = "MergeInsertValuesExpressionOrDefaultValueList";
 			public const string MergeSetColumnEqualsExpressionOrDefaultValueCommaChainedList = "MergeSetColumnEqualsExpressionOrDefaultValueCommaChainedList";
-			public const string MergeSetColumnEqualsExpressionOrOrDefaultValueList = "MergeSetColumnEqualsExpressionOrOrDefaultValueList";
+			public const string MergeSetColumnEqualsExpressionOrDefaultValueList = "MergeSetColumnEqualsExpressionOrDefaultValueList";
 			public const string MergeSource = "MergeSource";
 			public const string MergeStatement = "MergeStatement";
 			public const string MergeTarget = "MergeTarget";
@@ -948,7 +948,7 @@ namespace SqlPad.Oracle
 			public const string ParenthesisEnclosedExpressionList = "ParenthesisEnclosedExpressionList";
 			public const string ParenthesisEnclosedExpressionListWithIgnoreNulls = "ParenthesisEnclosedExpressionListWithIgnoreNulls";
 			public const string ParenthesisEnclosedExpressionListWithMandatoryExpressions = "ParenthesisEnclosedExpressionListWithMandatoryExpressions";
-			public const string ParenthesisEnclosedExpressionOrOrDefaultValueList = "ParenthesisEnclosedExpressionOrOrDefaultValueList";
+			public const string ParenthesisEnclosedExpressionOrDefaultValueList = "ParenthesisEnclosedExpressionOrDefaultValueList";
 			public const string ParenthesisEnclosedExternalTableFieldList = "ParenthesisEnclosedExternalTableFieldList";
 			public const string ParenthesisEnclosedFunctionParameters = "ParenthesisEnclosedFunctionParameters";
 			public const string ParenthesisEnclosedGroupingExpressionList = "ParenthesisEnclosedGroupingExpressionList";

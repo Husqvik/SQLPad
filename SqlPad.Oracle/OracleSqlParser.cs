@@ -569,6 +569,12 @@ namespace SqlPad.Oracle
 			var workingTerminalCount = 0;
 			var bestCandidateTerminalCount = 0;
 
+			var isPlSqlStatement = String.Equals(nonTerminalId, OracleGrammarDescription.NonTerminals.PlSqlStatementType);
+			if (isPlSqlStatement)
+			{
+				context.PlSqlStatementTokenIndex.Push(tokenStartOffset);
+			}
+
 			foreach (var sequence in nonTerminal.TargetRule.Sequences)
 			{
 				context.CancellationToken.ThrowIfCancellationRequested();
@@ -719,6 +725,11 @@ namespace SqlPad.Oracle
 				}
 			}
 
+			if (isPlSqlStatement)
+			{
+				context.PlSqlStatementTokenIndex.Pop();
+			}
+
 			result.BestCandidates = bestCandidateNodes;
 			result.TerminalCount = workingTerminalCount;
 			result.BestCandidateTerminalCount = bestCandidateTerminalCount;
@@ -852,7 +863,11 @@ namespace SqlPad.Oracle
 
 						if (isNotReservedWord && scope == ReservedWordScope.PlSqlBody)
 						{
-							isNotReservedWord = !OracleGrammarDescription.ReservedWordsPlSqlBody.Contains(currentToken.UpperInvariantValue);
+							var effectiveReservedWords = context.PlSqlStatementTokenIndex.Count == 0 || context.PlSqlStatementTokenIndex.Peek() == tokenOffset
+								? OracleGrammarDescription.ReservedWordsPlSqlBody
+								: OracleGrammarDescription.ReservedWordsPlSql;
+
+							isNotReservedWord = !effectiveReservedWords.Contains(currentToken.UpperInvariantValue);
 						}
 
 						if (isNotReservedWord && scope == ReservedWordScope.PlSqlDeclaration)
@@ -878,13 +893,14 @@ namespace SqlPad.Oracle
 					nodes = new[] { terminalNode };
 				}
 			}
-			
-			return new ParseResult
-			       {
-					   NodeId = terminalId,
-				       Status = tokenIsValid ? ParseStatus.Success : ParseStatus.SequenceNotFound,
-					   Nodes = nodes
-			       };
+
+			return
+				new ParseResult
+				{
+					NodeId = terminalId,
+					Status = tokenIsValid ? ParseStatus.Success : ParseStatus.SequenceNotFound,
+					Nodes = nodes
+				};
 		}
 
 		private static IEnumerable<StatementCommentNode> AddCommentNodes(IEnumerable<StatementBase> statements, IEnumerable<OracleToken> comments)
@@ -907,11 +923,8 @@ namespace SqlPad.Oracle
 					var targetNode = FindCommentTargetNode(statemenEnumerator.Current.RootNode, commentEnumerator.Current.Index);
 				
 					var commentNode = new StatementCommentNode(targetNode, commentEnumerator.Current);
-					if (targetNode != null)
-					{
-						targetNode.Comments.Add(commentNode);
-					}
-					
+					targetNode?.Comments.Add(commentNode);
+
 					tokenYielded = true;
 
 					yield return commentNode;
@@ -964,6 +977,7 @@ namespace SqlPad.Oracle
 			public OracleStatement Statement;
 			public IList<OracleToken> TokenBuffer;
 			public CancellationToken CancellationToken;
+			public readonly Stack<int> PlSqlStatementTokenIndex = new Stack<int>(); 
 		}
 	}
 
