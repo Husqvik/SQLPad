@@ -102,6 +102,8 @@ namespace SqlPad.Oracle
 		
 		internal static readonly ICollection<string> ReservedWordsPlSqlBody = new HashSet<string> { <#= String.Join(", ", reservedWordsPlSqlBody) #> };
 		
+		internal static readonly ICollection<string> ReservedWordsPlSql = new HashSet<string> { <#= String.Join(", ", reservedWordsPlSqlBody.Intersect(reservedWordsPlSqlDeclaration)) #> };
+		
 		private static readonly HashSet<string> LiteralsInternal = new HashSet<string> { <#= String.Join(", ", literalTerminalIds.Select(id => "Terminals." + id)) #> };
 
 		private static readonly HashSet<string> ZeroOffsetTerminalIdsInternal =

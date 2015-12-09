@@ -3442,6 +3442,8 @@ namespace SqlPad.Oracle
 		
 		internal static readonly ICollection<string> ReservedWordsPlSqlBody = new HashSet<string> { "AS", "AT", "BEGIN", "CASE", "CLOSE", "COLUMNS", "COMMIT", "DECLARE", "END", "EXCEPTION", "EXIT", "FETCH", "GOTO", "IF", "INDEXES", "LOOP", "OPEN", "OVERLAPS", "PRAGMA", "PROCEDURE", "RAISE", "RETURN", "ROLLBACK", "SAVEPOINT", "WHEN", "WHILE" };
 		
+		internal static readonly ICollection<string> ReservedWordsPlSql = new HashSet<string> { "AS", "AT", "BEGIN", "CASE", "COLUMNS", "DECLARE", "END", "EXCEPTION", "FETCH", "GOTO", "IF", "INDEXES", "OVERLAPS", "PRAGMA", "PROCEDURE", "WHEN" };
+		
 		private static readonly HashSet<string> LiteralsInternal = new HashSet<string> { Terminals.DoubleQuotedStringLiteral, Terminals.IntegerLiteral, Terminals.NumberLiteral, Terminals.StringLiteral };
 
 		private static readonly HashSet<string> ZeroOffsetTerminalIdsInternal =

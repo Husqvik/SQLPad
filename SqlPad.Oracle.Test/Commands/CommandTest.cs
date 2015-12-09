@@ -1859,6 +1859,16 @@ FROM
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestCreateScriptCommandAtPipelinedSchemaFunction()
+		{
+			const string statementText = @"SELECT * FROM TABLE(SQLPAD_FUNCTION())";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 20;
+
+			CanExecuteCommand(OracleCommands.CreateScript).ShouldBe(true);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void AddInsertIntoColumnListCommand()
 		{
 			const string statementText = @"INSERT INTO SELECTION SELECT * FROM SELECTION";

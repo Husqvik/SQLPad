@@ -7,6 +7,7 @@ using System.Windows;
 using SqlPad.Commands;
 using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.DataDictionary;
+using SqlPad.Oracle.SemanticModel;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle.Commands
@@ -31,7 +32,7 @@ namespace SqlPad.Oracle.Commands
 
 			_objectReference = SemanticModel.AllReferenceContainers
 				.SelectMany(c => c.AllReferences)
-				.Where(c => c.ObjectNode == CurrentNode && c.SchemaObject != null)
+				.Where(c => (c.ObjectNode == CurrentNode || (c as OracleProgramReference)?.FunctionIdentifierNode == CurrentNode) && c.SchemaObject != null)
 				.Select(c => c.SchemaObject)
 				.SingleOrDefault();
 
