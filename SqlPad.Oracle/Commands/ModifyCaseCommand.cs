@@ -43,45 +43,49 @@ namespace SqlPad.Oracle.Commands
 
 		private void ModifyCase()
 		{
-			var selectionStart = _executionContext.SelectionStart;
-			var selectionLength = _executionContext.SelectionLength;
-			if (selectionLength == 0)
+			if (_executionContext.SelectionLength == 0)
+			{
 				return;
+			}
 
-			var grammarRecognizedStart = selectionStart + selectionLength;
-			var grammarRecognizedEnd = selectionStart;
-
-			var selectedTerminals = _executionContext.DocumentRepository.Statements
-				.SelectMany(s => s.AllTerminals)
-				.Where(t => t.SourcePosition.IndexEnd >= selectionStart && t.SourcePosition.IndexStart < selectionStart + selectionLength)
-				.ToArray();
-
-			var isSelectionWithinSingleTerminal = selectedTerminals.Length == 1 &&
-			                                      selectedTerminals[0].SourcePosition.IndexStart <= selectionStart &&
-			                                      selectedTerminals[0].SourcePosition.IndexEnd + 1 >= selectionStart + selectionLength;
-
-			foreach (var terminal in selectedTerminals)
+			foreach (var selectedSegment in _executionContext.SelectedSegments)
 			{
-				var startOffset = selectionStart > terminal.SourcePosition.IndexStart ? selectionStart - terminal.SourcePosition.IndexStart : 0;
-				var indextStart = Math.Max(terminal.SourcePosition.IndexStart, selectionStart);
-				grammarRecognizedStart = Math.Min(grammarRecognizedStart, indextStart);
-				var indexEnd = Math.Min(terminal.SourcePosition.IndexEnd + 1, selectionStart + selectionLength);
-				grammarRecognizedEnd = Math.Max(grammarRecognizedEnd, indexEnd);
+				var selectionStart = selectedSegment.IndexStart;
+				var grammarRecognizedStart = selectedSegment.IndexEnd + 1;
+				var grammarRecognizedEnd = selectedSegment.IndexStart;
 
-				if (IsCaseModificationSafe(terminal) || isSelectionWithinSingleTerminal)
+				var selectedTerminals = _executionContext.DocumentRepository.Statements
+					.SelectMany(s => s.AllTerminals)
+					.Where(t => t.SourcePosition.IndexEnd >= selectionStart && t.SourcePosition.IndexStart < selectionStart + selectedSegment.Length)
+					.ToArray();
+
+				var isSelectionWithinSingleTerminal = selectedTerminals.Length == 1 &&
+				                                      selectedTerminals[0].SourcePosition.IndexStart <= selectionStart &&
+				                                      selectedTerminals[0].SourcePosition.IndexEnd + 1 >= selectionStart + selectedSegment.Length;
+
+				foreach (var terminal in selectedTerminals)
 				{
-					AddModifiedCaseSegment(terminal.Token.Value, startOffset, indextStart, indexEnd - indextStart);
+					var startOffset = selectionStart > terminal.SourcePosition.IndexStart ? selectionStart - terminal.SourcePosition.IndexStart : 0;
+					var indextStart = Math.Max(terminal.SourcePosition.IndexStart, selectionStart);
+					grammarRecognizedStart = Math.Min(grammarRecognizedStart, indextStart);
+					var indexEnd = Math.Min(terminal.SourcePosition.IndexEnd + 1, selectionStart + selectedSegment.Length);
+					grammarRecognizedEnd = Math.Max(grammarRecognizedEnd, indexEnd);
+
+					if (IsCaseModificationSafe(terminal) || isSelectionWithinSingleTerminal)
+					{
+						AddModifiedCaseSegment(terminal.Token.Value, startOffset, indextStart, indexEnd - indextStart);
+					}
 				}
-			}
 
-			if (grammarRecognizedStart > selectionStart)
-			{
-				AddModifiedCaseSegment(_executionContext.StatementText, selectionStart, selectionStart, grammarRecognizedStart - selectionStart);
-			}
+				if (grammarRecognizedStart > selectionStart)
+				{
+					AddModifiedCaseSegment(_executionContext.StatementText, selectionStart, selectionStart, grammarRecognizedStart - selectionStart);
+				}
 
-			if (grammarRecognizedEnd < selectionStart + selectionLength)
-			{
-				AddModifiedCaseSegment(_executionContext.StatementText, grammarRecognizedEnd, grammarRecognizedEnd, selectionStart + selectionLength - grammarRecognizedEnd);
+				if (grammarRecognizedEnd < selectionStart + selectedSegment.Length)
+				{
+					AddModifiedCaseSegment(_executionContext.StatementText, grammarRecognizedEnd, grammarRecognizedEnd, selectionStart + selectedSegment.Length - grammarRecognizedEnd);
+				}
 			}
 		}
 

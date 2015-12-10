@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -30,11 +31,13 @@ namespace SqlPad.Commands
 		
 		public SqlDocumentRepository DocumentRepository { get; private set; }
 		
-		public int SelectionStart { get; private set; }
+		public int SelectionStart { get; set; }
 
 		public int SelectionEnd => SelectionStart + SelectionLength;
 
-	    public int CaretOffset { get; set; }
+		public IReadOnlyList<SourcePosition> SelectedSegments { get; set; } 
+
+		public int CaretOffset { get; set; }
 
 		public int SelectionLength { get; set; }
 		
@@ -49,10 +52,10 @@ namespace SqlPad.Commands
 		public ActionExecutionContext(string statementText, int caretOffset, int selectionStart, int selectionLength, SqlDocumentRepository documentRepository)
 		{
 			StatementText = statementText;
+			SelectedSegments = new[] { SourcePosition.Create(selectionStart, selectionLength) };
 			SelectionStart = selectionStart;
 			SelectionLength = selectionLength;
 			CaretOffset = caretOffset;
-			SelectionStart = caretOffset;
 			DocumentRepository = documentRepository;
 		}
 
@@ -61,8 +64,9 @@ namespace SqlPad.Commands
 			return
 				new ActionExecutionContext(editor.Text, editor.CaretOffset, editor.SelectionStart, editor.SelectionLength, documentRepository)
 				{
-					SelectionStart = editor.SelectionStart,
-					SelectionLength = editor.SelectionLength,
+					SelectedSegments = editor.TextArea.Selection.Segments
+						.Select(s => SourcePosition.Create(s.StartOffset, s.EndOffset - 1))
+						.ToArray()
 				};
 		}
 
