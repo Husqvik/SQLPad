@@ -17,7 +17,7 @@ namespace SqlPad
 
 		protected override SourcePosition BuildSourcePosition()
 		{
-			return new SourcePosition { IndexStart = Token.Index, IndexEnd = Token.Index + Token.Value.Length - 1 };
+			return SourcePosition.Create(Token.Index, Token.Index + Token.Value.Length - 1);
 		}
 	}
 }

@@ -183,7 +183,7 @@ namespace SqlPad
 				indexEnd = lastTerminal.Index + lastTerminal.Value.Length - 1;
 			}
 
-			return new SourcePosition { IndexStart = indexStart, IndexEnd = indexEnd };
+			return SourcePosition.Create(indexStart, indexEnd);
 		}
 
 		public IReadOnlyList<StatementGrammarNode> Terminals => _terminals ?? GatherTerminals();

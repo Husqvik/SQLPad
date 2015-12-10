@@ -20,7 +20,7 @@ namespace SqlPad.Oracle
 			new OracleStatement
 			{
 				ParseStatus = ParseStatus.Success,
-				SourcePosition = new SourcePosition { IndexStart = -1, IndexEnd = -1 }
+				SourcePosition = SourcePosition.Empty
 			};
 
 		public override ICollection<BindVariableConfiguration> BindVariables => _bindVariables ?? (_bindVariables = BuildBindVariableCollection());

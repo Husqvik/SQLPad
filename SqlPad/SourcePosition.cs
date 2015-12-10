@@ -17,9 +17,9 @@ namespace SqlPad
 				};
 		}
 
-		public int IndexStart { get; set; }
+		public int IndexStart { get; private set; }
 
-		public int IndexEnd { get; set; }
+		public int IndexEnd { get; private set; }
 
 		public int Length => IndexEnd - IndexStart + 1;
 

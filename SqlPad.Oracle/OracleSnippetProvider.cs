@@ -53,7 +53,7 @@ namespace SqlPad.Oracle
 
 			return Snippets.SnippetCollection.Where(s => s.Name.ToUpperInvariant().Contains(textToReplace.ToUpperInvariant()) &&
 														 (s.AllowedTerminals == null || s.AllowedTerminals.Length == 0 || s.AllowedTerminals.Select(t => t.Id).Intersect(candidates).Any()))
-				.Select(s => BuildCodeSnippet(s, new SourcePosition { IndexStart = cursorPosition - textToReplace.Length, IndexEnd = cursorPosition })).ToArray();
+				.Select(s => BuildCodeSnippet(s, SourcePosition.Create(cursorPosition - textToReplace.Length, cursorPosition))).ToArray();
 		}
 
 		private static OracleCodeSnippet BuildCodeSnippet(Snippet s, SourcePosition sourcePosition)

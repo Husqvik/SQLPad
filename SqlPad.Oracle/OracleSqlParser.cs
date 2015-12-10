@@ -525,7 +525,7 @@ namespace SqlPad.Oracle
 					result.Nodes.Remove(lastNode);
 				}
 
-				context.Statement.SourcePosition = new SourcePosition { IndexStart = indexStart, IndexEnd = indexEnd };
+				context.Statement.SourcePosition = SourcePosition.Create(indexStart, indexEnd);
 				var rootNode =
 					new StatementGrammarNode(NodeType.NonTerminal, context.Statement, null)
 					{

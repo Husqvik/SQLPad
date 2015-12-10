@@ -7592,6 +7592,27 @@
           <Terminal Id="Rows" />
           <Terminal Id="Per" />
           <Terminal Id="Match" />
+          <NonTerminal Id="AllRowsPerMatchOption" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="AllRowsPerMatchOption">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Show" />
+          <Terminal Id="Empty" />
+          <Terminal Id="Matches" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Omit" />
+          <Terminal Id="Empty" />
+          <Terminal Id="Matches" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="With" />
+          <Terminal Id="Unmatched" />
+          <Terminal Id="Rows" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -20132,6 +20153,9 @@
     <Terminal Id="CircumflexCharacter" Value="^" />
     <Terminal Id="DollarCharacter" Value="$" />
     <Terminal Id="VerticalBarCharacter" Value="|" />
+    <Terminal Id="Matches" Value="MATCHES" />
+    <Terminal Id="Omit" Value="OMIT" />
+    <Terminal Id="Unmatched" Value="UNMATCHED" />
 
     <!-- Subquery factoring search and cycle -->
     <Terminal Id="Cycle" Value="CYCLE" />
