@@ -21,4 +21,10 @@ namespace SqlPad
 		Definition,
 		Usage
 	}
+
+	public enum SelectionType
+	{
+		Simple,
+		Rectangle
+	}
 }

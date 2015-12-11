@@ -436,7 +436,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			using (var reader = await _debuggerSessionCommand.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken))
 			{
 				var sourceBuilder = new StringBuilder("CREATE ");
-				while (reader.Read())
+				while (await reader.ReadAsynchronous(cancellationToken))
 				{
 					sourceBuilder.Append((string)reader["TEXT"]);
 				}

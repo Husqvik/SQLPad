@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using SqlPad.Oracle.DatabaseConnection;
 
 namespace SqlPad.Oracle.ExecutionPlan
@@ -134,18 +133,13 @@ namespace SqlPad.Oracle.ExecutionPlan
 		}
 	}
 
-	internal class TreeViewLineConverter : IValueConverter
+	internal class TreeViewLineConverter : ValueConverterBase
 	{
-		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			var item = (TreeViewItem)value;
 			var itemsControl = ItemsControl.ItemsControlFromItemContainer(item);
 			return itemsControl.ItemContainerGenerator.IndexFromContainer(item) == itemsControl.Items.Count - 1;
-		}
-
-		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			return false;
 		}
 	}
 }

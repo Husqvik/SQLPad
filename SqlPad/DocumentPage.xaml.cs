@@ -18,6 +18,7 @@ using System.Windows.Threading;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
+using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.Folding;
 using ICSharpCode.AvalonEdit.Rendering;
 using Microsoft.Win32;
@@ -526,6 +527,7 @@ namespace SqlPad
 			WorkDocument.FontSize = Editor.FontSize;
 			WorkDocument.SelectionStart = Editor.SelectionStart;
 			WorkDocument.SelectionLength = Editor.SelectionLength;
+			WorkDocument.SelectionType = Editor.IsMultiSelectionActive ? SelectionType.Rectangle : SelectionType.Simple;
 
 			WorkDocument.EnableDatabaseOutput = ActiveOutputViewer.EnableDatabaseOutput;
 			WorkDocument.KeepDatabaseOutputHistory = ActiveOutputViewer.KeepDatabaseOutputHistory;
@@ -1043,14 +1045,23 @@ namespace SqlPad
 
 				if (Editor.Document.TextLength >= WorkDocument.SelectionStart)
 				{
-					Editor.SelectionStart = WorkDocument.SelectionStart;
-
 					var storedSelectionEndIndex = WorkDocument.SelectionStart + WorkDocument.SelectionLength;
-					var validSelectionEndIndex = storedSelectionEndIndex > Editor.Document.TextLength
+					var textChangedMeanwhile = storedSelectionEndIndex > Editor.Document.TextLength;
+					var validSelectionEndIndex = textChangedMeanwhile
 						? Editor.Document.TextLength
 						: storedSelectionEndIndex;
 
-					Editor.SelectionLength = validSelectionEndIndex - WorkDocument.SelectionStart;
+					if (WorkDocument.SelectionType == SelectionType.Simple)
+					{
+						Editor.SelectionStart = WorkDocument.SelectionStart;
+						Editor.SelectionLength = validSelectionEndIndex - WorkDocument.SelectionStart;
+					}
+					else if (!textChangedMeanwhile)
+					{
+						var selectionTopLeft = Editor.Document.GetLocation(WorkDocument.SelectionStart);
+						var selectioBottomRight = Editor.Document.GetLocation(validSelectionEndIndex);
+						Editor.TextArea.Selection = new RectangleSelection(Editor.TextArea, new TextViewPosition(selectionTopLeft.Line, selectionTopLeft.Column), new TextViewPosition(selectioBottomRight.Line, selectioBottomRight.Column));
+					}
 				}
 
 				Editor.CaretOffset = Editor.Document.TextLength >= WorkDocument.CursorPosition

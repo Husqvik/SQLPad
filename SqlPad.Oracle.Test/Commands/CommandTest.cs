@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using ICSharpCode.AvalonEdit;
+using ICSharpCode.AvalonEdit.Editing;
 using NUnit.Framework;
 using Shouldly;
 using SqlPad.Commands;
@@ -1216,8 +1218,6 @@ SELECT VAL FROM CTE";
 
 			var foundSegments = FindUsagesOrdered(statement, 10);
 			foundSegments.Count.ShouldBe(1);
-
-			// TODO: Make proper implementation
 		}
 
 		[Test(Description = @""), STAThread]
@@ -1233,8 +1233,6 @@ SELECT VAL FROM CTE";
 
 			var foundSegments = FindUsagesOrdered(statement, 75);
 			foundSegments.Count.ShouldBe(2);
-
-			// TODO: Make proper implementation
 		}
 
 		[Test(Description = @""), STAThread]
@@ -1405,6 +1403,24 @@ FROM
 			ExecuteCommand(ModifyCaseCommand.MakeLowerCase);
 
 			_editor.Text.ShouldBe("select null, 'null' from selection");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestModifyCaseCommandWithMultipleSelectionSegments()
+		{
+			_editor.Text =
+@"select null, 'null' from selection;
+select null, 'null' from selection";
+			_editor.TextArea.Selection = new RectangleSelection(_editor.TextArea, new TextViewPosition(1, 4), new TextViewPosition(2, 23));
+			_editor.TextArea.Selection.Segments.Count().ShouldBe(2);
+
+			ExecuteCommand(ModifyCaseCommand.MakeUpperCase);
+
+			const string expectedResult =
+@"selECT NULL, 'null' FRom selection;
+selECT NULL, 'null' FRom selection";
+
+			_editor.Text.ShouldBe(expectedResult);
 		}
 
 		[Test(Description = @""), STAThread]

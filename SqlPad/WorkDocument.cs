@@ -74,6 +74,8 @@ namespace SqlPad
 		
 		public int SelectionLength { get; set; }
 
+		public SelectionType SelectionType { get; set; }
+
 		public int TabIndex { get; set; }
 		
 		public bool IsModified { get; set; }

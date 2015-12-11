@@ -43,7 +43,7 @@ namespace SqlPad.Oracle
 						databaseSessions.ColumnHeaders = OracleConnectionAdapter.GetColumnHeadersFromReader(reader);
 
 						var sessions = new Dictionary<int, DatabaseSession>();
-						while (reader.Read())
+						while (await reader.ReadAsynchronous(cancellationToken))
 						{
 							var oracleSession =
 								new OracleSessionValues
