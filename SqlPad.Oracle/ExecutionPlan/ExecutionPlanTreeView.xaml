@@ -853,21 +853,22 @@
 							</Grid.ColumnDefinitions>
 							<Grid.RowDefinitions>
 								<RowDefinition Height="Auto" />
+								<RowDefinition Height="Auto" />
 								<RowDefinition />
 							</Grid.RowDefinitions>
 
-							<Rectangle Name="SelectionEdge" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="3"
-							           SnapsToDevicePixels="True" />
+							<Rectangle Name="SelectionEdge" Grid.Row="0" Grid.RowSpan="3" Grid.Column="0" Grid.ColumnSpan="3" SnapsToDevicePixels="True" />
+
 							<!-- Connecting Lines -->
-							<Rectangle Grid.Row="0" Grid.Column="0" Margin="9,1,0,0" Height="1" Stroke="#DCDCDC" SnapsToDevicePixels="True" />
-							<Rectangle x:Name="VerticalLine" Grid.Row="0" Grid.Column="0" Width="1" Stroke="#DCDCDC" Margin="0,0,1,0"
-							           Grid.RowSpan="2" SnapsToDevicePixels="true" Fill="White" />
-							<ToggleButton Margin="-1,0,0,0" x:Name="Expander" Grid.Row="0" Grid.Column="0"
+							<Rectangle Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Margin="9,0,-2,0" Height="1" Stroke="#8C8C8C" SnapsToDevicePixels="True" />
+							<Rectangle x:Name="VerticalLine" Grid.Row="0" Grid.Column="0" Width="1" Stroke="#8C8C8C" Margin="0,0,1,0"
+							           Grid.RowSpan="3" SnapsToDevicePixels="true" Fill="Transparent" />
+							<ToggleButton Margin="-1,0,0,0" x:Name="Expander" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0"
 							              Style="{StaticResource ExpandCollapseToggleStyle}"
 							              IsChecked="{Binding Path=IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
 							              ClickMode="Press" />
 
-							<Border Name="ContentBorder" Grid.Row="0" Grid.Column="1" Background="{TemplateBinding Background}"
+							<Border Name="ContentBorder" Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Background="{TemplateBinding Background}"
 							        BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
 							        Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
 								<StackPanel Orientation="Horizontal">
@@ -877,14 +878,14 @@
 									<ContentPresenter x:Name="PART_Header" ContentSource="Header" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" MinWidth="20" />
 								</StackPanel>
 							</Border>
-							<ItemsPresenter x:Name="ItemsHost" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" />
+							<ItemsPresenter x:Name="ItemsHost" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" />
 						</Grid>
 						<ControlTemplate.Triggers>
 
 							<!-- This trigger changes the connecting lines if the item is the last in the list -->
 							<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Converter={StaticResource LineConverter}}" Value="true">
-								<Setter TargetName="VerticalLine" Property="Height" Value="9" />
-								<Setter TargetName="VerticalLine" Property="VerticalAlignment" Value="Top" />
+								<Setter TargetName="VerticalLine" Property="VerticalAlignment" Value="Stretch" />
+								<Setter TargetName="VerticalLine" Property="Grid.RowSpan" Value="1" />
 							</DataTrigger>
 							<Trigger Property="IsExpanded" Value="false">
 								<Setter TargetName="ItemsHost" Property="Visibility" Value="Collapsed" />
