@@ -158,7 +158,12 @@ namespace SqlPad.Oracle.DebugTrace
 
 		private void TraceFileNameHyperlinkClickHandler(object sender, RoutedEventArgs e)
 		{
-			var directoryName = new FileInfo(TraceFileName).DirectoryName;
+			NavigateToTraceFile(TraceFileName);
+		}
+
+		internal static void NavigateToTraceFile(string traceFileName)
+		{
+			var directoryName = new FileInfo(traceFileName).DirectoryName;
 			if (!Directory.Exists(directoryName))
 			{
 				var directoryType = String.IsNullOrWhiteSpace(OracleConfiguration.Configuration.RemoteTraceDirectory)
@@ -169,8 +174,8 @@ namespace SqlPad.Oracle.DebugTrace
 				return;
 			}
 
-			var arguments = File.Exists(TraceFileName)
-				? $"/select,{TraceFileName}"
+			var arguments = File.Exists(traceFileName)
+				? $"/select,{traceFileName}"
 				: $"/root,{directoryName}";
 
 			Process.Start("explorer.exe", arguments);

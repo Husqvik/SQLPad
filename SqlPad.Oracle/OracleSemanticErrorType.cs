@@ -65,5 +65,6 @@ namespace SqlPad.Oracle
 		public const string UseExplicitColumnList = "Use explicit column list";
 		public const string ExpressionIsAlwaysTrue = "Expression is always true";
 		public const string ExpressionIsAlwaysFalse = "Expression is always false";
+		public const string CorrelatedSubqueryColumnNotQualified = "Use qualifier when referencing correlated sub-query column";
 	}
 }

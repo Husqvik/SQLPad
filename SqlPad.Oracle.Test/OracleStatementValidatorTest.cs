@@ -3345,5 +3345,22 @@ END;";
 			invalidNonTerminals[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.DuplicateNameFoundInColumnAliasListForWithClause);
 			invalidNonTerminals[1].Node.Token.Value.ShouldBe("value1");
 		}
+
+		[Test(Description = @"")]
+		public void TestOuterCorrelatedSubqueryNonQualifiedColumn()
+		{
+			const string sqlText = @"SELECT NULL FROM SELECTION WHERE EXISTS (SELECT NULL FROM DUAL WHERE SELECTION_ID = 1)";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var validationData = validationModel.ColumnNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			validationData.Count.ShouldBe(1);
+			validationData[0].SuggestionType.ShouldBe(OracleSuggestionType.CorrelatedSubqueryColumnNotQualified);
+			validationData[0].Node.Token.Value.ShouldBe("SELECTION_ID");
+		}
 	}
 }

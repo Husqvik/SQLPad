@@ -851,6 +851,26 @@ namespace SqlPad.Oracle
 				}
 
 				ValidateNestedAggregateAndAnalyticFunctions(queryBlock, validationModel);
+
+				if (queryBlock.OuterCorrelatedQueryBlock != null)
+				{
+					foreach (var columnReference in queryBlock.AllColumnReferences)
+					{
+						INodeValidationData columnValidity;
+						if (columnReference.ObjectNode != null || columnReference.ValidObjectReference?.Owner != queryBlock.OuterCorrelatedQueryBlock ||
+							(validationModel.ColumnNodeValidity.TryGetValue(columnReference.ColumnNode, out columnValidity) && !String.IsNullOrEmpty(columnValidity.SemanticErrorType)))
+						{
+							continue;
+						}
+
+						validationModel.ColumnNodeValidity[columnReference.ColumnNode] =
+							new SuggestionData(OracleSuggestionType.CorrelatedSubqueryColumnNotQualified)
+							{
+								IsRecognized = true,
+								Node = columnReference.ColumnNode
+							};
+					}
+				}
 			}
 		}
 

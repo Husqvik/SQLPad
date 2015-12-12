@@ -96,7 +96,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				}
 			}
 
-			traceIdentifier = String.IsNullOrEmpty(traceIdentifier) ? "''''" : $"\"{traceIdentifier}\"";
+			traceIdentifier = String.IsNullOrEmpty(traceIdentifier) ? "''''" : $"\"{traceIdentifier.Replace("'", "''")}\"";
 			var preface = $"EXECUTE IMMEDIATE 'ALTER SESSION SET TRACEFILE_IDENTIFIER = {traceIdentifier}';";
 			var commandText = BuildTraceEventActionStatement(_activeTraceEvents, () => preface, e => e.CommandTextEnable);
 
