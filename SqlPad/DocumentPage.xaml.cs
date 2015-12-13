@@ -1883,7 +1883,7 @@ namespace SqlPad
 				new MenuItem
 				{
 					Header = action.Name.Replace("_", "__"),
-					Command = new ContextActionCommand(Editor, action),
+					Command = new ContextActionTextEditorCommand(Editor, action)
 				};
 
 			return menuItem;

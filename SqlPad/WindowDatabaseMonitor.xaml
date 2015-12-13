@@ -63,9 +63,14 @@
 		          ItemsSource="{Binding Source={StaticResource FilteredDatabaseSessions}, IsAsync=True}"
 		          MaxColumnWidth="{Binding ElementName=SessionDataGrid, Path=ActualWidth}"
 		          BeginningEdit="DataGridBeginningEditCancelTextInputHandler"
+				  ContextMenuOpening="SessionGridContextMenuOpeningHandler"
 		          SelectionChanged="SessionDataGridSelectionChangedHandler"
 		          Sorting="SessionDataGridSortingHandler"
-		          MouseDoubleClick="SessionDataGridMouseDoubleClickHandler" />
+		          MouseDoubleClick="SessionDataGridMouseDoubleClickHandler">
+			<DataGrid.ContextMenu>
+				<ContextMenu x:Name="SessionGridContextMenu" />
+			</DataGrid.ContextMenu>
+		</DataGrid>
 		
 		<GridSplitter Grid.Row="2" Height="4" HorizontalAlignment="Stretch" ShowsPreview="True" VerticalAlignment="Center" Background="DimGray" />
 

@@ -96,8 +96,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				}
 			}
 
-			traceIdentifier = String.IsNullOrEmpty(traceIdentifier) ? "''''" : $"\"{traceIdentifier.Replace("'", "''")}\"";
-			var preface = $"EXECUTE IMMEDIATE 'ALTER SESSION SET TRACEFILE_IDENTIFIER = {traceIdentifier}';";
+			var preface = $"EXECUTE IMMEDIATE 'ALTER SESSION SET TRACEFILE_IDENTIFIER = {OracleTraceIdentifier.Normalize(traceIdentifier)}';";
 			var commandText = BuildTraceEventActionStatement(_activeTraceEvents, () => preface, e => e.CommandTextEnable);
 
 			try
@@ -1085,7 +1084,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 						using (var reader = await command.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken))
 						{
-							if (!reader.Read())
+							if (!await reader.ReadAsynchronous(cancellationToken))
 							{
 								return null;
 							}

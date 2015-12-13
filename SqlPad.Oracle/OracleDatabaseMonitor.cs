@@ -6,18 +6,22 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using SqlPad.Commands;
 #if ORACLE_MANAGED_DATA_ACCESS_CLIENT
 using Oracle.ManagedDataAccess.Client;
 #else
 using Oracle.DataAccess.Client;
 #endif
 using SqlPad.Oracle.DatabaseConnection;
+using SqlPad.Oracle.DebugTrace;
 
 namespace SqlPad.Oracle
 {
 	public class OracleDatabaseMonitor : IDatabaseMonitor
 	{
 		private readonly ConnectionStringSettings _connectionString;
+
+		private string BackgroundConnectionString => OracleConnectionStringRepository.GetBackgroundConnectionString(_connectionString.ConnectionString);
 
 		public OracleDatabaseMonitor(ConnectionStringSettings connectionString)
 		{
@@ -28,7 +32,7 @@ namespace SqlPad.Oracle
 		{
 			var databaseSessions = new DatabaseSessions();
 
-			using (var connection = new OracleConnection(OracleConnectionStringRepository.GetBackgroundConnectionString(_connectionString.ConnectionString)))
+			using (var connection = new OracleConnection(BackgroundConnectionString))
 			{
 				using (var command = connection.CreateCommand())
 				{
@@ -102,7 +106,16 @@ namespace SqlPad.Oracle
 									UserName = OracleReaderValueConvert.ToString(reader["USERNAME"]),
 									WaitClass = (string)reader["WAIT_CLASS"],
 									WaitTime = OracleReaderValueConvert.ToInt64(reader["WAIT_TIME"]),
-									WaitTimeMicroseconds = OracleReaderValueConvert.ToInt64(reader["WAIT_TIME_MICRO"])
+									WaitTimeMicroseconds = OracleReaderValueConvert.ToInt64(reader["WAIT_TIME_MICRO"]),
+									ProcessIdentifier = Convert.ToInt32(reader["PID"]),
+									OperatingSystemIdentifier = Convert.ToInt32(reader["SOSID"]),
+									OperatingSystemProcessIdentifier = Convert.ToInt32(reader["SPID"]),
+									TraceId = OracleReaderValueConvert.ToString(reader["TRACEID"]),
+									TraceFile = (string)reader["TRACEFILE"],
+									ProgramGlobalAreaUsedMemoryBytes = Convert.ToInt32(reader["PGA_USED_MEM"]),
+									ProgramGlobalAreaAllocatedMemoryBytes = Convert.ToInt32(reader["PGA_ALLOC_MEM"]),
+									ProgramGlobalAreaFreeableMemoryBytes = Convert.ToInt32(reader["PGA_FREEABLE_MEM"]),
+									ProgramGlobalAreaMaximumMemoryBytes = Convert.ToInt32(reader["PGA_MAX_MEM"])
 								};
 
 							var databaseSession =
@@ -142,12 +155,80 @@ namespace SqlPad.Oracle
 		{
 			return new OracleSessionDetailViewer(_connectionString);
 		}
+
+		public IEnumerable<ContextAction> GetSessionContextActions(DatabaseSession databaseSession)
+		{
+			var sessionValues = (OracleSessionValues)databaseSession.ProviderValues;
+
+			var executionHandler = new CommandExecutionHandler();
+			string actionName;
+			if (String.Equals(sessionValues.SqlTrace, "Disabled"))
+			{
+				actionName = "Enable trace";
+				executionHandler.ExecutionHandlerAsync = (context, cancellationToken) => EnableSessionTracing(sessionValues, sessionValues.TraceId, true, true, cancellationToken);
+			}
+			else
+			{
+				actionName = "Disable trace";
+				executionHandler.ExecutionHandlerAsync = (context, cancellationToken) => DisableSessionTracing(sessionValues, cancellationToken);
+			}
+
+			yield return new ContextAction(actionName, executionHandler, null, true);
+
+			executionHandler =
+				new CommandExecutionHandler
+				{
+					ExecutionHandler = context => OracleTraceViewer.NavigateToTraceFile(sessionValues.TraceFile)
+				};
+
+			yield return new ContextAction("Navigate to trace file", executionHandler, null);
+		}
+
+		private async Task EnableSessionTracing(OracleSessionValues sessionData, string traceIdentifier, bool waits, bool binds, CancellationToken cancellationToken)
+		{
+			traceIdentifier = traceIdentifier ?? String.Empty;
+
+			var commandText =
+$@"BEGIN
+	EXECUTE IMMEDIATE 'ALTER SESSION SET TRACEFILE_IDENTIFIER = {OracleTraceIdentifier.Normalize(traceIdentifier)}';
+	dbms_monitor.session_trace_enable(session_id => :sid, serial_num => :serial, waits => {waits}, binds => {binds});
+END;";
+			await SetSessionTracing(sessionData, commandText, cancellationToken);
+		}
+
+		private async Task DisableSessionTracing(OracleSessionValues sessionData, CancellationToken cancellationToken)
+		{
+			const string commandText = @"BEGIN
+	dbms_monitor.session_trace_disable(session_id => :sid, serial_num => :serial);
+END;";
+
+			await SetSessionTracing(sessionData, commandText, cancellationToken);
+		}
+
+		private async Task SetSessionTracing(OracleSessionValues sessionData, string commandText, CancellationToken cancellationToken)
+		{
+			using (var connection = new OracleConnection(BackgroundConnectionString))
+			{
+				using (var command = connection.CreateCommand())
+				{
+					command.BindByName = true;
+					command.CommandText = commandText;
+
+					command.AddSimpleParameter("SID", sessionData.Id);
+					command.AddSimpleParameter("SERIAL", sessionData.Serial);
+
+					await connection.OpenAsynchronous(cancellationToken);
+					await command.ExecuteNonQueryAsynchronous(cancellationToken);
+					await connection.CloseAsynchronous(cancellationToken);
+				}
+			}
+		}
 	}
 
 	[DebuggerDisplay("OracleSessionValues(Id={Id}, Serial={Serial}, SqlId={SqlId}, ChildNumber={ChildNumber}, ExecutionId={ExecutionId}, ExecutionStart={ExecutionStart})")]
 	public class OracleSessionValues : IDatabaseSessionValues
 	{
-		public object[] Values { get; } = new object[56];
+		public object[] Values { get; } = new object[64];
 
 		public string SessionAddress
 		{
@@ -467,16 +548,70 @@ namespace SqlPad.Oracle
 			set { Values[52] = value; }
 		}
 
+		public string TraceId
+		{
+			get { return (string)Values[53]; }
+			set { Values[53] = value; }
+		}
+
+		public string TraceFile
+		{
+			get { return (string)Values[54]; }
+			set { Values[54] = value; }
+		}
+
+		public long ProgramGlobalAreaUsedMemoryBytes
+		{
+			get { return (long)Values[55]; }
+			set { Values[55] = value; }
+		}
+
+		public long ProgramGlobalAreaAllocatedMemoryBytes
+		{
+			get { return (long)Values[56]; }
+			set { Values[56] = value; }
+		}
+
+		public long ProgramGlobalAreaFreeableMemoryBytes
+		{
+			get { return (long)Values[57]; }
+			set { Values[57] = value; }
+		}
+
+		public long ProgramGlobalAreaMaximumMemoryBytes
+		{
+			get { return (long)Values[58]; }
+			set { Values[58] = value; }
+		}
+
+		public int ProcessIdentifier
+		{
+			get { return (int)Values[59]; }
+			set { Values[59] = value; }
+		}
+
+		public int OperatingSystemIdentifier
+		{
+			get { return (int)Values[60]; }
+			set { Values[60] = value; }
+		}
+
+		public int OperatingSystemProcessIdentifier
+		{
+			get { return (int)Values[61]; }
+			set { Values[61] = value; }
+		}
+
 		public string CurrentCommandText
 		{
-			get { return ((OracleSimpleValue)Values[53]).Value; }
-			set { Values[53] = new OracleSimpleValue(value); }
+			get { return ((OracleSimpleValue)Values[62]).Value; }
+			set { Values[62] = new OracleSimpleValue(value); }
 		}
 
 		public string PrecedingCommandText
 		{
-			get { return ((OracleSimpleValue)Values[54]).Value; }
-			set { Values[54] = new OracleSimpleValue(value); }
+			get { return ((OracleSimpleValue)Values[63]).Value; }
+			set { Values[63] = new OracleSimpleValue(value); }
 		}
 
 		public OracleSessionValues Clone()

@@ -7,19 +7,15 @@ namespace SqlPad.Commands
 {
 	internal class ContextActionCommand : ICommand
 	{
-		private readonly SqlTextEditor _textEditor;
-		
 		public ContextAction ContextAction { get; }
 
-		public ContextActionCommand(SqlTextEditor textEditor, ContextAction contextAction)
+		public ContextActionCommand(ContextAction contextAction)
 		{
-			if (textEditor == null)
-				throw new ArgumentNullException(nameof(textEditor));
-			
 			if (contextAction == null)
+			{
 				throw new ArgumentNullException(nameof(contextAction));
+			}
 
-			_textEditor = textEditor;
 			ContextAction = contextAction;
 		}
 
@@ -40,8 +36,9 @@ namespace SqlPad.Commands
 			{
 				try
 				{
+					OnBeforeExecute();
 					ContextAction.ExecutionHandler.ExecutionHandler(ContextAction.ExecutionContext);
-					GenericCommandHandler.UpdateDocument(_textEditor, ContextAction.ExecutionContext);
+					OnAfterExecute();
 				}
 				catch (Exception exception)
 				{
@@ -49,6 +46,10 @@ namespace SqlPad.Commands
 				}
 			}
 		}
+
+		protected virtual void OnBeforeExecute() { }
+
+		protected virtual void OnAfterExecute() { }
 
 		private async void ExecuteLongOperation()
 		{
@@ -61,7 +62,7 @@ namespace SqlPad.Commands
 
 				try
 				{
-					_textEditor.IsEnabled = false;
+					OnBeforeExecute();
 					await ContextAction.ExecutionHandler.ExecutionHandlerAsync(ContextAction.ExecutionContext, cancellationTokenSource.Token);
 				}
 				catch (Exception e)
@@ -70,24 +71,48 @@ namespace SqlPad.Commands
 				}
 				finally
 				{
+					OnAfterExecute();
 					operationMonitor.Close();
-					_textEditor.IsEnabled = true;
 				}
 
 				if (exception != null)
 				{
 					ShowErrorMessage(exception);
 				}
-
-				_textEditor.Focus();
 			}
-
-			GenericCommandHandler.UpdateDocument(_textEditor, ContextAction.ExecutionContext);
 		}
 
 		private static void ShowErrorMessage(Exception exception)
 		{
 			Messages.ShowError("Action failed: " + Environment.NewLine + exception.Message);
+		}
+	}
+
+	internal class ContextActionTextEditorCommand : ContextActionCommand
+	{
+		private readonly SqlTextEditor _textEditor;
+
+		public ContextActionTextEditorCommand(SqlTextEditor textEditor, ContextAction contextAction)
+			: base(contextAction)
+		{
+			if (textEditor == null)
+			{
+				throw new ArgumentNullException(nameof(textEditor));
+			}
+
+			_textEditor = textEditor;
+		}
+
+		protected override void OnBeforeExecute()
+		{
+			_textEditor.IsEnabled = false;
+		}
+
+		protected override void OnAfterExecute()
+		{
+			_textEditor.IsEnabled = true;
+			_textEditor.Focus();
+			GenericCommandHandler.UpdateDocument(_textEditor, ContextAction.ExecutionContext);
 		}
 	}
 }

@@ -12,6 +12,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Threading;
+using SqlPad.Commands;
 
 namespace SqlPad
 {
@@ -322,6 +323,31 @@ namespace SqlPad
 			_refreshTimer.IsEnabled = (bool)args.NewValue;
 			var timerState = _refreshTimer.IsEnabled ? "enabled" : "disabled";
 			Trace.WriteLine($"Session monitor auto-refresh has been {timerState}. ");
+		}
+
+		private void SessionGridContextMenuOpeningHandler(object sender, RoutedEventArgs e)
+		{
+			SessionGridContextMenu.Items.Clear();
+
+			var databaseSession = (DatabaseSession)SessionDataGrid.SelectedItem;
+			if (databaseSession == null)
+			{
+				e.Handled = true;
+			}
+			else
+			{
+				foreach (var contextAction in _databaseMonitor.GetSessionContextActions(databaseSession))
+				{
+					var menuItem =
+						new MenuItem
+						{
+							Header = contextAction.Name.Replace("_", "__"),
+							Command = new ContextActionCommand(contextAction)
+						};
+
+					SessionGridContextMenu.Items.Add(menuItem);
+				}
+			}
 		}
 	}
 }

@@ -169,7 +169,7 @@
     <Compile Include="ScrollingTextBox.cs" />
     <Compile Include="SqlDocumentColorizingTransformer.cs" />
     <Compile Include="Commands\CommandExecutionHandler.cs" />
-    <Compile Include="Commands\ContextActionCommand.cs" />
+    <Compile Include="Commands\ContextActionTextEditorCommand.cs" />
     <Compile Include="Commands\DiagnosticCommands.cs" />
     <Compile Include="Commands\GenericCommands.cs" />
     <Compile Include="DocumentPage.xaml.cs">

@@ -54,6 +54,8 @@ namespace SqlPad
 		Task<DatabaseSessions> GetAllSessionDataAsync(CancellationToken cancellationToken);
 
 		IDatabaseSessionDetailViewer CreateSessionDetailViewer();
+
+		IEnumerable<ContextAction> GetSessionContextActions(DatabaseSession databaseSession);
 	}
 
 	public interface IDatabaseSessionDetailViewer

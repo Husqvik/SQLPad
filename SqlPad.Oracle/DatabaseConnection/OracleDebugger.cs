@@ -333,7 +333,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_debuggerSessionCommand.Parameters.Clear();
 			_debuggerSessionCommand.AddSimpleParameter("DEBUG_SESSION_ID", _debuggerSessionId);
 
-			_debuggerConnection.Open();
+			await _debuggerConnection.OpenAsynchronous(cancellationToken);
 			_debuggerConnection.ModuleName = "SQLPad PL/SQL Debugger";
 			_debuggerConnection.ActionName = "Attach";
 
