@@ -111,11 +111,11 @@ namespace SqlPad.Oracle
 									OperatingSystemIdentifier = Convert.ToInt32(reader["SOSID"]),
 									OperatingSystemProcessIdentifier = Convert.ToInt32(reader["SPID"]),
 									TraceId = OracleReaderValueConvert.ToString(reader["TRACEID"]),
-									TraceFile = (string)reader["TRACEFILE"],
-									ProgramGlobalAreaUsedMemoryBytes = Convert.ToInt32(reader["PGA_USED_MEM"]),
-									ProgramGlobalAreaAllocatedMemoryBytes = Convert.ToInt32(reader["PGA_ALLOC_MEM"]),
-									ProgramGlobalAreaFreeableMemoryBytes = Convert.ToInt32(reader["PGA_FREEABLE_MEM"]),
-									ProgramGlobalAreaMaximumMemoryBytes = Convert.ToInt32(reader["PGA_MAX_MEM"])
+									TraceFile = OracleReaderValueConvert.ToString(reader["TRACEFILE"]),
+									ProgramGlobalAreaUsedMemoryBytes = OracleReaderValueConvert.ToInt64(reader["PGA_USED_MEM"]),
+									ProgramGlobalAreaAllocatedMemoryBytes = OracleReaderValueConvert.ToInt64(reader["PGA_ALLOC_MEM"]),
+									ProgramGlobalAreaFreeableMemoryBytes = OracleReaderValueConvert.ToInt64(reader["PGA_FREEABLE_MEM"]),
+									ProgramGlobalAreaMaximumMemoryBytes = OracleReaderValueConvert.ToInt64(reader["PGA_MAX_MEM"])
 								};
 
 							var databaseSession =
@@ -560,27 +560,27 @@ END;";
 			set { Values[54] = value; }
 		}
 
-		public long ProgramGlobalAreaUsedMemoryBytes
+		public long? ProgramGlobalAreaUsedMemoryBytes
 		{
-			get { return (long)Values[55]; }
+			get { return (long?)Values[55]; }
 			set { Values[55] = value; }
 		}
 
-		public long ProgramGlobalAreaAllocatedMemoryBytes
+		public long? ProgramGlobalAreaAllocatedMemoryBytes
 		{
-			get { return (long)Values[56]; }
+			get { return (long?)Values[56]; }
 			set { Values[56] = value; }
 		}
 
-		public long ProgramGlobalAreaFreeableMemoryBytes
+		public long? ProgramGlobalAreaFreeableMemoryBytes
 		{
-			get { return (long)Values[57]; }
+			get { return (long?)Values[57]; }
 			set { Values[57] = value; }
 		}
 
-		public long ProgramGlobalAreaMaximumMemoryBytes
+		public long? ProgramGlobalAreaMaximumMemoryBytes
 		{
-			get { return (long)Values[58]; }
+			get { return (long?)Values[58]; }
 			set { Values[58] = value; }
 		}
 
