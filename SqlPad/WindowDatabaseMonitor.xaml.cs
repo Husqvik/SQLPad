@@ -130,8 +130,11 @@ namespace SqlPad
 			UserSessionOnly = providerConfiguration.DatabaseMonitorConfiguration.UserSessionOnly;
 			MasterSessionOnly = providerConfiguration.DatabaseMonitorConfiguration.MasterSessionOnly;
 
-			SessionDataGridSource.SortDescriptions.Clear();
-			SessionDataGridSource.SortDescriptions.Add(new SortDescription(providerConfiguration.DatabaseMonitorConfiguration.SortMemberPath, providerConfiguration.DatabaseMonitorConfiguration.SortColumnOrder));
+			if (!String.IsNullOrEmpty(providerConfiguration.DatabaseMonitorConfiguration.SortMemberPath))
+			{
+				SessionDataGridSource.SortDescriptions.Clear();
+				SessionDataGridSource.SortDescriptions.Add(new SortDescription(providerConfiguration.DatabaseMonitorConfiguration.SortMemberPath, providerConfiguration.DatabaseMonitorConfiguration.SortColumnOrder));
+			}
 
 			lock (_databaseSessions)
 			{

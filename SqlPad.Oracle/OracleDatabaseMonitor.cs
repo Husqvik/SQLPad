@@ -14,12 +14,465 @@ using Oracle.DataAccess.Client;
 #endif
 using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.DebugTrace;
+using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle
 {
 	public class OracleDatabaseMonitor : IDatabaseMonitor
 	{
 		private readonly ConnectionStringSettings _connectionString;
+
+		private static readonly ColumnHeader[] DatabaseSessionColumnHeaders =
+		{
+			new ColumnHeader
+			{
+				ColumnIndex = 0,
+				Name = "Session Address",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 1,
+				Name = "Session ID",
+				DataType = typeof (decimal),
+				DatabaseDataType = Terminals.Decimal
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 2,
+				Name = "Owner Session ID",
+				DataType = typeof (decimal),
+				DatabaseDataType = Terminals.Decimal
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 3,
+				Name = "Serial#",
+				DataType = typeof (decimal),
+				DatabaseDataType = Terminals.Decimal
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 4,
+				Name = "Auditing Session ID",
+				DataType = typeof (decimal),
+				DatabaseDataType = Terminals.Decimal
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 5,
+				Name = "Process Address",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 6,
+				Name = "User name",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 7,
+				Name = "Transaction address",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 8,
+				Name = "Lock Wait",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 9,
+				Name = "Status",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 10,
+				Name = "Server",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 11,
+				Name = "Schema",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 12,
+				Name = "OS User",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 13,
+				Name = "Process",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 14,
+				Name = "Machine",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 15,
+				Name = "Port",
+				DataType = typeof (decimal),
+				DatabaseDataType = Terminals.Decimal
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 16,
+				Name = "Program",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 17,
+				Name = "Type",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 18,
+				Name = "SQL ID",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 19,
+				Name = "SQL Child Number",
+				DataType = typeof (decimal),
+				DatabaseDataType = Terminals.Decimal
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 20,
+				Name = "SQL Execution Start",
+				DataType = typeof (DateTime),
+				DatabaseDataType = Terminals.Date
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 21,
+				Name = "SQL Execution ID",
+				DataType = typeof (decimal),
+				DatabaseDataType = Terminals.Decimal
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 22,
+				Name = "Previous SQL ID",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 23,
+				Name = "Previous Child Number",
+				DataType = typeof (decimal),
+				DatabaseDataType = Terminals.Decimal
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 24,
+				Name = "Previous Execution Start",
+				DataType = typeof (DateTime),
+				DatabaseDataType = Terminals.Date
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 25,
+				Name = "Previous Execution ID",
+				DataType = typeof (decimal),
+				DatabaseDataType = Terminals.Decimal
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 26,
+				Name = "Module",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 27,
+				Name = "Action",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 28,
+				Name = "Client Info",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 29,
+				Name = "Logon Time",
+				DataType = typeof (DateTime),
+				DatabaseDataType = Terminals.Date
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 30,
+				Name = "Parallel DML",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 31,
+				Name = "Failover Type",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 32,
+				Name = "Failover Method",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 33,
+				Name = "Failed Over",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 34,
+				Name = "Resource Consumer Group",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 35,
+				Name = "Parallel DML Status",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 36,
+				Name = "Parallel DDL Status",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 37,
+				Name = "Parallel Query Status",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 38,
+				Name = "Event",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 39,
+				Name = "Parameter 1 Text",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 40,
+				Name = "Parameter 1",
+				DataType = typeof (decimal),
+				DatabaseDataType = Terminals.Decimal
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 41,
+				Name = "Parameter 2 Text",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 42,
+				Name = "Parameter 2",
+				DataType = typeof (decimal),
+				DatabaseDataType = Terminals.Decimal
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 43,
+				Name = "Parameter 3 Text",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 44,
+				Name = "Parameter 3",
+				DataType = typeof (decimal),
+				DatabaseDataType = Terminals.Decimal
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 45,
+				Name = "Wait Class",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 46,
+				Name = "Wait Time",
+				DataType = typeof (decimal),
+				DatabaseDataType = Terminals.Decimal
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 47,
+				Name = "State",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 48,
+				Name = "Wait Time Microseconds",
+				DataType = typeof (decimal),
+				DatabaseDataType = Terminals.Decimal
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 49,
+				Name = "Remaining Time Microseconds",
+				DataType = typeof (decimal),
+				DatabaseDataType = Terminals.Decimal
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 50,
+				Name = "Time Since Last Wait Microseconds",
+				DataType = typeof (decimal),
+				DatabaseDataType = Terminals.Decimal
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 51,
+				Name = "Service Name",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 52,
+				Name = "SQL Trace",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 53,
+				Name = "Trace Identifier",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 54,
+				Name = "Trace File",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 55,
+				Name = "PGA Used Memory",
+				DataType = typeof (decimal),
+				DatabaseDataType = Terminals.Decimal
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 56,
+				Name = "PGA Allocated Memory",
+				DataType = typeof (decimal),
+				DatabaseDataType = Terminals.Decimal
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 57,
+				Name = "PGA Freeable Memory",
+				DataType = typeof (decimal),
+				DatabaseDataType = Terminals.Decimal
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 58,
+				Name = "PGA Maximum Memory",
+				DataType = typeof (decimal),
+				DatabaseDataType = Terminals.Decimal
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 59,
+				Name = "Process ID",
+				DataType = typeof (decimal),
+				DatabaseDataType = Terminals.Decimal
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 60,
+				Name = "Operating System ID",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 61,
+				Name = "Operating System Process ID",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Varchar2
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 62,
+				Name = "Current Command Text",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Clob
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 63,
+				Name = "Preceding Command Text",
+				DataType = typeof (string),
+				DatabaseDataType = Terminals.Clob
+			}
+		};
 
 		private string BackgroundConnectionString => OracleConnectionStringRepository.GetBackgroundConnectionString(_connectionString.ConnectionString);
 
@@ -44,7 +497,7 @@ namespace SqlPad.Oracle
 
 					using (var reader = await command.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken))
 					{
-						databaseSessions.ColumnHeaders = OracleConnectionAdapter.GetColumnHeadersFromReader(reader);
+						databaseSessions.ColumnHeaders = DatabaseSessionColumnHeaders;
 
 						var sessions = new Dictionary<int, DatabaseSession>();
 						while (await reader.ReadAsynchronous(cancellationToken))
