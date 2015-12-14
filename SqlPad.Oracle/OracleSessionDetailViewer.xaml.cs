@@ -51,10 +51,21 @@ namespace SqlPad.Oracle
 		private bool isSynchronizing;
 		private SqlMonitorPlanItemCollection _planItemCollection;
 		private OracleSessionValues _oracleSessionValues;
+		private bool _autoRefreshEnabled;
 
 		public Control Control => this;
 
 		public DatabaseSession DatabaseSession { get; private set; }
+
+		public bool AutoRefreshEnabled
+		{
+			get { return _autoRefreshEnabled; }
+			set
+			{
+				_refreshTimer.IsEnabled = value;
+				_autoRefreshEnabled = value;
+			}
+		}
 
 		private SortDescriptionCollection DefaultSortDescriptions => ((CollectionViewSource)Resources["SortedSessionItems"]).SortDescriptions;
 
@@ -112,11 +123,14 @@ namespace SqlPad.Oracle
 
 		private async void RefreshTimerTickHandler(object sender, EventArgs eventArgs)
 		{
+			_refreshTimer.IsEnabled = false;
 			var exception = await App.SafeActionAsync(() => Refresh(CancellationToken.None));
 			if (exception != null)
 			{
 				Messages.ShowError(exception.Message, owner: Window.GetWindow(this));
 			}
+
+			_refreshTimer.IsEnabled = _autoRefreshEnabled;
 		}
 
 		public async Task Refresh(CancellationToken cancellationToken)
@@ -193,7 +207,7 @@ namespace SqlPad.Oracle
 			}
 			finally
 			{
-				_refreshTimer.IsEnabled = true;
+				AutoRefreshEnabled = true;
 			}
 		}
 
@@ -205,7 +219,7 @@ namespace SqlPad.Oracle
 				_oracleSessionValues = null;
 			}
 
-			_refreshTimer.IsEnabled = false;
+			AutoRefreshEnabled = false;
 			_planItemCollection = null;
 			SessionItems = null;
 			SummarySession.Clear();

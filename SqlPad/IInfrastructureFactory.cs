@@ -64,6 +64,8 @@ namespace SqlPad
 
 		DatabaseSession DatabaseSession { get; }
 
+		bool AutoRefreshEnabled { get; set; }
+
 		Task Initialize(DatabaseSession databaseSession, CancellationToken cancellationToken);
 
 		Task Refresh(CancellationToken cancellationToken);

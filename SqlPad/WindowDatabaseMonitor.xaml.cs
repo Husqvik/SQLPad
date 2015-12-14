@@ -324,6 +324,12 @@ namespace SqlPad
 		private void IsVisibleChangedHandler(object sender, DependencyPropertyChangedEventArgs args)
 		{
 			_refreshTimer.IsEnabled = (bool)args.NewValue;
+
+			if (_sessionDetailViewer != null)
+			{
+				_sessionDetailViewer.AutoRefreshEnabled = _refreshTimer.IsEnabled;
+			}
+
 			var timerState = _refreshTimer.IsEnabled ? "enabled" : "disabled";
 			Trace.WriteLine($"Session monitor auto-refresh has been {timerState}. ");
 		}

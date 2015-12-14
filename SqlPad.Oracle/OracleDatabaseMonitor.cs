@@ -525,7 +525,7 @@ namespace SqlPad.Oracle
 									LogonTime = (DateTime)reader["LOGON_TIME"],
 									Machine = OracleReaderValueConvert.ToString(reader["MACHINE"]),
 									Module = OracleReaderValueConvert.ToString(reader["MODULE"]),
-									OperatingSystemUser = (string)reader["OSUSER"],
+									OperatingSystemUser = OracleReaderValueConvert.ToString(reader["OSUSER"]),
 									ParallelDdlStatus = (string)reader["PDDL_STATUS"],
 									ParallelDmlEnabled = (string)reader["PDML_ENABLED"],
 									ParallelDmlStatus = (string)reader["PDML_STATUS"],
@@ -560,9 +560,9 @@ namespace SqlPad.Oracle
 									WaitClass = (string)reader["WAIT_CLASS"],
 									WaitTime = OracleReaderValueConvert.ToInt64(reader["WAIT_TIME"]),
 									WaitTimeMicroseconds = OracleReaderValueConvert.ToInt64(reader["WAIT_TIME_MICRO"]),
-									ProcessIdentifier = Convert.ToInt32(reader["PID"]),
-									OperatingSystemIdentifier = Convert.ToInt32(reader["SOSID"]),
-									OperatingSystemProcessIdentifier = Convert.ToInt32(reader["SPID"]),
+									ProcessIdentifier = OracleReaderValueConvert.ToInt32(reader["PID"]),
+									OperatingSystemIdentifier = OracleReaderValueConvert.ToInt32(reader["SOSID"]),
+									OperatingSystemProcessIdentifier = OracleReaderValueConvert.ToInt32(reader["SPID"]),
 									TraceId = OracleReaderValueConvert.ToString(reader["TRACEID"]),
 									TraceFile = OracleReaderValueConvert.ToString(reader["TRACEFILE"]),
 									ProgramGlobalAreaUsedMemoryBytes = OracleReaderValueConvert.ToInt64(reader["PGA_USED_MEM"]),
@@ -1037,21 +1037,21 @@ END;";
 			set { Values[58] = value; }
 		}
 
-		public int ProcessIdentifier
+		public int? ProcessIdentifier
 		{
-			get { return (int)Values[59]; }
+			get { return (int?)Values[59]; }
 			set { Values[59] = value; }
 		}
 
-		public int OperatingSystemIdentifier
+		public int? OperatingSystemIdentifier
 		{
-			get { return (int)Values[60]; }
+			get { return (int?)Values[60]; }
 			set { Values[60] = value; }
 		}
 
-		public int OperatingSystemProcessIdentifier
+		public int? OperatingSystemProcessIdentifier
 		{
-			get { return (int)Values[61]; }
+			get { return (int?)Values[61]; }
 			set { Values[61] = value; }
 		}
 
