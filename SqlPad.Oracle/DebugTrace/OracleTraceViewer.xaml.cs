@@ -149,9 +149,10 @@ namespace SqlPad.Oracle.DebugTrace
 				return;
 			}
 
-			TraceFileName = String.IsNullOrWhiteSpace(OracleConfiguration.Configuration.RemoteTraceDirectory)
+			var traceDirectory = OracleConfiguration.Configuration.GetRemoteTraceDirectory(_connectionAdapter.DatabaseModel.ConnectionString.Name);
+			TraceFileName = String.IsNullOrWhiteSpace(traceDirectory)
 				? _connectionAdapter.TraceFileName
-				: Path.Combine(OracleConfiguration.Configuration.RemoteTraceDirectory, TraceFileInfo.Name);
+				: Path.Combine(traceDirectory, TraceFileInfo.Name);
 
 			TKProfEnabled = !String.IsNullOrEmpty(OracleConfiguration.Configuration.TKProfPath);
 		}
@@ -163,12 +164,13 @@ namespace SqlPad.Oracle.DebugTrace
 
 		internal static void NavigateToTraceFile(string traceFileName)
 		{
-			var directoryName = new FileInfo(traceFileName).DirectoryName;
+			var fileInfo = new FileInfo(traceFileName);
+			var directoryName = fileInfo.DirectoryName;
 			if (!Directory.Exists(directoryName))
 			{
-				var directoryType = String.IsNullOrWhiteSpace(OracleConfiguration.Configuration.RemoteTraceDirectory)
-					? "Local"
-					: "Remote";
+				var directoryType = new Uri(traceFileName).IsUnc
+					? "Remote"
+					: "Local";
 
 				Messages.ShowError($"{directoryType} trace directory '{directoryName}' does not exist or is not accessible. ");
 				return;

@@ -568,25 +568,31 @@ namespace SqlPad.Oracle.DatabaseConnection
 				await RetrieveTraceFileName(cancellationToken);
 
 				var startupScript = OracleConfiguration.Configuration.StartupScript;
-				if (String.IsNullOrWhiteSpace(startupScript))
+				await ExecuteStartupScript(command, startupScript, cancellationToken);
+				await ExecuteStartupScript(command, OracleConfiguration.Configuration.GetConnectionStartupScript(_databaseModel.ConnectionString.Name), cancellationToken);
+			}
+		}
+
+		private static async Task ExecuteStartupScript(OracleCommand command, string startupScript, CancellationToken cancellationToken)
+		{
+			if (String.IsNullOrWhiteSpace(startupScript))
+			{
+				return;
+			}
+
+			var statements = await OracleSqlParser.Instance.ParseAsync(startupScript, cancellationToken);
+			foreach (var statement in statements)
+			{
+				command.CommandText = statement.RootNode.GetText(startupScript);
+
+				try
 				{
-					return;
+					await command.ExecuteNonQueryAsynchronous(cancellationToken);
+					Trace.WriteLine($"Startup script command '{command.CommandText}' executed successfully. ");
 				}
-
-				var statements = await OracleSqlParser.Instance.ParseAsync(startupScript, cancellationToken);
-				foreach (var statement in statements)
+				catch (Exception e)
 				{
-					command.CommandText = statement.RootNode.GetText(startupScript);
-
-					try
-					{
-						await command.ExecuteNonQueryAsynchronous(cancellationToken);
-						Trace.WriteLine($"Startup script command '{command.CommandText}' executed successfully. ");
-					}
-					catch (Exception e)
-					{
-						Trace.WriteLine($"Startup script command '{command.CommandText}' failed: {e}");
-					}
+					Trace.WriteLine($"Startup script command '{command.CommandText}' failed: {e}");
 				}
 			}
 		}

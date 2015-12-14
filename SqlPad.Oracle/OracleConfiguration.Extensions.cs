@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -21,7 +23,25 @@ namespace SqlPad.Oracle
 					}
 			};
 
-		public static OracleConfiguration Configuration { get; private set; }
+		public static OracleConfiguration Configuration { get; }
+
+		private IReadOnlyDictionary<string, OracleConfigurationConnection> _connectionConfigurations = new Dictionary<string, OracleConfigurationConnection>().AsReadOnly();
+
+		public string GetRemoteTraceDirectory(string connectionName)
+		{
+			OracleConfigurationConnection configuration;
+			return _connectionConfigurations.TryGetValue(connectionName, out configuration)
+				? configuration.RemoteTraceDirectory
+				: String.Empty;
+		}
+
+		public string GetConnectionStartupScript(string connectionName)
+		{
+			OracleConfigurationConnection configuration;
+			return _connectionConfigurations.TryGetValue(connectionName, out configuration)
+				? configuration.StartupScript
+				: String.Empty;
+		}
 
 		static OracleConfiguration()
 		{
@@ -37,6 +57,11 @@ namespace SqlPad.Oracle
 				using (var reader = XmlReader.Create(ConfigurationFilePath))
 				{
 					Configuration = (OracleConfiguration)XmlSerializer.Deserialize(reader);
+				}
+
+				if (Configuration.Connections != null)
+				{
+					Configuration._connectionConfigurations = Configuration.Connections.ToDictionary(c => c.ConnectionName);
 				}
 			}
 			catch (Exception e)

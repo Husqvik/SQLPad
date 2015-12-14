@@ -16,8 +16,22 @@
           </xs:complexType>
         </xs:element>
         <xs:element minOccurs="0" maxOccurs="1" name="StartupScript" type="xs:string" />
-        <xs:element minOccurs="0" maxOccurs="1" name="RemoteTraceDirectory" type="xs:string" />
         <xs:element minOccurs="0" maxOccurs="1" name="TKProfPath" type="xs:string" />
+        <xs:element minOccurs="0" maxOccurs="1" name="Connections">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element minOccurs="0" maxOccurs="unbounded" name="Connection">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element minOccurs="0" maxOccurs="1" name="StartupScript" type="xs:string" />
+                  </xs:sequence>
+                  <xs:attribute name="ConnectionName" type="xs:string" use="required" />
+                  <xs:attribute name="RemoteTraceDirectory" type="xs:string" use="optional" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
       </xs:sequence>
     </xs:complexType>
   </xs:element>

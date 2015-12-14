@@ -1,4 +1,4 @@
-SQLPad 0.4.0.104
+SQLPad 0.4.0.105
 ================
 
 SQLPad is an experimental SQL editor focused to quick and comfortable work.
@@ -215,9 +215,9 @@ Each connection string requires an infrastructure factory configuration record:
 		<ResultGrid DateFormat="yyyy-MM-dd HH:mm:ss" NullPlaceholder="(null)" FetchRowsBatchSize="500" />
 	</Configuration>
 
-`DataModelRefreshPeriod` - data dictionary refresh period in minutes; refresh can forced any time using F5
+`DataModelRefreshPeriod` - data dictionary refresh period in minutes; refresh can forced any time using `F5`
 
-`DateFormat` - data grid date time format
+`DateFormat` - data grid date time format (.NET format)
 
 `NullPlaceholder` - data grid NULL value representation
 

@@ -28,9 +28,9 @@ namespace SqlPad.Oracle {
         
         private string startupScriptField;
         
-        private string remoteTraceDirectoryField;
-        
         private string tKProfPathField;
+        
+        private OracleConfigurationConnection[] connectionsField;
         
         /// <remarks/>
         public OracleConfigurationExecutionPlan ExecutionPlan {
@@ -53,22 +53,23 @@ namespace SqlPad.Oracle {
         }
         
         /// <remarks/>
-        public string RemoteTraceDirectory {
-            get {
-                return this.remoteTraceDirectoryField;
-            }
-            set {
-                this.remoteTraceDirectoryField = value;
-            }
-        }
-        
-        /// <remarks/>
         public string TKProfPath {
             get {
                 return this.tKProfPathField;
             }
             set {
                 this.tKProfPathField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlArrayItemAttribute("Connection", IsNullable=false)]
+        public OracleConfigurationConnection[] Connections {
+            get {
+                return this.connectionsField;
+            }
+            set {
+                this.connectionsField = value;
             }
         }
     }
@@ -125,6 +126,53 @@ namespace SqlPad.Oracle {
             }
             set {
                 this.nameField = value;
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.6.81.0")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/08/Oracle")]
+    public partial class OracleConfigurationConnection {
+        
+        private string startupScriptField;
+        
+        private string connectionNameField;
+        
+        private string remoteTraceDirectoryField;
+        
+        /// <remarks/>
+        public string StartupScript {
+            get {
+                return this.startupScriptField;
+            }
+            set {
+                this.startupScriptField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string ConnectionName {
+            get {
+                return this.connectionNameField;
+            }
+            set {
+                this.connectionNameField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string RemoteTraceDirectory {
+            get {
+                return this.remoteTraceDirectoryField;
+            }
+            set {
+                this.remoteTraceDirectoryField = value;
             }
         }
     }
