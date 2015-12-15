@@ -12,6 +12,7 @@ namespace SqlPad.Oracle
 	public class OracleNavigationService : INavigationService
 	{
 		private static readonly SourcePosition[] EmptyPositionArray = new SourcePosition[0];
+		private static readonly Func<OracleSelectListColumn, bool> ExplicitColumnFilter = c => !c.IsAsterisk && c.HasExplicitDefinition;
 
 		public int? NavigateToQueryBlockRoot(ActionExecutionContext executionContext)
 		{
@@ -70,6 +71,38 @@ namespace SqlPad.Oracle
 
 		private static IEnumerable<SourcePosition> FindCorrespondingInsertColumnAndExpression(OracleStatementSemanticModel semanticModel, StatementGrammarNode terminal)
 		{
+			int? columnIndex;
+			StatementGrammarNode columnNode;
+			foreach (var queryBlock in semanticModel.QueryBlocks)
+			{
+				if (queryBlock.ExplicitColumnNames == null || queryBlock.PrecedingConcatenatedQueryBlock != null)
+				{
+					continue;
+				}
+
+				columnNode = FindItemAndIndexIndex(queryBlock.ExplicitColumnNames.Keys, t => t == terminal, out columnIndex);
+				if (columnIndex != null)
+				{
+					foreach (var columnSourcePosition in SelectQueryBlockColumns(columnNode, queryBlock, columnIndex.Value))
+					{
+						yield return columnSourcePosition;
+					}
+				}
+				else
+				{
+					columnIndex = FindSelectColumnIndex(queryBlock, terminal);
+
+					if (columnIndex.HasValue)
+					{
+						columnNode = queryBlock.ExplicitColumnNames.Keys.Skip(columnIndex.Value).FirstOrDefault();
+						foreach (var columnSourcePosition in SelectQueryBlockColumns(columnNode, queryBlock, columnIndex.Value))
+						{
+							yield return columnSourcePosition;
+						}
+					}
+				}
+			}
+
 			foreach (var insertTarget in semanticModel.InsertTargets)
 			{
 				if (insertTarget.Columns == null)
@@ -77,25 +110,22 @@ namespace SqlPad.Oracle
 					continue;
 				}
 
-				int columnIndex;
 				if (insertTarget.ValueList != null && insertTarget.ValueList.SourcePosition.Contains(terminal.SourcePosition))
 				{
 					var valueExpression = FindItemAndIndexIndex(insertTarget.ValueExpressions, e => e.SourcePosition.Contains(terminal.SourcePosition), out columnIndex);
 					if (valueExpression != null && insertTarget.Columns.Count > columnIndex)
 					{
 						yield return valueExpression.SourcePosition;
-						yield return GetInsertTargetColumnAtPosition(insertTarget, columnIndex);
+						yield return GetInsertTargetColumnAtPosition(insertTarget, columnIndex.Value).SourcePosition;
 					}
 
 					continue;
 				}
 
-				Func<OracleSelectListColumn, bool> explicitColumnFilter = c => !c.IsAsterisk && c.HasExplicitDefinition;
-				OracleSelectListColumn selectColumn;
 				if (insertTarget.ColumnListNode.SourcePosition.Contains(terminal.SourcePosition))
 				{
-					var columnNode = FindItemAndIndexIndex(insertTarget.Columns.Keys, t => t == terminal, out columnIndex);
-					if (columnNode == null)
+					columnNode = FindItemAndIndexIndex(insertTarget.Columns.Keys, t => t == terminal, out columnIndex);
+					if (columnIndex == null)
 					{
 						continue;
 					}
@@ -103,52 +133,91 @@ namespace SqlPad.Oracle
 					if (insertTarget.ValueExpressions?.Count > columnIndex)
 					{
 						yield return columnNode.SourcePosition;
-						yield return insertTarget.ValueExpressions[columnIndex].SourcePosition;
+						yield return insertTarget.ValueExpressions[columnIndex.Value].SourcePosition;
 					}
 					else
 					{
-						selectColumn = insertTarget.RowSource?.Columns.Where(explicitColumnFilter).Skip(columnIndex).FirstOrDefault();
-						if (selectColumn != null)
+						foreach (var columnSourcePosition in SelectQueryBlockColumns(columnNode, insertTarget.RowSource, columnIndex.Value))
 						{
-							yield return columnNode.SourcePosition;
-							yield return selectColumn.RootNode.SourcePosition;
+							yield return columnSourcePosition;
 						}
 					}
 
 					continue;
 				}
 
-				if (insertTarget.RowSource != null)
+				columnIndex = FindSelectColumnIndex(insertTarget.RowSource, terminal);
+
+				if (columnIndex.HasValue)
 				{
-					selectColumn = FindItemAndIndexIndex(insertTarget.RowSource.Columns.Where(explicitColumnFilter), c => c.RootNode.SourcePosition.Contains(terminal.SourcePosition), out columnIndex);
-					if (selectColumn != null)
+					var insertColumnPosition = GetInsertTargetColumnAtPosition(insertTarget, columnIndex.Value);
+					foreach (var columnSourcePosition in SelectQueryBlockColumns(insertColumnPosition, insertTarget.RowSource, columnIndex.Value))
 					{
-						yield return GetInsertTargetColumnAtPosition(insertTarget, columnIndex);
-						yield return selectColumn.RootNode.SourcePosition;
+						yield return columnSourcePosition;
 					}
 				}
 			}
 		}
 
-		private static SourcePosition GetInsertTargetColumnAtPosition(OracleInsertTarget insertTarget, int columnIndex)
+		private static int? FindSelectColumnIndex(OracleQueryBlock queryBlock, StatementGrammarNode terminal)
 		{
-			return insertTarget.Columns.Keys.Skip(columnIndex).First().SourcePosition;
+			while (queryBlock != null)
+			{
+				int? columnIndex;
+				var selectColumn = FindItemAndIndexIndex(queryBlock.Columns.Where(ExplicitColumnFilter), c => c.RootNode.SourcePosition.Contains(terminal.SourcePosition), out columnIndex);
+				if (selectColumn != null)
+				{
+					return columnIndex;
+				}
+
+				queryBlock = queryBlock.FollowingConcatenatedQueryBlock;
+			}
+
+			return null;
 		}
 
-		private static T FindItemAndIndexIndex<T>(IEnumerable<T> nodes, Func<T, bool> predicate, out int index)
+		private static IEnumerable<SourcePosition> SelectQueryBlockColumns(StatementGrammarNode columnNode, OracleQueryBlock queryBlock, int columnIndex)
 		{
-			index = 0;
+			var selectColumnFound = false;
+			while (queryBlock != null)
+			{
+				var selectColumn = queryBlock.Columns.Where(ExplicitColumnFilter).Skip(columnIndex).FirstOrDefault();
+				if (selectColumn != null)
+				{
+					selectColumnFound = true;
+					yield return selectColumn.RootNode.SourcePosition;
+				}
+
+				queryBlock = queryBlock.FollowingConcatenatedQueryBlock;
+			}
+
+			if (selectColumnFound && columnNode != null)
+			{
+				yield return columnNode.SourcePosition;
+			}
+		} 
+
+		private static StatementGrammarNode GetInsertTargetColumnAtPosition(OracleInsertTarget insertTarget, int columnIndex)
+		{
+			return insertTarget.Columns.Keys.Skip(columnIndex).First();
+		}
+
+		private static T FindItemAndIndexIndex<T>(IEnumerable<T> nodes, Func<T, bool> predicate, out int? index)
+		{
+			var matchIndex = 0;
 
 			foreach (var node in nodes)
 			{
 				if (predicate(node))
 				{
+					index = matchIndex;
 					return node;
 				}
 
-				index++;
+				matchIndex++;
 			}
 
+			index = null;
 			return default(T);
 		}
 

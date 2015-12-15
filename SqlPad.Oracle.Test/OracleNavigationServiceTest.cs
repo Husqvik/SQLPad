@@ -157,6 +157,84 @@ SELECT CTE.RESPONDENTBUCKET_ID, CTE.SELECTION_ID, CTE.PROJECT_ID, CTE.NAME FROM 
 		}
 
 		[Test(Description = @"")]
+		public void TestFindCorrespondingSegmentsInInsertCommandAtExplicitColumn()
+		{
+			const string query =
+@"WITH cte (val) AS (
+SELECT dummy from dual UNION ALL
+SELECT dummy || 'x' from dual)
+SELECT val FROM cte";
+
+			var context = CreateExecutionContext(query, 11);
+			var correspondingSegments = _navigationService.FindCorrespondingSegments(context).OrderBy(s => s.IndexStart).ToArray();
+			correspondingSegments.Length.ShouldBe(3);
+			correspondingSegments[0].IndexStart.ShouldBe(10);
+			correspondingSegments[0].Length.ShouldBe(3);
+			correspondingSegments[1].IndexStart.ShouldBe(28);
+			correspondingSegments[1].Length.ShouldBe(5);
+			correspondingSegments[2].IndexStart.ShouldBe(62);
+			correspondingSegments[2].Length.ShouldBe(12);
+		}
+
+		[Test(Description = @"")]
+		public void TestFindCorrespondingSegmentsInInsertCommandAtSelectColumn()
+		{
+			const string query =
+@"WITH cte (val) AS (
+SELECT dummy from dual UNION ALL
+SELECT dummy || 'x' from dual)
+SELECT val FROM cte";
+
+			var context = CreateExecutionContext(query, 62);
+			var correspondingSegments = _navigationService.FindCorrespondingSegments(context).OrderBy(s => s.IndexStart).ToArray();
+			correspondingSegments.Length.ShouldBe(3);
+			correspondingSegments[0].IndexStart.ShouldBe(10);
+			correspondingSegments[0].Length.ShouldBe(3);
+			correspondingSegments[1].IndexStart.ShouldBe(28);
+			correspondingSegments[1].Length.ShouldBe(5);
+			correspondingSegments[2].IndexStart.ShouldBe(62);
+			correspondingSegments[2].Length.ShouldBe(12);
+		}
+
+		[Test(Description = @"")]
+		public void TestFindCorrespondingSegmentsInCommonTableExpressionCommandAtInsertColumn()
+		{
+			const string query =
+@"INSERT INTO dual (dummy)
+SELECT dummy val from dual UNION ALL
+SELECT dummy || 'X' from dual";
+
+			var context = CreateExecutionContext(query, 19);
+			var correspondingSegments = _navigationService.FindCorrespondingSegments(context).OrderBy(s => s.IndexStart).ToArray();
+			correspondingSegments.Length.ShouldBe(3);
+			correspondingSegments[0].IndexStart.ShouldBe(18);
+			correspondingSegments[0].Length.ShouldBe(5);
+			correspondingSegments[1].IndexStart.ShouldBe(33);
+			correspondingSegments[1].Length.ShouldBe(9);
+			correspondingSegments[2].IndexStart.ShouldBe(71);
+			correspondingSegments[2].Length.ShouldBe(12);
+		}
+
+		[Test(Description = @"")]
+		public void TestFindCorrespondingSegmentsInCommonTableExpressionCommandAtSelectColumn()
+		{
+			const string query =
+@"INSERT INTO dual (dummy)
+SELECT dummy val from dual UNION ALL
+SELECT dummy || 'X' from dual";
+
+			var context = CreateExecutionContext(query, 71);
+			var correspondingSegments = _navigationService.FindCorrespondingSegments(context).OrderBy(s => s.IndexStart).ToArray();
+			correspondingSegments.Length.ShouldBe(3);
+			correspondingSegments[0].IndexStart.ShouldBe(18);
+			correspondingSegments[0].Length.ShouldBe(5);
+			correspondingSegments[1].IndexStart.ShouldBe(33);
+			correspondingSegments[1].Length.ShouldBe(9);
+			correspondingSegments[2].IndexStart.ShouldBe(71);
+			correspondingSegments[2].Length.ShouldBe(12);
+		}
+
+		[Test(Description = @"")]
 		public void TestFindCorrespondingSegmentsInPlSqlCase()
 		{
 			const string query = "BEGIN CASE WHEN 1 = 1 THEN NULL; END CASE x; END;";
