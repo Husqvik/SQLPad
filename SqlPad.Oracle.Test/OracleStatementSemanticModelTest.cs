@@ -2958,7 +2958,7 @@ FROM (
 		[Test(Description = @"")]
 		public void TestParenthesisWrappedConcatenatedSubquery()
 		{
-			const string query1 = @"(SELECT DUMMY, DUMMY FROM DUAL) UNION ALL (SELECT DUMMY, DUMMY FROM DUAL)";
+			const string query1 = @"((SELECT DUMMY, DUMMY FROM DUAL) UNION ALL (SELECT DUMMY, DUMMY FROM DUAL)) ORDER BY 1";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
@@ -3192,6 +3192,22 @@ WHEN NOT MATCHED THEN INSERT VALUES (T2.DUMMY)";
 			semanticModel.MainQueryBlock.Columns[1].ColumnReferences.Count.ShouldBe(1);
 			semanticModel.MainQueryBlock.Columns[1].ColumnReferences[0].ValidObjectReference.ShouldNotBe(null);
 			semanticModel.MainQueryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe("DATE");
+		}
+
+		[Test(Description = @"")]
+		public void TestMoreConcatenatedQueryBlocksWithSemicolon()
+		{
+			const string query1 =
+@"SELECT 1 FROM DUAL UNION ALL
+SELECT 2 FROM DUAL UNION ALL
+SELECT 3 FROM DUAL UNION ALL
+SELECT 4 FROM DUAL";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single().Validate();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = OracleStatementSemanticModel.Build(query1, statement, TestFixture.DatabaseModel);
+			semanticModel.MainQueryBlock.AllFollowingConcatenatedQueryBlocks.Count().ShouldBe(3);
 		}
 	}
 }

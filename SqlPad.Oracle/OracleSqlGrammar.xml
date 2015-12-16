@@ -8072,16 +8072,36 @@
     <Rule StartingNonTerminal="Subquery">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="QueryBlock" />
-          <NonTerminal Id="ConcatenatedSubquery" IsOptional="true" />
+          <NonTerminal Id="OptionalParenthesisEnclosedConcatenatedQueryBlock" />
           <NonTerminal Id="OrderByClause" IsOptional="true" />
           <NonTerminal Id="RowLimitingClause" IsOptional="true" />
         </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="OptionalParenthesisEnclosedQueryBlock">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="QueryBlock" />
+        </Sequence>
         <Sequence>
           <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="Subquery" />
+          <NonTerminal Id="OptionalParenthesisEnclosedQueryBlock" />
           <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="OptionalParenthesisEnclosedConcatenatedQueryBlock">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="OptionalParenthesisEnclosedQueryBlock" />
           <NonTerminal Id="ConcatenatedSubquery" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="OptionalParenthesisEnclosedConcatenatedQueryBlock" />
+          <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -8090,7 +8110,7 @@
       <Sequences>
         <Sequence>
           <NonTerminal Id="SetOperation" />
-          <NonTerminal Id="Subquery" />
+          <NonTerminal Id="OptionalParenthesisEnclosedQueryBlock" />
           <NonTerminal Id="ConcatenatedSubquery" IsOptional="true" />
         </Sequence>
       </Sequences>

@@ -1821,10 +1821,7 @@ namespace SqlPad.Oracle.SemanticModel
 		private void ResolveConcatenatedQueryBlocks(OracleQueryBlock queryBlock)
 		{
 			var concatenatedSubquery = queryBlock.RootNode.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBlock, NonTerminals.ConcatenatedSubquery);
-			var parentQueryBlockNode =
-				concatenatedSubquery?.ParentNode.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBlock, NonTerminals.QueryBlock)
-					.FirstOrDefault();
-
+			var parentQueryBlockNode = concatenatedSubquery?.ParentNode.GetDescendants(NonTerminals.QueryBlock).FirstOrDefault();
 			if (parentQueryBlockNode == null)
 			{
 				return;
@@ -2783,7 +2780,7 @@ namespace SqlPad.Oracle.SemanticModel
 				return;
 			}
 
-			queryBlock.OrderByClause = queryBlock.RootNode.ParentNode.GetPathFilterDescendants(n => n.Id != NonTerminals.QueryBlock, NonTerminals.OrderByClause).FirstOrDefault();
+			queryBlock.OrderByClause = queryBlock.RootNode.GetAncestor(NonTerminals.Subquery)[NonTerminals.OrderByClause];
 			if (queryBlock.OrderByClause == null)
 			{
 				return;

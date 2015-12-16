@@ -2,13 +2,16 @@
 <#@ assembly name="System.Core" #>
 <#@ assembly name="System.Xml" #>
 <#@ assembly name="System.Xml.Linq" #>
+<#@ import namespace="System.Globalization" #>
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Text" #>
+<#@ import namespace="System.Threading" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="System.Xml.Linq" #>
 <#@ import namespace="System.IO" #>
 <#@ output extension=".cs" #>
 <#
+	CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
 	const string xmlNamespace = "{http://husqvik.com/SqlPad/2014/08/Oracle}";
 	var grammarDescriptionPath = Path.Combine(Path.GetDirectoryName(Host.TemplateFile), @"OracleSqlGrammar.xml");
 	var grammarXml = XDocument.Load(grammarDescriptionPath);

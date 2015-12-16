@@ -905,6 +905,8 @@ namespace SqlPad.Oracle
 			public const string OptionalParameterExpression = "OptionalParameterExpression";
 			public const string OptionalParameterExpressionCommaChainedList = "OptionalParameterExpressionCommaChainedList";
 			public const string OptionalParameterExpressionList = "OptionalParameterExpressionList";
+			public const string OptionalParenthesisEnclosedConcatenatedQueryBlock = "OptionalParenthesisEnclosedConcatenatedQueryBlock";
+			public const string OptionalParenthesisEnclosedQueryBlock = "OptionalParenthesisEnclosedQueryBlock";
 			public const string OrderByClause = "OrderByClause";
 			public const string OrderExpression = "OrderExpression";
 			public const string OrderExpressionChained = "OrderExpressionChained";
