@@ -177,6 +177,33 @@ SELECT val FROM cte";
 		}
 
 		[Test(Description = @"")]
+		public void TestFindCorrespondingSegmentsInConcatenatedSubqueries()
+		{
+			const string query =
+@"SELECT dummy from dual UNION ALL
+SELECT dummy || 'x' from dual";
+
+			var context = CreateExecutionContext(query, 11);
+			var correspondingSegments = _navigationService.FindCorrespondingSegments(context).OrderBy(s => s.IndexStart).ToArray();
+			correspondingSegments.Length.ShouldBe(2);
+			correspondingSegments[0].IndexStart.ShouldBe(7);
+			correspondingSegments[0].Length.ShouldBe(5);
+			correspondingSegments[1].IndexStart.ShouldBe(41);
+			correspondingSegments[1].Length.ShouldBe(12);
+		}
+
+		[Test(Description = @"")]
+		public void TestFindCorrespondingSegmentsInSingleQueryBlock()
+		{
+			const string query =
+@"SELECT dummy from dual";
+
+			var context = CreateExecutionContext(query, 11);
+			var correspondingSegments = _navigationService.FindCorrespondingSegments(context).OrderBy(s => s.IndexStart).ToArray();
+			correspondingSegments.Length.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
 		public void TestFindCorrespondingSegmentsInInsertCommandAtSelectColumn()
 		{
 			const string query =

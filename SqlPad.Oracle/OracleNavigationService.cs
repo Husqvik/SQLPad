@@ -64,42 +64,39 @@ namespace SqlPad.Oracle
 
 			var correlatedSegments = FindCorrespondingBeginIfAndCaseTerminals(terminal);
 			var semanticModel = (OracleStatementSemanticModel)executionContext.DocumentRepository.ValidationModels[terminal.Statement].SemanticModel;
-			correlatedSegments.AddRange(FindCorrespondingInsertColumnAndExpression(semanticModel, terminal));
+			correlatedSegments.AddRange(FindCorrespondingColumnAndExpression(semanticModel, terminal));
 
 			return correlatedSegments.AsReadOnly();
 		}
 
-		private static IEnumerable<SourcePosition> FindCorrespondingInsertColumnAndExpression(OracleStatementSemanticModel semanticModel, StatementGrammarNode terminal)
+		private static IReadOnlyList<SourcePosition> FindCorrespondingColumnAndExpression(OracleStatementSemanticModel semanticModel, StatementGrammarNode terminal)
 		{
+			var correspondingSourcePositions = new List<SourcePosition>();
+
 			int? columnIndex;
 			StatementGrammarNode columnNode;
 			foreach (var queryBlock in semanticModel.QueryBlocks)
 			{
-				if (queryBlock.ExplicitColumnNames == null || queryBlock.PrecedingConcatenatedQueryBlock != null)
+				if (queryBlock.PrecedingConcatenatedQueryBlock != null)
 				{
 					continue;
 				}
 
-				columnNode = FindItemAndIndexIndex(queryBlock.ExplicitColumnNames.Keys, t => t == terminal, out columnIndex);
-				if (columnIndex != null)
-				{
-					foreach (var columnSourcePosition in SelectQueryBlockColumns(columnNode, queryBlock, columnIndex.Value))
-					{
-						yield return columnSourcePosition;
-					}
-				}
-				else
+				columnNode = FindItemAndIndexIndex(queryBlock.ExplicitColumnNames?.Keys, t => t == terminal, out columnIndex);
+				if (columnIndex == null)
 				{
 					columnIndex = FindSelectColumnIndex(queryBlock, terminal);
 
 					if (columnIndex.HasValue)
 					{
-						columnNode = queryBlock.ExplicitColumnNames.Keys.Skip(columnIndex.Value).FirstOrDefault();
-						foreach (var columnSourcePosition in SelectQueryBlockColumns(columnNode, queryBlock, columnIndex.Value))
-						{
-							yield return columnSourcePosition;
-						}
+						columnNode = queryBlock.ExplicitColumnNames?.Keys.Skip(columnIndex.Value).FirstOrDefault();
 					}
+				}
+
+				var sourcePositions = SelectQueryBlockColumns(columnNode, queryBlock, columnIndex).ToArray();
+				if (sourcePositions.Length > 1)
+				{
+					correspondingSourcePositions.AddRange(sourcePositions);
 				}
 			}
 
@@ -115,8 +112,8 @@ namespace SqlPad.Oracle
 					var valueExpression = FindItemAndIndexIndex(insertTarget.ValueExpressions, e => e.SourcePosition.Contains(terminal.SourcePosition), out columnIndex);
 					if (valueExpression != null && insertTarget.Columns.Count > columnIndex)
 					{
-						yield return valueExpression.SourcePosition;
-						yield return GetInsertTargetColumnAtPosition(insertTarget, columnIndex.Value).SourcePosition;
+						correspondingSourcePositions.Add(valueExpression.SourcePosition);
+						correspondingSourcePositions.Add(GetInsertTargetColumnAtPosition(insertTarget, columnIndex.Value).SourcePosition);
 					}
 
 					continue;
@@ -132,15 +129,12 @@ namespace SqlPad.Oracle
 
 					if (insertTarget.ValueExpressions?.Count > columnIndex)
 					{
-						yield return columnNode.SourcePosition;
-						yield return insertTarget.ValueExpressions[columnIndex.Value].SourcePosition;
+						correspondingSourcePositions.Add(columnNode.SourcePosition);
+						correspondingSourcePositions.Add(insertTarget.ValueExpressions[columnIndex.Value].SourcePosition);
 					}
 					else
 					{
-						foreach (var columnSourcePosition in SelectQueryBlockColumns(columnNode, insertTarget.RowSource, columnIndex.Value))
-						{
-							yield return columnSourcePosition;
-						}
+						correspondingSourcePositions.AddRange(SelectQueryBlockColumns(columnNode, insertTarget.RowSource, columnIndex.Value));
 					}
 
 					continue;
@@ -150,16 +144,22 @@ namespace SqlPad.Oracle
 
 				if (columnIndex.HasValue)
 				{
-					var insertColumnPosition = GetInsertTargetColumnAtPosition(insertTarget, columnIndex.Value);
-					foreach (var columnSourcePosition in SelectQueryBlockColumns(insertColumnPosition, insertTarget.RowSource, columnIndex.Value))
+					var insertColumn = GetInsertTargetColumnAtPosition(insertTarget, columnIndex.Value);
+					if (insertTarget.RowSource.FollowingConcatenatedQueryBlock == null)
 					{
-						yield return columnSourcePosition;
+						correspondingSourcePositions.AddRange(SelectQueryBlockColumns(insertColumn, insertTarget.RowSource, columnIndex.Value));
+					}
+					else if (insertColumn != null)
+					{
+						correspondingSourcePositions.Add(insertColumn.SourcePosition);
 					}
 				}
 			}
+
+			return correspondingSourcePositions.AsReadOnly();
 		}
 
-		private static int? FindSelectColumnIndex(OracleQueryBlock queryBlock, StatementGrammarNode terminal)
+		private static int? FindSelectColumnIndex(OracleQueryBlock queryBlock, StatementNode terminal)
 		{
 			while (queryBlock != null)
 			{
@@ -176,12 +176,17 @@ namespace SqlPad.Oracle
 			return null;
 		}
 
-		private static IEnumerable<SourcePosition> SelectQueryBlockColumns(StatementGrammarNode columnNode, OracleQueryBlock queryBlock, int columnIndex)
+		private static IEnumerable<SourcePosition> SelectQueryBlockColumns(StatementNode columnNode, OracleQueryBlock queryBlock, int? columnIndex)
 		{
+			if (columnIndex == null)
+			{
+				yield break;
+			}
+
 			var selectColumnFound = false;
 			while (queryBlock != null)
 			{
-				var selectColumn = queryBlock.Columns.Where(ExplicitColumnFilter).Skip(columnIndex).FirstOrDefault();
+				var selectColumn = queryBlock.Columns.Where(ExplicitColumnFilter).Skip(columnIndex.Value).FirstOrDefault();
 				if (selectColumn != null)
 				{
 					selectColumnFound = true;
@@ -204,17 +209,20 @@ namespace SqlPad.Oracle
 
 		private static T FindItemAndIndexIndex<T>(IEnumerable<T> nodes, Func<T, bool> predicate, out int? index)
 		{
-			var matchIndex = 0;
-
-			foreach (var node in nodes)
+			if (nodes != null)
 			{
-				if (predicate(node))
-				{
-					index = matchIndex;
-					return node;
-				}
+				var matchIndex = 0;
 
-				matchIndex++;
+				foreach (var node in nodes)
+				{
+					if (predicate(node))
+					{
+						index = matchIndex;
+						return node;
+					}
+
+					matchIndex++;
+				}
 			}
 
 			index = null;
