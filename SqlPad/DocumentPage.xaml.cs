@@ -198,7 +198,7 @@ namespace SqlPad
 		{
 			DocumentHeaderToolTip = WorkDocument.File == null
 				? "Unsaved"
-				: $"{WorkDocument.File.FullName}{Environment.NewLine}Last change: {WorkDocument.File.LastWriteTime}";
+				: $"{WorkDocument.File.FullName}{Environment.NewLine}Last change: {CellValueConverter.FormatDateTime(WorkDocument.File.LastWriteTime)}";
 		}
 		
 		private void InitializeFileWatcher()
