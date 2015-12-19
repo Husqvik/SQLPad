@@ -561,29 +561,32 @@ namespace SqlPad.Oracle.ModelDataProviders
 		private readonly string _sqlId;
 		private readonly int? _childNumber;
 		private readonly bool _displayLastCursor;
+		private readonly bool _resolveAdaptivePlan;
 
 		public string PlanText { get; private set; }
 
-		private DisplayCursorDataProvider() : base(null)
+		private DisplayCursorDataProvider(Version oracleVersion) : this(null, 0, oracleVersion)
 		{
 			_displayLastCursor = true;
 		}
 
-		public DisplayCursorDataProvider(string sqlId, int childNumber)
+		public DisplayCursorDataProvider(string sqlId, int childNumber, Version oracleVersion)
 			: base(null)
 		{
 			_sqlId = sqlId;
 			_childNumber = childNumber;
+			_resolveAdaptivePlan = oracleVersion.Major >= 12;
 		}
 
-		public static DisplayCursorDataProvider CreateDisplayLastCursorDataProvider()
+		public static DisplayCursorDataProvider CreateDisplayLastCursorDataProvider(Version oracleVersion)
 		{
-			return new DisplayCursorDataProvider();
+			return new DisplayCursorDataProvider(oracleVersion);
 		}
 
 		public override void InitializeCommand(OracleCommand command)
 		{
-			command.CommandText = OracleDatabaseCommands.SelectExecutionPlanTextCommandText;
+			
+			command.CommandText = String.Format(OracleDatabaseCommands.SelectExecutionPlanTextCommandTextBase, _resolveAdaptivePlan ? "ADAPTIVE" : null);
 			command.AddSimpleParameter("SQL_ID", _sqlId);
 			command.AddSimpleParameter("CHILD_NUMBER", _childNumber);
 		}

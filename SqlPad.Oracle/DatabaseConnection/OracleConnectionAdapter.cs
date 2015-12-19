@@ -274,7 +274,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		public async override Task<ExecutionStatisticsPlanItemCollection> GetCursorExecutionStatisticsAsync(CancellationToken cancellationToken)
 		{
 			var cursorExecutionStatisticsDataProvider = new CursorExecutionStatisticsDataProvider(_userCommandSqlId, _userCommandChildNumber);
-			var displayCursorDataProvider = new DisplayCursorDataProvider(_userCommandSqlId, _userCommandChildNumber);
+			var displayCursorDataProvider = new DisplayCursorDataProvider(_userCommandSqlId, _userCommandChildNumber, _databaseModel.Version);
 			await _databaseModel.UpdateModelAsync(cancellationToken, false, cursorExecutionStatisticsDataProvider, displayCursorDataProvider);
 			cursorExecutionStatisticsDataProvider.ItemCollection.PlanText = displayCursorDataProvider.PlanText;
 			return cursorExecutionStatisticsDataProvider.ItemCollection;
