@@ -177,6 +177,8 @@ namespace SqlPad.Oracle.ExecutionPlan
 
 		public ExecutionPlanItem Parent { get; private set; }
 
+		public bool IsInactive { get; set; }
+
 		public IReadOnlyList<ExecutionPlanItem> ChildItems => _childItems.AsReadOnly();
 
 	    public IEnumerable<ExecutionPlanItem> AllChildItems

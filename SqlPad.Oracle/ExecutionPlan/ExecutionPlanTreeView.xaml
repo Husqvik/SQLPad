@@ -112,6 +112,11 @@
 		</ControlTemplate>
 
 		<Style x:Key="PlanItemBaseStyle" TargetType="TextBlock">
+			<Style.Triggers>
+				<DataTrigger Binding="{Binding IsInactive}" Value="True">
+					<Setter Property="TextBlock.Opacity" Value="0.5" />
+				</DataTrigger>
+			</Style.Triggers>
 			<Style.Setters>
 				<Setter Property="FontFamily" Value="Arial" />
 			</Style.Setters>
@@ -286,6 +291,17 @@
 		<HierarchicalDataTemplate x:Key="ExplainPlanItemDataTemplate" ItemsSource="{Binding ChildItems}" DataType="executionPlan:ExecutionPlanItem">
 			<StackPanel>
 				<StackPanel Orientation="Horizontal">
+					<TextBlock Text ="ADAPTIVE ">
+						<TextBlock.Style>
+							<Style TargetType="TextBlock" BasedOn="{StaticResource ItemHeaderBold}">
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding IsInactive}" Value="False">
+										<Setter Property="TextBlock.Visibility" Value="Collapsed" />
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</TextBlock.Style>
+					</TextBlock>
 					<TextBlock Style="{StaticResource ColoredItemHeaderBold}">
 						<Run Text="{Binding Operation}" />
 						<Run Text=" " />
@@ -379,6 +395,17 @@
 		<HierarchicalDataTemplate x:Key="ExecutionStatisticsPlanItemDataTemplate" ItemsSource="{Binding ChildItems}" DataType="executionPlan:ExecutionStatisticsPlanItem">
 			<StackPanel>
 				<StackPanel Orientation="Horizontal">
+					<TextBlock Text ="INACTIVE ">
+						<TextBlock.Style>
+							<Style TargetType="TextBlock" BasedOn="{StaticResource ItemHeaderBold}">
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding IsInactive}" Value="False">
+										<Setter Property="TextBlock.Visibility" Value="Collapsed" />
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</TextBlock.Style>
+					</TextBlock>
 					<TextBlock Style="{StaticResource ColoredItemHeaderBold}">
 						<Run Text="{Binding Operation}" />
 						<Run Text=" " />
@@ -872,7 +899,7 @@
 							        BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
 							        Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
 								<StackPanel Orientation="Horizontal">
-									<TextBlock VerticalAlignment="Center" HorizontalAlignment="Right" FontFamily="Arial" FontSize="12" FontWeight="Bold" Padding="3,0,3,0" Foreground="DarkBlue">
+									<TextBlock VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="12" FontWeight="Bold" Padding="3,0,3,0" Foreground="DarkBlue" Style="{StaticResource PlanItemBaseStyle}">
 										<Run Text="{Binding ExecutionOrder}" /><Run Text=". " />
 									</TextBlock>
 									<ContentPresenter x:Name="PART_Header" ContentSource="Header" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" MinWidth="20" />

@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -100,14 +102,20 @@ namespace SqlPad.Oracle.ModelDataProviders
 		public async Task<TCollection> Build(OracleDataReader reader, CancellationToken cancellationToken)
 		{
 			var planItemCollection = InitializePlanItemCollection();
+			var inactiveMap = new HashSet<int>();
 
 			while (await reader.ReadAsynchronous(cancellationToken))
 			{
-				var item = await CreatePlanItem(reader, cancellationToken);
+				var item = await CreatePlanItem(reader, inactiveMap, cancellationToken);
 
 				FillData(reader, item);
 
 				planItemCollection.Add(item);
+			}
+
+			foreach (var item in planItemCollection)
+			{
+				item.IsInactive = inactiveMap.Contains(item.Id);
 			}
 
 			planItemCollection.Freeze();
@@ -119,12 +127,12 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		protected virtual void FillData(IDataRecord reader, TItem item) { }
 
-		private static async Task<TItem> CreatePlanItem(OracleDataReader reader, CancellationToken cancellationToken)
+		private async Task<TItem> CreatePlanItem(OracleDataReader reader, ICollection<int> inactiveMap, CancellationToken cancellationToken)
 		{
 			var time = OracleReaderValueConvert.ToInt32(reader["TIME"]);
 			var otherData = OracleReaderValueConvert.ToString(await reader.GetValueAsynchronous(reader.GetOrdinal("OTHER_XML"), cancellationToken));
 
-			return
+			var item =
 				new TItem
 				{
 					Id = Convert.ToInt32(reader["ID"]),
@@ -152,6 +160,27 @@ namespace SqlPad.Oracle.ModelDataProviders
 					QueryBlockName = OracleReaderValueConvert.ToString(reader["QBLOCK_NAME"]),
 					Other = String.IsNullOrEmpty(otherData) ? null : XElement.Parse(otherData)
 				};
+
+			ResolveInactiveNodes(item, inactiveMap);
+
+			return item;
+		}
+
+		private static void ResolveInactiveNodes(TItem item, ICollection<int> inactiveMap)
+		{
+			var isAdaptivePlanElement = item.Other?.Elements("info").SingleOrDefault(e => String.Equals(e.Attribute("type").Value, "adaptive_plan"));
+			if (isAdaptivePlanElement == null || !String.Equals(isAdaptivePlanElement.Value, "yes"))
+			{
+				return;
+			}
+
+			var inactiveMapSource =
+				item.Other.Element("display_map")
+					.Elements()
+					.Where(e => String.Equals(e.Attribute("skp").Value, "1"))
+					.Select(e => Convert.ToInt32(e.Attribute("op").Value));
+
+			inactiveMap.AddRange(inactiveMapSource);
 		}
 	}
 }
