@@ -112,11 +112,6 @@
 		</ControlTemplate>
 
 		<Style x:Key="PlanItemBaseStyle" TargetType="TextBlock">
-			<Style.Triggers>
-				<DataTrigger Binding="{Binding IsInactive}" Value="True">
-					<Setter Property="TextBlock.Opacity" Value="0.5" />
-				</DataTrigger>
-			</Style.Triggers>
 			<Style.Setters>
 				<Setter Property="FontFamily" Value="Arial" />
 			</Style.Setters>
@@ -290,6 +285,16 @@
 
 		<HierarchicalDataTemplate x:Key="ExplainPlanItemDataTemplate" ItemsSource="{Binding ChildItems}" DataType="executionPlan:ExecutionPlanItem">
 			<StackPanel>
+				<StackPanel.Style>
+					<Style>
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding IsInactive}" Value="True">
+								<Setter Property="TextBlock.Opacity" Value="0.5" />
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</StackPanel.Style>
+				
 				<StackPanel Orientation="Horizontal">
 					<TextBlock Text ="ADAPTIVE ">
 						<TextBlock.Style>
@@ -394,6 +399,16 @@
 
 		<HierarchicalDataTemplate x:Key="ExecutionStatisticsPlanItemDataTemplate" ItemsSource="{Binding ChildItems}" DataType="executionPlan:ExecutionStatisticsPlanItem">
 			<StackPanel>
+				<StackPanel.Style>
+					<Style>
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding IsInactive}" Value="True">
+								<Setter Property="TextBlock.Opacity" Value="0.5" />
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</StackPanel.Style>
+
 				<StackPanel Orientation="Horizontal">
 					<TextBlock Text ="INACTIVE ">
 						<TextBlock.Style>
@@ -570,7 +585,6 @@
 					<ColumnDefinition Width="Auto" SharedSizeGroup="WorkAreaMemory" />
 					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleWorkAreaTemp" />
 					<ColumnDefinition Width="Auto" SharedSizeGroup="WorkAreaTemp" />
-
 					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleParallelProperties" />
 					<ColumnDefinition Width="Auto" SharedSizeGroup="ParallelProperties" />
 				</Grid.ColumnDefinitions>
@@ -614,9 +628,9 @@
 				<Viewbox.Resources>
 					<CollectionViewSource x:Key="ParallelSlaveSessionItems" Source="{Binding}">
 						<CollectionViewSource.SortDescriptions>
-							<componentModel:SortDescription PropertyName="Value.SessionItem.ParallelServerGroup" />
-							<componentModel:SortDescription PropertyName="Value.SessionItem.ParallelServerSet" />
-							<componentModel:SortDescription PropertyName="Value.SessionItem.ParallelServerNumber" />
+							<componentModel:SortDescription PropertyName="SessionItem.ParallelServerGroup" />
+							<componentModel:SortDescription PropertyName="SessionItem.ParallelServerSet" />
+							<componentModel:SortDescription PropertyName="SessionItem.ParallelServerNumber" />
 						</CollectionViewSource.SortDescriptions>
 					</CollectionViewSource>
 				</Viewbox.Resources>
@@ -624,7 +638,7 @@
 				<ItemsControl ItemsSource="{Binding Source={StaticResource ParallelSlaveSessionItems}}" Grid.IsSharedSizeScope="True">
 					<ItemsControl.ItemTemplate>
 						<DataTemplate>
-							<ContentControl ContentTemplate="{StaticResource SqlMonitorSingleSessionDataTemplate}" Content="{Binding Value}" />
+							<ContentControl ContentTemplate="{StaticResource SqlMonitorSingleSessionDataTemplate}" Content="{Binding}" />
 						</DataTemplate>
 					</ItemsControl.ItemTemplate>
 				</ItemsControl>
@@ -683,11 +697,25 @@
 							<DataTrigger Binding="{Binding IsBeingExecuted}" Value="True">
 								<Setter Property="StackPanel.Background" Value="Chartreuse" />
 							</DataTrigger>
+							<DataTrigger Binding="{Binding IsInactive}" Value="True">
+								<Setter Property="TextBlock.Opacity" Value="0.5" />
+							</DataTrigger>
 						</Style.Triggers>
 					</Style>
 				</StackPanel.Style>
 				
 				<StackPanel Orientation="Horizontal">
+					<TextBlock Text ="INACTIVE ">
+						<TextBlock.Style>
+							<Style TargetType="TextBlock" BasedOn="{StaticResource ItemHeaderBold}">
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding IsInactive}" Value="False">
+										<Setter Property="TextBlock.Visibility" Value="Collapsed" />
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</TextBlock.Style>
+					</TextBlock>
 					<TextBlock Style="{StaticResource ColoredItemHeaderBold}">
 						<Run Text="{Binding Operation}" />
 						<Run Text=" " />
@@ -829,7 +857,7 @@
 					<StackPanel.Resources>
 						<CollectionViewSource x:Key="SessionLongOperations" Source="{Binding SessionLongOperations}">
 							<CollectionViewSource.SortDescriptions>
-								<componentModel:SortDescription PropertyName="Value.SessionId" />
+								<componentModel:SortDescription PropertyName="SessionId" />
 							</CollectionViewSource.SortDescriptions>
 						</CollectionViewSource>
 					</StackPanel.Resources>
@@ -848,7 +876,7 @@
 					<ItemsControl ItemsSource="{Binding Source={StaticResource SessionLongOperations}}" Grid.IsSharedSizeScope="True">
 						<ItemsControl.ItemTemplate>
 							<DataTemplate>
-								<ContentControl ContentTemplate="{StaticResource SessionLongOperationDataTemplate}" Content="{Binding Value}" />
+								<ContentControl ContentTemplate="{StaticResource SessionLongOperationDataTemplate}" Content="{Binding}" />
 							</DataTemplate>
 						</ItemsControl.ItemTemplate>
 					</ItemsControl>
@@ -917,6 +945,7 @@
 							</DataTrigger>
 							<Trigger Property="IsExpanded" Value="false">
 								<Setter TargetName="ItemsHost" Property="Visibility" Value="Collapsed" />
+								<Setter TargetName="VerticalLineBottom" Property="Rectangle.Visibility" Value="Collapsed" />
 							</Trigger>
 							<Trigger Property="HasItems" Value="false">
 								<Setter TargetName="Expander" Property="Visibility" Value="Hidden" />

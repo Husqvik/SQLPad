@@ -155,15 +155,20 @@ namespace SqlPad.Oracle.ModelDataProviders
 		private bool _isBeingExecuted;
 		private DateTime? _lastSampleTime;
 
+		private readonly ObservableCollection<SessionLongOperationCollection> _sessionLongOperations = new ObservableCollection<SessionLongOperationCollection>();
+		private readonly Dictionary<int, SessionLongOperationCollection> _sessionLongOperationsItemMapping = new Dictionary<int, SessionLongOperationCollection>();
+		private readonly ObservableCollection<SqlMonitorSessionPlanItem> _parallelSlaveSessionItems = new ObservableCollection<SqlMonitorSessionPlanItem>();
+		private readonly Dictionary<int, SqlMonitorSessionPlanItem> _parallelSlaveSessionItemMapping = new Dictionary<int, SqlMonitorSessionPlanItem>();
+
 		public SqlMonitorSessionPlanItem AllSessionSummaryPlanItem
 		{
 			get { return _allSessionSummaryPlanItem; }
 			set { UpdateValueAndRaisePropertyChanged(ref _allSessionSummaryPlanItem, value); }
 		}
 
-		public ObservableDictionary<int, SqlMonitorSessionPlanItem> ParallelSlaveSessionItems { get; } = new ObservableDictionary<int, SqlMonitorSessionPlanItem>();
+		public IReadOnlyCollection<SqlMonitorSessionPlanItem> ParallelSlaveSessionItems => _parallelSlaveSessionItems;
 
-		public ObservableDictionary<int, SessionLongOperationCollection> SessionLongOperations { get; } = new ObservableDictionary<int, SessionLongOperationCollection>();
+		public IReadOnlyCollection<SessionLongOperationCollection> SessionLongOperations => _sessionLongOperations;
 
 		public SessionLongOperationCollection QueryCoordinatorLongOperations { get; } = new SessionLongOperationCollection();
 
@@ -179,6 +184,30 @@ namespace SqlPad.Oracle.ModelDataProviders
 		{
 			get { return _lastSampleTime; }
 			set { UpdateValueAndRaisePropertyChanged(ref _lastSampleTime, value); }
+		}
+
+		public SqlMonitorSessionPlanItem GetSessionPlanItem(int sessionId)
+		{
+			SqlMonitorSessionPlanItem sessionPlanItem;
+			if (!_parallelSlaveSessionItemMapping.TryGetValue(sessionId, out sessionPlanItem))
+			{
+				_parallelSlaveSessionItemMapping.Add(sessionId, sessionPlanItem = new SqlMonitorSessionPlanItem { SessionId = sessionId });
+				_parallelSlaveSessionItems.Add(sessionPlanItem);
+			}
+
+			return sessionPlanItem;
+		}
+
+		public SessionLongOperationCollection GetSessionLongOperationCollection(int sessionId)
+		{
+			SessionLongOperationCollection longOperationCollection;
+			if (!_sessionLongOperationsItemMapping.TryGetValue(sessionId, out longOperationCollection))
+			{
+				_sessionLongOperationsItemMapping.Add(sessionId, longOperationCollection = new SessionLongOperationCollection { SessionId = sessionId, PlanItem = this });
+				_sessionLongOperations.Add(longOperationCollection);
+			}
+
+			return longOperationCollection;
 		}
 	}
 
@@ -588,16 +617,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 				var planLineId = Convert.ToInt32(reader["PLAN_LINE_ID"]);
 				var planItem = DataModel.AllItems[planLineId];
 
-				SqlMonitorSessionPlanItem sqlMonitorPlanItem;
-				if (sessionId == DataModel.SessionId)
-				{
-					sqlMonitorPlanItem = queryCoordinatorSessionItems.GetAndAddIfMissing(planLineId);
-				}
-				else if (!planItem.ParallelSlaveSessionItems.TryGetValue(sessionId, out sqlMonitorPlanItem))
-				{
-					sqlMonitorPlanItem = planItem.ParallelSlaveSessionItems.GetAndAddIfMissing(sessionId);
-					sqlMonitorPlanItem.SessionId = sessionId;
-				}
+				var sqlMonitorPlanItem = sessionId == DataModel.SessionId
+					? queryCoordinatorSessionItems.GetAndAddIfMissing(planLineId)
+					: planItem.GetSessionPlanItem(sessionId);
 
 				if (sqlMonitorPlanItem.SessionItem == null)
 				{
@@ -634,7 +656,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 					summaryItem.MergeSessionItem(masterSessionPlanItem);
 				}
 
-				foreach (var planSessionItem in planItem.ParallelSlaveSessionItems.Values)
+				foreach (var planSessionItem in planItem.ParallelSlaveSessionItems)
 				{
 					summaryItem.MergeSessionItem(planSessionItem);
 				}
@@ -705,11 +727,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			{
 				var sessionId = sessionPlanItem.Key.SessionId;
 				var planItem = sessionPlanItem.Key.PlanItem;
-				SessionLongOperationCollection longOperationCollection;
-				if (!planItem.SessionLongOperations.TryGetValue(sessionId, out longOperationCollection))
-				{
-					planItem.SessionLongOperations.Add(sessionId, longOperationCollection = new SessionLongOperationCollection { SessionId = sessionId, PlanItem = planItem });
-				}
+				var longOperationCollection = planItem.GetSessionLongOperationCollection(sessionId);
 
 				longOperationCollection.MergeItems(sessionPlanItem.Value);
 
