@@ -50,7 +50,7 @@ namespace SqlPad.Oracle
 		
 		public bool Column { get; }
 
-		public bool UpdateSetColumn { get; private set; }
+		public bool UpdateSetColumn { get; }
 
 		public bool AllColumns { get; }
 		
@@ -76,7 +76,7 @@ namespace SqlPad.Oracle
 
 		public bool BindVariable { get; }
 		
-		public bool InsertIntoColumn { get; private set; }
+		public bool InsertIntoColumn { get; }
 		
 		public bool InUnparsedData { get; private set; }
 
@@ -220,11 +220,11 @@ namespace SqlPad.Oracle
 				EffectiveTerminal = nearestTerminal;
 			}
 
-			var isColon = String.Equals(nearestTerminal.Id, Terminals.Colon);
+			var isColon = String.Equals(EffectiveTerminal.Id, Terminals.Colon);
 			if (!String.Equals(Statement.RootNode.Id, NonTerminals.CreatePlSqlStatement))
 			{
-				BindVariable = isColon && (String.Equals(nearestTerminal.ParentNode.Id, NonTerminals.AssignmentTriggerReferenceTarget) || String.Equals(nearestTerminal.ParentNode.Id, NonTerminals.BindVariableExpression));
-				BindVariable |= String.Equals(nearestTerminal.Id, Terminals.BindVariableIdentifier);
+				BindVariable = isColon && (String.Equals(EffectiveTerminal.ParentNode.Id, NonTerminals.AssignmentTriggerReferenceTarget) || String.Equals(EffectiveTerminal.ParentNode.Id, NonTerminals.BindVariableExpression));
+				BindVariable |= String.Equals(EffectiveTerminal.Id, Terminals.BindVariableIdentifier);
 			}
 
 			var terminalCandidateSourceToken = isCursorAfterToken || isColon ? nearestTerminal : precedingTerminal;

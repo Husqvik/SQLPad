@@ -71,9 +71,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 			var totalElapsedMicroseconds = OracleReaderValueConvert.ToInt64(reader["ELAPSED_TIME"]);
 			item.TotalElapsedTime = totalElapsedMicroseconds.HasValue ? TimeSpan.FromMilliseconds(totalElapsedMicroseconds.Value / 1000d) : (TimeSpan?)null;
 			item.WorkAreaSizingPolicy = TextInfo.ToTitleCase(OracleReaderValueConvert.ToString(reader["POLICY"]));
-			item.EstimatedOptimalSizeBytes = OracleReaderValueConvert.ToInt64(reader["ESTIMATED_OPTIMAL_SIZE"]) * 1024;
-			item.EstimatedOnePassSizeBytes = OracleReaderValueConvert.ToInt64(reader["ESTIMATED_ONEPASS_SIZE"]) * 1024;
-			item.LastMemoryUsedBytes = OracleReaderValueConvert.ToInt64(reader["LAST_MEMORY_USED"]) * 1024;
+			item.EstimatedOptimalSizeBytes = OracleReaderValueConvert.ToInt64(reader["ESTIMATED_OPTIMAL_SIZE"]);
+			item.EstimatedOnePassSizeBytes = OracleReaderValueConvert.ToInt64(reader["ESTIMATED_ONEPASS_SIZE"]);
+			item.LastMemoryUsedBytes = OracleReaderValueConvert.ToInt64(reader["LAST_MEMORY_USED"]);
 			item.LastExecutionMethod = TextInfo.ToTitleCase(OracleReaderValueConvert.ToString(reader["LAST_EXECUTION"]));
 			item.LastParallelDegree = OracleReaderValueConvert.ToInt32(reader["LAST_DEGREE"]);
 			item.TotalWorkAreaExecutions = OracleReaderValueConvert.ToInt32(reader["TOTAL_EXECUTIONS"]);

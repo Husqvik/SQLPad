@@ -2172,10 +2172,19 @@ ON (EVENTS.ID = SRC.ID)";
 		}
 
 		[Test(Description = @"")]
-		public void TestSuggestionAfterColorStartingBindVariable()
+		public void TestSuggestionAfterColonStartingBindVariable()
 		{
 			const string statement = @"SELECT COUNT(*) FROM SELECTION WHERE SELECTION_ID = :";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 53).ToList();
+			items.Count.ShouldBeGreaterThan(0);
+			items.ForEach(i => i.Category.ShouldBe(OracleCodeCompletionCategory.BindVariable));
+		}
+
+		[Test(Description = @"")]
+		public void TestSuggestionAfterColonStartingBindVariableBeforeClosingParenthesis()
+		{
+			const string statement = @"SELECT TO_DATE(:) FROM DUAL";
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 16).ToList();
 			items.Count.ShouldBeGreaterThan(0);
 			items.ForEach(i => i.Category.ShouldBe(OracleCodeCompletionCategory.BindVariable));
 		}

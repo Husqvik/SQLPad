@@ -22,7 +22,7 @@ namespace SqlPad.Oracle.Database.Test
 	public class OracleDatabaseModelTest : TemporaryDirectoryTestFixture
 	{
 		private const string LoopbackDatabaseLinkName = "HQ_PDB@LOOPBACK";
-		private const string ExplainPlanTableName = "EXPLAIN_PLAN";
+		private const string ExplainPlanTableName = "TOAD_PLAN_TABLE";
 		private static readonly ConnectionStringSettings ConnectionString;
 
 		private const string ExplainPlanTestQuery =
@@ -254,6 +254,7 @@ WHERE
 			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
 				var connectionAdapter = databaseModel.CreateConnectionAdapter();
+				CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
 				var statementBatchResult = await connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel }, GatherExecutionStatistics = true }, CancellationToken.None);
 				statementBatchResult.StatementResults.Count.ShouldBe(1);
 				var result = statementBatchResult.StatementResults[0];
@@ -275,7 +276,6 @@ WHERE
 				columnHeaders[9].DatabaseDataType.ShouldBe("Date");
 
 				var resultSet = await connectionAdapter.FetchRecordsAsync(resultInfo, Int32.MaxValue, CancellationToken.None);
-				CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
 
 				resultSet.Count.ShouldBe(1);
 				var firstRow = resultSet[0];
@@ -307,19 +307,19 @@ WHERE
 				((OracleSimpleValue)firstRow[3]).Value.ShouldBe(String.Empty);
 				firstRow[4].ShouldBeTypeOf<OracleTimestampWithTimeZone>();
 				var timestampWithTimezoneValue = (OracleTimestampWithTimeZone)firstRow[4];
-				timestampWithTimezoneValue.ToString().ShouldBe("11/01/2014 15:16:32.123456789 +02:00");
+				timestampWithTimezoneValue.ToString().ShouldBe("01/11/2014 15:16:32.123456789 +02:00");
 				timestampWithTimezoneValue.ToSqlLiteral().ShouldBe("TIMESTAMP'2014-11-1 15:16:32.123456789 +02:00'");
 				timestampWithTimezoneValue.ToXml().ShouldBe("2014-11-01T15:16:32.123");
 				timestampWithTimezoneValue.ToJson().ShouldBe("\"2014-11-01T15:16:32.123+02:00\"");
 				firstRow[5].ShouldBeTypeOf<OracleTimestamp>();
 				var timestampValue = (OracleTimestamp)firstRow[5];
-				timestampValue.ToString().ShouldBe("11/01/2014 14:16:32.123456789");
+				timestampValue.ToString().ShouldBe("01/11/2014 14:16:32.123456789");
 				timestampValue.ToSqlLiteral().ShouldBe("TIMESTAMP'2014-11-1 14:16:32.123456789'");
 				timestampValue.ToXml().ShouldBe("2014-11-01T14:16:32.123");
 				timestampValue.ToJson().ShouldBe("\"2014-11-01T14:16:32.123\"");
 				firstRow[6].ShouldBeTypeOf<OracleNumber>();
 				var numberValue = (OracleNumber)firstRow[6];
-				var expectedValue = $"0{CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator}1234567890123456789012345678901234567891";
+				var expectedValue = "0.1234567890123456789012345678901234567891";
 				numberValue.ToString().ShouldBe(expectedValue);
 				numberValue.ToSqlLiteral().ShouldBe("0.1234567890123456789012345678901234567891");
 				firstRow[7].ShouldBeTypeOf<OracleXmlValue>();
@@ -330,7 +330,7 @@ WHERE
 				xmlValue.ToSqlLiteral().ShouldBe("XMLTYPE('<root/>\n')");
 				firstRow[8].ShouldBeTypeOf<OracleNumber>();
 				numberValue = (OracleNumber)firstRow[8];
-				expectedValue = $"1{CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator}23456789012345678901234567890123456789E-125";
+				expectedValue = "1.23456789012345678901234567890123456789E-125";
 				numberValue.ToString().ShouldBe(expectedValue);
 				numberValue.ToSqlLiteral().ShouldBe("1.23456789012345678901234567890123456789E-125");
 				firstRow[9].ShouldBeTypeOf<OracleDateTime>();
@@ -653,7 +653,7 @@ WHERE
 		[Test]
 		public async Task TestDisplayCursorDataProvider()
 		{
-			var displayCursorDataProvider = DisplayCursorDataProvider.CreateDisplayLastCursorDataProvider();
+			var displayCursorDataProvider = DisplayCursorDataProvider.CreateDisplayLastCursorDataProvider(new Version(12, 1));
 			await ExecuteDataProvider(displayCursorDataProvider);
 
 			displayCursorDataProvider.PlanText.ShouldNotBe(null);

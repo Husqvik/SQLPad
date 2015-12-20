@@ -127,7 +127,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		protected virtual void FillData(IDataRecord reader, TItem item) { }
 
-		private async Task<TItem> CreatePlanItem(OracleDataReader reader, ICollection<int> inactiveMap, CancellationToken cancellationToken)
+		private static async Task<TItem> CreatePlanItem(OracleDataReader reader, ICollection<int> inactiveMap, CancellationToken cancellationToken)
 		{
 			var time = OracleReaderValueConvert.ToInt32(reader["TIME"]);
 			var otherData = OracleReaderValueConvert.ToString(await reader.GetValueAsynchronous(reader.GetOrdinal("OTHER_XML"), cancellationToken));

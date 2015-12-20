@@ -866,8 +866,8 @@
 
 		<!-- TreeViewItem -->
 		<Style TargetType="{x:Type TreeViewItem}">
+			<EventSetter Event="MouseLeftButtonUp" Handler="TreeViewItemMouseLeftButtonDownHandler" />
 			<Setter Property="Background" Value="Transparent" />
-			<Setter Property="Padding" Value="1,0,0,0" />
 			<Setter Property="IsExpanded" Value="True" />
 			<Setter Property="Template">
 				<Setter.Value>
@@ -908,7 +908,6 @@
 							<ItemsPresenter x:Name="ItemsHost" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" />
 						</Grid>
 						<ControlTemplate.Triggers>
-
 							<!-- This trigger changes the connecting lines if the item is the last in the list -->
 							<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Converter={StaticResource LineConverter}}" Value="true">
 								<Setter TargetName="VerticalLine" Property="VerticalAlignment" Value="Stretch" />
@@ -937,7 +936,6 @@
 							<Trigger Property="IsSelected" Value="true">
 								<Setter TargetName="RootGrid" Property="Background" Value="Yellow" />
 								<Setter TargetName="SelectionEdge" Property="Stroke" Value="Black" />
-								<!--<Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}"/>-->
 							</Trigger>
 							<MultiTrigger>
 								<MultiTrigger.Conditions>
@@ -945,7 +943,6 @@
 									<Condition Property="IsSelectionActive" Value="false" />
 								</MultiTrigger.Conditions>
 								<Setter TargetName="RootGrid" Property="Background" Value="LightGray" />
-								<!--<Setter Property="Foreground" Value="White"/>-->
 							</MultiTrigger>
 							<Trigger Property="IsEnabled" Value="false">
 								<Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />

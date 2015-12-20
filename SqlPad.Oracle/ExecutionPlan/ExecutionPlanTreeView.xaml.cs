@@ -91,6 +91,15 @@ namespace SqlPad.Oracle.ExecutionPlan
 				Messages.ShowError(e.Message, owner: App.MainWindow);
 			}
 		}
+
+		private void TreeViewItemMouseLeftButtonDownHandler(object sender, MouseButtonEventArgs e)
+		{
+			var item = (TreeViewItem)sender;
+			if (Keyboard.Modifiers == ModifierKeys.Shift && item.IsSelected)
+			{
+				item.IsSelected = false;
+			}
+		}
 	}
 
 	internal class PlanItemTemplateSelector : DataTemplateSelector

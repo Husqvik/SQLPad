@@ -1,4 +1,4 @@
-SQLPad 0.4.0.111
+SQLPad 0.4.0.112
 ================
 
 SQLPad is an experimental SQL editor focused to quick and comfortable work.
@@ -230,10 +230,16 @@ Each connection string requires an infrastructure factory configuration record:
 			<TargetTable Name="EXPLAIN_PLAN" />
 		</ExecutionPlan>
 		<StartupScript>
-			-- Enter optional script to execute when database connection is established.
+			-- Enter optional global script to execute when database connection is established.
 		</StartupScript>
-		<RemoteTraceDirectory>\\coresrv01\c$\Oracle\diag\rdbms\orcl\orcl\trace</RemoteTraceDirectory>
 		<TKProfPath>c:\Oracle\product\12.1.0\dbhome_1\BIN\tkprof.exe</TKProfPath>
+		<Connections>
+			<Connection ConnectionName="Oracle 12c PDB EZ-Connect" RemoteTraceDirectory="c:\Oracle\diag\rdbms\hq12c\hq12c\trace\">
+				<StartupScript>
+					-- Enter optional script to execute when database connection is established.
+				</StartupScript>
+			</Connection>
+		</Connections>
 	</OracleConfiguration>
 
 `StartupScript` - optional initialization script executed when connection to database is established
