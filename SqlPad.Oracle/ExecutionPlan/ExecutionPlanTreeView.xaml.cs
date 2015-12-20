@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -125,6 +126,38 @@ namespace SqlPad.Oracle.ExecutionPlan
 			}
 
 			return ExplainPlanTemplateTemplate;
+		}
+	}
+
+	internal class LastExecutionWorkAreaInfoConverter : ValueConverterBase
+	{
+		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			var planItem = value as ExecutionStatisticsPlanItem;
+			return planItem?.LastMemoryUsedBytes == null
+				? String.Empty
+				: $"{DataSpaceConverter.PrettyPrint(planItem.LastMemoryUsedBytes.Value)} ({planItem.LastExecutionMethod}, {planItem.WorkAreaSizingPolicy})";
+		}
+	}
+
+	internal class CumulativeExecutionWorkAreaInfoConverter : ValueConverterBase
+	{
+		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			var planItem = value as ExecutionStatisticsPlanItem;
+			return planItem?.LastMemoryUsedBytes == null
+				? String.Empty
+				: $"{planItem.TotalWorkAreaExecutions} total/{planItem.OptimalWorkAreaExecutions} optimal/{planItem.OnePassWorkAreaExecutions} one-pass/{planItem.MultiPassWorkAreaExecutions} multi-pass";
+		}
+	}
+
+	internal class TreeViewLineConverter : ValueConverterBase
+	{
+		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			var item = (TreeViewItem)value;
+			var itemsControl = ItemsControl.ItemsControlFromItemContainer(item);
+			return itemsControl.ItemContainerGenerator.IndexFromContainer(item) == itemsControl.Items.Count - 1;
 		}
 	}
 }

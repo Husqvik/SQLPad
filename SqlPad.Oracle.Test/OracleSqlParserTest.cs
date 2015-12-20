@@ -3284,6 +3284,24 @@ END;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
+			[Test(Description = @"")]
+			public void TestRaisePackageException()
+			{
+				const string statement1 = @"BEGIN RAISE test_schema.test_package.test_exception; END;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
+
+			[Test(Description = @"")]
+			public void TestEmptyDeclareSection()
+			{
+				const string statement1 = @"DECLARE BEGIN NULL; END;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
+
 			public class Triggers
 			{
 				[Test(Description = @"")]

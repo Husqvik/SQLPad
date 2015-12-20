@@ -14744,7 +14744,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Declare" />
-          <NonTerminal Id="ProgramDeclareSection" />
+          <NonTerminal Id="ProgramDeclareSection" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -14783,6 +14783,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Raise" />
+          <NonTerminal Id="Prefix" IsOptional="true" />
           <Terminal Id="ExceptionIdentifier" IsOptional="true" />
           <Terminal Id="Semicolon" />
         </Sequence>
