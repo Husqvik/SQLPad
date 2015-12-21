@@ -22,7 +22,7 @@ namespace SqlPad.Oracle.Database.Test
 	public class OracleDatabaseModelTest : TemporaryDirectoryTestFixture
 	{
 		private const string LoopbackDatabaseLinkName = "HQ_PDB@LOOPBACK";
-		private const string ExplainPlanTableName = "TOAD_PLAN_TABLE";
+		private const string ExplainPlanTableName = "EXPLAIN_PLAN";
 		private static readonly ConnectionStringSettings ConnectionString;
 
 		private const string ExplainPlanTestQuery =
@@ -251,10 +251,11 @@ WHERE
 					BindVariables = new BindVariableModel[0]
 				};
 
+			CultureInfo.CurrentUICulture = CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+
 			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
 				var connectionAdapter = databaseModel.CreateConnectionAdapter();
-				CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
 				var statementBatchResult = await connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel }, GatherExecutionStatistics = true }, CancellationToken.None);
 				statementBatchResult.StatementResults.Count.ShouldBe(1);
 				var result = statementBatchResult.StatementResults[0];
@@ -307,13 +308,13 @@ WHERE
 				((OracleSimpleValue)firstRow[3]).Value.ShouldBe(String.Empty);
 				firstRow[4].ShouldBeTypeOf<OracleTimestampWithTimeZone>();
 				var timestampWithTimezoneValue = (OracleTimestampWithTimeZone)firstRow[4];
-				timestampWithTimezoneValue.ToString().ShouldBe("01/11/2014 15:16:32.123456789 +02:00");
+				timestampWithTimezoneValue.ToString().ShouldBe("11/01/2014 15:16:32.123456789 +02:00");
 				timestampWithTimezoneValue.ToSqlLiteral().ShouldBe("TIMESTAMP'2014-11-1 15:16:32.123456789 +02:00'");
 				timestampWithTimezoneValue.ToXml().ShouldBe("2014-11-01T15:16:32.123");
 				timestampWithTimezoneValue.ToJson().ShouldBe("\"2014-11-01T15:16:32.123+02:00\"");
 				firstRow[5].ShouldBeTypeOf<OracleTimestamp>();
 				var timestampValue = (OracleTimestamp)firstRow[5];
-				timestampValue.ToString().ShouldBe("01/11/2014 14:16:32.123456789");
+				timestampValue.ToString().ShouldBe("11/01/2014 14:16:32.123456789");
 				timestampValue.ToSqlLiteral().ShouldBe("TIMESTAMP'2014-11-1 14:16:32.123456789'");
 				timestampValue.ToXml().ShouldBe("2014-11-01T14:16:32.123");
 				timestampValue.ToJson().ShouldBe("\"2014-11-01T14:16:32.123\"");

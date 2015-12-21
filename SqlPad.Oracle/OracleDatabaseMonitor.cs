@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -628,10 +629,15 @@ namespace SqlPad.Oracle
 
 			yield return new ContextAction(actionName, executionHandler, null, true);
 
+			var remoteTraceDirectory = OracleConfiguration.Configuration.GetRemoteTraceDirectory(_connectionString.Name);
+			var traceFileName = String.IsNullOrWhiteSpace(remoteTraceDirectory)
+				? sessionValues.TraceFile
+				: Path.Combine(remoteTraceDirectory, new FileInfo(sessionValues.TraceFile).Name);
+
 			executionHandler =
 				new CommandExecutionHandler
 				{
-					ExecutionHandler = context => OracleTraceViewer.NavigateToTraceFile(sessionValues.TraceFile)
+					ExecutionHandler = context => OracleTraceViewer.NavigateToTraceFile(traceFileName)
 				};
 
 			yield return new ContextAction("Navigate to trace file", executionHandler, null);
@@ -644,7 +650,7 @@ namespace SqlPad.Oracle
 			var commandText =
 $@"BEGIN
 	EXECUTE IMMEDIATE 'ALTER SESSION SET TRACEFILE_IDENTIFIER = {OracleTraceIdentifier.Normalize(traceIdentifier)}';
-	dbms_monitor.session_trace_enable(session_id => :sid, serial_num => :serial, waits => {waits}, binds => {binds});
+	dbms_monitor.session_trace_enable(session_id => :sid, serial_num => :serial, waits => {waits.ToString().ToUpperInvariant()}, binds => {binds.ToString().ToUpperInvariant()});
 END;";
 			await SetSessionTracing(sessionData, commandText, cancellationToken);
 		}
