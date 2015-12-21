@@ -14390,7 +14390,7 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="Expression" />
-          <NonTerminal Id="ChainedPlSqlBooleanExpression" IsOptional="true" />
+          <NonTerminal Id="LogicalOperatorChainedPlSqlExpression" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="LeftParenthesis" />
@@ -14547,29 +14547,29 @@
         <Sequence>
           <Terminal Id="PlSqlCompilationParameter" />
           <NonTerminal Id="PlSqlBooleanExpressionConditionExtension" IsOptional="true" />
-          <NonTerminal Id="ChainedPlSqlBooleanExpression" IsOptional="true" />
+          <NonTerminal Id="LogicalOperatorChainedPlSqlExpression" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="PlSqlBooleanExpression" />
           <Terminal Id="RightParenthesis" />
           <NonTerminal Id="PlSqlBooleanExpressionConditionExtension" IsOptional="true" />
-          <NonTerminal Id="ChainedPlSqlBooleanExpression" IsOptional="true" />
+          <NonTerminal Id="LogicalOperatorChainedPlSqlExpression" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="CursorIdentifier" />
           <Terminal Id="PercentCharacter" />
           <NonTerminal Id="CursorBooleanFunction" />
           <NonTerminal Id="PlSqlBooleanExpressionConditionExtension" IsOptional="true" />
-          <NonTerminal Id="ChainedPlSqlBooleanExpression" IsOptional="true" />
+          <NonTerminal Id="LogicalOperatorChainedPlSqlExpression" IsOptional="true" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="PlSqlBooleanLiteral" />
-          <NonTerminal Id="ChainedPlSqlBooleanExpression" IsOptional="true" />
+          <NonTerminal Id="LogicalOperatorChainedPlSqlExpression" IsOptional="true" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="PlSqlConditionalPredicate" />
-          <NonTerminal Id="ChainedPlSqlBooleanExpression" IsOptional="true" />
+          <NonTerminal Id="LogicalOperatorChainedPlSqlExpression" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="Not" />
@@ -14595,7 +14595,7 @@
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="ChainedPlSqlBooleanExpression">
+    <Rule StartingNonTerminal="LogicalOperatorChainedPlSqlExpression">
       <Sequences>
         <Sequence>
           <NonTerminal Id="LogicalOperator" />

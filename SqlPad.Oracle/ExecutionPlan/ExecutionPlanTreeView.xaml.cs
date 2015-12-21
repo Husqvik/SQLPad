@@ -96,7 +96,7 @@ namespace SqlPad.Oracle.ExecutionPlan
 		private void TreeViewItemMouseLeftButtonDownHandler(object sender, MouseButtonEventArgs e)
 		{
 			var item = (TreeViewItem)sender;
-			if (Keyboard.Modifiers == ModifierKeys.Shift && item.IsSelected)
+			if (item.IsSelected && (Keyboard.Modifiers == ModifierKeys.Shift || Keyboard.Modifiers == ModifierKeys.Control))
 			{
 				item.IsSelected = false;
 			}

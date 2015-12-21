@@ -184,7 +184,6 @@ namespace SqlPad.Oracle
 			public const string CellReferenceOptions = "CellReferenceOptions";
 			public const string ChainedCondition = "ChainedCondition";
 			public const string ChainedModifyColumnPropertiesOrModifyVirtualColumnPropertiesOrModifyColumnVisibility = "ChainedModifyColumnPropertiesOrModifyVirtualColumnPropertiesOrModifyColumnVisibility";
-			public const string ChainedPlSqlBooleanExpression = "ChainedPlSqlBooleanExpression";
 			public const string ChainedVirtualColumnDefinitionOrColumnDefinition = "ChainedVirtualColumnDefinitionOrColumnDefinition";
 			public const string CharacterCodeFunction = "CharacterCodeFunction";
 			public const string CharacterCodeParameterClause = "CharacterCodeParameterClause";
@@ -780,6 +779,7 @@ namespace SqlPad.Oracle
 			public const string LockTableStatement = "LockTableStatement";
 			public const string LoggingClause = "LoggingClause";
 			public const string LogicalOperator = "LogicalOperator";
+			public const string LogicalOperatorChainedPlSqlExpression = "LogicalOperatorChainedPlSqlExpression";
 			public const string LowOrHigh = "LowOrHigh";
 			public const string MainModel = "MainModel";
 			public const string MainModelName = "MainModelName";
