@@ -5,6 +5,8 @@ namespace SqlPad
 {
 	public class DataSpaceConverter : ValueConverterBase
 	{
+		public static readonly DataSpaceConverter Instance = new DataSpaceConverter();
+
 		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			return value == null ? ValueNotAvailable : PrettyPrint((long)value);

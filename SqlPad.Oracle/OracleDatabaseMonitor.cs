@@ -415,28 +415,32 @@ namespace SqlPad.Oracle
 				ColumnIndex = 55,
 				Name = "PGA Used Memory",
 				DataType = typeof (decimal),
-				DatabaseDataType = Terminals.Decimal
+				DatabaseDataType = Terminals.Decimal,
+				CustomConverter = DataSpaceConverter.Instance
 			},
 			new ColumnHeader
 			{
 				ColumnIndex = 56,
 				Name = "PGA Allocated Memory",
 				DataType = typeof (decimal),
-				DatabaseDataType = Terminals.Decimal
+				DatabaseDataType = Terminals.Decimal,
+				CustomConverter = DataSpaceConverter.Instance
 			},
 			new ColumnHeader
 			{
 				ColumnIndex = 57,
 				Name = "PGA Freeable Memory",
 				DataType = typeof (decimal),
-				DatabaseDataType = Terminals.Decimal
+				DatabaseDataType = Terminals.Decimal,
+				CustomConverter = DataSpaceConverter.Instance
 			},
 			new ColumnHeader
 			{
 				ColumnIndex = 58,
 				Name = "PGA Maximum Memory",
 				DataType = typeof (decimal),
-				DatabaseDataType = Terminals.Decimal
+				DatabaseDataType = Terminals.Decimal,
+				CustomConverter = DataSpaceConverter.Instance
 			},
 			new ColumnHeader
 			{

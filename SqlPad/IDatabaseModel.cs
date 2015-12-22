@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Data;
 
 namespace SqlPad
 {
@@ -85,6 +86,8 @@ namespace SqlPad
 		public string DatabaseDataType { get; set; }
 
 		public Type DataType { get; set; }
+
+		public IValueConverter CustomConverter { get; set; }
 
 		public IReadOnlyCollection<IReferenceDataSource> ParentReferenceDataSources { get; set; }
 

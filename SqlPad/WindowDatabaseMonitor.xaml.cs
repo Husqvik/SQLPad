@@ -185,7 +185,7 @@ namespace SqlPad
 					var column =
 						new DataGridTextColumn
 						{
-							Binding = new Binding($"{nameof(DatabaseSession.Values)}[{columnHeader.ColumnIndex}]") { Converter = CellValueConverter.Instance },
+							Binding = new Binding($"{nameof(DatabaseSession.Values)}[{columnHeader.ColumnIndex}]") { Converter = columnHeader.CustomConverter ?? CellValueConverter.Instance },
 							EditingElementStyle = (Style)Application.Current.Resources["CellTextBoxStyleReadOnly"]
 						};
 
