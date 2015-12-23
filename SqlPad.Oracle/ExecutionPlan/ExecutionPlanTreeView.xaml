@@ -148,26 +148,44 @@
 				</DataTrigger>
 			</Style.Triggers>
 		</Style>
-		<Style x:Key="ItemHeader" TargetType="TextBlock" BasedOn="{StaticResource PlanItemBaseStyle}">
-			<Style.Setters>
-				<Setter Property="Foreground" Value="DarkBlue" />
-				<Setter Property="FontSize" Value="12" />
-			</Style.Setters>
-		</Style>
 		<Style x:Key="ItemHeaderOther" TargetType="TextBlock" BasedOn="{StaticResource PlanItemBaseStyle}">
 			<Style.Setters>
 				<Setter Property="FontSize" Value="12" />
 			</Style.Setters>
 		</Style>
-		<Style x:Key="PlanStatisticValueStyle" TargetType="TextBlock" BasedOn="{StaticResource PlanItemBaseStyle}">
+		<Style x:Key="ItemHeader" TargetType="TextBlock" BasedOn="{StaticResource ItemHeaderOther}">
 			<Style.Setters>
-				<Setter Property="Foreground" Value="DarkRed" />
-				<Setter Property="FontSize" Value="11" />
+				<Setter Property="Foreground" Value="DarkBlue" />
 			</Style.Setters>
 		</Style>
 		<Style x:Key="OtherLabelStyle" TargetType="TextBlock" BasedOn="{StaticResource PlanItemBaseStyle}">
 			<Style.Setters>
 				<Setter Property="FontSize" Value="11" />
+			</Style.Setters>
+		</Style>
+		<Style x:Key="PlanStatisticValueStyle" TargetType="TextBlock" BasedOn="{StaticResource OtherLabelStyle}">
+			<Style.Setters>
+				<Setter Property="Foreground" Value="DarkRed" />
+			</Style.Setters>
+		</Style>
+
+		<Style x:Key="InactiveMarker" TargetType="Border">
+			<Style.Triggers>
+				<DataTrigger Binding="{Binding IsInactive}" Value="False">
+					<Setter Property="Border.Visibility" Value="Collapsed" />
+				</DataTrigger>
+			</Style.Triggers>
+			<Setter Property="CornerRadius" Value="2" />
+			<Setter Property="Padding" Value="4,0,4,0" />
+			<Setter Property="Margin" Value="0,0,2,0" />
+			<Setter Property="Background" Value="DimGray" />
+		</Style>
+
+		<Style x:Key="InactiveHeader" TargetType="TextBlock" BasedOn="{StaticResource OtherLabelStyle}">
+			<Style.Setters>
+				<Setter Property="Foreground" Value="White" />
+				<Setter Property="FontWeight" Value="Bold" />
+				<Setter Property="VerticalAlignment" Value="Center" />
 			</Style.Setters>
 		</Style>
 
@@ -284,17 +302,9 @@
 		<HierarchicalDataTemplate x:Key="ExplainPlanItemDataTemplate" ItemsSource="{Binding ChildItems}" DataType="executionPlan:ExecutionPlanItem">
 			<StackPanel>
 				<StackPanel Orientation="Horizontal">
-					<TextBlock Text ="ADAPTIVE ">
-						<TextBlock.Style>
-							<Style TargetType="TextBlock" BasedOn="{StaticResource ItemHeaderBold}">
-								<Style.Triggers>
-									<DataTrigger Binding="{Binding IsInactive}" Value="False">
-										<Setter Property="TextBlock.Visibility" Value="Collapsed" />
-									</DataTrigger>
-								</Style.Triggers>
-							</Style>
-						</TextBlock.Style>
-					</TextBlock>
+					<Border Style="{StaticResource InactiveMarker}">
+						<TextBlock Text ="ADAPTIVE" Style="{StaticResource InactiveHeader}" />
+					</Border>
 					<TextBlock Style="{StaticResource ColoredItemHeaderBold}">
 						<Run Text="{Binding Operation}" />
 						<Run Text=" " />
@@ -388,17 +398,9 @@
 		<HierarchicalDataTemplate x:Key="ExecutionStatisticsPlanItemDataTemplate" ItemsSource="{Binding ChildItems}" DataType="executionPlan:ExecutionStatisticsPlanItem">
 			<StackPanel>
 				<StackPanel Orientation="Horizontal">
-					<TextBlock Text ="INACTIVE ">
-						<TextBlock.Style>
-							<Style TargetType="TextBlock" BasedOn="{StaticResource ItemHeaderBold}">
-								<Style.Triggers>
-									<DataTrigger Binding="{Binding IsInactive}" Value="False">
-										<Setter Property="TextBlock.Visibility" Value="Collapsed" />
-									</DataTrigger>
-								</Style.Triggers>
-							</Style>
-						</TextBlock.Style>
-					</TextBlock>
+					<Border Style="{StaticResource InactiveMarker}">
+						<TextBlock Text ="INACTIVE" Style="{StaticResource InactiveHeader}" />
+					</Border>
 					<TextBlock Style="{StaticResource ColoredItemHeaderBold}">
 						<Run Text="{Binding Operation}" />
 						<Run Text=" " />
@@ -583,13 +585,13 @@
 				<TextBlock Grid.Column="13" Text="{Binding PhysicalWriteBytes, Converter={StaticResource DataSpaceConverter}}" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
 				<TextBlock Grid.Column="14" Text="I/O interconnection: " Margin="4,0,0,0" Style="{StaticResource PlanStatisticValueStyle}" />
 				<TextBlock Grid.Column="15" Text="{Binding IoInterconnectBytes, Converter={StaticResource DataSpaceConverter}}" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
-				<TextBlock Grid.Column="16" Text="Work area: " Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaMemoryBytes, Converter={StaticResource ObjectToVisibilityConverter}}" />
-				<TextBlock Grid.Column="17" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaMemoryBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
+				<TextBlock Grid.Column="16" Text="Work area: " Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaMemoryMaxBytes, Converter={StaticResource ObjectToVisibilityConverter}}" />
+				<TextBlock Grid.Column="17" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaMemoryMaxBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
 					<Run Text="{Binding WorkAreaMemoryBytes, Converter={StaticResource DataSpaceConverter}}" />
 					<Run Text="(max: " /><Run Text="{Binding WorkAreaMemoryMaxBytes, Converter={StaticResource DataSpaceConverter}}" /><Run Text=")" />
 				</TextBlock>
-				<TextBlock Grid.Column="18" Text="Temp: " Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaTempBytes, Converter={StaticResource ObjectToVisibilityConverter}}" />
-				<TextBlock Grid.Column="19" Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaTempBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
+				<TextBlock Grid.Column="18" Text="Temp: " Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaTempMaxBytes, Converter={StaticResource ObjectToVisibilityConverter}}" />
+				<TextBlock Grid.Column="19" Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaTempMaxBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
 					<Run Text="{Binding WorkAreaTempBytes, Converter={StaticResource DataSpaceConverter}}" />
 					<Run Text="(max: " /><Run Text="{Binding WorkAreaTempMaxBytes, Converter={StaticResource DataSpaceConverter}}" /><Run Text=")" />
 				</TextBlock>
@@ -680,17 +682,9 @@
 				</StackPanel.Style>
 				
 				<StackPanel Orientation="Horizontal">
-					<TextBlock Text ="INACTIVE ">
-						<TextBlock.Style>
-							<Style TargetType="TextBlock" BasedOn="{StaticResource ItemHeaderBold}">
-								<Style.Triggers>
-									<DataTrigger Binding="{Binding IsInactive}" Value="False">
-										<Setter Property="TextBlock.Visibility" Value="Collapsed" />
-									</DataTrigger>
-								</Style.Triggers>
-							</Style>
-						</TextBlock.Style>
-					</TextBlock>
+					<Border Style="{StaticResource InactiveMarker}">
+						<TextBlock Text ="INACTIVE" Style="{StaticResource InactiveHeader}" />
+					</Border>
 					<TextBlock Style="{StaticResource ColoredItemHeaderBold}">
 						<Run Text="{Binding Operation}" />
 						<Run Text=" " />
