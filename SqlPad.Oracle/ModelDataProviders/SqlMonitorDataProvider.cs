@@ -45,6 +45,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 	public class SqlMonitorPlanItemCollection : ExecutionPlanItemCollectionBase<SqlMonitorPlanItem>
 	{
 		private readonly Dictionary<int, SqlMonitorSessionItem> _sessionItemMapping = new Dictionary<int, SqlMonitorSessionItem>();
+		private readonly Dictionary<SqlMonitorPlanItem, List<ActiveSessionHistoryItem>> _planItemActiveSessionHistoryItems = new Dictionary<SqlMonitorPlanItem, List<ActiveSessionHistoryItem>>();
 
 		private int _totalActiveSessionHistorySamples;
 
@@ -113,7 +114,19 @@ namespace SqlPad.Oracle.ModelDataProviders
 		{
 			foreach (var historyItem in historyItems)
 			{
-				historyItem.PlanItem.AddActiveSessionHistoryItem(historyItem);
+				SqlMonitorSessionItem sessionItem;
+				if (_sessionItemMapping.TryGetValue(historyItem.SessionId, out sessionItem))
+				{
+					sessionItem.AddActiveSessionHistoryItem(historyItem);
+				}
+
+				List<ActiveSessionHistoryItem> planHistoryItems;
+				if (!_planItemActiveSessionHistoryItems.TryGetValue(historyItem.PlanItem, out planHistoryItems))
+				{
+					_planItemActiveSessionHistoryItems[historyItem.PlanItem] = planHistoryItems = new List<ActiveSessionHistoryItem>();
+				}
+
+				planHistoryItems.Add(historyItem);
 
 				if (LastSampleTime == null || historyItem.SampleTime > LastSampleTime)
 				{
@@ -123,14 +136,21 @@ namespace SqlPad.Oracle.ModelDataProviders
 				_totalActiveSessionHistorySamples++;
 			}
 
-			foreach (var planLineItem in AllItems.Values)
+			if (LastSampleTime == null)
 			{
-				planLineItem.IsBeingExecuted = LastSampleTime.HasValue && planLineItem.ActiveSessionHistoryItems.Values.Any(items => items.LastOrDefault()?.SampleTime >= LastSampleTime.Value.Add(-RefreshPeriod));
+				return;
+			}
+
+			var recentActivityThreshold = LastSampleTime.Value.Add(-RefreshPeriod);
+
+			foreach (var planItemActiveSessionHistoryItems in _planItemActiveSessionHistoryItems)
+			{
+				planItemActiveSessionHistoryItems.Key.IsBeingExecuted = planItemActiveSessionHistoryItems.Value.Last().SampleTime >= recentActivityThreshold;
 
 				if (_totalActiveSessionHistorySamples > 0)
 				{
-					var planItemSamples = planLineItem.ActiveSessionHistoryItems.Sum(kvp => kvp.Value.Count);
-					planLineItem.ActivityRatio = planItemSamples / (decimal)_totalActiveSessionHistorySamples;
+					var planItemSamples = (decimal)planItemActiveSessionHistoryItems.Value.Count;
+					planItemActiveSessionHistoryItems.Key.ActivityRatio = planItemSamples / _totalActiveSessionHistorySamples;
 				}
 			}
 		}
@@ -178,7 +198,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 		public long TempSpaceAllocated { get; set; }
 	}
 
-	[DebuggerDisplay("SqlMonitorPlanItem (Id={Id}; Operation={Operation}; ObjectName={ObjectName}; Depth={Depth}; IsLeaf={IsLeaf}; ExecutionOrder={ExecutionOrder})")]
+	[DebuggerDisplay("SqlMonitorPlanItem (Id={Id}; Operation={Operation}; ObjectName={ObjectName}; IsInactive={IsInactive}; IsBeingExecuted={IsBeingExecuted}; ExecutionOrder={ExecutionOrder}; Depth={Depth}; IsLeaf={IsLeaf})")]
 	public class SqlMonitorPlanItem : ExecutionPlanItem
 	{
 		private SqlMonitorSessionPlanItem _allSessionSummaryPlanItem;
@@ -189,7 +209,6 @@ namespace SqlPad.Oracle.ModelDataProviders
 		private readonly Dictionary<int, SessionLongOperationCollection> _sessionLongOperationsItemMapping = new Dictionary<int, SessionLongOperationCollection>();
 		private readonly ObservableCollection<SqlMonitorSessionPlanItem> _parallelSlaveSessionItems = new ObservableCollection<SqlMonitorSessionPlanItem>();
 		private readonly Dictionary<int, SqlMonitorSessionPlanItem> _parallelSlaveSessionItemMapping = new Dictionary<int, SqlMonitorSessionPlanItem>();
-		private readonly Dictionary<int, ObservableCollection<ActiveSessionHistoryItem>> _activeSessionHistoryItemMapping = new Dictionary<int, ObservableCollection<ActiveSessionHistoryItem>>();
 
 		public SqlMonitorSessionPlanItem AllSessionSummaryPlanItem
 		{
@@ -200,8 +219,6 @@ namespace SqlPad.Oracle.ModelDataProviders
 		public IReadOnlyCollection<SqlMonitorSessionPlanItem> ParallelSlaveSessionItems => _parallelSlaveSessionItems;
 
 		public IReadOnlyCollection<SessionLongOperationCollection> SessionLongOperations => _sessionLongOperations;
-
-		public IReadOnlyDictionary<int, ObservableCollection<ActiveSessionHistoryItem>> ActiveSessionHistoryItems => _activeSessionHistoryItemMapping;
 
 		public SessionLongOperationCollection QueryCoordinatorLongOperations { get; } = new SessionLongOperationCollection();
 
@@ -239,17 +256,6 @@ namespace SqlPad.Oracle.ModelDataProviders
 			}
 
 			return longOperationCollection;
-		}
-
-		public void AddActiveSessionHistoryItem(ActiveSessionHistoryItem historyItem)
-		{
-			ObservableCollection<ActiveSessionHistoryItem> activeSessionHistoryItems;
-			if (!_activeSessionHistoryItemMapping.TryGetValue(historyItem.SessionId, out activeSessionHistoryItems))
-			{
-				_activeSessionHistoryItemMapping[historyItem.SessionId] = activeSessionHistoryItems = new ObservableCollection<ActiveSessionHistoryItem>();
-			}
-
-			activeSessionHistoryItems.Add(historyItem);
 		}
 	}
 
@@ -870,6 +876,8 @@ namespace SqlPad.Oracle.ModelDataProviders
 	[DebuggerDisplay("SqlMonitorSessionItem (SessionId={SessionId})")]
 	public class SqlMonitorSessionItem : ModelBase
 	{
+		private readonly ObservableCollection<ActiveSessionHistoryItem> _activeSessionHistoryItems = new ObservableCollection<ActiveSessionHistoryItem>();
+
 		private TimeSpan _elapsedTime;
 		private TimeSpan _queingTime;
 		private TimeSpan _cpuTime;
@@ -902,6 +910,8 @@ namespace SqlPad.Oracle.ModelDataProviders
 		public int? ParallelServersRequested { get; set; }
 
 		public int? ParallelServersAllocated { get; set; }
+
+		public IReadOnlyCollection<ActiveSessionHistoryItem> ActiveSessionHistoryItems => _activeSessionHistoryItems;
 
 		public bool ParallelServersDegraded => ParallelServersAllocated < ParallelServersRequested;
 
@@ -1023,6 +1033,11 @@ namespace SqlPad.Oracle.ModelDataProviders
 		{
 			get { return _javaExecutionTime; }
 			set { UpdateValueAndRaisePropertyChanged(ref _javaExecutionTime, value); }
+		}
+
+		public void AddActiveSessionHistoryItem(ActiveSessionHistoryItem historyItem)
+		{
+			_activeSessionHistoryItems.Add(historyItem);
 		}
 	}
 }
