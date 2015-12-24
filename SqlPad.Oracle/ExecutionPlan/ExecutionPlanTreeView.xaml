@@ -116,10 +116,15 @@
 			</Style.Setters>
 		</Style>
 
-		<Style x:Key="ItemHeaderBold" TargetType="TextBlock" BasedOn="{StaticResource PlanItemBaseStyle}">
+		<Style x:Key="ItemHeaderOther" TargetType="TextBlock" BasedOn="{StaticResource PlanItemBaseStyle}">
+			<Style.Setters>
+				<Setter Property="FontSize" Value="12" />
+			</Style.Setters>
+		</Style>
+
+		<Style x:Key="ItemHeaderBold" TargetType="TextBlock" BasedOn="{StaticResource ItemHeaderOther}">
 			<Style.Setters>
 				<Setter Property="Foreground" Value="DarkBlue" />
-				<Setter Property="FontSize" Value="12" />
 				<Setter Property="FontWeight" Value="Bold" />
 			</Style.Setters>
 		</Style>
@@ -148,11 +153,6 @@
 					<Setter Property="Foreground" Value="ForestGreen" />
 				</DataTrigger>
 			</Style.Triggers>
-		</Style>
-		<Style x:Key="ItemHeaderOther" TargetType="TextBlock" BasedOn="{StaticResource PlanItemBaseStyle}">
-			<Style.Setters>
-				<Setter Property="FontSize" Value="12" />
-			</Style.Setters>
 		</Style>
 		<Style x:Key="ItemHeader" TargetType="TextBlock" BasedOn="{StaticResource ItemHeaderOther}">
 			<Style.Setters>
@@ -343,8 +343,8 @@
 						<Run Text="Cost: " />
 						<Run Text="{Binding Cost, Converter={StaticResource PrettyPrintNumericConverter}}" /><Run Text=" " />
 					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding CostPercent, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="(" /><Run Text="{Binding CostPercent}" /><Run Text=" %) " />
+					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding CostRatio, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text="(" /><Run Text="{Binding CostRatio, Converter={StaticResource RatioConverter}}" /><Run Text=") " />
 						<Run Text=" " />
 					</TextBlock>
 					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Cardinality, Converter={StaticResource ObjectToVisibilityConverter}}">
@@ -439,8 +439,8 @@
 						<Run Text="Cost: " />
 						<Run Text="{Binding Cost, Converter={StaticResource PrettyPrintNumericConverter}}" /><Run Text=" " />
 					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding CostPercent, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="(" /><Run Text="{Binding CostPercent}" /><Run Text=" %) " />
+					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding CostRatio, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text="(" /><Run Text="{Binding CostRatio, Converter={StaticResource RatioConverter}}" /><Run Text=") " />
 						<Run Text=" " />
 					</TextBlock>
 					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Cardinality, Converter={StaticResource ObjectToVisibilityConverter}}">
@@ -724,8 +724,8 @@
 						<Run Text="Cost: " />
 						<Run Text="{Binding Cost, Converter={StaticResource PrettyPrintNumericConverter}}" /><Run Text=" " />
 					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding CostPercent, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="(" /><Run Text="{Binding CostPercent}" /><Run Text=" %) " />
+					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding CostRatio, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text="(" /><Run Text="{Binding CostRatio, Converter={StaticResource RatioConverter}}" /><Run Text=") " />
 						<Run Text=" " />
 					</TextBlock>
 					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Cardinality, Converter={StaticResource ObjectToVisibilityConverter}}">
@@ -875,9 +875,9 @@
 			<Setter Property="Template">
 				<Setter.Value>
 					<ControlTemplate TargetType="{x:Type TreeViewItem}">
-						<Grid Name="RootGrid">
+						<Grid>
 							<Grid.ColumnDefinitions>
-								<ColumnDefinition MinWidth="19" Width="Auto" />
+								<ColumnDefinition Width="Auto" MinWidth="19" />
 								<ColumnDefinition Width="Auto" />
 								<ColumnDefinition Width="*" />
 							</Grid.ColumnDefinitions>
@@ -887,7 +887,7 @@
 								<RowDefinition />
 							</Grid.RowDefinitions>
 
-							<Rectangle Name="SelectionEdge" Grid.Row="0" Grid.RowSpan="3" Grid.Column="0" Grid.ColumnSpan="3" SnapsToDevicePixels="True" />
+							<Rectangle Name="SelectionEdge" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Grid.ColumnSpan="2" SnapsToDevicePixels="True" />
 
 							<!-- Connecting Lines -->
 							<Rectangle Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Margin="9,0,-2,0" Height="1" Stroke="#8C8C8C" SnapsToDevicePixels="True" />
@@ -905,7 +905,7 @@
 							        BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
 							        Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
 								<StackPanel Orientation="Horizontal" Style="{StaticResource InactivePlanItem}">
-									<TextBlock VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="12" FontWeight="Bold" Padding="3,0,3,0" Foreground="DarkBlue" Style="{StaticResource PlanItemBaseStyle}">
+									<TextBlock VerticalAlignment="Center" HorizontalAlignment="Right" Padding="3,0,3,0" Style="{StaticResource ItemHeaderBold}">
 										<Run Text="{Binding ExecutionOrder}" /><Run Text=". " />
 									</TextBlock>
 									<ContentPresenter x:Name="PART_Header" ContentSource="Header" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" MinWidth="20" />
@@ -942,7 +942,7 @@
 								<Setter TargetName="PART_Header" Property="MinHeight" Value="19" />
 							</MultiTrigger>
 							<Trigger Property="IsSelected" Value="true">
-								<Setter TargetName="RootGrid" Property="Background" Value="Yellow" />
+								<Setter TargetName="SelectionEdge" Property="Fill" Value="Yellow" />
 								<Setter TargetName="SelectionEdge" Property="Stroke" Value="Black" />
 							</Trigger>
 							<MultiTrigger>
@@ -950,7 +950,8 @@
 									<Condition Property="IsSelected" Value="true" />
 									<Condition Property="IsSelectionActive" Value="false" />
 								</MultiTrigger.Conditions>
-								<Setter TargetName="RootGrid" Property="Background" Value="LightGray" />
+								<Setter TargetName="SelectionEdge" Property="Fill" Value="LightGray" />
+								<Setter TargetName="SelectionEdge" Property="Stroke" Value="Gray" />
 							</MultiTrigger>
 							<Trigger Property="IsEnabled" Value="false">
 								<Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />

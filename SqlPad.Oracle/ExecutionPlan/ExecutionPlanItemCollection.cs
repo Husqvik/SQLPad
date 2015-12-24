@@ -58,11 +58,11 @@ namespace SqlPad.Oracle.ExecutionPlan
 					_leafItems.Add(item);
 				}
 
-				var costPercent = item.Cost.HasValue && RootItem.Cost.HasValue && RootItem.Cost > 0
-					? (int?)Math.Round(item.Cost.Value / (decimal)RootItem.Cost * 100)
-					: null;
+				var costRatio = item.Cost.HasValue && RootItem.Cost.HasValue && RootItem.Cost > 0
+					? Math.Round(item.Cost.Value / (decimal)RootItem.Cost)
+					: (decimal?)null;
 
-				item.CostPercent = costPercent;
+				item.CostRatio = costRatio;
 			}
 
 			var startNode = _leafItems[0];
@@ -123,7 +123,7 @@ namespace SqlPad.Oracle.ExecutionPlan
 
 		public int ExecutionOrder { get; set; }
 		
-		public int? CostPercent { get; set; }
+		public decimal? CostRatio { get; set; }
 
 		public int Id { get; set; }
 
