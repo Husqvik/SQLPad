@@ -188,7 +188,7 @@ namespace SqlPad.Oracle
 				     validationModel.ObjectNodeValidity[dataObjectReference.ObjectNode].IsRecognized))
 				{
 					var insertColumnCount = insertTarget.Columns == null
-						? dataObjectReference.Columns.Count
+						? dataObjectReference.Columns.Count(c => !c.Hidden)
 						: insertTarget.Columns.Count;
 
 					var rowSourceColumnCount = insertTarget.RowSource == null

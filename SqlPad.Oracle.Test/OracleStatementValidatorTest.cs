@@ -1541,6 +1541,18 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test(Description = @"")]
+		public void TestValidInsertColumnCountIntoTableWithInvisibleColumns()
+		{
+			const string sqlText = "INSERT INTO \"CaseSensitiveTable\" VALUES (NULL, NULL)";
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
 		public void TestInvalidInsertColumnCountWithBothListsDefined()
 		{
 			const string sqlText = "INSERT INTO SELECTION (RESPONDENTBUCKET_ID, NAME) SELECT RESPONDENTBUCKET_ID, NAME, PROJECT_ID FROM SELECTION";

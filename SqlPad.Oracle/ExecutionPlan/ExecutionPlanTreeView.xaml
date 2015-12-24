@@ -13,6 +13,7 @@
 		<sqlPad:DataSpaceConverter x:Key="DataSpaceConverter" />
 		<sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintNumericConverter" />
 		<sqlPad:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
+		<sqlPad:RatioConverter x:Key="RatioConverter" />
 		<executionPlan:LastExecutionWorkAreaInfoConverter x:Key="LastExecutionWorkAreaInfoConverter" />
 		<executionPlan:CumulativeExecutionWorkAreaInfoConverter x:Key="CumulativeExecutionWorkAreaInfoConverter" />
 
@@ -776,7 +777,14 @@
 				</TextBlock>
 
 				<StackPanel>
-					<ContentControl Content="{Binding AllSessionSummaryPlanItem}" ContentTemplate="{StaticResource SqlMonitorSingleSessionDataTemplate}" />
+					<StackPanel Orientation="Horizontal">
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding ActivityRatio, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="Activity: " /><Run Text="{Binding ActivityRatio, Converter={StaticResource RatioConverter}, ConverterParameter=1}" />
+							<Run Text=" " />
+						</TextBlock>
+						<ContentControl Content="{Binding AllSessionSummaryPlanItem}" ContentTemplate="{StaticResource SqlMonitorSingleSessionDataTemplate}" />
+					</StackPanel>
+
 					<Expander IsExpanded="False"
 							  Content="{Binding ParallelSlaveSessionItems}"
 							  ContentTemplate="{StaticResource SqlMonitorSessionListDataTemplate}"

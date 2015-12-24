@@ -81,6 +81,16 @@ namespace SqlPad
 		}
 	}
 
+	public class RatioConverter : ValueConverterBase
+	{
+		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			var precision = parameter as int? ?? 0;
+			var ratio = System.Convert.ToDecimal(value);
+			return value == null ? ValueNotAvailable : $"{Math.Round(ratio * 100, precision)} %";
+		}
+	}
+
 	public class StringConverter : ValueConverterBase
 	{
 		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
