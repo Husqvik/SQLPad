@@ -161,6 +161,8 @@ namespace SqlPad.Oracle.ModelDataProviders
 	{
 		public DateTime SampleTime { get; set; }
 
+		public string SessionState { get; set; }
+
 		public int SessionId { get; set; }
 
 		public int SessionSerial { get; set; }
@@ -196,6 +198,8 @@ namespace SqlPad.Oracle.ModelDataProviders
 		public long PgaAllocated { get; set; }
 
 		public long TempSpaceAllocated { get; set; }
+
+		public double Value => String.Equals(SessionState, "ON CPU") ? 1 : 0;
 	}
 
 	[DebuggerDisplay("SqlMonitorPlanItem (Id={Id}; Operation={Operation}; ObjectName={ObjectName}; IsInactive={IsInactive}; IsBeingExecuted={IsBeingExecuted}; ExecutionOrder={ExecutionOrder}; Depth={Depth}; IsLeaf={IsLeaf})")]
@@ -614,6 +618,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 						DeltaReadMemoryBytes = Convert.ToInt64(reader["DELTA_READ_MEM_BYTES"]),
 						PgaAllocated = Convert.ToInt64(reader["PGA_ALLOCATED"]),
 						TempSpaceAllocated = Convert.ToInt64(reader["TEMP_SPACE_ALLOCATED"]),
+						SessionState = (string)reader["SESSION_STATE"],
 						PlanItem = DataModel.AllItems[planLineId.Value]
 					};
 
