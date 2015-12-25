@@ -1902,9 +1902,18 @@ namespace SqlPad
 
 		private bool PopulateContextActionMenu()
 		{
-			return PopulateContextMenuItems(
-				c => _contextActionProvider.GetContextActions(_documentRepository, c)
-					.Select(BuildContextMenuItem));
+			try
+			{
+				return PopulateContextMenuItems(
+					c => _contextActionProvider.GetContextActions(_documentRepository, c)
+						.Select(BuildContextMenuItem));
+			}
+			catch (Exception exception)
+			{
+				App.CreateErrorLog(exception);
+				Messages.ShowError(exception.ToString());
+				return false;
+			}
 		}
 
 		private void ListGenerateCodeItems(object sender, ExecutedRoutedEventArgs args)

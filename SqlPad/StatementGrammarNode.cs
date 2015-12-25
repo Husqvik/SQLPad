@@ -332,7 +332,9 @@ namespace SqlPad
 		public bool HasAncestor(StatementGrammarNode node, bool includeSelf = false)
 		{
 			if (includeSelf && this == node)
+			{
 				return true;
+			}
 
 			var ancestorNode = this;
 			do
