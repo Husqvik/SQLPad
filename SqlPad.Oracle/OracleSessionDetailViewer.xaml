@@ -21,12 +21,20 @@
 				<componentModel:SortDescription PropertyName="ParallelServerNumber" />
 			</CollectionViewSource.SortDescriptions>
 		</CollectionViewSource>
-		
-		<Style x:Key="CellRealOnlyRightJustification">
+
+		<Style x:Key="CellRealOnly">
 			<Setter Property="TextBoxBase.IsReadOnly" Value="True" />
 			<Setter Property="TextBoxBase.IsReadOnlyCaretVisible" Value="True" />
+		</Style>
+
+		<Style x:Key="CellRealOnlyRightJustification" BasedOn="{StaticResource CellRealOnly}">
 			<Setter Property="Block.TextAlignment" Value="Right" />
 			<Setter Property="Control.HorizontalContentAlignment" Value="Right" />
+		</Style>
+		
+		<Style x:Key="ChartBorder">
+			<Setter Property="Border.BorderThickness" Value="0" />
+			<Setter Property="Border.BorderBrush" Value="Transparent" />
 		</Style>
 	</UserControl.Resources>
 	
@@ -76,15 +84,15 @@
 							<DataGridTextColumn Header="Physical read" Binding="{Binding PhysicalReadBytes, Converter={StaticResource DataSpaceConverter}}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
 							<DataGridTextColumn Header="Write requests" Binding="{Binding PhysicalWriteRequests}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
 							<DataGridTextColumn Header="Physical write" Binding="{Binding PhysicalWriteBytes, Converter={StaticResource DataSpaceConverter}}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
-							<DataGridTextColumn Header="Elapsed" Binding="{Binding ElapsedTime}" />
-							<DataGridTextColumn Header="CPU time" Binding="{Binding CpuTime}" />
-							<DataGridTextColumn Header="Concurrency wait" Binding="{Binding ConcurrencyWaitTime}" />
-							<DataGridTextColumn Header="Application wait" Binding="{Binding ApplicationWaitTime}" />
-							<DataGridTextColumn Header="Cluster wait" Binding="{Binding ClusterWaitTime}" />
-							<DataGridTextColumn Header="PL/SQL execution" Binding="{Binding PlSqlExecutionTime}" />
-							<DataGridTextColumn Header="Java execution" Binding="{Binding JavaExecutionTime}" />
-							<DataGridTextColumn Header="Queing" Binding="{Binding QueingTime}" />
-							<DataGridTextColumn Header="User I/O" Binding="{Binding UserIoWaitTime}" />
+							<DataGridTextColumn Header="Elapsed" Binding="{Binding ElapsedTime}" ElementStyle="{StaticResource CellRealOnly}" />
+							<DataGridTextColumn Header="CPU time" Binding="{Binding CpuTime}" ElementStyle="{StaticResource CellRealOnly}" />
+							<DataGridTextColumn Header="Concurrency wait" Binding="{Binding ConcurrencyWaitTime}" ElementStyle="{StaticResource CellRealOnly}" />
+							<DataGridTextColumn Header="Application wait" Binding="{Binding ApplicationWaitTime}" ElementStyle="{StaticResource CellRealOnly}" />
+							<DataGridTextColumn Header="Cluster wait" Binding="{Binding ClusterWaitTime}" ElementStyle="{StaticResource CellRealOnly}" />
+							<DataGridTextColumn Header="PL/SQL execution" Binding="{Binding PlSqlExecutionTime}" ElementStyle="{StaticResource CellRealOnly}" />
+							<DataGridTextColumn Header="Java execution" Binding="{Binding JavaExecutionTime}" ElementStyle="{StaticResource CellRealOnly}" />
+							<DataGridTextColumn Header="Queing" Binding="{Binding QueingTime}" ElementStyle="{StaticResource CellRealOnly}" />
+							<DataGridTextColumn Header="User I/O" Binding="{Binding UserIoWaitTime}" ElementStyle="{StaticResource CellRealOnly}" />
 							<DataGridTextColumn Header="Max DOP" Binding="{Binding MaxDegreeOfParallelism}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
 							<DataGridTextColumn Header="Max DOP instances" Binding="{Binding MaxDegreeOfParallelismInstances}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
 							<DataGridTextColumn Header="PX servers allocated" Binding="{Binding ParallelServersAllocated}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
