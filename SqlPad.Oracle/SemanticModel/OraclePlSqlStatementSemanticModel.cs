@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.DataDictionary;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
@@ -43,7 +44,7 @@ namespace SqlPad.Oracle.SemanticModel
 				throw new ArgumentNullException(nameof(statement));
 			}
 
-			if (!String.Equals(statement.RootNode.Id, NonTerminals.CreatePlSqlStatement) && !String.Equals(statement.RootNode.Id, NonTerminals.PlSqlBlockStatement))
+			if (!statement.IsPlSql)
 			{
 				throw new ArgumentException("Statement is not PL/SQL statement. ", nameof(statement));
 			}
@@ -58,7 +59,13 @@ namespace SqlPad.Oracle.SemanticModel
 			return new OraclePlSqlStatementSemanticModel(statementText, statement, databaseModel).Build(CancellationToken.None);
 		}
 
-		public OraclePlSqlStatementSemanticModel Build(CancellationToken cancellationToken)
+		public static Task<OraclePlSqlStatementSemanticModel> BuildAsync(string statementText, OracleStatement statement, OracleDatabaseModelBase databaseModel, CancellationToken cancellationToken)
+		{
+			return Task.Factory.StartNew(
+				() => new OraclePlSqlStatementSemanticModel(statementText, statement, databaseModel).Build(cancellationToken), cancellationToken);
+		}
+
+		private OraclePlSqlStatementSemanticModel Build(CancellationToken cancellationToken)
 		{
 			_cancellationToken = cancellationToken;
 
@@ -91,6 +98,10 @@ namespace SqlPad.Oracle.SemanticModel
 				else if (isSchemaProcedure)
 				{
 					schemaObjectNode = functionOrProcedure[NonTerminals.SchemaObject];
+				}
+				else
+				{
+					functionOrProcedure = Statement.RootNode;
 				}
 
 				if (schemaObjectNode != null)
@@ -181,14 +192,17 @@ namespace SqlPad.Oracle.SemanticModel
 			switch (program.RootNode.Id)
 			{
 				case NonTerminals.CreateFunction:
-					programSourceNode = program.RootNode[NonTerminals.PlSqlFunctionSource, NonTerminals.FunctionTypeDefinition];
+					programSourceNode = program.RootNode[NonTerminals.PlSqlFunctionSource, NonTerminals.FunctionTypeDefinition, NonTerminals.ProgramImplentationDeclaration];
+					break;
+				case NonTerminals.PlSqlBlockStatement:
+					programSourceNode = program.RootNode[NonTerminals.PlSqlBlock, NonTerminals.PlSqlBlockDeclareSection];
 					break;
 				default:
-					programSourceNode = program.RootNode;
+					programSourceNode = program.RootNode[NonTerminals.ProgramImplentationDeclaration];
 					break;
 			}
 
-			var item1 = programSourceNode?[NonTerminals.ProgramImplentationDeclaration, NonTerminals.ProgramDeclareSection, NonTerminals.ItemList1, NonTerminals.Item1];
+			var item1 = programSourceNode?[NonTerminals.ProgramDeclareSection, NonTerminals.ItemList1, NonTerminals.Item1];
 			if (item1 == null)
 			{
 				return;
