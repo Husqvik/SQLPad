@@ -24,12 +24,12 @@ namespace SqlPad.Oracle
 
 		public IStatementSemanticModel BuildSemanticModel(string statementText, StatementBase statementBase, IDatabaseModel databaseModel)
 		{
-			return OracleStatementSemanticModel.Build(statementText, (OracleStatement)statementBase, (OracleDatabaseModelBase)databaseModel);
+			return OracleStatementSemanticModelFactory.Build(statementText, (OracleStatement)statementBase, (OracleDatabaseModelBase)databaseModel);
 		}
 
 		public async Task<IStatementSemanticModel> BuildSemanticModelAsync(string statementText, StatementBase statementBase, IDatabaseModel databaseModel, CancellationToken cancellationToken)
 		{
-			return await OracleStatementSemanticModel.BuildAsync(statementText, (OracleStatement)statementBase, (OracleDatabaseModelBase)databaseModel, cancellationToken);
+			return await OracleStatementSemanticModelFactory.BuildAsync(statementText, (OracleStatement)statementBase, (OracleDatabaseModelBase)databaseModel, cancellationToken);
 		}
 
 		public IValidationModel BuildValidationModel(IStatementSemanticModel semanticModel)

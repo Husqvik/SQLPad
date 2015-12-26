@@ -12,67 +12,51 @@ namespace SqlPad.Oracle.SemanticModel
 {
 	public static class OracleStatementSemanticModelFactory
 	{
-		public static IStatementSemanticModel Build(OracleDatabaseModelBase databaseModel, OracleStatement statement, string statementText)
+		public static OracleStatementSemanticModel Build(string statementText, OracleStatement statement, OracleDatabaseModelBase databaseModel)
 		{
-			return null;
+			return BuildInternal(statementText, statement, databaseModel, CancellationToken.None);
+		}
+
+		private static OracleStatementSemanticModel BuildInternal(string statementText, OracleStatement statement, OracleDatabaseModelBase databaseModel, CancellationToken cancellationToken)
+		{
+			var semanticModel = statement != null && statement.IsPlSql
+				? new OraclePlSqlStatementSemanticModel(statementText, statement, databaseModel)
+				: new OracleStatementSemanticModel(statementText, statement, databaseModel);
+			return semanticModel.Build(cancellationToken);
+		}
+
+		public static Task<OracleStatementSemanticModel> BuildAsync(string statementText, OracleStatement statement, OracleDatabaseModelBase databaseModel, CancellationToken cancellationToken)
+		{
+			return Task.Factory.StartNew(
+				() => BuildInternal(statementText, statement, databaseModel, cancellationToken), cancellationToken);
 		}
 	}
 
-	public class OraclePlSqlStatementSemanticModel : IStatementSemanticModel
+	public class OraclePlSqlStatementSemanticModel : OracleStatementSemanticModel
 	{
-		private readonly OracleDatabaseModelBase _databaseModel;
 		private readonly List<OraclePlSqlProgram> _programs = new List<OraclePlSqlProgram>();
-
-		private CancellationToken _cancellationToken;
-
-		public IDatabaseModel DatabaseModel => _databaseModel;
-
-		public StatementBase Statement { get; }
-
-		public string StatementText { get; }
-
-		public bool HasDatabaseModel => DatabaseModel == null;
-
-		public ICollection<RedundantTerminalGroup> RedundantSymbolGroups => new RedundantTerminalGroup[0];
 
 		public IReadOnlyList<OraclePlSqlProgram> Programs => _programs.AsReadOnly();
 
-		private OraclePlSqlStatementSemanticModel(string statementText, OracleStatement statement, OracleDatabaseModelBase databaseModel)
+		internal OraclePlSqlStatementSemanticModel(string statementText, OracleStatement statement, OracleDatabaseModelBase databaseModel)
+			: base(statementText, statement, databaseModel)
 		{
-			if (statement == null)
-			{
-				throw new ArgumentNullException(nameof(statement));
-			}
-
 			if (!statement.IsPlSql)
 			{
 				throw new ArgumentException("Statement is not PL/SQL statement. ", nameof(statement));
 			}
-
-			_databaseModel = databaseModel;
-			Statement = statement;
-			StatementText = statementText;
+		}
+		internal new OraclePlSqlStatementSemanticModel Build(CancellationToken cancellationToken)
+		{
+			return (OraclePlSqlStatementSemanticModel)base.Build(cancellationToken);
 		}
 
-		public static OraclePlSqlStatementSemanticModel Build(string statementText, OracleStatement statement, OracleDatabaseModelBase databaseModel)
+		protected override void Build()
 		{
-			return new OraclePlSqlStatementSemanticModel(statementText, statement, databaseModel).Build(CancellationToken.None);
-		}
-
-		public static Task<OraclePlSqlStatementSemanticModel> BuildAsync(string statementText, OracleStatement statement, OracleDatabaseModelBase databaseModel, CancellationToken cancellationToken)
-		{
-			return Task.Factory.StartNew(
-				() => new OraclePlSqlStatementSemanticModel(statementText, statement, databaseModel).Build(cancellationToken), cancellationToken);
-		}
-
-		private OraclePlSqlStatementSemanticModel Build(CancellationToken cancellationToken)
-		{
-			_cancellationToken = cancellationToken;
+			base.Build();
 
 			ResolveProgramDefinitions();
 			ResolveProgramBodies();
-
-			return this;
 		}
 
 		private void ResolveProgramBodies()
@@ -129,7 +113,7 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 			else
 			{
-				throw new NotImplementedException();
+				// TODO: packages
 				//var programDefinitionNodes = Statement.RootNode.GetDescendants(NonTerminals.FunctionDefinition, NonTerminals.ProcedureDefinition);
 				//_programs.AddRange(programDefinitionNodes.Select(n => new OraclePlSqlProgram { RootNode = n }));
 			}
@@ -141,7 +125,7 @@ namespace SqlPad.Oracle.SemanticModel
 			foreach (var rootNode in sqlStatementNodes)
 			{
 				var childStatement = new OracleStatement { RootNode = rootNode, ParseStatus = Statement.ParseStatus, SourcePosition = rootNode.SourcePosition };
-				var childStatementSemanticModel = OracleStatementSemanticModel.Build(rootNode.GetText(StatementText), childStatement, _databaseModel);
+				var childStatementSemanticModel = new OracleStatementSemanticModel(rootNode.GetText(StatementText), childStatement, DatabaseModel).Build(CancellationToken.None);
 				program.ChildModels.Add(childStatementSemanticModel);
 			}
 		}

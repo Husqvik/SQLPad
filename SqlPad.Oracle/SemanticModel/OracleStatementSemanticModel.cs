@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.DataDictionary;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
@@ -62,7 +61,8 @@ namespace SqlPad.Oracle.SemanticModel
 		private readonly HashSet<StatementGrammarNode> _oldOuterJoinColumnReferences = new HashSet<StatementGrammarNode>();
 		
 		private OracleQueryBlock _mainQueryBlock;
-		private CancellationToken _cancellationToken = CancellationToken.None;
+
+		protected CancellationToken CancellationToken = CancellationToken.None;
 
 		public OracleDatabaseModelBase DatabaseModel
 		{
@@ -122,18 +122,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public IEnumerable<OracleLiteral> Literals => _literals;
 
-		public static OracleStatementSemanticModel Build(string statementText, OracleStatement statement, OracleDatabaseModelBase databaseModel)
-		{
-			return new OracleStatementSemanticModel(statementText, statement, databaseModel).Build(CancellationToken.None);
-		}
-
-		public static Task<OracleStatementSemanticModel> BuildAsync(string statementText, OracleStatement statement, OracleDatabaseModelBase databaseModel, CancellationToken cancellationToken)
-		{
-			return Task.Factory.StartNew(
-				() => new OracleStatementSemanticModel(statementText, statement, databaseModel).Build(cancellationToken), cancellationToken);
-		}
-
-		private OracleStatementSemanticModel(string statementText, OracleStatement statement, OracleDatabaseModelBase databaseModel)
+		protected internal OracleStatementSemanticModel(string statementText, OracleStatement statement, OracleDatabaseModelBase databaseModel)
 		{
 			if (statement == null)
 			{
@@ -359,14 +348,19 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private static StatementGrammarNode GetQueryBlockRootFromNestedQuery(StatementGrammarNode ownerQueryNode)
 		{
-		    var subquery = ownerQueryNode?[NonTerminals.Subquery];
+			var subquery = ownerQueryNode?[NonTerminals.Subquery];
 			return subquery?.GetDescendants(NonTerminals.QueryBlock).First();
 		}
 
-		private OracleStatementSemanticModel Build(CancellationToken cancellationToken)
+		internal OracleStatementSemanticModel Build(CancellationToken cancellationToken)
 		{
-			_cancellationToken = cancellationToken;
+			CancellationToken = cancellationToken;
+			Build();
+			return this;
+		}
 
+		protected virtual void Build()
+		{
 			Initialize();
 
 			foreach (var queryBlock in _queryBlockNodes.Values)
@@ -397,8 +391,6 @@ namespace SqlPad.Oracle.SemanticModel
 			BuildDmlModel();
 			
 			ResolveRedundantTerminals();
-
-			return this;
 		}
 
 		private void HarmonizeConcatenatedQueryBlockColumnTypes()
@@ -1871,7 +1863,7 @@ namespace SqlPad.Oracle.SemanticModel
 		{
 			foreach (var queryBlock in _queryBlockNodes.Values)
 			{
-				_cancellationToken.ThrowIfCancellationRequested();
+				CancellationToken.ThrowIfCancellationRequested();
 
 				ResolveOrderByReferences(queryBlock);
 
@@ -2890,7 +2882,7 @@ namespace SqlPad.Oracle.SemanticModel
 				
 				foreach (var columnExpression in columnExpressions)
 				{
-					_cancellationToken.ThrowIfCancellationRequested();
+					CancellationToken.ThrowIfCancellationRequested();
 
 					var columnAliasNode = columnExpression.LastTerminalNode != null && String.Equals(columnExpression.LastTerminalNode.Id, Terminals.ColumnAlias)
 						? columnExpression.LastTerminalNode

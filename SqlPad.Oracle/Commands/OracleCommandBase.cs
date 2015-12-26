@@ -25,14 +25,18 @@ namespace SqlPad.Oracle.Commands
 		protected OracleCommandBase(ActionExecutionContext executionContext)
 		{
 			if (executionContext == null)
+			{
 				throw new ArgumentNullException(nameof(executionContext));
+			}
 
 			ExecutionContext = executionContext;
 
 			CurrentNode = executionContext.DocumentRepository.Statements.GetNodeAtPosition(executionContext.CaretOffset, CurrentNodeFilterFunction);
 
 			if (CurrentNode == null)
+			{
 				return;
+			}
 
 			SemanticModel = (OracleStatementSemanticModel)executionContext.DocumentRepository.ValidationModels[CurrentNode.Statement].SemanticModel;
 			CurrentQueryBlock = SemanticModel.GetQueryBlock(CurrentNode);
@@ -41,10 +45,14 @@ namespace SqlPad.Oracle.Commands
 		protected static void CheckParametersNotNull(OracleStatementSemanticModel semanticModel, StatementGrammarNode currentTerminal)
 		{
 			if (semanticModel == null)
+			{
 				throw new InvalidOperationException("semanticModel");
+			}
 
 			if (currentTerminal == null)
+			{
 				throw new InvalidOperationException("currentTerminal");
+			}
 		}
 
 		protected virtual CommandCanExecuteResult CanExecute()

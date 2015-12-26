@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using NUnit.Framework;
 using Shouldly;
 using SqlPad.Oracle.DataDictionary;
@@ -13,7 +14,7 @@ namespace SqlPad.Oracle.Test
 		[Test]
 		public void TestInitializationNullStatement()
 		{
-			Assert.Throws<ArgumentNullException>(() => OraclePlSqlStatementSemanticModel.Build(null, null, TestFixture.DatabaseModel));
+			Assert.Throws<ArgumentNullException>(() => new OraclePlSqlStatementSemanticModel(null, null, TestFixture.DatabaseModel));
 		}
 
 		[Test]
@@ -22,7 +23,7 @@ namespace SqlPad.Oracle.Test
 			const string sqlText = @"SELECT * FROM DUAL";
 			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(sqlText).Single();
 
-			Assert.Throws<ArgumentException>(() => OraclePlSqlStatementSemanticModel.Build(sqlText, statement, TestFixture.DatabaseModel));
+			Assert.Throws<ArgumentException>(() => new OraclePlSqlStatementSemanticModel(sqlText, statement, TestFixture.DatabaseModel));
 		}
 
 		[Test]
@@ -66,7 +67,7 @@ END;";
 
 			var expectedObjectIdentifier = OracleObjectIdentifier.Create("HUSQVIK", "TEST_FUNCTION");
 
-			var semanticModel = OraclePlSqlStatementSemanticModel.Build(plsqlText, statement, TestFixture.DatabaseModel);
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
 			semanticModel.Programs.Count.ShouldBe(1);
 			var mainProgram = semanticModel.Programs[0];
 			mainProgram.ObjectIdentifier.ShouldBe(expectedObjectIdentifier);
@@ -170,7 +171,7 @@ END;";
 			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			var semanticModel = OraclePlSqlStatementSemanticModel.Build(plsqlText, statement, TestFixture.DatabaseModel);
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
 			semanticModel.Programs.Count.ShouldBe(1);
 			var mainProgram = semanticModel.Programs[0];
 			mainProgram.ObjectIdentifier.ShouldBe(OracleObjectIdentifier.Empty);

@@ -29,11 +29,15 @@ namespace SqlPad.Oracle
 		public ICollection<ContextAction> GetContextActions(SqlDocumentRepository sqlDocumentRepository, ActionExecutionContext executionContext)
 		{
 			if (sqlDocumentRepository?.Statements == null || executionContext.StatementText != sqlDocumentRepository.StatementText)
+			{
 				return EmptyCollection;
+			}
 
 			var currentTerminal = sqlDocumentRepository.Statements.GetTerminalAtPosition(executionContext.CaretOffset);
 			if (currentTerminal == null)
+			{
 				return EmptyCollection;
+			}
 
 			var precedingTerminal = currentTerminal.PrecedingTerminal;
 			if (currentTerminal.SourcePosition.IndexStart == executionContext.CaretOffset && precedingTerminal != null && precedingTerminal.SourcePosition.IndexEnd + 1 == executionContext.CaretOffset &&
@@ -43,6 +47,7 @@ namespace SqlPad.Oracle
 			}
 
 			var semanticModel = (OracleStatementSemanticModel)sqlDocumentRepository.ValidationModels[currentTerminal.Statement].SemanticModel;
+
 			var enterIdentifierModel = new CommandSettingsModel { Value = "Enter value" };
 			executionContext.SettingsProvider = new EditDialog(enterIdentifierModel);
 			
