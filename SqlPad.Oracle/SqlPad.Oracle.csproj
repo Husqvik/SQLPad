@@ -211,6 +211,7 @@
     <Compile Include="OracleToolTipProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ModelDataProviders\SessionExecutionStatisticsDataProvider.cs" />
+    <Compile Include="SemanticModel\OracleStatementSemanticModelFactory.cs" />
     <Compile Include="SemanticModel\OracleTableCollectionReference.cs" />
     <Compile Include="SemanticModel\StatementPlacement.cs" />
     <Compile Include="ToolTips\PartitionDetailsModel.cs" />

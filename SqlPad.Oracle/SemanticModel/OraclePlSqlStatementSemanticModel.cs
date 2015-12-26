@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.DataDictionary;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
@@ -10,33 +9,24 @@ using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
 namespace SqlPad.Oracle.SemanticModel
 {
-	public static class OracleStatementSemanticModelFactory
-	{
-		public static OracleStatementSemanticModel Build(string statementText, OracleStatement statement, OracleDatabaseModelBase databaseModel)
-		{
-			return BuildInternal(statementText, statement, databaseModel, CancellationToken.None);
-		}
-
-		private static OracleStatementSemanticModel BuildInternal(string statementText, OracleStatement statement, OracleDatabaseModelBase databaseModel, CancellationToken cancellationToken)
-		{
-			var semanticModel = statement != null && statement.IsPlSql
-				? new OraclePlSqlStatementSemanticModel(statementText, statement, databaseModel)
-				: new OracleStatementSemanticModel(statementText, statement, databaseModel);
-			return semanticModel.Build(cancellationToken);
-		}
-
-		public static Task<OracleStatementSemanticModel> BuildAsync(string statementText, OracleStatement statement, OracleDatabaseModelBase databaseModel, CancellationToken cancellationToken)
-		{
-			return Task.Factory.StartNew(
-				() => BuildInternal(statementText, statement, databaseModel, cancellationToken), cancellationToken);
-		}
-	}
-
 	public class OraclePlSqlStatementSemanticModel : OracleStatementSemanticModel
 	{
 		private readonly List<OraclePlSqlProgram> _programs = new List<OraclePlSqlProgram>();
 
 		public IReadOnlyList<OraclePlSqlProgram> Programs => _programs.AsReadOnly();
+
+		public override OracleQueryBlock MainQueryBlock { get; } = null;
+
+		public override IEnumerable<OracleReferenceContainer> AllReferenceContainers
+		{
+			get
+			{
+				return Programs
+					.SelectMany(p => p.ChildModels)
+					.SelectMany(m => m.AllReferenceContainers)
+					.Concat(Programs);
+			}
+		}
 
 		internal OraclePlSqlStatementSemanticModel(string statementText, OracleStatement statement, OracleDatabaseModelBase databaseModel)
 			: base(statementText, statement, databaseModel)
@@ -61,7 +51,39 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private void ResolveProgramBodies()
 		{
+			foreach (var program in Programs)
+			{
+				foreach (var statementTypeNode in program.RootNode.GetPathFilterDescendants(n => !n.Id.In(NonTerminals.PlSqlBlock, NonTerminals.PlSqlSqlStatement), NonTerminals.PlSqlStatementType))
+				{
+					var statementNode = statementTypeNode[0];
+					if (statementNode == null)
+					{
+						continue;
+					}
 
+					switch (statementNode.Id)
+					{
+						case NonTerminals.PlSqlProcedureCall:
+							var node = statementNode[NonTerminals.PrefixedProgramIdentifier];
+							var parameterListNode = statementNode[NonTerminals.ParenthesisEnclosedFunctionParameters];
+							var programReference =
+								new OracleProgramReference
+								{
+									RootNode = statementNode,
+									FunctionIdentifierNode = node[Terminals.Identifier],
+									ObjectNode = node[NonTerminals.Prefix, NonTerminals.ObjectPrefix, Terminals.ObjectIdentifier],
+									OwnerNode = node[NonTerminals.Prefix, NonTerminals.SchemaPrefix, Terminals.SchemaIdentifier],
+									DatabaseLinkNode = null,
+									ParameterListNode = parameterListNode,
+									ParameterReferences = ResolvedParameterReferences(parameterListNode)
+								};
+
+							program.ProgramReferences.Add(programReference);
+
+							break;
+					}
+				}
+			}
 		}
 
 		private void ResolveProgramDefinitions()
@@ -96,7 +118,7 @@ namespace SqlPad.Oracle.SemanticModel
 				}
 
 				var program =
-					new OraclePlSqlProgram
+					new OraclePlSqlProgram(this)
 					{
 						RootNode = functionOrProcedure,
 						ObjectIdentifier = identifier,
@@ -143,12 +165,12 @@ namespace SqlPad.Oracle.SemanticModel
 			foreach (var childNode in node.ChildNodes)
 			{
 				var subProgram = program;
-				if (String.Equals(childNode.Id, NonTerminals.ProcedureDefinition) || String.Equals(childNode.Id, NonTerminals.FunctionDefinition))
+				if (String.Equals(childNode.Id, NonTerminals.ProcedureDefinition) || String.Equals(childNode.Id, NonTerminals.FunctionDefinition) || String.Equals(childNode.Id, NonTerminals.PlSqlBlock))
 				{
 					var nameTerminal = childNode[0]?[Terminals.Identifier];
 
 					subProgram =
-						new OraclePlSqlProgram
+						new OraclePlSqlProgram(this)
 						{
 							RootNode = childNode,
 							ObjectIdentifier = program.ObjectIdentifier
@@ -180,6 +202,9 @@ namespace SqlPad.Oracle.SemanticModel
 					break;
 				case NonTerminals.PlSqlBlockStatement:
 					programSourceNode = program.RootNode[NonTerminals.PlSqlBlock, NonTerminals.PlSqlBlockDeclareSection];
+					break;
+				case NonTerminals.PlSqlBlock:
+					programSourceNode = program.RootNode[NonTerminals.PlSqlBlockDeclareSection];
 					break;
 				default:
 					programSourceNode = program.RootNode[NonTerminals.ProgramImplentationDeclaration];
@@ -297,8 +322,12 @@ namespace SqlPad.Oracle.SemanticModel
 		}
 	}
 
-	public class OraclePlSqlProgram
+	public class OraclePlSqlProgram : OracleReferenceContainer
 	{
+		public OraclePlSqlProgram(OraclePlSqlStatementSemanticModel semanticModel) : base(semanticModel)
+		{
+		}
+
 		public StatementGrammarNode RootNode { get; set; }
 
 		public OracleObjectIdentifier ObjectIdentifier { get; set; }

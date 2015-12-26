@@ -97,7 +97,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public IReadOnlyList<StatementGrammarNode> NonQueryBlockTerminals { get; private set; }
 
-		public IEnumerable<OracleReferenceContainer> AllReferenceContainers
+		public virtual IEnumerable<OracleReferenceContainer> AllReferenceContainers
 		{
 			get
 			{
@@ -108,7 +108,7 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 		}
 
-		public OracleQueryBlock MainQueryBlock
+		public virtual OracleQueryBlock MainQueryBlock
 		{
 			get
 			{
@@ -3060,21 +3060,31 @@ namespace SqlPad.Oracle.SemanticModel
 			return identifier.ParentNode.ChildNodes.Where(n => n.Id.In(NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.AnalyticClause)).ToArray();
 		}
 
+		protected static IReadOnlyList<ProgramParameterReference> ResolvedParameterReferences(StatementGrammarNode parameterList)
+		{
+			if (parameterList == null)
+			{
+				return ProgramParameterReference.EmptyArray;
+			}
+
+			return parameterList
+				.GetPathFilterDescendants(
+					n => !n.Id.In(NonTerminals.NestedQuery, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.AggregateFunctionCall, NonTerminals.AnalyticFunctionCall, NonTerminals.AnalyticClause, NonTerminals.Expression),
+					NonTerminals.ExpressionList, NonTerminals.OptionalParameterExpressionList)
+				.Select(n => n.ChildNodes.FirstOrDefault())
+				.Select(n =>
+					new ProgramParameterReference
+					{
+						ParameterNode = n,
+						OptionalIdentifierTerminal = n.FirstTerminalNode != null && String.Equals(n.FirstTerminalNode.Id, Terminals.ParameterIdentifier) ? n.FirstTerminalNode : null
+					}).ToArray();
+		}
+
 		private static OracleProgramReference CreateProgramReference(OracleReferenceContainer container, OracleQueryBlock queryBlock, OracleSelectListColumn selectListColumn, StatementPlacement placement, StatementGrammarNode identifierNode, StatementGrammarNode prefixNonTerminal, ICollection<StatementGrammarNode> functionCallNodes)
 		{
 			var analyticClauseNode = functionCallNodes.SingleOrDefault(n => String.Equals(n.Id, NonTerminals.AnalyticClause));
 
 			var parameterList = functionCallNodes.SingleOrDefault(n => String.Equals(n.Id, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters));
-
-			IEnumerable<StatementGrammarNode> parameterExpressionRootNodes = StatementGrammarNode.EmptyArray;
-			if (parameterList != null)
-			{
-				parameterExpressionRootNodes = parameterList
-					.GetPathFilterDescendants(
-						n => !n.Id.In(NonTerminals.NestedQuery, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.AggregateFunctionCall, NonTerminals.AnalyticFunctionCall, NonTerminals.AnalyticClause, NonTerminals.Expression),
-						NonTerminals.ExpressionList, NonTerminals.OptionalParameterExpressionList)
-					.Select(n => n.ChildNodes.FirstOrDefault());
-			}
 
 			var programReference =
 				new OracleProgramReference
@@ -3086,13 +3096,7 @@ namespace SqlPad.Oracle.SemanticModel
 					Placement = placement,
 					AnalyticClauseNode = analyticClauseNode,
 					ParameterListNode = parameterList,
-					ParameterReferences = parameterExpressionRootNodes
-						.Select(n =>
-							new ProgramParameterReference
-							{
-								ParameterNode = n,
-								OptionalIdentifierTerminal = n.FirstTerminalNode != null && String.Equals(n.FirstTerminalNode.Id, Terminals.ParameterIdentifier) ? n.FirstTerminalNode : null
-							}).ToArray(),
+					ParameterReferences = ResolvedParameterReferences(parameterList),
 					SelectListColumn = selectListColumn,
 					Container = container
 				};
@@ -3279,7 +3283,9 @@ namespace SqlPad.Oracle.SemanticModel
 		private static void AddPrefixNodes(OracleReference reference, StatementGrammarNode prefixNonTerminal)
 		{
 			if (prefixNonTerminal == null)
+			{
 				return;
+			}
 
 			reference.OwnerNode = prefixNonTerminal.GetSingleDescendant(Terminals.SchemaIdentifier);
 			reference.ObjectNode = prefixNonTerminal.GetSingleDescendant(Terminals.ObjectIdentifier);

@@ -58,6 +58,7 @@ IS
 		SELECT dummy INTO x FROM DUAL;
 	END;
 BEGIN
+	dbms_output.put_line(item => test_constant1);
 	SELECT COUNT(*) INTO test_variable1 FROM DUAL;
 	SELECT NULL, 'String value' INTO test_variable1, test_variable2 FROM DUAL;
 END;";
@@ -95,6 +96,15 @@ END;";
 			mainProgram.Types[1].Name.ShouldBe("\"TEST_TABLE_TYPE1\"");
 			mainProgram.SubPrograms.Count.ShouldBe(2);
 			mainProgram.ChildModels.Count.ShouldBe(2);
+
+			mainProgram.ProgramReferences.Count.ShouldBe(1);
+			var programReference = mainProgram.ProgramReferences.First();
+			programReference.Name.ShouldBe("put_line");
+			programReference.ObjectNode.Token.Value.ShouldBe("dbms_output");
+			programReference.ParameterListNode.ShouldNotBe(null);
+			programReference.ParameterReferences.Count.ShouldBe(1);
+			programReference.ParameterReferences[0].OptionalIdentifierTerminal.Token.Value.ShouldBe("item");
+			programReference.ParameterReferences[0].ParameterNode.LastTerminalNode.Token.Value.ShouldBe("test_constant1");
 
 			mainProgram.SubPrograms[0].ObjectIdentifier.ShouldBe(expectedObjectIdentifier);
 			mainProgram.SubPrograms[0].Name.ShouldBe("\"TEST_INNER_PROCEDURE\"");
@@ -224,6 +234,36 @@ END;";
 			mainProgram.SubPrograms[1].SubPrograms[0].Types.Count.ShouldBe(0);
 			mainProgram.SubPrograms[1].SubPrograms[0].SubPrograms.Count.ShouldBe(0);
 			mainProgram.SubPrograms[1].SubPrograms[0].ChildModels.Count.ShouldBe(1);
+		}
+
+		[Test]
+		public void TestInitializationNestedAnonymousBlock()
+		{
+			const string plsqlText =
+@"BEGIN
+	DECLARE
+		n NUMBER;
+	BEGIN
+		SELECT NULL INTO n FROM DUAL;
+	END;
+END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
+			semanticModel.Programs.Count.ShouldBe(1);
+			var mainProgram = semanticModel.Programs[0];
+			mainProgram.ObjectIdentifier.ShouldBe(OracleObjectIdentifier.Empty);
+			mainProgram.RootNode.ShouldBe(statement.RootNode);
+			mainProgram.Variables.Count.ShouldBe(0);
+			mainProgram.SubPrograms.Count.ShouldBe(1);
+			mainProgram.SubPrograms[0].ObjectIdentifier.ShouldBe(OracleObjectIdentifier.Empty);
+			mainProgram.SubPrograms[0].RootNode.SourcePosition.IndexStart.ShouldBe(8);
+			mainProgram.SubPrograms[0].RootNode.SourcePosition.Length.ShouldBe(68);
+			mainProgram.SubPrograms[0].Variables.Count.ShouldBe(1);
+			mainProgram.SubPrograms[0].Variables[0].Name.ShouldBe("\"N\"");
+			mainProgram.SubPrograms[0].ChildModels.Count.ShouldBe(1);
 		}
 	}
 }
