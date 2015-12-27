@@ -80,7 +80,7 @@ namespace SqlPad.Oracle.Commands
 			}
 
 			var functionReferences = CurrentQueryBlock.AllProgramReferences
-				.Where(c => c.HasExplicitDefinition && _selectedTerminals.Contains(c.FunctionIdentifierNode));
+				.Where(c => c.HasExplicitDefinition && _selectedTerminals.Contains(c.ProgramIdentifierNode));
 
 			var references = ((IEnumerable<OracleReference>)columnReferences).Concat(functionReferences).OrderBy(r => r.RootNode.SourcePosition.IndexStart).ToArray();
 

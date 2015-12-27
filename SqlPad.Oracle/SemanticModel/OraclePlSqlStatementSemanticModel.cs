@@ -70,7 +70,7 @@ namespace SqlPad.Oracle.SemanticModel
 								new OracleProgramReference
 								{
 									RootNode = statementNode,
-									FunctionIdentifierNode = node[Terminals.Identifier],
+									ProgramIdentifierNode = node[Terminals.Identifier],
 									ObjectNode = node[NonTerminals.Prefix, NonTerminals.ObjectPrefix, Terminals.ObjectIdentifier],
 									OwnerNode = node[NonTerminals.Prefix, NonTerminals.SchemaPrefix, Terminals.SchemaIdentifier],
 									DatabaseLinkNode = null,

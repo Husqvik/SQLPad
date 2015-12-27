@@ -155,17 +155,17 @@ FROM
 			var functionReferences = semanticModel.QueryBlocks.Single().AllProgramReferences.ToArray();
 			functionReferences.Length.ShouldBe(3);
 			var countFunction = functionReferences[0];
-			countFunction.FunctionIdentifierNode.Id.ShouldBe(Terminals.Count);
+			countFunction.ProgramIdentifierNode.Id.ShouldBe(Terminals.Count);
 			countFunction.AnalyticClauseNode.ShouldNotBe(null);
 			countFunction.SelectListColumn.ShouldNotBe(null);
 
 			var avgFunction = functionReferences[1];
-			avgFunction.FunctionIdentifierNode.Id.ShouldBe(Terminals.Avg);
+			avgFunction.ProgramIdentifierNode.Id.ShouldBe(Terminals.Avg);
 			avgFunction.AnalyticClauseNode.ShouldNotBe(null);
 			avgFunction.SelectListColumn.ShouldNotBe(null);
 
 			var lastValueFunction = functionReferences[2];
-			lastValueFunction.FunctionIdentifierNode.Id.ShouldBe(Terminals.LastValue);
+			lastValueFunction.ProgramIdentifierNode.Id.ShouldBe(Terminals.LastValue);
 			lastValueFunction.AnalyticClauseNode.ShouldNotBe(null);
 			lastValueFunction.SelectListColumn.ShouldNotBe(null);
 		}
@@ -186,7 +186,7 @@ FROM
 			var functionReferences = semanticModel.QueryBlocks.Single().AllProgramReferences.ToArray();
 			functionReferences.Length.ShouldBe(1);
 			var lagFunction = functionReferences[0];
-			lagFunction.FunctionIdentifierNode.Id.ShouldBe(Terminals.Lag);
+			lagFunction.ProgramIdentifierNode.Id.ShouldBe(Terminals.Lag);
 			lagFunction.AnalyticClauseNode.ShouldNotBe(null);
 			lagFunction.SelectListColumn.ShouldNotBe(null);
 			lagFunction.ParameterListNode.ShouldNotBe(null);
@@ -299,7 +299,7 @@ FROM
 			var functionReferences = semanticModel.QueryBlocks.Single().AllProgramReferences.ToArray();
 			functionReferences.Length.ShouldBe(1);
 			var maxFunction = functionReferences[0];
-			maxFunction.FunctionIdentifierNode.Id.ShouldBe(Terminals.Max);
+			maxFunction.ProgramIdentifierNode.Id.ShouldBe(Terminals.Max);
 			maxFunction.AnalyticClauseNode.ShouldBe(null);
 			maxFunction.SelectListColumn.ShouldNotBe(null);
 			maxFunction.ParameterListNode.ShouldNotBe(null);
@@ -584,7 +584,7 @@ SELECT * FROM sampleData";
 			var functionReferences = semanticModel.QueryBlocks.Single().AllProgramReferences.ToArray();
 			functionReferences.Length.ShouldBe(1);
 			var functionReference = functionReferences[0];
-			functionReference.FunctionIdentifierNode.Token.Value.ShouldBe("VALUE");
+			functionReference.ProgramIdentifierNode.Token.Value.ShouldBe("VALUE");
 			functionReference.ObjectNode.Token.Value.ShouldBe("DBMS_RANDOM");
 			functionReference.OwnerNode.Token.Value.ShouldBe("SYS");
 			functionReference.AnalyticClauseNode.ShouldBe(null);
@@ -1527,7 +1527,7 @@ END;";
 			var programReferences = semanticModel.QueryBlocks.Single().AllProgramReferences.ToArray();
 			programReferences.Length.ShouldBe(1);
 			var programReference = programReferences[0];
-			programReference.FunctionIdentifierNode.Id.ShouldBe(Terminals.Count);
+			programReference.ProgramIdentifierNode.Id.ShouldBe(Terminals.Count);
 			programReference.ObjectNode.ShouldBe(null);
 			programReference.OwnerNode.ShouldBe(null);
 			programReference.AnalyticClauseNode.ShouldBe(null);
@@ -1548,7 +1548,7 @@ END;";
 			var programReferences = semanticModel.QueryBlocks.Single().AllProgramReferences.ToArray();
 			programReferences.Length.ShouldBe(1);
 			var programReference = programReferences[0];
-			programReference.FunctionIdentifierNode.Id.ShouldBe(Terminals.ListAggregation);
+			programReference.ProgramIdentifierNode.Id.ShouldBe(Terminals.ListAggregation);
 			programReference.ObjectNode.ShouldBe(null);
 			programReference.OwnerNode.ShouldBe(null);
 			programReference.AnalyticClauseNode.ShouldBe(null);

@@ -5,12 +5,12 @@ using SqlPad.Oracle.DataDictionary;
 
 namespace SqlPad.Oracle.SemanticModel
 {
-	[DebuggerDisplay("OracleProgramReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Object={ObjectNode == null ? null : ObjectNode.Token.Value}; Function={FunctionIdentifierNode.Token.Value}; Metadata={Metadata})")]
+	[DebuggerDisplay("OracleProgramReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Object={ObjectNode == null ? null : ObjectNode.Token.Value}; Program={ProgramIdentifierNode.Token.Value}; Metadata={Metadata})")]
 	public class OracleProgramReference : OracleProgramReferenceBase
 	{
-		public override string Name => FunctionIdentifierNode.Token.Value;
+		public override string Name => ProgramIdentifierNode.Token.Value;
 
-	    public StatementGrammarNode FunctionIdentifierNode { get; set; }
+	    public StatementGrammarNode ProgramIdentifierNode { get; set; }
 		
 		public StatementGrammarNode AnalyticClauseNode { get; set; }
 		

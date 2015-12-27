@@ -2170,7 +2170,7 @@ namespace SqlPad.Oracle.SemanticModel
 					RootNode = programReference.RootNode,
 					SchemaObject = schemaObject,
 					SelectListColumn = programReference.SelectListColumn,
-					ObjectNode = programReference.FunctionIdentifierNode
+					ObjectNode = programReference.ProgramIdentifierNode
 				};
 			
 			return typeReference;
@@ -2251,7 +2251,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public OracleProgramReference GetProgramReference(StatementGrammarNode identifer)
 		{
-			return AllReferenceContainers.SelectMany(c => c.ProgramReferences).SingleOrDefault(c => c.FunctionIdentifierNode == identifer);
+			return AllReferenceContainers.SelectMany(c => c.ProgramReferences).SingleOrDefault(c => c.ProgramIdentifierNode == identifer);
 		}
 
 		public OracleTypeReference GetTypeReference(StatementGrammarNode typeIdentifer)
@@ -2504,7 +2504,7 @@ namespace SqlPad.Oracle.SemanticModel
 			var programReference =
 				new OracleProgramReference
 				{
-					FunctionIdentifierNode = columnReference.ColumnNode,
+					ProgramIdentifierNode = columnReference.ColumnNode,
 					DatabaseLinkNode = OracleReferenceBuilder.GetDatabaseLinkFromIdentifier(columnReference.ColumnNode),
 					ObjectNode = columnReference.ObjectNode,
 					OwnerNode = columnReference.OwnerNode,
@@ -3036,7 +3036,7 @@ namespace SqlPad.Oracle.SemanticModel
 				var programReference =
 					new OracleProgramReference
 					{
-						FunctionIdentifierNode = identifierNode,
+						ProgramIdentifierNode = identifierNode,
 						RootNode = rootNode,
 						Owner = queryBlock,
 						Container = queryBlock,
@@ -3089,7 +3089,7 @@ namespace SqlPad.Oracle.SemanticModel
 			var programReference =
 				new OracleProgramReference
 				{
-					FunctionIdentifierNode = identifierNode,
+					ProgramIdentifierNode = identifierNode,
 					DatabaseLinkNode = OracleReferenceBuilder.GetDatabaseLinkFromIdentifier(identifierNode),
 					RootNode = identifierNode.GetAncestor(NonTerminals.Expression) ?? identifierNode.GetAncestor(NonTerminals.TableCollectionInnerExpression),
 					Owner = queryBlock,

@@ -44,7 +44,7 @@ namespace SqlPad.Oracle.Commands
 				.Select(f =>
 					new TextSegment
 					{
-						IndextStart = (f.ObjectNode ?? f.FunctionIdentifierNode).SourcePosition.IndexStart,
+						IndextStart = (f.ObjectNode ?? f.ProgramIdentifierNode).SourcePosition.IndexStart,
 						Length = 0,
 						Text = $"{f.Metadata.Identifier.Owner.ToSimpleIdentifier()}."
 					});

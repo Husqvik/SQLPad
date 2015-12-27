@@ -550,7 +550,7 @@ namespace SqlPad.Oracle
 			var nodeToReplace = completionType.ReferenceIdentifier.IdentifierUnderCursor;
 			var schemaName = completionType.ReferenceIdentifier.SchemaIdentifierOriginalValue;
 
-			var functionReference = programReferences.SingleOrDefault(f => f.FunctionIdentifierNode == currentNode);
+			var functionReference = programReferences.SingleOrDefault(f => f.ProgramIdentifierNode == currentNode);
 			var addParameterList = functionReference?.ParameterListNode == null;
 
 			var tableReferenceSource = (ICollection<OracleObjectWithColumnsReference>)referenceContainers

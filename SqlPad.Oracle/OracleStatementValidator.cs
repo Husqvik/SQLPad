@@ -64,7 +64,7 @@ namespace SqlPad.Oracle
 						var returnParameter = tableCollectionProgramReference?.Metadata?.ReturnParameter;
 						if (returnParameter?.DataType.In(OracleTypeCollection.OracleCollectionTypeNestedTable, OracleTypeCollection.OracleCollectionTypeVarryingArray) == false)
 						{
-							validationModel.ProgramNodeValidity[tableCollectionProgramReference.FunctionIdentifierNode] = new InvalidNodeValidationData(OracleSemanticErrorType.FunctionReturningRowSetRequired) {Node = tableCollectionProgramReference.FunctionIdentifierNode};
+							validationModel.ProgramNodeValidity[tableCollectionProgramReference.ProgramIdentifierNode] = new InvalidNodeValidationData(OracleSemanticErrorType.FunctionReturningRowSetRequired) {Node = tableCollectionProgramReference.ProgramIdentifierNode};
 						}
 
 						var tableCollectionColumnReference = tableCollectionReference.RowSourceReference as OracleColumnReference;
@@ -1329,9 +1329,9 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			if (!validationModel.ProgramNodeValidity.ContainsKey(programReference.FunctionIdentifierNode))
+			if (!validationModel.ProgramNodeValidity.ContainsKey(programReference.ProgramIdentifierNode))
 			{
-				validationModel.ProgramNodeValidity[programReference.FunctionIdentifierNode] = new InvalidNodeValidationData(semanticError) { IsRecognized = isRecognized, Node = programReference.FunctionIdentifierNode };
+				validationModel.ProgramNodeValidity[programReference.ProgramIdentifierNode] = new InvalidNodeValidationData(semanticError) { IsRecognized = isRecognized, Node = programReference.ProgramIdentifierNode };
 			}
 		}
 

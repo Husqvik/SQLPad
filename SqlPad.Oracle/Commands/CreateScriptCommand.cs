@@ -32,7 +32,7 @@ namespace SqlPad.Oracle.Commands
 
 			_objectReference = SemanticModel.AllReferenceContainers
 				.SelectMany(c => c.AllReferences)
-				.Where(c => (c.ObjectNode == CurrentNode || (c as OracleProgramReference)?.FunctionIdentifierNode == CurrentNode) && c.SchemaObject != null)
+				.Where(c => (c.ObjectNode == CurrentNode || (c as OracleProgramReference)?.ProgramIdentifierNode == CurrentNode) && c.SchemaObject != null)
 				.Select(c => c.SchemaObject)
 				.SingleOrDefault();
 
