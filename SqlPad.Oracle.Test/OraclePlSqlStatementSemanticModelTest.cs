@@ -363,5 +363,32 @@ END;";
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
 			semanticModel.QueryBlocks.Count.ShouldBe(2);
 		}
+
+		[Test]
+		public void TestComplexStatementProgramReference()
+		{
+			const string plsqlText =
+@"BEGIN
+	FOR i IN 1..2 LOOP
+		dbms_output.put_line(a => 'x');
+	END LOOP;
+END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
+
+			semanticModel.Programs.Count.ShouldBe(1);
+			var mainProgram = semanticModel.Programs[0];
+			mainProgram.ProgramReferences.Count.ShouldBe(1);
+			var putLineReference = mainProgram.ProgramReferences.First();
+			putLineReference.OwnerNode.ShouldBe(null);
+			putLineReference.ObjectNode.Token.Value.ShouldBe("dbms_output");
+			putLineReference.ProgramIdentifierNode.Token.Value.ShouldBe("put_line");
+			putLineReference.Metadata.ShouldNotBe(null);
+			putLineReference.ParameterListNode.ShouldNotBe(null);
+			putLineReference.ParameterReferences.Count.ShouldBe(1);
+		}
 	}
 }

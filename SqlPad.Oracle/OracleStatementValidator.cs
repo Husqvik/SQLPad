@@ -1205,12 +1205,12 @@ namespace SqlPad.Oracle
 						{
 							parameterListSemanticError = OracleSemanticErrorType.InvalidParameterCount;
 						}
-						else if (programReference.Metadata.DisplayType == OracleProgramMetadata.DisplayTypeNoParenthesis)
+						else if (String.Equals(programReference.Metadata.DisplayType, OracleProgramMetadata.DisplayTypeNoParenthesis))
 						{
 							parameterListSemanticError = OracleSemanticErrorType.NonParenthesisFunction;
 						}
 
-						if (parameterListSemanticError != OracleSemanticErrorType.None && programReference.ParameterListNode.AllChildNodes.All(n => n.IsGrammarValid))
+						if (!String.Equals(parameterListSemanticError, OracleSemanticErrorType.None) && programReference.ParameterListNode.AllChildNodes.All(n => n.IsGrammarValid))
 						{
 							validationModel.ProgramNodeValidity[programReference.ParameterListNode] = new InvalidNodeValidationData(parameterListSemanticError) { Node = programReference.ParameterListNode };
 						}

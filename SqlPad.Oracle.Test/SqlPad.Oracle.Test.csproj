@@ -88,6 +88,7 @@
     <Compile Include="OracleMultiNodeEditorDataProviderTest.cs" />
     <Compile Include="OracleNavigationServiceTest.cs" />
     <Compile Include="OraclePlSqlStatementSemanticModelTest.cs" />
+    <Compile Include="OraclePlSqlStatementValidatorTest.cs" />
     <Compile Include="OracleSnippetProviderTest.cs">
       <SubType>Code</SubType>
     </Compile>

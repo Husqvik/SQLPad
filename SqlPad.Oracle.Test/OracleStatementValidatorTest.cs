@@ -14,14 +14,14 @@ namespace SqlPad.Oracle.Test
 	public class OracleStatementValidatorTest
 	{
 		private static readonly OracleSqlParser Parser = OracleSqlParser.Instance;
-		private readonly OracleStatementValidator _statementValidator = new OracleStatementValidator();
 
-		private OracleValidationModel BuildValidationModel(string statementText, StatementBase statement, OracleDatabaseModelBase databaseModel = null)
+		internal static OracleValidationModel BuildValidationModel(string statementText, StatementBase statement, OracleDatabaseModelBase databaseModel = null)
 		{
-			var task = _statementValidator.BuildSemanticModelAsync(statementText, statement, databaseModel ?? TestFixture.DatabaseModel, CancellationToken.None);
+			var statementValidator = new OracleStatementValidator();
+			var task = statementValidator.BuildSemanticModelAsync(statementText, statement, databaseModel ?? TestFixture.DatabaseModel, CancellationToken.None);
 			task.Wait();
 
-			return (OracleValidationModel)_statementValidator.BuildValidationModel(task.Result);
+			return (OracleValidationModel)statementValidator.BuildValidationModel(task.Result);
 		}
 
 		[Test(Description = @"")]

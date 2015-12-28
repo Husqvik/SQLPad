@@ -299,7 +299,7 @@ namespace SqlPad.Oracle.Test
 			#region SYS.DBMS_OUTPUT
 			var dbmsOutput = (OraclePackage)AllObjectsInternal.Single(o => String.Equals(o.Name, "\"DBMS_OUTPUT\"") && String.Equals(o.Owner, SchemaSys));
 			var putLineProcedureMetadata = new OracleProgramMetadata(ProgramType.Procedure, OracleProgramIdentifier.CreateFromValues("SYS", "DBMS_OUTPUT", "PUT_LINE"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
-			putLineProcedureMetadata.AddParameter(new OracleProgramParameterMetadata("\"ITEM\"", 1, 1, 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			putLineProcedureMetadata.AddParameter(new OracleProgramParameterMetadata("\"A\"", 1, 1, 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
 			putLineProcedureMetadata.Owner = dbmsOutput;
 			dbmsOutput.Functions.Add(putLineProcedureMetadata);
 
