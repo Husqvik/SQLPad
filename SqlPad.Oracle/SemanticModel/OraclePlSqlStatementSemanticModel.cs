@@ -51,7 +51,7 @@ namespace SqlPad.Oracle.SemanticModel
 		{
 			foreach (var program in Programs)
 			{
-				foreach (var statementTypeNode in program.RootNode.GetPathFilterDescendants(n => !n.Id.In(NonTerminals.PlSqlBlock, NonTerminals.PlSqlSqlStatement), NonTerminals.PlSqlStatementType))
+				foreach (var statementTypeNode in program.RootNode.GetPathFilterDescendants(n => !String.Equals(n.Id, NonTerminals.PlSqlSqlStatement) && (!String.Equals(n.Id, NonTerminals.PlSqlBlock) || !String.Equals(n.ParentNode.Id, NonTerminals.PlSqlStatementType)), NonTerminals.PlSqlStatementType))
 				{
 					var statementNode = statementTypeNode[0];
 					if (statementNode == null)
@@ -93,6 +93,11 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private void FindPlSqlReferences(OraclePlSqlProgram program, StatementGrammarNode node)
 		{
+			if (node == null)
+			{
+				return;
+			}
+
 			var identifiers = node.GetPathFilterDescendants(NodeFilters.BreakAtPlSqlSubProgramOrSqlCommand, Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level, Terminals.RowNumberPseudoColumn);
 			ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(null, program, identifiers, StatementPlacement.None, null);
 
@@ -124,6 +129,8 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 
 			program.ColumnReferences.Clear();
+
+			ResolveFunctionReferences(program.ProgramReferences);
 
 			ResolveSubProgramReferences(program.SubPrograms);
 		}
@@ -233,7 +240,7 @@ namespace SqlPad.Oracle.SemanticModel
 		private void ResolveSqlStatements(OraclePlSqlProgram program)
 		{
 			var sqlStatementNodes = program.RootNode.GetPathFilterDescendants(
-				n => !String.Equals(n.Id, NonTerminals.ProgramDeclareSection) && (!String.Equals(n.Id, NonTerminals.PlSqlBlock) || !String.Equals(n.ParentNode.Id, NonTerminals.PlSqlStatementType)),
+				n => !String.Equals(n.Id, NonTerminals.ItemList2) && (!String.Equals(n.Id, NonTerminals.PlSqlBlock) || !String.Equals(n.ParentNode.Id, NonTerminals.PlSqlStatementType)),
 				NonTerminals.SelectStatement, NonTerminals.InsertStatement, NonTerminals.UpdateStatement, NonTerminals.MergeStatement);
 
 			foreach (var sqlStatementNode in sqlStatementNodes)

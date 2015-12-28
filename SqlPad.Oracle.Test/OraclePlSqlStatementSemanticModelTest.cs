@@ -297,7 +297,7 @@ END;";
 IS
     test_variable1 VARCHAR2(255);
 BEGIN
-    test_variable1 := test_variable1 || test_parameter1 || test_parameter2;
+    test_variable1 := nvl(test_variable1, 'x') || test_parameter1 || test_parameter2;
 END;";
 
 			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
@@ -314,6 +314,54 @@ END;";
 			localReferences[1].Variables.Count.ShouldBe(1);
 			localReferences[2].Variables.Count.ShouldBe(1);
 			localReferences[3].Variables.Count.ShouldBe(0);
+
+			mainProgram.ProgramReferences.Count.ShouldBe(1);
+			var programReference = mainProgram.ProgramReferences.First();
+			programReference.Metadata.ShouldNotBe(null);
+		}
+
+		[Test]
+		public void TestAnonymousPlSqlBlockLocalReferences()
+		{
+			const string plsqlText =
+@"DECLARE
+    test_variable1 VARCHAR2(255);
+BEGIN
+    test_variable1 := test_variable1 || test_parameter1;
+END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
+
+			semanticModel.Programs.Count.ShouldBe(1);
+			var mainProgram = semanticModel.Programs[0];
+			mainProgram.ColumnReferences.Count.ShouldBe(0);
+			mainProgram.PlSqlVariableReferences.Count.ShouldBe(3);
+			var localReferences = mainProgram.PlSqlVariableReferences.OrderBy(r => r.IdentifierNode.SourcePosition.IndexStart).ToArray();
+			localReferences[0].Variables.Count.ShouldBe(1);
+			localReferences[1].Variables.Count.ShouldBe(1);
+			localReferences[2].Variables.Count.ShouldBe(0);
+		}
+
+		[Test]
+		public void TestCursorVariableQueryBlockRetrieval()
+		{
+			const string plsqlText =
+@"DECLARE
+    CURSOR test_cursor IS SELECT * FROM DUAL;
+BEGIN
+	FOR c IN (SELECT * FROM DUAL) LOOP
+		NULL;
+	END LOOP;
+END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
+			semanticModel.QueryBlocks.Count.ShouldBe(2);
 		}
 	}
 }

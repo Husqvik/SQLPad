@@ -296,6 +296,25 @@ namespace SqlPad.Oracle.Test
 			AllObjectsInternal.Add(synonym);
 			#endregion
 
+			#region SYS.DBMS_OUTPUT
+			var dbmsOutput = (OraclePackage)AllObjectsInternal.Single(o => String.Equals(o.Name, "\"DBMS_OUTPUT\"") && String.Equals(o.Owner, SchemaSys));
+			var putLineProcedureMetadata = new OracleProgramMetadata(ProgramType.Procedure, OracleProgramIdentifier.CreateFromValues("SYS", "DBMS_OUTPUT", "PUT_LINE"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			putLineProcedureMetadata.AddParameter(new OracleProgramParameterMetadata("\"ITEM\"", 1, 1, 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			putLineProcedureMetadata.Owner = dbmsOutput;
+			dbmsOutput.Functions.Add(putLineProcedureMetadata);
+
+			synonym =
+				new OracleSynonym
+				{
+					FullyQualifiedName = OracleObjectIdentifier.Create(SchemaPublic, "DBMS_OUTPUT"),
+					SchemaObject = dbmsOutput,
+					IsValid = true
+				};
+			synonym.SchemaObject.Synonyms.Add(synonym);
+
+			AllObjectsInternal.Add(synonym);
+			#endregion
+
 			var uncompilableFunction = (OracleFunction)AllObjectsInternal.Single(o => String.Equals(o.Name, "\"UNCOMPILABLE_FUNCTION\"") && String.Equals(o.Owner, InitialSchema));
 			uncompilableFunction.Metadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "UNCOMPILABLE_FUNCTION"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
 			uncompilableFunction.Metadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
@@ -888,6 +907,11 @@ namespace SqlPad.Oracle.Test
 			new OraclePackage
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(SchemaSys, "\"DBMS_CRYPTO\""),
+				IsValid = true
+			},
+			new OraclePackage
+			{
+				FullyQualifiedName = OracleObjectIdentifier.Create(SchemaSys, "\"DBMS_OUTPUT\""),
 				IsValid = true
 			},
 			new OraclePackage

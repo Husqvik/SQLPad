@@ -2121,7 +2121,7 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 		}
 
-		private void ResolveFunctionReferences(IEnumerable<OracleProgramReference> programReferences)
+		protected void ResolveFunctionReferences(IEnumerable<OracleProgramReference> programReferences)
 		{
 			var programsTransferredToTypes = new List<OracleProgramReference>();
 			foreach (var programReference in programReferences)
