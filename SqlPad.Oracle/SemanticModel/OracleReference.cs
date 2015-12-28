@@ -15,18 +15,18 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public OracleObjectIdentifier FullyQualifiedObjectName => _fullyQualifiedName ?? (_fullyQualifiedName = BuildFullyQualifiedObjectName()).Value;
 
-	    protected virtual OracleObjectIdentifier BuildFullyQualifiedObjectName()
+		protected virtual OracleObjectIdentifier BuildFullyQualifiedObjectName()
 		{
 			return OracleObjectIdentifier.Create(OwnerNode, ObjectNode, null);
 		}
 
 		public bool HasExplicitDefinition => SelectListColumn == null || SelectListColumn.HasExplicitDefinition;
 
-	    public abstract string Name { get; }
+		public abstract string Name { get; }
 
 		public virtual string NormalizedName => Name.ToQuotedIdentifier();
 
-	    public StatementPlacement Placement { get; set; }
+		public StatementPlacement Placement { get; set; }
 
 		public OracleQueryBlock Owner { get; set; }
 
@@ -44,13 +44,24 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public OracleReferenceContainer Container { get; set; }
 
-	    public StatementGrammarNode DatabaseLinkNode { get; set; }
+		public StatementGrammarNode DatabaseLinkNode { get; set; }
 
 		public OracleDatabaseLink DatabaseLink { get; set; }
 
 		public virtual void Accept(OracleReferenceVisitor visitor)
 		{
 			throw new NotSupportedException();
+		}
+
+		public void CopyPropertiesFrom(OracleReference reference)
+		{
+			ObjectNode = reference.ObjectNode;
+			OwnerNode = reference.OwnerNode;
+			RootNode = reference.RootNode;
+			Owner = reference.Owner;
+			SelectListColumn = reference.SelectListColumn;
+			Container = reference.Container;
+			Placement = reference.Placement;
 		}
 	}
 }

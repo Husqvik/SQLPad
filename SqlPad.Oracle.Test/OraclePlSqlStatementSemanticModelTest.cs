@@ -265,5 +265,55 @@ END;";
 			mainProgram.SubPrograms[0].Variables[0].Name.ShouldBe("\"N\"");
 			mainProgram.SubPrograms[0].ChildModels.Count.ShouldBe(1);
 		}
+
+		[Test]
+		public void TestSelectListRedundancy()
+		{
+			const string plsqlText =
+@"DECLARE
+	c1 NUMBER;
+	c2 NUMBER;
+BEGIN
+	SELECT NULL, NULL INTO c1, c2 FROM DUAL;
+END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
+			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
+
+			semanticModel.Programs.Count.ShouldBe(1);
+			var mainProgram = semanticModel.Programs[0];
+			mainProgram.ChildModels.Count.ShouldBe(1);
+			mainProgram.ChildModels[0].RedundantSymbolGroups.Count.ShouldBe(0);
+		}
+
+		[Test]
+		public void TestLocalReferences()
+		{
+			const string plsqlText =
+@"CREATE OR REPLACE PROCEDURE test_procedure(test_parameter1 IN VARCHAR2)
+IS
+    test_variable1 VARCHAR2(255);
+BEGIN
+    test_variable1 := test_variable1 || test_parameter1 || test_parameter2;
+END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
+
+			semanticModel.Programs.Count.ShouldBe(1);
+			var mainProgram = semanticModel.Programs[0];
+			mainProgram.ColumnReferences.Count.ShouldBe(0);
+			mainProgram.PlSqlVariableReferences.Count.ShouldBe(4);
+			var localReferences = mainProgram.PlSqlVariableReferences.OrderBy(r => r.IdentifierNode.SourcePosition.IndexStart).ToArray();
+			localReferences[0].Variables.Count.ShouldBe(1);
+			localReferences[1].Variables.Count.ShouldBe(1);
+			localReferences[2].Variables.Count.ShouldBe(1);
+			localReferences[3].Variables.Count.ShouldBe(0);
+		}
 	}
 }

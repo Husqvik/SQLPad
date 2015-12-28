@@ -1117,6 +1117,15 @@ namespace SqlPad.Oracle
 					ValidateDatabaseLinkReference(validationModel.ObjectNodeValidity, dataTypeReference);
 				}
 			}
+
+			foreach (var variableReference in referenceContainer.PlSqlVariableReferences)
+			{
+				if (variableReference.Variables.Count == 0)
+				{
+					validationModel.ObjectNodeValidity[variableReference.IdentifierNode] =
+						new NodeValidationData { Node = variableReference.IdentifierNode };
+				}
+			}
 		}
 
 		private static void ValidatePriorOperators(OracleValidationModel validationModel, IEnumerable<StatementGrammarNode> terminals)

@@ -43,7 +43,6 @@ namespace SqlPad.Oracle.SemanticModel
 			NonTerminals.WithinGroupAggregationFunction
 		};
 
-		private readonly Dictionary<StatementGrammarNode, OracleQueryBlock> _queryBlockNodes = new Dictionary<StatementGrammarNode, OracleQueryBlock>();
 		private readonly List<OracleInsertTarget> _insertTargets = new List<OracleInsertTarget>();
 		private readonly List<OracleLiteral> _literals = new List<OracleLiteral>();
 		private readonly Dictionary<StatementGrammarNode, OracleJoinDescription> _joinTableReferenceNodes = new Dictionary<StatementGrammarNode, OracleJoinDescription>();
@@ -59,7 +58,9 @@ namespace SqlPad.Oracle.SemanticModel
 		private readonly Dictionary<StatementGrammarNode, OracleDataObjectReference> _joinPartitionColumnTableReferenceRootNodes = new Dictionary<StatementGrammarNode, OracleDataObjectReference>();
 		private readonly HashSet<OracleQueryBlock> _unreferencedQueryBlocks = new HashSet<OracleQueryBlock>();
 		private readonly HashSet<StatementGrammarNode> _oldOuterJoinColumnReferences = new HashSet<StatementGrammarNode>();
-		
+
+		protected readonly Dictionary<StatementGrammarNode, OracleQueryBlock> QueryBlockNodes = new Dictionary<StatementGrammarNode, OracleQueryBlock>();
+
 		private OracleQueryBlock _mainQueryBlock;
 
 		protected CancellationToken CancellationToken = CancellationToken.None;
@@ -87,7 +88,7 @@ namespace SqlPad.Oracle.SemanticModel
 		
 		public bool HasDatabaseModel => _databaseModel != null && _databaseModel.IsInitialized;
 
-		public ICollection<OracleQueryBlock> QueryBlocks => _queryBlockNodes.Values;
+		public ICollection<OracleQueryBlock> QueryBlocks => QueryBlockNodes.Values;
 
 		public ICollection<OracleInsertTarget> InsertTargets => _insertTargets;
 
@@ -101,7 +102,7 @@ namespace SqlPad.Oracle.SemanticModel
 		{
 			get
 			{
-				return _queryBlockNodes.Values
+				return QueryBlockNodes.Values
 					.SelectMany(qb => Enumerable.Repeat(qb, 1).Concat(qb.ChildContainers))
 					.Concat(_insertTargets)
 					.Concat(Enumerable.Repeat(MainObjectReferenceContainer, 1));
@@ -113,7 +114,7 @@ namespace SqlPad.Oracle.SemanticModel
 			get
 			{
 				return _mainQueryBlock ??
-				       (_mainQueryBlock = _queryBlockNodes.Values
+				       (_mainQueryBlock = QueryBlockNodes.Values
 					       .Where(qb => qb.Type == QueryBlockType.Normal)
 					       .OrderBy(qb => qb.RootNode.Level)
 					       .FirstOrDefault());
@@ -140,6 +141,8 @@ namespace SqlPad.Oracle.SemanticModel
 
 			MainObjectReferenceContainer = new OracleMainObjectReferenceContainer(this);
 			_referenceBuilder = new OracleReferenceBuilder(this);
+
+			NonQueryBlockTerminals = StatementGrammarNode.EmptyArray;
 		}
 
 		private void Initialize()
@@ -288,16 +291,16 @@ namespace SqlPad.Oracle.SemanticModel
 
 				foreach (var queryBlock in childQueryBlocks)
 				{
-					_queryBlockNodes.Add(queryBlock.RootNode, queryBlock);
+					QueryBlockNodes.Add(queryBlock.RootNode, queryBlock);
 					normalQueryBlocks.Remove(queryBlock);
 				}
 
-				_queryBlockNodes.Add(commonTableExpression.RootNode, commonTableExpression);
+				QueryBlockNodes.Add(commonTableExpression.RootNode, commonTableExpression);
 			}
 
 			foreach (var queryBlock in normalQueryBlocks)
 			{
-				_queryBlockNodes.Add(queryBlock.RootNode, queryBlock);
+				QueryBlockNodes.Add(queryBlock.RootNode, queryBlock);
 			}
 		}
 
@@ -363,7 +366,7 @@ namespace SqlPad.Oracle.SemanticModel
 		{
 			Initialize();
 
-			foreach (var queryBlock in _queryBlockNodes.Values)
+			foreach (var queryBlock in QueryBlockNodes.Values)
 			{
 				FindObjectReferences(queryBlock);
 
@@ -395,7 +398,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private void HarmonizeConcatenatedQueryBlockColumnTypes()
 		{
-			foreach (var queryBlock in _queryBlockNodes.Values)
+			foreach (var queryBlock in QueryBlockNodes.Values)
 			{
 				if (queryBlock.PrecedingConcatenatedQueryBlock != null || queryBlock.FollowingConcatenatedQueryBlock == null)
 				{
@@ -623,7 +626,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private void ResolvePivotClauses()
 		{
-			var objectReferences = _queryBlockNodes.Values.SelectMany(qb => qb.ObjectReferences).ToArray();
+			var objectReferences = QueryBlockNodes.Values.SelectMany(qb => qb.ObjectReferences).ToArray();
 			foreach (var objectReference in objectReferences)
 			{
 				ResolvePivotClause(objectReference);
@@ -743,7 +746,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private void FindRecursiveQueryReferences()
 		{
-			foreach (var queryBlock in _queryBlockNodes.Values.Where(qb => qb.Type == QueryBlockType.CommonTableExpression))
+			foreach (var queryBlock in QueryBlockNodes.Values.Where(qb => qb.Type == QueryBlockType.CommonTableExpression))
 			{
 				FindRecusiveSearchReferences(queryBlock);
 				FindRecusiveCycleReferences(queryBlock);
@@ -983,7 +986,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private void ResolveModelClause()
 		{
-			foreach (var queryBlock in _queryBlockNodes.Values)
+			foreach (var queryBlock in QueryBlockNodes.Values)
 			{
 				var modelClause = queryBlock.RootNode[NonTerminals.ModelClause];
 
@@ -1130,7 +1133,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private void ResolveInlineViewOrCommonTableExpressionRelations()
 		{
-			foreach (var queryBlock in _queryBlockNodes.Values)
+			foreach (var queryBlock in QueryBlockNodes.Values)
 			{
 				ResolveConcatenatedQueryBlocks(queryBlock);
 
@@ -1144,21 +1147,21 @@ namespace SqlPad.Oracle.SemanticModel
 				}
 			}
 
-			foreach (var queryBlock in _queryBlockNodes.Values)
+			foreach (var queryBlock in QueryBlockNodes.Values)
 			{
 				foreach (var nestedQueryReference in queryBlock.ObjectReferences.Where(t => t.Type != ReferenceType.SchemaObject))
 				{
 					switch (nestedQueryReference.Type)
 					{
 						case ReferenceType.InlineView:
-							nestedQueryReference.QueryBlocks.Add(_queryBlockNodes[nestedQueryReference.ObjectNode]);
+							nestedQueryReference.QueryBlocks.Add(QueryBlockNodes[nestedQueryReference.ObjectNode]);
 							break;
 						
 						case ReferenceType.PivotTable:
 							var pivotTableReference = (OraclePivotTableReference)nestedQueryReference;
 							if (pivotTableReference.SourceReference.Type == ReferenceType.InlineView)
 							{
-								pivotTableReference.SourceReference.QueryBlocks.Add(_queryBlockNodes[pivotTableReference.SourceReference.ObjectNode]);
+								pivotTableReference.SourceReference.QueryBlocks.Add(QueryBlockNodes[pivotTableReference.SourceReference.ObjectNode]);
 							}
 							
 							break;
@@ -1175,7 +1178,7 @@ namespace SqlPad.Oracle.SemanticModel
 									var cteQueryBlockNode = referencedQueryBlock.Key.GetDescendants(NonTerminals.QueryBlock).FirstOrDefault();
 									if (cteQueryBlockNode != null)
 									{
-										var referredQueryBlock = _queryBlockNodes[cteQueryBlockNode];
+										var referredQueryBlock = QueryBlockNodes[cteQueryBlockNode];
 										nestedQueryReference.QueryBlocks.Add(referredQueryBlock);
 
 										_unreferencedQueryBlocks.Remove(referredQueryBlock);
@@ -1192,7 +1195,7 @@ namespace SqlPad.Oracle.SemanticModel
 					var accesibleQueryBlockRoot = accessibleQueryBlock.GetDescendants(NonTerminals.QueryBlock).FirstOrDefault();
 					if (accesibleQueryBlockRoot != null)
 					{
-						queryBlock.AccessibleQueryBlocks.Add(_queryBlockNodes[accesibleQueryBlockRoot]);
+						queryBlock.AccessibleQueryBlocks.Add(QueryBlockNodes[accesibleQueryBlockRoot]);
 					}
 				}
 			}
@@ -1261,7 +1264,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private void ResolveRedundantColumns()
 		{
-			foreach (var queryBlock in _queryBlockNodes.Values)
+			foreach (var queryBlock in QueryBlockNodes.Values)
 			{
 				var nestedQuery = queryBlock.RootNode.GetAncestor(NonTerminals.NestedQuery);
 				var groupingExpressionOrNestedQuery =
@@ -1368,7 +1371,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private void ResolveRedundantQualifiers()
 		{
-			foreach (var queryBlock in _queryBlockNodes.Values)
+			foreach (var queryBlock in QueryBlockNodes.Values)
 			{
 				var ownerNameObjectReferences = queryBlock.ObjectReferences
 					.Where(o => o.OwnerNode != null && o.SchemaObject != null)
@@ -1446,7 +1449,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private void ResolveRedundantAliases()
 		{
-			var redundantColumnAliases = _queryBlockNodes.Values
+			var redundantColumnAliases = QueryBlockNodes.Values
 				.SelectMany(qb => qb.Columns)
 				.Where(c => c.IsDirectReference && c.HasExplicitAlias && String.Equals(c.NormalizedName, c.AliasNode.PrecedingTerminal.Token.Value.ToQuotedIdentifier()) && !_redundantTerminals.Contains(c.AliasNode))
 				.Select(c => c.AliasNode);
@@ -1710,7 +1713,7 @@ namespace SqlPad.Oracle.SemanticModel
 					var queryBlock = subquery?.GetDescendantsWithinSameQueryBlock(NonTerminals.QueryBlock).FirstOrDefault();
 					if (queryBlock != null)
 					{
-						insertTarget.RowSource = _queryBlockNodes[queryBlock];
+						insertTarget.RowSource = QueryBlockNodes[queryBlock];
 					}
 				}
 				else
@@ -1819,7 +1822,7 @@ namespace SqlPad.Oracle.SemanticModel
 				return;
 			}
 			
-			var precedingQueryBlock = _queryBlockNodes[parentQueryBlockNode];
+			var precedingQueryBlock = QueryBlockNodes[parentQueryBlockNode];
 			precedingQueryBlock.FollowingConcatenatedQueryBlock = queryBlock;
 			queryBlock.PrecedingConcatenatedQueryBlock = precedingQueryBlock;
 
@@ -1861,7 +1864,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private void ResolveReferences()
 		{
-			foreach (var queryBlock in _queryBlockNodes.Values)
+			foreach (var queryBlock in QueryBlockNodes.Values)
 			{
 				CancellationToken.ThrowIfCancellationRequested();
 
@@ -2238,7 +2241,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public OracleQueryBlock GetQueryBlock(int position)
 		{
-			return _queryBlockNodes.Values
+			return QueryBlockNodes.Values
 				.Where(qb => qb.RootNode.SourcePosition.ContainsIndex(position))
 				.OrderByDescending(qb => qb.RootNode.Level)
 				.FirstOrDefault();
@@ -2283,14 +2286,14 @@ namespace SqlPad.Oracle.SemanticModel
 
 				if (orderByClauseNode != null)
 				{
-					queryBlock = _queryBlockNodes.Values.SingleOrDefault(qb => qb.OrderByClause == orderByClauseNode);
+					queryBlock = QueryBlockNodes.Values.SingleOrDefault(qb => qb.OrderByClause == orderByClauseNode);
 				}
 				else
 				{
 					var explicitColumnListNode = node.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.NestedQuery), NonTerminals.ParenthesisEnclosedIdentifierList);
 					if (explicitColumnListNode != null)
 					{
-						queryBlock = _queryBlockNodes.Values.SingleOrDefault(qb => qb.AliasNode != null && qb.ExplicitColumnNameList == explicitColumnListNode);
+						queryBlock = QueryBlockNodes.Values.SingleOrDefault(qb => qb.AliasNode != null && qb.ExplicitColumnNameList == explicitColumnListNode);
 					}
 				}
 
@@ -2302,7 +2305,7 @@ namespace SqlPad.Oracle.SemanticModel
 				queryBlockNode = queryBlock.RootNode;
 			}
 
-			return queryBlockNode == null ? null : _queryBlockNodes[queryBlockNode];
+			return queryBlockNode == null ? null : QueryBlockNodes[queryBlockNode];
 		}
 
 		private void ResolveColumnObjectReferences(IEnumerable<OracleColumnReference> columnReferences, ICollection<OracleDataObjectReference> accessibleRowSourceReferences, ICollection<OracleDataObjectReference> parentCorrelatedRowSourceReferences)
@@ -2506,17 +2509,12 @@ namespace SqlPad.Oracle.SemanticModel
 				{
 					ProgramIdentifierNode = columnReference.ColumnNode,
 					DatabaseLinkNode = OracleReferenceBuilder.GetDatabaseLinkFromIdentifier(columnReference.ColumnNode),
-					ObjectNode = columnReference.ObjectNode,
-					OwnerNode = columnReference.OwnerNode,
-					RootNode = columnReference.RootNode,
-					Owner = columnReference.Owner,
-					SelectListColumn = columnReference.SelectListColumn,
-					Container = columnReference.Container,
-					Placement = columnReference.Placement,
 					AnalyticClauseNode = null,
 					ParameterListNode = null,
 					ParameterReferences = null
 				};
+
+			programReference.CopyPropertiesFrom(columnReference);
 
 			UpdateFunctionReferenceWithMetadata(programReference);
 			if (programReference.SchemaObject != null)
@@ -2566,26 +2564,27 @@ namespace SqlPad.Oracle.SemanticModel
 		private void ResolveSequenceReference(OracleColumnReference columnReference)
 		{
 			if (columnReference.ObjectNode == null ||
-				columnReference.ObjectNodeObjectReferences.Count > 0)
+			    columnReference.ObjectNodeObjectReferences.Count > 0)
+			{
 				return;
+			}
 
 			var identifierCandidates = _databaseModel.GetPotentialSchemaObjectIdentifiers(columnReference.FullyQualifiedObjectName);	
 			var schemaObject = _databaseModel.GetFirstSchemaObject<OracleSequence>(identifierCandidates);
 			if (schemaObject == null)
+			{
 				return;
+			}
 			
 			var sequenceReference =
 				new OracleSequenceReference
 				{
 					ObjectNode = columnReference.ObjectNode,
 					DatabaseLinkNode = OracleReferenceBuilder.GetDatabaseLinkFromIdentifier(columnReference.ColumnNode),
-					Owner = columnReference.Owner,
-					OwnerNode = columnReference.OwnerNode,
-					RootNode = columnReference.RootNode,
-					SelectListColumn = columnReference.SelectListColumn,
-					Placement = columnReference.Placement,
 					SchemaObject = schemaObject
 				};
+
+			sequenceReference.CopyPropertiesFrom(columnReference);
 
 			var sequence = (OracleSequence)schemaObject.GetTargetSchemaObject();
 			columnReference.Container.SequenceReferences.Add(sequenceReference);
@@ -2784,13 +2783,13 @@ namespace SqlPad.Oracle.SemanticModel
 			CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, queryBlock, queryBlock.ProgramReferences, StatementPlacement.OrderBy, null);
 		}
 
-		private IEnumerable<StatementGrammarNode> GetGrammarSpecificFunctionNodes(StatementGrammarNode sourceNode, Func<StatementGrammarNode, bool> filter = null)
+		protected IEnumerable<StatementGrammarNode> GetGrammarSpecificFunctionNodes(StatementGrammarNode sourceNode, Func<StatementGrammarNode, bool> filter = null)
 		{
 			return sourceNode.GetPathFilterDescendants(n => NodeFilters.BreakAtNestedQueryBlock(n) && (filter == null || filter(n)),
 				Terminals.Count, Terminals.Trim, Terminals.CharacterCode, Terminals.Cast, Terminals.NegationOrNull, Terminals.JsonExists, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, NonTerminals.WithinGroupAggregationFunction);
 		}
 
-		private void ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(OracleQueryBlock queryBlock, OracleReferenceContainer referenceContainer, IEnumerable<StatementGrammarNode> identifiers, StatementPlacement placement, OracleSelectListColumn selectListColumn, Func<StatementGrammarNode, StatementGrammarNode> getPrefixNonTerminalFromIdentiferFunction = null)
+		protected void ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(OracleQueryBlock queryBlock, OracleReferenceContainer referenceContainer, IEnumerable<StatementGrammarNode> identifiers, StatementPlacement placement, OracleSelectListColumn selectListColumn, Func<StatementGrammarNode, StatementGrammarNode> getPrefixNonTerminalFromIdentiferFunction = null)
 		{
 			foreach (var identifier in identifiers)
 			{
@@ -2943,7 +2942,7 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 		}
 
-		private static IReadOnlyList<OracleProgramReference> CreateGrammarSpecificFunctionReferences(IEnumerable<StatementGrammarNode> grammarSpecificFunctions, OracleQueryBlock queryBlock, ICollection<OracleProgramReference> programReferences, StatementPlacement placement, OracleSelectListColumn selectListColumn)
+		protected static IReadOnlyList<OracleProgramReference> CreateGrammarSpecificFunctionReferences(IEnumerable<StatementGrammarNode> grammarSpecificFunctions, OracleQueryBlock queryBlock, ICollection<OracleProgramReference> programReferences, StatementPlacement placement, OracleSelectListColumn selectListColumn)
 		{
 			var newProgramReferences = new List<OracleProgramReference>();
 			foreach (var identifierNode in grammarSpecificFunctions.Select(n => n.FirstTerminalNode).Distinct())

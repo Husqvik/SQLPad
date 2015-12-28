@@ -43,8 +43,6 @@ namespace SqlPad.Oracle.SemanticModel
 
 		protected override void Build()
 		{
-			base.Build();
-
 			ResolveProgramDefinitions();
 			ResolveProgramBodies();
 		}
@@ -78,11 +76,102 @@ namespace SqlPad.Oracle.SemanticModel
 									ParameterReferences = ResolvedParameterReferences(parameterListNode)
 								};
 
+							FindPlSqlReferences(program, parameterListNode);
 							program.ProgramReferences.Add(programReference);
 
 							break;
+
+						default:
+							FindPlSqlReferences(program, statementNode);
+							break;
 					}
 				}
+			}
+
+			ResolveSubProgramReferences(Programs);
+		}
+
+		private void FindPlSqlReferences(OraclePlSqlProgram program, StatementGrammarNode node)
+		{
+			var identifiers = node.GetPathFilterDescendants(NodeFilters.BreakAtPlSqlSubProgramOrSqlCommand, Terminals.Identifier, Terminals.RowIdPseudoColumn, Terminals.Level, Terminals.RowNumberPseudoColumn);
+			ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(null, program, identifiers, StatementPlacement.None, null);
+
+			var grammarSpecificFunctions = GetGrammarSpecificFunctionNodes(node);
+			CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, null, program.ProgramReferences, StatementPlacement.None, null);
+
+			var assignmentTargetIdentifiers = node
+				.GetPathFilterDescendants(NodeFilters.BreakAtPlSqlSubProgramOrSqlCommand, NonTerminals.BindVariableExpressionOrPlSqlTarget)
+				.SelectMany(t => t.GetDescendants(Terminals.PlSqlIdentifier));
+
+			ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(null, program, assignmentTargetIdentifiers, StatementPlacement.None, null);
+		}
+
+		private void ResolvePlSqlReferences(OraclePlSqlProgram program)
+		{
+			foreach (var columnReference in program.ColumnReferences)
+			{
+				var variableReference =
+					new OraclePlSqlVariableReference
+					{
+						PlSqlProgram = program,
+						IdentifierNode = columnReference.ColumnNode
+					};
+
+				variableReference.CopyPropertiesFrom(columnReference);
+				TryResolveLocalVariableReference(variableReference);
+
+				program.PlSqlVariableReferences.Add(variableReference);
+			}
+
+			program.ColumnReferences.Clear();
+
+			ResolveSubProgramReferences(program.SubPrograms);
+		}
+
+		private bool TryResolveLocalVariableReference(OraclePlSqlVariableReference variableReference)
+		{
+			if (variableReference.ObjectNode != null)
+			{
+				return false;
+			}
+
+			var program = variableReference.PlSqlProgram;
+
+			do
+			{
+				foreach (var variable in variableReference.PlSqlProgram.Variables)
+				{
+					if (String.Equals(variable.Name, variableReference.NormalizedName))
+					{
+						variableReference.Variables.Add(variable);
+					}
+				}
+
+				foreach (var parameter in variableReference.PlSqlProgram.Parameters)
+				{
+					if (String.Equals(parameter.Name, variableReference.NormalizedName))
+					{
+						variableReference.Variables.Add(parameter);
+					}
+				}
+
+				if (variableReference.Variables.Count > 0)
+				{
+					return true;
+				}
+
+				program = program.Owner;
+			} while (variableReference.Variables.Count == 0 && program != null);
+
+
+			return false;
+		}
+
+		private void ResolveSubProgramReferences(IEnumerable<OraclePlSqlProgram> programs)
+		{
+			foreach (var subProgram in programs)
+			{
+				ResolvePlSqlReferences(subProgram);
 			}
 		}
 
@@ -143,12 +232,20 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private void ResolveSqlStatements(OraclePlSqlProgram program)
 		{
-			var sqlStatementNodes = program.RootNode.GetPathFilterDescendants(n => !String.Equals(n.Id, NonTerminals.ProgramDeclareSection), NonTerminals.SelectStatement, NonTerminals.InsertStatement, NonTerminals.UpdateStatement, NonTerminals.MergeStatement);
-			foreach (var rootNode in sqlStatementNodes)
+			var sqlStatementNodes = program.RootNode.GetPathFilterDescendants(
+				n => !String.Equals(n.Id, NonTerminals.ProgramDeclareSection) && (!String.Equals(n.Id, NonTerminals.PlSqlBlock) || !String.Equals(n.ParentNode.Id, NonTerminals.PlSqlStatementType)),
+				NonTerminals.SelectStatement, NonTerminals.InsertStatement, NonTerminals.UpdateStatement, NonTerminals.MergeStatement);
+
+			foreach (var sqlStatementNode in sqlStatementNodes)
 			{
-				var childStatement = new OracleStatement { RootNode = rootNode, ParseStatus = Statement.ParseStatus, SourcePosition = rootNode.SourcePosition };
-				var childStatementSemanticModel = new OracleStatementSemanticModel(rootNode.GetText(StatementText), childStatement, DatabaseModel).Build(CancellationToken.None);
+				var childStatement = new OracleStatement { RootNode = sqlStatementNode, ParseStatus = Statement.ParseStatus, SourcePosition = sqlStatementNode.SourcePosition };
+				var childStatementSemanticModel = new OracleStatementSemanticModel(sqlStatementNode.GetText(StatementText), childStatement, DatabaseModel).Build(CancellationToken);
 				program.ChildModels.Add(childStatementSemanticModel);
+
+				foreach (var queryBlock in childStatementSemanticModel.QueryBlocks)
+				{
+					QueryBlockNodes.Add(queryBlock.RootNode, queryBlock);
+				}
 			}
 		}
 
@@ -172,6 +269,7 @@ namespace SqlPad.Oracle.SemanticModel
 					subProgram =
 						new OraclePlSqlProgram(this)
 						{
+							Owner = program,
 							RootNode = childNode,
 							ObjectIdentifier = program.ObjectIdentifier
 						};
@@ -275,6 +373,9 @@ namespace SqlPad.Oracle.SemanticModel
 				case NonTerminals.CreateFunction:
 					parameterSourceNode = program.RootNode[NonTerminals.PlSqlFunctionSource];
 					break;
+				case NonTerminals.CreateProcedure:
+					parameterSourceNode = program.RootNode;
+					break;
 				default:
 					parameterSourceNode = program.RootNode[0];
 					break;
@@ -338,6 +439,8 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public IList<OraclePlSqlProgram> SubPrograms { get; } = new List<OraclePlSqlProgram>();
 
+		public OraclePlSqlProgram Owner { get; set; }
+
 		public IList<OraclePlSqlParameter> Parameters { get; } = new List<OraclePlSqlParameter>();
 
 		public IList<OraclePlSqlType> Types { get; } = new List<OraclePlSqlType>();
@@ -347,10 +450,26 @@ namespace SqlPad.Oracle.SemanticModel
 		public OraclePlSqlParameter ReturnParameter { get; set; }
 	}
 
-	public class OraclePlSqlVariable
+	public class OraclePlSqlVariableReference : OracleReference
+	{
+		public StatementGrammarNode IdentifierNode { get; set; }
+
+		public OraclePlSqlProgram PlSqlProgram { get; set; }
+
+		public OraclePlSqlVariableReference ChainedVariableReference { get; set; }
+
+		public override string Name => IdentifierNode.Token.Value;
+
+		public ICollection<OraclePlSqlElement> Variables { get; } = new List<OraclePlSqlElement>();
+	}
+
+	public abstract class OraclePlSqlElement
 	{
 		public string Name { get; set; }
+	}
 
+	public class OraclePlSqlVariable : OraclePlSqlElement
+	{
 		public bool IsConstant { get; set; }
 
 		public bool IsException { get; set; }
@@ -358,15 +477,12 @@ namespace SqlPad.Oracle.SemanticModel
 		//public OracleDataType DataType { get; set; }
 	}
 
-	public class OraclePlSqlType
+	public class OraclePlSqlType : OraclePlSqlElement
 	{
-		public string Name { get; set; }
 	}
 
-	public class OraclePlSqlParameter
+	public class OraclePlSqlParameter : OraclePlSqlElement
 	{
-		public string Name { get; set; }
-
 		public ParameterDirection Direction { get; set; }
 
 		//public OracleDataType DataType { get; set; }

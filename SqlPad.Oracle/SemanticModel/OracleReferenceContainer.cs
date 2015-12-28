@@ -15,28 +15,23 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 
 			SemanticModel = semanticModel;
-
-			TypeReferences = new List<OracleTypeReference>();
-			ColumnReferences = new List<OracleColumnReference>();
-			ProgramReferences = new List<OracleProgramReference>();
-			SequenceReferences = new List<OracleSequenceReference>();
-			ObjectReferences = new List<OracleDataObjectReference>();
-			DataTypeReferences = new List<OracleDataTypeReference>();
 		}
 
 		public OracleStatementSemanticModel SemanticModel { get; private set; }
 
-		public ICollection<OracleTypeReference> TypeReferences { get; }
+		public ICollection<OracleTypeReference> TypeReferences { get; } = new List<OracleTypeReference>();
 
-		public ICollection<OracleSequenceReference> SequenceReferences { get; }
+		public ICollection<OracleSequenceReference> SequenceReferences { get; } = new List<OracleSequenceReference>();
 
-		public IList<OracleColumnReference> ColumnReferences { get; }
+		public IList<OracleColumnReference> ColumnReferences { get; } = new List<OracleColumnReference>();
 
-		public ICollection<OracleProgramReference> ProgramReferences { get; }
+		public ICollection<OracleProgramReference> ProgramReferences { get; } = new List<OracleProgramReference>();
 
-		public ICollection<OracleDataObjectReference> ObjectReferences { get; }
+		public ICollection<OracleDataObjectReference> ObjectReferences { get; } = new List<OracleDataObjectReference>();
 
-		public ICollection<OracleDataTypeReference> DataTypeReferences { get; }
+		public ICollection<OracleDataTypeReference> DataTypeReferences { get; } = new List<OracleDataTypeReference>();
+
+		public ICollection<OraclePlSqlVariableReference> PlSqlVariableReferences { get; } = new List<OraclePlSqlVariableReference>();
 
 		public IEnumerable<OracleReference> AllReferences
 		{
@@ -48,6 +43,7 @@ namespace SqlPad.Oracle.SemanticModel
 					.Concat(ProgramReferences)
 					.Concat(DataTypeReferences)
 					.Concat(ObjectReferences)
+					.Concat(PlSqlVariableReferences)
 					.Concat(ObjectReferences.Where(r => r.PartitionReference != null).Select(r => r.PartitionReference));
 			}
 		}
