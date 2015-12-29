@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using SqlPad.Oracle.DatabaseConnection;
@@ -97,7 +98,15 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private void ResolvePlSqlReferences(OraclePlSqlProgram program)
 		{
-			foreach (var columnReference in program.ColumnReferences.ToArray())
+			var sourceColumnReferences = program.ColumnReferences
+				.Concat(
+					program.ChildModels
+						.SelectMany(m => m.AllReferenceContainers)
+						.SelectMany(c => c.ColumnReferences)
+						.Where(c => !c.ReferencesAllColumns && c.ColumnNodeColumnReferences.Count == 0 && c.ObjectNodeObjectReferences.Count == 0))
+				.ToArray();
+
+			foreach (var columnReference in sourceColumnReferences)
 			{
 				var variableReference =
 					new OraclePlSqlVariableReference
@@ -109,7 +118,11 @@ namespace SqlPad.Oracle.SemanticModel
 				variableReference.CopyPropertiesFrom(columnReference);
 
 				var variableResolved = TryResolveLocalVariableReference(variableReference);
-				if (!variableResolved)
+				if (variableResolved)
+				{
+					columnReference.Container.ColumnReferences.Remove(columnReference);
+				}
+				else
 				{
 					variableResolved = !TryColumnReferenceAsProgramOrSequenceReference(columnReference, true);
 				}
@@ -129,34 +142,30 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private bool TryResolveLocalVariableReference(OraclePlSqlVariableReference variableReference)
 		{
-			if (variableReference.ObjectNode != null)
+			if (variableReference.OwnerNode != null)
 			{
 				return false;
 			}
 
+			var variablePrefix = variableReference.ObjectNode == null ? null : variableReference.FullyQualifiedObjectName.NormalizedName;
 			var program = variableReference.PlSqlProgram;
 
 			do
 			{
-				foreach (var variable in variableReference.PlSqlProgram.Variables)
+				if (variablePrefix == null || GetScopeNames(program).Any(n => String.Equals(variablePrefix, n)))
 				{
-					if (String.Equals(variable.Name, variableReference.NormalizedName))
+					foreach (var variable in ((IEnumerable<OraclePlSqlElement>)variableReference.PlSqlProgram.Variables).Concat(variableReference.PlSqlProgram.Parameters))
 					{
-						variableReference.Variables.Add(variable);
+						if (String.Equals(variable.Name, variableReference.NormalizedName))
+						{
+							variableReference.Variables.Add(variable);
+						}
 					}
-				}
 
-				foreach (var parameter in variableReference.PlSqlProgram.Parameters)
-				{
-					if (String.Equals(parameter.Name, variableReference.NormalizedName))
+					if (variableReference.Variables.Count > 0)
 					{
-						variableReference.Variables.Add(parameter);
+						return true;
 					}
-				}
-
-				if (variableReference.Variables.Count > 0)
-				{
-					return true;
 				}
 
 				program = program.Owner;
@@ -164,6 +173,13 @@ namespace SqlPad.Oracle.SemanticModel
 
 
 			return false;
+		}
+
+		private static IEnumerable<string> GetScopeNames(OraclePlSqlProgram program)
+		{
+			return String.IsNullOrEmpty(program.Name)
+				? program.Labels.Select(l => l.Name)
+				: Enumerable.Repeat(program.Name, 1);
 		}
 
 		private void ResolveSubProgramReferences(IEnumerable<OraclePlSqlProgram> programs)
@@ -195,7 +211,7 @@ namespace SqlPad.Oracle.SemanticModel
 				}
 				else
 				{
-					functionOrProcedure = Statement.RootNode;
+					functionOrProcedure = Statement.RootNode[NonTerminals.PlSqlBlock];
 				}
 
 				if (schemaObjectNode != null)
@@ -206,7 +222,7 @@ namespace SqlPad.Oracle.SemanticModel
 				}
 
 				var program =
-					new OraclePlSqlProgram(this)
+					new OraclePlSqlProgram(anonymousPlSqlBlock ? PlSqlProgramType.PlSqlBlock : PlSqlProgramType.StandaloneProgram, this)
 					{
 						RootNode = functionOrProcedure,
 						ObjectIdentifier = identifier,
@@ -214,7 +230,7 @@ namespace SqlPad.Oracle.SemanticModel
 					};
 
 				ResolveParameterDeclarations(program);
-				ResolveLocalVariableAndTypeDeclarations(program);
+				ResolveLocalVariableTypeAndLabelDeclarations(program);
 				ResolveSqlStatements(program);
 
 				_programs.Add(program);
@@ -261,12 +277,13 @@ namespace SqlPad.Oracle.SemanticModel
 			foreach (var childNode in node.ChildNodes)
 			{
 				var subProgram = program;
-				if (String.Equals(childNode.Id, NonTerminals.ProcedureDefinition) || String.Equals(childNode.Id, NonTerminals.FunctionDefinition) || String.Equals(childNode.Id, NonTerminals.PlSqlBlock))
+				var isPlSqlBlock = String.Equals(childNode.Id, NonTerminals.PlSqlBlock);
+				if (isPlSqlBlock || String.Equals(childNode.Id, NonTerminals.ProcedureDefinition) || String.Equals(childNode.Id, NonTerminals.FunctionDefinition))
 				{
 					var nameTerminal = childNode[0]?[Terminals.Identifier];
 
 					subProgram =
-						new OraclePlSqlProgram(this)
+						new OraclePlSqlProgram(isPlSqlBlock ? PlSqlProgramType.PlSqlBlock : PlSqlProgramType.NestedProgram, this)
 						{
 							Owner = program,
 							RootNode = childNode,
@@ -274,7 +291,7 @@ namespace SqlPad.Oracle.SemanticModel
 						};
 
 					ResolveParameterDeclarations(subProgram);
-					ResolveLocalVariableAndTypeDeclarations(subProgram);
+					ResolveLocalVariableTypeAndLabelDeclarations(subProgram);
 					ResolveSqlStatements(subProgram);
 
 					if (nameTerminal != null)
@@ -289,16 +306,13 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 		}
 
-		private void ResolveLocalVariableAndTypeDeclarations(OraclePlSqlProgram program)
+		private void ResolveLocalVariableTypeAndLabelDeclarations(OraclePlSqlProgram program)
 		{
 			StatementGrammarNode programSourceNode;
 			switch (program.RootNode.Id)
 			{
 				case NonTerminals.CreateFunction:
 					programSourceNode = program.RootNode[NonTerminals.PlSqlFunctionSource, NonTerminals.FunctionTypeDefinition, NonTerminals.ProgramImplentationDeclaration];
-					break;
-				case NonTerminals.PlSqlBlockStatement:
-					programSourceNode = program.RootNode[NonTerminals.PlSqlBlock, NonTerminals.PlSqlBlockDeclareSection];
 					break;
 				case NonTerminals.PlSqlBlock:
 					programSourceNode = program.RootNode[NonTerminals.PlSqlBlockDeclareSection];
@@ -307,6 +321,8 @@ namespace SqlPad.Oracle.SemanticModel
 					programSourceNode = program.RootNode[NonTerminals.ProgramImplentationDeclaration];
 					break;
 			}
+
+			ResolveProgramDeclarationLabels(program);
 
 			var item1 = programSourceNode?[NonTerminals.ProgramDeclareSection, NonTerminals.ItemList1, NonTerminals.Item1];
 			if (item1 == null)
@@ -360,6 +376,30 @@ namespace SqlPad.Oracle.SemanticModel
 				{
 					variable.Name = identifierNode.Token.Value.ToQuotedIdentifier();
 					program.Variables.Add(variable);
+				}
+			}
+		}
+
+		private static void ResolveProgramDeclarationLabels(OraclePlSqlProgram program)
+		{
+			var labelListNode = program.RootNode[NonTerminals.PlSqlLabelList];
+			if (String.Equals(program.RootNode.ParentNode.Id, NonTerminals.PlSqlStatementType))
+			{
+				labelListNode = program.RootNode.ParentNode.ParentNode[NonTerminals.PlSqlLabelList];
+			}
+
+			if (labelListNode != null)
+			{
+				foreach (var labelIdentifier in labelListNode.GetDescendants(Terminals.LabelIdentifier))
+				{
+					var label =
+						new OraclePlSqlLabel
+						{
+							Name = labelIdentifier.Token.Value.ToQuotedIdentifier(),
+							Node = labelIdentifier.ParentNode
+						};
+
+					program.Labels.Add(label);
 				}
 			}
 		}
@@ -422,11 +462,23 @@ namespace SqlPad.Oracle.SemanticModel
 		}
 	}
 
+	public enum PlSqlProgramType
+	{
+		PlSqlBlock,
+		StandaloneProgram,
+		PackageProgram,
+		NestedProgram
+	}
+
+	[DebuggerDisplay("OraclePlSqlProgram (Name={Name}; ObjectOwner={ObjectIdentifier.Owner}; ObjectName={ObjectIdentifier.Name})")]
 	public class OraclePlSqlProgram : OracleReferenceContainer
 	{
-		public OraclePlSqlProgram(OraclePlSqlStatementSemanticModel semanticModel) : base(semanticModel)
+		public OraclePlSqlProgram(PlSqlProgramType type, OraclePlSqlStatementSemanticModel semanticModel) : base(semanticModel)
 		{
+			Type = type;
 		}
+
+		public PlSqlProgramType Type { get; }
 
 		public StatementGrammarNode RootNode { get; set; }
 
@@ -446,16 +498,17 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public IList<OraclePlSqlVariable> Variables { get; } = new List<OraclePlSqlVariable>();
 
+		public IList<OraclePlSqlLabel> Labels { get; } = new List<OraclePlSqlLabel>();
+
 		public OraclePlSqlParameter ReturnParameter { get; set; }
 	}
 
+	[DebuggerDisplay("OraclePlSqlVariableReference (Name={Name}; Variables={Variables.Count})")]
 	public class OraclePlSqlVariableReference : OracleReference
 	{
 		public StatementGrammarNode IdentifierNode { get; set; }
 
 		public OraclePlSqlProgram PlSqlProgram { get; set; }
-
-		public OraclePlSqlVariableReference ChainedVariableReference { get; set; }
 
 		public override string Name => IdentifierNode.Token.Value;
 
@@ -478,6 +531,11 @@ namespace SqlPad.Oracle.SemanticModel
 
 	public class OraclePlSqlType : OraclePlSqlElement
 	{
+	}
+
+	public class OraclePlSqlLabel : OraclePlSqlElement
+	{
+		public StatementGrammarNode Node { get; set; }
 	}
 
 	public class OraclePlSqlParameter : OraclePlSqlElement

@@ -17,6 +17,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		public const string SchemaSys = "\"SYS\"";
 		public const string SchemaSystem = "\"SYSTEM\"";
 		public const string PackageBuiltInFunction = "\"STANDARD\"";
+		public const string PackageDbmsStandard = "\"DBMS_STANDARD\"";
 		public const string PackageDbmsRandom = "\"DBMS_RANDOM\"";
 		public const string PackageDbmsCrypto = "\"DBMS_CRYPTO\"";
 		public const string SystemParameterNameMaxStringSize = "max_string_size";
@@ -52,6 +53,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		internal static readonly OracleProgramIdentifier IdentifierDbmsCryptoHash = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageDbmsCrypto, "HASH");
 		
 		internal static readonly OracleObjectIdentifier BuiltInFunctionPackageIdentifier = OracleObjectIdentifier.Create(SchemaSys, PackageBuiltInFunction);
+		internal static readonly OracleObjectIdentifier IdentifierDbmsStandard = OracleObjectIdentifier.Create(SchemaSys, PackageDbmsStandard);
 
 		internal static readonly ICollection<string> BuiltInDataTypes =
 			new HashSet<string>
@@ -204,16 +206,16 @@ namespace SqlPad.Oracle.DatabaseConnection
 			IEnumerable<OracleProgramMetadata> programMetadataSource = new List<OracleProgramMetadata>();
 			if (String.IsNullOrEmpty(identifier.Package) && (forceBuiltInFunction || String.IsNullOrEmpty(identifier.Owner)))
 			{
+				var programIdentifier =
+					new OracleProgramIdentifier
+					{
+						Owner = BuiltInFunctionPackageIdentifier.Owner,
+						Package = BuiltInFunctionPackageIdentifier.Name,
+						Name = identifier.Name
+					};
+
 				if (AllObjects.TryGetValue(BuiltInFunctionPackageIdentifier, out schemaObject))
 				{
-					var programIdentifier =
-						new OracleProgramIdentifier
-						{
-							Owner = BuiltInFunctionPackageIdentifier.Owner,
-							Package = BuiltInFunctionPackageIdentifier.Name,
-							Name = identifier.Name
-						};
-					
 					programMetadataSource = BuiltInPackageFunctionMetadata[programIdentifier];
 				}
 
@@ -221,8 +223,18 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 				if (result.Metadata == null)
 				{
-					var nonSchemaBuiltInFunctionIdentifier = OracleProgramIdentifier.CreateBuiltIn(identifier.Name);
-					result.Metadata = TryFindProgramOverload(NonSchemaBuiltInFunctionMetadata[nonSchemaBuiltInFunctionIdentifier], identifier.Name, parameterCount, hasAnalyticClause, includePlSqlObjects);
+					if (includePlSqlObjects && AllObjects.TryGetValue(IdentifierDbmsStandard, out schemaObject))
+					{
+						programIdentifier.Package = PackageDbmsStandard;
+						programMetadataSource = BuiltInPackageFunctionMetadata[programIdentifier];
+						result.Metadata = TryFindProgramOverload(programMetadataSource, identifier.Name, parameterCount, hasAnalyticClause, true);
+					}
+
+					if (result.Metadata == null)
+					{
+						var nonSchemaBuiltInFunctionIdentifier = OracleProgramIdentifier.CreateBuiltIn(identifier.Name);
+						result.Metadata = TryFindProgramOverload(NonSchemaBuiltInFunctionMetadata[nonSchemaBuiltInFunctionIdentifier], identifier.Name, parameterCount, hasAnalyticClause, includePlSqlObjects);
+					}
 				}
 
 				result.SchemaObject = schemaObject;

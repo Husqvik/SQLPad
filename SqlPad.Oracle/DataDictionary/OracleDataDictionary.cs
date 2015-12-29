@@ -34,20 +34,27 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects => _allObjects ?? InitialDictionary;
 
-	    public IDictionary<OracleObjectIdentifier, OracleDatabaseLink> DatabaseLinks => _databaseLinks ?? InitialDatabaseLinkDictionary;
+		public IDictionary<OracleObjectIdentifier, OracleDatabaseLink> DatabaseLinks => _databaseLinks ?? InitialDatabaseLinkDictionary;
 
-	    public ILookup<OracleProgramIdentifier, OracleProgramMetadata> NonSchemaFunctionMetadata => _nonSchemaFunctionMetadataLookup ?? BuildNonSchemaFunctionMetadata();
+		public ILookup<OracleProgramIdentifier, OracleProgramMetadata> NonSchemaFunctionMetadata => _nonSchemaFunctionMetadataLookup ?? BuildNonSchemaFunctionMetadata();
 
-	    public ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuiltInPackageFunctionMetadata => _builtInPackageFunctionMetadata ?? BuildBuiltInPackageFunctionMetadata();
+		public ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuiltInPackageFunctionMetadata => _builtInPackageFunctionMetadata ?? BuildBuiltInPackageFunctionMetadata();
 
-	    private ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuildBuiltInPackageFunctionMetadata()
+		private ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuildBuiltInPackageFunctionMetadata()
 		{
-			OracleSchemaObject standardPackage;
-			var functions = AllObjects.TryGetValue(OracleDatabaseModelBase.BuiltInFunctionPackageIdentifier, out standardPackage)
-				? ((OraclePackage)standardPackage).Functions
-				: new List<OracleProgramMetadata>();
+			var metadataCollection = new List<OracleProgramMetadata>();
+			OracleSchemaObject package;
+			if (AllObjects.TryGetValue(OracleDatabaseModelBase.BuiltInFunctionPackageIdentifier, out package))
+			{
+				metadataCollection.AddRange(((OraclePackage)package).Functions);
+			}
 
-			return _builtInPackageFunctionMetadata = functions.ToLookup(m => m.Identifier);
+			if (AllObjects.TryGetValue(OracleDatabaseModelBase.IdentifierDbmsStandard, out package))
+			{
+				metadataCollection.AddRange(((OraclePackage)package).Functions);
+			}
+
+			return _builtInPackageFunctionMetadata = metadataCollection.ToLookup(m => m.Identifier);
 		}
 
 		private ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuildNonSchemaFunctionMetadata()

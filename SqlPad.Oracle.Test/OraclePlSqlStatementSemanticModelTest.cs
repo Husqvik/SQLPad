@@ -185,7 +185,7 @@ END;";
 			semanticModel.Programs.Count.ShouldBe(1);
 			var mainProgram = semanticModel.Programs[0];
 			mainProgram.ObjectIdentifier.ShouldBe(OracleObjectIdentifier.Empty);
-			mainProgram.RootNode.ShouldBe(statement.RootNode);
+			mainProgram.RootNode.ShouldBe(statement.RootNode[0]);
 			mainProgram.Variables.Count.ShouldBe(3);
 			mainProgram.Variables[0].Name.ShouldBe("\"TEST_VARIABLE1\"");
 			mainProgram.Variables[0].IsConstant.ShouldBe(false);
@@ -255,7 +255,6 @@ END;";
 			semanticModel.Programs.Count.ShouldBe(1);
 			var mainProgram = semanticModel.Programs[0];
 			mainProgram.ObjectIdentifier.ShouldBe(OracleObjectIdentifier.Empty);
-			mainProgram.RootNode.ShouldBe(statement.RootNode);
 			mainProgram.Variables.Count.ShouldBe(0);
 			mainProgram.SubPrograms.Count.ShouldBe(1);
 			mainProgram.SubPrograms[0].ObjectIdentifier.ShouldBe(OracleObjectIdentifier.Empty);
@@ -389,6 +388,82 @@ END;";
 			putLineReference.Metadata.ShouldNotBe(null);
 			putLineReference.ParameterListNode.ShouldNotBe(null);
 			putLineReference.ParameterReferences.Count.ShouldBe(1);
+		}
+
+		[Test]
+		public void TestPlSqlBlockDeclarationLabels()
+		{
+			const string plsqlText =
+@"<<test_label1>>
+<<test_label2>>
+BEGIN
+	<<test_label3>>
+	<<test_label4>>
+	BEGIN
+		<<test_label5>>
+		NULL;
+	END;
+END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
+
+			semanticModel.Programs.Count.ShouldBe(1);
+			semanticModel.Programs[0].Labels.Count.ShouldBe(2);
+			semanticModel.Programs[0].SubPrograms.Count.ShouldBe(1);
+			semanticModel.Programs[0].SubPrograms[0].Labels.Count.ShouldBe(2);
+		}
+
+		[Test]
+		public void TestScopeQualifiedPlSqlReferences()
+		{
+			const string plsqlText =
+@"CREATE OR REPLACE PROCEDURE test_procedure
+IS
+    dummy VARCHAR2(2);
+BEGIN
+    SELECT dummy INTO dummy FROM dual WHERE dummy = test_procedure.dummy OR dummy = non_existing_scope.dummy;
+END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
+
+			semanticModel.Programs.Count.ShouldBe(1);
+			var plSqlVariableReferences = semanticModel.Programs[0].PlSqlVariableReferences.ToArray();
+			plSqlVariableReferences.Length.ShouldBe(2);
+			plSqlVariableReferences[0].ObjectNode.Token.Value.ShouldBe("test_procedure");
+			plSqlVariableReferences[0].Variables.Count.ShouldBe(1);
+			plSqlVariableReferences[1].ObjectNode.Token.Value.ShouldBe("non_existing_scope");
+			plSqlVariableReferences[1].Variables.Count.ShouldBe(0);
+		}
+
+		[Test]
+		public void TestScopeQualifiedPlSqlReferencesUsingLabel()
+		{
+			const string plsqlText =
+@"<<test_plsql_block>>
+DECLARE
+    dummy VARCHAR2(2);
+BEGIN
+    SELECT dummy INTO dummy FROM dual WHERE dummy = test_plsql_block.dummy OR dummy = non_existing_scope.dummy;
+END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
+
+			semanticModel.Programs.Count.ShouldBe(1);
+			var plSqlVariableReferences = semanticModel.Programs[0].PlSqlVariableReferences.ToArray();
+			plSqlVariableReferences.Length.ShouldBe(2);
+			plSqlVariableReferences[0].ObjectNode.Token.Value.ShouldBe("test_plsql_block");
+			plSqlVariableReferences[0].Variables.Count.ShouldBe(1);
+			plSqlVariableReferences[1].ObjectNode.Token.Value.ShouldBe("non_existing_scope");
+			plSqlVariableReferences[1].Variables.Count.ShouldBe(0);
 		}
 	}
 }

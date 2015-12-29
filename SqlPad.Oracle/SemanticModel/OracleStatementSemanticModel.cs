@@ -60,6 +60,7 @@ namespace SqlPad.Oracle.SemanticModel
 		private readonly HashSet<StatementGrammarNode> _oldOuterJoinColumnReferences = new HashSet<StatementGrammarNode>();
 
 		protected readonly Dictionary<StatementGrammarNode, OracleQueryBlock> QueryBlockNodes = new Dictionary<StatementGrammarNode, OracleQueryBlock>();
+		protected readonly List<StatementGrammarNode> PlSqlTargets = new List<StatementGrammarNode>(); 
 
 		private OracleQueryBlock _mainQueryBlock;
 
@@ -200,6 +201,12 @@ namespace SqlPad.Oracle.SemanticModel
 
 				if (queryBlockTerminalList.Key != null)
 				{
+					if (String.Equals(terminal.Id, Terminals.PlSqlIdentifier) &&
+						(String.Equals(terminal.ParentNode.Id, NonTerminals.AssignmentStatementTarget)/* || String.Equals(terminal.ParentNode.Id, NonTerminals.AssignmentTriggerReferenceTarget)*/))
+					{
+						PlSqlTargets.Add(terminal.GetAncestor(NonTerminals.AssignmentStatementTarget));
+					}
+
 					queryBlockTerminalList.Value.Add(terminal);
 
 					if (terminal == queryBlockTerminalList.Key.RootNode.LastTerminalNode && queryBlockTerminalListQueue.Count > 0)
