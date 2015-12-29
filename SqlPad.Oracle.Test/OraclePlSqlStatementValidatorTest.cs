@@ -9,7 +9,7 @@ namespace SqlPad.Oracle.Test
 	{
 		private static readonly OracleSqlParser Parser = OracleSqlParser.Instance;
 
-		[Test(Description = @""), Ignore]
+		[Test(Description = @"")]
 		public void TestTableNodeValidityWithQuotedNotations()
 		{
 			const string plsqlText =
@@ -23,7 +23,7 @@ END;";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var validationModel = OracleStatementValidatorTest.BuildValidationModel(plsqlText, statement);
-			validationModel.ProgramNodeValidity.Count.ShouldBe(0);
+			validationModel.ProgramNodeValidity.Values.Count(v => !v.IsRecognized).ShouldBe(0);
 		}
 	}
 }

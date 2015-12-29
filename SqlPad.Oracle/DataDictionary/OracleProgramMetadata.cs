@@ -95,28 +95,44 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public bool IsDeterministic { get; private set; }
 
-		public int MinimumArguments
+		public int MinimumArguments => _minimumArguments ?? (_minimumArguments = ResolveMinimumArguments()).Value;
+
+		private int? _minimumArguments;
+
+		private int ResolveMinimumArguments()
 		{
-			get
+			if (Type == ProgramType.Procedure)
 			{
-				var properMetadataMinimumArgumentCount = Parameters.Count > 0 && Parameters[0].Direction == ParameterDirection.ReturnValue
-					? Parameters.Count(p => !p.IsOptional && p.DataLevel == 0) - 1
-					: (int?)null;
-				return properMetadataMinimumArgumentCount > 0 && (_metadataMinimumArguments == null || properMetadataMinimumArgumentCount < _metadataMinimumArguments)
-					? properMetadataMinimumArgumentCount.Value
-					: (_metadataMinimumArguments ?? 0);
+				return MinimumParameterCount;
 			}
+
+			var properMetadataMinimumArgumentCount = Parameters.Count > 0 && Parameters[0].Direction == ParameterDirection.ReturnValue
+					? MinimumParameterCount - 1
+					: (int?)null;
+			return properMetadataMinimumArgumentCount > 0 && (_metadataMinimumArguments == null || properMetadataMinimumArgumentCount < _metadataMinimumArguments)
+				? properMetadataMinimumArgumentCount.Value
+				: (_metadataMinimumArguments ?? 0);
 		}
 
-		public int MaximumArguments
+		private int MinimumParameterCount => RootParameters.Count(p => !p.IsOptional);
+
+		public int MaximumArguments => _maximumArguments ?? (_maximumArguments = ResolveMaximumArguments()).Value;
+
+		private int? _maximumArguments;
+
+		private int ResolveMaximumArguments()
 		{
-			get
+			if (Type == ProgramType.Procedure)
 			{
-				return Parameters.Count > 1 && _metadataMaximumArguments != 0 && Parameters[0].Direction == ParameterDirection.ReturnValue
-					? Parameters.Count(p => p.DataLevel == 0) - 1
-					: (_metadataMaximumArguments ?? 0);
+				return RootParameters.Count();
 			}
+
+			return Parameters.Count > 1 && _metadataMaximumArguments != 0 && Parameters[0].Direction == ParameterDirection.ReturnValue
+					? RootParameters.Count() - 1
+					: (_metadataMaximumArguments ?? 0);
 		}
+
+		private IEnumerable<OracleProgramParameterMetadata> RootParameters => Parameters.Where(p => p.DataLevel == 0);
 
 		public bool IsPackageFunction => !String.IsNullOrEmpty(Identifier.Package);
 
