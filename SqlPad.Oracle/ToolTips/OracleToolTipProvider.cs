@@ -141,10 +141,12 @@ namespace SqlPad.Oracle.ToolTips
 					case Terminals.XmlParse:
 					case Terminals.XmlQuery:
 					case Terminals.XmlRoot:
+					case Terminals.PlSqlIdentifier:
 					case Terminals.Identifier:
 						var reference = semanticModel.GetColumnReference(node)
-							?? (OracleReference)semanticModel.GetProgramReference(node)
-							?? semanticModel.GetTypeReference(node);
+							?? semanticModel.GetProgramReference(node)
+							?? semanticModel.GetTypeReference(node)
+							?? (OracleReference)semanticModel.GetPlSqlReference(node);
 
 						reference?.Accept(toolTipBuilderVisitor);
 						if (toolTipBuilderVisitor.ToolTip != null)

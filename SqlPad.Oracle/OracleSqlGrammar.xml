@@ -13181,7 +13181,8 @@
         <Sequence>
           <Terminal Id="Identifier" />
           <NonTerminal Id="PlSqlDataType" />
-          <NonTerminal Id="VariableDeclarationConstraintAndDefaultValue" IsOptional="true" />
+          <NonTerminal Id="NotNull" IsOptional="true" />
+          <NonTerminal Id="VariableDeclarationDefaultValue" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -13365,15 +13366,6 @@
       </Sequences>
     </Rule>
     
-    <Rule StartingNonTerminal="VariableDeclarationConstraintAndDefaultValue">
-      <Sequences>
-        <Sequence>
-          <NonTerminal Id="NotNull" IsOptional="true" />
-          <NonTerminal Id="VariableDeclarationDefaultValue" />
-        </Sequence>
-      </Sequences>
-    </Rule>
-    
     <Rule StartingNonTerminal="VariableDeclarationDefaultValue">
       <Sequences>
         <Sequence>
@@ -13386,7 +13378,7 @@
     <Rule StartingNonTerminal="NotNull">
       <Sequences>
         <Sequence>
-          <Terminal Id="Not" />
+          <Terminal Id="Not" IsOptional="true" />
           <Terminal Id="Null" />
         </Sequence>
       </Sequences>
@@ -14585,8 +14577,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Is" />
-          <Terminal Id="Not" IsOptional="true" />
-          <Terminal Id="Null" />
+          <NonTerminal Id="NotNull" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="RelationalOperator" />
@@ -17221,8 +17212,7 @@
     <Rule StartingNonTerminal="InlineConstraintType">
       <Sequences>
         <Sequence>
-          <Terminal Id="Not" IsOptional="true" />
-          <Terminal Id="Null" />
+          <NonTerminal Id="NotNull" />
         </Sequence>
         <Sequence>
           <Terminal Id="Unique" />

@@ -3302,6 +3302,15 @@ END;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
+			[Test(Description = @"")]
+			public void TestExplicitNullableVariableDeclaration()
+			{
+				const string statement1 = @"DECLARE test_variable VARCHAR2(255) NULL; BEGIN NULL; END;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
+
 			public class Triggers
 			{
 				[Test(Description = @"")]

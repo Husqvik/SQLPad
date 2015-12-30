@@ -241,7 +241,70 @@ namespace SqlPad.Oracle.ToolTips
 
 		public void VisitPlSqlVariableReference(OraclePlSqlVariableReference plSqlVariableReference)
 		{
-			
+			if (plSqlVariableReference.Variables.Count != 1)
+			{
+				return;
+			}
+
+			var element = plSqlVariableReference.Variables.First();
+			var labelNullable = String.Empty;
+			var labelVariableType = String.Empty;
+			var labelDataType = String.Empty;
+			var labelDefaultExpression = String.Empty;
+
+			var elementTypeName = element.GetType().Name;
+			switch (elementTypeName)
+			{
+				case nameof(OraclePlSqlParameter):
+					labelVariableType = "Parameter";
+
+					var parameter = (OraclePlSqlParameter)element;
+					labelNullable = "NULL";
+					labelDataType = GetDataTypeFromNode(parameter);
+					labelDefaultExpression = GetDefaultExpression(plSqlVariableReference.PlSqlProgram, parameter);
+					break;
+
+				case nameof(OraclePlSqlVariable):
+					var variable = (OraclePlSqlVariable)element;
+					labelVariableType = variable.IsConstant ? "Constant" : "Variable";
+					labelNullable = variable.Nullable ? "NULL" : "NOT NULL";
+					labelDataType = GetDataTypeFromNode(variable);
+					labelDefaultExpression = GetDefaultExpression(plSqlVariableReference.PlSqlProgram, variable);
+					break;
+
+				case nameof(OraclePlSqlType):
+					labelVariableType = "Type";
+					break;
+
+				case nameof(OraclePlSqlException):
+					labelVariableType = "Exception";
+					break;
+			}
+
+			var defaultExpressionPostFix = String.IsNullOrEmpty(labelDefaultExpression)
+				? String.Empty
+				: $"= {labelDefaultExpression}";
+
+			ToolTip =
+				new ToolTipObject
+				{
+					DataContext = $"{labelVariableType} {element.Name.ToSimpleIdentifier()}: {labelDataType} {labelNullable} {defaultExpressionPostFix}".Trim()
+				};
+		}
+
+		// TODO: Make proper resolution using metadata
+		private static string GetDataTypeFromNode(OraclePlSqlVariable variable)
+		{
+			return variable.DataTypeNode == null
+				? String.Empty
+				: String.Join(null, variable.DataTypeNode.Terminals.Select(t => t.Token.Value));
+		}
+
+		private static string GetDefaultExpression(OracleReferenceContainer program, OraclePlSqlVariable variable)
+		{
+			return variable.DefaultExpression == null || !variable.IsConstant
+				? String.Empty
+				: variable.DefaultExpression.GetText(program.SemanticModel.StatementText);
 		}
 
 		private static ColumnDetailsModel BuildColumnDetailsModel(OracleDatabaseModelBase databaseModel, OracleColumnReference columnReference)

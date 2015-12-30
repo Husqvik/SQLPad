@@ -2276,6 +2276,11 @@ namespace SqlPad.Oracle.SemanticModel
 			return AllReferenceContainers.SelectMany(c => c.TypeReferences).SingleOrDefault(c => c.ObjectNode == typeIdentifer);
 		}
 
+		public OraclePlSqlVariableReference GetPlSqlReference(StatementGrammarNode identifer)
+		{
+			return AllReferenceContainers.SelectMany(c => c.PlSqlVariableReferences).SingleOrDefault(c => c.IdentifierNode == identifer);
+		}
+
 		public OracleSequenceReference GetSequenceReference(StatementGrammarNode sequenceIdentifer)
 		{
 			return AllReferenceContainers.SelectMany(c => c.SequenceReferences).FilterRecursiveReferences().SingleOrDefault(c => c.ObjectNode == sequenceIdentifer);

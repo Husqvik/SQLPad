@@ -1042,6 +1042,41 @@ SELECT * FROM sampleData";
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestPlSqlVariableReferenceTooltip()
+		{
+			const string query =
+@"DECLARE
+    test_variable VARCHAR2(255) := 'This' || ' is ' || 'value';
+BEGIN
+    test_variable := NULL;
+END;";
+
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 85);
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("Variable TEST_VARIABLE: VARCHAR2(255) NULL");
+		}
+
+
+		[Test(Description = @""), STAThread]
+		public void TestPlSqlConstantReferenceTooltip()
+		{
+			const string query =
+@"DECLARE
+    test_constant CONSTANT VARCHAR2(255) NOT NULL := 'This' || ' is ' || 'value';
+BEGIN
+    test_constant := NULL;
+END;";
+
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 103);
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("Constant TEST_CONSTANT: VARCHAR2(255) NOT NULL = 'This' || ' is ' || 'value'");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestTooltipOverExplicitColumnListInCommonTableExpression()
 		{
 			const string query =

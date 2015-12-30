@@ -1449,7 +1449,6 @@ namespace SqlPad.Oracle
 			public const string ValidateOrNoValidate = "ValidateOrNoValidate";
 			public const string VarcharOrVarchar2OrString = "VarcharOrVarchar2OrString";
 			public const string VariableDeclaration = "VariableDeclaration";
-			public const string VariableDeclarationConstraintAndDefaultValue = "VariableDeclarationConstraintAndDefaultValue";
 			public const string VariableDeclarationDefaultValue = "VariableDeclarationDefaultValue";
 			public const string VariableElementArrayColumnProperties = "VariableElementArrayColumnProperties";
 			public const string VariableElementArrayColumnPropertiesOrLargeObjectPartitioningStorage = "VariableElementArrayColumnPropertiesOrLargeObjectPartitioningStorage";

@@ -333,29 +333,50 @@ namespace SqlPad.Oracle.SemanticModel
 			var itemDeclarations = StatementGrammarNode.GetAllChainedClausesByPath(item1, n => String.Equals(n.ParentNode.Id, NonTerminals.Item1OrPragmaDefinition) ? n.ParentNode.ParentNode : n.ParentNode, NonTerminals.ItemList1Chained, NonTerminals.Item1OrPragmaDefinition, NonTerminals.Item1).ToArray();
 			foreach (var itemDeclaration in itemDeclarations)
 			{
-				var variable = new OraclePlSqlVariable();
 				var declarationRoot = itemDeclaration[0];
-				StatementGrammarNode identifierNode = null;
 				switch (declarationRoot?.Id)
 				{
 					case NonTerminals.ItemDeclaration:
 						var specificNode = declarationRoot[0];
 						if (specificNode != null)
 						{
+							OraclePlSqlVariable variable;
 							switch (specificNode.Id)
 							{
 								case NonTerminals.ConstantDeclaration:
-									variable.IsConstant = true;
-									identifierNode = specificNode[Terminals.Identifier];
+									variable =
+										new OraclePlSqlVariable
+										{
+											IsConstant = true,
+											DefaultExpression = specificNode[NonTerminals.PlSqlExpression]
+										};
+
+									SetDataTypeAndNullablePropertiesAndAddIfIdentifierFound(variable, specificNode, program);
 									break;
 
 								case NonTerminals.ExceptionDeclaration:
-									variable.IsException = true;
-									identifierNode = specificNode[Terminals.ExceptionIdentifier];
+									var exceptionName = specificNode[Terminals.ExceptionIdentifier]?.Token.Value.ToQuotedIdentifier();
+									if (exceptionName != null)
+									{
+										var exception = new OraclePlSqlException { Name = exceptionName };
+										program.Exceptions.Add(exception);
+									}
+
 									break;
 
 								case NonTerminals.VariableDeclaration:
-									identifierNode = specificNode[NonTerminals.FieldDefinition, Terminals.Identifier];
+									specificNode = specificNode[NonTerminals.FieldDefinition];
+									if (specificNode != null)
+									{
+										variable =
+											new OraclePlSqlVariable
+											{
+												DefaultExpression = specificNode[NonTerminals.VariableDeclarationDefaultValue, NonTerminals.PlSqlExpression],
+											};
+
+										SetDataTypeAndNullablePropertiesAndAddIfIdentifierFound(variable, specificNode, program);
+									}
+
 									break;
 							}
 						}
@@ -371,13 +392,21 @@ namespace SqlPad.Oracle.SemanticModel
 
 						break;
 				}
-
-				if (identifierNode != null)
-				{
-					variable.Name = identifierNode.Token.Value.ToQuotedIdentifier();
-					program.Variables.Add(variable);
-				}
 			}
+		}
+
+		private static void SetDataTypeAndNullablePropertiesAndAddIfIdentifierFound(OraclePlSqlVariable variable, StatementGrammarNode variableNode, OraclePlSqlProgram program)
+		{
+			var identifierNode = variableNode[Terminals.Identifier];
+			if (identifierNode == null)
+			{
+				return;
+			}
+
+			variable.Name = identifierNode.Token.Value.ToQuotedIdentifier();
+			variable.Nullable = variableNode[NonTerminals.NotNull, Terminals.Not] == null;
+			variable.DataTypeNode = variableNode[NonTerminals.PlSqlDataType];
+			program.Variables.Add(variable);
 		}
 
 		private static void ResolveProgramDeclarationLabels(OraclePlSqlProgram program)
@@ -440,25 +469,36 @@ namespace SqlPad.Oracle.SemanticModel
 					new OraclePlSqlParameter
 					{
 						Direction = ParameterDirection.ReturnValue,
-						//DataType = null
+						Nullable = true,
+						DataTypeNode = returnParameterNode
 					};
 			}
 		}
 
 		private static OraclePlSqlParameter ResolveParameter(StatementGrammarNode parameterDeclaration)
 		{
-			var direction = ParameterDirection.Input;
-			if (parameterDeclaration[NonTerminals.ParameterDirectionDeclaration, Terminals.Out] != null)
-			{
-				direction = parameterDeclaration[Terminals.In] == null ? ParameterDirection.Output : ParameterDirection.InputOutput;
-			}
-
-			return
+			var parameter =
 				new OraclePlSqlParameter
 				{
-					Name = parameterDeclaration[Terminals.ParameterIdentifier].Token.Value.ToQuotedIdentifier(),
-					Direction = direction
+					Name = parameterDeclaration[Terminals.ParameterIdentifier].Token.Value.ToQuotedIdentifier()
 				};
+
+			var direction = ParameterDirection.Input;
+			var parameterDirectionDeclaration = parameterDeclaration[NonTerminals.ParameterDirectionDeclaration];
+			if (parameterDirectionDeclaration != null)
+			{
+				if (parameterDirectionDeclaration[Terminals.Out] != null)
+				{
+					direction = parameterDeclaration[Terminals.In] == null ? ParameterDirection.Output : ParameterDirection.InputOutput;
+				}
+
+				parameter.DataTypeNode = parameterDirectionDeclaration[NonTerminals.PlSqlDataTypeWithoutConstraint];
+				parameter.DefaultExpression = parameterDirectionDeclaration[NonTerminals.VariableDeclarationDefaultValue];
+			}
+
+			parameter.Direction = direction;
+
+			return parameter;
 		}
 	}
 
@@ -498,6 +538,8 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public IList<OraclePlSqlVariable> Variables { get; } = new List<OraclePlSqlVariable>();
 
+		public IList<OraclePlSqlException> Exceptions { get; } = new List<OraclePlSqlException>();
+
 		public IList<OraclePlSqlLabel> Labels { get; } = new List<OraclePlSqlLabel>();
 
 		public OraclePlSqlParameter ReturnParameter { get; set; }
@@ -523,15 +565,27 @@ namespace SqlPad.Oracle.SemanticModel
 	public abstract class OraclePlSqlElement
 	{
 		public string Name { get; set; }
+	}
 
-		//public OracleDataType DataType { get; set; }
+	public class OraclePlSqlException : OraclePlSqlElement
+	{
+		
 	}
 
 	public class OraclePlSqlVariable : OraclePlSqlElement
 	{
 		public bool IsConstant { get; set; }
 
-		public bool IsException { get; set; }
+		public bool Nullable { get; set; }
+
+		public StatementGrammarNode DefaultExpression { get; set; }
+
+		public StatementGrammarNode DataTypeNode { get; set; }
+	}
+
+	public class OraclePlSqlParameter : OraclePlSqlVariable
+	{
+		public ParameterDirection Direction { get; set; }
 	}
 
 	public class OraclePlSqlType : OraclePlSqlElement
@@ -541,10 +595,5 @@ namespace SqlPad.Oracle.SemanticModel
 	public class OraclePlSqlLabel : OraclePlSqlElement
 	{
 		public StatementGrammarNode Node { get; set; }
-	}
-
-	public class OraclePlSqlParameter : OraclePlSqlElement
-	{
-		public ParameterDirection Direction { get; set; }
 	}
 }
