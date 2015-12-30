@@ -4,7 +4,7 @@ namespace SqlPad
 {
 	public interface ICodeCompletionProvider
 	{
-		ICollection<FunctionOverloadDescription> ResolveFunctionOverloads(SqlDocumentRepository sqlDocumentRepository, int cursorPosition);
+		ICollection<FunctionOverloadDescription> ResolveProgramOverloads(SqlDocumentRepository sqlDocumentRepository, int cursorPosition);
 
 		ICollection<ICodeCompletionItem> ResolveItems(SqlDocumentRepository sqlDocumentRepository, IDatabaseModel databaseModel, int cursorPosition, bool forcedInvokation);
 	}

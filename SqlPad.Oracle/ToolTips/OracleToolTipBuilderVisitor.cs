@@ -67,14 +67,14 @@ namespace SqlPad.Oracle.ToolTips
 
 		public void VisitProgramReference(OracleProgramReference programReference)
 		{
-			if (programReference.DatabaseLinkNode != null || programReference.Metadata == null)
-			{
-				return;
-			}
-
 			if (programReference.ObjectNode == _terminal)
 			{
 				BuildSimpleToolTip(programReference.SchemaObject);
+				return;
+			}
+
+			if (programReference.DatabaseLinkNode != null || programReference.Metadata == null)
+			{
 				return;
 			}
 

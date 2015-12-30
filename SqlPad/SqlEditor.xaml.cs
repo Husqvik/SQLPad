@@ -64,7 +64,7 @@ namespace SqlPad
 
 		private void ShowFunctionOverloads(object sender, ExecutedRoutedEventArgs args)
 		{
-			var functionOverloads = _codeCompletionProvider.ResolveFunctionOverloads(DocumentRepository, Editor.CaretOffset);
+			var functionOverloads = _codeCompletionProvider.ResolveProgramOverloads(DocumentRepository, Editor.CaretOffset);
 			if (functionOverloads.Count == 0)
 			{
 				return;

@@ -570,7 +570,7 @@ SELECT * FROM CTE";
 			const string query = "SELECT SQLPAD.SQLPAD_FUNCTION() FROM DUAL";
 			_documentRepository.UpdateStatements(query);
 
-			var functionOverloads = _codeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 30);
+			var functionOverloads = _codeCompletionProvider.ResolveProgramOverloads(_documentRepository, 30);
 			var functionOverloadList = new FunctionOverloadList { FunctionOverloads = functionOverloads };
 			functionOverloadList.ViewOverloads.Items.Count.ShouldBe(1);
 			functionOverloadList.ViewOverloads.Items[0].ShouldBeTypeOf(typeof(TextBlock));
@@ -585,7 +585,7 @@ SELECT * FROM CTE";
 			const string query = "SELECT SYS.ODCIARGDESC() FROM DUAL";
 			_documentRepository.UpdateStatements(query);
 
-			var functionOverloads = _codeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 23);
+			var functionOverloads = _codeCompletionProvider.ResolveProgramOverloads(_documentRepository, 23);
 			var functionOverloadList = new FunctionOverloadList { FunctionOverloads = functionOverloads };
 			functionOverloadList.ViewOverloads.Items.Count.ShouldBe(1);
 			functionOverloadList.ViewOverloads.Items[0].ShouldBeTypeOf(typeof(TextBlock));
@@ -600,7 +600,7 @@ SELECT * FROM CTE";
 			const string query = "SELECT SYS.ODCIARGDESCLIST() FROM DUAL";
 			_documentRepository.UpdateStatements(query);
 
-			var functionOverloads = _codeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 27);
+			var functionOverloads = _codeCompletionProvider.ResolveProgramOverloads(_documentRepository, 27);
 			var functionOverloadList = new FunctionOverloadList { FunctionOverloads = functionOverloads };
 			functionOverloadList.ViewOverloads.Items.Count.ShouldBe(1);
 			functionOverloadList.ViewOverloads.Items[0].ShouldBeTypeOf(typeof(TextBlock));
@@ -615,7 +615,7 @@ SELECT * FROM CTE";
 			const string query = "SELECT SYS.ODCIRAWLIST() FROM DUAL";
 			_documentRepository.UpdateStatements(query);
 
-			var functionOverloads = _codeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 23);
+			var functionOverloads = _codeCompletionProvider.ResolveProgramOverloads(_documentRepository, 23);
 			var functionOverloadList = new FunctionOverloadList { FunctionOverloads = functionOverloads };
 			functionOverloadList.ViewOverloads.Items.Count.ShouldBe(1);
 			functionOverloadList.ViewOverloads.Items[0].ShouldBeTypeOf(typeof(TextBlock));
@@ -630,7 +630,7 @@ SELECT * FROM CTE";
 			const string query = "SELECT DBMS_XPLAN.DISPLAY_CURSOR() FROM DUAL";
 			_documentRepository.UpdateStatements(query);
 
-			var functionOverloads = _codeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 33);
+			var functionOverloads = _codeCompletionProvider.ResolveProgramOverloads(_documentRepository, 33);
 			var functionOverloadList = new FunctionOverloadList { FunctionOverloads = functionOverloads };
 			functionOverloadList.ViewOverloads.Items.Count.ShouldBe(1);
 			functionOverloadList.ViewOverloads.Items[0].ShouldBeTypeOf(typeof(TextBlock));
@@ -693,7 +693,7 @@ SELECT * FROM CTE";
 			const string query = "SELECT MAX(DUMMY) FROM DUAL";
 			_documentRepository.UpdateStatements(query);
 
-			var functionOverloads = _codeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 9);
+			var functionOverloads = _codeCompletionProvider.ResolveProgramOverloads(_documentRepository, 9);
 			var toolTip = new FunctionOverloadList { FunctionOverloads = functionOverloads };
 			toolTip.ViewOverloads.Items.Count.ShouldBe(0);
 		}
@@ -1025,6 +1025,18 @@ SELECT * FROM sampleData";
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestPackageTooltipWhenMetadataNotResolved()
+		{
+			const string query = @"SELECT dbms_output.put_line('value') FROM dual";
+
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 7);
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("\"PUBLIC\".DBMS_OUTPUT (Synonym) => SYS.DBMS_OUTPUT (Package)");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestTypeTooltipInRecursiveAnchorQueryBlock()
 		{
 			const string query =
@@ -1074,6 +1086,23 @@ END;";
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 103);
 			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("Constant TEST_CONSTANT: VARCHAR2(255) NOT NULL = 'This' || ' is ' || 'value'");
+		}
+
+		[Test(Description = @""), STAThread, Ignore]
+		public void TestPlSqlExceptionReferenceTooltip()
+		{
+			const string query =
+@"DECLARE
+    EXCEPTION test_exception;
+BEGIN
+    RAISE test_exception;
+END;";
+
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 57);
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("EXCEPTION TEST_EXCEPTION");
 		}
 
 		[Test(Description = @""), STAThread]

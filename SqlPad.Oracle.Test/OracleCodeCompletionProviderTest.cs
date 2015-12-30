@@ -702,7 +702,7 @@ FROM
 			const string query1 = @"SELECT ROUND(1.23, 1) FROM DUAL";
 
 			_documentRepository.UpdateStatements(query1);
-			var items = CodeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 19).ToList();
+			var items = CodeCompletionProvider.ResolveProgramOverloads(_documentRepository, 19).ToList();
 			items.Count.ShouldBe(1);
 			items[0].Name.ShouldBe("SYS.STANDARD.ROUND");
 			items[0].Parameters.Count.ShouldBe(2);
@@ -716,7 +716,7 @@ FROM
 			const string query1 = @"SELECT DBMS_RANDOM.VALUE(1, 2) FROM DUAL";
 
 			_documentRepository.UpdateStatements(query1);
-			var items = CodeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 25).ToList();
+			var items = CodeCompletionProvider.ResolveProgramOverloads(_documentRepository, 25).ToList();
 			items.Count.ShouldBe(2);
 			items[0].Name.ShouldBe("SYS.DBMS_RANDOM.VALUE");
 			items[0].Parameters.Count.ShouldBe(0);
@@ -734,7 +734,7 @@ FROM
 			const string query1 = @"SELECT SYS.ODCIARGDESC() FROM DUAL";
 
 			_documentRepository.UpdateStatements(query1);
-			var items = CodeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 23).ToList();
+			var items = CodeCompletionProvider.ResolveProgramOverloads(_documentRepository, 23).ToList();
 			items.Count.ShouldBe(1);
 			items[0].Name.ShouldBe("SYS.ODCIARGDESC");
 			items[0].Parameters.Count.ShouldBe(7);
@@ -748,7 +748,7 @@ FROM
 			const string query1 = @"SELECT SYS.ODCIRAWLIST(NULL, NULL) FROM DUAL";
 
 			_documentRepository.UpdateStatements(query1);
-			var items = CodeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 29).ToList();
+			var items = CodeCompletionProvider.ResolveProgramOverloads(_documentRepository, 29).ToList();
 			items.Count.ShouldBe(1);
 			items[0].Name.ShouldBe("SYS.ODCIRAWLIST");
 			items[0].Parameters.Count.ShouldBe(1);
@@ -762,7 +762,7 @@ FROM
 			const string query1 = @"SELECT ROUND(1.23, 1) FROM DUAL";
 
 			_documentRepository.UpdateStatements(query1);
-			var items = CodeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 18).ToList();
+			var items = CodeCompletionProvider.ResolveProgramOverloads(_documentRepository, 18).ToList();
 			items.Count.ShouldBe(1);
 			items[0].CurrentParameterIndex.ShouldBe(1);
 		}
@@ -773,7 +773,7 @@ FROM
 			const string query1 = @"SELECT MAX(DUMMY) FROM DUAL";
 
 			_documentRepository.UpdateStatements(query1);
-			var items = CodeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 11).ToList();
+			var items = CodeCompletionProvider.ResolveProgramOverloads(_documentRepository, 11).ToList();
 			items.Count.ShouldBe(1);
 			items[0].Name.ShouldBe("MAX");
 			items[0].Parameters.Count.ShouldBe(1);
@@ -791,7 +791,7 @@ FROM
 SELECT F1(NULL) FROM DUAL";
 
 			_documentRepository.UpdateStatements(query1);
-			var items = CodeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 112).ToList();
+			var items = CodeCompletionProvider.ResolveProgramOverloads(_documentRepository, 112).ToList();
 			items.Count.ShouldBe(1);
 			items[0].Parameters.Count.ShouldBe(2);
 			items[0].CurrentParameterIndex = 1;
@@ -805,7 +805,7 @@ SELECT F1(NULL) FROM DUAL";
 			const string query1 = @"SELECT COUNT(*) FROM DUAL";
 
 			_documentRepository.UpdateStatements(query1);
-			var items = CodeCompletionProvider.ResolveFunctionOverloads(_documentRepository, 14).ToList();
+			var items = CodeCompletionProvider.ResolveProgramOverloads(_documentRepository, 14).ToList();
 			items.Count.ShouldBe(1);
 			items[0].Name.ShouldBe("COUNT");
 			items[0].Parameters.Count.ShouldBe(1);

@@ -31,20 +31,22 @@ namespace SqlPad.Oracle
 			new OracleCodeCompletionItem { Name = JoinTypeCrossJoin, Priority = 4 }
 		};
 
-		public ICollection<FunctionOverloadDescription> ResolveFunctionOverloads(SqlDocumentRepository sqlDocumentRepository, int cursorPosition)
+		public ICollection<FunctionOverloadDescription> ResolveProgramOverloads(SqlDocumentRepository sqlDocumentRepository, int cursorPosition)
 		{
 			var emptyCollection = new FunctionOverloadDescription[0];
 			var node = sqlDocumentRepository.Statements.GetNodeAtPosition(cursorPosition);
 			if (node == null)
+			{
 				return emptyCollection;
+			}
 
 			var semanticModel = (OracleStatementSemanticModel)sqlDocumentRepository.ValidationModels[node.Statement].SemanticModel;
 			var queryBlock = semanticModel.GetQueryBlock(cursorPosition);
 
 			var referenceContainers = GetReferenceContainers(semanticModel.MainObjectReferenceContainer, queryBlock);
-			var functionOverloadSource = ResolveFunctionOverloads(referenceContainers, node, cursorPosition);
+			var programOverloadSource = ResolveProgramOverloads(referenceContainers, node, cursorPosition);
 
-			var functionOverloads = functionOverloadSource.Select(
+			var functionOverloads = programOverloadSource.Select(
 				fo =>
 				{
 					var metadata = fo.ProgramMetadata;
@@ -109,9 +111,10 @@ namespace SqlPad.Oracle
 			return referenceContainers;
 		}
 
-		private IEnumerable<OracleCodeCompletionFunctionOverload> ResolveFunctionOverloads(IEnumerable<OracleReferenceContainer> referenceContainers, StatementGrammarNode node, int cursorPosition)
+		private IEnumerable<OracleCodeCompletionFunctionOverload> ResolveProgramOverloads(IEnumerable<OracleReferenceContainer> referenceContainers, StatementGrammarNode node, int cursorPosition)
 		{
-			var programReferenceBase = referenceContainers.SelectMany(c => ((IEnumerable<OracleProgramReferenceBase>)c.ProgramReferences).Concat(c.TypeReferences)).Where(f => node.HasAncestor(f.ParameterListNode))
+			var programReferenceBase = referenceContainers.SelectMany(c => ((IEnumerable<OracleProgramReferenceBase>)c.ProgramReferences).Concat(c.TypeReferences))
+				.Where(f => node.HasAncestor(f.ParameterListNode))
 				.OrderByDescending(r => r.RootNode.Level)
 				.FirstOrDefault();
 
@@ -321,8 +324,8 @@ namespace SqlPad.Oracle
 					completionItems = completionItems.Concat(GenerateSelectListItems(referenceContainers, cursorPosition, oracleDatabaseModel, completionType, forcedInvokation));
 				}
 
-				var functionOverloads = ResolveFunctionOverloads(referenceContainers, currentTerminal, cursorPosition);
-				var specificFunctionParameterCodeCompletionItems = CodeCompletionSearchHelper.ResolveSpecificFunctionParameterCodeCompletionItems(currentTerminal, functionOverloads, oracleDatabaseModel);
+				var programOverloads = ResolveProgramOverloads(referenceContainers, currentTerminal, cursorPosition);
+				var specificFunctionParameterCodeCompletionItems = CodeCompletionSearchHelper.ResolveSpecificFunctionParameterCodeCompletionItems(currentTerminal, programOverloads, oracleDatabaseModel);
 				completionItems = completionItems.Concat(specificFunctionParameterCodeCompletionItems);
 			}
 
