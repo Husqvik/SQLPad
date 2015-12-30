@@ -16,5 +16,10 @@ namespace SqlPad.Oracle.SemanticModel
 		public override IReadOnlyList<OracleColumn> PseudoColumns => ((OracleSequence)SchemaObject).Columns;
 
 		public override ReferenceType Type => ReferenceType.SchemaObject;
+
+		public override void Accept(IOracleReferenceVisitor visitor)
+		{
+			visitor.VisitSequenceReference(this);
+		}
 	}
 }

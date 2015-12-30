@@ -48,7 +48,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public OracleDatabaseLink DatabaseLink { get; set; }
 
-		public virtual void Accept(OracleReferenceVisitor visitor)
+		public virtual void Accept(IOracleReferenceVisitor visitor)
 		{
 			throw new NotSupportedException();
 		}

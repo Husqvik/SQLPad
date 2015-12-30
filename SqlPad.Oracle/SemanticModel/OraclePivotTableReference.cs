@@ -53,7 +53,7 @@ namespace SqlPad.Oracle.SemanticModel
 			var innerTableReferenceRootNode = sourceReference.RootNode.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBlock, NonTerminals.InnerTableReference, NonTerminals.InnerSpecialTableReference).Last();
 			sourceReference.RootNode = innerTableReferenceRootNode;
 
-			Owner = sourceReference.Owner;
+			Container = Owner = sourceReference.Owner;
 			Owner.ObjectReferences.Remove(sourceReference);
 			Owner.ObjectReferences.Add(this);
 

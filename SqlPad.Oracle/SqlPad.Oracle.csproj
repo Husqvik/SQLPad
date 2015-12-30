@@ -167,6 +167,7 @@
     <Compile Include="OracleSessionDetailViewer.xaml.cs">
       <DependentUpon>OracleSessionDetailViewer.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ToolTips\OracleToolTipBuilderVisitor.cs" />
     <Compile Include="SemanticModel\OracleColumnBuilderVisitor.cs" />
     <Compile Include="SemanticModel\OracleDataTypeReference.cs" />
     <Compile Include="SemanticModel\OracleLiteral.cs" />
@@ -208,7 +209,7 @@
     <Compile Include="SemanticModel\OracleDataObjectReference.cs" />
     <Compile Include="OracleToken.cs" />
     <Compile Include="OracleTokenReader.cs" />
-    <Compile Include="OracleToolTipProvider.cs" />
+    <Compile Include="ToolTips\OracleToolTipProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ModelDataProviders\SessionExecutionStatisticsDataProvider.cs" />
     <Compile Include="SemanticModel\OracleStatementSemanticModelFactory.cs" />

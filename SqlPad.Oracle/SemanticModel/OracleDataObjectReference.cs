@@ -27,6 +27,11 @@ namespace SqlPad.Oracle.SemanticModel
 		public OraclePartitionBase Partition { get; set; }
 		
 		public OracleDataObjectReference DataObjectReference { get; set; }
+
+		public override void Accept(IOracleReferenceVisitor visitor)
+		{
+			visitor.VisitPartitionReference(this);
+		}
 	}
 
 	[DebuggerDisplay("OracleDataObjectReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Table={Type != SqlPad.Oracle.SemanticModel.ReferenceType.InlineView ? ObjectNode.Token.Value : \"<Nested subquery>\"}; Alias={AliasNode == null ? null : AliasNode.Token.Value}; Type={Type}; IsOuterJoined={IsOuterJoined})")]
@@ -46,7 +51,7 @@ namespace SqlPad.Oracle.SemanticModel
 			Type = referenceType;
 		}
 
-		public override string Name { get { throw new NotImplementedException(); } }
+		public override string Name { get { throw new NotSupportedException(); } }
 
 		public OraclePartitionReference PartitionReference { get; set; }
 
@@ -180,6 +185,11 @@ namespace SqlPad.Oracle.SemanticModel
 		public FlashbackOption FlashbackOption { get; set; }
 		
 		public override ReferenceType Type { get; }
+
+		public override void Accept(IOracleReferenceVisitor visitor)
+		{
+			visitor.VisitDataObjectReference(this);
+		}
 	}
 
 	[Flags]

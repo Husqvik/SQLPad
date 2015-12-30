@@ -6,24 +6,36 @@ using SqlPad.Oracle.DataDictionary;
 
 namespace SqlPad.Oracle.SemanticModel
 {
-	public abstract class OracleReferenceVisitor
+	public interface IOracleReferenceVisitor
 	{
-		public abstract void VisitColumnReference(OracleColumnReference columnReference);
+		void VisitDataObjectReference(OracleDataObjectReference dataObjectReference);
 
-		public abstract void VisitProgramReference(OracleProgramReference programReference);
+		void VisitColumnReference(OracleColumnReference columnReference);
 
-		public abstract void VisitTypeReference(OracleTypeReference typeReference);
+		void VisitProgramReference(OracleProgramReference programReference);
+
+		void VisitTypeReference(OracleTypeReference typeReference);
+
+		void VisitSequenceReference(OracleSequenceReference sequenceReference);
+
+		void VisitTableCollectionReference(OracleTableCollectionReference tableCollectionReference);
+
+		void VisitPartitionReference(OraclePartitionReference partitionReference);
+
+		void VisitDataTypeReference(OracleDataTypeReference dataTypeReference);
+
+		void VisitPlSqlVariableReference(OraclePlSqlVariableReference plSqlVariableReference);
 	}
 
-	public class OracleColumnBuilderVisitor : OracleReferenceVisitor
+	public class OracleColumnBuilderVisitor : IOracleReferenceVisitor
 	{
 		private readonly List<OracleColumn> _columns = new List<OracleColumn>();
 
 		public IReadOnlyList<OracleColumn> Columns => _columns.AsReadOnly();
 
-	    public override void VisitColumnReference(OracleColumnReference columnReference)
+		public void VisitColumnReference(OracleColumnReference columnReference)
 		{
-	        var matchedColumns = columnReference.ValidObjectReference?.Columns.Where(c => String.Equals(columnReference.NormalizedName, c.Name)).ToArray();
+			var matchedColumns = columnReference.ValidObjectReference?.Columns.Where(c => String.Equals(columnReference.NormalizedName, c.Name)).ToArray();
 			if (matchedColumns?.Length != 1)
 			{
 				return;
@@ -48,7 +60,7 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 		}
 
-		public override void VisitProgramReference(OracleProgramReference programReference)
+		public void VisitProgramReference(OracleProgramReference programReference)
 		{
 			var programMetadata = programReference.Metadata;
 			var semanticModel = programReference.Owner.SemanticModel;
@@ -108,13 +120,43 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 		}
 
-		public override void VisitTypeReference(OracleTypeReference typeReference)
+		public void VisitTypeReference(OracleTypeReference typeReference)
 		{
 			var collectionType = typeReference.SchemaObject.GetTargetSchemaObject() as OracleTypeCollection;
 			if (collectionType != null)
 			{
 				_columns.Add(OracleColumn.BuildColumnValueColumn(collectionType.ElementDataType));
 			}
+		}
+
+		public void VisitSequenceReference(OracleSequenceReference sequenceReference)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void VisitTableCollectionReference(OracleTableCollectionReference tableCollectionReference)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void VisitPartitionReference(OraclePartitionReference partitionReference)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void VisitDataObjectReference(OracleDataObjectReference dataObjectReference)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void VisitDataTypeReference(OracleDataTypeReference dataTypeReference)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void VisitPlSqlVariableReference(OraclePlSqlVariableReference plSqlVariableReference)
+		{
+			throw new NotSupportedException();
 		}
 	}
 }

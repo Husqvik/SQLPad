@@ -4,6 +4,7 @@ using SqlPad.Oracle.Commands;
 using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.ExecutionPlan;
 using SqlPad.Oracle.DebugTrace;
+using SqlPad.Oracle.ToolTips;
 
 namespace SqlPad.Oracle
 {

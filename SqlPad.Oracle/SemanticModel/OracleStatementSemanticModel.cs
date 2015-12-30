@@ -501,7 +501,6 @@ namespace SqlPad.Oracle.SemanticModel
 					{
 						specialTableReference.RootNode = tableReferenceNonterminal;
 						specialTableReference.AliasNode = tableReferenceNonterminal[NonTerminals.InnerSpecialTableReference].GetSingleDescendant(Terminals.ObjectAlias);
-						queryBlock.ObjectReferences.Add(specialTableReference);
 						_rootNodeObjectReference.Add(specialTableReference.RootNode, specialTableReference);
 					}
 				}
@@ -531,7 +530,7 @@ namespace SqlPad.Oracle.SemanticModel
 								}
 
 								var tableCollectionDataObjectReference =
-									new OracleTableCollectionReference
+									new OracleTableCollectionReference(queryBlock)
 									{
 										RowSourceReference = tableCollectionReference,
 										AliasNode = objectReferenceAlias,
@@ -539,7 +538,6 @@ namespace SqlPad.Oracle.SemanticModel
 										RootNode = tableReferenceNonterminal
 									};
 
-								queryBlock.ObjectReferences.Add(tableCollectionDataObjectReference);
 								_rootNodeObjectReference.Add(tableCollectionDataObjectReference.RootNode, tableCollectionDataObjectReference);
 								_rowSourceTableCollectionReferences.Add(tableCollectionReference, tableCollectionDataObjectReference);
 
@@ -559,6 +557,7 @@ namespace SqlPad.Oracle.SemanticModel
 							var objectReference =
 								new OracleDataObjectReference(ReferenceType.InlineView)
 								{
+									Container = queryBlock,
 									Owner = queryBlock,
 									RootNode = tableReferenceNonterminal,
 									ObjectNode = nestedQueryTableReferenceQueryBlock,
@@ -606,6 +605,7 @@ namespace SqlPad.Oracle.SemanticModel
 						var objectReference =
 							new OracleDataObjectReference(referenceType)
 							{
+								Container = queryBlock,
 								Owner = queryBlock,
 								RootNode = tableReferenceNonterminal,
 								OwnerNode = schemaTerminal,
@@ -724,6 +724,7 @@ namespace SqlPad.Oracle.SemanticModel
 			objectReference.PartitionReference =
 				new OraclePartitionReference
 				{
+					Container = objectReference.Container,
 					RootNode = explicitPartitionIdentifier.ParentNode.ParentNode,
 					ObjectNode = explicitPartitionIdentifier,
 				};
@@ -885,7 +886,7 @@ namespace SqlPad.Oracle.SemanticModel
 				ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(null, queryBlock, identifiers, StatementPlacement.TableReference, null);
 			}
 
-			return new OracleSpecialTableReference(ReferenceType.JsonTable, columns, jsonTableClause[NonTerminals.JsonColumnsClause]) { Owner = queryBlock };
+			return new OracleSpecialTableReference(queryBlock, ReferenceType.JsonTable, columns, jsonTableClause[NonTerminals.JsonColumnsClause]) { Owner = queryBlock };
 		}
 
 		private OracleSpecialTableReference ResolveXmlTableReference(OracleQueryBlock queryBlock, StatementGrammarNode tableReferenceNonterminal)
@@ -960,7 +961,7 @@ namespace SqlPad.Oracle.SemanticModel
 				ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(null, queryBlock, identifiers, StatementPlacement.TableReference, null);
 			}
 
-			return new OracleSpecialTableReference(ReferenceType.XmlTable, columns, columnListClause) { Owner = queryBlock };
+			return new OracleSpecialTableReference(queryBlock, ReferenceType.XmlTable, columns, columnListClause) { Owner = queryBlock };
 		}
 
 		private static bool TryAssingnColumnForOrdinality(OracleColumn column, IEnumerable<StatementGrammarNode> forOrdinalityTerminals)
@@ -1012,7 +1013,6 @@ namespace SqlPad.Oracle.SemanticModel
 
 				var dimensionExpressionList = modelColumnClauses.ChildNodes[modelColumnClauses.ChildNodes.Count - 3];
 				var dimensionColumns = GatherSqlModelColumns(queryBlock, dimensionExpressionList);
-				var dimensionColumnObjectReference = new OracleSpecialTableReference(ReferenceType.SqlModel, dimensionColumns, null);
 				sqlModelColumns.AddRange(dimensionColumns);
 				
 				var measureParenthesisEnclosedAliasedExpressionList = modelColumnClauses.ChildNodes[modelColumnClauses.ChildNodes.Count - 1];
@@ -1064,7 +1064,7 @@ namespace SqlPad.Oracle.SemanticModel
 					}
 				}
 
-				queryBlock.ModelReference.DimensionReferenceContainer.ObjectReferences.Add(dimensionColumnObjectReference);
+				new OracleSpecialTableReference(queryBlock.ModelReference.DimensionReferenceContainer, ReferenceType.SqlModel, dimensionColumns, null);
 				ResolveSqlModelReferences(queryBlock, queryBlock.ModelReference.DimensionReferenceContainer, ruleDimensionIdentifiers);
 
 				queryBlock.ModelReference.MeasuresReferenceContainer.ObjectReferences.Add(queryBlock.ModelReference);
@@ -1537,7 +1537,7 @@ namespace SqlPad.Oracle.SemanticModel
 				return;
 			}
 
-			var loggingObjectReference = CreateDataObjectReference(loggingTableIdentifier.ParentNode, loggingTableIdentifier, null);
+			var loggingObjectReference = CreateDataObjectReference(referenceContainer, loggingTableIdentifier.ParentNode, loggingTableIdentifier, null);
 			referenceContainer.ObjectReferences.Add(loggingObjectReference);
 		}
 
@@ -1551,7 +1551,7 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 
 			var objectReferenceAlias = mergeTarget[Terminals.ObjectAlias];
-			MainObjectReferenceContainer.MainObjectReference = CreateDataObjectReference(mergeTarget, objectIdentifier, objectReferenceAlias);
+			MainObjectReferenceContainer.MainObjectReference = CreateDataObjectReference(MainObjectReferenceContainer, mergeTarget, objectIdentifier, objectReferenceAlias);
 
 			var mergeSource = Statement.RootNode[0, 0][NonTerminals.UsingMergeSource, NonTerminals.MergeSource];
 			if (mergeSource == null)
@@ -1564,7 +1564,7 @@ namespace SqlPad.Oracle.SemanticModel
 			if (objectIdentifier != null)
 			{
 				objectReferenceAlias = objectIdentifier.ParentNode.ParentNode.ParentNode[Terminals.ObjectAlias];
-				mergeSourceReference = CreateDataObjectReference(mergeSource, objectIdentifier, objectReferenceAlias);
+				mergeSourceReference = CreateDataObjectReference(MainObjectReferenceContainer, mergeSource, objectIdentifier, objectReferenceAlias);
 			}
 			else if (MainQueryBlock != null)
 			{
@@ -1616,7 +1616,7 @@ namespace SqlPad.Oracle.SemanticModel
 			if (objectIdentifier != null)
 			{
 				var objectReferenceAlias = tableReferenceNode[Terminals.ObjectAlias];
-				MainObjectReferenceContainer.MainObjectReference = CreateDataObjectReference(tableReferenceNode, objectIdentifier, objectReferenceAlias);
+				MainObjectReferenceContainer.MainObjectReference = CreateDataObjectReference(MainObjectReferenceContainer, tableReferenceNode, objectIdentifier, objectReferenceAlias);
 			}
 			else if (MainQueryBlock != null)
 			{
@@ -1668,15 +1668,6 @@ namespace SqlPad.Oracle.SemanticModel
 					continue;
 				}
 
-				var dataObjectReference = CreateDataObjectReference(dmlTableExpressionClause, objectIdentifier, objectReferenceAlias);
-
-				var insertTarget =
-					new OracleInsertTarget(this)
-					{
-						TargetNode = dmlTableExpressionClause,
-						RootNode = insertIntoClause.ParentNode
-					};
-
 				var sourceReferenceContainer = new OracleMainObjectReferenceContainer(this);
 				if (MainQueryBlock != null)
 				{
@@ -1697,6 +1688,15 @@ namespace SqlPad.Oracle.SemanticModel
 
 					ResolveFunctionReferences(sourceReferenceContainer.ProgramReferences);
 				}
+
+				var insertTarget =
+					new OracleInsertTarget(this)
+					{
+						TargetNode = dmlTableExpressionClause,
+						RootNode = insertIntoClause.ParentNode
+					};
+
+				var dataObjectReference = CreateDataObjectReference(insertTarget, dmlTableExpressionClause, objectIdentifier, objectReferenceAlias);
 
 				var targetReferenceContainer = new OracleMainObjectReferenceContainer(this);
 				insertTarget.ObjectReferences.Add(dataObjectReference);
@@ -1747,7 +1747,7 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 		}
 
-		private OracleDataObjectReference CreateDataObjectReference(StatementGrammarNode rootNode, StatementGrammarNode objectIdentifier, StatementGrammarNode aliasNode)
+		private OracleDataObjectReference CreateDataObjectReference(OracleReferenceContainer referenceContainer, StatementGrammarNode rootNode, StatementGrammarNode objectIdentifier, StatementGrammarNode aliasNode)
 		{
 			var queryTableExpressionNode = objectIdentifier.ParentNode;
 			var schemaPrefixNode = queryTableExpressionNode[NonTerminals.SchemaPrefix, Terminals.SchemaIdentifier];
@@ -1762,6 +1762,7 @@ namespace SqlPad.Oracle.SemanticModel
 			return
 				new OracleDataObjectReference(ReferenceType.SchemaObject)
 				{
+					Container = referenceContainer,
 					RootNode = rootNode,
 					OwnerNode = schemaPrefixNode,
 					ObjectNode = objectIdentifier,
@@ -1856,6 +1857,7 @@ namespace SqlPad.Oracle.SemanticModel
 				var newAnchorReference =
 					new OracleDataObjectReference(ReferenceType.CommonTableExpression)
 					{
+						Container = queryBlock,
 						Owner = queryBlock,
 						RootNode = anchorReference.RootNode,
 						ObjectNode = anchorReference.ObjectNode,

@@ -16,7 +16,7 @@ namespace SqlPad.Oracle.SemanticModel
 		
 		public override OracleProgramMetadata Metadata { get; set; }
 
-		public override void Accept(OracleReferenceVisitor visitor)
+		public override void Accept(IOracleReferenceVisitor visitor)
 		{
 			visitor.VisitProgramReference(this);
 		}
@@ -33,7 +33,7 @@ namespace SqlPad.Oracle.SemanticModel
 			set { throw new NotSupportedException("Metadata cannot be set. It is inferred from type attributes"); }
 		}
 
-		public override void Accept(OracleReferenceVisitor visitor)
+		public override void Accept(IOracleReferenceVisitor visitor)
 		{
 			visitor.VisitTypeReference(this);
 		}

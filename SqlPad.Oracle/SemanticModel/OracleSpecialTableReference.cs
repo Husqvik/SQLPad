@@ -12,9 +12,11 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public StatementGrammarNode ColumnsClause { get; }
 
-		public OracleSpecialTableReference(ReferenceType referenceType, IEnumerable<OracleSelectListColumn> columns, StatementGrammarNode columnsClause)
+		public OracleSpecialTableReference(OracleReferenceContainer referenceContainer, ReferenceType referenceType, IEnumerable<OracleSelectListColumn> columns, StatementGrammarNode columnsClause)
 			: base(referenceType)
 		{
+			referenceContainer.ObjectReferences.Add(this);
+			Container = referenceContainer;
 			ColumnDefinitions = columns.ToArray();
 			ColumnsClause = columnsClause;
 		}

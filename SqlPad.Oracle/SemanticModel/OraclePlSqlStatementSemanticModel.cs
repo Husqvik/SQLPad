@@ -513,6 +513,11 @@ namespace SqlPad.Oracle.SemanticModel
 		public override string Name => IdentifierNode.Token.Value;
 
 		public ICollection<OraclePlSqlElement> Variables { get; } = new List<OraclePlSqlElement>();
+
+		public override void Accept(IOracleReferenceVisitor visitor)
+		{
+			visitor.VisitPlSqlVariableReference(this);
+		}
 	}
 
 	public abstract class OraclePlSqlElement

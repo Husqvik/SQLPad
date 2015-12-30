@@ -22,8 +22,10 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 		}
 
-		public OracleTableCollectionReference() : base(ReferenceType.TableCollection)
+		public OracleTableCollectionReference(OracleReferenceContainer referenceContainer) : base(ReferenceType.TableCollection)
 		{
+			referenceContainer.ObjectReferences.Add(this);
+			Container = referenceContainer;
 			Placement = StatementPlacement.TableReference;
 		}
 
@@ -35,6 +37,11 @@ namespace SqlPad.Oracle.SemanticModel
 		}
 
 		public override IReadOnlyList<OracleColumn> Columns => _columns ?? BuildColumns();
+
+		public override void Accept(IOracleReferenceVisitor visitor)
+		{
+			visitor.VisitTableCollectionReference(this);
+		}
 
 		private IReadOnlyList<OracleColumn> BuildColumns()
 		{

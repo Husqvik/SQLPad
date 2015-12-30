@@ -61,7 +61,7 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 		}
 
-		public override void Accept(OracleReferenceVisitor visitor)
+		public override void Accept(IOracleReferenceVisitor visitor)
 		{
 			visitor.VisitColumnReference(this);
 		}
