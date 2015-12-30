@@ -1066,6 +1066,16 @@ SELECT * FROM data";
 			Assert.DoesNotThrow(() => _toolTipProvider.GetToolTip(_documentRepository, 25));
 		}
 
+		[Test(Description = @""), STAThread]
+		public void TestTooltipOverNomExistingColumn()
+		{
+			const string query = @"SELECT non_existing FROM dual";
+
+			_documentRepository.UpdateStatements(query);
+
+			Assert.DoesNotThrow(() => _toolTipProvider.GetToolTip(_documentRepository, 7));
+		}
+
 		private static string GetTextFromTextBlock(TextBlock textBlock)
 		{
 			var inlines = textBlock.Inlines.Select(GetTextFromInline);

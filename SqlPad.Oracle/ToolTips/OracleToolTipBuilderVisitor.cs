@@ -22,7 +22,7 @@ namespace SqlPad.Oracle.ToolTips
 
 		public void VisitColumnReference(OracleColumnReference columnReference)
 		{
-			if (columnReference.DatabaseLinkNode != null)
+			if (columnReference.ColumnDescription == null)
 			{
 				return;
 			}
