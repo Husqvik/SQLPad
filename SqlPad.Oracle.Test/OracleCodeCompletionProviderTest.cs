@@ -697,7 +697,7 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void TestResolveFunctionOverloadsFilteredByCurrentArgumentIndex()
+		public void TestResolveProgramOverloadsFilteredByCurrentArgumentIndex()
 		{
 			const string query1 = @"SELECT ROUND(1.23, 1) FROM DUAL";
 
@@ -711,7 +711,7 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void TestResolveFunctionOverloadsWithParameterlessOverload()
+		public void TestResolveProgramOverloadsWithParameterlessOverload()
 		{
 			const string query1 = @"SELECT DBMS_RANDOM.VALUE(1, 2) FROM DUAL";
 
@@ -729,7 +729,7 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void TestResolveFunctionOverloadsInUserDefinedTypeConstructor()
+		public void TestResolveProgramOverloadsInUserDefinedTypeConstructor()
 		{
 			const string query1 = @"SELECT SYS.ODCIARGDESC() FROM DUAL";
 
@@ -743,7 +743,7 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void TestResolveFunctionOverloadsInUserDefinedCollectionTypeConstructorAtNonFirstParameter()
+		public void TestResolveProgramOverloadsInUserDefinedCollectionTypeConstructorAtNonFirstParameter()
 		{
 			const string query1 = @"SELECT SYS.ODCIRAWLIST(NULL, NULL) FROM DUAL";
 
@@ -757,7 +757,17 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void TestResolveFunctionOverloadsOutsideTerminal()
+		public void TestResolveProgramOverloadsWithinPlSqlContext()
+		{
+			const string query1 = @"BEGIN dbms_output.put_line(''); END;";
+
+			_documentRepository.UpdateStatements(query1);
+			var items = CodeCompletionProvider.ResolveProgramOverloads(_documentRepository, 28).ToList();
+			items.Count.ShouldBe(1);
+		}
+
+		[Test(Description = @"")]
+		public void TestResolveProgramOverloadsOutsideTerminal()
 		{
 			const string query1 = @"SELECT ROUND(1.23, 1) FROM DUAL";
 
@@ -768,7 +778,7 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void TestResolveFunctionOverloadsWithNonSchemaFunction()
+		public void TestResolveProgramOverloadsWithNonSchemaFunction()
 		{
 			const string query1 = @"SELECT MAX(DUMMY) FROM DUAL";
 
@@ -783,7 +793,7 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void TestResolveFunctionOverloadsWithStatementDefinedFunction()
+		public void TestResolveProgramOverloadsWithStatementDefinedFunction()
 		{
 			const string query1 =
 @"WITH
@@ -800,7 +810,7 @@ SELECT F1(NULL) FROM DUAL";
 		}
 
 		[Test(Description = @"")]
-		public void TestResolveFunctionOverloadsWithNonSchemaAggregateAndAnalyticFunction()
+		public void TestResolveProgramOverloadsWithNonSchemaAggregateAndAnalyticFunction()
 		{
 			const string query1 = @"SELECT COUNT(*) FROM DUAL";
 

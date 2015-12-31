@@ -149,13 +149,13 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public abstract Task<IReadOnlyList<string>> GetWeekdayNames(CancellationToken cancellationToken);
 
-		public abstract ILookup<OracleProgramIdentifier, OracleProgramMetadata> AllFunctionMetadata { get; }
+		public abstract ILookup<OracleProgramIdentifier, OracleProgramMetadata> AllProgramMetadata { get; }
 
 		public abstract ILookup<OracleObjectIdentifier, OracleReferenceConstraint> UniqueConstraintReferringReferenceConstraints { get; }
 
 		protected abstract ILookup<OracleProgramIdentifier, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadata { get; }
 		
-		protected abstract ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuiltInPackageFunctionMetadata { get; }
+		protected abstract ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuiltInPackageProgramMetadata { get; }
 
 		public abstract IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get; }
 
@@ -216,7 +216,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 				if (AllObjects.TryGetValue(BuiltInFunctionPackageIdentifier, out schemaObject))
 				{
-					programMetadataSource = BuiltInPackageFunctionMetadata[programIdentifier];
+					programMetadataSource = BuiltInPackageProgramMetadata[programIdentifier];
 				}
 
 				result.Metadata = TryFindProgramOverload(programMetadataSource, identifier.Name, parameterCount, hasAnalyticClause, !forceBuiltInFunction && includePlSqlObjects);
@@ -226,7 +226,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					if (includePlSqlObjects && AllObjects.TryGetValue(IdentifierDbmsStandard, out schemaObject))
 					{
 						programIdentifier.Package = PackageDbmsStandard;
-						programMetadataSource = BuiltInPackageFunctionMetadata[programIdentifier];
+						programMetadataSource = BuiltInPackageProgramMetadata[programIdentifier];
 						result.Metadata = TryFindProgramOverload(programMetadataSource, identifier.Name, parameterCount, hasAnalyticClause, true);
 					}
 
@@ -359,7 +359,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var functionContainer = targetObject as IFunctionCollection;
 			if (functionContainer != null)
 			{
-				functionMetadata = functionContainer.Functions;
+				functionMetadata = functionContainer.Programs;
 				return true;
 			}
 

@@ -28,7 +28,7 @@ namespace SqlPad.Oracle.DataDictionary
 		private readonly HashSet<string> _characterSets;
 
 		private ILookup<OracleProgramIdentifier, OracleProgramMetadata> _nonSchemaFunctionMetadataLookup;
-		private ILookup<OracleProgramIdentifier, OracleProgramMetadata> _builtInPackageFunctionMetadata;
+		private ILookup<OracleProgramIdentifier, OracleProgramMetadata> _builtInPackageProgramMetadata;
 
 		public DateTime Timestamp { get; private set; }
 
@@ -38,23 +38,23 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public ILookup<OracleProgramIdentifier, OracleProgramMetadata> NonSchemaFunctionMetadata => _nonSchemaFunctionMetadataLookup ?? BuildNonSchemaFunctionMetadata();
 
-		public ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuiltInPackageFunctionMetadata => _builtInPackageFunctionMetadata ?? BuildBuiltInPackageFunctionMetadata();
+		public ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuiltInPackageProgramMetadata => _builtInPackageProgramMetadata ?? BuildBuiltInPackageProgramMetadata();
 
-		private ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuildBuiltInPackageFunctionMetadata()
+		private ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuildBuiltInPackageProgramMetadata()
 		{
 			var metadataCollection = new List<OracleProgramMetadata>();
 			OracleSchemaObject package;
 			if (AllObjects.TryGetValue(OracleDatabaseModelBase.BuiltInFunctionPackageIdentifier, out package))
 			{
-				metadataCollection.AddRange(((OraclePackage)package).Functions);
+				metadataCollection.AddRange(((OraclePackage)package).Programs);
 			}
 
 			if (AllObjects.TryGetValue(OracleDatabaseModelBase.IdentifierDbmsStandard, out package))
 			{
-				metadataCollection.AddRange(((OraclePackage)package).Functions);
+				metadataCollection.AddRange(((OraclePackage)package).Programs);
 			}
 
-			return _builtInPackageFunctionMetadata = metadataCollection.ToLookup(m => m.Identifier);
+			return _builtInPackageProgramMetadata = metadataCollection.ToLookup(m => m.Identifier);
 		}
 
 		private ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuildNonSchemaFunctionMetadata()
@@ -162,7 +162,7 @@ namespace SqlPad.Oracle.DataDictionary
 
 			var oraclePackageType = Serializer.Add(typeof(OraclePackage), false);
 			oraclePackageType.AsReferenceDefault = true;
-			oraclePackageType.Add("_functions");
+			oraclePackageType.Add("_programs");
 
 			var oracleFunctionType = Serializer.Add(typeof(OracleFunction), false);
 			oracleFunctionType.AsReferenceDefault = true;

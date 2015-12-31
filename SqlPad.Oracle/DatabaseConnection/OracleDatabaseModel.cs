@@ -39,7 +39,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private bool _cacheLoaded;
 		private Task _backgroundTask;
 		private readonly CancellationTokenSource _backgroundTaskCancellationTokenSource = new CancellationTokenSource();
-		private ILookup<OracleProgramIdentifier, OracleProgramMetadata> _allFunctionMetadata = Enumerable.Empty<OracleProgramMetadata>().ToLookup(m => m.Identifier);
+		private ILookup<OracleProgramIdentifier, OracleProgramMetadata> _allProgramMetadata = Enumerable.Empty<OracleProgramMetadata>().ToLookup(m => m.Identifier);
 		private ILookup<OracleObjectIdentifier, OracleReferenceConstraint> _uniqueConstraintReferringReferenceConstraints = Enumerable.Empty<OracleReferenceConstraint>().ToLookup(m => m.FullyQualifiedName);
 		private readonly ConnectionStringSettings _connectionString;
 
@@ -119,7 +119,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 
 			_dataDictionary = refreshedModel._dataDictionary;
-			_allFunctionMetadata = refreshedModel._allFunctionMetadata;
+			_allProgramMetadata = refreshedModel._allProgramMetadata;
 			_uniqueConstraintReferringReferenceConstraints = refreshedModel._uniqueConstraintReferringReferenceConstraints;
 			_allSchemas = refreshedModel._allSchemas;
 			_schemas = refreshedModel._schemas;
@@ -210,13 +210,13 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_backgroundTask = Task.Factory.StartNew(action);
 		}
 
-		public override ILookup<OracleProgramIdentifier, OracleProgramMetadata> AllFunctionMetadata => _allFunctionMetadata;
+		public override ILookup<OracleProgramIdentifier, OracleProgramMetadata> AllProgramMetadata => _allProgramMetadata;
 
 		public override ILookup<OracleObjectIdentifier, OracleReferenceConstraint> UniqueConstraintReferringReferenceConstraints => _uniqueConstraintReferringReferenceConstraints;
 
 		protected override ILookup<OracleProgramIdentifier, OracleProgramMetadata> NonSchemaBuiltInFunctionMetadata => _dataDictionary.NonSchemaFunctionMetadata;
 
-		protected override ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuiltInPackageFunctionMetadata => _dataDictionary.BuiltInPackageFunctionMetadata;
+		protected override ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuiltInPackageProgramMetadata => _dataDictionary.BuiltInPackageProgramMetadata;
 
 		public override ConnectionStringSettings ConnectionString => _connectionString;
 
@@ -574,7 +574,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				{
 					_currentSchema = _currentSchema,
 					_dataDictionary = _dataDictionary,
-					_allFunctionMetadata = _allFunctionMetadata,
+					_allProgramMetadata = _allProgramMetadata,
 					_uniqueConstraintReferringReferenceConstraints = _uniqueConstraintReferringReferenceConstraints
 				};
 
@@ -723,17 +723,17 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 				var allObjects = _dataDictionaryMapper.BuildDataDictionary();
 
-				var userFunctions = _dataDictionaryMapper.GetUserFunctionMetadata().SelectMany(g => g).ToArray();
-				var builtInFunctions = _dataDictionaryMapper.GetBuiltInFunctionMetadata().SelectMany(g => g).ToArray();
-				_allFunctionMetadata = builtInFunctions
-					.Concat(userFunctions.Where(f => f.Type == ProgramType.Function))
+				var userPrograms = _dataDictionaryMapper.GetUserFunctionMetadata().SelectMany(g => g).ToArray();
+				var builtInPrograms = _dataDictionaryMapper.GetBuiltInFunctionMetadata().SelectMany(g => g).ToArray();
+				_allProgramMetadata = builtInPrograms
+					.Concat(userPrograms)
 					.ToLookup(m => m.Identifier);
 
 				stopwatch.Reset();
 
 				var nonSchemaBuiltInFunctionMetadata = new List<OracleProgramMetadata>();
 
-				foreach (var programMetadata in builtInFunctions.Concat(userFunctions))
+				foreach (var programMetadata in builtInPrograms.Concat(userPrograms))
 				{
 					if (String.IsNullOrEmpty(programMetadata.Identifier.Owner))
 					{
@@ -745,7 +745,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					var packageIdentifier = OracleObjectIdentifier.Create(programMetadata.Identifier.Owner, programMetadata.Identifier.Package);
 					if (allObjects.TryGetFirstValue(out schemaObject, packageIdentifier))
 					{
-						((OraclePackage)schemaObject).Functions.Add(programMetadata);
+						((OraclePackage)schemaObject).Programs.Add(programMetadata);
 						programMetadata.Owner = schemaObject;
 					}
 					else
@@ -856,9 +856,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 			{
 				var functionMetadata = _dataDictionary.AllObjects.Values
 					.OfType<IFunctionCollection>()
-					.SelectMany(o => o.Functions);
+					.SelectMany(o => o.Programs);
 
-				_allFunctionMetadata = FilterFunctionsWithUnavailableMetadata(functionMetadata)
+				_allProgramMetadata = FilterFunctionsWithUnavailableMetadata(functionMetadata)
 					.Concat(_dataDictionary.NonSchemaFunctionMetadata.SelectMany(g => g))
 					.ToLookup(m => m.Identifier);
 

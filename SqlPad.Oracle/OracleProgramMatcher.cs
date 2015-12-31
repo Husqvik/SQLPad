@@ -5,29 +5,41 @@ using SqlPad.Oracle.DataDictionary;
 
 namespace SqlPad.Oracle
 {
-	internal class OracleFunctionMatcher
+	internal class OracleProgramMatcher
 	{
-		private readonly FunctionMatchElement _ownerMatch;
-		private readonly FunctionMatchElement _packageMatch;
-		private readonly FunctionMatchElement _identifierMatch;
+		private readonly ProgramMatchElement _ownerMatch;
+		private readonly ProgramMatchElement _packageMatch;
+		private readonly ProgramMatchElement _identifierMatch;
 
-		public OracleFunctionMatcher(FunctionMatchElement ownerMatch, FunctionMatchElement packageMatch, FunctionMatchElement identifierMatch)
+		public bool AllowPlSql { get; set; }
+
+		public OracleProgramMatcher(ProgramMatchElement ownerMatch, ProgramMatchElement packageMatch, ProgramMatchElement identifierMatch)
 		{
 			_identifierMatch = identifierMatch;
 			_packageMatch = packageMatch;
 			_ownerMatch = ownerMatch;
 		}
 
-		public FunctionMatchResult GetMatchResult(OracleProgramMetadata programMetadata, string quotedCurrentSchema)
+		public ProgramMatchResult GetMatchResult(OracleProgramMetadata programMetadata, string quotedCurrentSchema)
 		{
-			var isSchemaMatched = _ownerMatch == null || (_ownerMatch.Value != null && _ownerMatch.Value.Length == 0 && String.Equals(programMetadata.Identifier.Owner, quotedCurrentSchema)) ||
-			                      _ownerMatch.IsMatch(programMetadata).Any();
+			var programTypeSupported = AllowPlSql || programMetadata.Type != ProgramType.Procedure;
+
 			var matchResult =
-				new FunctionMatchResult
+				new ProgramMatchResult
 				{
 					Metadata = programMetadata,
-					IsMatched = isSchemaMatched
+					IsMatched = programTypeSupported
 				};
+
+			if (!programTypeSupported)
+			{
+				return matchResult;
+			}
+
+			var isSchemaMatched = _ownerMatch == null || (_ownerMatch.Value != null && _ownerMatch.Value.Length == 0 && String.Equals(programMetadata.Identifier.Owner, quotedCurrentSchema)) ||
+			                      _ownerMatch.IsMatch(programMetadata).Any();
+
+			matchResult.IsMatched &= isSchemaMatched;
 
 			if (_packageMatch != null && isSchemaMatched)
 			{
@@ -60,7 +72,7 @@ namespace SqlPad.Oracle
 		}
 	}
 
-	internal struct FunctionMatchResult
+	internal struct ProgramMatchResult
 	{
 		public bool IsMatched { get; set; }
 
@@ -122,7 +134,7 @@ namespace SqlPad.Oracle
 		}
 	}
 
-	internal class FunctionMatchElement : MatchElement<OracleProgramMetadata>
+	internal class ProgramMatchElement : MatchElement<OracleProgramMetadata>
 	{
 		private static readonly Func<OracleProgramMetadata, IEnumerable<string>> OwnerSelector = metadata => Enumerable.Repeat(metadata.Identifier.Owner, 1);
 		private static readonly Func<OracleProgramMetadata, IEnumerable<string>> PackageSelector = metadata => Enumerable.Repeat(metadata.Identifier.Package, 1);
@@ -130,33 +142,33 @@ namespace SqlPad.Oracle
 
 		private Func<OracleProgramMetadata, IEnumerable<string>> _selector;
 
-		public FunctionMatchElement(string value) : base(value)
+		public ProgramMatchElement(string value) : base(value)
 		{
 		}
 
 		protected override Func<OracleProgramMetadata, IEnumerable<string>> Selector => _selector;
 
-	    public FunctionMatchElement AsResultValue()
+	    public ProgramMatchElement AsResultValue()
 		{
 			IsResultValue = true;
 			return this;
 		}
 
-		public FunctionMatchElement SelectOwner()
+		public ProgramMatchElement SelectOwner()
 		{
 			CheckSelectorNotAssigned();
 			_selector = OwnerSelector;
 			return this;
 		}
 
-		public FunctionMatchElement SelectPackage()
+		public ProgramMatchElement SelectPackage()
 		{
 			CheckSelectorNotAssigned();
 			_selector = PackageSelector;
 			return this;
 		}
 
-		public FunctionMatchElement SelectName()
+		public ProgramMatchElement SelectName()
 		{
 			CheckSelectorNotAssigned();
 			_selector = NameSelector;
@@ -171,21 +183,21 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		public FunctionMatchElement SelectSynonymOwner()
+		public ProgramMatchElement SelectSynonymOwner()
 		{
 			CheckSelectorNotAssigned();
 			_selector = SelectSynonymOwnerHandler;
 			return this;
 		}
 
-		public FunctionMatchElement SelectSynonymPackage()
+		public ProgramMatchElement SelectSynonymPackage()
 		{
 			CheckSelectorNotAssigned();
 			_selector = SelectSynonymPackageHandler;
 			return this;
 		}
 
-		public FunctionMatchElement SelectSynonymName()
+		public ProgramMatchElement SelectSynonymName()
 		{
 			CheckSelectorNotAssigned();
 			_selector = SelectSynonymIdentifierHandler;

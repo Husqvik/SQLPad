@@ -211,7 +211,7 @@ namespace SqlPad.Oracle.DataDictionary
 
 	public interface IFunctionCollection
 	{
-		ICollection<OracleProgramMetadata> Functions { get; }
+		ICollection<OracleProgramMetadata> Programs { get; }
 
 		OracleObjectIdentifier FullyQualifiedName { get; }
 	}
@@ -219,9 +219,9 @@ namespace SqlPad.Oracle.DataDictionary
 	[DebuggerDisplay("OraclePackage (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
 	public class OraclePackage : OracleSchemaObject, IFunctionCollection
 	{
-		private readonly List<OracleProgramMetadata> _functions = new List<OracleProgramMetadata>();
+		private readonly List<OracleProgramMetadata> _programs = new List<OracleProgramMetadata>();
 
-		public ICollection<OracleProgramMetadata> Functions => _functions;
+		public ICollection<OracleProgramMetadata> Programs => _programs;
 
 	    public override string Type => OracleSchemaObjectType.Package;
 	}
@@ -231,7 +231,7 @@ namespace SqlPad.Oracle.DataDictionary
 	{
 		public OracleProgramMetadata Metadata { get; set; }
 
-		ICollection<OracleProgramMetadata> IFunctionCollection.Functions => new [] { Metadata };
+		ICollection<OracleProgramMetadata> IFunctionCollection.Programs => new [] { Metadata };
 
 	    public override string Type => OracleSchemaObjectType.Function;
 	}
@@ -345,7 +345,7 @@ namespace SqlPad.Oracle.DataDictionary
 			return constructorMetadata;
 		}
 
-		public ICollection<OracleProgramMetadata> Functions => new [] { BuildConstructorMetadata() };
+		public ICollection<OracleProgramMetadata> Programs => new [] { BuildConstructorMetadata() };
 
 	    public OracleDataType ElementDataType { get; set; }
 	}

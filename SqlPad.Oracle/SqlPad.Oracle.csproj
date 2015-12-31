@@ -157,7 +157,7 @@
     <Compile Include="DataDictionary\OracleDataType.cs" />
     <Compile Include="DatabaseConnection\OracleDebugger.cs" />
     <Compile Include="OracleFoldingSectionProvider.cs" />
-    <Compile Include="OracleFunctionMatcher.cs" />
+    <Compile Include="OracleProgramMatcher.cs" />
     <Compile Include="OracleGrammarDescription.cs">
       <DependentUpon>OracleGrammarDescription.tt</DependentUpon>
       <DesignTime>True</DesignTime>
