@@ -1688,7 +1688,7 @@ END;";
 			var columns = queryBlock.Columns.ToArray();
 			columns.Length.ShouldBe(1);
 			columns[0].ColumnDescription.Name.ShouldBe("\"DUMMY\"");
-			columns[0].ColumnDescription.Nullable.ShouldBe(false);
+			columns[0].ColumnDescription.Nullable.ShouldBe(true);
 			columns[0].ColumnDescription.FullTypeName.ShouldBe("VARCHAR2(1 BYTE)");
 		}
 		

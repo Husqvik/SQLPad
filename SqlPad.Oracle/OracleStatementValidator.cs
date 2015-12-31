@@ -1070,8 +1070,9 @@ namespace SqlPad.Oracle
 				if (sequenceReference.DatabaseLinkNode == null)
 				{
 					var mainQueryBlockOrderByClause = GetOrderByClauseIfWithinMainQueryBlock(sequenceReference);
+					var isInQueryBlockWithUnsupportedClause = (sequenceReference.Owner?.HavingClause ?? sequenceReference.Owner?.GroupByClause) != null;
 					var isWithinMainQueryBlockWithOrderByClause = mainQueryBlockOrderByClause != null;
-					if (isWithinMainQueryBlockWithOrderByClause || !sequenceReference.Placement.In(StatementPlacement.None, StatementPlacement.ValuesClause, StatementPlacement.SelectList) ||
+					if (isWithinMainQueryBlockWithOrderByClause || isInQueryBlockWithUnsupportedClause || !sequenceReference.Placement.In(StatementPlacement.None, StatementPlacement.ValuesClause, StatementPlacement.SelectList) ||
 					    IsNotWithinMainQueryBlock(sequenceReference) || sequenceReference.Owner?.HasDistinctResultSet == true)
 					{
 						validationModel.InvalidNonTerminals[sequenceReference.RootNode] =

@@ -1255,6 +1255,42 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test(Description = @"")]
+		public void TestSequenceCombinedWithGroupByClause()
+		{
+			const string sqlText = "SELECT test_seq.nextval FROM dual GROUP BY dummy";
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var nonTerminalValidity = validationModel.InvalidNonTerminals.Values.OrderBy(nv => nv.Node.SourcePosition.IndexStart).ToList();
+			nonTerminalValidity.Count.ShouldBe(1);
+			nonTerminalValidity[0].IsRecognized.ShouldBe(true);
+			nonTerminalValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.SequenceNumberNotAllowedHere);
+			nonTerminalValidity[0].ToolTipText.ShouldBe(OracleSemanticErrorType.SequenceNumberNotAllowedHere);
+			nonTerminalValidity[0].Node.ShouldNotBe(null);
+			nonTerminalValidity[0].Node.TerminalCount.ShouldBe(3);
+		}
+
+		[Test(Description = @"")]
+		public void TestSequenceCombinedWithHavingClause()
+		{
+			const string sqlText = "SELECT test_seq.nextval FROM dual HAVING dummy IS NOT NULL";
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var nonTerminalValidity = validationModel.InvalidNonTerminals.Values.OrderBy(nv => nv.Node.SourcePosition.IndexStart).ToList();
+			nonTerminalValidity.Count.ShouldBe(1);
+			nonTerminalValidity[0].IsRecognized.ShouldBe(true);
+			nonTerminalValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.SequenceNumberNotAllowedHere);
+			nonTerminalValidity[0].ToolTipText.ShouldBe(OracleSemanticErrorType.SequenceNumberNotAllowedHere);
+			nonTerminalValidity[0].Node.ShouldNotBe(null);
+			nonTerminalValidity[0].Node.TerminalCount.ShouldBe(3);
+		}
+
+		[Test(Description = @"")]
 		public void TestSequenceWithinSubquery()
 		{
 			const string sqlText = "SELECT NEXTVAL FROM (SELECT TEST_SEQ.NEXTVAL FROM DUAL)";

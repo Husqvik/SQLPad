@@ -36,7 +36,10 @@
 					<RowDefinition />
 				</Grid.RowDefinitions>
 				<TextBlock Grid.Row="0" Grid.Column="0" Text="Current value: " />
-				<TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding CurrentValue, Converter={StaticResource PrettyPrintIntegerConverter}}" />
+				<TextBlock Grid.Row="0" Grid.Column="1">
+					<Run Text="{Binding CurrentValue, Converter={StaticResource PrettyPrintIntegerConverter}}" />
+					<Run Text="(cached values not included)" />
+				</TextBlock>
 				<TextBlock Grid.Row="1" Grid.Column="0" Text="Increment: " />
 				<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Increment, Converter={StaticResource PrettyPrintIntegerConverter}}" />
 				<TextBlock Grid.Row="2" Grid.Column="0" Text="Minimum value: " />

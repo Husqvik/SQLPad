@@ -714,7 +714,7 @@ namespace SqlPad.Oracle.Test
 				Columns =
 					new Dictionary<string, OracleColumn>
 					{
-						{ "\"DUMMY\"", new OracleColumn { Name = "\"DUMMY\"", CharacterSize = 1, DataType = BuildPrimitiveDataType(TerminalValues.Varchar2, 1, dataUnit: DataUnit.Byte) } }
+						{ "\"DUMMY\"", new OracleColumn { Name = "\"DUMMY\"", CharacterSize = 1, DataType = BuildPrimitiveDataType(TerminalValues.Varchar2, 1, dataUnit: DataUnit.Byte), Nullable = true } }
 					}
 			},
 			new OracleView
