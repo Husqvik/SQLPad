@@ -3119,7 +3119,7 @@ namespace SqlPad.Oracle.SemanticModel
 				{
 					ProgramIdentifierNode = identifierNode,
 					DatabaseLinkNode = OracleReferenceBuilder.GetDatabaseLinkFromIdentifier(identifierNode),
-					RootNode = identifierNode.GetAncestor(NonTerminals.Expression) ?? identifierNode.GetAncestor(NonTerminals.TableCollectionInnerExpression),
+					RootNode = identifierNode.GetAncestor(NonTerminals.Expression) ?? identifierNode.GetAncestor(NonTerminals.TableCollectionInnerExpression) ?? identifierNode.GetAncestor(NonTerminals.PlSqlProcedureCall),
 					Owner = queryBlock,
 					Placement = placement,
 					AnalyticClauseNode = analyticClauseNode,

@@ -739,7 +739,18 @@ namespace SqlPad
 
 		private void ShowFunctionOverloads(object sender, ExecutedRoutedEventArgs args)
 		{
-			var functionOverloads = _codeCompletionProvider.ResolveProgramOverloads(_documentRepository, Editor.CaretOffset);
+			ICollection<FunctionOverloadDescription> functionOverloads;
+
+			try
+			{
+				functionOverloads = _codeCompletionProvider.ResolveProgramOverloads(_documentRepository, Editor.CaretOffset);
+			}
+			catch (Exception exception)
+			{
+				Messages.ShowError(exception.Message);
+				return;
+			}
+			
 			if (functionOverloads.Count == 0)
 			{
 				return;
@@ -989,9 +1000,14 @@ namespace SqlPad
 			}
 			catch (Exception exception)
 			{
-				App.CreateErrorLog(exception);
-				Messages.ShowError(exception.ToString());
+				LogErrorAndShowMesage(exception);
 			}
+		}
+
+		private void LogErrorAndShowMesage(Exception exception)
+		{
+			App.CreateErrorLog(exception);
+			Messages.ShowError(exception.ToString());
 		}
 
 		private void RedrawMultiEditSegments(bool forceRedraw = false)
@@ -1731,8 +1747,7 @@ namespace SqlPad
 				}
 				catch (Exception exception)
 				{
-					App.CreateErrorLog(exception);
-					Messages.ShowError(exception.ToString());
+					LogErrorAndShowMesage(exception);
 				}
 
 				if (toolTip == null)
@@ -1910,8 +1925,7 @@ namespace SqlPad
 			}
 			catch (Exception exception)
 			{
-				App.CreateErrorLog(exception);
-				Messages.ShowError(exception.ToString());
+				LogErrorAndShowMesage(exception);
 				return false;
 			}
 		}
