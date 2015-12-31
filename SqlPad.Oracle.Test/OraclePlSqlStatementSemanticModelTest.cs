@@ -450,7 +450,11 @@ END;";
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
 
 			semanticModel.Programs.Count.ShouldBe(1);
-			var plSqlExceptionReferences = semanticModel.Programs[0].PlSqlExceptionReferences.ToArray();
+			var mainProgram = semanticModel.Programs[0];
+			mainProgram.Exceptions.Count.ShouldBe(1);
+			mainProgram.Exceptions[0].ErrorCode.ShouldBe(null);
+
+			var plSqlExceptionReferences = mainProgram.PlSqlExceptionReferences.ToArray();
 			plSqlExceptionReferences.Length.ShouldBe(4);
 			plSqlExceptionReferences[0].IdentifierNode.Token.Value.ShouldBe("test_exception");
 			plSqlExceptionReferences[0].Exceptions.Count.ShouldBe(1);
@@ -460,6 +464,29 @@ END;";
 			plSqlExceptionReferences[2].Exceptions.Count.ShouldBe(1);
 			plSqlExceptionReferences[3].IdentifierNode.Token.Value.ShouldBe("undefined_exception");
 			plSqlExceptionReferences[3].Exceptions.Count.ShouldBe(0);
+		}
+
+		[Test]
+		public void TestExceptionWithInitPragma()
+		{
+			const string plsqlText =
+@"DECLARE
+	deadlock_detected EXCEPTION;
+	PRAGMA EXCEPTION_INIT(deadlock_detected, -60);
+BEGIN
+    NULL;
+END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
+
+			semanticModel.Programs.Count.ShouldBe(1);
+			semanticModel.Programs[0].Exceptions.Count.ShouldBe(1);
+			var exceptionNoDataFound = semanticModel.Programs[0].Exceptions[0];
+			exceptionNoDataFound.Name.ShouldBe("\"DEADLOCK_DETECTED\"");
+			exceptionNoDataFound.ErrorCode.ShouldBe(-60);
 		}
 	}
 }

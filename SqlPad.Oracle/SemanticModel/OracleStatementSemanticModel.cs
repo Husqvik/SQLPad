@@ -3149,16 +3149,27 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private static OracleColumnReference CreateColumnReference(OracleReferenceContainer container, OracleQueryBlock queryBlock, OracleSelectListColumn selectListColumn, StatementPlacement placement, StatementGrammarNode identifierNode, StatementGrammarNode prefixNonTerminal)
 		{
+			StatementGrammarNode rootNode;
+			if (String.Equals(identifierNode.ParentNode.Id, NonTerminals.IdentifierList) || String.Equals(identifierNode.ParentNode.Id, NonTerminals.ColumnIdentifierChainedList) || String.Equals(identifierNode.Id, Terminals.RowNumberPseudoColumn) || String.Equals(identifierNode.Id, Terminals.Level) || String.Equals(identifierNode.Id, Terminals.User))
+			{
+				rootNode = identifierNode;
+			}
+			else if (String.Equals(identifierNode.Id, Terminals.PlSqlIdentifier))
+			{
+				rootNode = identifierNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.PlSqlAssignmentStatement), NonTerminals.AssignmentStatementTarget);
+			}
+			else
+			{
+				rootNode = identifierNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.AliasedExpressionOrAllTableColumns), NonTerminals.PrefixedColumnReference)
+				           ?? identifierNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.AliasedExpressionOrAllTableColumns), NonTerminals.PrefixedAsterisk)
+				           ?? identifierNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.QueryTableExpression), NonTerminals.TableCollectionInnerExpression)
+				           ?? identifierNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.AliasedExpressionOrAllTableColumns), NonTerminals.Expression);
+			}
+
 			var columnReference =
 				new OracleColumnReference(container)
 				{
-					RootNode =
-						String.Equals(identifierNode.ParentNode.Id, NonTerminals.IdentifierList) || String.Equals(identifierNode.ParentNode.Id, NonTerminals.ColumnIdentifierChainedList) || String.Equals(identifierNode.Id, Terminals.RowNumberPseudoColumn) || String.Equals(identifierNode.Id, Terminals.Level) || String.Equals(identifierNode.Id, Terminals.User)
-							? identifierNode
-							: identifierNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.AliasedExpressionOrAllTableColumns), NonTerminals.PrefixedColumnReference)
-							  ?? identifierNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.AliasedExpressionOrAllTableColumns), NonTerminals.PrefixedAsterisk)
-							  ?? identifierNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.QueryTableExpression), NonTerminals.TableCollectionInnerExpression)
-							  ?? identifierNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.AliasedExpressionOrAllTableColumns), NonTerminals.Expression),
+					RootNode = rootNode,
 					ColumnNode = identifierNode,
 					DatabaseLinkNode = OracleReferenceBuilder.GetDatabaseLinkFromIdentifier(identifierNode),
 					Placement = placement,

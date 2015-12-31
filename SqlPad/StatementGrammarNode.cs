@@ -526,18 +526,18 @@ namespace SqlPad
 			}
 		}
 
-		public static IEnumerable<StatementGrammarNode> GetAllChainedClausesByPath(StatementGrammarNode initialialSearchedClause, Func<StatementGrammarNode, StatementGrammarNode> getChainedRootFunction, params string[] chainNonTerminalIds)
+		public static IEnumerable<StatementGrammarNode> GetAllChainedClausesByPath(StatementGrammarNode initialSearchedClause, Func<StatementGrammarNode, StatementGrammarNode> getChainedRootFunction, params string[] chainNonTerminalIds)
 		{
-			while (initialialSearchedClause != null)
+			while (initialSearchedClause != null)
 			{
-				yield return initialialSearchedClause;
+				yield return initialSearchedClause;
 
 				if (getChainedRootFunction != null)
 				{
-					initialialSearchedClause = getChainedRootFunction(initialialSearchedClause);
+					initialSearchedClause = getChainedRootFunction(initialSearchedClause);
 				}
 
-				initialialSearchedClause = initialialSearchedClause[chainNonTerminalIds];
+				initialSearchedClause = initialSearchedClause[chainNonTerminalIds];
 			}
 		}
 	}

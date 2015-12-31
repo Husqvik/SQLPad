@@ -206,7 +206,8 @@ namespace SqlPad.Oracle.SemanticModel
 				{
 					foreach (var element in elements)
 					{
-						if (String.Equals(element.Name, plSqlReference.NormalizedName))
+						var elementDefinitionIndex = element.DefinitionNode?.SourcePosition.IndexStart;
+						if (String.Equals(element.Name, plSqlReference.NormalizedName) && elementDefinitionIndex < plSqlReference.RootNode.SourcePosition.IndexStart)
 						{
 							resolvedCollection.Add(element);
 						}
@@ -374,73 +375,117 @@ namespace SqlPad.Oracle.SemanticModel
 
 			ResolveProgramDeclarationLabels(program);
 
-			var item1 = programSourceNode?[NonTerminals.ProgramDeclareSection, NonTerminals.ItemList1, NonTerminals.Item1];
+			var item1 = programSourceNode?[NonTerminals.ProgramDeclareSection, NonTerminals.ItemList1];
 			if (item1 == null)
 			{
 				return;
 			}
 
-			var itemDeclarations = StatementGrammarNode.GetAllChainedClausesByPath(item1, n => String.Equals(n.ParentNode.Id, NonTerminals.Item1OrPragmaDefinition) ? n.ParentNode.ParentNode : n.ParentNode, NonTerminals.ItemList1Chained, NonTerminals.Item1OrPragmaDefinition, NonTerminals.Item1).ToArray();
-			foreach (var itemDeclaration in itemDeclarations)
+			var itemOrPragmaNodes = StatementGrammarNode.GetAllChainedClausesByPath(item1, n => String.Equals(n.Id, NonTerminals.Item1OrPragmaDefinition) ? n.ParentNode : n, NonTerminals.ItemList1Chained, NonTerminals.Item1OrPragmaDefinition).ToArray();
+			foreach (var itemOrPragmaSwitchNode in itemOrPragmaNodes)
 			{
-				var declarationRoot = itemDeclaration[0];
-				switch (declarationRoot?.Id)
+				var itemOrPragmaNode = itemOrPragmaSwitchNode[0];
+				if (String.Equals(itemOrPragmaNode.Id, NonTerminals.Item1))
 				{
-					case NonTerminals.ItemDeclaration:
-						var specificNode = declarationRoot[0];
-						if (specificNode != null)
-						{
-							OraclePlSqlVariable variable;
-							switch (specificNode.Id)
+					var declarationRoot = itemOrPragmaNode[0];
+					switch (declarationRoot?.Id)
+					{
+						case NonTerminals.ItemDeclaration:
+							var specificNode = declarationRoot[0];
+							if (specificNode != null)
 							{
-								case NonTerminals.ConstantDeclaration:
-									variable =
-										new OraclePlSqlVariable
-										{
-											IsConstant = true,
-											DefaultExpression = specificNode[NonTerminals.PlSqlExpression]
-										};
-
-									SetDataTypeAndNullablePropertiesAndAddIfIdentifierFound(variable, specificNode, program);
-									break;
-
-								case NonTerminals.ExceptionDeclaration:
-									var exceptionName = specificNode[Terminals.ExceptionIdentifier]?.Token.Value.ToQuotedIdentifier();
-									if (exceptionName != null)
-									{
-										var exception = new OraclePlSqlException { Name = exceptionName };
-										program.Exceptions.Add(exception);
-									}
-
-									break;
-
-								case NonTerminals.VariableDeclaration:
-									specificNode = specificNode[NonTerminals.FieldDefinition];
-									if (specificNode != null)
-									{
+								OraclePlSqlVariable variable;
+								switch (specificNode.Id)
+								{
+									case NonTerminals.ConstantDeclaration:
 										variable =
 											new OraclePlSqlVariable
 											{
-												DefaultExpression = specificNode[NonTerminals.VariableDeclarationDefaultValue, NonTerminals.PlSqlExpression],
+												DefinitionNode = specificNode,
+												IsConstant = true,
+												DefaultExpression = specificNode[NonTerminals.PlSqlExpression]
 											};
 
 										SetDataTypeAndNullablePropertiesAndAddIfIdentifierFound(variable, specificNode, program);
-									}
+										break;
 
-									break;
+									case NonTerminals.ExceptionDeclaration:
+										var exceptionName = specificNode[Terminals.ExceptionIdentifier]?.Token.Value.ToQuotedIdentifier();
+										if (exceptionName != null)
+										{
+											var exception =
+												new OraclePlSqlException
+												{
+													Name = exceptionName,
+													DefinitionNode = specificNode
+												};
+
+											program.Exceptions.Add(exception);
+										}
+
+										break;
+
+									case NonTerminals.VariableDeclaration:
+										specificNode = specificNode[NonTerminals.FieldDefinition];
+										if (specificNode != null)
+										{
+											variable =
+												new OraclePlSqlVariable
+												{
+													DefinitionNode = specificNode,
+													DefaultExpression = specificNode[NonTerminals.VariableDeclarationDefaultValue, NonTerminals.PlSqlExpression],
+												};
+
+											SetDataTypeAndNullablePropertiesAndAddIfIdentifierFound(variable, specificNode, program);
+										}
+
+										break;
+								}
 							}
-						}
 
-						break;
+							break;
 
-					case NonTerminals.TypeDefinition:
-						var typeIdentifierNode = declarationRoot[Terminals.TypeIdentifier];
-						if (typeIdentifierNode != null)
+						case NonTerminals.TypeDefinition:
+							var typeIdentifierNode = declarationRoot[Terminals.TypeIdentifier];
+							if (typeIdentifierNode != null)
+							{
+								var type =
+									new OraclePlSqlType
+									{
+										DefinitionNode = declarationRoot,
+										Name = typeIdentifierNode.Token.Value.ToQuotedIdentifier()
+									};
+
+								program.Types.Add(type);
+							}
+
+							break;
+					}
+				}
+				else
+				{
+					var exceptionInit = itemOrPragmaNode[NonTerminals.PragmaType, Terminals.ExceptionInit];
+					if (exceptionInit != null)
+					{
+						var exceptionIdentifier = exceptionInit.ParentNode[Terminals.ExceptionIdentifier];
+						var errorCodeModifier = exceptionInit.ParentNode[Terminals.MathMinus] == null ? 1 : -1;
+						var integerLiteral = exceptionInit.ParentNode[Terminals.IntegerLiteral];
+
+						int errorCode;
+						if (exceptionIdentifier != null && integerLiteral != null && Int32.TryParse(integerLiteral.Token.Value, out errorCode))
 						{
-							program.Types.Add(new OraclePlSqlType { Name = typeIdentifierNode.Token.Value.ToQuotedIdentifier() });
-						}
+							var exceptionName = exceptionIdentifier.Token.Value.ToQuotedIdentifier();
+							foreach (var exception in program.Exceptions)
+							{
+								if (String.Equals(exception.Name, exceptionName))
+								{
+									exception.ErrorCode = errorCodeModifier * errorCode;
+								}
+							}
 
-						break;
+							CreatePlSqlExceptionReference(program, integerLiteral.ParentNode);
+						}
+					}
 				}
 			}
 		}
@@ -474,6 +519,7 @@ namespace SqlPad.Oracle.SemanticModel
 					var label =
 						new OraclePlSqlLabel
 						{
+							DefinitionNode = labelIdentifier.ParentNode,
 							Name = labelIdentifier.Token.Value.ToQuotedIdentifier(),
 							Node = labelIdentifier.ParentNode
 						};
@@ -518,6 +564,7 @@ namespace SqlPad.Oracle.SemanticModel
 				program.ReturnParameter =
 					new OraclePlSqlParameter
 					{
+						DefinitionNode = parameterSourceNode,
 						Direction = ParameterDirection.ReturnValue,
 						Nullable = true,
 						DataTypeNode = returnParameterNode
@@ -530,6 +577,7 @@ namespace SqlPad.Oracle.SemanticModel
 			var parameter =
 				new OraclePlSqlParameter
 				{
+					DefinitionNode = parameterDeclaration,
 					Name = parameterDeclaration[Terminals.ParameterIdentifier].Token.Value.ToQuotedIdentifier()
 				};
 
@@ -629,6 +677,8 @@ namespace SqlPad.Oracle.SemanticModel
 	public abstract class OraclePlSqlElement
 	{
 		public string Name { get; set; }
+
+		public StatementGrammarNode DefinitionNode { get; set; }
 	}
 
 	public class OraclePlSqlException : OraclePlSqlElement

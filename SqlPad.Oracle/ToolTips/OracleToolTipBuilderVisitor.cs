@@ -328,7 +328,7 @@ namespace SqlPad.Oracle.ToolTips
 				new ColumnDetailsModel
 				{
 					Owner = columnOwner.ToString(),
-					Name = columnReference.Name.ToSimpleIdentifier(),
+					Name = OracleCodeCompletionProvider.GetPrettyColumnName(columnReference.ColumnDescription.Name),
 					Nullable = columnReference.ColumnDescription.Nullable,
 					Invisible = columnReference.ColumnDescription.Hidden,
 					Virtual = columnReference.ColumnDescription.Virtual,

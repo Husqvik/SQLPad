@@ -1106,6 +1106,24 @@ END;";
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestPlSqlExceptionReferenceWithExceptionInitPragmaTooltip()
+		{
+			const string query =
+@"DECLARE
+	deadlock_detected EXCEPTION;
+	PRAGMA EXCEPTION_INIT(deadlock_detected, -60);
+BEGIN
+    NULL;
+END;";
+
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 63);
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("Exception DEADLOCK_DETECTED (Error code -60)");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestTooltipOverExplicitColumnListInCommonTableExpression()
 		{
 			const string query =
