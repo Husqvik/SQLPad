@@ -1126,6 +1126,15 @@ namespace SqlPad.Oracle
 						new NodeValidationData { Node = variableReference.IdentifierNode };
 				}
 			}
+
+			foreach (var exceptionReference in referenceContainer.PlSqlExceptionReferences)
+			{
+				if (exceptionReference.Exceptions.Count == 0)
+				{
+					validationModel.IdentifierNodeValidity[exceptionReference.IdentifierNode] =
+						new NodeValidationData { Node = exceptionReference.IdentifierNode };
+				}
+			}
 		}
 
 		private static void ValidatePriorOperators(OracleValidationModel validationModel, IEnumerable<StatementGrammarNode> terminals)

@@ -33,6 +33,8 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public ICollection<OraclePlSqlVariableReference> PlSqlVariableReferences { get; } = new List<OraclePlSqlVariableReference>();
 
+		public ICollection<OraclePlSqlExceptionReference> PlSqlExceptionReferences { get; } = new List<OraclePlSqlExceptionReference>();
+
 		public IEnumerable<OracleReference> AllReferences
 		{
 			get
@@ -44,6 +46,7 @@ namespace SqlPad.Oracle.SemanticModel
 					.Concat(DataTypeReferences)
 					.Concat(ObjectReferences)
 					.Concat(PlSqlVariableReferences)
+					.Concat(PlSqlExceptionReferences)
 					.Concat(ObjectReferences.Where(r => r.PartitionReference != null).Select(r => r.PartitionReference));
 			}
 		}

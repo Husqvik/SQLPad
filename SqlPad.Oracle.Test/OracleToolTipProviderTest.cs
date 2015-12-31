@@ -1088,12 +1088,12 @@ END;";
 			toolTip.Control.DataContext.ShouldBe("Constant TEST_CONSTANT: VARCHAR2(255) NOT NULL = 'This' || ' is ' || 'value'");
 		}
 
-		[Test(Description = @""), STAThread, Ignore]
+		[Test(Description = @""), STAThread]
 		public void TestPlSqlExceptionReferenceTooltip()
 		{
 			const string query =
 @"DECLARE
-    EXCEPTION test_exception;
+    test_exception EXCEPTION;
 BEGIN
     RAISE test_exception;
 END;";
@@ -1102,7 +1102,7 @@ END;";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 57);
 			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
-			toolTip.Control.DataContext.ShouldBe("EXCEPTION TEST_EXCEPTION");
+			toolTip.Control.DataContext.ShouldBe("Exception TEST_EXCEPTION");
 		}
 
 		[Test(Description = @""), STAThread]

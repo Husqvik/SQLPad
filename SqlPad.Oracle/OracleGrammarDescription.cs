@@ -1091,6 +1091,7 @@ namespace SqlPad.Oracle
 			public const string Prefix = "Prefix";
 			public const string PrefixedAsterisk = "PrefixedAsterisk";
 			public const string PrefixedColumnReference = "PrefixedColumnReference";
+			public const string PrefixedExceptionIdentifier = "PrefixedExceptionIdentifier";
 			public const string PrefixedProgramIdentifier = "PrefixedProgramIdentifier";
 			public const string PrefixedUpdatedColumnReference = "PrefixedUpdatedColumnReference";
 			public const string PreserveTable = "PreserveTable";

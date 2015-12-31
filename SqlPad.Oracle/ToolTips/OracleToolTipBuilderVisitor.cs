@@ -239,14 +239,14 @@ namespace SqlPad.Oracle.ToolTips
 			BuildSimpleToolTip(dataTypeReference.SchemaObject);
 		}
 
-		public void VisitPlSqlVariableReference(OraclePlSqlVariableReference plSqlVariableReference)
+		public void VisitPlSqlVariableReference(OraclePlSqlVariableReference variableReference)
 		{
-			if (plSqlVariableReference.Variables.Count != 1)
+			if (variableReference.Variables.Count != 1)
 			{
 				return;
 			}
 
-			var element = plSqlVariableReference.Variables.First();
+			var element = variableReference.Variables.First();
 			var labelNullable = String.Empty;
 			var labelVariableType = String.Empty;
 			var labelDataType = String.Empty;
@@ -261,7 +261,7 @@ namespace SqlPad.Oracle.ToolTips
 					var parameter = (OraclePlSqlParameter)element;
 					labelNullable = "NULL";
 					labelDataType = GetDataTypeFromNode(parameter);
-					labelDefaultExpression = GetDefaultExpression(plSqlVariableReference.PlSqlProgram, parameter);
+					labelDefaultExpression = GetDefaultExpression(variableReference.PlSqlProgram, parameter);
 					break;
 
 				case nameof(OraclePlSqlVariable):
@@ -269,26 +269,39 @@ namespace SqlPad.Oracle.ToolTips
 					labelVariableType = variable.IsConstant ? "Constant" : "Variable";
 					labelNullable = variable.Nullable ? "NULL" : "NOT NULL";
 					labelDataType = GetDataTypeFromNode(variable);
-					labelDefaultExpression = GetDefaultExpression(plSqlVariableReference.PlSqlProgram, variable);
+					labelDefaultExpression = GetDefaultExpression(variableReference.PlSqlProgram, variable);
 					break;
 
 				case nameof(OraclePlSqlType):
 					labelVariableType = "Type";
 					break;
-
-				case nameof(OraclePlSqlException):
-					labelVariableType = "Exception";
-					break;
 			}
 
-			var defaultExpressionPostFix = String.IsNullOrEmpty(labelDefaultExpression)
+			var defaultExpressionPostfix = String.IsNullOrEmpty(labelDefaultExpression)
 				? String.Empty
 				: $"= {labelDefaultExpression}";
 
 			ToolTip =
 				new ToolTipObject
 				{
-					DataContext = $"{labelVariableType} {element.Name.ToSimpleIdentifier()}: {labelDataType} {labelNullable} {defaultExpressionPostFix}".Trim()
+					DataContext = $"{labelVariableType} {element.Name.ToSimpleIdentifier()}: {labelDataType} {labelNullable} {defaultExpressionPostfix}".TrimEnd()
+				};
+		}
+
+		public void VisitPlSqlExceptionReference(OraclePlSqlExceptionReference exceptionReference)
+		{
+			if (exceptionReference.Exceptions.Count != 1)
+			{
+				return;
+			}
+
+			var exception = exceptionReference.Exceptions.First();
+			var initializationPostfix = exception.ErrorCode.HasValue ? $"(Error code {exception.ErrorCode})" : null;
+
+			ToolTip =
+				new ToolTipObject
+				{
+					DataContext = $"Exception {exception.Name.ToSimpleIdentifier()} {initializationPostfix}".TrimEnd()
 				};
 		}
 

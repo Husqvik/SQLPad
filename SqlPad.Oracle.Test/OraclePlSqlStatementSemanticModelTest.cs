@@ -40,7 +40,7 @@ namespace SqlPad.Oracle.Test
 	IS
 		test_variable3 VARCHAR2(100) NOT NULL DEFAULT 'value3';
 	BEGIN
-		NULL;
+		test_variable3 := 'modified value3';
 	END;
 
 	FUNCTION TEST_INNER_FUNCTION(p1 test_table_type) RETURN NUMBER
@@ -54,6 +54,8 @@ namespace SqlPad.Oracle.Test
 		END;
 	BEGIN
 		SELECT dummy INTO x FROM DUAL;
+		RAISE test_exception1;
+		EXCEPTION WHEN test_exception1 THEN NULL;
 	END;
 BEGIN
 	dbms_output.put_line(item => test_constant1);
@@ -110,6 +112,8 @@ END;";
 			mainProgram.Variables[2].Nullable.ShouldBe(false);
 			mainProgram.Variables[2].DefaultExpression.ShouldNotBe(null);
 			mainProgram.Exceptions.Count.ShouldBe(0);
+			mainProgram.PlSqlVariableReferences.Count.ShouldBe(1);
+			mainProgram.PlSqlExceptionReferences.Count.ShouldBe(0);
 			mainProgram.Types.Count.ShouldBe(2);
 			mainProgram.Types[0].Name.ShouldBe("\"TEST_TYPE1\"");
 			mainProgram.Types[1].Name.ShouldBe("\"TEST_TABLE_TYPE1\"");
@@ -137,6 +141,8 @@ END;";
 			mainProgram.SubPrograms[0].Variables[0].Nullable.ShouldBe(false);
 			mainProgram.SubPrograms[0].Variables[0].DefaultExpression.ShouldNotBe(null);
 			mainProgram.SubPrograms[0].Exceptions.Count.ShouldBe(0);
+			mainProgram.SubPrograms[0].PlSqlVariableReferences.Count.ShouldBe(1);
+			mainProgram.SubPrograms[0].PlSqlExceptionReferences.Count.ShouldBe(0);
 			mainProgram.SubPrograms[0].Types.Count.ShouldBe(0);
 			mainProgram.SubPrograms[0].SubPrograms.Count.ShouldBe(0);
 			mainProgram.SubPrograms[0].ChildModels.Count.ShouldBe(0);
@@ -154,6 +160,9 @@ END;";
 			mainProgram.SubPrograms[1].Variables.Count.ShouldBe(0);
 			mainProgram.SubPrograms[1].Exceptions.Count.ShouldBe(1);
 			mainProgram.SubPrograms[1].Exceptions[0].Name.ShouldBe("\"TEST_EXCEPTION1\"");
+			mainProgram.SubPrograms[1].PlSqlExceptionReferences.Count.ShouldBe(2);
+			mainProgram.SubPrograms[1].PlSqlExceptionReferences.ForEach(r => r.Name.ShouldBe("test_exception1"));
+			mainProgram.SubPrograms[1].PlSqlVariableReferences.Count.ShouldBe(0);
 			mainProgram.SubPrograms[1].Types.Count.ShouldBe(0);
 			mainProgram.SubPrograms[1].SubPrograms.Count.ShouldBe(1);
 			mainProgram.SubPrograms[1].ChildModels.Count.ShouldBe(1);
@@ -166,6 +175,8 @@ END;";
 			mainProgram.SubPrograms[1].SubPrograms[0].ReturnParameter.ShouldBe(null);
 			mainProgram.SubPrograms[1].SubPrograms[0].Variables.Count.ShouldBe(0);
 			mainProgram.SubPrograms[1].SubPrograms[0].Exceptions.Count.ShouldBe(0);
+			mainProgram.SubPrograms[1].SubPrograms[0].PlSqlVariableReferences.Count.ShouldBe(0);
+			mainProgram.SubPrograms[1].SubPrograms[0].PlSqlExceptionReferences.Count.ShouldBe(0);
 			mainProgram.SubPrograms[1].SubPrograms[0].Types.Count.ShouldBe(0);
 			mainProgram.SubPrograms[1].SubPrograms[0].SubPrograms.Count.ShouldBe(0);
 			mainProgram.SubPrograms[1].SubPrograms[0].ChildModels.Count.ShouldBe(1);
@@ -377,7 +388,7 @@ END;";
 IS
     dummy VARCHAR2(2);
 BEGIN
-    SELECT dummy INTO dummy FROM dual WHERE dummy = test_procedure.dummy OR dummy = non_existing_scope.dummy;
+    SELECT dummy INTO dummy FROM dual WHERE dummy = test_procedure.dummy OR dummy = undefined_scope.dummy;
 END;";
 
 			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
@@ -390,7 +401,7 @@ END;";
 			plSqlVariableReferences.Length.ShouldBe(2);
 			plSqlVariableReferences[0].ObjectNode.Token.Value.ShouldBe("test_procedure");
 			plSqlVariableReferences[0].Variables.Count.ShouldBe(1);
-			plSqlVariableReferences[1].ObjectNode.Token.Value.ShouldBe("non_existing_scope");
+			plSqlVariableReferences[1].ObjectNode.Token.Value.ShouldBe("undefined_scope");
 			plSqlVariableReferences[1].Variables.Count.ShouldBe(0);
 		}
 
@@ -402,7 +413,7 @@ END;";
 DECLARE
     dummy VARCHAR2(2);
 BEGIN
-    SELECT dummy INTO dummy FROM dual WHERE dummy = test_plsql_block.dummy OR dummy = non_existing_scope.dummy;
+    SELECT dummy INTO dummy FROM dual WHERE dummy = test_plsql_block.dummy OR dummy = undefined_scope.dummy;
 END;";
 
 			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
@@ -415,8 +426,40 @@ END;";
 			plSqlVariableReferences.Length.ShouldBe(2);
 			plSqlVariableReferences[0].ObjectNode.Token.Value.ShouldBe("test_plsql_block");
 			plSqlVariableReferences[0].Variables.Count.ShouldBe(1);
-			plSqlVariableReferences[1].ObjectNode.Token.Value.ShouldBe("non_existing_scope");
+			plSqlVariableReferences[1].ObjectNode.Token.Value.ShouldBe("undefined_scope");
 			plSqlVariableReferences[1].Variables.Count.ShouldBe(0);
+		}
+
+		[Test]
+		public void TestExceptionReferences()
+		{
+			const string plsqlText =
+@"DECLARE
+    test_exception EXCEPTION;
+BEGIN
+    RAISE test_exception;
+    RAISE undefined_exception;
+    EXCEPTION
+    	WHEN test_exception OR undefined_exception THEN NULL;
+    	WHEN OTHERS THEN NULL;
+END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
+
+			semanticModel.Programs.Count.ShouldBe(1);
+			var plSqlExceptionReferences = semanticModel.Programs[0].PlSqlExceptionReferences.ToArray();
+			plSqlExceptionReferences.Length.ShouldBe(4);
+			plSqlExceptionReferences[0].IdentifierNode.Token.Value.ShouldBe("test_exception");
+			plSqlExceptionReferences[0].Exceptions.Count.ShouldBe(1);
+			plSqlExceptionReferences[1].IdentifierNode.Token.Value.ShouldBe("undefined_exception");
+			plSqlExceptionReferences[1].Exceptions.Count.ShouldBe(0);
+			plSqlExceptionReferences[2].IdentifierNode.Token.Value.ShouldBe("test_exception");
+			plSqlExceptionReferences[2].Exceptions.Count.ShouldBe(1);
+			plSqlExceptionReferences[3].IdentifierNode.Token.Value.ShouldBe("undefined_exception");
+			plSqlExceptionReferences[3].Exceptions.Count.ShouldBe(0);
 		}
 	}
 }

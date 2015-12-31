@@ -24,7 +24,9 @@ namespace SqlPad.Oracle.SemanticModel
 
 		void VisitDataTypeReference(OracleDataTypeReference dataTypeReference);
 
-		void VisitPlSqlVariableReference(OraclePlSqlVariableReference plSqlVariableReference);
+		void VisitPlSqlVariableReference(OraclePlSqlVariableReference variableReference);
+
+		void VisitPlSqlExceptionReference(OraclePlSqlExceptionReference exceptionReference);
 	}
 
 	public class OracleColumnBuilderVisitor : IOracleReferenceVisitor
@@ -154,7 +156,12 @@ namespace SqlPad.Oracle.SemanticModel
 			throw new NotSupportedException();
 		}
 
-		public void VisitPlSqlVariableReference(OraclePlSqlVariableReference plSqlVariableReference)
+		public void VisitPlSqlVariableReference(OraclePlSqlVariableReference variableReference)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void VisitPlSqlExceptionReference(OraclePlSqlExceptionReference exceptionReference)
 		{
 			throw new NotSupportedException();
 		}

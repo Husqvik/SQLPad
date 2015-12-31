@@ -14774,9 +14774,17 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Raise" />
-          <NonTerminal Id="Prefix" IsOptional="true" />
-          <Terminal Id="ExceptionIdentifier" IsOptional="true" />
+          <NonTerminal Id="PrefixedExceptionIdentifier" IsOptional="true" />
           <Terminal Id="Semicolon" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="PrefixedExceptionIdentifier">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="Prefix" IsOptional="true" />
+          <Terminal Id="ExceptionIdentifier" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -14922,8 +14930,7 @@
     <Rule StartingNonTerminal="ExceptionIdentifierList">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="Prefix" IsOptional="true" />
-          <Terminal Id="ExceptionIdentifier" />
+          <NonTerminal Id="PrefixedExceptionIdentifier" />
           <NonTerminal Id="ExceptionIdentifierListChained" IsOptional="true" />
         </Sequence>
       </Sequences>
