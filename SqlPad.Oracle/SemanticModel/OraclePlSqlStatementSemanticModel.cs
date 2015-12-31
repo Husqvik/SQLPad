@@ -375,13 +375,13 @@ namespace SqlPad.Oracle.SemanticModel
 
 			ResolveProgramDeclarationLabels(program);
 
-			var item1 = programSourceNode?[NonTerminals.ProgramDeclareSection, NonTerminals.ItemList1];
-			if (item1 == null)
+			var firstItemNode = programSourceNode?[NonTerminals.ProgramDeclareSection, NonTerminals.ItemList1, NonTerminals.Item1OrPragmaDefinition];
+			if (firstItemNode == null)
 			{
 				return;
 			}
 
-			var itemOrPragmaNodes = StatementGrammarNode.GetAllChainedClausesByPath(item1, n => String.Equals(n.Id, NonTerminals.Item1OrPragmaDefinition) ? n.ParentNode : n, NonTerminals.ItemList1Chained, NonTerminals.Item1OrPragmaDefinition).ToArray();
+			var itemOrPragmaNodes = StatementGrammarNode.GetAllChainedClausesByPath(firstItemNode, n => n.ParentNode, NonTerminals.ItemList1Chained, NonTerminals.Item1OrPragmaDefinition);
 			foreach (var itemOrPragmaSwitchNode in itemOrPragmaNodes)
 			{
 				var itemOrPragmaNode = itemOrPragmaSwitchNode[0];
@@ -492,7 +492,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private static void SetDataTypeAndNullablePropertiesAndAddIfIdentifierFound(OraclePlSqlVariable variable, StatementGrammarNode variableNode, OraclePlSqlProgram program)
 		{
-			var identifierNode = variableNode[Terminals.Identifier];
+			var identifierNode = variableNode[Terminals.PlSqlIdentifier];
 			if (identifierNode == null)
 			{
 				return;

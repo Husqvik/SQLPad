@@ -488,5 +488,50 @@ END;";
 			exceptionNoDataFound.Name.ShouldBe("\"DEADLOCK_DETECTED\"");
 			exceptionNoDataFound.ErrorCode.ShouldBe(-60);
 		}
+
+		[Test]
+		public void TestPragmaExceptionInitBeforeExceptionDeclaration()
+		{
+			const string plsqlText =
+@"DECLARE
+	PRAGMA EXCEPTION_INIT(deadlock_detected, -60);
+	deadlock_detected EXCEPTION;
+BEGIN
+    NULL;
+END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
+
+			semanticModel.Programs.Count.ShouldBe(1);
+			semanticModel.Programs[0].PlSqlExceptionReferences.Count.ShouldBe(1);
+			var exceptionReference = semanticModel.Programs[0].PlSqlExceptionReferences.First();
+			exceptionReference.Exceptions.Count.ShouldBe(0);
+		}
+
+		[Test]
+		public void TestModelBuildWithNestedPlSqlBlocks()
+		{
+			const string plsqlText =
+@"DECLARE
+	x NUMBER;
+BEGIN
+	DECLARE
+		x NUMBER;
+	BEGIN
+		x := 1;
+	END;
+END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
+
+			semanticModel.Programs.Count.ShouldBe(1);
+			semanticModel.Programs[0].SubPrograms.Count.ShouldBe(1);
+		}
 	}
 }

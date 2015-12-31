@@ -12917,7 +12917,7 @@
     <Rule StartingNonTerminal="ItemList1">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="Item1" />
+          <NonTerminal Id="Item1OrPragmaDefinition" />
           <NonTerminal Id="ItemList1Chained" IsOptional="true" />
         </Sequence>
       </Sequences>
@@ -13179,7 +13179,7 @@
     <Rule StartingNonTerminal="FieldDefinition">
       <Sequences>
         <Sequence>
-          <Terminal Id="Identifier" />
+          <Terminal Id="PlSqlIdentifier" />
           <NonTerminal Id="PlSqlDataType" />
           <NonTerminal Id="NotNull" IsOptional="true" />
           <NonTerminal Id="VariableDeclarationDefaultValue" IsOptional="true" />
@@ -13218,7 +13218,7 @@
     <Rule StartingNonTerminal="ConstantDeclaration">
       <Sequences>
         <Sequence>
-          <Terminal Id="Identifier" />
+          <Terminal Id="PlSqlIdentifier" />
           <Terminal Id="Constant" />
           <NonTerminal Id="PlSqlDataType" />
           <NonTerminal Id="NotNull" IsOptional="true" />
