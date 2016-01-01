@@ -1143,6 +1143,24 @@ END;";
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestSqlToolTipInNestedPlSqlBlock()
+		{
+			const string plSqlCode =
+@"BEGIN
+	BEGIN
+		FOR implicit_cursor IN (SELECT dummy FROM dual) LOOP
+			NULL;
+		END LOOP;
+	END;
+END;";
+
+			_documentRepository.UpdateStatements(plSqlCode);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 59);
+			toolTip.ShouldNotBe(null);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestTooltipOverExplicitColumnListInCommonTableExpression()
 		{
 			const string query =

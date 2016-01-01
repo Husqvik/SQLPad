@@ -3156,7 +3156,8 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 			else if (String.Equals(identifierNode.Id, Terminals.PlSqlIdentifier))
 			{
-				rootNode = identifierNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.PlSqlAssignmentStatement), NonTerminals.AssignmentStatementTarget);
+				rootNode = identifierNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.PlSqlAssignmentStatement), NonTerminals.AssignmentStatementTarget)
+					?? identifierNode;
 			}
 			else
 			{

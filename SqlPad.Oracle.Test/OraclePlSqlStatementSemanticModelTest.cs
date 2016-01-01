@@ -532,6 +532,36 @@ END;";
 
 			semanticModel.Programs.Count.ShouldBe(1);
 			semanticModel.Programs[0].SubPrograms.Count.ShouldBe(1);
+			semanticModel.Programs[0].SubPrograms[0].PlSqlVariableReferences.Count.ShouldBe(1);
+			var variableReference = semanticModel.Programs[0].SubPrograms[0].PlSqlVariableReferences.First();
+			variableReference.Variables.Count.ShouldBe(1);
+			var referredVariable = variableReference.Variables.First();
+			semanticModel.Programs[0].SubPrograms[0].Variables.ShouldContain(referredVariable);
+		}
+
+		[Test]
+		public void TestVariableReferenceInNestedPlSqlBlock()
+		{
+			const string plsqlText =
+@"DECLARE
+	test_variable VARCHAR2(1);
+BEGIN
+	BEGIN
+		test_variable := NULL;
+	END;
+END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
+
+			semanticModel.Programs[0].PlSqlVariableReferences.Count.ShouldBe(0);
+			semanticModel.Programs[0].SubPrograms[0].PlSqlVariableReferences.Count.ShouldBe(1);
+			var variableReference = semanticModel.Programs[0].SubPrograms[0].PlSqlVariableReferences.First();
+			variableReference.Variables.Count.ShouldBe(1);
+			var referredVariable = variableReference.Variables.First();
+			semanticModel.Programs[0].Variables.ShouldContain(referredVariable);
 		}
 
 		[Test]
