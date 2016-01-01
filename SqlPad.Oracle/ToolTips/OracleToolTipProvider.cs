@@ -143,6 +143,7 @@ namespace SqlPad.Oracle.ToolTips
 					case Terminals.XmlRoot:
 					case Terminals.PlSqlIdentifier:
 					case Terminals.ExceptionIdentifier:
+					case Terminals.CursorIdentifier:
 					case Terminals.Identifier:
 						var reference = semanticModel.GetColumnReference(node)
 							?? semanticModel.GetProgramReference(node)

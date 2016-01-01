@@ -1056,14 +1056,14 @@ SELECT * FROM sampleData";
 		[Test(Description = @""), STAThread]
 		public void TestPlSqlVariableReferenceTooltip()
 		{
-			const string query =
+			const string plSqlCode =
 @"DECLARE
     test_variable VARCHAR2(255) := 'This' || ' is ' || 'value';
 BEGIN
     test_variable := NULL;
 END;";
 
-			_documentRepository.UpdateStatements(query);
+			_documentRepository.UpdateStatements(plSqlCode);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 85);
 			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
@@ -1074,14 +1074,14 @@ END;";
 		[Test(Description = @""), STAThread]
 		public void TestPlSqlConstantReferenceTooltip()
 		{
-			const string query =
+			const string plSqlCode =
 @"DECLARE
     test_constant CONSTANT VARCHAR2(255) NOT NULL := 'This' || ' is ' || 'value';
 BEGIN
     test_constant := NULL;
 END;";
 
-			_documentRepository.UpdateStatements(query);
+			_documentRepository.UpdateStatements(plSqlCode);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 103);
 			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
@@ -1089,16 +1089,35 @@ END;";
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestPlSqlCursorReferenceTooltipInNestedPlSqlBlock()
+		{
+			const string plSqlCode =
+@"DECLARE
+	CURSOR test_cursor IS SELECT dummy FROM dual;
+BEGIN
+	BEGIN
+		OPEN test_cursor;
+	END;
+END;";
+
+			_documentRepository.UpdateStatements(plSqlCode);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 79);
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("Cursor TEST_CURSOR: SELECT dummy FROM dual");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestPlSqlExceptionReferenceTooltip()
 		{
-			const string query =
+			const string plSqlCode =
 @"DECLARE
     test_exception EXCEPTION;
 BEGIN
     RAISE test_exception;
 END;";
 
-			_documentRepository.UpdateStatements(query);
+			_documentRepository.UpdateStatements(plSqlCode);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 57);
 			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
@@ -1108,7 +1127,7 @@ END;";
 		[Test(Description = @""), STAThread]
 		public void TestPlSqlExceptionReferenceWithExceptionInitPragmaTooltip()
 		{
-			const string query =
+			const string plSqlCode =
 @"DECLARE
 	deadlock_detected EXCEPTION;
 	PRAGMA EXCEPTION_INIT(deadlock_detected, -60);
@@ -1116,7 +1135,7 @@ BEGIN
     NULL;
 END;";
 
-			_documentRepository.UpdateStatements(query);
+			_documentRepository.UpdateStatements(plSqlCode);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 63);
 			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();

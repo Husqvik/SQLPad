@@ -533,5 +533,69 @@ END;";
 			semanticModel.Programs.Count.ShouldBe(1);
 			semanticModel.Programs[0].SubPrograms.Count.ShouldBe(1);
 		}
+
+		[Test]
+		public void TestImplicitAndExplicitCursors()
+		{
+			const string plsqlText =
+@"DECLARE
+	CURSOR test_cursor IS SELECT dummy FROM dual;
+	x VARCHAR2(1);
+BEGIN
+	OPEN test_cursor;
+	FETCH test_cursor INTO x;
+	CLOSE test_cursor;
+	
+	FOR implicit_cursor IN (SELECT dummy FROM dual) LOOP
+		x := implicit_cursor.dummy;
+	END LOOP;
+END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
+
+			semanticModel.Programs.Count.ShouldBe(1);
+			var mainProgram = semanticModel.Programs[0];
+			mainProgram.Variables.Count.ShouldBe(2);
+			mainProgram.Variables[0].Name.ShouldBe("\"TEST_CURSOR\"");
+			mainProgram.Variables[0].ShouldBeTypeOf<OraclePlSqlCursorVariable>();
+			var cursorVariable = (OraclePlSqlCursorVariable)mainProgram.Variables[0];
+			cursorVariable.SemanticModel.ShouldNotBe(null);
+		}
+
+		[Test]
+		public void TestOpenExplicitStaticCursorReferences()
+		{
+			const string plsqlText =
+@"DECLARE
+	CURSOR test_cursor IS SELECT dummy FROM dual;
+BEGIN
+	OPEN test_cursor;
+	BEGIN
+		OPEN test_cursor;
+	END;
+END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
+
+			semanticModel.Programs.Count.ShouldBe(1);
+			var mainProgram = semanticModel.Programs[0];
+			mainProgram.Variables.Count.ShouldBe(1);
+			mainProgram.Variables[0].Name.ShouldBe("\"TEST_CURSOR\"");
+			mainProgram.PlSqlVariableReferences.Count.ShouldBe(1);
+			var cursorReference = mainProgram.PlSqlVariableReferences.First();
+			cursorReference.Variables.Count.ShouldBe(1);
+
+			mainProgram.SubPrograms.Count.ShouldBe(1);
+			var subProgram = mainProgram.SubPrograms[0];
+			subProgram.PlSqlVariableReferences.Count.ShouldBe(1);
+			cursorReference = subProgram.PlSqlVariableReferences.First();
+			cursorReference.Variables.Count.ShouldBe(1);
+		}
 	}
 }

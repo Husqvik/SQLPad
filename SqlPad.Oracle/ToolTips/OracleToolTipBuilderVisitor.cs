@@ -247,45 +247,49 @@ namespace SqlPad.Oracle.ToolTips
 			}
 
 			var element = variableReference.Variables.First();
-			var labelNullable = String.Empty;
-			var labelVariableType = String.Empty;
-			var labelDataType = String.Empty;
-			var labelDefaultExpression = String.Empty;
+			var labelBuilder = new ToolTipLabelBuilder();
 
 			var elementTypeName = element.GetType().Name;
 			switch (elementTypeName)
 			{
 				case nameof(OraclePlSqlParameter):
-					labelVariableType = "Parameter";
-
 					var parameter = (OraclePlSqlParameter)element;
-					labelNullable = "NULL";
-					labelDataType = GetDataTypeFromNode(parameter);
-					labelDefaultExpression = GetDefaultExpression(variableReference.PlSqlProgram, parameter);
+					labelBuilder.AddElement("Parameter");
+					labelBuilder.AddElement($"{element.Name.ToSimpleIdentifier()}:");
+					labelBuilder.AddElement(GetDataTypeFromNode(parameter));
+					labelBuilder.AddElement("NULL");
+					labelBuilder.AddElement(GetDefaultExpression(variableReference.PlSqlProgram, parameter), "= ");
 					break;
 
 				case nameof(OraclePlSqlVariable):
 					var variable = (OraclePlSqlVariable)element;
-					labelVariableType = variable.IsConstant ? "Constant" : "Variable";
-					labelNullable = variable.Nullable ? "NULL" : "NOT NULL";
-					labelDataType = GetDataTypeFromNode(variable);
-					labelDefaultExpression = GetDefaultExpression(variableReference.PlSqlProgram, variable);
+					labelBuilder.AddElement(variable.IsConstant ? "Constant" : "Variable");
+					labelBuilder.AddElement($"{element.Name.ToSimpleIdentifier()}:");
+					labelBuilder.AddElement(GetDataTypeFromNode(variable));
+					labelBuilder.AddElement(variable.Nullable ? "NULL" : "NOT NULL");
+					labelBuilder.AddElement(GetDefaultExpression(variableReference.PlSqlProgram, variable), "= ");
 					break;
 
 				case nameof(OraclePlSqlType):
-					labelVariableType = "Type";
+					labelBuilder.AddElement("Type");
+					labelBuilder.AddElement($"{element.Name.ToSimpleIdentifier()}:");
+					break;
+
+				case nameof(OraclePlSqlCursorVariable):
+					labelBuilder.AddElement("Cursor");
+					labelBuilder.AddElement($"{element.Name.ToSimpleIdentifier()}:");
+
+					var cursor = (OraclePlSqlCursorVariable)element;
+					if (cursor.SemanticModel != null)
+					{
+						var queryText = cursor.SemanticModel.Statement.RootNode.GetText(variableReference.Container.SemanticModel.StatementText);
+						labelBuilder.AddElement(queryText);
+					}
+
 					break;
 			}
 
-			var defaultExpressionPostfix = String.IsNullOrEmpty(labelDefaultExpression)
-				? String.Empty
-				: $"= {labelDefaultExpression}";
-
-			ToolTip =
-				new ToolTipObject
-				{
-					DataContext = $"{labelVariableType} {element.Name.ToSimpleIdentifier()}: {labelDataType} {labelNullable} {defaultExpressionPostfix}".TrimEnd()
-				};
+			ToolTip = new ToolTipObject { DataContext = labelBuilder.ToString() };
 		}
 
 		public void VisitPlSqlExceptionReference(OraclePlSqlExceptionReference exceptionReference)
@@ -408,6 +412,32 @@ namespace SqlPad.Oracle.ToolTips
 
 				default:
 					return schemaObject.Type.ToLower();
+			}
+		}
+
+		private class ToolTipLabelBuilder
+		{
+			private readonly StringBuilder _builder = new StringBuilder();
+
+			public void AddElement(string labelElement, string prefix = null)
+			{
+				if (String.IsNullOrEmpty(labelElement))
+				{
+					return;
+				}
+
+				if (_builder.Length > 0)
+				{
+					_builder.Append(" ");
+				}
+
+				_builder.Append(prefix);
+				_builder.Append(labelElement);
+			}
+
+			public override string ToString()
+			{
+				return _builder.ToString();
 			}
 		}
 	}
