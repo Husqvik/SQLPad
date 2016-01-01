@@ -250,12 +250,13 @@ namespace SqlPad.Oracle.ToolTips
 			var labelBuilder = new ToolTipLabelBuilder();
 
 			var elementTypeName = element.GetType().Name;
+			var elementName = $"{element.Name.ToSimpleIdentifier()}:";
 			switch (elementTypeName)
 			{
 				case nameof(OraclePlSqlParameter):
 					var parameter = (OraclePlSqlParameter)element;
 					labelBuilder.AddElement("Parameter");
-					labelBuilder.AddElement($"{element.Name.ToSimpleIdentifier()}:");
+					labelBuilder.AddElement(elementName);
 					labelBuilder.AddElement(GetDataTypeFromNode(parameter));
 					labelBuilder.AddElement("NULL");
 					labelBuilder.AddElement(GetDefaultExpression(variableReference.PlSqlProgram, parameter), "= ");
@@ -264,20 +265,21 @@ namespace SqlPad.Oracle.ToolTips
 				case nameof(OraclePlSqlVariable):
 					var variable = (OraclePlSqlVariable)element;
 					labelBuilder.AddElement(variable.IsConstant ? "Constant" : "Variable");
-					labelBuilder.AddElement($"{element.Name.ToSimpleIdentifier()}:");
-					labelBuilder.AddElement(GetDataTypeFromNode(variable));
+					labelBuilder.AddElement(elementName);
+					var dataTypeName = variable.DataType == null ? GetDataTypeFromNode(variable) : OracleDataType.ResolveFullTypeName(variable.DataType);
+					labelBuilder.AddElement(dataTypeName);
 					labelBuilder.AddElement(variable.Nullable ? "NULL" : "NOT NULL");
 					labelBuilder.AddElement(GetDefaultExpression(variableReference.PlSqlProgram, variable), "= ");
 					break;
 
 				case nameof(OraclePlSqlType):
 					labelBuilder.AddElement("Type");
-					labelBuilder.AddElement($"{element.Name.ToSimpleIdentifier()}:");
+					labelBuilder.AddElement(elementName);
 					break;
 
 				case nameof(OraclePlSqlCursorVariable):
 					labelBuilder.AddElement("Cursor");
-					labelBuilder.AddElement($"{element.Name.ToSimpleIdentifier()}:");
+					labelBuilder.AddElement(elementName);
 
 					var cursor = (OraclePlSqlCursorVariable)element;
 					if (cursor.SemanticModel != null)
@@ -319,9 +321,9 @@ namespace SqlPad.Oracle.ToolTips
 
 		private static string GetDefaultExpression(OracleReferenceContainer program, OraclePlSqlVariable variable)
 		{
-			return variable.DefaultExpression == null || !variable.IsConstant
+			return variable.DefaultExpressionNode == null || !variable.IsConstant
 				? String.Empty
-				: variable.DefaultExpression.GetText(program.SemanticModel.StatementText);
+				: variable.DefaultExpressionNode.GetText(program.SemanticModel.StatementText);
 		}
 
 		private static ColumnDetailsModel BuildColumnDetailsModel(OracleDatabaseModelBase databaseModel, OracleColumnReference columnReference)

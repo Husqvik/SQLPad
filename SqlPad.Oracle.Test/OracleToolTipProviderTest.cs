@@ -1160,6 +1160,24 @@ END;";
 			toolTip.ShouldNotBe(null);
 		}
 
+
+		[Test(Description = @""), STAThread]
+		public void TestToolTipOverTypedVariable()
+		{
+			const string plSqlCode =
+@"BEGIN
+	FOR i IN 1..10 LOOP
+		dbms_output.put_line(i);
+	END LOOP;
+END;";
+
+			_documentRepository.UpdateStatements(plSqlCode);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 52);
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("Variable I: BINARY_INTEGER NOT NULL");
+		}
+
 		[Test(Description = @""), STAThread]
 		public void TestTooltipOverExplicitColumnListInCommonTableExpression()
 		{

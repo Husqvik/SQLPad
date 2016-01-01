@@ -96,21 +96,21 @@ END;";
 			mainProgram.Variables[0].Name.ShouldBe("\"TEST_VARIABLE1\"");
 			mainProgram.Variables[0].IsConstant.ShouldBe(false);
 			mainProgram.Variables[0].Nullable.ShouldBe(true);
-			mainProgram.Variables[0].DefaultExpression.ShouldBe(null);
+			mainProgram.Variables[0].DefaultExpressionNode.ShouldBe(null);
 			mainProgram.Variables[0].DataTypeNode.ShouldNotBe(null);
 			mainProgram.Variables[0].DataTypeNode.FirstTerminalNode.Id.ShouldBe(Terminals.Number);
 			mainProgram.Variables[0].DataTypeNode.LastTerminalNode.Id.ShouldBe(Terminals.Number);
 			mainProgram.Variables[1].Name.ShouldBe("\"TEST_VARIABLE2\"");
 			mainProgram.Variables[1].IsConstant.ShouldBe(false);
 			mainProgram.Variables[1].Nullable.ShouldBe(true);
-			mainProgram.Variables[1].DefaultExpression.ShouldBe(null);
+			mainProgram.Variables[1].DefaultExpressionNode.ShouldBe(null);
 			mainProgram.Variables[1].DataTypeNode.ShouldNotBe(null);
 			mainProgram.Variables[1].DataTypeNode.FirstTerminalNode.Id.ShouldBe(Terminals.Varchar2);
 			mainProgram.Variables[1].DataTypeNode.LastTerminalNode.Id.ShouldBe(Terminals.RightParenthesis);
 			mainProgram.Variables[2].Name.ShouldBe("\"TEST_CONSTANT1\"");
 			mainProgram.Variables[2].IsConstant.ShouldBe(true);
 			mainProgram.Variables[2].Nullable.ShouldBe(false);
-			mainProgram.Variables[2].DefaultExpression.ShouldNotBe(null);
+			mainProgram.Variables[2].DefaultExpressionNode.ShouldNotBe(null);
 			mainProgram.Exceptions.Count.ShouldBe(0);
 			mainProgram.PlSqlVariableReferences.Count.ShouldBe(1);
 			mainProgram.PlSqlExceptionReferences.Count.ShouldBe(0);
@@ -139,7 +139,7 @@ END;";
 			mainProgram.SubPrograms[0].Variables[0].Name.ShouldBe("\"TEST_VARIABLE3\"");
 			mainProgram.SubPrograms[0].Variables[0].IsConstant.ShouldBe(false);
 			mainProgram.SubPrograms[0].Variables[0].Nullable.ShouldBe(false);
-			mainProgram.SubPrograms[0].Variables[0].DefaultExpression.ShouldNotBe(null);
+			mainProgram.SubPrograms[0].Variables[0].DefaultExpressionNode.ShouldNotBe(null);
 			mainProgram.SubPrograms[0].Exceptions.Count.ShouldBe(0);
 			mainProgram.SubPrograms[0].PlSqlVariableReferences.Count.ShouldBe(1);
 			mainProgram.SubPrograms[0].PlSqlExceptionReferences.Count.ShouldBe(0);
@@ -154,7 +154,7 @@ END;";
 			mainProgram.SubPrograms[1].Parameters[0].Direction.ShouldBe(ParameterDirection.Input);
 			mainProgram.SubPrograms[1].ReturnParameter.ShouldNotBe(null);
 			mainProgram.SubPrograms[1].ReturnParameter.DataTypeNode.ShouldNotBe(null);
-			mainProgram.SubPrograms[1].ReturnParameter.DefaultExpression.ShouldBe(null);
+			mainProgram.SubPrograms[1].ReturnParameter.DefaultExpressionNode.ShouldBe(null);
 			mainProgram.SubPrograms[1].ReturnParameter.Nullable.ShouldBe(true);
 			mainProgram.SubPrograms[1].ReturnParameter.Direction.ShouldBe(ParameterDirection.ReturnValue);
 			mainProgram.SubPrograms[1].Variables.Count.ShouldBe(0);
@@ -626,6 +626,21 @@ END;";
 			subProgram.PlSqlVariableReferences.Count.ShouldBe(1);
 			cursorReference = subProgram.PlSqlVariableReferences.First();
 			cursorReference.Variables.Count.ShouldBe(1);
+		}
+
+		[Test]
+		public void TestModelBuildWhenMistypingLoppInsteadOfLoop()
+		{
+			const string plsqlText =
+@"BEGIN
+	FOR i IN 1..10 LOOP
+		NULL;
+	END LOPP;
+END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel);
+			Assert.DoesNotThrow(() => semanticModel.Build(CancellationToken.None));
 		}
 	}
 }

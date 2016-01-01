@@ -89,12 +89,63 @@ namespace SqlPad.Oracle.SemanticModel
 				return;
 			}
 
+			var excludedIdentifiers = new HashSet<StatementGrammarNode>();
+
 			switch (node.Id)
 			{
 				case NonTerminals.PlSqlRaiseStatement:
 					var prefixedExceptionIdentifierNode = node[NonTerminals.PrefixedExceptionIdentifier];
 					CreatePlSqlExceptionReference(program, prefixedExceptionIdentifierNode);
 					break;
+
+				case NonTerminals.PlSqlCursorForLoopStatement:
+					var cursorIdentifier = node[Terminals.PlSqlIdentifier];
+					var cursorScopeNode = node[NonTerminals.PlSqlBasicLoopStatement];
+					if (cursorIdentifier != null && cursorScopeNode != null)
+					{
+						excludedIdentifiers.Add(cursorIdentifier);
+
+						var cursor =
+							new OraclePlSqlCursorVariable
+							{
+								Name = cursorIdentifier.Token.Value.ToQuotedIdentifier(),
+								Owner = program,
+								DefinitionNode = cursorIdentifier,
+								ScopeNode = cursorScopeNode
+							};
+
+						SetStatementModelIfFound(cursor, node[NonTerminals.CursorSource, NonTerminals.SelectStatement]);
+
+						var cursorReferenceIdentifier = node[NonTerminals.CursorSource, Terminals.CursorIdentifier];
+						if (cursorReferenceIdentifier != null)
+						{
+							
+						}
+					}
+
+					goto default;
+
+				case NonTerminals.PlSqlForLoopStatement:
+					var identifier = node[Terminals.PlSqlIdentifier];
+					var scopeNode = node[NonTerminals.PlSqlBasicLoopStatement];
+					if (identifier != null && scopeNode != null)
+					{
+						excludedIdentifiers.Add(identifier);
+
+						var variable =
+							new OraclePlSqlVariable
+							{
+								Name = identifier.Token.Value.ToQuotedIdentifier(),
+								Owner = program,
+								DefinitionNode = identifier,
+								DataType = OracleDataType.BinaryIntegerType,
+								ScopeNode = scopeNode
+							};
+
+						program.Variables.Add(variable);
+					}
+
+					goto default;
 
 				case NonTerminals.PlSqlOpenStatement:
 					var cursorIdentifierNode = node[NonTerminals.PrefixedCursorIdentifier, Terminals.CursorIdentifier];
@@ -118,7 +169,9 @@ namespace SqlPad.Oracle.SemanticModel
 					goto default;
 
 				default:
-					var identifiers = node.GetPathFilterDescendants(NodeFilters.BreakAtPlSqlSubProgramOrSqlCommand, Terminals.Identifier, Terminals.PlSqlIdentifier, Terminals.RowIdPseudoColumn, Terminals.Level, Terminals.RowNumberPseudoColumn);
+					var identifiers = node.GetPathFilterDescendants(NodeFilters.BreakAtPlSqlSubProgramOrSqlCommand, Terminals.Identifier, Terminals.PlSqlIdentifier, Terminals.RowIdPseudoColumn, Terminals.Level, Terminals.RowNumberPseudoColumn)
+						.Where(i => !excludedIdentifiers.Contains(i));
+
 					ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(null, program, identifiers, StatementPlacement.None, null, null, GetFunctionCallNodes);
 
 					var grammarSpecificFunctions = GetGrammarSpecificFunctionNodes(node);
@@ -229,13 +282,15 @@ namespace SqlPad.Oracle.SemanticModel
 				{
 					foreach (var element in elements)
 					{
-						if (resolvedCollection.Count > 0 && program != element.Owner)
+						var isLocal = program == element.Owner;
+						if (resolvedCollection.Count > 0 && !isLocal)
 						{
 							break;
 						}
 
+						var isWithinScope = element.ScopeNode?.SourcePosition.Contains(plSqlReference.IdentifierNode.SourcePosition) ?? true;
 						var elementDefinitionIndex = element.DefinitionNode?.SourcePosition.IndexStart;
-						if (String.Equals(element.Name, plSqlReference.NormalizedName) && elementDefinitionIndex < plSqlReference.RootNode.SourcePosition.IndexStart)
+						if (isWithinScope && String.Equals(element.Name, plSqlReference.NormalizedName) && elementDefinitionIndex < plSqlReference.IdentifierNode.SourcePosition.IndexStart)
 						{
 							resolvedCollection.Add(element);
 						}
@@ -432,7 +487,7 @@ namespace SqlPad.Oracle.SemanticModel
 												Owner = program,
 												DefinitionNode = specificNode,
 												IsConstant = true,
-												DefaultExpression = specificNode[NonTerminals.PlSqlExpression]
+												DefaultExpressionNode = specificNode[NonTerminals.PlSqlExpression]
 											};
 
 										SetDataTypeAndNullablePropertiesAndAddIfIdentifierFound(variable, specificNode, program);
@@ -464,7 +519,7 @@ namespace SqlPad.Oracle.SemanticModel
 												{
 													Owner = program,
 													DefinitionNode = specificNode,
-													DefaultExpression = specificNode[NonTerminals.VariableDeclarationDefaultValue, NonTerminals.PlSqlExpression],
+													DefaultExpressionNode = specificNode[NonTerminals.VariableDeclarationDefaultValue, NonTerminals.PlSqlExpression],
 												};
 
 											SetDataTypeAndNullablePropertiesAndAddIfIdentifierFound(variable, specificNode, program);
@@ -497,8 +552,6 @@ namespace SqlPad.Oracle.SemanticModel
 							var identifierNode = declarationRoot[Terminals.CursorIdentifier];
 							if (identifierNode != null)
 							{
-								var selectStatementNode = declarationRoot[NonTerminals.SelectStatement];
-
 								var cursor =
 									new OraclePlSqlCursorVariable
 									{
@@ -507,10 +560,7 @@ namespace SqlPad.Oracle.SemanticModel
 										Name = identifierNode.Token.Value.ToQuotedIdentifier()
 									};
 
-								if (selectStatementNode != null)
-								{
-									cursor.SemanticModel = program.ChildModels.SingleOrDefault(m => m.Statement.RootNode == selectStatementNode);
-								}
+								SetStatementModelIfFound(cursor, declarationRoot[NonTerminals.SelectStatement]);
 
 								program.Variables.Add(cursor);
 							}
@@ -542,6 +592,14 @@ namespace SqlPad.Oracle.SemanticModel
 						}
 					}
 				}
+			}
+		}
+
+		private static void SetStatementModelIfFound(OraclePlSqlCursorVariable cursor, StatementGrammarNode selectStatementNode)
+		{
+			if (selectStatementNode != null)
+			{
+				cursor.SemanticModel = cursor.Owner.ChildModels.SingleOrDefault(m => m.Statement.RootNode == selectStatementNode);
 			}
 		}
 
@@ -646,7 +704,7 @@ namespace SqlPad.Oracle.SemanticModel
 				}
 
 				parameter.DataTypeNode = parameterDirectionDeclaration[NonTerminals.PlSqlDataTypeWithoutConstraint];
-				parameter.DefaultExpression = parameterDirectionDeclaration[NonTerminals.VariableDeclarationDefaultValue];
+				parameter.DefaultExpressionNode = parameterDirectionDeclaration[NonTerminals.VariableDeclarationDefaultValue];
 			}
 
 			parameter.Direction = direction;
@@ -771,6 +829,10 @@ namespace SqlPad.Oracle.SemanticModel
 		public StatementGrammarNode DefinitionNode { get; set; }
 
 		public OraclePlSqlProgram Owner { get; set; }
+
+		public StatementGrammarNode ScopeNode { get; set; }
+
+		public bool HasLocalScopeOnly => ScopeNode != null;
 	}
 
 	public class OraclePlSqlException : OraclePlSqlElement
@@ -784,7 +846,9 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public bool Nullable { get; set; }
 
-		public StatementGrammarNode DefaultExpression { get; set; }
+		public OracleDataType DataType { get; set; }
+
+		public StatementGrammarNode DefaultExpressionNode { get; set; }
 
 		public StatementGrammarNode DataTypeNode { get; set; }
 	}
