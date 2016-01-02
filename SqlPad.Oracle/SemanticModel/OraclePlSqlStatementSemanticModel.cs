@@ -59,6 +59,12 @@ namespace SqlPad.Oracle.SemanticModel
 		{
 			foreach (var program in programs)
 			{
+				var declarationReferenceSourceNodes = program.RootNode.GetPathFilterDescendants(n => !String.Equals(n.Id, NonTerminals.ItemList2) && !String.Equals(n.Id, NonTerminals.ProgramBody) && !String.Equals(n.Id, NonTerminals.CursorDefinition), NonTerminals.PlSqlExpression);
+				foreach (var sourceNode in declarationReferenceSourceNodes)
+				{
+					FindPlSqlReferences(program, sourceNode);
+				}
+
 				var programBodyNode = program.RootNode.GetPathFilterDescendants(n => !String.Equals(n.Id, NonTerminals.ProgramDeclareSection), NonTerminals.ProgramBody).FirstOrDefault();
 				if (programBodyNode != null)
 				{
@@ -119,7 +125,7 @@ namespace SqlPad.Oracle.SemanticModel
 						var cursorReferenceIdentifier = node[NonTerminals.CursorSource, Terminals.CursorIdentifier];
 						if (cursorReferenceIdentifier != null)
 						{
-							
+							// TODO
 						}
 					}
 

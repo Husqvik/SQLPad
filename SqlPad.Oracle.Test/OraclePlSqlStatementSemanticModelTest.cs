@@ -565,6 +565,35 @@ END;";
 		}
 
 		[Test]
+		public void TestOutOfScopeReferences()
+		{
+			const string plsqlText =
+@"DECLARE
+	y NUMBER := x;
+	TYPE w IS RECORD (c1 NUMBER DEFAULT x);
+	CURSOR z IS SELECT * FROM dual WHERE dummy = x;
+	x NUMBER;
+BEGIN
+	i := 0;
+	
+	FOR i IN 1..10 LOOP
+		NULL;
+	END LOOP;
+	
+	i := 0;
+END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
+
+			var variableReferences = semanticModel.Programs[0].PlSqlVariableReferences.ToArray();
+			variableReferences.Length.ShouldBe(5);
+			variableReferences.ForEach(v => v.Variables.Count.ShouldBe(0));
+		}
+
+		[Test]
 		public void TestImplicitAndExplicitCursors()
 		{
 			const string plsqlText =

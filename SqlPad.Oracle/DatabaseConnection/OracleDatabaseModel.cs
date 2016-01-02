@@ -873,7 +873,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private IEnumerable<OracleProgramMetadata> FilterFunctionsWithUnavailableMetadata(IEnumerable<OracleProgramMetadata> functions)
 		{
-			return functions.Where(m => m != null && m.Type != ProgramType.Procedure);
+			return functions.Where(m => m != null);
 		}
 
 		private void RaiseRefreshStatusChanged(string message)
