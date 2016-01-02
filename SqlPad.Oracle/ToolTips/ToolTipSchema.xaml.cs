@@ -39,6 +39,10 @@ namespace SqlPad.Oracle.ToolTips
 		private DateTime? _expiryDate;
 		private DateTime? _lastLogin;
 
+		public TablespaceDetailModel DefaultTablespaceDataModel { get; } = new TablespaceDetailModel();
+
+		public TablespaceDetailModel TemporaryTablespaceDataModel { get; } = new TablespaceDetailModel();
+
 		public OracleSchema Schema { get; set; }
 
 		public string AccountStatus
@@ -50,13 +54,25 @@ namespace SqlPad.Oracle.ToolTips
 		public string DefaultTablespace
 		{
 			get { return _defaultTablespace; }
-			set { UpdateValueAndRaisePropertyChanged(ref _defaultTablespace, value); }
+			set
+			{
+				if (UpdateValueAndRaisePropertyChanged(ref _defaultTablespace, value))
+				{
+					DefaultTablespaceDataModel.Name = value;
+				}
+			}
 		}
 
 		public string TemporaryTablespace
 		{
 			get { return _temporaryTablespace; }
-			set { UpdateValueAndRaisePropertyChanged(ref _temporaryTablespace, value); }
+			set
+			{
+				if (UpdateValueAndRaisePropertyChanged(ref _temporaryTablespace, value))
+				{
+					TemporaryTablespaceDataModel.Name = value;
+				}
+			}
 		}
 
 		public string Profile

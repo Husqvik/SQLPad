@@ -1205,6 +1205,7 @@ TABLESPACE ""TBS_HQ_PDB""";
 				};
 
 			SetPartitionDetails(partition1Details);
+			SetTablespaceDetails(dataModel.TablespaceDataModel);
 
 			var partition2Details =
 				new PartitionDetailsModel
@@ -1229,14 +1230,14 @@ TABLESPACE ""TBS_HQ_PDB""";
 			return Task.FromResult<object>(null);
 		}
 
-		public override Task UpdateTablespaceDetailsAsync(TablespaceDetailModel dataModel, CancellationToken cancellationToken)
+		private static void SetTablespaceDetails(TablespaceDetailModel dataModel)
 		{
 			dataModel.BlockSize = 8192;
 			dataModel.InitialExtent = 65536;
 			dataModel.MinimumExtents = 1;
 			dataModel.MaximumExtents = 2147483645;
-			dataModel.MaximumSizeBytes = 2147483645;
-			dataModel.MinimumExtentLength = 65536;
+			dataModel.MaximumSizeBlocks = 2147483645;
+			dataModel.MinimumExtentSizeBytes = 65536;
 			dataModel.Status = "Online";
 			dataModel.Contents = "Permanent";
 			dataModel.Logging = true;
@@ -1246,11 +1247,9 @@ TABLESPACE ""TBS_HQ_PDB""";
 			dataModel.DefaultTableCompression = "Disabled";
 			dataModel.Retention = "Not Apply";
 			dataModel.PredicateEvaluation = "Host";
-
-			return Task.FromResult<object>(null);
 		}
 
-		private void SetPartitionDetails(PartitionDetailsModelBase dataModel)
+		private static void SetPartitionDetails(PartitionDetailsModelBase dataModel)
 		{
 			dataModel.TablespaceName = "TEST_TABLESPACE_1";
 			dataModel.AverageRowSize = 237;
@@ -1315,6 +1314,9 @@ TABLESPACE ""TBS_HQ_PDB""";
 			dataModel.LastLogin = new DateTime(2015, 7, 13, 22, 47, 30);
 			dataModel.LockDate = new DateTime(2015, 7, 13, 22, 47, 31);
 			dataModel.ExpiryDate = new DateTime(2015, 7, 13, 22, 47, 32);
+
+			SetTablespaceDetails(dataModel.DefaultTablespaceDataModel);
+			SetTablespaceDetails(dataModel.TemporaryTablespaceDataModel);
 
 			return Task.FromResult((object)null);
 		}

@@ -274,13 +274,13 @@ namespace SqlPad.Oracle.ModelDataProviders
 			DataModel.InitialExtent = Convert.ToInt32(reader["INITIAL_EXTENT"]);
 			DataModel.NextExtent = OracleReaderValueConvert.ToInt32(reader["NEXT_EXTENT"]);
 			DataModel.MinimumExtents = Convert.ToInt32(reader["MIN_EXTENTS"]);
-			DataModel.MaximumExtents = Convert.ToInt32(reader["MAX_EXTENTS"]);
-			DataModel.MaximumSizeBytes = Convert.ToInt64(reader["MAX_SIZE"]);
+			DataModel.MaximumExtents = OracleReaderValueConvert.ToInt32(reader["MAX_EXTENTS"]);
+			DataModel.MaximumSizeBlocks = Convert.ToInt64(reader["MAX_SIZE"]);
 			DataModel.PercentIncrease = OracleReaderValueConvert.ToInt32(reader["PCT_INCREASE"]);
-			DataModel.MinimumExtentLength = Convert.ToInt32(reader["MIN_EXTLEN"]);
+			DataModel.MinimumExtentSizeBytes = Convert.ToInt32(reader["MIN_EXTLEN"]);
 			DataModel.Status = (string)reader["STATUS"];
 			DataModel.Contents = (string)reader["CONTENTS"];
-			DataModel.Logging = String.Equals((string)reader["LOGGING"], "YES");
+			DataModel.Logging = String.Equals((string)reader["LOGGING"], "LOGGING");
 			DataModel.ForceLogging = String.Equals((string)reader["FORCE_LOGGING"], "YES");
 			DataModel.ExtentManagement = (string)reader["EXTENT_MANAGEMENT"];
 			DataModel.AllocationType = (string)reader["ALLOCATION_TYPE"];

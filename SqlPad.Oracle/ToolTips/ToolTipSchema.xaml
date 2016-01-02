@@ -50,9 +50,9 @@
 			<TextBlock Grid.Row="4" Grid.Column="0" Text="Authentication type: " Visibility="{Binding AuthenticationType, Converter={StaticResource ObjectToVisibilityConverter}}" />
 			<TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding AuthenticationType}" Visibility="{Binding AuthenticationType, Converter={StaticResource ObjectToVisibilityConverter}}" />
 			<TextBlock Grid.Row="5" Grid.Column="0" Text="Default tablespace: " Visibility="{Binding DefaultTablespace, Converter={StaticResource ObjectToVisibilityConverter}}" />
-			<TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding DefaultTablespace}" Visibility="{Binding DefaultTablespace, Converter={StaticResource ObjectToVisibilityConverter}}" />
+			<toolTips:TablespaceDetails x:Name="DefaultTablespaceDetails" Grid.Row="5" Grid.Column="1" Visibility="{Binding DefaultTablespace, Converter={StaticResource ObjectToVisibilityConverter}}" Tablespace="{Binding DefaultTablespaceDataModel}" />
 			<TextBlock Grid.Row="6" Grid.Column="0" Text="Temporary tablespace: " Visibility="{Binding TemporaryTablespace, Converter={StaticResource ObjectToVisibilityConverter}}" />
-			<TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding TemporaryTablespace}" Visibility="{Binding TemporaryTablespace, Converter={StaticResource ObjectToVisibilityConverter}}" />
+			<toolTips:TablespaceDetails x:Name="TemporaryTablespaceDetails" Grid.Row="6" Grid.Column="1" Visibility="{Binding TemporaryTablespace, Converter={StaticResource ObjectToVisibilityConverter}}" Tablespace="{Binding TemporaryTablespaceDataModel}" />
 			<TextBlock Grid.Row="7" Grid.Column="0" Text="Profile: " Visibility="{Binding Profile, Converter={StaticResource ObjectToVisibilityConverter}}" />
 			<TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding Profile}" Visibility="{Binding Profile, Converter={StaticResource ObjectToVisibilityConverter}}" />
 			<TextBlock Grid.Row="8" Grid.Column="0" Text="Editions enabled: " Visibility="{Binding EditionsEnabled, Converter={StaticResource ObjectToVisibilityConverter}}" />

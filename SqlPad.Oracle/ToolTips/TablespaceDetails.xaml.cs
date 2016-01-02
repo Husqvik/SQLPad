@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
@@ -9,7 +8,7 @@ namespace SqlPad.Oracle.ToolTips
 	public partial class TablespaceDetails
 	{
 		public static readonly DependencyProperty IsDetailVisibleProperty = DependencyProperty.Register(nameof(IsDetailVisible), typeof (bool), typeof (TablespaceDetails), new FrameworkPropertyMetadata());
-		public static readonly DependencyProperty TablespaceNameProperty = DependencyProperty.Register(nameof(TablespaceName), typeof (string), typeof (TablespaceDetails), new FrameworkPropertyMetadata(TablespaceNameChangedCallback));
+		public static readonly DependencyProperty TablespaceProperty = DependencyProperty.Register(nameof(Tablespace), typeof (TablespaceDetailModel), typeof (TablespaceDetails), new FrameworkPropertyMetadata());
 
 		[Bindable(true)]
 		public bool IsDetailVisible
@@ -19,21 +18,11 @@ namespace SqlPad.Oracle.ToolTips
 		}
 
 		[Bindable(true)]
-		public string TablespaceName
+		public TablespaceDetailModel Tablespace
 		{
-			get { return (string)GetValue(TablespaceNameProperty); }
-			set { SetValue(TablespaceNameProperty, value); }
+			get { return (TablespaceDetailModel)GetValue(TablespaceProperty); }
+			set { SetValue(TablespaceProperty, value); }
 		}
-		
-		private static void TablespaceNameChangedCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
-		{
-			var tablespaceDetails = (TablespaceDetails)dependencyObject;
-			tablespaceDetails.DataModel.Name = (string)args.NewValue;
-		}
-
-		public TablespaceDetailModel DataModel { get; } = new TablespaceDetailModel();
-
-		public event EventHandler TablespaceDetailRequested;
 
 		public TablespaceDetails()
 		{
@@ -42,28 +31,21 @@ namespace SqlPad.Oracle.ToolTips
 
 		private void TablespaceHyperlinkClickHandler(object sender, RoutedEventArgs e)
 		{
-			if (TablespaceDetailRequested == null)
-			{
-				Messages.ShowError("TablespaceDetailRequested is not subscribed. ");
-				return;
-			}
-
-			TablespaceDetailRequested(this, EventArgs.Empty);
-
 			IsDetailVisible = true;
 		}
 	}
 
 	public class TablespaceDetailModel : ModelBase
 	{
+		private string _name;
 		private int _blockSize;
 		private int _initialExtent;
 		private int? _nextExtent;
 		private int _minimumExtents;
-		private int _maximumExtents;
-		private long _maximumSizeBytes;
+		private int? _maximumExtents;
+		private long _maximumSizeBlocks;
 		private int? _percentIncrease;
-		private int _minimumExtentLength;
+		private int _minimumExtentSizeBytes;
 		private string _status;
 		private string _contents;
 		private bool _logging;
@@ -80,7 +62,11 @@ namespace SqlPad.Oracle.ToolTips
 
 		public ICollection<DatafileDetailModel> Datafiles { get; } = new ObservableCollection<DatafileDetailModel>();
 
-		public string Name { get; set; }
+		public string Name
+		{
+			get { return _name; }
+			set { UpdateValueAndRaisePropertyChanged(ref _name, value); }
+		}
 
 		public int BlockSize
 		{
@@ -106,16 +92,16 @@ namespace SqlPad.Oracle.ToolTips
 			set { UpdateValueAndRaisePropertyChanged(ref _minimumExtents, value); }
 		}
 
-		public int MaximumExtents
+		public int? MaximumExtents
 		{
 			get { return _maximumExtents; }
 			set { UpdateValueAndRaisePropertyChanged(ref _maximumExtents, value); }
 		}
 
-		public long MaximumSizeBytes
+		public long MaximumSizeBlocks
 		{
-			get { return _maximumSizeBytes; }
-			set { UpdateValueAndRaisePropertyChanged(ref _maximumSizeBytes, value); }
+			get { return _maximumSizeBlocks; }
+			set { UpdateValueAndRaisePropertyChanged(ref _maximumSizeBlocks, value); }
 		}
 
 		public int? PercentIncrease
@@ -124,10 +110,10 @@ namespace SqlPad.Oracle.ToolTips
 			set { UpdateValueAndRaisePropertyChanged(ref _percentIncrease, value); }
 		}
 
-		public int MinimumExtentLength
+		public int MinimumExtentSizeBytes
 		{
-			get { return _minimumExtentLength; }
-			set { UpdateValueAndRaisePropertyChanged(ref _minimumExtentLength, value); }
+			get { return _minimumExtentSizeBytes; }
+			set { UpdateValueAndRaisePropertyChanged(ref _minimumExtentSizeBytes, value); }
 		}
 
 		public string Status

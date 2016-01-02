@@ -41,6 +41,8 @@ namespace SqlPad.Oracle.ToolTips
 		private long? _largeObjectBytes;
 		private string _inMemoryCompression;
 
+		public TablespaceDetailModel TablespaceDataModel { get; } = new TablespaceDetailModel();
+
 		public long? RowCount
 		{
 			get { return _rowCount; }
@@ -74,7 +76,13 @@ namespace SqlPad.Oracle.ToolTips
 		public string TablespaceName
 		{
 			get { return _tablespaceName; }
-			set { UpdateValueAndRaisePropertyChanged(ref _tablespaceName, value); }
+			set
+			{
+				if (UpdateValueAndRaisePropertyChanged(ref _tablespaceName, value))
+				{
+					TablespaceDataModel.Name = value;
+				}
+			}
 		}
 
 		public DateTime? LastAnalyzed

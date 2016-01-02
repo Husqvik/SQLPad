@@ -202,10 +202,7 @@ namespace SqlPad.Oracle.ToolTips
 						SetPartitionKeys(dataModel, materializedView);
 
 						databaseModel.UpdateTableDetailsAsync(schemaObject.FullyQualifiedName, dataModel, CancellationToken.None);
-						var toolTipMaterializedView = new ToolTipMaterializedView { DataContext = dataModel };
-						var tablespaceDetails = toolTipMaterializedView.ToolTipTable.TablespaceDetails;
-						tablespaceDetails.TablespaceDetailRequested += (sender, args) => databaseModel.UpdateTablespaceDetailsAsync(tablespaceDetails.DataModel, CancellationToken.None);
-						ToolTip = toolTipMaterializedView;
+						ToolTip = new ToolTipMaterializedView { DataContext = dataModel };
 						break;
 
 					case OracleSchemaObjectType.Table:
@@ -213,10 +210,7 @@ namespace SqlPad.Oracle.ToolTips
 						SetPartitionKeys(dataModel, (OracleTable)schemaObject);
 
 						databaseModel.UpdateTableDetailsAsync(schemaObject.FullyQualifiedName, dataModel, CancellationToken.None);
-						var toolTipTable = new ToolTipTable { DataContext = dataModel };
-						toolTipTable.TablespaceDetails.TablespaceDetailRequested += (sender, args) => databaseModel.UpdateTablespaceDetailsAsync(toolTipTable.TablespaceDetails.DataModel, CancellationToken.None);
-
-						ToolTip = toolTipTable;
+						ToolTip = new ToolTipTable { DataContext = dataModel };
 						break;
 
 					case OracleSchemaObjectType.View:

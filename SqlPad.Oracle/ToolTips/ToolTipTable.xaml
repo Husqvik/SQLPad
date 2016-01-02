@@ -51,7 +51,7 @@
 				</Grid.RowDefinitions>
 				<TextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding Comment}" Visibility="{Binding Comment, Converter={StaticResource ObjectToVisibilityConverter}}" Style="{StaticResource TextBoxBackgroundLessReadOnly}" />
 				<TextBlock Grid.Row="1" Grid.Column="0" Text="Tablespace: " Visibility="{Binding TablespaceName, Converter={StaticResource ObjectToVisibilityConverter}}" />
-				<toolTips:TablespaceDetails x:Name="TablespaceDetails" Grid.Row="1" Grid.Column="1" Visibility="{Binding TablespaceName, Converter={StaticResource ObjectToVisibilityConverter}}" TablespaceName="{Binding TablespaceName}" />
+				<toolTips:TablespaceDetails x:Name="TablespaceDetails" Grid.Row="1" Grid.Column="1" Visibility="{Binding TablespaceName, Converter={StaticResource ObjectToVisibilityConverter}}" Tablespace="{Binding TablespaceDataModel}" />
 				<TextBlock Grid.Row="2" Grid.Column="0" Text="Organization: " />
 				<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Organization}" />
 				<TextBlock Grid.Row="3" Grid.Column="0" Text="Partition keys: " Visibility="{Binding PartitionKeys, Converter={StaticResource ObjectToVisibilityConverter}}" />
