@@ -46,6 +46,7 @@
 						<RowDefinition />
 						<RowDefinition />
 						<RowDefinition Height="Auto" />
+						<RowDefinition Height="Auto" />
 					</Grid.RowDefinitions>
 					<TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding ElementName=TablespaceDetailControl, Path=Tablespace.Name}" />
 					<TextBlock Grid.Row="1" Grid.Column="0" Text="Contents: " />
@@ -94,6 +95,53 @@
 					<TextBlock Grid.Row="21" Grid.Column="1" Visibility="{Binding PercentIncrease, Converter={StaticResource ObjectToVisibilityConverter}}">
 						<Run Text="{Binding PercentIncrease, Converter={StaticResource PrettyPrintIntegerConverter}}" /><Run Text=" %" />
 					</TextBlock>
+
+					<GroupBox Header="Datafiles: " FontWeight="Bold" Padding="0,4,0,0" Grid.Row="22" Grid.Column="0" Grid.ColumnSpan="2">
+						<DataGrid ItemsSource="{Binding Datafiles}" Style="{StaticResource DataGridStyleToolTip}" ColumnHeaderStyle="{StaticResource HeaderStyleToolTip}">
+							<DataGrid.Columns>
+								<DataGridTextColumn Header="File ID"
+								                    Binding="{Binding FileId}"
+								                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+								                    CellStyle="{StaticResource CellStyleRightAlign}" />
+								<DataGridTextColumn Header="File name" Binding="{Binding FileName}" />
+								<DataGridTextColumn Header="Status" Binding="{Binding Status}" />
+								<DataGridTextColumn Header="Online status" Binding="{Binding OnlineStatus}" />
+								<DataGridTextColumn Header="Relative file no. "
+								                    Binding="{Binding RelativeFileNumber, Converter={StaticResource PrettyPrintIntegerConverter}}"
+								                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+								                    CellStyle="{StaticResource CellStyleRightAlign}" />
+								<DataGridTextColumn Header="Size"
+								                    Binding="{Binding SizeBytes, Converter={StaticResource DataSpaceConverter}}"
+								                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+								                    CellStyle="{StaticResource CellStyleRightAlign}" />
+								<DataGridTextColumn Header="Blocks"
+								                    Binding="{Binding SizeBlocks, Converter={StaticResource PrettyPrintIntegerConverter}}"
+								                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+								                    CellStyle="{StaticResource CellStyleRightAlign}" />
+								<DataGridTextColumn Header="User size"
+								                    Binding="{Binding UserSizeBytes, Converter={StaticResource DataSpaceConverter}}"
+								                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+								                    CellStyle="{StaticResource CellStyleRightAlign}" />
+								<DataGridTextColumn Header="User blocks"
+								                    Binding="{Binding UserSizeBlocks, Converter={StaticResource PrettyPrintIntegerConverter}}"
+								                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+								                    CellStyle="{StaticResource CellStyleRightAlign}" />
+								<DataGridTextColumn Header="Max. size"
+								                    Binding="{Binding MaximumSizeBytes, Converter={StaticResource DataSpaceConverter}}"
+								                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+								                    CellStyle="{StaticResource CellStyleRightAlign}" />
+								<DataGridTextColumn Header="Max. blocks"
+								                    Binding="{Binding MaximumSizeBlocks, Converter={StaticResource PrettyPrintIntegerConverter}}"
+								                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+								                    CellStyle="{StaticResource CellStyleRightAlign}" />
+								<DataGridCheckBoxColumn Header="Autoextensible" Binding="{Binding IsAutoextensible}" />
+								<DataGridTextColumn Header="Increment by (blocks)"
+								                    Binding="{Binding IncrementByBlocks, Converter={StaticResource PrettyPrintIntegerConverter}}"
+								                    HeaderStyle="{StaticResource HeaderStyleRightAlign}"
+								                    CellStyle="{StaticResource CellStyleRightAlign}" />
+							</DataGrid.Columns>
+						</DataGrid>
+					</GroupBox>
 				</Grid>
 			</DataTemplate>
 		</ResourceDictionary>

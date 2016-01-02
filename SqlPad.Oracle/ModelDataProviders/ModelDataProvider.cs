@@ -294,6 +294,46 @@ namespace SqlPad.Oracle.ModelDataProviders
 		}
 	}
 
+	internal class TablespaceFilesDataProvider : ModelDataProvider<TablespaceDetailModel>
+	{
+		public TablespaceFilesDataProvider(TablespaceDetailModel dataModel)
+			: base(dataModel)
+		{
+		}
+
+		public override void InitializeCommand(OracleCommand command)
+		{
+			command.CommandText = OracleDatabaseCommands.SelectTablespaceDatafiles;
+			command.AddSimpleParameter("TABLESPACE_NAME", DataModel.Name);
+		}
+
+		public override async Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
+		{
+			while (await reader.ReadAsynchronous(cancellationToken))
+			{
+				var dataFileModel =
+					new DatafileDetailModel
+					{
+						FileName = (string)reader["FILE_NAME"],
+						FileId = Convert.ToInt32(reader["FILE_ID"]),
+						SizeBytes = Convert.ToInt64(reader["BYTES"]),
+						SizeBlocks = Convert.ToInt64(reader["BLOCKS"]),
+						Status = OracleReaderValueConvert.ToString(reader["STATUS"]),
+						RelativeFileNumber = Convert.ToInt32(reader["RELATIVE_FNO"]),
+						IsAutoextensible = String.Equals((string)reader["AUTOEXTENSIBLE"], "YES"),
+						MaximumSizeBytes = Convert.ToInt64(reader["MAXBYTES"]),
+						MaximumSizeBlocks = Convert.ToInt64(reader["MAXBLOCKS"]),
+						IncrementByBlocks = Convert.ToInt64(reader["INCREMENT_BY"]),
+						UserSizeBytes = Convert.ToInt64(reader["USER_BYTES"]),
+						UserSizeBlocks = Convert.ToInt64(reader["USER_BLOCKS"]),
+						OnlineStatus = (string)reader["ONLINE_STATUS"]
+					};
+
+				DataModel.Datafiles.Add(dataFileModel);
+			}
+		}
+	}
+
 	internal class CommentDataProvider : ModelDataProvider<IModelWithComment>
 	{
 		private readonly OracleObjectIdentifier _objectIdentifier;

@@ -368,7 +368,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var indexColumnDataProvider = new IndexColumnDataProvider(dataModel, objectIdentifier, null);
 			var partitionDataProvider = new PartitionDataProvider(dataModel, objectIdentifier, Version);
 			var tablespaceDetailDataProvider = new TablespaceDetailDataProvider(dataModel.TablespaceDataModel);
-			await UpdateModelAsync(cancellationToken, true, tableDetailDataProvider, tableCommentDataProvider, spaceAllocationDataProvider, tableInMemorySpaceAllocationDataProvider, indexDetailDataProvider, indexColumnDataProvider, partitionDataProvider.PartitionDetailDataProvider, partitionDataProvider.SubPartitionDetailDataProvider, tablespaceDetailDataProvider);
+			var datafileDataProvider = new TablespaceFilesDataProvider(dataModel.TablespaceDataModel);
+			await UpdateModelAsync(cancellationToken, true, tableDetailDataProvider, tableCommentDataProvider, spaceAllocationDataProvider, tableInMemorySpaceAllocationDataProvider, indexDetailDataProvider, indexColumnDataProvider, partitionDataProvider.PartitionDetailDataProvider, partitionDataProvider.SubPartitionDetailDataProvider, tablespaceDetailDataProvider, datafileDataProvider);
 		}
 
 		public async override Task UpdateViewDetailsAsync(OracleObjectIdentifier objectIdentifier, ViewDetailsModel dataModel, CancellationToken cancellationToken)
@@ -394,8 +395,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			var userDetailDataProvider = new UserDataProvider(dataModel);
 			var defaultTablespaceDetailDataProvider = new TablespaceDetailDataProvider(dataModel.DefaultTablespaceDataModel);
+			var defaultDatafileDataProvider = new TablespaceFilesDataProvider(dataModel.DefaultTablespaceDataModel);
 			var temporaryTablespaceDetailDataProvider = new TablespaceDetailDataProvider(dataModel.TemporaryTablespaceDataModel);
-			await UpdateModelAsync(cancellationToken, true, userDetailDataProvider, defaultTablespaceDetailDataProvider, temporaryTablespaceDetailDataProvider);
+			var temporaryDatafileDataProvider = new TablespaceFilesDataProvider(dataModel.TemporaryTablespaceDataModel);
+			await UpdateModelAsync(cancellationToken, true, userDetailDataProvider, defaultTablespaceDetailDataProvider, temporaryTablespaceDetailDataProvider, defaultDatafileDataProvider, temporaryDatafileDataProvider);
 		}
 
 		public async override Task<IReadOnlyList<string>> GetRemoteTableColumnsAsync(string databaseLink, OracleObjectIdentifier schemaObject, CancellationToken cancellationToken)

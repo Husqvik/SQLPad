@@ -13,17 +13,37 @@
 		<Setter Property="DataGridCell.Template" Value="{StaticResource DataGridCellControlTemplate}" />
 	</Style>
 
-	<Style x:Key="HeaderStyleRightAlign">
-		<Setter Property="Control.HorizontalContentAlignment" Value="Right" />
+	<Style x:Key="HeaderStyleToolTip">
 		<Setter Property="Control.Background" Value="Transparent" />
 		<Setter Property="Control.Padding" Value="4,2,4,2" />
 		<Setter Property="Control.FontWeight" Value="Medium" />
+	</Style>
+
+	<Style x:Key="HeaderStyleRightAlign" BasedOn="{StaticResource HeaderStyleToolTip}">
+		<Setter Property="Control.HorizontalContentAlignment" Value="Right" />
 	</Style>
 
 	<Style TargetType="{x:Type DataGridCell}">
 		<Setter Property="Template" Value="{StaticResource DataGridCellControlTemplate}" />
 		<!-- Disables row selection -->
 		<Setter Property="IsHitTestVisible" Value="False"/>
+	</Style>
+	
+	<Style x:Key="DataGridStyleToolTip">
+		<Setter Property="DataGrid.FontWeight" Value="Normal" />
+		<Setter Property="DataGrid.Background" Value="Transparent" />
+		<Setter Property="DataGrid.RowBackground" Value="Transparent" />
+		<Setter Property="DataGrid.AutoGenerateColumns" Value="False" />
+		<Setter Property="DataGrid.RowHeaderWidth" Value="0" />
+		<Setter Property="DataGrid.IsReadOnly" Value="True" />
+		<Setter Property="DataGrid.HorizontalGridLinesBrush" Value="LightGray" />
+		<Setter Property="DataGrid.VerticalGridLinesBrush" Value="LightGray" />
+		<Setter Property="DataGrid.CanUserAddRows" Value="False" />
+		<Setter Property="DataGrid.CanUserDeleteRows" Value="False" />
+		<Setter Property="DataGrid.CanUserReorderColumns" Value="False" />
+		<Setter Property="DataGrid.CanUserResizeColumns" Value="False" />
+		<Setter Property="DataGrid.CanUserResizeRows" Value="False" />
+		<Setter Property="DataGrid.CanUserSortColumns" Value="False" />
 	</Style>
 
 </ResourceDictionary>

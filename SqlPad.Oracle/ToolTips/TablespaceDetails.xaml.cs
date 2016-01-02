@@ -197,6 +197,30 @@ namespace SqlPad.Oracle.ToolTips
 
 	public class DatafileDetailModel
 	{
+		public string FileName { get; set; }
+
+		public int FileId { get; set; }
+
+		public long SizeBytes { get; set; }
+
+		public long SizeBlocks { get; set; }
+
+		public string Status { get; set; }
+
+		public int RelativeFileNumber { get; set; }
+
+		public bool IsAutoextensible { get; set; }
+
+		public long MaximumSizeBytes { get; set; }
+
+		public long MaximumSizeBlocks { get; set; }
+
+		public long IncrementByBlocks { get; set; }
 		
+		public long UserSizeBytes { get; set; }
+
+		public long UserSizeBlocks { get; set; }
+
+		public string OnlineStatus { get; set; }
 	}
 }
