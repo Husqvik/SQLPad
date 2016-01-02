@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:toolTips="clr-namespace:SqlPad.Oracle.ToolTips"
              mc:Ignorable="d" 
-             d:DesignHeight="80" d:DesignWidth="176"
+             d:DesignHeight="190" d:DesignWidth="176"
 			 Padding="4" d:DataContext="{d:DesignInstance toolTips:OracleSchemaModel}">
 
 	<UserControl.Resources>
@@ -16,56 +16,54 @@
 		</ResourceDictionary>
 	</UserControl.Resources>
 
-    <StackPanel>
-		<GroupBox BorderThickness="0">
-			<GroupBox.Header>
-				<TextBlock x:Name="LabelTitle" FontWeight="Bold"/>
-			</GroupBox.Header>
-			<Grid Margin="4">
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="Auto"/>
-					<ColumnDefinition/>
-				</Grid.ColumnDefinitions>
-				<Grid.RowDefinitions>
-					<RowDefinition />
-					<RowDefinition />
-					<RowDefinition />
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="Auto" />
-				</Grid.RowDefinitions>
-				<TextBlock Grid.Row="0" Grid.Column="0" Text="Created: " />
-				<TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Schema.Created, Converter={StaticResource DateTimeConverter}}" />
-				<TextBlock Grid.Row="1" Grid.Column="0" Text="Container account: " />
-				<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Schema.IsCommon, Converter={StaticResource BooleanConverter}}" />
-				<TextBlock Grid.Row="2" Grid.Column="0" Text="Oracle maintained: " />
-				<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Schema.IsOracleMaintained, Converter={StaticResource BooleanConverter}}" />
-				<TextBlock Grid.Row="3" Grid.Column="0" Text="Account status: " Visibility="{Binding AccountStatus, Converter={StaticResource ObjectToVisibilityConverter}}" />
-				<TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding AccountStatus}" Visibility="{Binding AccountStatus, Converter={StaticResource ObjectToVisibilityConverter}}" />
-				<TextBlock Grid.Row="4" Grid.Column="0" Text="Authentication type: " Visibility="{Binding AuthenticationType, Converter={StaticResource ObjectToVisibilityConverter}}" />
-				<TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding AuthenticationType}" Visibility="{Binding AuthenticationType, Converter={StaticResource ObjectToVisibilityConverter}}" />
-				<TextBlock Grid.Row="5" Grid.Column="0" Text="Default tablespace: " Visibility="{Binding DefaultTablespace, Converter={StaticResource ObjectToVisibilityConverter}}" />
-				<TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding DefaultTablespace}" Visibility="{Binding DefaultTablespace, Converter={StaticResource ObjectToVisibilityConverter}}" />
-				<TextBlock Grid.Row="6" Grid.Column="0" Text="Temporary tablespace: " Visibility="{Binding TemporaryTablespace, Converter={StaticResource ObjectToVisibilityConverter}}" />
-				<TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding TemporaryTablespace}" Visibility="{Binding TemporaryTablespace, Converter={StaticResource ObjectToVisibilityConverter}}" />
-				<TextBlock Grid.Row="7" Grid.Column="0" Text="Profile: " Visibility="{Binding Profile, Converter={StaticResource ObjectToVisibilityConverter}}" />
-				<TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding Profile}" Visibility="{Binding Profile, Converter={StaticResource ObjectToVisibilityConverter}}" />
-				<TextBlock Grid.Row="8" Grid.Column="0" Text="Editions enabled: " Visibility="{Binding EditionsEnabled, Converter={StaticResource ObjectToVisibilityConverter}}" />
-				<TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding EditionsEnabled, Converter={StaticResource BooleanConverter}}" Visibility="{Binding EditionsEnabled, Converter={StaticResource ObjectToVisibilityConverter}}" />
-				<TextBlock Grid.Row="9" Grid.Column="0" Text="Last login: " Visibility="{Binding LastLogin, Converter={StaticResource ObjectToVisibilityConverter}}" />
-				<TextBlock Grid.Row="9" Grid.Column="1" Text="{Binding LastLogin, Converter={StaticResource DateTimeConverter}}" Visibility="{Binding LastLogin, Converter={StaticResource ObjectToVisibilityConverter}}" />
-				<TextBlock Grid.Row="10" Grid.Column="0" Text="Lock date: " Visibility="{Binding LockDate, Converter={StaticResource ObjectToVisibilityConverter}}" />
-				<TextBlock Grid.Row="10" Grid.Column="1" Text="{Binding LockDate, Converter={StaticResource DateTimeConverter}}" Visibility="{Binding LockDate, Converter={StaticResource ObjectToVisibilityConverter}}" />
-				<TextBlock Grid.Row="11" Grid.Column="0" Text="Expiry date: " Visibility="{Binding ExpiryDate, Converter={StaticResource ObjectToVisibilityConverter}}" />
-				<TextBlock Grid.Row="11" Grid.Column="1" Text="{Binding ExpiryDate, Converter={StaticResource DateTimeConverter}}" Visibility="{Binding ExpiryDate, Converter={StaticResource ObjectToVisibilityConverter}}" />
-			</Grid>
-		</GroupBox>
+	<GroupBox BorderThickness="0">
+		<GroupBox.Header>
+			<TextBlock x:Name="LabelTitle" FontWeight="Bold"/>
+		</GroupBox.Header>
+		<Grid Margin="4">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto"/>
+				<ColumnDefinition/>
+			</Grid.ColumnDefinitions>
+			<Grid.RowDefinitions>
+				<RowDefinition />
+				<RowDefinition />
+				<RowDefinition />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+			</Grid.RowDefinitions>
+			<TextBlock Grid.Row="0" Grid.Column="0" Text="Created: " />
+			<TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Schema.Created, Converter={StaticResource DateTimeConverter}}" />
+			<TextBlock Grid.Row="1" Grid.Column="0" Text="Container account: " />
+			<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Schema.IsCommon, Converter={StaticResource BooleanConverter}}" />
+			<TextBlock Grid.Row="2" Grid.Column="0" Text="Oracle maintained: " />
+			<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Schema.IsOracleMaintained, Converter={StaticResource BooleanConverter}}" />
+			<TextBlock Grid.Row="3" Grid.Column="0" Text="Account status: " Visibility="{Binding AccountStatus, Converter={StaticResource ObjectToVisibilityConverter}}" />
+			<TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding AccountStatus}" Visibility="{Binding AccountStatus, Converter={StaticResource ObjectToVisibilityConverter}}" />
+			<TextBlock Grid.Row="4" Grid.Column="0" Text="Authentication type: " Visibility="{Binding AuthenticationType, Converter={StaticResource ObjectToVisibilityConverter}}" />
+			<TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding AuthenticationType}" Visibility="{Binding AuthenticationType, Converter={StaticResource ObjectToVisibilityConverter}}" />
+			<TextBlock Grid.Row="5" Grid.Column="0" Text="Default tablespace: " Visibility="{Binding DefaultTablespace, Converter={StaticResource ObjectToVisibilityConverter}}" />
+			<TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding DefaultTablespace}" Visibility="{Binding DefaultTablespace, Converter={StaticResource ObjectToVisibilityConverter}}" />
+			<TextBlock Grid.Row="6" Grid.Column="0" Text="Temporary tablespace: " Visibility="{Binding TemporaryTablespace, Converter={StaticResource ObjectToVisibilityConverter}}" />
+			<TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding TemporaryTablespace}" Visibility="{Binding TemporaryTablespace, Converter={StaticResource ObjectToVisibilityConverter}}" />
+			<TextBlock Grid.Row="7" Grid.Column="0" Text="Profile: " Visibility="{Binding Profile, Converter={StaticResource ObjectToVisibilityConverter}}" />
+			<TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding Profile}" Visibility="{Binding Profile, Converter={StaticResource ObjectToVisibilityConverter}}" />
+			<TextBlock Grid.Row="8" Grid.Column="0" Text="Editions enabled: " Visibility="{Binding EditionsEnabled, Converter={StaticResource ObjectToVisibilityConverter}}" />
+			<TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding EditionsEnabled, Converter={StaticResource BooleanConverter}}" Visibility="{Binding EditionsEnabled, Converter={StaticResource ObjectToVisibilityConverter}}" />
+			<TextBlock Grid.Row="9" Grid.Column="0" Text="Last login: " Visibility="{Binding LastLogin, Converter={StaticResource ObjectToVisibilityConverter}}" />
+			<TextBlock Grid.Row="9" Grid.Column="1" Text="{Binding LastLogin, Converter={StaticResource DateTimeConverter}}" Visibility="{Binding LastLogin, Converter={StaticResource ObjectToVisibilityConverter}}" />
+			<TextBlock Grid.Row="10" Grid.Column="0" Text="Lock date: " Visibility="{Binding LockDate, Converter={StaticResource ObjectToVisibilityConverter}}" />
+			<TextBlock Grid.Row="10" Grid.Column="1" Text="{Binding LockDate, Converter={StaticResource DateTimeConverter}}" Visibility="{Binding LockDate, Converter={StaticResource ObjectToVisibilityConverter}}" />
+			<TextBlock Grid.Row="11" Grid.Column="0" Text="Expiry date: " Visibility="{Binding ExpiryDate, Converter={StaticResource ObjectToVisibilityConverter}}" />
+			<TextBlock Grid.Row="11" Grid.Column="1" Text="{Binding ExpiryDate, Converter={StaticResource DateTimeConverter}}" Visibility="{Binding ExpiryDate, Converter={StaticResource ObjectToVisibilityConverter}}" />
+		</Grid>
+	</GroupBox>
 
-	</StackPanel>
 </UserControl>

@@ -1229,6 +1229,27 @@ TABLESPACE ""TBS_HQ_PDB""";
 			return Task.FromResult<object>(null);
 		}
 
+		public override Task UpdateTablespaceDetailsAsync(TablespaceDetailModel dataModel, CancellationToken cancellationToken)
+		{
+			dataModel.BlockSize = 8192;
+			dataModel.InitialExtent = 65536;
+			dataModel.MinimumExtents = 1;
+			dataModel.MaximumExtents = 2147483645;
+			dataModel.MaximumSizeBytes = 2147483645;
+			dataModel.MinimumExtentLength = 65536;
+			dataModel.Status = "Online";
+			dataModel.Contents = "Permanent";
+			dataModel.Logging = true;
+			dataModel.ExtentManagement = "Local";
+			dataModel.AllocationType = "System";
+			dataModel.SegmentSpaceManagement = "Auto";
+			dataModel.DefaultTableCompression = "Disabled";
+			dataModel.Retention = "Not Apply";
+			dataModel.PredicateEvaluation = "Host";
+
+			return Task.FromResult<object>(null);
+		}
+
 		private void SetPartitionDetails(PartitionDetailsModelBase dataModel)
 		{
 			dataModel.TablespaceName = "TEST_TABLESPACE_1";

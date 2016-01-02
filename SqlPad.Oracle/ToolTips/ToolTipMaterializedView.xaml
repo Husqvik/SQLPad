@@ -61,6 +61,6 @@
 				<TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding RefreshGroup, Converter={StaticResource SimpleIdentifierConverter}}" Visibility="{Binding RefreshGroup, Converter={StaticResource ObjectToVisibilityConverter}}" />
 			</Grid>
 		</GroupBox>
-		<toolTips:ToolTipTable Padding="0" IsPinnable="False" />
+		<toolTips:ToolTipTable x:Name="ToolTipTable" Padding="0" IsPinnable="False" />
 	</StackPanel>
 </toolTips:PopupBase>

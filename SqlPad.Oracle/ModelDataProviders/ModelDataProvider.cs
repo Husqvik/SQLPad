@@ -222,7 +222,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public override void InitializeCommand(OracleCommand command)
 		{
-			command.CommandText = String.Format(OracleDatabaseCommands.SelectTableDetailsCommandText);
+			command.CommandText = OracleDatabaseCommands.SelectTableDetailsCommandText;
 			command.AddSimpleParameter("OWNER", _objectIdentifier.Owner.Trim('"'));
 			command.AddSimpleParameter("TABLE_NAME", _objectIdentifier.Name.Trim('"'));
 		}
@@ -245,8 +245,52 @@ namespace SqlPad.Oracle.ModelDataProviders
 			DataModel.ClusterName = OracleReaderValueConvert.ToString(reader["CLUSTER_NAME"]);
 			DataModel.TablespaceName = OracleReaderValueConvert.ToString(reader["TABLESPACE_NAME"]);
 			DataModel.SampleRows = OracleReaderValueConvert.ToInt64(reader["SAMPLE_SIZE"]);
-			DataModel.Logging = loggingRaw == DBNull.Value ? (bool?)null : (string)loggingRaw == "YES";
+			DataModel.Logging = loggingRaw == DBNull.Value ? (bool?)null : String.Equals((string)loggingRaw, "YES");
 			DataModel.IsTemporary = (string)reader["TEMPORARY"] == "Y";
+		}
+	}
+
+	internal class TablespaceDetailDataProvider : ModelDataProvider<TablespaceDetailModel>
+	{
+		public TablespaceDetailDataProvider(TablespaceDetailModel dataModel)
+			: base(dataModel)
+		{
+		}
+
+		public override void InitializeCommand(OracleCommand command)
+		{
+			command.CommandText = OracleDatabaseCommands.SelectTablespaceDetails;
+			command.AddSimpleParameter("TABLESPACE_NAME", DataModel.Name);
+		}
+
+		public override async Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
+		{
+			if (!await reader.ReadAsynchronous(cancellationToken))
+			{
+				return;
+			}
+
+			DataModel.BlockSize = Convert.ToInt32(reader["BLOCK_SIZE"]);
+			DataModel.InitialExtent = Convert.ToInt32(reader["INITIAL_EXTENT"]);
+			DataModel.NextExtent = OracleReaderValueConvert.ToInt32(reader["NEXT_EXTENT"]);
+			DataModel.MinimumExtents = Convert.ToInt32(reader["MIN_EXTENTS"]);
+			DataModel.MaximumExtents = Convert.ToInt32(reader["MAX_EXTENTS"]);
+			DataModel.MaximumSizeBytes = Convert.ToInt64(reader["MAX_SIZE"]);
+			DataModel.PercentIncrease = OracleReaderValueConvert.ToInt32(reader["PCT_INCREASE"]);
+			DataModel.MinimumExtentLength = Convert.ToInt32(reader["MIN_EXTLEN"]);
+			DataModel.Status = (string)reader["STATUS"];
+			DataModel.Contents = (string)reader["CONTENTS"];
+			DataModel.Logging = String.Equals((string)reader["LOGGING"], "YES");
+			DataModel.ForceLogging = String.Equals((string)reader["FORCE_LOGGING"], "YES");
+			DataModel.ExtentManagement = (string)reader["EXTENT_MANAGEMENT"];
+			DataModel.AllocationType = (string)reader["ALLOCATION_TYPE"];
+			DataModel.SegmentSpaceManagement = (string)reader["SEGMENT_SPACE_MANAGEMENT"];
+			DataModel.DefaultTableCompression = (string)reader["DEFAULT_TABLE_COMPRESSION"];
+			DataModel.Retention = (string)reader["RETENTION"];
+			DataModel.IsBigFile = String.Equals((string)reader["BIGFILE"], "YES");
+			DataModel.PredicateEvaluation = (string)reader["PREDICATE_EVALUATION"];
+			DataModel.IsEncrypted = String.Equals((string)reader["ENCRYPTED"], "YES");
+			DataModel.CompressFor = OracleReaderValueConvert.ToString(reader["COMPRESS_FOR"]);
 		}
 	}
 

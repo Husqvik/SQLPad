@@ -867,6 +867,8 @@ namespace SqlPad.Oracle.SemanticModel
 	public class OraclePlSqlParameter : OraclePlSqlVariable
 	{
 		public ParameterDirection Direction { get; set; }
+
+		public bool IsReadOnly => Direction == ParameterDirection.Input;
 	}
 
 	public class OraclePlSqlType : OraclePlSqlElement

@@ -14,13 +14,12 @@
 				<ResourceDictionary Source="../Themes/Common.xaml"/>
 				<ResourceDictionary Source="../Themes/ToolTipDataGrid.xaml"/>
 			</ResourceDictionary.MergedDictionaries>
+
+			<toolTips:InMemoryAllocationStatusConverter x:Key="InMemoryAllocationStatusConverter" />
 		</ResourceDictionary>
 	</toolTips:PopupBase.Resources>
 
-    <StackPanel>
-		<StackPanel.Resources>
-			<toolTips:InMemoryAllocationStatusConverter x:Key="InMemoryAllocationStatusConverter" />
-		</StackPanel.Resources>
+	<StackPanel>
 		<GroupBox BorderThickness="0">
 			<GroupBox.Header>
 				<TextBlock Text="{Binding Title}" FontWeight="Bold"/>
@@ -51,8 +50,8 @@
 					<RowDefinition Height="Auto" />
 				</Grid.RowDefinitions>
 				<TextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding Comment}" Visibility="{Binding Comment, Converter={StaticResource ObjectToVisibilityConverter}}" Style="{StaticResource TextBoxBackgroundLessReadOnly}" />
-				<TextBlock Grid.Row="1" Grid.Column="0" Text="Tablespace: " Visibility="{Binding TablespaceNameVisibility}" />
-				<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding TablespaceName}" Visibility="{Binding TablespaceNameVisibility}" />
+				<TextBlock Grid.Row="1" Grid.Column="0" Text="Tablespace: " Visibility="{Binding TablespaceName, Converter={StaticResource ObjectToVisibilityConverter}}" />
+				<toolTips:TablespaceDetails x:Name="TablespaceDetails" Grid.Row="1" Grid.Column="1" Visibility="{Binding TablespaceName, Converter={StaticResource ObjectToVisibilityConverter}}" TablespaceName="{Binding TablespaceName}" />
 				<TextBlock Grid.Row="2" Grid.Column="0" Text="Organization: " />
 				<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Organization}" />
 				<TextBlock Grid.Row="3" Grid.Column="0" Text="Partition keys: " Visibility="{Binding PartitionKeys, Converter={StaticResource ObjectToVisibilityConverter}}" />

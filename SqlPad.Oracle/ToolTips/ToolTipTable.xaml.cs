@@ -74,13 +74,7 @@ namespace SqlPad.Oracle.ToolTips
 		public string TablespaceName
 		{
 			get { return _tablespaceName; }
-			set
-			{
-				if (UpdateValueAndRaisePropertyChanged(ref _tablespaceName, value))
-				{
-					RaisePropertyChanged(nameof(TablespaceNameVisibility));
-				}
-			}
+			set { UpdateValueAndRaisePropertyChanged(ref _tablespaceName, value); }
 		}
 
 		public DateTime? LastAnalyzed
@@ -95,9 +89,7 @@ namespace SqlPad.Oracle.ToolTips
 			set { UpdateValueAndRaisePropertyChanged(ref _averageRowSize, value); }
 		}
 
-		public Visibility TablespaceNameVisibility => String.IsNullOrEmpty(_tablespaceName) ? Visibility.Collapsed : Visibility.Visible;
-
-	    public long? AllocatedBytes
+		public long? AllocatedBytes
 		{
 			get { return _allocatedBytes; }
 			set { UpdateValueAndRaisePropertyChanged(ref _allocatedBytes, value); }
