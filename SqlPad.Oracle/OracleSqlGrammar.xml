@@ -8177,9 +8177,13 @@
           <NonTerminal Id="GroupingClauseChained" IsOptional="true" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="Expression" />
+          <NonTerminal Id="ParenthesisEnclosedExpressionList" />
           <NonTerminal Id="GroupingClauseChained" IsOptional="true" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="Expression" />
+          <NonTerminal Id="GroupingClauseChained" IsOptional="true" />
+        </Sequence> 
       </Sequences>
     </Rule>
 
