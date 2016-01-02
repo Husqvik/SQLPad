@@ -43,7 +43,7 @@ namespace SqlPad.Oracle.ToolTips
 		private int? _nextExtent;
 		private int _minimumExtents;
 		private int? _maximumExtents;
-		private long _maximumSizeBlocks;
+		private long _segmentMaximumSizeBlocks;
 		private int? _percentIncrease;
 		private int _minimumExtentSizeBytes;
 		private string _status;
@@ -98,10 +98,10 @@ namespace SqlPad.Oracle.ToolTips
 			set { UpdateValueAndRaisePropertyChanged(ref _maximumExtents, value); }
 		}
 
-		public long MaximumSizeBlocks
+		public long SegmentMaximumSizeBlocks
 		{
-			get { return _maximumSizeBlocks; }
-			set { UpdateValueAndRaisePropertyChanged(ref _maximumSizeBlocks, value); }
+			get { return _segmentMaximumSizeBlocks; }
+			set { UpdateValueAndRaisePropertyChanged(ref _segmentMaximumSizeBlocks, value); }
 		}
 
 		public int? PercentIncrease

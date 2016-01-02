@@ -1236,7 +1236,7 @@ TABLESPACE ""TBS_HQ_PDB""";
 			dataModel.InitialExtent = 65536;
 			dataModel.MinimumExtents = 1;
 			dataModel.MaximumExtents = 2147483645;
-			dataModel.MaximumSizeBlocks = 2147483645;
+			dataModel.SegmentMaximumSizeBlocks = 2147483645;
 			dataModel.MinimumExtentSizeBytes = 65536;
 			dataModel.Status = "Online";
 			dataModel.Contents = "Permanent";

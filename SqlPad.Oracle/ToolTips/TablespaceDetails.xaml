@@ -52,9 +52,9 @@
 					<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Contents}" />
 					<TextBlock Grid.Row="2" Grid.Column="0" Text="Block size: " />
 					<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding BlockSize, Converter={StaticResource DataSpaceConverter}}" />
-					<TextBlock Grid.Row="3" Grid.Column="0" Text="Maximum size: " />
+					<TextBlock Grid.Row="3" Grid.Column="0" Text="Default max. segment size: " />
 					<TextBlock Grid.Row="3" Grid.Column="1">
-						<Run Text="{Binding MaximumSizeBlocks, Converter={StaticResource PrettyPrintIntegerConverter}}" /><Run Text=" blocks" />
+						<Run Text="{Binding SegmentMaximumSizeBlocks, Converter={StaticResource PrettyPrintIntegerConverter}}" /><Run Text=" blocks" />
 					</TextBlock>
 					<TextBlock Grid.Row="4" Grid.Column="0" Text="Status: " />
 					<TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Status}" />
@@ -84,11 +84,11 @@
 					<TextBlock Grid.Row="16" Grid.Column="1" Text="{Binding InitialExtent, Converter={StaticResource DataSpaceConverter}}" />
 					<TextBlock Grid.Row="17" Grid.Column="0" Text="Default next extent: " />
 					<TextBlock Grid.Row="17" Grid.Column="1" Text="{Binding NextExtent, Converter={StaticResource DataSpaceConverter}}" />
-					<TextBlock Grid.Row="18" Grid.Column="0" Text="Default minimum extents: " />
+					<TextBlock Grid.Row="18" Grid.Column="0" Text="Default min. extents: " />
 					<TextBlock Grid.Row="18" Grid.Column="1" Text="{Binding MinimumExtents, Converter={StaticResource PrettyPrintIntegerConverter}}" />
-					<TextBlock Grid.Row="19" Grid.Column="0" Text="Default maximum extents: " />
+					<TextBlock Grid.Row="19" Grid.Column="0" Text="Default max. extents: " />
 					<TextBlock Grid.Row="19" Grid.Column="1" Text="{Binding MaximumExtents, Converter={StaticResource PrettyPrintIntegerConverter}}" />
-					<TextBlock Grid.Row="20" Grid.Column="0" Text="Minimum extent size: " />
+					<TextBlock Grid.Row="20" Grid.Column="0" Text="Min. extent size: " />
 					<TextBlock Grid.Row="20" Grid.Column="1" Text="{Binding MinimumExtentSizeBytes, Converter={StaticResource DataSpaceConverter}}" />
 					<TextBlock Grid.Row="21" Grid.Column="0" Text="Default extent size increase: " Visibility="{Binding PercentIncrease, Converter={StaticResource ObjectToVisibilityConverter}}" />
 					<TextBlock Grid.Row="21" Grid.Column="1" Visibility="{Binding PercentIncrease, Converter={StaticResource ObjectToVisibilityConverter}}">

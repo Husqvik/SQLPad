@@ -275,7 +275,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			DataModel.NextExtent = OracleReaderValueConvert.ToInt32(reader["NEXT_EXTENT"]);
 			DataModel.MinimumExtents = Convert.ToInt32(reader["MIN_EXTENTS"]);
 			DataModel.MaximumExtents = OracleReaderValueConvert.ToInt32(reader["MAX_EXTENTS"]);
-			DataModel.MaximumSizeBlocks = Convert.ToInt64(reader["MAX_SIZE"]);
+			DataModel.SegmentMaximumSizeBlocks = Convert.ToInt64(reader["MAX_SIZE"]);
 			DataModel.PercentIncrease = OracleReaderValueConvert.ToInt32(reader["PCT_INCREASE"]);
 			DataModel.MinimumExtentSizeBytes = Convert.ToInt32(reader["MIN_EXTLEN"]);
 			DataModel.Status = (string)reader["STATUS"];

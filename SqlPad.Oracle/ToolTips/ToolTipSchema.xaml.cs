@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Windows;
-using System.Windows.Controls;
 using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.DataDictionary;
 
 namespace SqlPad.Oracle.ToolTips
 {
-	public partial class ToolTipSchema : IToolTip
+	public partial class ToolTipSchema
 	{
-		public event EventHandler Pin;
-
 		public ToolTipSchema(OracleSchemaModel dataModel)
 		{
 			InitializeComponent();
@@ -21,10 +17,6 @@ namespace SqlPad.Oracle.ToolTips
 
 			LabelTitle.Text = $"{dataModel.Schema.Name.ToSimpleIdentifier()} ({objectType})";
 		}
-
-		public Control Control => this;
-
-	    public FrameworkElement InnerContent => this;
 	}
 
 	public class OracleSchemaModel : ModelBase
