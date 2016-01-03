@@ -1101,6 +1101,17 @@ WHERE
 
 			_editor.Text.ShouldBe("SELECT T.\"CaseSensitiveColumn\", T.VIRTUAL_COLUMN FROM \"CaseSensitiveTable\" T");
 		}
+		
+		[Test(Description = @""), STAThread]
+		public void TestExpandAsteriskCommandWithoutSpaces()
+		{
+			_editor.Text = "SELECT*FROM dual";
+			_editor.CaretOffset = 6;
+
+			ExecuteCommand(OracleCommands.ExpandAsterisk, new TestCommandSettings(new CommandSettingsModel()));
+
+			_editor.Text.ShouldBe("SELECT dual.DUMMY FROM dual");
+		}
 
 		[Test(Description = @""), STAThread]
 		public void TestExpandAsteriskCommandWithAmbiguousColumnName()

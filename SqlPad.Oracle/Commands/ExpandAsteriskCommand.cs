@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -17,7 +18,7 @@ namespace SqlPad.Oracle.Commands
 	internal class ExpandAsteriskCommand : OracleCommandBase
 	{
 		private CommandSettingsModel _settingsModel;
-		private SourcePosition _sourcePosition;
+		private StatementGrammarNode _asteriskNode;
 		public const string Title = "Expand";
 
 		private ExpandAsteriskCommand(ActionExecutionContext executionContext)
@@ -66,7 +67,7 @@ namespace SqlPad.Oracle.Commands
 
 			var expandedColumns = new List<ExpandedColumn>();
 			var databaseLinkReferences = new List<OracleObjectWithColumnsReference>();
-			_sourcePosition = FillColumnNames(expandedColumns, databaseLinkReferences, true);
+			_asteriskNode = FillColumnNames(expandedColumns, databaseLinkReferences, true);
 
 			var useDefaultSettings = _settingsModel.UseDefaultSettings == null || _settingsModel.UseDefaultSettings();
 
@@ -168,30 +169,49 @@ namespace SqlPad.Oracle.Commands
 				.ToArray();
 
 			if (columnNames.Length == 0)
+			{
 				return TextSegment.Empty;
+			}
+
+			var builder = new StringBuilder(String.Join(", ", columnNames));
+			var addSpacePrefix =
+				_asteriskNode.SourcePosition.IndexStart - 1 == _asteriskNode.PrecedingTerminal?.SourcePosition.IndexEnd &&
+				!String.Equals(_asteriskNode.PrecedingTerminal.Id, Terminals.Comma);
+			if (addSpacePrefix)
+			{
+				builder.Insert(0, " ");
+			}
+
+			var addSpacePostfix =
+				_asteriskNode.SourcePosition.IndexEnd + 1 == _asteriskNode.FollowingTerminal?.SourcePosition.IndexStart &&
+				!String.Equals(_asteriskNode.FollowingTerminal.Id, Terminals.Comma);
+			if (addSpacePostfix)
+			{
+				builder.Append(" ");
+			}
 
 			var textSegment =
 				new TextSegment
 				{
-					IndextStart = _sourcePosition.IndexStart,
-					Length = _sourcePosition.Length,
-					Text = String.Join(", ", columnNames)
+					IndextStart = _asteriskNode.SourcePosition.IndexStart,
+					Length = _asteriskNode.SourcePosition.Length,
+					Text = builder.ToString()
 				};
 
 			return textSegment;
 		}
 
-		private SourcePosition FillColumnNames(List<ExpandedColumn> columnNames, List<OracleObjectWithColumnsReference> databaseLinkReferences, bool includePseudoColumns)
+		private StatementGrammarNode FillColumnNames(List<ExpandedColumn> columnNames, List<OracleObjectWithColumnsReference> databaseLinkReferences, bool includePseudoColumns)
 		{
-			var sourcePosition = SourcePosition.Empty;
+			StatementGrammarNode asteriskNode;
 			var asteriskReference = CurrentQueryBlock.Columns.FirstOrDefault(c => c.RootNode == CurrentNode);
 			if (asteriskReference == null)
 			{
 				var columnReference = CurrentQueryBlock.Columns.SelectMany(c => c.ColumnReferences).FirstOrDefault(c => c.ColumnNode == CurrentNode);
 				if (columnReference == null || columnReference.ObjectNodeObjectReferences.Count != 1)
-					return sourcePosition;
+					return null;
 
-				sourcePosition = columnReference.SelectListColumn.RootNode.SourcePosition;
+				asteriskNode = columnReference.SelectListColumn.RootNode;
 				var objectReference = columnReference.ObjectNodeObjectReferences.First();
 
 				if (objectReference.DatabaseLink == null)
@@ -221,16 +241,18 @@ namespace SqlPad.Oracle.Commands
 				databaseLinkReferences.AddRange(CurrentQueryBlock.ObjectReferences.Where(o => o.DatabaseLink != null));
 
 				if (!includePseudoColumns)
-					return sourcePosition;
+				{
+					return null;
+				}
 
 				var pseudoColumns = CurrentQueryBlock.ObjectReferences.SelectMany(GetPseudoColumns);
 
 				columnNames.InsertRange(0, pseudoColumns);
 
-				sourcePosition = asteriskReference.RootNode.SourcePosition;
+				asteriskNode = asteriskReference.RootNode;
 			}
 
-			return sourcePosition;
+			return asteriskNode;
 		}
 
 		private static IEnumerable<ExpandedColumn> GetPseudoColumns(OracleDataObjectReference reference)
