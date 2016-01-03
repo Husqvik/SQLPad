@@ -48,7 +48,7 @@
 						<RowDefinition Height="Auto" />
 						<RowDefinition Height="Auto" />
 					</Grid.RowDefinitions>
-					<TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding ElementName=TablespaceDetailControl, Path=Tablespace.Name}" />
+					<TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding Name}" />
 					<TextBlock Grid.Row="1" Grid.Column="0" Text="Contents: " />
 					<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Contents}" />
 					<TextBlock Grid.Row="2" Grid.Column="0" Text="Block size: " />

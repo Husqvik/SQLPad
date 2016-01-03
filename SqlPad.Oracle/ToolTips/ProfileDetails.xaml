@@ -1,0 +1,105 @@
+﻿<UserControl x:Class="SqlPad.Oracle.ToolTips.ProfileDetails"
+             x:Name="ProfileDetailControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:toolTips="clr-namespace:SqlPad.Oracle.ToolTips"
+             mc:Ignorable="d"
+             d:DesignHeight="28" d:DesignWidth="200">
+	<UserControl.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="../Themes/Common.xaml"/>
+				<ResourceDictionary Source="../Themes/ToolTipDataGrid.xaml"/>
+			</ResourceDictionary.MergedDictionaries>
+
+			<toolTips:ProfileLimitConverter x:Key="ProfileLimitConverter" />
+
+			<DataTemplate x:Key="DataTemplateTablespaceName">
+				<TextBlock><Hyperlink Click="ProfileHyperlinkClickHandler"><Run Text="{Binding ElementName=ProfileDetailControl, Path=Profile.Name}" /></Hyperlink></TextBlock>
+			</DataTemplate>
+
+			<DataTemplate x:Key="DataTemplateTablespaceDetails">
+				<Grid DataContext="{Binding ElementName=ProfileDetailControl, Path=Profile}">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto"/>
+						<ColumnDefinition/>
+					</Grid.ColumnDefinitions>
+					<Grid.RowDefinitions>
+						<RowDefinition />
+						<RowDefinition />
+						<RowDefinition />
+						<RowDefinition />
+						<RowDefinition />
+						<RowDefinition />
+						<RowDefinition />
+						<RowDefinition />
+						<RowDefinition />
+						<RowDefinition />
+						<RowDefinition />
+						<RowDefinition />
+						<RowDefinition />
+						<RowDefinition />
+						<RowDefinition />
+						<RowDefinition />
+						<RowDefinition />
+						<RowDefinition />
+						<RowDefinition />
+						<RowDefinition />
+						<RowDefinition />
+						<RowDefinition Height="Auto" />
+						<RowDefinition Height="Auto" />
+					</Grid.RowDefinitions>
+
+					<TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding Name}" />
+					<TextBlock Grid.Row="1" Grid.Column="0" Text="Sessions per user: " />
+					<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SessionsPerUser, Converter={StaticResource ProfileLimitConverter}}" />
+					<TextBlock Grid.Row="2" Grid.Column="0" Text="CPU per session: " />
+					<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding CpuPerSession, Converter={StaticResource ProfileLimitConverter}}" />
+					<TextBlock Grid.Row="3" Grid.Column="0" Text="CPU per call: " />
+					<TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding CpuPerCall, Converter={StaticResource ProfileLimitConverter}}" />
+					<TextBlock Grid.Row="4" Grid.Column="0" Text="Logical reads per session: " />
+					<TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding LogicalReadsPerSession, Converter={StaticResource ProfileLimitConverter}}" />
+					<TextBlock Grid.Row="5" Grid.Column="0" Text="Logical reads per call" />
+					<TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding LogicalReadsPerCall, Converter={StaticResource ProfileLimitConverter}}" />
+					<TextBlock Grid.Row="6" Grid.Column="0" Text="Idle time: " />
+					<TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding IdleTime, Converter={StaticResource ProfileLimitConverter}, ConverterParameter=' min'}" />
+					<TextBlock Grid.Row="7" Grid.Column="0" Text="Connect time: " />
+					<TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding ConnectTime, Converter={StaticResource ProfileLimitConverter}, ConverterParameter=' min'}" />
+					<TextBlock Grid.Row="8" Grid.Column="0" Text="Password life time: " />
+					<TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding PasswordLifeTime, Converter={StaticResource ProfileLimitConverter}, ConverterParameter=' days'}" />
+					<TextBlock Grid.Row="9" Grid.Column="0" Text="Password reuse time: " />
+					<TextBlock Grid.Row="9" Grid.Column="1" Text="{Binding PasswordReuseTime, Converter={StaticResource ProfileLimitConverter}, ConverterParameter=' days'}" />
+					<TextBlock Grid.Row="10" Grid.Column="0" Text="Password reuse max: " />
+					<TextBlock Grid.Row="10" Grid.Column="1" Text="{Binding PasswordReuseMax, Converter={StaticResource ProfileLimitConverter}}" />
+					<TextBlock Grid.Row="11" Grid.Column="0" Text="Password lock time: " />
+					<TextBlock Grid.Row="11" Grid.Column="1" Text="{Binding PasswordLockTime, Converter={StaticResource ProfileLimitConverter}, ConverterParameter=' days'}" />
+					<TextBlock Grid.Row="12" Grid.Column="0" Text="Password grace time: " />
+					<TextBlock Grid.Row="12" Grid.Column="1" Text="{Binding PasswordGraceTime, Converter={StaticResource ProfileLimitConverter}, ConverterParameter=' days'}" />
+					<TextBlock Grid.Row="13" Grid.Column="0" Text="Failed login attempts: " />
+					<TextBlock Grid.Row="13" Grid.Column="1" Text="{Binding FailedLoginAttempts, Converter={StaticResource ProfileLimitConverter}}" />
+					<TextBlock Grid.Row="14" Grid.Column="0" Text="Password verify function: " />
+					<TextBlock Grid.Row="14" Grid.Column="1" Text="{Binding PasswordVerifyFunction}" />
+					<TextBlock Grid.Row="15" Grid.Column="0" Text="Composite limit: " />
+					<TextBlock Grid.Row="15" Grid.Column="1" Text="{Binding CompositeLimit, Converter={StaticResource ProfileLimitConverter}}" />
+					<TextBlock Grid.Row="16" Grid.Column="0" Text="Default initial extent: " />
+					<TextBlock Grid.Row="16" Grid.Column="1" Text="{Binding PrivateSystemGlobalArea, Converter={StaticResource ProfileLimitConverter}}" />
+				</Grid>
+			</DataTemplate>
+		</ResourceDictionary>
+	</UserControl.Resources>
+
+	<ContentControl>
+		<ContentControl.Style>
+			<Style>
+				<Style.Triggers>
+					<DataTrigger Binding="{Binding ElementName=ProfileDetailControl, Path=IsDetailVisible}" Value="True">
+						<Setter Property="ContentControl.ContentTemplate" Value="{StaticResource DataTemplateTablespaceDetails}"></Setter>
+					</DataTrigger>
+				</Style.Triggers>
+				<Setter Property="ContentControl.ContentTemplate" Value="{StaticResource DataTemplateTablespaceName}" />
+			</Style>
+		</ContentControl.Style>
+	</ContentControl>
+</UserControl>

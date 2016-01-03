@@ -222,6 +222,9 @@
     <Compile Include="ToolTips\IndexList.xaml.cs">
       <DependentUpon>IndexList.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ToolTips\ProfileDetails.xaml.cs">
+      <DependentUpon>ProfileDetails.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ToolTips\TablespaceDetails.xaml.cs">
       <DependentUpon>TablespaceDetails.xaml</DependentUpon>
     </Compile>
@@ -354,6 +357,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="ToolTips\IndexList.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="ToolTips\ProfileDetails.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

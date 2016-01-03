@@ -31,9 +31,11 @@ namespace SqlPad.Oracle.ToolTips
 		private DateTime? _expiryDate;
 		private DateTime? _lastLogin;
 
-		public TablespaceDetailModel DefaultTablespaceDataModel { get; } = new TablespaceDetailModel();
+		public TablespaceDetailModel DefaultTablespaceModel { get; } = new TablespaceDetailModel();
 
-		public TablespaceDetailModel TemporaryTablespaceDataModel { get; } = new TablespaceDetailModel();
+		public TablespaceDetailModel TemporaryTablespaceModel { get; } = new TablespaceDetailModel();
+
+		public ProfileDetailModel ProfileModel { get; } = new ProfileDetailModel();
 
 		public OracleSchema Schema { get; set; }
 
@@ -50,7 +52,7 @@ namespace SqlPad.Oracle.ToolTips
 			{
 				if (UpdateValueAndRaisePropertyChanged(ref _defaultTablespace, value))
 				{
-					DefaultTablespaceDataModel.Name = value;
+					DefaultTablespaceModel.Name = value;
 				}
 			}
 		}
@@ -62,7 +64,7 @@ namespace SqlPad.Oracle.ToolTips
 			{
 				if (UpdateValueAndRaisePropertyChanged(ref _temporaryTablespace, value))
 				{
-					TemporaryTablespaceDataModel.Name = value;
+					TemporaryTablespaceModel.Name = value;
 				}
 			}
 		}
@@ -70,7 +72,13 @@ namespace SqlPad.Oracle.ToolTips
 		public string Profile
 		{
 			get { return _profile; }
-			set { UpdateValueAndRaisePropertyChanged(ref _profile, value); }
+			set
+			{
+				if (UpdateValueAndRaisePropertyChanged(ref _profile, value))
+				{
+					ProfileModel.Name = value;
+				}
+			}
 		}
 
 		public string AuthenticationType

@@ -334,6 +334,91 @@ namespace SqlPad.Oracle.ModelDataProviders
 		}
 	}
 
+	internal class ProfileDetailsDataProvider : ModelDataProvider<ProfileDetailModel>
+	{
+		public ProfileDetailsDataProvider(ProfileDetailModel dataModel)
+			: base(dataModel)
+		{
+		}
+
+		public override void InitializeCommand(OracleCommand command)
+		{
+			command.CommandText = OracleDatabaseCommands.SelectProfileDetails;
+			command.AddSimpleParameter("PROFILE", DataModel.Name);
+		}
+
+		public override async Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
+		{
+			while (await reader.ReadAsynchronous(cancellationToken))
+			{
+				var resourceName = (string)reader["RESOURCE_NAME"];
+				var limitRaw = (string)reader["LIMIT"];
+				int? limit = null;
+				var passwordVerifyFunction = String.Empty;
+				if (String.Equals(resourceName, "PASSWORD_VERIFY_FUNCTION"))
+				{
+					passwordVerifyFunction = String.Equals(limitRaw, "NULL") ? "Not set" : limitRaw;
+				}
+				else
+				{
+					limit = String.Equals(limitRaw, "UNLIMITED") ? (int?)null : Convert.ToInt32(limitRaw);
+				}
+
+				switch (resourceName)
+				{
+					case "SESSIONS_PER_USER":
+						DataModel.SessionsPerUser = limit;
+						break;
+					case "COMPOSITE_LIMIT":
+						DataModel.CompositeLimit = limit;
+						break;
+					case "CPU_PER_SESSION":
+						DataModel.CpuPerSession = limit == null ? (TimeSpan?)null : TimeSpan.FromMilliseconds(limit.Value * 10L);
+						break;
+					case "CPU_PER_CALL":
+						DataModel.CpuPerCall = limit == null ? (TimeSpan?)null : TimeSpan.FromMilliseconds(limit.Value * 10L);
+						break;
+					case "LOGICAL_READS_PER_SESSION":
+						DataModel.LogicalReadsPerSession = limit;
+						break;
+					case "LOGICAL_READS_PER_CALL":
+						DataModel.LogicalReadsPerCall = limit;
+						break;
+					case "IDLE_TIME":
+						DataModel.IdleTime = limit;
+						break;
+					case "CONNECT_TIME":
+						DataModel.ConnectTime = limit;
+						break;
+					case "PRIVATE_SGA":
+						DataModel.PrivateSystemGlobalArea = limit;
+						break;
+					case "FAILED_LOGIN_ATTEMPTS":
+						DataModel.FailedLoginAttempts = limit;
+						break;
+					case "PASSWORD_LIFE_TIME":
+						DataModel.PasswordLifeTime = limit;
+						break;
+					case "PASSWORD_REUSE_TIME":
+						DataModel.PasswordReuseTime = limit;
+						break;
+					case "PASSWORD_REUSE_MAX":
+						DataModel.PasswordReuseMax = limit;
+						break;
+					case "PASSWORD_VERIFY_FUNCTION":
+						DataModel.PasswordVerifyFunction = passwordVerifyFunction;
+						break;
+					case "PASSWORD_LOCK_TIME":
+						DataModel.PasswordLockTime = limit;
+						break;
+					case "PASSWORD_GRACE_TIME":
+						DataModel.PasswordGraceTime = limit;
+						break;
+				}
+			}
+		}
+	}
+
 	internal class CommentDataProvider : ModelDataProvider<IModelWithComment>
 	{
 		private readonly OracleObjectIdentifier _objectIdentifier;

@@ -394,11 +394,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 		public async override Task UpdateUserDetailsAsync(OracleSchemaModel dataModel, CancellationToken cancellationToken)
 		{
 			var userDetailDataProvider = new UserDataProvider(dataModel);
-			var defaultTablespaceDetailDataProvider = new TablespaceDetailDataProvider(dataModel.DefaultTablespaceDataModel);
-			var defaultDatafileDataProvider = new TablespaceFilesDataProvider(dataModel.DefaultTablespaceDataModel);
-			var temporaryTablespaceDetailDataProvider = new TablespaceDetailDataProvider(dataModel.TemporaryTablespaceDataModel);
-			var temporaryDatafileDataProvider = new TablespaceFilesDataProvider(dataModel.TemporaryTablespaceDataModel);
-			await UpdateModelAsync(cancellationToken, true, userDetailDataProvider, defaultTablespaceDetailDataProvider, temporaryTablespaceDetailDataProvider, defaultDatafileDataProvider, temporaryDatafileDataProvider);
+			var defaultTablespaceDetailDataProvider = new TablespaceDetailDataProvider(dataModel.DefaultTablespaceModel);
+			var defaultDatafileDataProvider = new TablespaceFilesDataProvider(dataModel.DefaultTablespaceModel);
+			var temporaryTablespaceDetailDataProvider = new TablespaceDetailDataProvider(dataModel.TemporaryTablespaceModel);
+			var temporaryDatafileDataProvider = new TablespaceFilesDataProvider(dataModel.TemporaryTablespaceModel);
+			var profileDataProvider = new ProfileDetailsDataProvider(dataModel.ProfileModel);
+			await UpdateModelAsync(cancellationToken, true, userDetailDataProvider, defaultTablespaceDetailDataProvider, temporaryTablespaceDetailDataProvider, defaultDatafileDataProvider, temporaryDatafileDataProvider, profileDataProvider);
 		}
 
 		public async override Task<IReadOnlyList<string>> GetRemoteTableColumnsAsync(string databaseLink, OracleObjectIdentifier schemaObject, CancellationToken cancellationToken)

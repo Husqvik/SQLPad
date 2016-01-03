@@ -1315,8 +1315,8 @@ TABLESPACE ""TBS_HQ_PDB""";
 			dataModel.LockDate = new DateTime(2015, 7, 13, 22, 47, 31);
 			dataModel.ExpiryDate = new DateTime(2015, 7, 13, 22, 47, 32);
 
-			SetTablespaceDetails(dataModel.DefaultTablespaceDataModel);
-			SetTablespaceDetails(dataModel.TemporaryTablespaceDataModel);
+			SetTablespaceDetails(dataModel.DefaultTablespaceModel);
+			SetTablespaceDetails(dataModel.TemporaryTablespaceModel);
 
 			return Task.FromResult((object)null);
 		}
