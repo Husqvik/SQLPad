@@ -122,10 +122,23 @@ namespace SqlPad.Oracle.SemanticModel
 
 						SetStatementModelIfFound(cursor, node[NonTerminals.CursorSource, NonTerminals.SelectStatement]);
 
+						program.Variables.Add(cursor);
+
 						var cursorReferenceIdentifier = node[NonTerminals.CursorSource, Terminals.CursorIdentifier];
 						if (cursorReferenceIdentifier != null)
 						{
-							// TODO
+							var cursorReference =
+								new OraclePlSqlVariableReference
+								{
+									RootNode = cursorReferenceIdentifier.ParentNode,
+									IdentifierNode = cursorReferenceIdentifier,
+									//ObjectNode = cursorIdentifierNode.ParentNode[NonTerminals.ObjectPrefix, Terminals.ObjectIdentifier],
+									//OwnerNode = cursorIdentifierNode.ParentNode[NonTerminals.SchemaPrefix, Terminals.SchemaIdentifier],
+									Container = program,
+									PlSqlProgram = program
+								};
+
+							program.PlSqlVariableReferences.Add(cursorReference);
 						}
 					}
 
@@ -382,6 +395,7 @@ namespace SqlPad.Oracle.SemanticModel
 				// TODO: packages/triggers/types
 				//var programDefinitionNodes = Statement.RootNode.GetDescendants(NonTerminals.FunctionDefinition, NonTerminals.ProcedureDefinition);
 				//_programs.AddRange(programDefinitionNodes.Select(n => new OraclePlSqlProgram { RootNode = n }));
+				Initialize();
 			}
 		}
 

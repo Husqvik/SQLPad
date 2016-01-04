@@ -159,6 +159,8 @@ namespace SqlPad.Oracle.ToolTips
 
 						goto default;
 					case Terminals.DatabaseLinkIdentifier:
+					case Terminals.Dot:
+					case Terminals.AtCharacter:
 						var databaseLink = GetDatabaseLink(queryBlock, node);
 						if (databaseLink == null)
 						{

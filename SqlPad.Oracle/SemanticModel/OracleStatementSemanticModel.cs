@@ -146,7 +146,7 @@ namespace SqlPad.Oracle.SemanticModel
 			NonQueryBlockTerminals = StatementGrammarNode.EmptyArray;
 		}
 
-		private void Initialize()
+		protected void Initialize()
 		{
 			var queryBlockTerminalListQueue = new Stack<KeyValuePair<OracleQueryBlock, List<StatementGrammarNode>>>();
 			var queryBlockTerminalList = new KeyValuePair<OracleQueryBlock, List<StatementGrammarNode>>();
