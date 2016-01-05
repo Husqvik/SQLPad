@@ -402,12 +402,19 @@ namespace SqlPad.Oracle.SemanticModel
 		private void ResolveSqlStatements(OraclePlSqlProgram program)
 		{
 			var sqlStatementNodes = program.RootNode.GetPathFilterDescendants(
-				n => !String.Equals(n.Id, NonTerminals.ItemList2) && (!String.Equals(n.Id, NonTerminals.PlSqlBlock) || !String.Equals(n.ParentNode.Id, NonTerminals.PlSqlStatementType)),
+				n => !String.Equals(n.Id, NonTerminals.ItemList2) && !(String.Equals(n.Id, NonTerminals.PlSqlBlock) && String.Equals(n.ParentNode.Id, NonTerminals.PlSqlStatementType)),
 				NonTerminals.SelectStatement, NonTerminals.InsertStatement, NonTerminals.UpdateStatement, NonTerminals.MergeStatement);
 
 			foreach (var sqlStatementNode in sqlStatementNodes)
 			{
-				var childStatement = new OracleStatement { RootNode = sqlStatementNode, ParseStatus = Statement.ParseStatus, SourcePosition = sqlStatementNode.SourcePosition };
+				var childStatement =
+					new OracleStatement
+					{
+						RootNode = sqlStatementNode,
+						ParseStatus = Statement.ParseStatus,
+						SourcePosition = sqlStatementNode.SourcePosition
+					};
+
 				var childStatementSemanticModel = new OracleStatementSemanticModel(sqlStatementNode.GetText(StatementText), childStatement, DatabaseModel).Build(CancellationToken);
 				program.ChildModels.Add(childStatementSemanticModel);
 

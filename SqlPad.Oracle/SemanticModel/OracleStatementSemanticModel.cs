@@ -66,6 +66,8 @@ namespace SqlPad.Oracle.SemanticModel
 
 		protected CancellationToken CancellationToken = CancellationToken.None;
 
+		private StatementGrammarNode DmlRootNode => String.Equals(Statement.RootNode.Id, NonTerminals.StandaloneStatement) ? Statement.RootNode[0, 0] : Statement.RootNode;
+
 		public OracleDatabaseModelBase DatabaseModel
 		{
 			get
@@ -1504,7 +1506,7 @@ namespace SqlPad.Oracle.SemanticModel
 			ResolveMainObjectReferenceUpdateOrDelete();
 			ResolveMainObjectReferenceMerge();
 
-			var rootNode = Statement.RootNode[0, 0];
+			var rootNode = DmlRootNode;
 			if (rootNode == null)
 			{
 				return;
@@ -1543,7 +1545,8 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private void ResolveMainObjectReferenceMerge()
 		{
-			var mergeTarget = Statement.RootNode[0, 0]?[NonTerminals.MergeTarget];
+			var rootNode = DmlRootNode;
+			var mergeTarget = rootNode?[NonTerminals.MergeTarget];
 			var objectIdentifier = mergeTarget?[NonTerminals.SchemaObject, Terminals.ObjectIdentifier];
 			if (objectIdentifier == null)
 			{
@@ -1553,7 +1556,7 @@ namespace SqlPad.Oracle.SemanticModel
 			var objectReferenceAlias = mergeTarget[Terminals.ObjectAlias];
 			MainObjectReferenceContainer.MainObjectReference = CreateDataObjectReference(MainObjectReferenceContainer, mergeTarget, objectIdentifier, objectReferenceAlias);
 
-			var mergeSource = Statement.RootNode[0, 0][NonTerminals.UsingMergeSource, NonTerminals.MergeSource];
+			var mergeSource = rootNode[NonTerminals.UsingMergeSource, NonTerminals.MergeSource];
 			if (mergeSource == null)
 			{
 				return;
@@ -1573,7 +1576,7 @@ namespace SqlPad.Oracle.SemanticModel
 				mergeSourceReference.AliasNode = mergeSource[Terminals.ObjectAlias];
 			}
 
-			var mergeCondition = Statement.RootNode[0, 0][NonTerminals.Condition];
+			var mergeCondition = rootNode[NonTerminals.Condition];
 			if (mergeCondition == null)
 			{
 				return;
@@ -1582,7 +1585,7 @@ namespace SqlPad.Oracle.SemanticModel
 			var mergeConditionIdentifiers = mergeCondition.GetDescendantsWithinSameQueryBlock(Terminals.Identifier, Terminals.RowIdPseudoColumn);
 			ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(null, MainObjectReferenceContainer, mergeConditionIdentifiers, StatementPlacement.None, null);
 
-			var updateInsertClause = Statement.RootNode[0, 0][8];
+			var updateInsertClause = rootNode[8];
 			if (updateInsertClause != null && String.Equals(updateInsertClause.Id, NonTerminals.MergeUpdateInsertClause))
 			{
 				var updateInsertClauseIdentifiers = updateInsertClause.GetDescendantsWithinSameQueryBlock(Terminals.Identifier, Terminals.RowIdPseudoColumn);
@@ -1604,7 +1607,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private void ResolveMainObjectReferenceUpdateOrDelete()
 		{
-			var rootNode = Statement.RootNode[0, 0];
+			var rootNode = DmlRootNode;
 			var tableReferenceNode = rootNode?[NonTerminals.TableReference];
 			var queryTableExpression = tableReferenceNode?.GetDescendantsWithinSameQueryBlock(NonTerminals.QueryTableExpression).SingleOrDefault();
 			if (queryTableExpression == null)
