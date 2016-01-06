@@ -23,7 +23,17 @@
 			</GroupBox.Header>
 			<TextBox Text="{Binding Comment}" Visibility="{Binding Comment, Converter={StaticResource ObjectToVisibilityConverter}}" Style="{StaticResource TextBoxBackgroundLessReadOnly}" />
 		</GroupBox>
-		
-		<toolTips:ConstraintList Padding="0" Constraints="{Binding ConstraintDetails}" Visibility="{Binding ConstraintDetailsVisibility}" />
+
+		<toolTips:ConstraintList Padding="0" Constraints="{Binding ConstraintDetails}">
+			<toolTips:ConstraintList.Style>
+				<Style>
+					<Style.Triggers>
+						<DataTrigger Binding="{Binding ConstraintDetails.Count}" Value="0">
+							<Setter Property="GroupBox.Visibility" Value="Collapsed" />
+						</DataTrigger>
+					</Style.Triggers>
+				</Style>
+			</toolTips:ConstraintList.Style>
+		</toolTips:ConstraintList>
 	</StackPanel>
 </toolTips:PopupBase>

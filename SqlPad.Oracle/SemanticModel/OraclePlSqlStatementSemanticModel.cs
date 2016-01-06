@@ -345,39 +345,35 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private void ResolveProgramDefinitions()
 		{
-			var identifier = OracleObjectIdentifier.Empty;
-
 			var anonymousPlSqlBlock = String.Equals(Statement.RootNode.Id, NonTerminals.PlSqlBlockStatement);
-			var functionOrProcedure = Statement.RootNode[NonTerminals.CreatePlSqlObjectClause]?[0];
-			var isSchemaProcedure = String.Equals(functionOrProcedure?.Id, NonTerminals.CreateProcedure);
-			var isSchemaFunction = String.Equals(functionOrProcedure?.Id, NonTerminals.CreateFunction);
-			if (isSchemaProcedure || isSchemaFunction || anonymousPlSqlBlock)
+			var objectNode = Statement.RootNode[NonTerminals.CreatePlSqlObjectClause]?[0];
+			var isSchemaProcedure = String.Equals(objectNode?.Id, NonTerminals.CreateProcedure);
+			var isSchemaFunction = String.Equals(objectNode?.Id, NonTerminals.CreateFunction);
+			var isPackage = String.Equals(objectNode?.Id, NonTerminals.CreatePackageBody);
+			var schemaObjectNode = objectNode?[NonTerminals.SchemaObject];
+			if (isSchemaProcedure || isSchemaFunction || anonymousPlSqlBlock || isPackage)
 			{
-				StatementGrammarNode schemaObjectNode = null;
 				if (isSchemaFunction)
 				{
-					schemaObjectNode = functionOrProcedure[NonTerminals.PlSqlFunctionSource, NonTerminals.SchemaObject];
+					schemaObjectNode = objectNode[NonTerminals.PlSqlFunctionSource, NonTerminals.SchemaObject];
 				}
-				else if (isSchemaProcedure)
+				else if (anonymousPlSqlBlock)
 				{
-					schemaObjectNode = functionOrProcedure[NonTerminals.SchemaObject];
-				}
-				else
-				{
-					functionOrProcedure = Statement.RootNode[NonTerminals.PlSqlBlock];
+					objectNode = Statement.RootNode[NonTerminals.PlSqlBlock];
 				}
 
-				if (schemaObjectNode != null)
-				{
-					var owner = schemaObjectNode[NonTerminals.SchemaPrefix, Terminals.SchemaIdentifier]?.Token.Value ?? DatabaseModel.CurrentSchema;
-					var name = schemaObjectNode[Terminals.ObjectIdentifier]?.Token.Value;
-					identifier = OracleObjectIdentifier.Create(owner, name);
-				}
+				var identifier = CreateObjectIdentifierFromSchemaObjectNode(schemaObjectNode);
+
+				var programType = anonymousPlSqlBlock
+					? PlSqlProgramType.PlSqlBlock
+					: isPackage
+						? PlSqlProgramType.PackageProgram
+						: PlSqlProgramType.StandaloneProgram;
 
 				var program =
-					new OraclePlSqlProgram(anonymousPlSqlBlock ? PlSqlProgramType.PlSqlBlock : PlSqlProgramType.StandaloneProgram, this)
+					new OraclePlSqlProgram(programType, this)
 					{
-						RootNode = functionOrProcedure,
+						RootNode = objectNode,
 						ObjectIdentifier = identifier,
 						Name = identifier.NormalizedName
 					};
@@ -397,6 +393,18 @@ namespace SqlPad.Oracle.SemanticModel
 				//_programs.AddRange(programDefinitionNodes.Select(n => new OraclePlSqlProgram { RootNode = n }));
 				Initialize();
 			}
+		}
+
+		private OracleObjectIdentifier CreateObjectIdentifierFromSchemaObjectNode(StatementGrammarNode schemaObjectNode)
+		{
+			if (schemaObjectNode == null)
+			{
+				return OracleObjectIdentifier.Empty;
+			}
+
+			var owner = schemaObjectNode[NonTerminals.SchemaPrefix, Terminals.SchemaIdentifier]?.Token.Value ?? DatabaseModel.CurrentSchema;
+			var name = schemaObjectNode[Terminals.ObjectIdentifier]?.Token.Value;
+			return OracleObjectIdentifier.Create(owner, name);
 		}
 
 		private void ResolveSqlStatements(OraclePlSqlProgram program)
@@ -477,6 +485,9 @@ namespace SqlPad.Oracle.SemanticModel
 					break;
 				case NonTerminals.PlSqlBlock:
 					programSourceNode = program.RootNode[NonTerminals.PlSqlBlockDeclareSection];
+					break;
+				case NonTerminals.CreatePackageBody:
+					programSourceNode = program.RootNode[NonTerminals.PackageBodyDefinition];
 					break;
 				default:
 					programSourceNode = program.RootNode[NonTerminals.ProgramImplentationDeclaration];

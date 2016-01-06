@@ -671,5 +671,96 @@ END;";
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel);
 			Assert.DoesNotThrow(() => semanticModel.Build(CancellationToken.None));
 		}
+
+		[Test, Ignore]
+		public void TestCursorColumnReference()
+		{
+			const string plsqlText =
+@"BEGIN
+	FOR c IN (SELECT * FROM dual) LOOP
+		dbms_output.put_line(c.dummy);
+	END LOOP;
+END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
+
+			semanticModel.Programs.Count.ShouldBe(1);
+			var program = semanticModel.Programs[0];
+			program.Variables.Count.ShouldBe(1);
+			program.PlSqlVariableReferences.Count.ShouldBe(1);
+			var cursorColumnReference = program.PlSqlVariableReferences.First();
+			cursorColumnReference.Variables.Count.ShouldBe(1);
+		}
+
+		[Test]
+		public void TestDmlColumnReference()
+		{
+			const string plsqlText =
+@"BEGIN
+    UPDATE DUAL SET DUMMY = NULL;
+END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
+
+			semanticModel.Programs.Count.ShouldBe(1);
+			var program = semanticModel.Programs[0];
+			program.ChildModels.Count.ShouldBe(1);
+			var dmlModel = program.ChildModels[0];
+			dmlModel.MainObjectReferenceContainer.ColumnReferences.Count.ShouldBe(1);
+			dmlModel.MainObjectReferenceContainer.ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+		}
+
+		[Test]
+		public void TestPackagePrograms()
+		{
+			const string plsqlText =
+@"CREATE OR REPLACE PACKAGE BODY test_package IS
+	test_global_variable VARCHAR2(255);
+
+	PROCEDURE test_procedure1 IS
+		test_variable1 NUMBER;
+
+		PROCEDURE nested_procedure1 IS
+		BEGIN
+			NULL;
+		END;
+	BEGIN
+		NULL;
+	END;
+
+	FUNCTION test_function1 RETURN NUMBER IS
+		test_variable2 NUMBER;
+
+		FUNCTION nested_function1 RETURN NUMBER IS
+		BEGIN
+			NULL;
+		END;
+	BEGIN
+		NULL;
+	END;
+BEGIN
+	SELECT dummy INTO test_global_variable FROM dual WHERE dummy = test_global_variable;
+END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
+
+			semanticModel.Programs.Count.ShouldBe(1);
+			semanticModel.Programs[0].Variables.Count.ShouldBe(1);
+			semanticModel.Programs[0].ChildModels.Count.ShouldBe(1);
+			semanticModel.Programs[0].PlSqlVariableReferences.Count.ShouldBe(1);
+			semanticModel.Programs[0].SubPrograms.Count.ShouldBe(2);
+			semanticModel.Programs[0].SubPrograms[0].Name.ShouldBe("\"TEST_PROCEDURE1\"");
+			semanticModel.Programs[0].SubPrograms[0].SubPrograms.Count.ShouldBe(1);
+			semanticModel.Programs[0].SubPrograms[0].SubPrograms[0].Name.ShouldBe("\"NESTED_PROCEDURE1\"");
+			semanticModel.Programs[0].SubPrograms[1].Name.ShouldBe("\"TEST_FUNCTION1\"");
+			semanticModel.Programs[0].SubPrograms[1].SubPrograms.Count.ShouldBe(1);
+			semanticModel.Programs[0].SubPrograms[1].SubPrograms[0].Name.ShouldBe("\"NESTED_FUNCTION1\"");
+
+			var packageInitializationReference = semanticModel.Programs[0].PlSqlVariableReferences.First();
+			packageInitializationReference.Variables.Count.ShouldBe(1);
+		}
 	}
 }

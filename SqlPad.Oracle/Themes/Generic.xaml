@@ -13,8 +13,8 @@
 			<Setter.Value>
 				<ControlTemplate TargetType="{x:Type local:PopupBase}">
 					<Border Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}">
+					        BorderBrush="{TemplateBinding BorderBrush}"
+					        BorderThickness="{TemplateBinding BorderThickness}">
 						<Grid>
 							<Grid.RowDefinitions>
 								<RowDefinition Height="20" />

@@ -19,16 +19,7 @@ namespace SqlPad.Oracle.ToolTips
 
 	public abstract class ModelWithConstraints : ModelBase
 	{
-		private readonly ObservableCollection<ConstraintDetailsModel> _constraintDetails = new ObservableCollection<ConstraintDetailsModel>();
-
-		protected ModelWithConstraints()
-		{
-			_constraintDetails.CollectionChanged += delegate { RaisePropertyChanged(nameof(ConstraintDetailsVisibility)); };
-		}
-
-		public Visibility ConstraintDetailsVisibility => _constraintDetails.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-
-	    public ICollection<ConstraintDetailsModel> ConstraintDetails => _constraintDetails;
+		public ICollection<ConstraintDetailsModel> ConstraintDetails { get; } = new ObservableCollection<ConstraintDetailsModel>();
 	}
 
 	public class ColumnDetailsModel : ModelWithConstraints, IModelWithComment, IModelWithIndexes
@@ -47,16 +38,9 @@ namespace SqlPad.Oracle.ToolTips
 		private double _histogramHeight;
 		private PointCollection _histogramPoints;
 
-		private readonly ObservableCollection<IndexDetailsModel> _indexDetails = new ObservableCollection<IndexDetailsModel>();
+		public ICollection<IndexDetailsModel> IndexDetails { get; } = new ObservableCollection<IndexDetailsModel>();
 
-		public ColumnDetailsModel()
-		{
-			_indexDetails.CollectionChanged += delegate { RaisePropertyChanged(nameof(IndexDetailsVisibility)); };
-		}
-
-		public ICollection<IndexDetailsModel> IndexDetails => _indexDetails;
-
-	    public string Owner { get; set; }
+		public string Owner { get; set; }
 
 		public string Name { get; set; }
 		
@@ -109,16 +93,8 @@ namespace SqlPad.Oracle.ToolTips
 		public string InMemoryCompression
 		{
 			get { return _inMemoryCompression; }
-			set
-			{
-				if (UpdateValueAndRaisePropertyChanged(ref _inMemoryCompression, value))
-				{
-					RaisePropertyChanged(nameof(InMemoryCompressionVisibility));
-				}
-			}
+			set { UpdateValueAndRaisePropertyChanged(ref _inMemoryCompression, value); }
 		}
-
-		public Visibility InMemoryCompressionVisibility => String.IsNullOrEmpty(_inMemoryCompression) ? Visibility.Collapsed : Visibility.Visible;
 
 	    public string HistogramType
 		{
@@ -135,16 +111,8 @@ namespace SqlPad.Oracle.ToolTips
 		public PointCollection HistogramPoints
 		{
 			get { return _histogramPoints; }
-			set
-			{
-				if (UpdateValueAndRaisePropertyChanged(ref _histogramPoints, value))
-				{
-					RaisePropertyChanged(nameof(HistogramVisibility));
-				}
-			}
+			set { UpdateValueAndRaisePropertyChanged(ref _histogramPoints, value); }
 		}
-
-		public Visibility HistogramVisibility => _histogramPoints == null || _histogramPoints.Count == 0 ? Visibility.Collapsed : Visibility.Visible;
 
 	    public double HistogramHeight
 		{
@@ -163,9 +131,7 @@ namespace SqlPad.Oracle.ToolTips
 			set { UpdateValueAndRaisePropertyChanged(ref _comment, value); }
 		}
 
-	    public Visibility IndexDetailsVisibility => _indexDetails.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-
-	    private static PointCollection ConvertToPointCollection(IList<double> values, bool smooth = false)
+		private static PointCollection ConvertToPointCollection(IList<double> values, bool smooth = false)
 		{
 			if (smooth)
 			{

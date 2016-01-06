@@ -41,7 +41,7 @@ namespace SqlPad.Oracle.Test
 			dataModel.LastAnalyzed.ShouldBe(new DateTime(2014, 8, 19, 6, 18, 12));
 			dataModel.HistogramType.ShouldBe("Frequency");
 			dataModel.HistogramBucketCount.ShouldBe(6);
-			dataModel.HistogramVisibility.ShouldBe(Visibility.Visible);
+			dataModel.HistogramPoints.Count.ShouldBeGreaterThan(0);
 		}
 
 		[Test(Description = @""), STAThread]
