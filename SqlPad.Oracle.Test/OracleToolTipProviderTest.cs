@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
-using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using NUnit.Framework;
@@ -209,7 +208,6 @@ SELECT * FROM CTE";
 			dataModel.AllocatedBytes.ShouldBe(22546891);
 			dataModel.LargeObjectBytes.ShouldBe(1546891);
 			dataModel.ClusterName.ShouldBe(null);
-			dataModel.ClusterNameVisibility.ShouldBe(Visibility.Collapsed);
 			dataModel.Compression.ShouldBe("Disabled");
 			dataModel.ParallelDegree.ShouldBe("Default");
 			dataModel.PartitionKeys.ShouldBe("COLUMN1, COLUMN2");
@@ -222,7 +220,7 @@ SELECT * FROM CTE";
 			dataModel.Logging.ShouldBe(true);
 
 			dataModel.PartitionCount.ShouldBe(2);
-			dataModel.PartitionDetailsVisibility.ShouldBe(Visibility.Visible);
+			dataModel.VisiblePartitionDetails.Count.ShouldBe(2);
 		}
 
 		[Test(Description = @""), STAThread]
@@ -240,7 +238,6 @@ SELECT * FROM CTE";
 			dataModel.AverageRowSize.ShouldBe(237);
 			dataModel.BlockCount.ShouldBe(544);
 			dataModel.ClusterName.ShouldBe(null);
-			dataModel.ClusterNameVisibility.ShouldBe(Visibility.Collapsed);
 			dataModel.Compression.ShouldBe("Disabled");
 			dataModel.PartitionKeys.ShouldBe("COLUMN1, COLUMN2");
 			dataModel.SubPartitionKeys.ShouldBe("COLUMN3, COLUMN4");

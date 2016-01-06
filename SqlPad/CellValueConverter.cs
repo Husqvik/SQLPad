@@ -65,6 +65,14 @@ namespace SqlPad
 		}
 	}
 
+	public class VisibilityCollapseIfZeroConverter : ValueConverterBase
+	{
+		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			return (int)value == 0 ? Visibility.Collapsed : Visibility.Visible;
+		}
+	}
+
 	public class DateTimeLabelConverter : ValueConverterBase
 	{
 		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)

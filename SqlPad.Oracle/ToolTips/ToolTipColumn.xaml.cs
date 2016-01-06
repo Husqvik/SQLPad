@@ -111,7 +111,7 @@ namespace SqlPad.Oracle.ToolTips
 		public PointCollection HistogramPoints
 		{
 			get { return _histogramPoints; }
-			set { UpdateValueAndRaisePropertyChanged(ref _histogramPoints, value); }
+			private set { UpdateValueAndRaisePropertyChanged(ref _histogramPoints, value); }
 		}
 
 	    public double HistogramHeight

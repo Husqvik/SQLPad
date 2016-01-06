@@ -21,19 +21,6 @@
 				<TextBlock Text="Column Attributes" FontWeight="Bold"/>
 			</GroupBox.Header>
 			<Grid Margin="4">
-				<Grid.Resources>
-					<Style x:Key="DisplayIfInMemoryEnabled">
-						<Style.Triggers>
-							<DataTrigger Binding="{Binding InMemoryCompression}" Value="{x:Null}">
-								<Setter Property="GroupBox.Visibility" Value="Collapsed" />
-							</DataTrigger>
-							<DataTrigger Binding="{Binding InMemoryCompression}" Value="">
-								<Setter Property="GroupBox.Visibility" Value="Collapsed" />
-							</DataTrigger>
-						</Style.Triggers>
-					</Style>
-				</Grid.Resources>
-				
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="Auto"/>
 					<ColumnDefinition/>
@@ -80,49 +67,17 @@
 				<TextBlock Grid.Row="11" Grid.Column="1" Text="{Binding AverageValueSize, Converter={StaticResource PrettyPrintIntegerConverter}}" />
 				<TextBlock Grid.Row="12" Grid.Column="0" Text="Last analyzed: " />
 				<TextBlock Grid.Row="12" Grid.Column="1" Text="{Binding LastAnalyzed, Converter={StaticResource DateTimeConverter}}" />
-				<TextBlock Grid.Row="13" Grid.Column="0" Text="In-memory compression: " Style="{StaticResource DisplayIfInMemoryEnabled}" />
-				<TextBlock Grid.Row="13" Grid.Column="1" Text="{Binding InMemoryCompression}" Style="{StaticResource DisplayIfInMemoryEnabled}" />
+				<TextBlock Grid.Row="13" Grid.Column="0" Text="In-memory compression: " Visibility="{Binding InMemoryCompression, Converter={StaticResource ObjectToVisibilityConverter}}" />
+				<TextBlock Grid.Row="13" Grid.Column="1" Text="{Binding InMemoryCompression}" Visibility="{Binding InMemoryCompression, Converter={StaticResource ObjectToVisibilityConverter}}" />
 				<TextBlock Grid.Row="14" Grid.Column="0" Grid.ColumnSpan="2" Text="System generated" Visibility="{Binding IsSystemGenerated, Converter={StaticResource ObjectToVisibilityConverter}}" />
 			</Grid>
 		</GroupBox>
 
-		<toolTips:ConstraintList Padding="0" Constraints="{Binding ConstraintDetails}">
-			<toolTips:ConstraintList.Style>
-				<Style>
-					<Style.Triggers>
-						<DataTrigger Binding="{Binding ConstraintDetails.Count}" Value="0">
-							<Setter Property="GroupBox.Visibility" Value="Collapsed" />
-						</DataTrigger>
-					</Style.Triggers>
-				</Style>
-			</toolTips:ConstraintList.Style>
-		</toolTips:ConstraintList>
+		<toolTips:ConstraintList Padding="0" Constraints="{Binding ConstraintDetails}" Visibility="{Binding ConstraintDetails.Count, Converter={StaticResource VisibilityCollapseIfZeroConverter}}" />
 
-		<toolTips:IndexList Padding="0" Indexes="{Binding IndexDetails}">
-			<toolTips:IndexList.Style>
-				<Style>
-					<Style.Triggers>
-						<DataTrigger Binding="{Binding IndexDetails.Count}" Value="0">
-							<Setter Property="GroupBox.Visibility" Value="Collapsed" />
-						</DataTrigger>
-					</Style.Triggers>
-				</Style>
-			</toolTips:IndexList.Style>
-		</toolTips:IndexList>
+		<toolTips:IndexList Padding="0" Indexes="{Binding IndexDetails}" Visibility="{Binding IndexDetails.Count, Converter={StaticResource VisibilityCollapseIfZeroConverter}}" />
 
-		<GroupBox BorderThickness="0">
-			<GroupBox.Style>
-				<Style>
-					<Style.Triggers>
-						<DataTrigger Binding="{Binding HistogramPoints}" Value="{x:Null}">
-							<Setter Property="GroupBox.Visibility" Value="Collapsed" />
-						</DataTrigger>
-						<DataTrigger Binding="{Binding HistogramPoints.Count}" Value="0">
-							<Setter Property="GroupBox.Visibility" Value="Collapsed" />
-						</DataTrigger>
-					</Style.Triggers>
-				</Style>
-			</GroupBox.Style>
+		<GroupBox BorderThickness="0" Visibility="{Binding HistogramPoints, Converter={StaticResource ObjectToVisibilityConverter}}">
 			<GroupBox.Header>
 				<TextBlock Text="Histogram" FontWeight="Bold"/>
 			</GroupBox.Header>

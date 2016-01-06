@@ -83,8 +83,8 @@
 				<TextBlock Grid.Row="13" Grid.Column="1" Text="{Binding Logging, Converter={StaticResource BooleanConverter}}" />
 				<TextBlock Grid.Row="14" Grid.Column="0" Text="Last analyzed: " />
 				<TextBlock Grid.Row="14" Grid.Column="1" Text="{Binding LastAnalyzed, Converter={StaticResource DateTimeConverter}}" />
-				<TextBlock Grid.Row="15" Grid.Column="0" Text="In-memory space: " Visibility="{Binding InMemoryAllocationStatusVisibility}" />
-				<TextBlock Grid.Row="15" Grid.Column="1" Visibility="{Binding InMemoryAllocationStatusVisibility}">
+				<TextBlock Grid.Row="15" Grid.Column="0" Text="In-memory space: " Visibility="{Binding InMemoryAllocatedBytes, Converter={StaticResource ObjectToVisibilityConverter}}" />
+				<TextBlock Grid.Row="15" Grid.Column="1" Visibility="{Binding InMemoryAllocatedBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
 					<TextBlock.Text>
 						<MultiBinding Converter="{StaticResource InMemoryAllocationStatusConverter}">
 							<Binding Path="InMemoryAllocatedBytes" />
@@ -94,15 +94,15 @@
 						</MultiBinding>
 					</TextBlock.Text>
 				</TextBlock>
-				<TextBlock Grid.Row="16" Grid.Column="0" Text="In-memory compression: " Visibility="{Binding InMemoryAllocationStatusVisibility}" />
-				<TextBlock Grid.Row="16" Grid.Column="1" Text="{Binding InMemoryCompression}" Visibility="{Binding InMemoryAllocationStatusVisibility}" />
-				<TextBlock Grid.Row="17" Grid.Column="0" Text="Cluster: " Visibility="{Binding ClusterNameVisibility}" />
-				<TextBlock Grid.Row="17" Grid.Column="1" Text="{Binding ClusterName}" Visibility="{Binding ClusterNameVisibility}" />
+				<TextBlock Grid.Row="16" Grid.Column="0" Text="In-memory compression: " Visibility="{Binding InMemoryAllocatedBytes, Converter={StaticResource ObjectToVisibilityConverter}}" />
+				<TextBlock Grid.Row="16" Grid.Column="1" Text="{Binding InMemoryCompression}" Visibility="{Binding InMemoryAllocatedBytes, Converter={StaticResource ObjectToVisibilityConverter}}" />
+				<TextBlock Grid.Row="17" Grid.Column="0" Text="Cluster: " Visibility="{Binding ClusterName, Converter={StaticResource ObjectToVisibilityConverter}}" />
+				<TextBlock Grid.Row="17" Grid.Column="1" Text="{Binding ClusterName}" Visibility="{Binding ClusterName, Converter={StaticResource ObjectToVisibilityConverter}}" />
 			</Grid>
 		</GroupBox>
-		
-		<toolTips:IndexList Padding="0" Indexes="{Binding IndexDetails}" Visibility="{Binding IndexDetailsVisibility}" />
-		
-		<toolTips:PartitionList Padding="0" TableDetails="{Binding}" Visibility="{Binding PartitionDetailsVisibility}" />
+
+		<toolTips:IndexList Padding="0" Indexes="{Binding IndexDetails}" Visibility="{Binding IndexDetails.Count, Converter={StaticResource VisibilityCollapseIfZeroConverter}}" />
+
+		<toolTips:PartitionList Padding="0" TableDetails="{Binding}" Visibility="{Binding VisiblePartitionDetails.Count, Converter={StaticResource VisibilityCollapseIfZeroConverter}}" />
 	</StackPanel>
 </toolTips:PopupBase>

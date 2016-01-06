@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
@@ -126,32 +125,19 @@ namespace SqlPad.Oracle.ToolTips
 		private bool? _isTemporary;
 		private string _comment;
 
-		private readonly ObservableCollection<IndexDetailsModel> _indexDetails = new ObservableCollection<IndexDetailsModel>();
-		private readonly ObservableCollection<PartitionDetailsModel> _visiblePartitionDetails = new ObservableCollection<PartitionDetailsModel>();
 		private readonly Dictionary<string, PartitionDetailsModel> _partitionDetailsDictionary = new Dictionary<string, PartitionDetailsModel>();
 
-		public TableDetailsModel()
-		{
-			_indexDetails.CollectionChanged += delegate { RaisePropertyChanged(nameof(IndexDetailsVisibility)); };
-			_visiblePartitionDetails.CollectionChanged += VisiblePartitionDetailsCollectionChangedHandler;
-		}
+		public ICollection<IndexDetailsModel> IndexDetails { get; } = new ObservableCollection<IndexDetailsModel>();
 
-		private void VisiblePartitionDetailsCollectionChangedHandler(object sender, NotifyCollectionChangedEventArgs args)
-		{
-			RaisePropertyChanged(nameof(PartitionDetailsVisibility));
-		}
+		public ICollection<PartitionDetailsModel> VisiblePartitionDetails { get; } = new ObservableCollection<PartitionDetailsModel>();
 
-		public ICollection<IndexDetailsModel> IndexDetails => _indexDetails;
-
-	    public ICollection<PartitionDetailsModel> VisiblePartitionDetails => _visiblePartitionDetails;
-
-	    public void AddPartition(PartitionDetailsModel partition)
+		public void AddPartition(PartitionDetailsModel partition)
 		{
 			_partitionDetailsDictionary.Add(partition.Name, partition);
 
-			if (_visiblePartitionDetails.Count < MaxVisiblePartitionCount)
+			if (VisiblePartitionDetails.Count < MaxVisiblePartitionCount)
 			{
-				_visiblePartitionDetails.Add(partition);
+				VisiblePartitionDetails.Add(partition);
 			}
 			else
 			{
@@ -163,9 +149,9 @@ namespace SqlPad.Oracle.ToolTips
 
 		public Visibility MorePartitionsExistMessageVisibility => _partitionDetailsDictionary.Count > MaxVisiblePartitionCount ? Visibility.Visible : Visibility.Collapsed;
 
-	    public int VisiblePartitionCount => MaxVisiblePartitionCount;
+		public int VisiblePartitionCount => MaxVisiblePartitionCount;
 
-	    public int PartitionCount => _partitionDetailsDictionary.Count;
+		public int PartitionCount => _partitionDetailsDictionary.Count;
 
 	    public PartitionDetailsModel GetPartitions(string partitionName)
 		{
@@ -193,13 +179,7 @@ namespace SqlPad.Oracle.ToolTips
 		public string ClusterName
 		{
 			get { return _clusterName; }
-			set
-			{
-				if (UpdateValueAndRaisePropertyChanged(ref _clusterName, value))
-				{
-					RaisePropertyChanged(nameof(ClusterNameVisibility));
-				}
-			}
+			set { UpdateValueAndRaisePropertyChanged(ref _clusterName, value); }
 		}
 
 		public bool? IsTemporary
@@ -208,15 +188,12 @@ namespace SqlPad.Oracle.ToolTips
 			set { UpdateValueAndRaisePropertyChanged(ref _isTemporary, value); }
 		}
 
-		public Visibility ClusterNameVisibility => String.IsNullOrEmpty(_clusterName) ? Visibility.Collapsed : Visibility.Visible;
+		public long? InMemoryAllocatedBytes { get; private set; }
 
-	    public Visibility IndexDetailsVisibility => _indexDetails.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-
-	    public Visibility PartitionDetailsVisibility => _visiblePartitionDetails.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-
-	    public long? InMemoryAllocatedBytes { get; private set; }
 		public long? StorageBytes { get; private set; }
+
 		public long? NonPopulatedBytes { get; private set; }
+
 		public string InMemoryPopulationStatus { get; private set; }
 
 		public void SetInMemoryAllocationStatus(long? inMemoryAllocatedBytes, long? storageBytes, long? nonPopulatedBytes, string populationStatus)
@@ -235,12 +212,9 @@ namespace SqlPad.Oracle.ToolTips
 			RaisePropertyChanged(nameof(StorageBytes));
 			RaisePropertyChanged(nameof(NonPopulatedBytes));
 			RaisePropertyChanged(nameof(InMemoryPopulationStatus));
-			RaisePropertyChanged(nameof(InMemoryAllocationStatusVisibility));
 		}
 
-		public Visibility InMemoryAllocationStatusVisibility => InMemoryAllocatedBytes.HasValue ? Visibility.Visible : Visibility.Collapsed;
-
-	    public string Comment
+		public string Comment
 		{
 			get { return _comment; }
 			set { UpdateValueAndRaisePropertyChanged(ref _comment, value); }

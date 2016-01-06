@@ -9,6 +9,7 @@
 	<sqlPad:DataSpaceConverter x:Key="DataSpaceConverter" />
 	<sqlPad:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter"/>
 	<sqlPad:StringConverter x:Key="StringConverter" />
+	<sqlPad:VisibilityCollapseIfZeroConverter x:Key="VisibilityCollapseIfZeroConverter" />
 
 	<Style x:Key="TextBoxBackgroundLessReadOnly">
 		<Setter Property="TextBoxBase.IsReadOnly" Value="True" />
