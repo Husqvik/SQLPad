@@ -751,6 +751,7 @@ END;";
 			semanticModel.Programs[0].Variables.Count.ShouldBe(1);
 			semanticModel.Programs[0].ChildModels.Count.ShouldBe(1);
 			semanticModel.Programs[0].PlSqlVariableReferences.Count.ShouldBe(1);
+			semanticModel.Programs[0].ChildModels[0].QueryBlocks.Count.ShouldBe(1);
 			semanticModel.Programs[0].SubPrograms.Count.ShouldBe(2);
 			semanticModel.Programs[0].SubPrograms[0].Name.ShouldBe("\"TEST_PROCEDURE1\"");
 			semanticModel.Programs[0].SubPrograms[0].SubPrograms.Count.ShouldBe(1);
@@ -761,6 +762,11 @@ END;";
 
 			var packageInitializationReference = semanticModel.Programs[0].PlSqlVariableReferences.First();
 			packageInitializationReference.Variables.Count.ShouldBe(1);
+
+			var queryBlock = semanticModel.Programs[0].ChildModels[0].QueryBlocks.First();
+			queryBlock.PlSqlVariableReferences.Count.ShouldBe(1);
+			var intoValueReference = queryBlock.PlSqlVariableReferences.First();
+			intoValueReference.Variables.Count.ShouldBe(1);
 		}
 	}
 }

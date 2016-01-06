@@ -234,7 +234,7 @@ namespace SqlPad.Oracle.SemanticModel
 		{
 			ResolveFunctionReferences(program.ProgramReferences, true);
 
-			foreach (var variableReference in program.PlSqlVariableReferences)
+			foreach (var variableReference in program.PlSqlVariableReferences.Concat(program.ChildModels.SelectMany(m => m.AllReferenceContainers).SelectMany(c => c.PlSqlVariableReferences)))
 			{
 				TryResolveLocalReference(variableReference, program.AccessibleVariables, variableReference.Variables);
 			}
@@ -429,6 +429,11 @@ namespace SqlPad.Oracle.SemanticModel
 				foreach (var queryBlock in childStatementSemanticModel.QueryBlocks)
 				{
 					QueryBlockNodes.Add(queryBlock.RootNode, queryBlock);
+				}
+
+				foreach (var plSqlVariableReference in childStatementSemanticModel.AllReferenceContainers.SelectMany(c => c.PlSqlVariableReferences))
+				{
+					plSqlVariableReference.PlSqlProgram = program;
 				}
 			}
 		}

@@ -159,9 +159,9 @@ namespace SqlPad.Oracle
 			public const string BindArgumentList = "BindArgumentList";
 			public const string BindArgumentListChained = "BindArgumentListChained";
 			public const string BindVariableExpression = "BindVariableExpression";
-			public const string BindVariableExpressionOrPlSqlIdentifierCommaChainedList = "BindVariableExpressionOrPlSqlIdentifierCommaChainedList";
-			public const string BindVariableExpressionOrPlSqlIdentifierList = "BindVariableExpressionOrPlSqlIdentifierList";
 			public const string BindVariableExpressionOrPlSqlTarget = "BindVariableExpressionOrPlSqlTarget";
+			public const string BindVariableExpressionOrPlSqlTargetCommaChainedList = "BindVariableExpressionOrPlSqlTargetCommaChainedList";
+			public const string BindVariableExpressionOrPlSqlTargetList = "BindVariableExpressionOrPlSqlTargetList";
 			public const string BlockSizeClause = "BlockSizeClause";
 			public const string BufferPoolType = "BufferPoolType";
 			public const string BuiltInDataType = "BuiltInDataType";

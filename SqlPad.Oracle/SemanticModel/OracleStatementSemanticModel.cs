@@ -60,7 +60,6 @@ namespace SqlPad.Oracle.SemanticModel
 		private readonly HashSet<StatementGrammarNode> _oldOuterJoinColumnReferences = new HashSet<StatementGrammarNode>();
 
 		protected readonly Dictionary<StatementGrammarNode, OracleQueryBlock> QueryBlockNodes = new Dictionary<StatementGrammarNode, OracleQueryBlock>();
-		protected readonly List<StatementGrammarNode> PlSqlTargets = new List<StatementGrammarNode>(); 
 
 		private OracleQueryBlock _mainQueryBlock;
 
@@ -158,6 +157,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 			foreach (var terminal in Statement.AllTerminals)
 			{
+				StatementGrammarNode plSqlIdentifier = null;
 				if (String.Equals(terminal.Id, Terminals.Select) && String.Equals(terminal.ParentNode.Id, NonTerminals.QueryBlock))
 				{
 					var queryBlock = new OracleQueryBlock(this) { RootNode = terminal.ParentNode, Statement = Statement };
@@ -200,15 +200,15 @@ namespace SqlPad.Oracle.SemanticModel
 				{
 					_oldOuterJoinColumnReferences.Add(terminal.ParentNode.ParentNode.ParentNode);
 				}
+				else if (String.Equals(terminal.Id, Terminals.PlSqlIdentifier) && String.Equals(terminal.ParentNode.Id, NonTerminals.AssignmentStatementTarget))
+				{
+					plSqlIdentifier = terminal;
+				}
 
+				OracleReferenceContainer targetReferenceContainer;
 				if (queryBlockTerminalList.Key != null)
 				{
-					if (String.Equals(terminal.Id, Terminals.PlSqlIdentifier) &&
-						(String.Equals(terminal.ParentNode.Id, NonTerminals.AssignmentStatementTarget)/* || String.Equals(terminal.ParentNode.Id, NonTerminals.AssignmentTriggerReferenceTarget)*/))
-					{
-						PlSqlTargets.Add(terminal.GetAncestor(NonTerminals.AssignmentStatementTarget));
-					}
-
+					targetReferenceContainer = queryBlockTerminalList.Key;
 					queryBlockTerminalList.Value.Add(terminal);
 
 					if (terminal == queryBlockTerminalList.Key.RootNode.LastTerminalNode && queryBlockTerminalListQueue.Count > 0)
@@ -218,7 +218,22 @@ namespace SqlPad.Oracle.SemanticModel
 				}
 				else
 				{
+					targetReferenceContainer = MainObjectReferenceContainer;
 					nonQueryBlockTerminals.Add(terminal);
+				}
+
+				if (plSqlIdentifier != null)
+				{
+					var plSqlReference =
+						new OraclePlSqlVariableReference
+						{
+							Container = targetReferenceContainer,
+							RootNode = plSqlIdentifier.ParentNode,
+							IdentifierNode = plSqlIdentifier,
+							Owner = targetReferenceContainer as OracleQueryBlock
+						};
+
+					targetReferenceContainer.PlSqlVariableReferences.Add(plSqlReference);
 				}
 			}
 

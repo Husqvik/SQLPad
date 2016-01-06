@@ -4631,7 +4631,7 @@
         <Sequence>
           <NonTerminal Id="BulkCollect" IsOptional="true" />
           <Terminal Id="Into" />
-          <NonTerminal Id="BindVariableExpressionOrPlSqlIdentifierList" />
+          <NonTerminal Id="BindVariableExpressionOrPlSqlTargetList" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -4645,20 +4645,20 @@
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="BindVariableExpressionOrPlSqlIdentifierList">
+    <Rule StartingNonTerminal="BindVariableExpressionOrPlSqlTargetList">
       <Sequences>
         <Sequence>
           <NonTerminal Id="BindVariableExpressionOrPlSqlTarget" />
-          <NonTerminal Id="BindVariableExpressionOrPlSqlIdentifierCommaChainedList" IsOptional="true" />
+          <NonTerminal Id="BindVariableExpressionOrPlSqlTargetCommaChainedList" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="BindVariableExpressionOrPlSqlIdentifierCommaChainedList">
+    <Rule StartingNonTerminal="BindVariableExpressionOrPlSqlTargetCommaChainedList">
       <Sequences>
         <Sequence>
           <Terminal Id="Comma" />
-          <NonTerminal Id="BindVariableExpressionOrPlSqlIdentifierList" />
+          <NonTerminal Id="BindVariableExpressionOrPlSqlTargetList" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -14213,12 +14213,12 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Into" />
-          <NonTerminal Id="BindVariableExpressionOrPlSqlIdentifierList" />
+          <NonTerminal Id="BindVariableExpressionOrPlSqlTargetList" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="BulkCollect" />
           <Terminal Id="Into" />
-          <NonTerminal Id="BindVariableExpressionOrPlSqlIdentifierList" />
+          <NonTerminal Id="BindVariableExpressionOrPlSqlTargetList" />
           <NonTerminal Id="PlSqlFetchLimitClause" IsOptional="true" />
         </Sequence>
       </Sequences>
