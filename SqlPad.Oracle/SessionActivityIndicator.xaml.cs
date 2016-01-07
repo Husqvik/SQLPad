@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Specialized;
 using System.Text;
 using System.Windows;
 using System.Windows.Media;
@@ -28,10 +27,12 @@ namespace SqlPad.Oracle
 		private static void SessionItemChangedCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
 		{
 			var visualizer = (SessionActivityIndicator)dependencyObject;
-			var newSessionItem = ((SqlMonitorSessionItem)args.NewValue).ActiveSessionHistoryItems as INotifyCollectionChanged;
+			var newSessionItem = (SqlMonitorSessionItem)args.NewValue;
 			if (newSessionItem != null)
 			{
-				newSessionItem.CollectionChanged += delegate { visualizer.BuildPathSegments(); };
+				newSessionItem.PlanItemCollection.PropertyChanged +=
+					(sender, e) =>
+						(String.Equals(e.PropertyName, nameof(SqlMonitorPlanItemCollection.LastSampleTime)) ? visualizer : null)?.BuildPathSegments();
 			}
 		}
 
@@ -65,11 +66,11 @@ namespace SqlPad.Oracle
 			var x = 0d;
 			foreach (var historyItem in SessionItem.ActiveSessionHistoryItems)
 			{
+				x = (historyItem.SampleTime - executionStart).TotalSeconds / totalSeconds;
+
 				var activity = String.Equals(historyItem.SessionState, "ON CPU") ? 0 : 1;
 				if (previousActivity != activity)
 				{
-					x = (historyItem.SampleTime - executionStart).TotalSeconds / totalSeconds;
-
 					if (previousActivity.HasValue || activity == 0)
 					{
 						var horizontalSegment = new LineSegment(new Point(x, previousActivity ?? 1), false);

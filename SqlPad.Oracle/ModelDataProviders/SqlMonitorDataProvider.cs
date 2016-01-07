@@ -48,6 +48,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 		private readonly Dictionary<SqlMonitorPlanItem, List<ActiveSessionHistoryItem>> _planItemActiveSessionHistoryItems = new Dictionary<SqlMonitorPlanItem, List<ActiveSessionHistoryItem>>();
 
 		private int _totalActiveSessionHistorySamples;
+		private DateTime? _lastSampleTime;
 
 		public SqlMonitorPlanItemCollection(int sessionId, string sqlId, DateTime executionStart, int executionId)
 		{
@@ -68,7 +69,11 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public TimeSpan RefreshPeriod { get; set; }
 
-		public DateTime? LastSampleTime { get; private set; }
+		public DateTime? LastSampleTime
+		{
+			get { return _lastSampleTime; }
+			private set { UpdateValueAndRaisePropertyChanged(ref _lastSampleTime, value); }
+		}
 
 		public ObservableCollection<SqlMonitorSessionItem> SessionItems { get; } = new ObservableCollection<SqlMonitorSessionItem>();
 
@@ -157,7 +162,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 		}
 	}
 
-	[DebuggerDisplay("ActiveSessionHistoryItem (SessionId={SessionId}; SessionSerial={SessionSerial}; SampleTime={SampleTime})")]
+	[DebuggerDisplay("ActiveSessionHistoryItem (SessionId={SessionId}; SessionSerial={SessionSerial}; SampleTime={SampleTime}; SessionState={SessionState})")]
 	public class ActiveSessionHistoryItem
 	{
 		public DateTime SampleTime { get; set; }

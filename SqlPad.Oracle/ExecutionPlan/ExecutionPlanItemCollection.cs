@@ -9,7 +9,7 @@ namespace SqlPad.Oracle.ExecutionPlan
 {
 	public class ExecutionPlanItemCollection : ExecutionPlanItemCollectionBase<ExecutionPlanItem> { }
 
-	public abstract class ExecutionPlanItemCollectionBase<T> : IEnumerable<T> where T : ExecutionPlanItem
+	public abstract class ExecutionPlanItemCollectionBase<T> : ModelBase, IEnumerable<T> where T : ExecutionPlanItem
 	{
 		private readonly Dictionary<int, T> _allItems = new Dictionary<int, T>();
 		private readonly List<ExecutionPlanItem> _leafItems = new List<ExecutionPlanItem>();

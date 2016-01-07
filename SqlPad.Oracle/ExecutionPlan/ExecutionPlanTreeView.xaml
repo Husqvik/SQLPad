@@ -592,7 +592,7 @@
 					<Run Text="(max: " /><Run Text="{Binding WorkAreaMemoryMaxBytes, Converter={StaticResource DataSpaceConverter}}" /><Run Text=")" />
 				</TextBlock>
 				<TextBlock Grid.Column="18" Text="Temp: " Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaTempMaxBytes, Converter={StaticResource ObjectToVisibilityConverter}}" />
-				<TextBlock Grid.Column="19" Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaTempMaxBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
+				<TextBlock Grid.Column="19" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaTempMaxBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
 					<Run Text="{Binding WorkAreaTempBytes, Converter={StaticResource DataSpaceConverter}}" />
 					<Run Text="(max: " /><Run Text="{Binding WorkAreaTempMaxBytes, Converter={StaticResource DataSpaceConverter}}" /><Run Text=")" />
 				</TextBlock>
