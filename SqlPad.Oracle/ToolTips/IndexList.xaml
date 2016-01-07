@@ -17,21 +17,7 @@
 	</UserControl.Resources>
 
 	<GroupBox Header="Indexes: " FontWeight="Bold" Padding="0,4,0,0">
-		<DataGrid x:Name="DataGrid"
-		          FontWeight="Normal" Background="Transparent" AutoGenerateColumns="False" RowBackground="Transparent"
-		          RowHeaderWidth="0"
-		          HorizontalGridLinesBrush="LightGray" VerticalGridLinesBrush="LightGray" IsReadOnly="True"
-		          CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False"
-		          CanUserResizeColumns="False" CanUserResizeRows="False" CanUserSortColumns="False">
-			<DataGrid.ColumnHeaderStyle>
-				<Style TargetType="DataGridColumnHeader">
-					<Style.Setters>
-						<Setter Property="Background" Value="Transparent" />
-						<Setter Property="Padding" Value="4,2,4,2" />
-						<Setter Property="FontWeight" Value="Medium" />
-					</Style.Setters>
-				</Style>
-			</DataGrid.ColumnHeaderStyle>
+		<DataGrid x:Name="DataGrid" Style="{StaticResource DataGridStyleToolTip}" ColumnHeaderStyle="{StaticResource HeaderStyleToolTip}">
 			<DataGrid.Columns>
 				<DataGridTemplateColumn Header="Identifier">
 					<DataGridTemplateColumn.CellTemplate>
