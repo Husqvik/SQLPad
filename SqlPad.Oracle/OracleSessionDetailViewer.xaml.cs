@@ -48,7 +48,7 @@ namespace SqlPad.Oracle
 		private readonly DispatcherTimer _refreshTimer;
 
 		private bool _isBusy;
-		private bool isSynchronizing;
+		private bool _isSynchronizing;
 		private SqlMonitorPlanItemCollection _planItemCollection;
 		private OracleSessionValues _oracleSessionValues;
 		private bool _autoRefreshEnabled;
@@ -96,20 +96,20 @@ namespace SqlPad.Oracle
 					sourceColumn,
 					delegate
 					{
-						if (isSynchronizing) return;
-						isSynchronizing = true;
+						if (_isSynchronizing) return;
+						_isSynchronizing = true;
 						summaryColumn.Width = sourceColumn.Width;
-						isSynchronizing = false;
+						_isSynchronizing = false;
 					});
 
 				DataGridColumn.WidthProperty.AddValueChanged(
 					summaryColumn,
 					delegate
 					{
-						if (isSynchronizing) return;
-						isSynchronizing = true;
+						if (_isSynchronizing) return;
+						_isSynchronizing = true;
 						sourceColumn.Width = summaryColumn.Width;
-						isSynchronizing = false;
+						_isSynchronizing = false;
 					});
 			}
 
@@ -122,6 +122,11 @@ namespace SqlPad.Oracle
 		}
 
 		private async void RefreshTimerTickHandler(object sender, EventArgs eventArgs)
+		{
+			await SafeRefresh();
+		}
+
+		private async Task SafeRefresh()
 		{
 			_refreshTimer.IsEnabled = false;
 			var exception = await App.SafeActionAsync(() => Refresh(CancellationToken.None));
@@ -202,6 +207,8 @@ namespace SqlPad.Oracle
 						ExecutionPlanTreeView.RootItem = _planItemCollection.RootItem;
 						SessionItems = _planItemCollection.SessionItems;
 						SummarySession.Inititalize(_planItemCollection);
+
+						await SafeRefresh();
 					}
 				}
 			}
@@ -368,6 +375,15 @@ namespace SqlPad.Oracle
 		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			return Equals(value, 0) ? "Total" : value;
+		}
+	}
+
+	public class ActiveSessionHistoryToActivityConverter : ValueConverterBase
+	{
+		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			var historyItem = (ActiveSessionHistoryItem)value;
+			return String.Equals(historyItem.SessionState, "ON CPU") ? 1 : 0;
 		}
 	}
 }

@@ -7,6 +7,7 @@
              xmlns:sqlPad="clr-namespace:SqlPad;assembly=SqlPad"
              xmlns:oracle="clr-namespace:SqlPad.Oracle"
              xmlns:componentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+             xmlns:modelDataProviders="clr-namespace:SqlPad.Oracle.ModelDataProviders"
              mc:Ignorable="d"
              d:DesignHeight="160" d:DesignWidth="240"
              DataContext="{Binding RelativeSource={RelativeSource Self}}">
@@ -99,6 +100,13 @@
 							<DataGridTextColumn Header="PX servers requested" Binding="{Binding ParallelServersRequested}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
 							<DataGridCheckBoxColumn Header="Cross instance" Binding="{Binding IsCrossInstance}" IsReadOnly="True" />
 							<DataGridTextColumn Header="QC instance ID" Binding="{Binding ParallelServerQueryCoordinatorInstanceId}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTemplateColumn Header="CPU activity">
+								<DataGridTemplateColumn.CellTemplate>
+									<DataTemplate DataType="modelDataProviders:SqlMonitorSessionItem">
+										<oracle:SessionActivityVisualizer SessionItem="{Binding}" Width="200" Height="20" />
+									</DataTemplate>
+								</DataGridTemplateColumn.CellTemplate>
+							</DataGridTemplateColumn>
 						</DataGrid.Columns>
 					</DataGrid>
 					<DataGrid x:Name="SummaryDataGrid"

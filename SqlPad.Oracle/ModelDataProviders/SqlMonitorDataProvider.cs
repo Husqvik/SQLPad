@@ -105,6 +105,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			}
 			else
 			{
+				newSessionItem.PlanItemCollection = this;
 				_sessionItemMapping.Add(newSessionItem.SessionId, newSessionItem);
 				SessionItems.Add(newSessionItem);
 			}
@@ -114,6 +115,11 @@ namespace SqlPad.Oracle.ModelDataProviders
 		{
 			foreach (var historyItem in historyItems)
 			{
+				if (LastSampleTime == null || historyItem.SampleTime > LastSampleTime)
+				{
+					LastSampleTime = historyItem.SampleTime;
+				}
+
 				SqlMonitorSessionItem sessionItem;
 				if (_sessionItemMapping.TryGetValue(historyItem.SessionId, out sessionItem))
 				{
@@ -127,11 +133,6 @@ namespace SqlPad.Oracle.ModelDataProviders
 				}
 
 				planHistoryItems.Add(historyItem);
-
-				if (LastSampleTime == null || historyItem.SampleTime > LastSampleTime)
-				{
-					LastSampleTime = historyItem.SampleTime;
-				}
 
 				_totalActiveSessionHistorySamples++;
 			}
@@ -171,6 +172,8 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public string WaitClass { get; set; }
 
+		public string Event { get; set; }
+
 		public TimeSpan WaitTime { get; set; }
 
 		public TimeSpan TimeWaited { get; set; }
@@ -198,8 +201,6 @@ namespace SqlPad.Oracle.ModelDataProviders
 		public long PgaAllocated { get; set; }
 
 		public long TempSpaceAllocated { get; set; }
-
-		public double Value => String.Equals(SessionState, "ON CPU") ? 1 : 0;
 	}
 
 	[DebuggerDisplay("SqlMonitorPlanItem (Id={Id}; Operation={Operation}; ObjectName={ObjectName}; IsInactive={IsInactive}; IsBeingExecuted={IsBeingExecuted}; ExecutionOrder={ExecutionOrder}; Depth={Depth}; IsLeaf={IsLeaf})")]
@@ -604,6 +605,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 						SessionId = sessionId,
 						SessionSerial = Convert.ToInt32(reader["SESSION_SERIAL#"]),
 						WaitClass = OracleReaderValueConvert.ToString(reader["WAIT_CLASS"]),
+						Event = OracleReaderValueConvert.ToString(reader["EVENT"]),
 						WaitTime = TimeSpan.FromTicks(Convert.ToInt64(reader["WAIT_TIME"]) * 10),
 						TimeWaited = TimeSpan.FromTicks(Convert.ToInt64(reader["TIME_WAITED"]) * 10),
 						DeltaTime = OracleReaderValueConvert.ToTimeSpanFromMicroseconds(reader["TM_DELTA_TIME"]),
@@ -901,6 +903,8 @@ namespace SqlPad.Oracle.ModelDataProviders
 		private long _physicalReadBytes;
 		private long _physicalWriteRequests;
 		private long _physicalWriteBytes;
+
+		internal SqlMonitorPlanItemCollection PlanItemCollection { get; set; }
 
 		public int SessionId { get; set; }
 
