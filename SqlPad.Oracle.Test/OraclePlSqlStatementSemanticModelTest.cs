@@ -118,7 +118,7 @@ END;";
 			mainProgram.Types[0].Name.ShouldBe("\"TEST_TYPE1\"");
 			mainProgram.Types[1].Name.ShouldBe("\"TEST_TABLE_TYPE1\"");
 			mainProgram.SubPrograms.Count.ShouldBe(2);
-			mainProgram.ChildModels.Count.ShouldBe(2);
+			mainProgram.SqlModels.Count.ShouldBe(2);
 
 			mainProgram.ProgramReferences.Count.ShouldBe(1);
 			var programReference = mainProgram.ProgramReferences.First();
@@ -145,7 +145,7 @@ END;";
 			mainProgram.SubPrograms[0].PlSqlExceptionReferences.Count.ShouldBe(0);
 			mainProgram.SubPrograms[0].Types.Count.ShouldBe(0);
 			mainProgram.SubPrograms[0].SubPrograms.Count.ShouldBe(0);
-			mainProgram.SubPrograms[0].ChildModels.Count.ShouldBe(0);
+			mainProgram.SubPrograms[0].SqlModels.Count.ShouldBe(0);
 
 			mainProgram.SubPrograms[1].ObjectIdentifier.ShouldBe(expectedObjectIdentifier);
 			mainProgram.SubPrograms[1].Name.ShouldBe("\"TEST_INNER_FUNCTION\"");
@@ -165,7 +165,7 @@ END;";
 			mainProgram.SubPrograms[1].PlSqlVariableReferences.Count.ShouldBe(0);
 			mainProgram.SubPrograms[1].Types.Count.ShouldBe(0);
 			mainProgram.SubPrograms[1].SubPrograms.Count.ShouldBe(1);
-			mainProgram.SubPrograms[1].ChildModels.Count.ShouldBe(1);
+			mainProgram.SubPrograms[1].SqlModels.Count.ShouldBe(1);
 
 			mainProgram.SubPrograms[1].SubPrograms[0].ObjectIdentifier.ShouldBe(expectedObjectIdentifier);
 			mainProgram.SubPrograms[1].SubPrograms[0].Name.ShouldBe("\"TEST_NESTED_PROCEDURE\"");
@@ -179,7 +179,7 @@ END;";
 			mainProgram.SubPrograms[1].SubPrograms[0].PlSqlExceptionReferences.Count.ShouldBe(0);
 			mainProgram.SubPrograms[1].SubPrograms[0].Types.Count.ShouldBe(0);
 			mainProgram.SubPrograms[1].SubPrograms[0].SubPrograms.Count.ShouldBe(0);
-			mainProgram.SubPrograms[1].SubPrograms[0].ChildModels.Count.ShouldBe(1);
+			mainProgram.SubPrograms[1].SubPrograms[0].SqlModels.Count.ShouldBe(1);
 		}
 
 		[Test]
@@ -226,7 +226,7 @@ END;";
 			mainProgram.SubPrograms[0].RootNode.SourcePosition.Length.ShouldBe(68);
 			mainProgram.SubPrograms[0].Variables.Count.ShouldBe(1);
 			mainProgram.SubPrograms[0].Variables[0].Name.ShouldBe("\"N\"");
-			mainProgram.SubPrograms[0].ChildModels.Count.ShouldBe(1);
+			mainProgram.SubPrograms[0].SqlModels.Count.ShouldBe(1);
 		}
 
 		[Test]
@@ -248,8 +248,8 @@ END;";
 
 			semanticModel.Programs.Count.ShouldBe(1);
 			var mainProgram = semanticModel.Programs[0];
-			mainProgram.ChildModels.Count.ShouldBe(1);
-			mainProgram.ChildModels[0].RedundantSymbolGroups.Count.ShouldBe(0);
+			mainProgram.SqlModels.Count.ShouldBe(1);
+			mainProgram.SqlModels[0].RedundantSymbolGroups.Count.ShouldBe(0);
 		}
 
 		[Test]
@@ -706,8 +706,8 @@ END;";
 
 			semanticModel.Programs.Count.ShouldBe(1);
 			var program = semanticModel.Programs[0];
-			program.ChildModels.Count.ShouldBe(1);
-			var dmlModel = program.ChildModels[0];
+			program.SqlModels.Count.ShouldBe(1);
+			var dmlModel = program.SqlModels[0];
 			dmlModel.MainObjectReferenceContainer.ColumnReferences.Count.ShouldBe(1);
 			dmlModel.MainObjectReferenceContainer.ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
 		}
@@ -749,9 +749,9 @@ END;";
 
 			semanticModel.Programs.Count.ShouldBe(1);
 			semanticModel.Programs[0].Variables.Count.ShouldBe(1);
-			semanticModel.Programs[0].ChildModels.Count.ShouldBe(1);
+			semanticModel.Programs[0].SqlModels.Count.ShouldBe(1);
 			semanticModel.Programs[0].PlSqlVariableReferences.Count.ShouldBe(1);
-			semanticModel.Programs[0].ChildModels[0].QueryBlocks.Count.ShouldBe(1);
+			semanticModel.Programs[0].SqlModels[0].QueryBlocks.Count.ShouldBe(1);
 			semanticModel.Programs[0].SubPrograms.Count.ShouldBe(2);
 			semanticModel.Programs[0].SubPrograms[0].Name.ShouldBe("\"TEST_PROCEDURE1\"");
 			semanticModel.Programs[0].SubPrograms[0].SubPrograms.Count.ShouldBe(1);
@@ -763,7 +763,7 @@ END;";
 			var packageInitializationReference = semanticModel.Programs[0].PlSqlVariableReferences.First();
 			packageInitializationReference.Variables.Count.ShouldBe(1);
 
-			var queryBlock = semanticModel.Programs[0].ChildModels[0].QueryBlocks.First();
+			var queryBlock = semanticModel.Programs[0].SqlModels[0].QueryBlocks.First();
 			queryBlock.PlSqlVariableReferences.Count.ShouldBe(1);
 			var intoValueReference = queryBlock.PlSqlVariableReferences.First();
 			intoValueReference.Variables.Count.ShouldBe(1);

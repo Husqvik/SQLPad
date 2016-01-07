@@ -7,11 +7,11 @@ using SqlPad.Oracle.ModelDataProviders;
 
 namespace SqlPad.Oracle
 {
-	public partial class SessionActivityVisualizer
+	public partial class SessionActivityIndicator
 	{
-		public static readonly DependencyProperty SessionItemProperty = DependencyProperty.Register(nameof(SessionItem), typeof(SqlMonitorSessionItem), typeof(SessionActivityVisualizer), new FrameworkPropertyMetadata(SessionItemChangedCallback));
-		public static readonly DependencyProperty PathSegmentsProperty = DependencyProperty.Register(nameof(PathSegments), typeof(PathSegmentCollection), typeof(SessionActivityVisualizer), new FrameworkPropertyMetadata());
-		public static readonly DependencyProperty DiagnosticsProperty = DependencyProperty.Register(nameof(Diagnostics), typeof(string), typeof(SessionActivityVisualizer), new FrameworkPropertyMetadata());
+		public static readonly DependencyProperty SessionItemProperty = DependencyProperty.Register(nameof(SessionItem), typeof(SqlMonitorSessionItem), typeof(SessionActivityIndicator), new FrameworkPropertyMetadata(SessionItemChangedCallback));
+		public static readonly DependencyProperty PathSegmentsProperty = DependencyProperty.Register(nameof(PathSegments), typeof(PathSegmentCollection), typeof(SessionActivityIndicator), new FrameworkPropertyMetadata());
+		public static readonly DependencyProperty DiagnosticsProperty = DependencyProperty.Register(nameof(Diagnostics), typeof(string), typeof(SessionActivityIndicator), new FrameworkPropertyMetadata());
 
 		public string Diagnostics
 		{
@@ -27,7 +27,7 @@ namespace SqlPad.Oracle
 
 		private static void SessionItemChangedCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
 		{
-			var visualizer = (SessionActivityVisualizer)dependencyObject;
+			var visualizer = (SessionActivityIndicator)dependencyObject;
 			var newSessionItem = ((SqlMonitorSessionItem)args.NewValue).ActiveSessionHistoryItems as INotifyCollectionChanged;
 			if (newSessionItem != null)
 			{
@@ -41,7 +41,7 @@ namespace SqlPad.Oracle
 			private set { SetValue(PathSegmentsProperty, value); }
 		}
 
-		public SessionActivityVisualizer()
+		public SessionActivityIndicator()
 		{
 			InitializeComponent();
 		}

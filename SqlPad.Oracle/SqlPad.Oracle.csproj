@@ -167,8 +167,8 @@
     <Compile Include="OracleSessionDetailViewer.xaml.cs">
       <DependentUpon>OracleSessionDetailViewer.xaml</DependentUpon>
     </Compile>
-    <Compile Include="SessionActivityVisualizer.xaml.cs">
-      <DependentUpon>SessionActivityVisualizer.xaml</DependentUpon>
+    <Compile Include="SessionActivityIndicator.xaml.cs">
+      <DependentUpon>SessionActivityIndicator.xaml</DependentUpon>
     </Compile>
     <Compile Include="ToolTips\OracleToolTipBuilderVisitor.cs" />
     <Compile Include="SemanticModel\OracleColumnBuilderVisitor.cs" />
@@ -343,7 +343,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="SessionActivityVisualizer.xaml">
+    <Page Include="SessionActivityIndicator.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

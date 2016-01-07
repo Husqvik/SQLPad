@@ -103,7 +103,7 @@
 							<DataGridTemplateColumn Header="CPU activity">
 								<DataGridTemplateColumn.CellTemplate>
 									<DataTemplate DataType="modelDataProviders:SqlMonitorSessionItem">
-										<oracle:SessionActivityVisualizer SessionItem="{Binding}" Width="200" Height="20" />
+										<oracle:SessionActivityIndicator SessionItem="{Binding}" Width="200" Height="16" />
 									</DataTemplate>
 								</DataGridTemplateColumn.CellTemplate>
 							</DataGridTemplateColumn>

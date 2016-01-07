@@ -24,7 +24,7 @@ namespace SqlPad.Oracle.SemanticModel
 			{
 				var allPlSqlPrograms = Programs.Concat(Programs.SelectMany(p => p.AllSubPrograms)).ToArray();
 				var allSSqlContainers = allPlSqlPrograms
-					.SelectMany(p => p.ChildModels)
+					.SelectMany(p => p.SqlModels)
 					.SelectMany(m => m.AllReferenceContainers);
 				return allPlSqlPrograms.Concat(allSSqlContainers);
 			}
@@ -234,14 +234,14 @@ namespace SqlPad.Oracle.SemanticModel
 		{
 			ResolveFunctionReferences(program.ProgramReferences, true);
 
-			foreach (var variableReference in program.PlSqlVariableReferences.Concat(program.ChildModels.SelectMany(m => m.AllReferenceContainers).SelectMany(c => c.PlSqlVariableReferences)))
+			foreach (var variableReference in program.PlSqlVariableReferences.Concat(program.SqlModels.SelectMany(m => m.AllReferenceContainers).SelectMany(c => c.PlSqlVariableReferences)))
 			{
 				TryResolveLocalReference(variableReference, program.AccessibleVariables, variableReference.Variables);
 			}
 
 			var sourceColumnReferences = program.ColumnReferences
 				.Concat(
-					program.ChildModels
+					program.SqlModels
 						.SelectMany(m => m.AllReferenceContainers)
 						.SelectMany(c => c.ColumnReferences)
 						.Where(c => !c.ReferencesAllColumns && c.ColumnNodeColumnReferences.Count == 0 && c.ObjectNodeObjectReferences.Count == 0))
@@ -423,15 +423,15 @@ namespace SqlPad.Oracle.SemanticModel
 						SourcePosition = sqlStatementNode.SourcePosition
 					};
 
-				var childStatementSemanticModel = new OracleStatementSemanticModel(sqlStatementNode.GetText(StatementText), childStatement, DatabaseModel).Build(CancellationToken);
-				program.ChildModels.Add(childStatementSemanticModel);
+				var sqlStatementSemanticModel = new OracleStatementSemanticModel(sqlStatementNode.GetText(StatementText), childStatement, DatabaseModel).Build(CancellationToken);
+				program.SqlModels.Add(sqlStatementSemanticModel);
 
-				foreach (var queryBlock in childStatementSemanticModel.QueryBlocks)
+				foreach (var queryBlock in sqlStatementSemanticModel.QueryBlocks)
 				{
 					QueryBlockNodes.Add(queryBlock.RootNode, queryBlock);
 				}
 
-				foreach (var plSqlVariableReference in childStatementSemanticModel.AllReferenceContainers.SelectMany(c => c.PlSqlVariableReferences))
+				foreach (var plSqlVariableReference in sqlStatementSemanticModel.AllReferenceContainers.SelectMany(c => c.PlSqlVariableReferences))
 				{
 					plSqlVariableReference.PlSqlProgram = program;
 				}
@@ -642,7 +642,7 @@ namespace SqlPad.Oracle.SemanticModel
 		{
 			if (selectStatementNode != null)
 			{
-				cursor.SemanticModel = cursor.Owner.ChildModels.SingleOrDefault(m => m.Statement.RootNode == selectStatementNode);
+				cursor.SemanticModel = cursor.Owner.SqlModels.SingleOrDefault(m => m.Statement.RootNode == selectStatementNode);
 			}
 		}
 
@@ -780,7 +780,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public string Name { get; set; }
 
-		public IList<OracleStatementSemanticModel> ChildModels { get; } = new List<OracleStatementSemanticModel>();
+		public IList<OracleStatementSemanticModel> SqlModels { get; } = new List<OracleStatementSemanticModel>();
 
 		public IList<OraclePlSqlProgram> SubPrograms { get; } = new List<OraclePlSqlProgram>();
 
