@@ -3209,5 +3209,41 @@ SELECT 4 FROM DUAL";
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 			semanticModel.MainQueryBlock.AllFollowingConcatenatedQueryBlocks.Count().ShouldBe(3);
 		}
+
+		[Test(Description = @"")]
+		public void TestConnectByPseudoColumns()
+		{
+			const string query1 =
+@"WITH edges (child_id, parent_id) AS (
+    SELECT 2, 1 FROM DUAL UNION ALL
+    SELECT 3, 2 FROM DUAL UNION ALL
+    SELECT 4, 2 FROM DUAL UNION ALL
+    SELECT 5, 4 FROM DUAL
+)
+SELECT
+	CONNECT_BY_ISLEAF,
+	CONNECT_BY_ISCYCLE,
+	CONNECT_BY_ROOT parent_id,
+	1f + 1d
+FROM
+    edges
+CONNECT BY NOCYCLE
+    PRIOR child_id = parent_id";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single().Validate();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
+			var mainQueryBlock = semanticModel.QueryBlocks.Single(q => q.Type == QueryBlockType.Normal);
+			mainQueryBlock.Columns.Count.ShouldBe(4);
+			mainQueryBlock.Columns[0].ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			var isLeafReference = mainQueryBlock.Columns[0].ColumnReferences[0].ColumnNodeColumnReferences.First();
+			isLeafReference.FullTypeName.ShouldBe("NUMBER");
+			var isCycleReference = mainQueryBlock.Columns[1].ColumnReferences[0].ColumnNodeColumnReferences.First();
+			mainQueryBlock.Columns[1].ColumnReferences[0].ColumnNodeObjectReferences.Count.ShouldBe(1);
+			isCycleReference.FullTypeName.ShouldBe("NUMBER");
+			//mainQueryBlock.Columns[2].NormalizedName.ShouldBe("\"CONNECT_BY_ROOTPARENT_ID\"");
+			//mainQueryBlock.Columns[3].NormalizedName.ShouldBe("\"1F+1D\"");
+		}
 	}
 }

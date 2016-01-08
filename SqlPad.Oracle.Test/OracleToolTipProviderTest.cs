@@ -1205,6 +1205,33 @@ SELECT * FROM data";
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestTooltipOverHierarchicalPseudoColumn()
+		{
+			const string query =
+@"WITH edges (child_id, parent_id) AS (
+    SELECT 2, 1 FROM DUAL UNION ALL
+    SELECT 3, 2 FROM DUAL UNION ALL
+    SELECT 4, 2 FROM DUAL UNION ALL
+    SELECT 5, 4 FROM DUAL
+)
+SELECT
+    child_id,
+    CONNECT_BY_ROOT parent_id,
+    CONNECT_BY_ISLEAF,
+    CONNECT_BY_ISCYCLE
+FROM
+    edges
+CONNECT BY NOCYCLE
+    PRIOR child_id = parent_id";
+
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 239);
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("CONNECT_BY_ISLEAF NUMBER NOT NULL");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestTooltipOverNamedParameterCombinedWithParameterlessFunction()
 		{
 			const string query = @"SELECT DBMS_RANDOM.VALUE(low => 0, high => 5) FROM DUAL WHERE ROWNUM = 1";

@@ -45,16 +45,18 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public bool HasExplicitDefinition => AsteriskColumn == null;
 
-	    public string NormalizedName
+		public string NormalizedName
 		{
 			get
 			{
 				if (!String.IsNullOrEmpty(ExplicitNormalizedName))
+				{
 					return ExplicitNormalizedName;
+				}
 
-			    return _aliasNode != null
-			        ? _normalizedName
-			        : _columnDescription?.Name;
+				return _aliasNode != null
+					? _normalizedName
+					: _columnDescription?.Name;
 			}
 		}
 

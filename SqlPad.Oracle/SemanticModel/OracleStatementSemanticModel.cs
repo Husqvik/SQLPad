@@ -2429,6 +2429,25 @@ namespace SqlPad.Oracle.SemanticModel
 				{
 					columnReference.ColumnDescription = columnDescription;
 				}
+				else if (columnReference.ColumnNodeObjectReferences.Count == 0 &&
+				         columnReference.ObjectNode == null && columnReference.Owner?.HierarchicalQueryClause != null)
+				{
+					var hasNoCycleSupport = columnReference.Owner.HierarchicalQueryClause[NonTerminals.HierarchicalQueryConnectByClause, Terminals.NoCycle] != null;
+					var hierarchicalClauseReference = new OracleHierarchicalClauseReference(hasNoCycleSupport);
+					if (String.Equals(columnReference.NormalizedName, OracleHierarchicalClauseReference.ColumnConnectByIsLeaf))
+					{
+						columnReference.ColumnNodeColumnReferences.Add(hierarchicalClauseReference.ConnectByIsLeafColumn);
+						columnReference.ColumnDescription = hierarchicalClauseReference.ConnectByIsLeafColumn;
+						columnReference.ColumnNodeObjectReferences.Add(hierarchicalClauseReference);
+					}
+
+					if (hasNoCycleSupport && String.Equals(columnReference.NormalizedName, OracleHierarchicalClauseReference.ColumnConnectByIsCycle))
+					{
+						columnReference.ColumnNodeColumnReferences.Add(hierarchicalClauseReference.ConnectByIsCycleColumn);
+						columnReference.ColumnDescription = hierarchicalClauseReference.ConnectByIsCycleColumn;
+						columnReference.ColumnNodeObjectReferences.Add(hierarchicalClauseReference);
+					}
+				}
 
 				TryColumnReferenceAsProgramOrSequenceReference(columnReference, false);
 			}
@@ -2585,7 +2604,7 @@ namespace SqlPad.Oracle.SemanticModel
 			for (var i = 0; i < concatenatedQueryBlocks.Count; i++)
 			{
 				var queryBlockColumnAliasReferences = concatenatedQueryBlocks[i].Columns
-					.Where(c => c.NormalizedName == columnReference.NormalizedName)
+					.Where(c => String.Equals(c.NormalizedName, columnReference.NormalizedName))
 					.Select(c => c.ColumnDescription)
 					.ToArray();
 
@@ -2885,15 +2904,14 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private void FindSelectListReferences(OracleQueryBlock queryBlock)
 		{
-			queryBlock.SelectList = queryBlock.RootNode[NonTerminals.SelectList];
-			if (queryBlock.SelectList == null)
-				return;
-
 			var distinctModifierNode = queryBlock.RootNode[NonTerminals.DistinctModifier];
 			queryBlock.HasDistinctResultSet = distinctModifierNode != null && distinctModifierNode.FirstTerminalNode.Id.In(Terminals.Distinct, Terminals.Unique);
 
-			if (queryBlock.SelectList.FirstTerminalNode == null)
+			queryBlock.SelectList = queryBlock.RootNode[NonTerminals.SelectList];
+			if (queryBlock.SelectList?.FirstTerminalNode == null)
+			{
 				return;
+			}
 
 			if (queryBlock.Type == QueryBlockType.CommonTableExpression)
 			{
@@ -3477,7 +3495,8 @@ namespace SqlPad.Oracle.SemanticModel
 		XmlTable,
 		JsonTable,
 		SqlModel,
-		PivotTable
+		PivotTable,
+		HierarchicalClause
 	}
 
 	public enum QueryBlockType

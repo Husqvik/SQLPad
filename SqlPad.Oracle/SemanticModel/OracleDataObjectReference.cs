@@ -20,6 +20,47 @@ namespace SqlPad.Oracle.SemanticModel
 		public abstract ReferenceType Type { get; }
 	}
 
+	public class OracleHierarchicalClauseReference : OracleObjectWithColumnsReference
+	{
+		private static readonly OracleColumn[] EmptyArray = new OracleColumn[0];
+
+		public const string ColumnConnectByIsLeaf = "\"CONNECT_BY_ISLEAF\"";
+		public const string ColumnConnectByIsCycle = "\"CONNECT_BY_ISCYCLE\"";
+
+		public OracleColumn ConnectByIsLeafColumn { get; } =
+				new OracleColumn(true)
+				{
+					Name = ColumnConnectByIsLeaf,
+					DataType = OracleDataType.NumberType
+				};
+
+		public OracleColumn ConnectByIsCycleColumn { get; } =
+			new OracleColumn(true)
+			{
+				Name = ColumnConnectByIsCycle,
+				DataType = OracleDataType.NumberType
+			};
+
+		public override string Name { get; } = String.Empty;
+
+		public override IReadOnlyList<OracleColumn> Columns { get; } = EmptyArray;
+
+		public override IReadOnlyList<OracleColumn> PseudoColumns { get; }
+
+		public override ReferenceType Type { get; } = ReferenceType.HierarchicalClause;
+
+		public OracleHierarchicalClauseReference(bool includeIsCycleColumn)
+		{
+			var pseudoColumns = new List<OracleColumn>(2) { ConnectByIsLeafColumn };
+			if (includeIsCycleColumn)
+			{
+				pseudoColumns.Add(ConnectByIsCycleColumn);
+			}
+
+			PseudoColumns = pseudoColumns;
+		}
+	}
+
 	public class OraclePartitionReference : OracleReference
 	{
 		public override string Name => ObjectNode.Token.Value;
