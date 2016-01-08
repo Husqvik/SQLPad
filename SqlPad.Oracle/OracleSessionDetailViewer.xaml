@@ -32,11 +32,6 @@
 			<Setter Property="Block.TextAlignment" Value="Right" />
 			<Setter Property="Control.HorizontalContentAlignment" Value="Right" />
 		</Style>
-		
-		<Style x:Key="ChartBorder">
-			<Setter Property="Border.BorderThickness" Value="0" />
-			<Setter Property="Border.BorderBrush" Value="Transparent" />
-		</Style>
 	</UserControl.Resources>
 	
 	<TabControl>
@@ -138,15 +133,15 @@
 							<DataGridTextColumn Binding="{Binding PhysicalReadBytes, Converter={StaticResource DataSpaceConverter}}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
 							<DataGridTextColumn Binding="{Binding PhysicalWriteRequests}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
 							<DataGridTextColumn Binding="{Binding PhysicalWriteBytes, Converter={StaticResource DataSpaceConverter}}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
-							<DataGridTextColumn Binding="{Binding ElapsedTime}" />
-							<DataGridTextColumn Binding="{Binding CpuTime}" />
-							<DataGridTextColumn Binding="{Binding ConcurrencyWaitTime}" />
-							<DataGridTextColumn Binding="{Binding ApplicationWaitTime}" />
-							<DataGridTextColumn Binding="{Binding ClusterWaitTime}" />
-							<DataGridTextColumn Binding="{Binding PlSqlExecutionTime}" />
-							<DataGridTextColumn Binding="{Binding JavaExecutionTime}" />
-							<DataGridTextColumn Binding="{Binding QueingTime}" />
-							<DataGridTextColumn Binding="{Binding UserIoWaitTime}" />
+							<DataGridTextColumn Binding="{Binding ElapsedTime}" ElementStyle="{StaticResource CellRealOnly}" />
+							<DataGridTextColumn Binding="{Binding CpuTime}" ElementStyle="{StaticResource CellRealOnly}" />
+							<DataGridTextColumn Binding="{Binding ConcurrencyWaitTime}" ElementStyle="{StaticResource CellRealOnly}" />
+							<DataGridTextColumn Binding="{Binding ApplicationWaitTime}" ElementStyle="{StaticResource CellRealOnly}" />
+							<DataGridTextColumn Binding="{Binding ClusterWaitTime}" ElementStyle="{StaticResource CellRealOnly}" />
+							<DataGridTextColumn Binding="{Binding PlSqlExecutionTime}" ElementStyle="{StaticResource CellRealOnly}" />
+							<DataGridTextColumn Binding="{Binding JavaExecutionTime}" ElementStyle="{StaticResource CellRealOnly}" />
+							<DataGridTextColumn Binding="{Binding QueingTime}" ElementStyle="{StaticResource CellRealOnly}" />
+							<DataGridTextColumn Binding="{Binding UserIoWaitTime}" ElementStyle="{StaticResource CellRealOnly}" />
 							<DataGridTextColumn Binding="{Binding MaxDegreeOfParallelism}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
 							<DataGridTextColumn Binding="{Binding MaxDegreeOfParallelismInstances}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
 							<DataGridTextColumn Binding="{Binding ParallelServersAllocated}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
