@@ -4995,7 +4995,7 @@
           <Terminal Id="Matched" />
           <Terminal Id="Then" />
           <Terminal Id="Insert" />
-          <NonTerminal Id="ParenthesisEnclosedIdentifierList" IsOptional="true" />
+          <NonTerminal Id="ParenthesisEnclosedPrefixedIdentifierList" IsOptional="true" />
           <Terminal Id="Values" />
           <NonTerminal Id="ParenthesisEnclosedMergeInsertValuesExpressionOrDefaultValueList" />
           <NonTerminal Id="WhereClause" IsOptional="true" />

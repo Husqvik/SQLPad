@@ -1618,7 +1618,7 @@ namespace SqlPad.Oracle.SemanticModel
 			MainObjectReferenceContainer.ObjectReferences.Add(mergeSourceReference);
 
 			var mergeSourceAccessibleReferences = MainObjectReferenceContainer.ColumnReferences
-				.Where(c => c.ColumnNode.GetPathFilterAncestor(null, n => n.Id.In(NonTerminals.PrefixedIdentifier, NonTerminals.ParenthesisEnclosedIdentifierList)) == null);
+				.Where(c => c.ColumnNode.GetPathFilterAncestor(null, n => n.Id.In(NonTerminals.PrefixedIdentifier, NonTerminals.ParenthesisEnclosedPrefixedIdentifierList)) == null);
 
 			ResolveColumnObjectReferences(mergeSourceAccessibleReferences, new[] { mergeSourceReference }, OracleDataObjectReference.EmptyArray);
 		}
