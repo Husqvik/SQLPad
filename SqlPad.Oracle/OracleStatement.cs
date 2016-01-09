@@ -36,224 +36,238 @@ namespace SqlPad.Oracle
 
 		public bool IsPlSql => !String.Equals(RootNode.Id, NonTerminals.StandaloneStatement);
 
-		public string SuccessfulExecutionMessage
+		public string BuildSuccessfulExecutionMessage(int? affectedRows)
 		{
-			get
+			if (String.Equals(RootNode.Id, NonTerminals.PlSqlBlockStatement))
 			{
-				if (String.Equals(RootNode.Id, NonTerminals.PlSqlBlockStatement))
-				{
-					return "PL/SQL procedure successfully completed. ";
-				}
+				return "PL/SQL procedure successfully completed. ";
+			}
 
-				if (String.Equals(RootNode.Id, NonTerminals.CreatePlSqlStatement))
+			if (String.Equals(RootNode.Id, NonTerminals.CreatePlSqlStatement))
+			{
+				switch (RootNode[NonTerminals.CreatePlSqlObjectClause]?[0].Id)
 				{
-					switch (RootNode[NonTerminals.CreatePlSqlObjectClause]?[0].Id)
+					case NonTerminals.CreateFunction:
+						return "Function created. ";
+					case NonTerminals.CreateProcedure:
+						return "Procedure created. ";
+					case NonTerminals.CreatePackageBody:
+						return "Package body created. ";
+					case NonTerminals.CreatePackage:
+						return "Package created. ";
+					case NonTerminals.CreateTrigger:
+						return "Trigger created. ";
+					case NonTerminals.CreateTypeBody:
+						return "Type body created. ";
+					case NonTerminals.CreateType:
+						return "Type created. ";
+				}
+			}
+
+			var statementNode = RootNode[0, 0];
+			var pluralPostfix = affectedRows == 1 ? null : "s";
+			switch (statementNode?.Id)
+			{
+				case NonTerminals.InsertStatement:
+					return $"{affectedRows} row{pluralPostfix} created. ";
+
+				case NonTerminals.UpdateStatement:
+					return $"{affectedRows} row{pluralPostfix} updated. ";
+
+				case NonTerminals.DeleteStatement:
+					return $"{affectedRows} row{pluralPostfix} deleted. ";
+
+				case NonTerminals.MergeStatement:
+					return "Rows merged. ";
+
+				case NonTerminals.CreateSqlStatement:
+					switch (statementNode[1, 0]?.Id)
 					{
-						case NonTerminals.CreateFunction:
-							return "Function created. ";
-						case NonTerminals.CreateProcedure:
-							return "Procedure created. ";
-						case NonTerminals.CreatePackageBody:
-							return "Package body created. ";
-						case NonTerminals.CreatePackage:
-							return "Package created. ";
-						case NonTerminals.CreateTrigger:
-							return "Trigger created. ";
-						case NonTerminals.CreateTypeBody:
-							return "Type body created. ";
-						case NonTerminals.CreateType:
-							return "Type created. ";
+						case NonTerminals.CreateTable:
+							return "Table created. ";
+						case NonTerminals.CreateIndex:
+							return "Index created. ";
+						case NonTerminals.CreateSynonym:
+							return "Synonym created. ";
+						case NonTerminals.CreateSequence:
+							return "Sequence created. ";
+						case NonTerminals.CreateView:
+							return "View created. ";
+						case NonTerminals.CreateCluster:
+							return "Cluster created. ";
+						case NonTerminals.CreateMaterializedViewLog:
+							return "Materialized view log created. ";
+						case NonTerminals.CreateDirectory:
+							return "Directory created. ";
+						case NonTerminals.CreateProfile:
+							return "Profile created. ";
+						case NonTerminals.CreateTablespace:
+							return "Tablespace created. ";
+						case NonTerminals.CreateUser:
+							return "User created. ";
+						case NonTerminals.CreateRole:
+							return "Role created. ";
+						case NonTerminals.CreateRollbackSegment:
+							return "Rollback segment created. ";
+						case NonTerminals.CreateRestorePoint:
+							return "Restore point created. ";
+						case NonTerminals.CreateSchemaAuthorization:
+							return "Schema created. ";
+						case NonTerminals.CreateDatabaseLink:
+							return "Database link created. ";
+						case NonTerminals.CreateParameterFile:
+						case NonTerminals.CreateServerParameterFile:
+							return "File created. ";
+						default:
+							return DefaultMessageCommandExecutedSuccessfully;
 					}
-				}
 
-				var statementNode = RootNode[0, 0];
-				switch (statementNode?.Id)
-				{
-					case NonTerminals.CreateSqlStatement:
-						switch (statementNode[1, 0]?.Id)
-						{
-							case NonTerminals.CreateTable:
-								return "Table created. ";
-							case NonTerminals.CreateIndex:
-								return "Index created. ";
-							case NonTerminals.CreateSynonym:
-								return "Synonym created. ";
-							case NonTerminals.CreateSequence:
-								return "Sequence created. ";
-							case NonTerminals.CreateView:
-								return "View created. ";
-							case NonTerminals.CreateCluster:
-								return "Cluster created. ";
-							case NonTerminals.CreateMaterializedViewLog:
-								return "Materialized view log created. ";
-							case NonTerminals.CreateDirectory:
-								return "Directory created. ";
-							case NonTerminals.CreateProfile:
-								return "Profile created. ";
-							case NonTerminals.CreateTablespace:
-								return "Tablespace created. ";
-							case NonTerminals.CreateUser:
-								return "User created. ";
-							case NonTerminals.CreateRole:
-								return "Role created. ";
-							case NonTerminals.CreateRollbackSegment:
-								return "Rollback segment created. ";
-							case NonTerminals.CreateRestorePoint:
-								return "Restore point created. ";
-							case NonTerminals.CreateSchemaAuthorization:
-								return "Schema created. ";
-							case NonTerminals.CreateDatabaseLink:
-								return "Database link created. ";
-							case NonTerminals.CreateParameterFile:
-							case NonTerminals.CreateServerParameterFile:
-								return "File created. ";
-							default:
-								return DefaultMessageCommandExecutedSuccessfully;
-						}
-					case NonTerminals.AlterStatement:
-						switch (statementNode[1, 0]?.Id)
-						{
-							case NonTerminals.AlterSession:
-								return "Session altered. ";
-							case NonTerminals.AlterProcedure:
-								return "Procedure altered. ";
-							case NonTerminals.AlterFunction:
-								return "Function altered. ";
-							case NonTerminals.AlterPackage:
-								return "Package altered. ";
-							case NonTerminals.AlterTable:
-								return "Table altered. ";
-							case NonTerminals.AlterProfile:
-								return "Profile altered. ";
-							case NonTerminals.AlterTablespace:
-								return "Tablespace altered. ";
-							case NonTerminals.AlterView:
-								return "View altered. ";
-							case NonTerminals.AlterLibrary:
-								return "Library altered. ";
-							case NonTerminals.AlterRole:
-								return "Role altered. ";
-							case NonTerminals.AlterRollbackSegment:
-								return "Rollback segment altered. ";
-							case NonTerminals.AlterResourceCost:
-								return "Resource cost altered. ";
-							case NonTerminals.AlterUser:
-								return "User altered. ";
-							case NonTerminals.AlterMaterializedView:
-								return "Materialized view altered. ";
-							case NonTerminals.AlterSystem:
-								return "System altered. ";
-							case NonTerminals.AlterTrigger:
-								return "Trigger altered. ";
-							case NonTerminals.AlterSynonym:
-								return "Synonym altered. ";
-							default:
-								return DefaultMessageCommandExecutedSuccessfully;
-						}
-					case NonTerminals.DropStatement:
-						var rootDropClause = statementNode[1, 0];
-						switch (rootDropClause?.Id)
-						{
-							case NonTerminals.DropTable:
-								return "Table dropped. ";
-							case NonTerminals.DropView:
-								return "View dropped. ";
-							case NonTerminals.DropIndex:
-								return "Index dropped. ";
-							case NonTerminals.DropPackage:
-								return "Package dropped. ";
-							case NonTerminals.DropContext:
-								return "Context dropped. ";
-							case NonTerminals.DropCluster:
-								return "Cluster dropped. ";
-							case NonTerminals.DropMaterializedViewLog:
-								return "Materialized view log dropped. ";
-							case NonTerminals.DropMaterializedView:
-								return "Materialized view dropped. ";
-							case NonTerminals.DropSynonym:
-								return "Synonym dropped. ";
-							case NonTerminals.DropType:
-								return "Type dropped. ";
-							case NonTerminals.DropDatabaseLink:
-								return "Database link dropped. ";
-							case NonTerminals.DropTablespace:
-								return "Tablespace dropped. ";
-							case NonTerminals.DropOther:
-								switch (rootDropClause?[0, 0]?.Id)
-								{
-									case Terminals.Function:
-										return "Function dropped. ";
-									case Terminals.Procedure:
-										return "Procedure dropped. ";
-									case Terminals.Sequence:
-										return "Sequence dropped. ";
-									case Terminals.Directory:
-										return "Directory dropped. ";
-									case Terminals.Trigger:
-										return "Trigger dropped. ";
-									case Terminals.Restore:
-										return "Restore point dropped. ";
-									default:
-										return DefaultMessageCommandExecutedSuccessfully;
-								}
-							default:
-								return DefaultMessageCommandExecutedSuccessfully;
-						}
-					case NonTerminals.CallStatement:
-						return "Call completed. ";
-					case NonTerminals.CommentStatement:
-						return "Comment created. ";
-					case NonTerminals.CommitStatement:
-						return "Commit complete. ";
-					case NonTerminals.SavepointStatement:
-						return "Savepoint created.";
-					case NonTerminals.RollbackStatement:
-						return "Rollback complete. ";
-					case NonTerminals.RenameStatement:
-						return "Object renamed. ";
-					case NonTerminals.ExplainPlanStatement:
-						return "Explained. ";
-					case NonTerminals.SetConstraintStatement:
-						return "Constraint set. ";
-					case NonTerminals.GrantStatement:
-						return "Grant succeeded. ";
-					case NonTerminals.TruncateStatement:
-						return "Table truncated. ";
-					case NonTerminals.SetTransactionStatement:
-						return "Transaction set. ";
-					case NonTerminals.FlashbackStatement:
-						return "Flashback complete. ";
-					case NonTerminals.PurgeStatement:
-						switch (statementNode[NonTerminals.PurgeOption]?.FirstTerminalNode?.Id)
-						{
-							case Terminals.Table:
-								return "Table purged. ";
-							case Terminals.Index:
-								return "Index purged. ";
-							case Terminals.RecycleBin:
-								return "Recyclebin purged. ";
-							case Terminals.DbaRecycleBin:
-								return "DBA Recyclebin purged. ";
-							case Terminals.Tablespace:
-								return "Tablespace purged. ";
-							default:
-								return DefaultMessageCommandExecutedSuccessfully;
-						}
-					case NonTerminals.AnalyzeStatement:
-						switch (statementNode[NonTerminals.AnalyzedObject]?.FirstTerminalNode?.Id)
-						{
-							case Terminals.Table:
-								return "Table analyzed. ";
-							case Terminals.Index:
-								return "Index analyzed. ";
-							case Terminals.Cluster:
-								return "Cluster analyzed. ";
-							default:
-								return DefaultMessageCommandExecutedSuccessfully;
-						}
-					default:
-						return DefaultMessageCommandExecutedSuccessfully;
-				}
+				case NonTerminals.AlterStatement:
+					switch (statementNode[1, 0]?.Id)
+					{
+						case NonTerminals.AlterSession:
+							return "Session altered. ";
+						case NonTerminals.AlterProcedure:
+							return "Procedure altered. ";
+						case NonTerminals.AlterFunction:
+							return "Function altered. ";
+						case NonTerminals.AlterPackage:
+							return "Package altered. ";
+						case NonTerminals.AlterTable:
+							return "Table altered. ";
+						case NonTerminals.AlterProfile:
+							return "Profile altered. ";
+						case NonTerminals.AlterTablespace:
+							return "Tablespace altered. ";
+						case NonTerminals.AlterView:
+							return "View altered. ";
+						case NonTerminals.AlterLibrary:
+							return "Library altered. ";
+						case NonTerminals.AlterRole:
+							return "Role altered. ";
+						case NonTerminals.AlterRollbackSegment:
+							return "Rollback segment altered. ";
+						case NonTerminals.AlterResourceCost:
+							return "Resource cost altered. ";
+						case NonTerminals.AlterUser:
+							return "User altered. ";
+						case NonTerminals.AlterMaterializedView:
+							return "Materialized view altered. ";
+						case NonTerminals.AlterSystem:
+							return "System altered. ";
+						case NonTerminals.AlterTrigger:
+							return "Trigger altered. ";
+						case NonTerminals.AlterSynonym:
+							return "Synonym altered. ";
+						default:
+							return DefaultMessageCommandExecutedSuccessfully;
+					}
+				case NonTerminals.DropStatement:
+					var rootDropClause = statementNode[1, 0];
+					switch (rootDropClause?.Id)
+					{
+						case NonTerminals.DropTable:
+							return "Table dropped. ";
+						case NonTerminals.DropView:
+							return "View dropped. ";
+						case NonTerminals.DropIndex:
+							return "Index dropped. ";
+						case NonTerminals.DropPackage:
+							return "Package dropped. ";
+						case NonTerminals.DropContext:
+							return "Context dropped. ";
+						case NonTerminals.DropCluster:
+							return "Cluster dropped. ";
+						case NonTerminals.DropMaterializedViewLog:
+							return "Materialized view log dropped. ";
+						case NonTerminals.DropMaterializedView:
+							return "Materialized view dropped. ";
+						case NonTerminals.DropSynonym:
+							return "Synonym dropped. ";
+						case NonTerminals.DropType:
+							return "Type dropped. ";
+						case NonTerminals.DropDatabaseLink:
+							return "Database link dropped. ";
+						case NonTerminals.DropTablespace:
+							return "Tablespace dropped. ";
+						case NonTerminals.DropOther:
+							switch (rootDropClause?[0, 0]?.Id)
+							{
+								case Terminals.Function:
+									return "Function dropped. ";
+								case Terminals.Procedure:
+									return "Procedure dropped. ";
+								case Terminals.Sequence:
+									return "Sequence dropped. ";
+								case Terminals.Directory:
+									return "Directory dropped. ";
+								case Terminals.Trigger:
+									return "Trigger dropped. ";
+								case Terminals.Restore:
+									return "Restore point dropped. ";
+								default:
+									return DefaultMessageCommandExecutedSuccessfully;
+							}
+
+						default:
+							return DefaultMessageCommandExecutedSuccessfully;
+					}
+				case NonTerminals.CallStatement:
+					return "Call completed. ";
+				case NonTerminals.CommentStatement:
+					return "Comment created. ";
+				case NonTerminals.CommitStatement:
+					return "Commit complete. ";
+				case NonTerminals.SavepointStatement:
+					return "Savepoint created.";
+				case NonTerminals.RollbackStatement:
+					return "Rollback complete. ";
+				case NonTerminals.RenameStatement:
+					return "Object renamed. ";
+				case NonTerminals.ExplainPlanStatement:
+					return "Explained. ";
+				case NonTerminals.SetConstraintStatement:
+					return "Constraint set. ";
+				case NonTerminals.GrantStatement:
+					return "Grant succeeded. ";
+				case NonTerminals.TruncateStatement:
+					return "Table truncated. ";
+				case NonTerminals.SetTransactionStatement:
+					return "Transaction set. ";
+				case NonTerminals.FlashbackStatement:
+					return "Flashback complete. ";
+				case NonTerminals.PurgeStatement:
+					switch (statementNode[NonTerminals.PurgeOption]?.FirstTerminalNode?.Id)
+					{
+						case Terminals.Table:
+							return "Table purged. ";
+						case Terminals.Index:
+							return "Index purged. ";
+						case Terminals.RecycleBin:
+							return "Recyclebin purged. ";
+						case Terminals.DbaRecycleBin:
+							return "DBA Recyclebin purged. ";
+						case Terminals.Tablespace:
+							return "Tablespace purged. ";
+						default:
+							return DefaultMessageCommandExecutedSuccessfully;
+					}
+
+				case NonTerminals.AnalyzeStatement:
+					switch (statementNode[NonTerminals.AnalyzedObject]?.FirstTerminalNode?.Id)
+					{
+						case Terminals.Table:
+							return "Table analyzed. ";
+						case Terminals.Index:
+							return "Index analyzed. ";
+						case Terminals.Cluster:
+							return "Cluster analyzed. ";
+						default:
+							return DefaultMessageCommandExecutedSuccessfully;
+					}
+
+				default:
+					return DefaultMessageCommandExecutedSuccessfully;
 			}
 		}
 

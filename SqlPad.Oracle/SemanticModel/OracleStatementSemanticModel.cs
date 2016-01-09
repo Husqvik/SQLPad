@@ -433,7 +433,7 @@ namespace SqlPad.Oracle.SemanticModel
 					var index = 0;
 					foreach (var column in concatenatedQueryBlock.Columns)
 					{
-						if (column.IsAsterisk)
+						if (column.IsAsterisk || columns.Length == index)
 						{
 							continue;
 						}

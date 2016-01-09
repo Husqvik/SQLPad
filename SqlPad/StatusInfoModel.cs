@@ -1,11 +1,7 @@
-using System;
-using System.Windows;
-
 namespace SqlPad
 {
 	public class StatusInfoModel : ModelBase
 	{
-		private int _affectedRowCount = -1;
 		private string _executionTimerMessage;
 		private bool _moreRowsAvailable;
 		private bool _resultGridAvailable;
@@ -14,25 +10,13 @@ namespace SqlPad
 		public bool ResultGridAvailable
 		{
 			get { return _resultGridAvailable; }
-			set
-			{
-				if (UpdateValueAndRaisePropertyChanged(ref _resultGridAvailable, value))
-				{
-					RaisePropertyChanged(nameof(StatementExecutionInfoSeparatorVisibility));
-				}
-			}
+			set { UpdateValueAndRaisePropertyChanged(ref _resultGridAvailable, value); }
 		}
 
 		public string SuccessfulExecutionMessage
 		{
 			get { return _successfulExecutionMessage; }
-			set
-			{
-				if (UpdateValueAndRaisePropertyChanged(ref _successfulExecutionMessage, value))
-				{
-					RaisePropertyChanged(nameof(StatementExecutionInfoSeparatorVisibility));
-				}
-			}
+			set { UpdateValueAndRaisePropertyChanged(ref _successfulExecutionMessage, value); }
 		}
 
 		public bool MoreRowsAvailable
@@ -46,25 +30,5 @@ namespace SqlPad
 			get { return _executionTimerMessage; }
 			set { UpdateValueAndRaisePropertyChanged(ref _executionTimerMessage, value); }
 		}
-
-		public int AffectedRowCount
-		{
-			get { return _affectedRowCount; }
-			set
-			{
-				if (!UpdateValueAndRaisePropertyChanged(ref _affectedRowCount, value))
-					return;
-
-				RaisePropertyChanged(nameof(AffectedRowCountVisibility));
-				RaisePropertyChanged(nameof(StatementExecutionInfoSeparatorVisibility));
-			}
-		}
-
-		public Visibility AffectedRowCountVisibility => _affectedRowCount == -1 ? Visibility.Collapsed : Visibility.Visible;
-
-		public Visibility StatementExecutionInfoSeparatorVisibility =>
-			!_resultGridAvailable && (AffectedRowCountVisibility == Visibility.Collapsed && String.IsNullOrEmpty(_successfulExecutionMessage))
-				? Visibility.Collapsed
-				: Visibility.Visible;
 	}
 }

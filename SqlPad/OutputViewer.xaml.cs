@@ -191,7 +191,6 @@ namespace SqlPad
 			StatusInfo.ResultGridAvailable = false;
 			StatusInfo.MoreRowsAvailable = false;
 			StatusInfo.SuccessfulExecutionMessage = null;
-			StatusInfo.AffectedRowCount = -1;
 
 			RemoveResultViewers();
 
@@ -372,14 +371,7 @@ namespace SqlPad
 			}
 			else
 			{
-				if (lastStatementResult.AffectedRowCount == -1)
-				{
-					StatusInfo.SuccessfulExecutionMessage = lastStatementResult.SuccessfulExecutionMessage;
-				}
-				else if (lastStatementResult.AffectedRowCount.HasValue)
-				{
-					StatusInfo.AffectedRowCount = lastStatementResult.AffectedRowCount.Value;
-				}
+				StatusInfo.SuccessfulExecutionMessage = lastStatementResult.SuccessfulExecutionMessage;
 			}
 		}
 
@@ -422,19 +414,6 @@ namespace SqlPad
 					_executionLogBuilder.Append("(");
 					_executionLogBuilder.Append(executionResult.Duration.Value.ToPrettyString());
 					_executionLogBuilder.Append(")");
-
-					if (executionResult.AffectedRowCount != -1)
-					{
-						_executionLogBuilder.Append(". ");
-						_executionLogBuilder.Append(Convert.ToDecimal(executionResult.AffectedRowCount).ToString("N0"));
-						_executionLogBuilder.Append(" row");
-						if (executionResult.AffectedRowCount != 1)
-						{
-							_executionLogBuilder.Append("s");
-						}
-
-						_executionLogBuilder.Append(" affected. ");
-					}
 				}
 				else
 				{

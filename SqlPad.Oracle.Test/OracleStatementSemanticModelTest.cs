@@ -3272,5 +3272,22 @@ CONNECT BY NOCYCLE
 			mainQueryBlock.Columns[0].IsAsterisk.ShouldBe(true);
 			mainQueryBlock.Columns[1].NormalizedName.ShouldBe(null);
 		}
+
+		[Test(Description = @"")]
+		public void TestConcatenatdQueryBlockDataTypeHarmonizationWhileTyping()
+		{
+			const string query1 =
+@"WITH data AS (SELECT 1 c1 FROM dual),
+generator (c2) AS (
+	SELECT  FROM data UNION ALL
+	SELECT c2 + 1 FROM generator WHERE c2 < 3
+)
+SELECT * FROM generator";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single().Validate();
+			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
+
+			Assert.DoesNotThrow(() => OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel));
+		}
 	}
 }
