@@ -175,10 +175,10 @@ namespace SqlPad.Oracle
 				var dataObjectReference = insertTarget.DataObjectReference;
 				foreach (var columnReference in insertTarget.ColumnReferences)
 				{
-					if (columnReference.ValidObjectReference != null && columnReference.ColumnDescription.Virtual)
+					if (columnReference.ColumnDescription != null && columnReference.ColumnDescription.Virtual)
 					{
-						validationModel.InvalidNonTerminals[columnReference.ColumnNode] =
-							new InvalidNodeValidationData(OracleSemanticErrorType.InsertOperationDisallowedOnVirtualColumns) { Node = columnReference.ColumnNode };
+						validationModel.InvalidNonTerminals[columnReference.RootNode] =
+							new InvalidNodeValidationData(OracleSemanticErrorType.InsertOperationDisallowedOnVirtualColumns) { Node = columnReference.RootNode };
 					}
 				}
 

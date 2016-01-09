@@ -973,6 +973,7 @@ namespace SqlPad.Oracle
 			public const string ParenthesisEnclosedObjectProperties = "ParenthesisEnclosedObjectProperties";
 			public const string ParenthesisEnclosedParameterDeclarationList = "ParenthesisEnclosedParameterDeclarationList";
 			public const string ParenthesisEnclosedPeriodStartEndColumns = "ParenthesisEnclosedPeriodStartEndColumns";
+			public const string ParenthesisEnclosedPrefixedIdentifierList = "ParenthesisEnclosedPrefixedIdentifierList";
 			public const string ParenthesisEnclosedRangePartitionDescriptionList = "ParenthesisEnclosedRangePartitionDescriptionList";
 			public const string ParenthesisEnclosedRangePartitionListOrSubpartitionClause = "ParenthesisEnclosedRangePartitionListOrSubpartitionClause";
 			public const string ParenthesisEnclosedReferencePartitionDescriptionList = "ParenthesisEnclosedReferencePartitionDescriptionList";
@@ -1093,8 +1094,9 @@ namespace SqlPad.Oracle
 			public const string PrefixedColumnReference = "PrefixedColumnReference";
 			public const string PrefixedCursorIdentifier = "PrefixedCursorIdentifier";
 			public const string PrefixedExceptionIdentifier = "PrefixedExceptionIdentifier";
-			public const string PrefixedProgramIdentifier = "PrefixedProgramIdentifier";
-			public const string PrefixedUpdatedColumnReference = "PrefixedUpdatedColumnReference";
+			public const string PrefixedIdentifier = "PrefixedIdentifier";
+			public const string PrefixedIdentifierList = "PrefixedIdentifierList";
+			public const string PrefixedIdentifierListChained = "PrefixedIdentifierListChained";
 			public const string PreserveTable = "PreserveTable";
 			public const string PreviousOrNext = "PreviousOrNext";
 			public const string ProcedureDeclaration = "ProcedureDeclaration";

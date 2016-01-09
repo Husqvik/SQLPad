@@ -3372,7 +3372,7 @@ END;";
 			var invalidNonTerminals = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
 			invalidNonTerminals.Count.ShouldBe(1);
 			invalidNonTerminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InsertOperationDisallowedOnVirtualColumns);
-			invalidNonTerminals[0].Node.Token.Value.ShouldBe("VIRTUAL_COLUMN");
+			invalidNonTerminals[0].Node.FirstTerminalNode.Token.Value.ShouldBe("VIRTUAL_COLUMN");
 		}
 
 		[Test(Description = @"")]
@@ -3445,6 +3445,20 @@ END;";
 			validationData.Count.ShouldBe(1);
 			validationData[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.NoCycleKeywordRequiredWithConnectByIsCyclePseudocolumn);
 			validationData[0].Node.FirstTerminalNode.Token.Value.ShouldBe("connect_by_iscycle");
+		}
+
+		[Test(Description = @"")]
+		public void InsertIntoColumnClauseWithPrefixedColumnReferringNonExistingTable()
+		{
+			const string sqlText = @"INSERT INTO tmp (tmp.val) VALUES (1)";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			validationModel.ColumnNodeValidity.Values.Count(c => !c.IsRecognized).ShouldBe(1);
 		}
 	}
 }

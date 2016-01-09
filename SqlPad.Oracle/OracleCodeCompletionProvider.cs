@@ -339,7 +339,7 @@ namespace SqlPad.Oracle
 
 			if (completionType.InsertIntoColumn)
 			{
-				var columnList = currentTerminal.GetAncestor(NonTerminals.ParenthesisEnclosedIdentifierList);
+				var columnList = currentTerminal.GetAncestor(NonTerminals.ParenthesisEnclosedPrefixedIdentifierList);
 				var insertTarget = semanticModel.InsertTargets.SingleOrDefault(t => t.ColumnListNode == columnList && t.DataObjectReference != null);
 				if (insertTarget != null)
 				{

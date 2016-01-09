@@ -4472,7 +4472,35 @@
         <Sequence>
           <Terminal Id="Into" />
           <NonTerminal Id="DmlTableExpressionClause" />
-          <NonTerminal Id="ParenthesisEnclosedIdentifierList" IsOptional="true" />
+          <NonTerminal Id="ParenthesisEnclosedPrefixedIdentifierList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ParenthesisEnclosedPrefixedIdentifierList">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="PrefixedIdentifierList" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="PrefixedIdentifierList">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="PrefixedIdentifier" />
+          <NonTerminal Id="PrefixedIdentifierListChained" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PrefixedIdentifierListChained">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Comma" />
+          <NonTerminal Id="PrefixedIdentifierList" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -4804,18 +4832,9 @@
     <Rule StartingNonTerminal="SetColumnEqualsExpressionOrNestedQueryOrDefaultValue">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="PrefixedUpdatedColumnReference" />
+          <NonTerminal Id="PrefixedIdentifier" />
           <Terminal Id="MathEquals" />
           <NonTerminal Id="ExpressionOrNestedQueryOrDefaultValue" />
-        </Sequence>
-      </Sequences>
-    </Rule>
-
-    <Rule StartingNonTerminal="PrefixedUpdatedColumnReference">
-      <Sequences>
-        <Sequence>
-          <NonTerminal Id="Prefix" IsOptional="true" />
-          <Terminal Id="Identifier" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -4931,7 +4950,7 @@
     <Rule StartingNonTerminal="MergeSetColumnEqualsExpressionOrDefaultValueList">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="PrefixedUpdatedColumnReference" />
+          <NonTerminal Id="PrefixedIdentifier" />
           <Terminal Id="MathEquals" />
           <NonTerminal Id="ExpressionOrDefaultValue" />
           <NonTerminal Id="MergeSetColumnEqualsExpressionOrDefaultValueCommaChainedList" IsOptional="true" />
@@ -14527,7 +14546,7 @@
     <Rule StartingNonTerminal="PlSqlProcedureCall">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="PrefixedProgramIdentifier" />
+          <NonTerminal Id="PrefixedIdentifier" />
           <!--<NonTerminal Id="DatabaseLink" IsOptional="true" />--><!-- Not in documentation -->
           <NonTerminal Id="ParenthesisEnclosedFunctionParameters" IsOptional="true" />
           <Terminal Id="Semicolon" />
@@ -14535,7 +14554,7 @@
       </Sequences>
     </Rule>
     
-    <Rule StartingNonTerminal="PrefixedProgramIdentifier">
+    <Rule StartingNonTerminal="PrefixedIdentifier">
       <Sequences>
         <Sequence>
           <NonTerminal Id="Prefix" IsOptional="true" />

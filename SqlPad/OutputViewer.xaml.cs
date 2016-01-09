@@ -543,7 +543,9 @@ namespace SqlPad
 			{
 				HasActiveTransaction = false;
 				TransactionIdentifier = null;
-				AddExecutionLog(result.ExecutedAt, $"{operation} complete. ({elapsedString})");
+				var statusMesssage = $"{operation} complete. ({elapsedString})";
+				AddExecutionLog(result.ExecutedAt, statusMesssage);
+				StatusInfo.SuccessfulExecutionMessage = statusMesssage;
 
 				DocumentPage.Editor.Focus();
 			}

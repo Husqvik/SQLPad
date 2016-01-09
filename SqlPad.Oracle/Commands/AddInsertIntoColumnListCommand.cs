@@ -86,9 +86,10 @@ namespace SqlPad.Oracle.Commands
 
 		protected override void Execute()
 		{
-			_columnList = CurrentNode.ParentNode.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.ParenthesisEnclosedIdentifierList);
-			var existingColumns = _columnList?.GetDescendants(Terminals.Identifier).Select(n => n.Token.Value.ToQuotedIdentifier())
-			                      ?? Enumerable.Empty<string>();
+			_columnList = CurrentNode.ParentNode.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.ParenthesisEnclosedPrefixedIdentifierList);
+			var existingColumns =
+				_columnList?.GetDescendants(Terminals.Identifier).Select(n => n.Token.Value.ToQuotedIdentifier())
+				?? Enumerable.Empty<string>();
 
 			_existingColumns = existingColumns.ToHashSet();
 

@@ -1618,7 +1618,7 @@ namespace SqlPad.Oracle.SemanticModel
 			MainObjectReferenceContainer.ObjectReferences.Add(mergeSourceReference);
 
 			var mergeSourceAccessibleReferences = MainObjectReferenceContainer.ColumnReferences
-				.Where(c => c.ColumnNode.GetPathFilterAncestor(null, n => n.Id.In(NonTerminals.PrefixedUpdatedColumnReference, NonTerminals.ParenthesisEnclosedIdentifierList)) == null);
+				.Where(c => c.ColumnNode.GetPathFilterAncestor(null, n => n.Id.In(NonTerminals.PrefixedIdentifier, NonTerminals.ParenthesisEnclosedIdentifierList)) == null);
 
 			ResolveColumnObjectReferences(mergeSourceAccessibleReferences, new[] { mergeSourceReference }, OracleDataObjectReference.EmptyArray);
 		}
@@ -1657,15 +1657,15 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 
 			var identifiers = updateListNode.GetDescendantsWithinSameQueryBlock(Terminals.Identifier, Terminals.RowIdPseudocolumn, Terminals.Level, Terminals.User);
-			ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(null, MainObjectReferenceContainer, identifiers, StatementPlacement.None, null, GetPrefixNonTerminalFromPrefixedUpdatedColumnReference);
+			ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(null, MainObjectReferenceContainer, identifiers, StatementPlacement.None, null, GetPrefixNonTerminalFromPrefixedIdentifier);
 
 			var grammarSpecificFunctions = GetGrammarSpecificFunctionNodes(updateListNode);
 			CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, null, MainObjectReferenceContainer.ProgramReferences, StatementPlacement.None, null);
 		}
 
-		private StatementGrammarNode GetPrefixNonTerminalFromPrefixedUpdatedColumnReference(StatementGrammarNode identifier)
+		private StatementGrammarNode GetPrefixNonTerminalFromPrefixedIdentifier(StatementGrammarNode identifier)
 		{
-			return identifier.ParentNode.Id == NonTerminals.PrefixedUpdatedColumnReference
+			return String.Equals(identifier.ParentNode.Id, NonTerminals.PrefixedIdentifier)
 				? identifier.ParentNode[NonTerminals.Prefix]
 				: GetPrefixNodeFromPrefixedColumnReference(identifier);
 		}
@@ -1721,7 +1721,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 				var targetReferenceContainer = new OracleMainObjectReferenceContainer(this);
 				insertTarget.ObjectReferences.Add(dataObjectReference);
-				insertTarget.ColumnListNode = insertIntoClause[NonTerminals.ParenthesisEnclosedIdentifierList];
+				insertTarget.ColumnListNode = insertIntoClause[NonTerminals.ParenthesisEnclosedPrefixedIdentifierList];
 				if (insertTarget.ColumnListNode != null)
 				{
 					var columnIdentiferNodes = insertTarget.ColumnListNode.GetDescendants(Terminals.Identifier);
@@ -3205,6 +3205,10 @@ namespace SqlPad.Oracle.SemanticModel
 			if (String.Equals(identifierNode.ParentNode.Id, NonTerminals.IdentifierList) || String.Equals(identifierNode.ParentNode.Id, NonTerminals.ColumnIdentifierChainedList) || String.Equals(identifierNode.Id, Terminals.RowNumberPseudocolumn) || String.Equals(identifierNode.Id, Terminals.Level) || String.Equals(identifierNode.Id, Terminals.User))
 			{
 				rootNode = identifierNode;
+			}
+			else if (String.Equals(identifierNode.ParentNode.Id, NonTerminals.PrefixedIdentifier))
+			{
+				rootNode = identifierNode.ParentNode;
 			}
 			else if (String.Equals(identifierNode.Id, Terminals.PlSqlIdentifier))
 			{

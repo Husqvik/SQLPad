@@ -309,11 +309,11 @@ namespace SqlPad.Oracle
 			var inMainQueryBlockOrMainObjectReference = CurrentQueryBlock == SemanticModel.MainQueryBlock || (CurrentQueryBlock == null && SemanticModel.MainObjectReferenceContainer.MainObjectReference != null);
 			Sequence = inMainQueryBlockOrMainObjectReference && (nearestTerminal.IsWithinSelectClause() || !nearestTerminal.IsWithinExpression() || nearestTerminal.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.InsertValuesClause) != null);
 
-			var isWithinUpdateSetNonTerminal = String.Equals(nearestTerminal.ParentNode.Id, NonTerminals.PrefixedUpdatedColumnReference) || nearestTerminal.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBlock, NonTerminals.SetColumnListEqualsNestedQuery) != null;
+			var isWithinUpdateSetNonTerminal = String.Equals(nearestTerminal.ParentNode.Id, NonTerminals.PrefixedIdentifier) || nearestTerminal.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBlock, NonTerminals.SetColumnListEqualsNestedQuery) != null;
 			var isAfterSetTerminal = isCursorAfterToken && String.Equals(nearestTerminal.Id, Terminals.Set);
 			var isAfterCommaInChainedUpdateSetClause = isCursorAfterToken && String.Equals(nearestTerminal.Id, Terminals.Comma) && String.Equals(nearestTerminal.ParentNode.Id, NonTerminals.UpdateSetColumnOrColumnListChainedList);
 			UpdateSetColumn = isCandidateIdentifier && (isWithinUpdateSetNonTerminal || isAfterSetTerminal || isAfterCommaInChainedUpdateSetClause);
-			var columnList = nearestTerminal.GetAncestor(NonTerminals.ParenthesisEnclosedIdentifierList);
+			var columnList = nearestTerminal.GetAncestor(NonTerminals.ParenthesisEnclosedPrefixedIdentifierList);
 			InsertIntoColumn = isCandidateIdentifier && String.Equals(columnList?.ParentNode?.Id, NonTerminals.InsertIntoClause);
 
 			ColumnAlias = Column && nearestTerminal.IsWithinOrderByClause();
