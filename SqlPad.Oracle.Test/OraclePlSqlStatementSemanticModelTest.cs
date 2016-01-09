@@ -540,6 +540,25 @@ END;";
 		}
 
 		[Test]
+		public void TestParameterlessProcedureReference()
+		{
+			const string plsqlText =
+@"BEGIN
+	HUSQVIK.SQLPAD_PROCEDURE;
+END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
+
+			semanticModel.Programs.Count.ShouldBe(1);
+			semanticModel.Programs[0].ProgramReferences.Count.ShouldBe(1);
+			var sqlPadProcedureReference = semanticModel.Programs[0].ProgramReferences.First();
+			sqlPadProcedureReference.Metadata.ShouldNotBe(null);
+		}
+
+		[Test]
 		public void TestVariableReferenceInNestedPlSqlBlock()
 		{
 			const string plsqlText =

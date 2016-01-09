@@ -356,7 +356,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private static bool TryGetSchemaObjectProgramMetadata(OracleSchemaObject schemaObject, out IEnumerable<OracleProgramMetadata> functionMetadata)
 		{
 			var targetObject = schemaObject.GetTargetSchemaObject();
-			var functionContainer = targetObject as IFunctionCollection;
+			var functionContainer = targetObject as IProgramCollection;
 			if (functionContainer != null)
 			{
 				functionMetadata = functionContainer.Programs;

@@ -209,7 +209,7 @@ namespace SqlPad.Oracle.DataDictionary
 		public override string Type => OracleSchemaObjectType.Sequence;
 	}
 
-	public interface IFunctionCollection
+	public interface IProgramCollection
 	{
 		ICollection<OracleProgramMetadata> Programs { get; }
 
@@ -217,30 +217,31 @@ namespace SqlPad.Oracle.DataDictionary
 	}
 
 	[DebuggerDisplay("OraclePackage (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
-	public class OraclePackage : OracleSchemaObject, IFunctionCollection
+	public class OraclePackage : OracleSchemaObject, IProgramCollection
 	{
 		private readonly List<OracleProgramMetadata> _programs = new List<OracleProgramMetadata>();
 
 		public ICollection<OracleProgramMetadata> Programs => _programs;
 
-	    public override string Type => OracleSchemaObjectType.Package;
+		public override string Type => OracleSchemaObjectType.Package;
+	}
+
+	public abstract class OracleSchemaProgram : OracleSchemaObject, IProgramCollection
+	{
+		public OracleProgramMetadata Metadata { get; set; }
+
+		ICollection<OracleProgramMetadata> IProgramCollection.Programs => new[] { Metadata };
 	}
 
 	[DebuggerDisplay("OracleFunction (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
-	public class OracleFunction : OracleSchemaObject, IFunctionCollection
+	public class OracleFunction : OracleSchemaProgram
 	{
-		public OracleProgramMetadata Metadata { get; set; }
-
-		ICollection<OracleProgramMetadata> IFunctionCollection.Programs => new [] { Metadata };
-
-	    public override string Type => OracleSchemaObjectType.Function;
+		public override string Type => OracleSchemaObjectType.Function;
 	}
 
 	[DebuggerDisplay("OracleProcedure (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
-	public class OracleProcedure : OracleSchemaObject
+	public class OracleProcedure : OracleSchemaProgram
 	{
-		public OracleProgramMetadata Metadata { get; set; }
-
 		public override string Type => OracleSchemaObjectType.Procedure;
 	}
 
@@ -319,7 +320,7 @@ namespace SqlPad.Oracle.DataDictionary
 	}
 
 	[DebuggerDisplay("OracleTypeCollection (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
-	public class OracleTypeCollection : OracleTypeBase, IFunctionCollection
+	public class OracleTypeCollection : OracleTypeBase, IProgramCollection
 	{
 		public const string OracleCollectionTypeNestedTable = "TABLE";
 		public const string OracleCollectionTypeVarryingArray = "VARRAY";

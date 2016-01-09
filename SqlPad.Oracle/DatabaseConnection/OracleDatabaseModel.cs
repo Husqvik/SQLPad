@@ -862,7 +862,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			try
 			{
 				var functionMetadata = _dataDictionary.AllObjects.Values
-					.OfType<IFunctionCollection>()
+					.OfType<IProgramCollection>()
 					.SelectMany(o => o.Programs);
 
 				_allProgramMetadata = FilterFunctionsWithUnavailableMetadata(functionMetadata)

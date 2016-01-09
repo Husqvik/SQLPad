@@ -142,8 +142,7 @@ namespace SqlPad.Oracle.DataDictionary
 			oracleSchemaObjectType.AddSubType(103, typeof(OracleSynonym));
 			oracleSchemaObjectType.AddSubType(104, typeof(OracleSequence));
 			oracleSchemaObjectType.AddSubType(105, typeof(OraclePackage));
-			oracleSchemaObjectType.AddSubType(106, typeof(OracleFunction));
-			oracleSchemaObjectType.AddSubType(107, typeof(OracleProcedure));
+			oracleSchemaObjectType.AddSubType(106, typeof(OracleSchemaProgram));
 
 			var oracleTypeBaseType = Serializer.Add(typeof(OracleTypeBase), true);
 			oracleTypeBaseType.AsReferenceDefault = true;
@@ -164,13 +163,12 @@ namespace SqlPad.Oracle.DataDictionary
 			oraclePackageType.AsReferenceDefault = true;
 			oraclePackageType.Add("_programs");
 
-			var oracleFunctionType = Serializer.Add(typeof(OracleFunction), false);
-			oracleFunctionType.AsReferenceDefault = true;
-			oracleFunctionType.Add(nameof(OracleFunction.Metadata));
+			var oracleSchemaProgramType = Serializer.Add(typeof(OracleSchemaProgram), false);
+			oracleSchemaProgramType.AsReferenceDefault = true;
+			oracleSchemaProgramType.Add(nameof(OracleSchemaProgram.Metadata));
 
-			var oracleProcedureType = Serializer.Add(typeof(OracleProcedure), false);
-			oracleProcedureType.AsReferenceDefault = true;
-			oracleProcedureType.Add(nameof(OracleProcedure.Metadata));
+			oracleSchemaProgramType.AddSubType(101, typeof(OracleFunction));
+			oracleSchemaProgramType.AddSubType(102, typeof(OracleProcedure));
 
 			oracleTypeBaseType.AddSubType(101, typeof(OracleTypeObject));
 			oracleTypeBaseType.AddSubType(102, typeof(OracleTypeCollection));

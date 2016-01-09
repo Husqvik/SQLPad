@@ -331,6 +331,10 @@ namespace SqlPad.Oracle.Test
 			userCountFunction.Metadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
 			userCountFunction.Metadata.Owner = userCountFunction;
 
+			var sqlPadProcedure = (OracleProcedure)AllObjectsInternal.Single(o => String.Equals(o.Name, "\"SQLPAD_PROCEDURE\"") && String.Equals(o.Owner, InitialSchema));
+			sqlPadProcedure.Metadata = new OracleProgramMetadata(ProgramType.Procedure, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "SQLPAD_PROCEDURE"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			sqlPadProcedure.Metadata.Owner = sqlPadProcedure;
+
 			var sqlPadFunction = (OracleFunction)AllObjectsInternal.Single(o => String.Equals(o.Name, "\"SQLPAD_FUNCTION\"") && String.Equals(o.Owner, InitialSchema));
 			sqlPadFunction.Metadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "SQLPAD_FUNCTION"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
 			sqlPadFunction.Metadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
@@ -521,7 +525,7 @@ namespace SqlPad.Oracle.Test
 			AddConstraints();
 
 			#region non-schema built-in functions
-			var allProgramMetadata = AllObjectsInternal.OfType<IFunctionCollection>().SelectMany(c => c.Programs).ToList();
+			var allProgramMetadata = AllObjectsInternal.OfType<IProgramCollection>().SelectMany(c => c.Programs).ToList();
 
 			var countFunctionAggregateMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(null, null, "COUNT"), false, true, false, false, false, false, 1, 1, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
 			countFunctionAggregateMetadata.AddParameter(new OracleProgramParameterMetadata(null, 1, 1, 0, ParameterDirection.Input, "EXPR", OracleObjectIdentifier.Empty, false));
@@ -926,6 +930,11 @@ namespace SqlPad.Oracle.Test
 			new OracleFunction
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"SQLPAD_FUNCTION\""),
+				IsValid = true
+			},
+			new OracleProcedure
+			{
+				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"SQLPAD_PROCEDURE\""),
 				IsValid = true
 			},
 			new OracleFunction
