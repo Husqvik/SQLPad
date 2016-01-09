@@ -377,13 +377,4 @@ namespace SqlPad.Oracle
 			return Equals(value, 0) ? "Total" : value;
 		}
 	}
-
-	public class ActiveSessionHistoryToActivityConverter : ValueConverterBase
-	{
-		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			var historyItem = (ActiveSessionHistoryItem)value;
-			return String.Equals(historyItem.SessionState, "ON CPU") ? 1 : 0;
-		}
-	}
 }

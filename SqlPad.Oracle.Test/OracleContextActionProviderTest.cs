@@ -166,6 +166,14 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestExpandAsteriskCommandNotAvailableWithSourceNamedColumnContainingQuotes()
+		{
+			const string query1 = @"SELECT * FROM (SELECT ""1"" || ""2"" FROM(SELECT 1, 2 FROM DUAL))";
+			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 7).ToArray();
+			actions.Length.ShouldBe(0);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestExpandAsteriskCommandAvailableBeforeComma()
 		{
 			const string query1 = "SELECT SELECTION.*, 1 FROM SELECTION";

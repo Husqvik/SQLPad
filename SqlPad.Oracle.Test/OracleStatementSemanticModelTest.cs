@@ -3257,5 +3257,20 @@ CONNECT BY NOCYCLE
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
+
+		[Test(Description = @"")]
+		public void TestNonAliasedColumnNameConsistOfDoubleQuotedReferences()
+		{
+			const string query1 = @"SELECT * FROM (SELECT ""1"" || ""2"" FROM(SELECT 1, 2 FROM DUAL))";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single().Validate();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
+			var mainQueryBlock = semanticModel.QueryBlocks.Single(qb => qb.RootNode.SourcePosition.IndexStart == 0);
+			mainQueryBlock.Columns.Count.ShouldBe(2);
+			mainQueryBlock.Columns[0].IsAsterisk.ShouldBe(true);
+			mainQueryBlock.Columns[1].NormalizedName.ShouldBe(null);
+		}
 	}
 }

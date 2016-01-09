@@ -300,7 +300,7 @@ namespace SqlPad.Oracle.ToolTips
 						new OracleColumnModel
 						{
 							Name = String.IsNullOrEmpty(c.ColumnDescription.Name)
-								? OracleSelectListColumn.BuildNonAliasedColumnName(c.RootNode.Terminals)
+								? OracleSelectListColumn.BuildNonAliasedOutputColumnName(c.RootNode.Terminals)
 								: c.ColumnDescription.Name,
 							FullTypeName = c.ColumnDescription.FullTypeName,
 							Nullable = nullable,

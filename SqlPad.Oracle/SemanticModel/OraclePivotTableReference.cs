@@ -264,7 +264,7 @@ namespace SqlPad.Oracle.SemanticModel
 					var columnAlias = aliasSourceNode[NonTerminals.ColumnAsAlias, Terminals.ColumnAlias];
 
 					var columnName = columnAlias == null
-						? OracleSelectListColumn.BuildNonAliasedColumnName(aliasSourceNode.Terminals).ToQuotedIdentifier()
+						? OracleSelectListColumn.BuildNonAliasedColumnName(aliasSourceNode.Terminals)
 						: columnAlias.Token.Value.ToQuotedIdentifier();
 
 					if (!String.IsNullOrEmpty(columnName))

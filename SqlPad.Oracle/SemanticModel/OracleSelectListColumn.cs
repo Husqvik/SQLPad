@@ -95,7 +95,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 				if (HasExplicitDefinition && !IsAsterisk && RootNode != null)
 				{
-					return BuildNonAliasedColumnName(RootNode.Terminals).ToQuotedIdentifier();
+					return BuildNonAliasedColumnName(RootNode.Terminals);
 				}
 
 				return null;
@@ -147,9 +147,15 @@ namespace SqlPad.Oracle.SemanticModel
 			return _columnDescription;
 		}
 
-		internal static string BuildNonAliasedColumnName(IEnumerable<StatementGrammarNode> terminals)
+		internal static string BuildNonAliasedOutputColumnName(IEnumerable<StatementGrammarNode> terminals)
 		{
 			return String.Concat(terminals.Select(t => WhitespaceRegex.Replace(((OracleToken)t.Token).UpperInvariantValue, String.Empty)));
+		}
+
+		internal static string BuildNonAliasedColumnName(IEnumerable<StatementGrammarNode> terminals)
+		{
+			var outputColumnName = BuildNonAliasedOutputColumnName(terminals);
+			return outputColumnName.Trim('"').IndexOf('"') == -1 ? outputColumnName.ToQuotedIdentifier() : null;
 		}
 
 		public OracleSelectListColumn AsImplicit(OracleSelectListColumn asteriskColumn)
