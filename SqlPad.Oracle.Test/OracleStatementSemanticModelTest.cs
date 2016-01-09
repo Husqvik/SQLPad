@@ -3242,8 +3242,8 @@ CONNECT BY NOCYCLE
 			var isCycleReference = mainQueryBlock.Columns[1].ColumnReferences[0].ColumnNodeColumnReferences.First();
 			mainQueryBlock.Columns[1].ColumnReferences[0].ColumnNodeObjectReferences.Count.ShouldBe(1);
 			isCycleReference.FullTypeName.ShouldBe("NUMBER");
-			//mainQueryBlock.Columns[2].NormalizedName.ShouldBe("\"CONNECT_BY_ROOTPARENT_ID\"");
-			//mainQueryBlock.Columns[3].NormalizedName.ShouldBe("\"1F+1D\"");
+			mainQueryBlock.Columns[2].NormalizedName.ShouldBe("\"CONNECT_BY_ROOTPARENT_ID\"");
+			mainQueryBlock.Columns[3].NormalizedName.ShouldBe("\"1F+1D\"");
 		}
 	}
 }

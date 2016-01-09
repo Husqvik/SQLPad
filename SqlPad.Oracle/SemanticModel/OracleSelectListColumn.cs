@@ -45,26 +45,13 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public bool HasExplicitDefinition => AsteriskColumn == null;
 
-		public string NormalizedName
-		{
-			get
-			{
-				if (!String.IsNullOrEmpty(ExplicitNormalizedName))
-				{
-					return ExplicitNormalizedName;
-				}
-
-				return _aliasNode != null
-					? _normalizedName
-					: _columnDescription?.Name;
-			}
-		}
+		public string NormalizedName => ColumnName ?? ColumnDescription?.Name;
 
 		public string ExplicitNormalizedName { get; set; }
 
 		public bool HasExplicitAlias => !IsAsterisk && HasExplicitDefinition && String.Equals(RootNode.LastTerminalNode.Id, Terminals.ColumnAlias);
 
-	    public StatementGrammarNode AliasNode
+		public StatementGrammarNode AliasNode
 		{
 			get { return _aliasNode; }
 			set
@@ -92,6 +79,29 @@ namespace SqlPad.Oracle.SemanticModel
 			set { _columnDescription = value; }
 		}
 
+		private string ColumnName
+		{
+			get
+			{
+				if (!String.IsNullOrEmpty(ExplicitNormalizedName))
+				{
+					return ExplicitNormalizedName;
+				}
+
+				if (_aliasNode != null)
+				{
+					return _normalizedName;
+				}
+
+				if (HasExplicitDefinition && !IsAsterisk && RootNode != null)
+				{
+					return BuildNonAliasedColumnName(RootNode.Terminals).ToQuotedIdentifier();
+				}
+
+				return null;
+			}
+		}
+
 		private OracleColumn BuildColumnDescription()
 		{
 			var columnDescription = IsDirectReference && ColumnReferences.Count == 1
@@ -101,13 +111,13 @@ namespace SqlPad.Oracle.SemanticModel
 			_columnDescription =
 				new OracleColumn
 				{
-					Name = NormalizedName,
+					Name = ColumnName,
 					Nullable = columnDescription == null || columnDescription.Nullable,
 					DataType = columnDescription == null ? OracleDataType.Empty : columnDescription.DataType,
 					CharacterSize = columnDescription?.CharacterSize
 				};
 
-			if (columnDescription == null && RootNode.TerminalCount > 0)
+			if (columnDescription == null && !IsAsterisk && RootNode.TerminalCount > 0)
 			{
 				var expressionNode = RootNode[0];
 				if (String.Equals(expressionNode.Id, NonTerminals.AliasedExpression))

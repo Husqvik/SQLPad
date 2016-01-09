@@ -106,14 +106,14 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @""), STAThread]
-		public void TestWrapCommandsNotAvailableWhenQueryBlockHasNoNamedColumn()
+		public void TestWrapCommandsAvailableWhenQueryBlockHasNoNamedColumn()
 		{
 			const string query1 = @"SELECT NULL FROM DUAL";
 
 			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 1)
 				.Count(a => a.Name.In(WrapAsCommonTableExpressionCommand.Title, WrapAsInlineViewCommand.Title));
 			
-			actions.ShouldBe(0);
+			actions.ShouldBe(2);
 		}
 
 		[Test(Description = @""), STAThread]
@@ -154,7 +154,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @""), STAThread]
-		public void TestExpandAsteriskCommandNotAvailableWithSourceWithoutNamedColumn()
+		public void TestExpandAsteriskCommandAvailableWithSourceWithoutNamedColumn()
 		{
 			const string query1 = "SELECT * FROM (SELECT 1 FROM SELECTION)";
 			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 7).ToArray();
@@ -162,7 +162,7 @@ namespace SqlPad.Oracle.Test
 
 			const string query2 = "SELECT S.* FROM (SELECT 1 FROM SELECTION) S";
 			actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query2, 9).ToArray();
-			actions.Length.ShouldBe(0);
+			actions.Length.ShouldBe(1);
 		}
 
 		[Test(Description = @""), STAThread]

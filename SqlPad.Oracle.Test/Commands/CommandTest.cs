@@ -349,7 +349,7 @@ ORDER BY
 			CanExecuteCommand(OracleCommands.WrapAsInlineView).ShouldBe(true);
 			ExecuteCommand(OracleCommands.WrapAsInlineView, new TestCommandSettings(new CommandSettingsModel { Value = "IV" } ));
 
-			_editor.Text.ShouldBe(@"SELECT IV.RESPONDENTBUCKET_ID, IV.SELECTION_ID, IV.PROJECT_ID, IV.NAME FROM (SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM SELECTION S) IV");
+			_editor.Text.ShouldBe(@"SELECT IV.RESPONDENTBUCKET_ID, IV.SELECTION_ID, IV.PROJECT_ID, IV.NAME, IV.""1"" FROM (SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM SELECTION S) IV");
 		}
 
 		[Test(Description = @""), STAThread]
@@ -429,7 +429,7 @@ FROM
 			CanExecuteCommand(OracleCommands.WrapAsInlineView).ShouldBe(true);
 			ExecuteCommand(OracleCommands.WrapAsInlineView, new TestCommandSettings(new CommandSettingsModel()));
 
-			_editor.Text.ShouldBe(@"SELECT RESPONDENTBUCKET_ID, SELECTION_ID, PROJECT_ID, NAME FROM (SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM SELECTION S)");
+			_editor.Text.ShouldBe(@"SELECT RESPONDENTBUCKET_ID, SELECTION_ID, PROJECT_ID, NAME, ""1"" FROM (SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM SELECTION S)");
 		}
 
 		[Test(Description = @""), STAThread]
@@ -476,7 +476,7 @@ FROM
 
 			ExecuteCommand(OracleCommands.WrapAsInlineView, new TestCommandSettings(new CommandSettingsModel { Value = "IV" }));
 
-			_editor.Text.ShouldBe(@"SELECT IV.RESPONDENTBUCKET_ID FROM (SELECT COUNT(DISTINCT SELECTION_ID) OVER (), RESPONDENTBUCKET_ID FROM SELECTION) IV");
+			_editor.Text.ShouldBe(@"SELECT IV.""COUNT(DISTINCTSELECTION_ID)OVER()"", IV.RESPONDENTBUCKET_ID FROM (SELECT COUNT(DISTINCT SELECTION_ID) OVER (), RESPONDENTBUCKET_ID FROM SELECTION) IV");
 		}
 
 		[Test(Description = @""), STAThread]
@@ -487,7 +487,7 @@ FROM
 
 			ExecuteCommand(OracleCommands.WrapAsCommonTableExpression, new TestCommandSettings(new CommandSettingsModel { Value = "MYQUERY" } ));
 
-			_editor.Text.ShouldBe(@"WITH MYQUERY AS (SELECT 1, 1 + 1 MYCOLUMN, DUMMY || '3' COLUMN3 FROM DUAL) SELECT MYQUERY.MYCOLUMN, MYQUERY.COLUMN3 FROM MYQUERY");
+			_editor.Text.ShouldBe(@"WITH MYQUERY AS (SELECT 1, 1 + 1 MYCOLUMN, DUMMY || '3' COLUMN3 FROM DUAL) SELECT MYQUERY.""1"", MYQUERY.MYCOLUMN, MYQUERY.COLUMN3 FROM MYQUERY");
 		}
 
 		[Test(Description = @""), STAThread]
@@ -509,7 +509,7 @@ FROM
 
 			ExecuteCommand(OracleCommands.WrapAsCommonTableExpression, new TestCommandSettings(new CommandSettingsModel { Value = "NEWQUERY" }));
 
-			_editor.Text.ShouldBe("\t\t            WITH OLDQUERY AS (SELECT OLD FROM OLD), NEWQUERY AS (SELECT 1, 1 + 1 MYCOLUMN, DUMMY || '3' COLUMN3 FROM DUAL) SELECT NEWQUERY.MYCOLUMN, NEWQUERY.COLUMN3 FROM NEWQUERY");
+			_editor.Text.ShouldBe("\t\t            WITH OLDQUERY AS (SELECT OLD FROM OLD), NEWQUERY AS (SELECT 1, 1 + 1 MYCOLUMN, DUMMY || '3' COLUMN3 FROM DUAL) SELECT NEWQUERY.\"1\", NEWQUERY.MYCOLUMN, NEWQUERY.COLUMN3 FROM NEWQUERY");
 		}
 
 		[Test(Description = @""), STAThread]

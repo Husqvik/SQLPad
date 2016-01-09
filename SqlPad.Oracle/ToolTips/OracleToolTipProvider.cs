@@ -311,10 +311,7 @@ namespace SqlPad.Oracle.ToolTips
 
 			return columns.Length == 0
 				? null
-				: new ToolTipAsterisk
-				{
-					Columns = columns
-				};
+				: new ToolTipAsterisk { Columns = columns };
 		}
 
 		private static OracleReference GetObjectReference(OracleStatementSemanticModel semanticModel, StatementGrammarNode terminal)

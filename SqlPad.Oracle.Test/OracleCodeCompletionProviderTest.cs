@@ -487,12 +487,13 @@ FROM
 		}
 
 		[Test(Description = @"")]
-		public void TestJoinConditionNotSuggestedWhenCommonTableExpressionColumnsAreNotAliased()
+		public void TestJoinConditionWhenCommonTableExpressionColumnsAreNotAliased()
 		{
 			const string query1 = @"WITH X AS (SELECT 1 FROM DUAL), Y AS (SELECT 1 FROM DUAL) SELECT * FROM X JOIN Y ";
 
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 81).ToArray();
-			items.Length.ShouldBe(0);
+			items.Length.ShouldBe(1);
+			items[0].Name.ShouldBe("ON X.\"1\" = Y.\"1\"");
 		}
 
 		[Test(Description = @"")]
