@@ -23,9 +23,29 @@ namespace SqlPad.Oracle.SemanticModel
 
 		internal static readonly Func<OracleSelectListColumn, bool> PredicateContainsAnalyticFuction = c => c.ProgramReferences.Any(p => p.AnalyticClauseNode != null);
 
-		public OracleQueryBlock(OracleStatementSemanticModel semanticModel) : base(semanticModel)
+		public OracleQueryBlock(OracleStatement statement, StatementGrammarNode rootNode, OracleStatementSemanticModel semanticModel) : base(semanticModel)
 		{
-			AccessibleQueryBlocks = new List<OracleQueryBlock>();
+			if (rootNode == null)
+			{
+				throw new ArgumentNullException(nameof(rootNode));
+			}
+
+			if (!String.Equals(rootNode.Id, NonTerminals.QueryBlock))
+			{
+				throw new ArgumentException($"'rootNode' parameter must be '{NonTerminals.QueryBlock}' non-terminal. ", nameof(rootNode));
+			}
+
+			Statement = statement;
+			RootNode = rootNode;
+
+			FromClause = rootNode[NonTerminals.FromClause];
+			HierarchicalQueryClause = rootNode[NonTerminals.HierarchicalQueryClause];
+
+			if (HierarchicalQueryClause != null)
+			{
+				var hasNoCycleSupport = HierarchicalQueryClause[NonTerminals.HierarchicalQueryConnectByClause, OracleGrammarDescription.Terminals.NoCycle] != null;
+				HierarchicalClauseReference = new OracleHierarchicalClauseReference(hasNoCycleSupport);
+			}
 		}
 
 		private bool IsFrozen => _namedColumns != null;
@@ -61,7 +81,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public QueryBlockType Type { get; set; }
 		
-		public StatementGrammarNode RootNode { get; set; }
+		public StatementGrammarNode RootNode { get; }
 
 		public StatementGrammarNode WhereClause { get; set; }
 
@@ -69,7 +89,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public bool HasDistinctResultSet { get; set; }
 
-		public StatementGrammarNode FromClause { get; set; }
+		public StatementGrammarNode FromClause { get; }
 
 		public StatementGrammarNode GroupByClause { get; set; }
 
@@ -77,7 +97,7 @@ namespace SqlPad.Oracle.SemanticModel
 		
 		public StatementGrammarNode OrderByClause { get; set; }
 		
-		public StatementGrammarNode HierarchicalQueryClause { get; set; }
+		public StatementGrammarNode HierarchicalQueryClause { get; private set; }
 
 		public StatementGrammarNode ExplicitColumnNameList { get; set; }
 
@@ -89,7 +109,7 @@ namespace SqlPad.Oracle.SemanticModel
 		
 		public OracleDataObjectReference CrossOrOuterApplyReference { get; set; }
 
-		public OracleStatement Statement { get; set; }
+		public OracleStatement Statement { get; }
 		
 		public bool IsRecursive { get; set; }
 		
@@ -122,6 +142,8 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public OracleSqlModelReference ModelReference { get; set; }
 
+		public OracleHierarchicalClauseReference HierarchicalClauseReference { get; private set; }
+
 		public IEnumerable<OracleReferenceContainer> ChildContainers
 		{
 			get
@@ -146,7 +168,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public IEnumerable<OracleSequenceReference> AllSequenceReferences { get { return ChildContainers.SelectMany(c => c.SequenceReferences).Concat(SequenceReferences); } }
 
-		public ICollection<OracleQueryBlock> AccessibleQueryBlocks { get; private set; }
+		public ICollection<OracleQueryBlock> AccessibleQueryBlocks { get; } = new List<OracleQueryBlock>();
 
 		public IReadOnlyList<StatementGrammarNode> Terminals { get; set; }
 

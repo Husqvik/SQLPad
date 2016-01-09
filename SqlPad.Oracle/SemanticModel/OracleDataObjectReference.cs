@@ -24,20 +24,20 @@ namespace SqlPad.Oracle.SemanticModel
 	{
 		private static readonly OracleColumn[] EmptyArray = new OracleColumn[0];
 
-		public const string ColumnConnectByIsLeaf = "\"CONNECT_BY_ISLEAF\"";
-		public const string ColumnConnectByIsCycle = "\"CONNECT_BY_ISCYCLE\"";
+		public const string ColumnNameConnectByIsLeaf = "\"CONNECT_BY_ISLEAF\"";
+		public const string ColumnNameConnectByIsCycle = "\"CONNECT_BY_ISCYCLE\"";
 
 		public OracleColumn ConnectByIsLeafColumn { get; } =
 				new OracleColumn(true)
 				{
-					Name = ColumnConnectByIsLeaf,
+					Name = ColumnNameConnectByIsLeaf,
 					DataType = OracleDataType.NumberType
 				};
 
 		public OracleColumn ConnectByIsCycleColumn { get; } =
 			new OracleColumn(true)
 			{
-				Name = ColumnConnectByIsCycle,
+				Name = ColumnNameConnectByIsCycle,
 				DataType = OracleDataType.NumberType
 			};
 
@@ -49,10 +49,14 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public override ReferenceType Type { get; } = ReferenceType.HierarchicalClause;
 
-		public OracleHierarchicalClauseReference(bool includeIsCycleColumn)
+		public bool HasNoCycleSupport { get; }
+
+		public OracleHierarchicalClauseReference(bool hasNoCycleSupport)
 		{
+			HasNoCycleSupport = hasNoCycleSupport;
+
 			var pseudoColumns = new List<OracleColumn>(2) { ConnectByIsLeafColumn };
-			if (includeIsCycleColumn)
+			if (hasNoCycleSupport)
 			{
 				pseudoColumns.Add(ConnectByIsCycleColumn);
 			}

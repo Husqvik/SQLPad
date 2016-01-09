@@ -20,7 +20,9 @@ namespace SqlPad.Oracle
 		public static string ToSimpleIdentifier(this string identifier)
 		{
 			if (String.IsNullOrWhiteSpace(identifier))
+			{
 				return String.Empty;
+			}
 
 			var isNotKeyword = !identifier.CollidesWithReservedWord();
 
@@ -101,7 +103,9 @@ namespace SqlPad.Oracle
 		public static bool CollidesWithReservedWord(this string identifier)
 		{
 			if (String.IsNullOrEmpty(identifier))
+			{
 				return false;
+			}
 
 			CheckQuotedIdentifier(identifier);
 
@@ -111,7 +115,9 @@ namespace SqlPad.Oracle
 		public static bool IsQuoted(this string identifier)
 		{
 			if (String.IsNullOrEmpty(identifier))
+			{
 				return false;
+			}
 
 			CheckQuotedIdentifier(identifier);
 			return IsQuotedWithoutCheck(identifier);
@@ -125,7 +131,9 @@ namespace SqlPad.Oracle
 		public static string ToQuotedIdentifier(this string identifier)
 		{
 			if (String.IsNullOrWhiteSpace(identifier))
+			{
 				return String.Empty;
+			}
 
 			CheckQuotedIdentifier(identifier);
 
@@ -135,7 +143,9 @@ namespace SqlPad.Oracle
 		private static void CheckQuotedIdentifier(string identifier)
 		{
 			if (identifier.IsQuotedWithoutCheck() && (identifier.Length == 1 || identifier[identifier.Length - 1] != '"' || identifier.Substring(1, identifier.Length - 2).Contains(QuoteCharacter)))
+			{
 				throw new ArgumentException("invalid quoted notation");
+			}
 		}
 
 		public static string ToNormalizedBindVariableIdentifier(this string identifier)
@@ -162,7 +172,9 @@ namespace SqlPad.Oracle
 			var tableIdentifierNode = queryTableExpression.ChildNodes.SingleOrDefault(n => n.Id == Terminals.ObjectIdentifier);
 
 			if (tableIdentifierNode == null)
+			{
 				return OracleObjectIdentifier.Empty;
+			}
 
 			var schemaPrefixNode = queryTableExpression.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.SchemaPrefix);
 		    schemaPrefixNode = schemaPrefixNode?.ChildNodes.First();

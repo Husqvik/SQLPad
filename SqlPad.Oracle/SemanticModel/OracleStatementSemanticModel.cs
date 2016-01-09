@@ -160,7 +160,7 @@ namespace SqlPad.Oracle.SemanticModel
 				StatementGrammarNode plSqlIdentifier = null;
 				if (String.Equals(terminal.Id, Terminals.Select) && String.Equals(terminal.ParentNode.Id, NonTerminals.QueryBlock))
 				{
-					var queryBlock = new OracleQueryBlock(this) { RootNode = terminal.ParentNode, Statement = Statement };
+					var queryBlock = new OracleQueryBlock(Statement, terminal.ParentNode, this);
 					queryBlockNodes.Add(queryBlock.RootNode, queryBlock);
 
 					if (queryBlockTerminalList.Key != null)
@@ -287,9 +287,6 @@ namespace SqlPad.Oracle.SemanticModel
 						}
 					}
 				}
-
-				queryBlock.HierarchicalQueryClause = queryBlockRoot[NonTerminals.HierarchicalQueryClause];
-				queryBlock.FromClause = queryBlockRoot[NonTerminals.FromClause];
 			}
 
 			foreach (var kvp in statementDefinedFunctions)
@@ -2384,6 +2381,11 @@ namespace SqlPad.Oracle.SemanticModel
 					}
 				}
 
+				if (HasResolveHierachicalPseudoColumnRefences(columnReference))
+				{
+					continue;
+				}
+
 				IEnumerable<OracleDataObjectReference> effectiveAccessibleRowSourceReferences = accessibleRowSourceReferences;
 				if (columnReference.Placement == StatementPlacement.Join || columnReference.Placement == StatementPlacement.TableReference)
 				{
@@ -2429,28 +2431,36 @@ namespace SqlPad.Oracle.SemanticModel
 				{
 					columnReference.ColumnDescription = columnDescription;
 				}
-				else if (columnReference.ColumnNodeObjectReferences.Count == 0 &&
-				         columnReference.ObjectNode == null && columnReference.Owner?.HierarchicalQueryClause != null)
-				{
-					var hasNoCycleSupport = columnReference.Owner.HierarchicalQueryClause[NonTerminals.HierarchicalQueryConnectByClause, Terminals.NoCycle] != null;
-					var hierarchicalClauseReference = new OracleHierarchicalClauseReference(hasNoCycleSupport);
-					if (String.Equals(columnReference.NormalizedName, OracleHierarchicalClauseReference.ColumnConnectByIsLeaf))
-					{
-						columnReference.ColumnNodeColumnReferences.Add(hierarchicalClauseReference.ConnectByIsLeafColumn);
-						columnReference.ColumnDescription = hierarchicalClauseReference.ConnectByIsLeafColumn;
-						columnReference.ColumnNodeObjectReferences.Add(hierarchicalClauseReference);
-					}
-
-					if (hasNoCycleSupport && String.Equals(columnReference.NormalizedName, OracleHierarchicalClauseReference.ColumnConnectByIsCycle))
-					{
-						columnReference.ColumnNodeColumnReferences.Add(hierarchicalClauseReference.ConnectByIsCycleColumn);
-						columnReference.ColumnDescription = hierarchicalClauseReference.ConnectByIsCycleColumn;
-						columnReference.ColumnNodeObjectReferences.Add(hierarchicalClauseReference);
-					}
-				}
 
 				TryColumnReferenceAsProgramOrSequenceReference(columnReference, false);
 			}
+		}
+
+		private static bool HasResolveHierachicalPseudoColumnRefences(OracleColumnReference columnReference)
+		{
+			var hierarchicalClauseReference = columnReference.Owner?.HierarchicalClauseReference;
+			if (hierarchicalClauseReference == null || columnReference.Name.IsQuoted())
+			{
+				return false;
+			}
+
+			if (String.Equals(columnReference.NormalizedName, OracleHierarchicalClauseReference.ColumnNameConnectByIsLeaf))
+			{
+				columnReference.ColumnNodeColumnReferences.Add(hierarchicalClauseReference.ConnectByIsLeafColumn);
+				columnReference.ColumnDescription = hierarchicalClauseReference.ConnectByIsLeafColumn;
+				columnReference.ColumnNodeObjectReferences.Add(hierarchicalClauseReference);
+				return true;
+			}
+
+			if (hierarchicalClauseReference.HasNoCycleSupport && String.Equals(columnReference.NormalizedName, OracleHierarchicalClauseReference.ColumnNameConnectByIsCycle))
+			{
+				columnReference.ColumnNodeColumnReferences.Add(hierarchicalClauseReference.ConnectByIsCycleColumn);
+				columnReference.ColumnDescription = hierarchicalClauseReference.ConnectByIsCycleColumn;
+				columnReference.ColumnNodeObjectReferences.Add(hierarchicalClauseReference);
+				return true;
+			}
+
+			return false;
 		}
 
 		private void ResolveColumnReference(IEnumerable<OracleDataObjectReference> rowSources, OracleColumnReference columnReference, bool correlatedRowSources)
