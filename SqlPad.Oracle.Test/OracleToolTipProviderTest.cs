@@ -1205,7 +1205,7 @@ SELECT * FROM data";
 		}
 
 		[Test(Description = @""), STAThread]
-		public void TestTooltipOverHierarchicalPseudoColumn()
+		public void TestTooltipOverHierarchicalPseudocolumn()
 		{
 			const string query =
 @"WITH edges (child_id, parent_id) AS (

@@ -37,7 +37,7 @@ namespace SqlPad.Oracle.ToolTips
 				Terminals.PercentileContinuousDistribution,
 				Terminals.PercentileDiscreteDistribution,
 				Terminals.Rank,
-				Terminals.RowIdPseudoColumn,
+				Terminals.RowIdPseudocolumn,
 				Terminals.StandardDeviation,
 				Terminals.Sum,
 				Terminals.Time,
@@ -127,8 +127,8 @@ namespace SqlPad.Oracle.ToolTips
 					case Terminals.PercentileDiscreteDistribution:
 					case Terminals.PercentileContinuousDistribution:
 					case Terminals.NegationOrNull:
-					case Terminals.RowIdPseudoColumn:
-					case Terminals.RowNumberPseudoColumn:
+					case Terminals.RowIdPseudocolumn:
+					case Terminals.RowNumberPseudocolumn:
 					case Terminals.User:
 					case Terminals.Level:
 					case Terminals.Extract:

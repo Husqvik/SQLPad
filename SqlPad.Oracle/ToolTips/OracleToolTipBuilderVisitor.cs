@@ -40,7 +40,7 @@ namespace SqlPad.Oracle.ToolTips
 					case OracleSchemaObjectType.Table:
 					case OracleSchemaObjectType.MaterializedView:
 						dataModel = BuildColumnDetailsModel(databaseModel, columnReference);
-						ToolTip = columnReference.ColumnDescription.IsPseudoColumn
+						ToolTip = columnReference.ColumnDescription.IsPseudocolumn
 							? (IToolTip)new ToolTipViewColumn(dataModel)
 							: new ToolTipColumn(dataModel);
 

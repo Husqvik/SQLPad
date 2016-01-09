@@ -78,7 +78,7 @@ SELECT * FROM CTE JOIN DUAL ON TO_CHAR(VAL) <> DUMMY CROSS APPLY (SELECT * FROM 
 			items[0].Name.ShouldBe("DUEDATE");
 			items[0].Text.ShouldBe("DUEDATE");
 			items[1].Name.ShouldBe("ORA_ROWSCN");
-			items[2].Name.ShouldBe(TerminalValues.RowIdPseudoColumn);
+			items[2].Name.ShouldBe(TerminalValues.RowIdPseudocolumn);
 		}
 
 		[Test(Description = @"")]
@@ -241,7 +241,7 @@ FROM
 			items[1].Text.ShouldBe("S.NAME");
 			items[1].Category.ShouldBe(OracleCodeCompletionCategory.Column);
 			items[2].Name.ShouldBe("S.ORA_ROWSCN");
-			items[2].Category.ShouldBe(OracleCodeCompletionCategory.PseudoColumn);
+			items[2].Category.ShouldBe(OracleCodeCompletionCategory.Pseudocolumn);
 			items[3].Name.ShouldBe("S.PROJECT_ID");
 			items[3].Text.ShouldBe("S.PROJECT_ID");
 			items[3].Category.ShouldBe(OracleCodeCompletionCategory.Column);
@@ -249,7 +249,7 @@ FROM
 			items[4].Text.ShouldBe("S.RESPONDENTBUCKET_ID");
 			items[4].Category.ShouldBe(OracleCodeCompletionCategory.Column);
 			items[5].Name.ShouldBe("S.ROWID");
-			items[5].Category.ShouldBe(OracleCodeCompletionCategory.PseudoColumn);
+			items[5].Category.ShouldBe(OracleCodeCompletionCategory.Pseudocolumn);
 			items[6].Name.ShouldBe("S.SELECTION_ID");
 			items[6].Text.ShouldBe("S.SELECTION_ID");
 			items[6].Category.ShouldBe(OracleCodeCompletionCategory.Column);
@@ -311,7 +311,7 @@ FROM
 			items[0].Text.ShouldBe("RESPONDENTBUCKET_ID, SELECTION.SELECTION_ID, SELECTION.PROJECT_ID, SELECTION.NAME");
 			items[1].Name.ShouldBe("NAME");
 			items[1].Text.ShouldBe("NAME");
-			items[5].Name.ShouldBe(TerminalValues.RowIdPseudoColumn);
+			items[5].Name.ShouldBe(TerminalValues.RowIdPseudocolumn);
 			items[6].Name.ShouldBe("SELECTION_ID");
 			items[6].Text.ShouldBe("SELECTION_ID");
 
@@ -412,8 +412,8 @@ FROM
 			items[2].Name.ShouldBe("PROJECT_ID");
 			items[2].Text.ShouldBe("PROJECT_ID");
 			items[2].StatementNode.ShouldBe(null);
-			items[3].Name.ShouldBe(TerminalValues.RowIdPseudoColumn);
-			items[3].Text.ShouldBe(TerminalValues.RowIdPseudoColumn);
+			items[3].Name.ShouldBe(TerminalValues.RowIdPseudocolumn);
+			items[3].Text.ShouldBe(TerminalValues.RowIdPseudocolumn);
 			items[3].StatementNode.ShouldBe(null);
 		}
 
@@ -482,7 +482,7 @@ FROM
 			items.Length.ShouldBe(6);
 			items[0].Name.ShouldBe("NAME");
 			items[1].Name.ShouldBe("ORA_ROWSCN");
-			items[4].Name.ShouldBe(TerminalValues.RowIdPseudoColumn);
+			items[4].Name.ShouldBe(TerminalValues.RowIdPseudocolumn);
 			items[5].Name.ShouldBe("SELECTION_ID");
 		}
 
@@ -534,7 +534,7 @@ FROM
 			items[0].Name.ShouldBe("*");
 			items[0].Text.ShouldBe("RESPONDENTBUCKET_ID, S.SELECTION_ID, S.PROJECT_ID, S.NAME");
 			items[2].Name.ShouldBe("ORA_ROWSCN");
-			items[5].Name.ShouldBe(TerminalValues.RowIdPseudoColumn);
+			items[5].Name.ShouldBe(TerminalValues.RowIdPseudocolumn);
 			items[6].Name.ShouldBe("SELECTION_ID");
 			items[6].StatementNode.ShouldBe(null);
 		}
@@ -1719,7 +1719,7 @@ se";
 			items.Count.ShouldBe(1);
 			items[0].Name.ShouldBe("ROWID");
 			items[0].Text.ShouldBe("ROWID");
-			items[0].Category.ShouldBe(OracleCodeCompletionCategory.PseudoColumn);
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.Pseudocolumn);
 		}
 
 		[Test(Description = @"")]
@@ -1810,32 +1810,32 @@ se";
 		}
 
 		[Test(Description = @"")]
-		public void TestSequencePseudoColumnSuggestion()
+		public void TestSequencePseudocolumnSuggestion()
 		{
 			const string statement = @"SELECT TEST_SEQ.N FROM DUAL";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 17).ToList();
 			items.Count.ShouldBe(1);
 			items[0].Name.ShouldBe("NEXTVAL");
-			items[0].Category.ShouldBe(OracleCodeCompletionCategory.PseudoColumn);
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.Pseudocolumn);
 			items[0].StatementNode.ShouldNotBe(null);
 		}
 
 		[Test(Description = @"")]
-		public void TestSequencePseudoColumnSuggestionRightAfterDot()
+		public void TestSequencePseudocolumnSuggestionRightAfterDot()
 		{
 			const string statement = @"SELECT TEST_SEQ. FROM DUAL";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 16).ToList();
 			items.Count.ShouldBe(2);
 			items[0].Name.ShouldBe("CURRVAL");
-			items[0].Category.ShouldBe(OracleCodeCompletionCategory.PseudoColumn);
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.Pseudocolumn);
 			items[0].StatementNode.ShouldBe(null);
 			items[1].Name.ShouldBe("NEXTVAL");
-			items[1].Category.ShouldBe(OracleCodeCompletionCategory.PseudoColumn);
+			items[1].Category.ShouldBe(OracleCodeCompletionCategory.Pseudocolumn);
 			items[1].StatementNode.ShouldBe(null);
 		}
 
 		[Test(Description = @"")]
-		public void TestSequencePseudoColumnSuggestionWhenAlreadyInPlace()
+		public void TestSequencePseudocolumnSuggestionWhenAlreadyInPlace()
 		{
 			const string statement = @"SELECT TEST_SEQ.NEXTVAL FROM DUAL";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 17).ToList();

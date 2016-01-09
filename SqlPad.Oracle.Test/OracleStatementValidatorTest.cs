@@ -1444,7 +1444,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test(Description = @"")]
-		public void TestSequenceAndPseudoColumnValidityOverUndefinedDatabaseLink()
+		public void TestSequenceAndPseudocolumnValidityOverUndefinedDatabaseLink()
 		{
 			const string sqlText = "SELECT TEST_SEQ.NEXTVAL@UNDEFINED_DB_LINK FROM DUAL";
 			var statement = Parser.Parse(sqlText).Single();
@@ -3217,9 +3217,9 @@ WHERE
 
 			var invalidNonTerminalValidities = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
 			invalidNonTerminalValidities.Count.ShouldBe(2);
-			invalidNonTerminalValidities[0].SemanticErrorType.ShouldBe(OracleSemanticErrorTooltipText.FunctionOrPseudoColumnMayBeUsedInsideSqlStatementOnly);
+			invalidNonTerminalValidities[0].SemanticErrorType.ShouldBe(OracleSemanticErrorTooltipText.FunctionOrPseudocolumnMayBeUsedInsideSqlStatementOnly);
 			invalidNonTerminalValidities[0].Node.Id.ShouldBe(NonTerminals.Expression);
-			invalidNonTerminalValidities[1].SemanticErrorType.ShouldBe(OracleSemanticErrorTooltipText.FunctionOrPseudoColumnMayBeUsedInsideSqlStatementOnly);
+			invalidNonTerminalValidities[1].SemanticErrorType.ShouldBe(OracleSemanticErrorTooltipText.FunctionOrPseudocolumnMayBeUsedInsideSqlStatementOnly);
 			invalidNonTerminalValidities[1].Node.Id.ShouldBe(NonTerminals.PrefixedColumnReference);
 		}
 
@@ -3409,6 +3409,42 @@ END;";
 			validationData.Count.ShouldBe(1);
 			validationData[0].SuggestionType.ShouldBe(OracleSuggestionType.CorrelatedSubqueryColumnNotQualified);
 			validationData[0].Node.Token.Value.ShouldBe("SELECTION_ID");
+		}
+
+		[Test(Description = @"")]
+		public void TestConnectByPseudocolumnConflictingWithRowSourceColumns()
+		{
+			const string sqlText = @"SELECT connect_by_isleaf, connect_by_iscycle, ""CONNECT_BY_ISLEAF"", ""CONNECT_BY_ISCYCLE"" FROM (SELECT 'x' connect_by_isleaf, 'y' connect_by_iscycle FROM dual)";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var validationData = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			validationData.Count.ShouldBe(2);
+			validationData[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ConnectByClauseRequired);
+			validationData[0].Node.FirstTerminalNode.Token.Value.ShouldBe("connect_by_isleaf");
+			validationData[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ConnectByClauseRequired);
+			validationData[1].Node.FirstTerminalNode.Token.Value.ShouldBe("connect_by_iscycle");
+		}
+
+		[Test(Description = @"")]
+		public void TestConnectByIsCyclePseudocolumnWithoutNoCycleKeyword()
+		{
+			const string sqlText = @"SELECT connect_by_isleaf, connect_by_iscycle FROM dual CONNECT BY LEVEL < 3";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var validationData = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			validationData.Count.ShouldBe(1);
+			validationData[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.NoCycleKeywordRequiredWithConnectByIsCyclePseudocolumn);
+			validationData[0].Node.FirstTerminalNode.Token.Value.ShouldBe("connect_by_iscycle");
 		}
 	}
 }

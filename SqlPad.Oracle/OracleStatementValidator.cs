@@ -1362,7 +1362,7 @@ namespace SqlPad.Oracle
 			}
 
 			validationModel.InvalidNonTerminals[programReference.RootNode] =
-				new InvalidNodeValidationData(OracleSemanticErrorTooltipText.FunctionOrPseudoColumnMayBeUsedInsideSqlStatementOnly)
+				new InvalidNodeValidationData(OracleSemanticErrorTooltipText.FunctionOrPseudocolumnMayBeUsedInsideSqlStatementOnly)
 				{
 					Node = programReference.RootNode
 				};
@@ -1500,6 +1500,31 @@ namespace SqlPad.Oracle
 					else if (databaseLinkReferenceCount > 0 && sourceObjectReferences.Count > 1)
 					{
 						ResolveDatabaseLinkQualifierSuggestion(validationModel, columnReference, isAsterisk);
+					}
+
+					if (columnReference.ObjectNode == null && !columnReference.Name.IsQuoted())
+					{
+						var isConnectByIsCyclePseudocolumn = String.Equals(columnReference.NormalizedName, OracleHierarchicalClauseReference.ColumnNameConnectByIsCycle);
+						if (String.Equals(columnReference.NormalizedName, OracleHierarchicalClauseReference.ColumnNameConnectByIsLeaf) || isConnectByIsCyclePseudocolumn)
+						{
+							var hierarchicalClauseReference = columnReference.Owner?.HierarchicalClauseReference;
+							if (hierarchicalClauseReference == null)
+							{
+								validationModel.InvalidNonTerminals[columnReference.RootNode] =
+									new InvalidNodeValidationData(OracleSemanticErrorType.ConnectByClauseRequired)
+									{
+										Node = columnReference.RootNode
+									};
+							}
+							else if (isConnectByIsCyclePseudocolumn && !columnReference.Owner.HierarchicalClauseReference.HasNoCycleSupport)
+							{
+								validationModel.InvalidNonTerminals[columnReference.RootNode] =
+									new InvalidNodeValidationData(OracleSemanticErrorType.NoCycleKeywordRequiredWithConnectByIsCyclePseudocolumn)
+									{
+										Node = columnReference.RootNode
+									};
+							}
+						}
 					}
 				}
 				else if (databaseLinkReferenceCount > 1)

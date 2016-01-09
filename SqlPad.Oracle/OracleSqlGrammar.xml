@@ -5704,7 +5704,7 @@
     <Rule StartingNonTerminal="Expression">
       <Sequences>
         <Sequence>
-          <Terminal Id="RowNumberPseudoColumn" />
+          <Terminal Id="RowNumberPseudocolumn" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -6756,7 +6756,7 @@
     <Rule StartingNonTerminal="ColumnReference">
       <Sequences>
         <Sequence>
-          <Terminal Id="RowIdPseudoColumn" />
+          <Terminal Id="RowIdPseudocolumn" />
           <NonTerminal Id="OuterJoinOld" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -11530,7 +11530,7 @@
           <Terminal Id="Key" />
         </Sequence>
         <Sequence>
-          <Terminal Id="RowIdPseudoColumn" />
+          <Terminal Id="RowIdPseudocolumn" />
         </Sequence>
         <Sequence>
           <Terminal Id="Sequence" />
@@ -19054,7 +19054,7 @@
     <Rule StartingNonTerminal="InMemoryDistributeOption">
       <Sequences>
         <Sequence>
-          <Terminal Id="RowIdPseudoColumn" />
+          <Terminal Id="RowIdPseudocolumn" />
           <Terminal Id="Range" />
         </Sequence>
         <Sequence>
@@ -19933,8 +19933,8 @@
     <Terminal Id="Cursor" Value="CURSOR" ReservedWord="PlSqlDeclaration" />
     <Terminal Id="Public" Value="PUBLIC" ReservedWord="Sql" />
     <Terminal Id="Column" Value="COLUMN" ReservedWord="Sql" />
-    <Terminal Id="RowNumberPseudoColumn" Value="ROWNUM" ReservedWord="Sql" />
-    <Terminal Id="RowIdPseudoColumn" Value="ROWID" ReservedWord="Sql" />
+    <Terminal Id="RowNumberPseudocolumn" Value="ROWNUM" ReservedWord="Sql" />
+    <Terminal Id="RowIdPseudocolumn" Value="ROWID" ReservedWord="Sql" />
     <Terminal Id="RowIdDataType" Value="ROWID" ReservedWord="Sql" />
     <Terminal Id="Identifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
     <Terminal Id="MemberFunctionIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />

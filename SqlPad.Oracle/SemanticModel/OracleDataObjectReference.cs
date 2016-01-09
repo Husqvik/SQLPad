@@ -13,7 +13,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public abstract IReadOnlyList<OracleColumn> Columns { get; }
 
-		public abstract IReadOnlyList<OracleColumn> PseudoColumns { get; }
+		public abstract IReadOnlyList<OracleColumn> Pseudocolumns { get; }
 
 		public virtual ICollection<OracleQueryBlock> QueryBlocks => _queryBlocks;
 
@@ -45,7 +45,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public override IReadOnlyList<OracleColumn> Columns { get; } = EmptyArray;
 
-		public override IReadOnlyList<OracleColumn> PseudoColumns { get; }
+		public override IReadOnlyList<OracleColumn> Pseudocolumns { get; }
 
 		public override ReferenceType Type { get; } = ReferenceType.HierarchicalClause;
 
@@ -61,7 +61,7 @@ namespace SqlPad.Oracle.SemanticModel
 				pseudoColumns.Add(ConnectByIsCycleColumn);
 			}
 
-			PseudoColumns = pseudoColumns;
+			Pseudocolumns = pseudoColumns;
 		}
 	}
 
@@ -85,7 +85,7 @@ namespace SqlPad.Oracle.SemanticModel
 		private IReadOnlyList<OracleColumn> _columns;
 		private IReadOnlyList<OracleColumn> _pseudoColumns;
 
-		internal static readonly string RowIdNormalizedName = TerminalValues.RowIdPseudoColumn.ToQuotedIdentifier();
+		internal static readonly string RowIdNormalizedName = TerminalValues.RowIdPseudocolumn.ToQuotedIdentifier();
 
 		public static readonly OracleDataObjectReference[] EmptyArray = new OracleDataObjectReference[0];
 
@@ -109,7 +109,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public virtual IEnumerable<OracleDataObjectReference> IncludeInnerReferences => Enumerable.Repeat(this, 1);
 
-		public override IReadOnlyList<OracleColumn> PseudoColumns
+		public override IReadOnlyList<OracleColumn> Pseudocolumns
 		{
 			get
 			{
@@ -118,13 +118,13 @@ namespace SqlPad.Oracle.SemanticModel
 					return _pseudoColumns;
 				}
 
-				var pseudoColumns = new List<OracleColumn>();
+				var pseudocolumns = new List<OracleColumn>();
 				var table = SchemaObject.GetTargetSchemaObject() as OracleTable;
 				if (Type == ReferenceType.SchemaObject && table != null)
 				{
 					if (table.Organization == OrganizationType.Heap || table.Organization == OrganizationType.Index)
 					{
-						var rowIdPseudoColumn =
+						var rowIdPseudocolumn =
 							new OracleColumn(true)
 							{
 								Name = RowIdNormalizedName,
@@ -135,19 +135,19 @@ namespace SqlPad.Oracle.SemanticModel
 									}
 							};
 
-						pseudoColumns.Add(rowIdPseudoColumn);
+						pseudocolumns.Add(rowIdPseudocolumn);
 					}
 
 					if (FlashbackOption == FlashbackOption.None || FlashbackOption == FlashbackOption.AsOf)
 					{
-						var rowSystemChangeNumberPseudoColumn =
+						var rowSystemChangeNumberPseudocolumn =
 							new OracleColumn(true)
 							{
 								Name = "\"ORA_ROWSCN\"",
 								DataType = OracleDataType.NumberType
 							};
 
-						pseudoColumns.Add(rowSystemChangeNumberPseudoColumn);
+						pseudocolumns.Add(rowSystemChangeNumberPseudocolumn);
 					}
 					else if ((FlashbackOption & FlashbackOption.Versions) == FlashbackOption.Versions)
 					{
@@ -186,11 +186,11 @@ namespace SqlPad.Oracle.SemanticModel
 									}
 								};
 
-						pseudoColumns.AddRange(flashbackVersionColumns);
+						pseudocolumns.AddRange(flashbackVersionColumns);
 					}
 				}
 
-				return _pseudoColumns = pseudoColumns.AsReadOnly();
+				return _pseudoColumns = pseudocolumns.AsReadOnly();
 			}
 		}
 

@@ -75,7 +75,7 @@ namespace SqlPad.Oracle
 		public const string InlineView = "Inline View";
 		public const string CommonTableExpression = "Common Table Expression";
 		public const string Column = "Column";
-		public const string PseudoColumn = "Pseudo column";
+		public const string Pseudocolumn = "Pseudo column";
 		public const string AllColumns = "All Columns";
 		public const string JoinMethod = "Join Method";
 		public const string JoinConditionByReferenceConstraint = "Join Condition (foreign key)";

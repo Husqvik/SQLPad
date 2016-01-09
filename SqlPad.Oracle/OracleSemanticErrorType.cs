@@ -5,6 +5,7 @@ namespace SqlPad.Oracle
 		public const string None = null;
 		public const string ClauseNotAllowed = "Clause not allowed";
 		public const string ConnectByClauseRequired = "CONNECT BY clause required in this query block";
+		public const string NoCycleKeywordRequiredWithConnectByIsCyclePseudocolumn = "NOCYCLE keyword is required with CONNECT_BY_ISCYCLE pseudocolumn";
 		public const string InvalidDateLiteral = "Invalid date literal";
 		public const string InvalidTimestampLiteral = "Invalid timestamp literal";
 		public const string InvalidIntervalLiteral = "Invalid interval";
@@ -55,7 +56,7 @@ namespace SqlPad.Oracle
 		public const string InvalidTimestampLiteral = "ANSI format of TIMESTAMP literal must be [-]YYYY-MM-DD HH24:MI:SS[.1-9 digits] [time zone definition]";
 		public const string InvalidIntervalYearToMonthLiteral = "INTERVAL DAY TO SECOND literal must be [-][1-9 digits][-(0-11)] and match target elements";
 		public const string InvalidIntervalDayToSecondLiteral = "INTERVAL YEAR TO MONTH literal must be [-][1-9 digits][0-23][:0-59][:0-59][.1-9 digits] and match target elements";
-		public const string FunctionOrPseudoColumnMayBeUsedInsideSqlStatementOnly = "Function or pseudo-column may be used inside a SQL statement only";
+		public const string FunctionOrPseudocolumnMayBeUsedInsideSqlStatementOnly = "Function or pseudo-column may be used inside a SQL statement only";
 	}
 
 	public static class OracleSuggestionType

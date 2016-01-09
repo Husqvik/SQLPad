@@ -13,7 +13,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public override IReadOnlyList<OracleColumn> Columns => EmptyArray;
 
-		public override IReadOnlyList<OracleColumn> PseudoColumns => ((OracleSequence)SchemaObject).Columns;
+		public override IReadOnlyList<OracleColumn> Pseudocolumns => ((OracleSequence)SchemaObject).Columns;
 
 		public override ReferenceType Type => ReferenceType.SchemaObject;
 

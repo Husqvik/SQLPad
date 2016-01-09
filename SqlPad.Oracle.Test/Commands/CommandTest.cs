@@ -1703,7 +1703,7 @@ FROM
 		}
 
 		[Test(Description = @""), STAThread]
-		public void TestAddToGroupByCommandNotAvailableWhenSequencePseudoColumnWithinSelection()
+		public void TestAddToGroupByCommandNotAvailableWhenSequencePseudocolumnWithinSelection()
 		{
 			_editor.Text = @"SELECT TEST_SEQ.NEXTVAL FROM SELECTION";
 			_editor.CaretOffset = 18;
@@ -1770,7 +1770,7 @@ FROM
 		}
 
 		[Test(Description = @""), STAThread]
-		public void TestToggleFullyQualifiedReferencesWithRowIdPseudoColumn()
+		public void TestToggleFullyQualifiedReferencesWithRowIdPseudocolumn()
 		{
 			_editor.Text = @"SELECT ROWID FROM DUAL";
 			_editor.SelectionLength = 0;

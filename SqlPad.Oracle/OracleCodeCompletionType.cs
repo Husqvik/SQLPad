@@ -427,7 +427,7 @@ namespace SqlPad.Oracle
 			var prefixedColumnReference = effectiveTerminal.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.Expression), NonTerminals.PrefixedColumnReference);
 			var prefix = effectiveTerminal.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.Expression) && !String.Equals(n.Id, NonTerminals.AliasedExpressionOrAllTableColumns), NonTerminals.Prefix);
 			var lookupNode = prefixedColumnReference ?? prefix;
-			if (lookupNode == null && effectiveTerminal.Id.In(Terminals.Asterisk, Terminals.User, Terminals.SystemDate, Terminals.Level, Terminals.RowIdPseudoColumn, Terminals.Null))
+			if (lookupNode == null && effectiveTerminal.Id.In(Terminals.Asterisk, Terminals.User, Terminals.SystemDate, Terminals.Level, Terminals.RowIdPseudocolumn, Terminals.Null))
 			{
 				lookupNode = effectiveTerminal.ParentNode;
 			}
@@ -442,7 +442,7 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			var identifiers = lookupNode.GetPathFilterDescendants(n => !String.Equals(n.Id, NonTerminals.Expression) && !String.Equals(n.Id, NonTerminals.AliasedExpressionOrAllTableColumns), Terminals.SchemaIdentifier, Terminals.ObjectIdentifier, Terminals.Identifier, Terminals.BindVariableIdentifier, Terminals.Asterisk, Terminals.User, Terminals.SystemDate, Terminals.Level, Terminals.RowIdPseudoColumn, Terminals.Null).ToList();
+			var identifiers = lookupNode.GetPathFilterDescendants(n => !String.Equals(n.Id, NonTerminals.Expression) && !String.Equals(n.Id, NonTerminals.AliasedExpressionOrAllTableColumns), Terminals.SchemaIdentifier, Terminals.ObjectIdentifier, Terminals.Identifier, Terminals.BindVariableIdentifier, Terminals.Asterisk, Terminals.User, Terminals.SystemDate, Terminals.Level, Terminals.RowIdPseudocolumn, Terminals.Null).ToList();
 			ReferenceIdentifier = BuildReferenceIdentifier(identifiers);
 		}
 
@@ -453,7 +453,7 @@ namespace SqlPad.Oracle
 				{
 					SchemaIdentifier = GetIdentifierTokenValue(identifiers, Terminals.SchemaIdentifier),
 					ObjectIdentifier = GetIdentifierTokenValue(identifiers, Terminals.ObjectIdentifier, Terminals.DataTypeIdentifier),
-					Identifier = GetIdentifierTokenValue(identifiers, Terminals.Identifier, Terminals.BindVariableIdentifier, Terminals.Asterisk, Terminals.User, Terminals.SystemDate, Terminals.Level, Terminals.RowIdPseudoColumn, Terminals.Null),
+					Identifier = GetIdentifierTokenValue(identifiers, Terminals.Identifier, Terminals.BindVariableIdentifier, Terminals.Asterisk, Terminals.User, Terminals.SystemDate, Terminals.Level, Terminals.RowIdPseudocolumn, Terminals.Null),
 					CursorPosition = CursorPosition
 				};
 		}

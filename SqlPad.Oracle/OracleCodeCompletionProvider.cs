@@ -578,7 +578,7 @@ namespace SqlPad.Oracle
 					{
 						suggestedItems = sequence.Columns
 							.Where(c => !String.Equals(c.Name, currentName) && CodeCompletionSearchHelper.IsMatch(c.Name, partialName))
-							.Select(c => CreateColumnCodeCompletionItem(c.Name.ToSimpleIdentifier(), null, nodeToReplace, OracleCodeCompletionCategory.PseudoColumn));
+							.Select(c => CreateColumnCodeCompletionItem(c.Name.ToSimpleIdentifier(), null, nodeToReplace, OracleCodeCompletionCategory.Pseudocolumn));
 					}
 				}
 
@@ -715,10 +715,10 @@ namespace SqlPad.Oracle
 			suggestedItems = suggestedItems.Concat(rowSourceColumnItems);
 
 			var flashbackColumns = tableReferenceSource
-				.SelectMany(r => r.PseudoColumns.Select(c => new { r.FullyQualifiedObjectName, PseudoColumn = c }))
-				.Where(c => CodeCompletionSearchHelper.IsMatch(c.PseudoColumn.Name, partialName))
+				.SelectMany(r => r.Pseudocolumns.Select(c => new { r.FullyQualifiedObjectName, Pseudocolumn = c }))
+				.Where(c => CodeCompletionSearchHelper.IsMatch(c.Pseudocolumn.Name, partialName))
 				.Select(c =>
-					CreateColumnCodeCompletionItem(GetPrettyColumnName(c.PseudoColumn.Name), objectIdentifierNode == null ? c.FullyQualifiedObjectName.ToString() : null, nodeToReplace, OracleCodeCompletionCategory.PseudoColumn));
+					CreateColumnCodeCompletionItem(GetPrettyColumnName(c.Pseudocolumn.Name), objectIdentifierNode == null ? c.FullyQualifiedObjectName.ToString() : null, nodeToReplace, OracleCodeCompletionCategory.Pseudocolumn));
 
 			suggestedItems = suggestedItems.Concat(flashbackColumns);
 
@@ -765,7 +765,7 @@ namespace SqlPad.Oracle
 		internal static string GetPrettyColumnName(string normalizedColumnName)
 		{
 			return String.Equals(normalizedColumnName, OracleDataObjectReference.RowIdNormalizedName)
-				? TerminalValues.RowIdPseudoColumn
+				? TerminalValues.RowIdPseudocolumn
 				: normalizedColumnName.ToSimpleIdentifier();
 		}
 

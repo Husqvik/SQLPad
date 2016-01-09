@@ -767,7 +767,7 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test(Description = @"Tests sequence pseudo columns. ")]
-		public void TestSequencePseudoColumns()
+		public void TestSequencePseudocolumns()
 		{
 			const string query1 = @"SELECT SEQ_TEST.CURRVAL, HUSQVIK.SEQ_TEST.NEXTVAL, SEQ_TEST.CURRVAL@HQ11G2 FROM DUAL";
 			var result = Parser.Parse(query1);
@@ -3587,7 +3587,7 @@ END;";
 				var terminalCandidates = Parser.GetTerminalCandidates(node).Select(c => c.Id).OrderBy(t => t).ToArray();
 
 				// TODO: Wrong, at least ObjectIdentifier should be available in addition
-				var expectedTerminals = new[] { Terminals.Asterisk, Terminals.Identifier, Terminals.RowIdPseudoColumn };
+				var expectedTerminals = new[] { Terminals.Asterisk, Terminals.Identifier, Terminals.RowIdPseudocolumn };
 				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 
@@ -3663,7 +3663,7 @@ END;";
 				const string statement1 = @"SELECT CASE WHEN S.";
 				var node = Parser.Parse(statement1).Single().RootNode.LastTerminalNode;
 				var terminalCandidates = Parser.GetTerminalCandidates(node).Select(c => c.Id).OrderBy(t => t).ToArray();
-				var expectedTerminals = new[] { Terminals.Identifier, Terminals.RowIdPseudoColumn };
+				var expectedTerminals = new[] { Terminals.Identifier, Terminals.RowIdPseudocolumn };
 				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 
@@ -3729,8 +3729,8 @@ END;";
 						Terminals.PlSqlCompilationParameter,
 						Terminals.Prior,
 						Terminals.Rank,
-						Terminals.RowIdPseudoColumn,
-						Terminals.RowNumberPseudoColumn,
+						Terminals.RowIdPseudocolumn,
+						Terminals.RowNumberPseudocolumn,
 						Terminals.SchemaIdentifier,
 						Terminals.StandardDeviation,
 						Terminals.StringLiteral,

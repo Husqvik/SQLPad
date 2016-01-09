@@ -115,7 +115,7 @@ namespace SqlPad.Oracle.Commands
 				}
 
 				string extraInformation = null;
-				if (expandedColumn.IsPseudoColumn)
+				if (expandedColumn.IsPseudocolumn)
 				{
 					extraInformation = " (pseudocolumn)";
 					columnNameLabel.Foreground = dataTypeLabel.Foreground = nullableLabel.Foreground = Brushes.CornflowerBlue;
@@ -133,7 +133,7 @@ namespace SqlPad.Oracle.Commands
 					{
 						OptionIdentifier = expandedColumn.ColumnName,
 						DescriptionContent = descriptionContent,
-						Value = !expandedColumn.IsPseudoColumn && !expandedColumn.IsHidden && useDefaultSettings,
+						Value = !expandedColumn.IsPseudocolumn && !expandedColumn.IsHidden && useDefaultSettings,
 						Tag = expandedColumn
 					});
 			}
@@ -201,7 +201,7 @@ namespace SqlPad.Oracle.Commands
 			return textSegment;
 		}
 
-		private StatementGrammarNode FillColumnNames(List<ExpandedColumn> columnNames, List<OracleObjectWithColumnsReference> databaseLinkReferences, bool includePseudoColumns)
+		private StatementGrammarNode FillColumnNames(List<ExpandedColumn> columnNames, List<OracleObjectWithColumnsReference> databaseLinkReferences, bool includePseudocolumns)
 		{
 			StatementGrammarNode asteriskNode;
 			var asteriskReference = CurrentQueryBlock.Columns.FirstOrDefault(c => c.RootNode == CurrentNode);
@@ -221,9 +221,9 @@ namespace SqlPad.Oracle.Commands
 						.Select(c => GetExpandedColumn(objectReference, c, false)));
 
 					var table = objectReference.SchemaObject.GetTargetSchemaObject() as OracleTable;
-					if (includePseudoColumns && table != null)
+					if (includePseudocolumns && table != null)
 					{
-						var pseudoColumns = ((OracleDataObjectReference)objectReference).PseudoColumns.Select(c => GetExpandedColumn(objectReference, c, true));
+						var pseudoColumns = ((OracleDataObjectReference)objectReference).Pseudocolumns.Select(c => GetExpandedColumn(objectReference, c, true));
 						columnNames.InsertRange(0, pseudoColumns);
 					}
 				}
@@ -240,12 +240,12 @@ namespace SqlPad.Oracle.Commands
 
 				databaseLinkReferences.AddRange(CurrentQueryBlock.ObjectReferences.Where(o => o.DatabaseLink != null));
 
-				if (!includePseudoColumns)
+				if (!includePseudocolumns)
 				{
 					return null;
 				}
 
-				var pseudoColumns = CurrentQueryBlock.ObjectReferences.SelectMany(GetPseudoColumns);
+				var pseudoColumns = CurrentQueryBlock.ObjectReferences.SelectMany(GetPseudocolumns);
 
 				columnNames.InsertRange(0, pseudoColumns);
 
@@ -255,9 +255,9 @@ namespace SqlPad.Oracle.Commands
 			return asteriskNode;
 		}
 
-		private static IEnumerable<ExpandedColumn> GetPseudoColumns(OracleDataObjectReference reference)
+		private static IEnumerable<ExpandedColumn> GetPseudocolumns(OracleDataObjectReference reference)
 		{
-			return reference.PseudoColumns.Select(c => GetExpandedColumn(reference, c, true));
+			return reference.Pseudocolumns.Select(c => GetExpandedColumn(reference, c, true));
 		}
 
 		private static OracleDataObjectReference GetObjectReference(OracleReferenceContainer column)
@@ -268,7 +268,7 @@ namespace SqlPad.Oracle.Commands
 				: null;
 		}
 
-		private static ExpandedColumn GetExpandedColumn(OracleReference objectReference, OracleColumn column, bool isPseudoColumn)
+		private static ExpandedColumn GetExpandedColumn(OracleReference objectReference, OracleColumn column, bool isPseudocolumn)
 		{
 			var nullable = objectReference.SchemaObject.GetTargetSchemaObject() is OracleView
 				? (bool?)null
@@ -280,7 +280,7 @@ namespace SqlPad.Oracle.Commands
 					ColumnName = GetColumnName(objectReference, OracleCodeCompletionProvider.GetPrettyColumnName(column.Name)),
 					DataType = column.FullTypeName,
 					Nullable = nullable,
-					IsPseudoColumn = isPseudoColumn,
+					IsPseudocolumn = isPseudocolumn,
 					IsHidden = column.Hidden
 				};
 		}
@@ -299,14 +299,14 @@ namespace SqlPad.Oracle.Commands
 			return $"{usedObjectPrefix}{simpleColumnName}";
 		}
 
-		[DebuggerDisplay("ExpandedColumn (ColumnName={ColumnName}; IsPseudoColumn={IsPseudoColumn}; IsHidden={IsHidden})")]
+		[DebuggerDisplay("ExpandedColumn (ColumnName={ColumnName}; IsPseudocolumn={IsPseudocolumn}; IsHidden={IsHidden})")]
 		private struct ExpandedColumn
 		{
 			public string ColumnName { get; set; }
 			
 			public string DataType { get; set; }
 			
-			public bool IsPseudoColumn { get; set; }
+			public bool IsPseudocolumn { get; set; }
 
 			public bool IsHidden { get; set; }
 

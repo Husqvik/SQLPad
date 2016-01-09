@@ -1087,7 +1087,7 @@ SELECT c FROM t2";
 		}
 
 		[Test(Description = @"")]
-		public void TestRedundantTerminalsWithObjectQualifiedPseudoColumn()
+		public void TestRedundantTerminalsWithObjectQualifiedPseudocolumn()
 		{
 			const string query1 = @"SELECT T.ORA_ROWSCN, T.ROWID FROM ""CaseSensitiveTable"" T";
 
@@ -3137,7 +3137,7 @@ WHEN NOT MATCHED THEN INSERT VALUES (T2.DUMMY)";
 		}
 
 		[Test(Description = @"")]
-		public void TestRownumPseudoColumnPriority()
+		public void TestRownumPseudocolumnPriority()
 		{
 			const string query1 = @"SELECT NULL FROM (SELECT ROWNUM FROM SELECTION WHERE ROWNUM <= 100) T WHERE ROWNUM > 98";
 
@@ -3211,7 +3211,7 @@ SELECT 4 FROM DUAL";
 		}
 
 		[Test(Description = @"")]
-		public void TestConnectByPseudoColumns()
+		public void TestConnectByPseudocolumns()
 		{
 			const string query1 =
 @"WITH edges (child_id, parent_id) AS (
@@ -3244,6 +3244,18 @@ CONNECT BY NOCYCLE
 			isCycleReference.FullTypeName.ShouldBe("NUMBER");
 			mainQueryBlock.Columns[2].NormalizedName.ShouldBe("\"CONNECT_BY_ROOTPARENT_ID\"");
 			mainQueryBlock.Columns[3].NormalizedName.ShouldBe("\"1F+1D\"");
+		}
+
+		[Test(Description = @"")]
+		public void TestNonRedundantQualifiersWhenConnectByPseudocolumnNamesAsColumnNames()
+		{
+			const string query1 = @"SELECT t.connect_by_isleaf, t.connect_by_iscycle FROM (SELECT 'x' connect_by_isleaf, 'y' connect_by_iscycle FROM dual) t";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single().Validate();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
+			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
 	}
 }

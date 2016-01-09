@@ -18,7 +18,7 @@ namespace SqlPad.Oracle.Commands
 			CheckParametersNotNull(semanticModel, currentTerminal);
 
 			var commands = new List<CommandExecutionHandler>();
-			if (currentTerminal.Id != Terminals.Identifier && currentTerminal.Id != Terminals.RowIdPseudoColumn)
+			if (currentTerminal.Id != Terminals.Identifier && currentTerminal.Id != Terminals.RowIdPseudocolumn)
 				return EmptyHandlerCollection;
 
 			var columnReference = semanticModel.AllReferenceContainers.SelectMany(qb => qb.ColumnReferences).SingleOrDefault(c => c.ColumnNode == currentTerminal);

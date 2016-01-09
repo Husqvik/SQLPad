@@ -7,9 +7,9 @@ namespace SqlPad.Oracle.DataDictionary
 	{
 		private const string ColumnNameColumnValue = "\"COLUMN_VALUE\"";
 
-		public OracleColumn(bool isPseudoColumn = false)
+		public OracleColumn(bool isPseudocolumn = false)
 		{
-			IsPseudoColumn = isPseudoColumn;
+			IsPseudocolumn = isPseudocolumn;
 		}
 
 		public OracleDataType DataType { get; set; }
@@ -30,7 +30,7 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public string DefaultValue { get; set; }
 		
-		public bool IsPseudoColumn { get; private set; }
+		public bool IsPseudocolumn { get; private set; }
 
 		public OracleColumn Clone()
 		{
