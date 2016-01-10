@@ -95,7 +95,7 @@
 							<DataGridTextColumn Header="PX servers requested" Binding="{Binding ParallelServersRequested}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
 							<DataGridCheckBoxColumn Header="Cross instance" Binding="{Binding IsCrossInstance}" IsReadOnly="True" />
 							<DataGridTextColumn Header="QC instance ID" Binding="{Binding ParallelServerQueryCoordinatorInstanceId}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
-							<DataGridTemplateColumn Header="CPU activity">
+							<DataGridTemplateColumn Header="Session activity">
 								<DataGridTemplateColumn.CellTemplate>
 									<DataTemplate DataType="modelDataProviders:SqlMonitorSessionItem">
 										<oracle:SessionActivityIndicator SessionItem="{Binding}" Width="200" Height="16" />

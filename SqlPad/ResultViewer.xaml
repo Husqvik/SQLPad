@@ -149,6 +149,7 @@
 		          KeyDown="ResultViewerDataGridKeyDownHandler"
 		          SelectedCellsChanged="ResultGridSelectedCellsChangedHandler"
 		          ScrollViewer.ScrollChanged="ResultGridScrollChangedHandler"
+		          ScrollViewer.IsDeferredScrollingEnabled="True"
 		          VirtualizingStackPanel.CleanUpVirtualizedItem="CleanUpVirtualizedItemHandler"
 		          MouseDoubleClick="ResultGridMouseDoubleClickHandler"
 		          DataGridColumnHeader.Click="ColumnHeaderMouseClickHandler">

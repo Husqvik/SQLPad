@@ -3289,5 +3289,24 @@ SELECT * FROM generator";
 
 			Assert.DoesNotThrow(() => OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel));
 		}
+
+
+		[Test(Description = @"")]
+		public void TestInlineFunctionInTableCollectionExpression()
+		{
+			const string query1 =
+@"WITH FUNCTION f RETURN sys.odcinumberlist IS
+BEGIN
+	return sys.odcinumberlist(1, 10, 100);
+END;
+SELECT * FROM TABLE(f)";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single().Validate();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
+			var mainQueryBlock = semanticModel.QueryBlocks.Single();
+			mainQueryBlock.ProgramReferences.Count.ShouldBe(1);
+		}
 	}
 }

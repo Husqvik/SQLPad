@@ -1213,10 +1213,10 @@ namespace SqlPad.Oracle.SemanticModel
 
 				foreach (var accessibleQueryBlock in _accessibleQueryBlockRoot[queryBlock])
 				{
-					var accesibleQueryBlockRoot = accessibleQueryBlock.GetDescendants(NonTerminals.QueryBlock).FirstOrDefault();
-					if (accesibleQueryBlockRoot != null)
+					var accessibleQueryBlockRoot = accessibleQueryBlock.GetDescendants(NonTerminals.QueryBlock).FirstOrDefault();
+					if (accessibleQueryBlockRoot != null)
 					{
-						queryBlock.AccessibleQueryBlocks.Add(QueryBlockNodes[accesibleQueryBlockRoot]);
+						queryBlock.AccessibleQueryBlocks.Add(QueryBlockNodes[accessibleQueryBlockRoot]);
 					}
 				}
 			}
@@ -2596,7 +2596,7 @@ namespace SqlPad.Oracle.SemanticModel
 			programReference.CopyPropertiesFrom(columnReference);
 
 			UpdateProgramReferenceWithMetadata(programReference, includePlSqlObjects);
-			if (programReference.SchemaObject != null)
+			if (programReference.Metadata != null || programReference.SchemaObject != null)
 			{
 				columnReference.Container.ProgramReferences.Add(programReference);
 				columnReference.Container.ColumnReferences.Remove(columnReference);
