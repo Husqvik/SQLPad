@@ -4982,7 +4982,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Delete" />
-          <NonTerminal Id="WhereClause" IsOptional="true" />
+          <NonTerminal Id="WhereClause" />
         </Sequence>
       </Sequences>
     </Rule>

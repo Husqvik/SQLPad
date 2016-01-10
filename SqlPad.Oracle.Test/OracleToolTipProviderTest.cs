@@ -170,7 +170,8 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 119);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("CTE.VAL NULL");
 		}
 
 		[Test(Description = @""), STAThread]
@@ -1229,6 +1230,24 @@ CONNECT BY NOCYCLE
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 239);
 			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("CONNECT_BY_ISLEAF NUMBER NOT NULL");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestTooltipOverColumnInAnchorQueryBlock()
+		{
+			const string query =
+@"WITH data AS (SELECT 1 c1 FROM dual),
+generator (c2) AS (
+	SELECT c1 FROM data UNION ALL
+	SELECT c2 + 1 FROM generator WHERE c2 < 3
+)
+SELECT * FROM generator";
+
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 68);
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("data.c1 NUMBER NOT NULL");
 		}
 
 		[Test(Description = @""), STAThread]

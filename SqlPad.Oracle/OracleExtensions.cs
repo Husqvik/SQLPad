@@ -160,11 +160,6 @@ namespace SqlPad.Oracle
 			return node.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBlock, descendantNodeIds);
 		}
 
-		public static IEnumerable<T> FilterRecursiveReferences<T>(this IEnumerable<T> source) where T : OracleReference
-		{
-			return source.Where(r => r.Owner == null || !r.Owner.IsRecursive);
-		}
-
 		public static OracleObjectIdentifier ExtractObjectIdentifier(this StatementGrammarNode node)
 		{
 			var queryTableExpression = node.GetPathFilterAncestor(n => n.Id != NonTerminals.FromClause, NonTerminals.QueryTableExpression);

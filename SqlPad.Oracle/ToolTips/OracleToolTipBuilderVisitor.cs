@@ -59,10 +59,14 @@ namespace SqlPad.Oracle.ToolTips
 
 			var qualifiedColumnName = isSchemaObject && targetSchemaObject.Type == OracleSchemaObjectType.Sequence
 				? null
-				: $"{objectPrefix}{columnReference.Name.ToSimpleIdentifier()} ";
+				: $"{objectPrefix}{columnReference.Name.ToSimpleIdentifier()}";
 
-			var tip = $"{qualifiedColumnName}{columnReference.ColumnDescription.FullTypeName} {(columnReference.ColumnDescription.Nullable ? null : "NOT ")}{"NULL"}";
-			ToolTip = new ToolTipObject { DataContext = tip };
+			var labelBuilder = new ToolTipLabelBuilder();
+			labelBuilder.AddElement(qualifiedColumnName);
+			labelBuilder.AddElement(columnReference.ColumnDescription.FullTypeName);
+			labelBuilder.AddElement($"{(columnReference.ColumnDescription.Nullable ? null : "NOT ")}{"NULL"}");
+
+			ToolTip = new ToolTipObject { DataContext = labelBuilder.ToString() };
 		}
 
 		public void VisitProgramReference(OracleProgramReference programReference)

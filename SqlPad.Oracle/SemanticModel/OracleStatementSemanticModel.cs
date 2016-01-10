@@ -768,7 +768,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private void FindRecursiveQueryReferences()
 		{
-			foreach (var queryBlock in QueryBlockNodes.Values.Where(qb => qb.Type == QueryBlockType.CommonTableExpression))
+			foreach (var queryBlock in QueryBlockNodes.Values.Where(qb => qb.Type == QueryBlockType.CommonTableExpression && qb.AliasNode != null))
 			{
 				FindRecusiveSearchReferences(queryBlock);
 				FindRecusiveCycleReferences(queryBlock);
@@ -793,7 +793,7 @@ namespace SqlPad.Oracle.SemanticModel
 			CreateGrammarSpecificFunctionReferences(herarchicalQueryClauseGrammarSpecificFunctions, queryBlock, queryBlock.ProgramReferences, StatementPlacement.RecursiveSearchOrCycleClause, null);
 
 			var cycleColumnAlias = queryBlock.RecursiveCycleClause[Terminals.ColumnAlias];
-			if (cycleColumnAlias == null || !queryBlock.IsRecursive)
+			if (!queryBlock.IsRecursive || cycleColumnAlias == null)
 			{
 				return;
 			}
@@ -820,7 +820,7 @@ namespace SqlPad.Oracle.SemanticModel
 			var subqueryComponentNode = queryBlock.RootNode.GetAncestor(NonTerminals.CommonTableExpression);
 			queryBlock.RecursiveSearchClause = subqueryComponentNode[NonTerminals.SubqueryFactoringSearchClause];
 
-		    var orderExpressionListNode = queryBlock.RecursiveSearchClause?[NonTerminals.OrderExpressionList];
+			var orderExpressionListNode = queryBlock.RecursiveSearchClause?[NonTerminals.OrderExpressionList];
 			if (orderExpressionListNode == null)
 			{
 				return;
@@ -832,7 +832,7 @@ namespace SqlPad.Oracle.SemanticModel
 			var herarchicalQueryClauseGrammarSpecificFunctions = GetGrammarSpecificFunctionNodes(orderExpressionListNode);
 			CreateGrammarSpecificFunctionReferences(herarchicalQueryClauseGrammarSpecificFunctions, queryBlock, queryBlock.ProgramReferences, StatementPlacement.RecursiveSearchOrCycleClause, null);
 
-			if (queryBlock.RecursiveSearchClause.LastTerminalNode.Id != Terminals.ColumnAlias || !queryBlock.IsRecursive)
+			if (!queryBlock.IsRecursive || !String.Equals(queryBlock.RecursiveSearchClause.LastTerminalNode.Id, Terminals.ColumnAlias))
 			{
 				return;
 			}
@@ -2284,7 +2284,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public OracleColumnReference GetColumnReference(StatementGrammarNode columnIdentifer)
 		{
-			return AllReferenceContainers.SelectMany(c => c.ColumnReferences).FilterRecursiveReferences().SingleOrDefault(c => c.ColumnNode == columnIdentifer);
+			return AllReferenceContainers.SelectMany(c => c.ColumnReferences).SingleOrDefault(c => c.ColumnNode == columnIdentifer);
 		}
 
 		public OracleProgramReference GetProgramReference(StatementGrammarNode identifer)
@@ -2309,7 +2309,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public OracleSequenceReference GetSequenceReference(StatementGrammarNode sequenceIdentifer)
 		{
-			return AllReferenceContainers.SelectMany(c => c.SequenceReferences).FilterRecursiveReferences().SingleOrDefault(c => c.ObjectNode == sequenceIdentifer);
+			return AllReferenceContainers.SelectMany(c => c.SequenceReferences).SingleOrDefault(c => c.ObjectNode == sequenceIdentifer);
 		}
 
 		public T GetReference<T>(StatementGrammarNode objectIdentifer) where T : OracleReference
