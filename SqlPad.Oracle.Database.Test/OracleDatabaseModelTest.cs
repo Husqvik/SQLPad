@@ -236,6 +236,7 @@ WHERE
 				result.AffectedRowCount.ShouldBe(null);
 				result.CompilationErrors.ShouldBe(null);
 				result.StatementModel.ShouldBe(executionModel);
+				result.ErrorPosition.ShouldBe(17);
 			}
 		}
 
@@ -659,6 +660,62 @@ WHERE
 
 			displayCursorDataProvider.PlanText.ShouldNotBe(null);
 			Trace.WriteLine(displayCursorDataProvider.PlanText);
+		}
+
+		[Test]
+		public async Task TestProfileDetailDataProvider()
+		{
+			var model = new ProfileDetailModel { Name = "DEFAULT" };
+			var profileDetailsDataProvider = new ProfileDetailsDataProvider(model);
+
+			await ExecuteDataProvider(profileDetailsDataProvider);
+
+			model.FailedLoginAttempts.ShouldBe(10);
+		}
+
+		[Test]
+		public async Task TestDatabaseMonitorDataProviders()
+		{
+			var executionModel =
+				new StatementExecutionModel
+				{
+					StatementText =
+@"WITH generator as (SELECT /*+ materialize */ LEVEL val FROM dual CONNECT BY LEVEL <= 5000)
+SELECT /*+ parallel(g1 2) parallel(g2 2) monitor */ avg(g1.val * 10000 + g2.val) FROM generator g1, generator g2",
+					BindVariables = new BindVariableModel[0],
+				};
+
+			var databaseMonitor = new OracleDatabaseMonitor(ConnectionString);
+
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
+			{
+				var connectionAdapter = (OracleConnectionAdapter)databaseModel.CreateConnectionAdapter();
+				var executionTask = connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel } }, CancellationToken.None);
+
+				Thread.Sleep(TimeSpan.FromSeconds(1));
+
+				var databaseSessions = await databaseMonitor.GetAllSessionDataAsync(CancellationToken.None);
+				var sessionValues = (OracleSessionValues)databaseSessions.Rows.Single(s => s.Id == connectionAdapter.SessionId).ProviderValues;
+
+				var monitorDataProvider = new SqlMonitorDataProvider(sessionValues.Id, sessionValues.ExecutionStart.Value, sessionValues.ExecutionId.Value, sessionValues.SqlId, sessionValues.ChildNumber.Value);
+				await OracleDatabaseModel.UpdateModelAsync(ConnectionString.ConnectionString, null, CancellationToken.None, false, monitorDataProvider);
+				var planItemCollection = monitorDataProvider.ItemCollection;
+				var sessionMonitorDataProvider = new SessionMonitorDataProvider(planItemCollection);
+				var activeSessionHistoryDataProvider = new SqlMonitorActiveSessionHistoryDataProvider(planItemCollection);
+				var planMonitorDataProvider = new SqlMonitorSessionPlanMonitorDataProvider(planItemCollection);
+				var sessionLongOperationDataProvider = new SessionLongOperationPlanMonitorDataProvider(planItemCollection);
+				await OracleDatabaseModel.UpdateModelAsync(ConnectionString.ConnectionString, null, CancellationToken.None, false, sessionMonitorDataProvider, activeSessionHistoryDataProvider, planMonitorDataProvider, sessionLongOperationDataProvider);
+
+				var statementBatchResult = executionTask.Result;
+				statementBatchResult.StatementResults.Count.ShouldBe(1);
+				var result = statementBatchResult.StatementResults[0];
+				result.ExecutedSuccessfully.ShouldBe(true);
+
+				planItemCollection.RootItem.ShouldNotBe(null);
+				planItemCollection.SessionItems.Count.ShouldBeGreaterThan(0);
+				planItemCollection.AllItems.Values.Any(pi => pi.ParallelSlaveSessionItems.Count > 0).ShouldBe(true);
+				planItemCollection.SessionItems.Any(pi => pi.ActiveSessionHistoryItems.Count > 0).ShouldBe(true);
+			}
 		}
 
 		[Test]
