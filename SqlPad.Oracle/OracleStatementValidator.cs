@@ -1130,6 +1130,20 @@ namespace SqlPad.Oracle
 
 			foreach (var exceptionReference in referenceContainer.PlSqlExceptionReferences)
 			{
+				if (exceptionReference.ObjectNode == null && String.Equals(exceptionReference.NormalizedName, "\"OTHERS\"") && !exceptionReference.Name.IsQuoted())
+				{
+					var isNotOnlyIdentifer = exceptionReference.RootNode.GetAncestor(NonTerminals.PlSqlExceptionHandler)
+						?[NonTerminals.ExceptionIdentifierList, NonTerminals.ExceptionIdentifierListChained] != null;
+
+					if (isNotOnlyIdentifer)
+					{
+						validationModel.InvalidNonTerminals[exceptionReference.IdentifierNode] =
+							new InvalidNodeValidationData(OracleSemanticErrorType.NoChoicesMayAppearWithChoiceOthersInExceptionHandler) { Node = exceptionReference.IdentifierNode };
+					}
+
+					continue;
+				}
+
 				if (exceptionReference.Exceptions.Count == 0)
 				{
 					validationModel.IdentifierNodeValidity[exceptionReference.IdentifierNode] =

@@ -50,5 +50,27 @@ END;";
 			nodeValidities[1].IsRecognized.ShouldBe(false);
 			nodeValidities[1].Node.Token.Value.ShouldBe("undefined_exception");
 		}
+
+		[Test(Description = @"")]
+		public void TestOthersExceptionCombinedWithNamedException()
+		{
+			const string plsqlText =
+@"DECLARE
+    test_exception EXCEPTION;
+BEGIN
+    NULL;
+    EXCEPTION
+    	WHEN test_exception OR OTHERS THEN NULL;
+END;";
+			var statement = Parser.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = OracleStatementValidatorTest.BuildValidationModel(plsqlText, statement);
+			validationModel.IdentifierNodeValidity.Count.ShouldBe(0);
+			var nodeValidities = validationModel.InvalidNonTerminals.Values.ToArray();
+			nodeValidities.Length.ShouldBe(1);
+			nodeValidities[0].Node.Token.Value.ShouldBe("OTHERS");
+			nodeValidities[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.NoChoicesMayAppearWithChoiceOthersInExceptionHandler);
+		}
 	}
 }

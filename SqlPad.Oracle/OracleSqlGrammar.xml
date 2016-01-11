@@ -14941,20 +14941,9 @@
       <Sequences>
         <Sequence>
           <Terminal Id="When" />
-          <NonTerminal Id="OthersOrExceptionIdentifierList" />
+          <NonTerminal Id="ExceptionIdentifierList" />
           <Terminal Id="Then" />
           <NonTerminal Id="PlSqlStatementList" />
-        </Sequence>
-      </Sequences>
-    </Rule>
-    
-    <Rule StartingNonTerminal="OthersOrExceptionIdentifierList">
-      <Sequences>
-        <Sequence>
-          <Terminal Id="Others" />
-        </Sequence>
-        <Sequence>
-          <NonTerminal Id="ExceptionIdentifierList" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -20900,7 +20889,6 @@
     <Terminal Id="PlsInteger" Value="PLS_INTEGER" />
     <Terminal Id="BinaryInteger" Value="BINARY_INTEGER" />
     <Terminal Id="ReliesOn" Value="RELIES_ON" />
-    <Terminal Id="Others" Value="OTHERS" />
     <Terminal Id="Indices" Value="INDICES" />
     <Terminal Id="Save" Value="SAVE" />
     <Terminal Id="String" Value="STRING" />

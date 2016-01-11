@@ -4,11 +4,23 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:system="clr-namespace:System;assembly=mscorlib"
+             xmlns:presentationOptions="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
              mc:Ignorable="d" 
              d:DesignHeight="20" d:DesignWidth="100">
+	
+	<UserControl.Resources>
+		<VisualBrush x:Key="BrushHatch" TileMode="Tile" Viewport="0,0,5,5" ViewportUnits="Absolute" Viewbox="0,0,5,5" ViewboxUnits="Absolute" presentationOptions:Freeze="True">
+			<VisualBrush.Visual>
+				<Grid>
+					<Path Data="M 0 5 L 5 0" Stroke="Black" StrokeThickness="0.333" />
+				</Grid>
+			</VisualBrush.Visual>
+		</VisualBrush>
+	</UserControl.Resources>
+	
 	<Grid>
-		<!--<Image ToolTip="{Binding Diagnostics, RelativeSource={RelativeSource AncestorType=UserControl}}" ToolTipService.ShowDuration="{x:Static Member=system:Int32.MaxValue}">-->
-		<Image>
+		<Image ToolTip="{Binding Diagnostics, RelativeSource={RelativeSource AncestorType=UserControl}}" ToolTipService.ShowDuration="{x:Static Member=system:Int32.MaxValue}">
+		<!--<Image>-->
 			<Image.Source>
 				<DrawingImage>
 					<DrawingImage.Drawing>
@@ -23,14 +35,40 @@
 								</GeometryDrawing.Geometry>
 							</GeometryDrawing>
 
-							<GeometryDrawing Brush="Black">
+							<GeometryDrawing Brush="Green">
 								<GeometryDrawing.Geometry>
 									<PathGeometry>
 										<PathGeometry.Transform>
 											<ScaleTransform ScaleX="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Grid}}" ScaleY="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Grid}}"/>
 										</PathGeometry.Transform>
 										<PathGeometry.Figures>
-											<PathFigure StartPoint="0,1" IsFilled="True" Segments="{Binding PathSegments, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+											<PathFigure StartPoint="0,1" IsFilled="True" Segments="{Binding CpuSegments, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+										</PathGeometry.Figures>
+									</PathGeometry>
+								</GeometryDrawing.Geometry>
+							</GeometryDrawing>
+							
+							<GeometryDrawing Brush="Red">
+								<GeometryDrawing.Geometry>
+									<PathGeometry>
+										<PathGeometry.Transform>
+											<ScaleTransform ScaleX="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Grid}}" ScaleY="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Grid}}"/>
+										</PathGeometry.Transform>
+										<PathGeometry.Figures>
+											<PathFigure StartPoint="0,1" IsFilled="True" Segments="{Binding WaitingSegments, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+										</PathGeometry.Figures>
+									</PathGeometry>
+								</GeometryDrawing.Geometry>
+							</GeometryDrawing>
+
+							<GeometryDrawing Brush="{StaticResource BrushHatch}">
+								<GeometryDrawing.Geometry>
+									<PathGeometry>
+										<PathGeometry.Transform>
+											<ScaleTransform ScaleX="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Grid}}" ScaleY="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Grid}}"/>
+										</PathGeometry.Transform>
+										<PathGeometry.Figures>
+											<PathFigure StartPoint="0,1" IsFilled="True" Segments="{Binding IdleSegments, RelativeSource={RelativeSource AncestorType=UserControl}}" />
 										</PathGeometry.Figures>
 									</PathGeometry>
 								</GeometryDrawing.Geometry>

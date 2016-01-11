@@ -455,7 +455,7 @@ END;";
 			mainProgram.Exceptions[0].ErrorCode.ShouldBe(null);
 
 			var plSqlExceptionReferences = mainProgram.PlSqlExceptionReferences.ToArray();
-			plSqlExceptionReferences.Length.ShouldBe(4);
+			plSqlExceptionReferences.Length.ShouldBe(5);
 			plSqlExceptionReferences[0].IdentifierNode.Token.Value.ShouldBe("test_exception");
 			plSqlExceptionReferences[0].Exceptions.Count.ShouldBe(1);
 			plSqlExceptionReferences[1].IdentifierNode.Token.Value.ShouldBe("undefined_exception");
@@ -464,6 +464,7 @@ END;";
 			plSqlExceptionReferences[2].Exceptions.Count.ShouldBe(1);
 			plSqlExceptionReferences[3].IdentifierNode.Token.Value.ShouldBe("undefined_exception");
 			plSqlExceptionReferences[3].Exceptions.Count.ShouldBe(0);
+			plSqlExceptionReferences[4].IdentifierNode.Token.Value.ShouldBe("OTHERS");
 		}
 
 		[Test]
