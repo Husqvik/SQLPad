@@ -962,8 +962,8 @@
 			</Setter>
 		</Style>
 	</UserControl.Resources>
-	
-	<TreeView x:Name="TreeView" ItemTemplateSelector="{StaticResource PlanItemTemplateSelector}">
+
+	<TreeView x:Name="TreeView" ItemTemplateSelector="{StaticResource PlanItemTemplateSelector}" ScrollViewer.IsDeferredScrollingEnabled="True">
 		<TreeView.Resources>
 			<RoutedCommand x:Key="CommandSaveContentAsPng" />
 		</TreeView.Resources>

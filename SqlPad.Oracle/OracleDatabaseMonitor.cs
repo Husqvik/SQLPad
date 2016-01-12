@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -28,391 +28,398 @@ namespace SqlPad.Oracle
 			new ColumnHeader
 			{
 				ColumnIndex = 0,
+				Name = "Instance",
+				DataType = typeof (decimal),
+				DatabaseDataType = Terminals.Decimal
+			},
+			new ColumnHeader
+			{
+				ColumnIndex = 1,
 				Name = "Session Address",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 1,
+				ColumnIndex = 2,
 				Name = "Session ID",
 				DataType = typeof (decimal),
 				DatabaseDataType = Terminals.Decimal
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 2,
+				ColumnIndex = 3,
 				Name = "Owner Session ID",
 				DataType = typeof (decimal),
 				DatabaseDataType = Terminals.Decimal
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 3,
+				ColumnIndex = 4,
 				Name = "Serial#",
 				DataType = typeof (decimal),
 				DatabaseDataType = Terminals.Decimal
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 4,
+				ColumnIndex = 5,
 				Name = "Auditing Session ID",
 				DataType = typeof (decimal),
 				DatabaseDataType = Terminals.Decimal
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 5,
+				ColumnIndex = 6,
 				Name = "Process Address",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 6,
+				ColumnIndex = 7,
 				Name = "User name",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 7,
+				ColumnIndex = 8,
 				Name = "Transaction address",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 8,
+				ColumnIndex = 9,
 				Name = "Lock Wait",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 9,
+				ColumnIndex = 10,
 				Name = "Status",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 10,
+				ColumnIndex = 11,
 				Name = "Server",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 11,
+				ColumnIndex = 12,
 				Name = "Schema",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 12,
+				ColumnIndex = 13,
 				Name = "OS User",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 13,
+				ColumnIndex = 14,
 				Name = "Process",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 14,
+				ColumnIndex = 15,
 				Name = "Machine",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 15,
+				ColumnIndex = 16,
 				Name = "Port",
 				DataType = typeof (decimal),
 				DatabaseDataType = Terminals.Decimal
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 16,
+				ColumnIndex = 17,
 				Name = "Program",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 17,
+				ColumnIndex = 18,
 				Name = "Type",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 18,
+				ColumnIndex = 19,
 				Name = "SQL ID",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 19,
+				ColumnIndex = 20,
 				Name = "SQL Child Number",
 				DataType = typeof (decimal),
 				DatabaseDataType = Terminals.Decimal
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 20,
+				ColumnIndex = 21,
 				Name = "SQL Execution Start",
 				DataType = typeof (DateTime),
 				DatabaseDataType = Terminals.Date
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 21,
+				ColumnIndex = 22,
 				Name = "SQL Execution ID",
 				DataType = typeof (decimal),
 				DatabaseDataType = Terminals.Decimal
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 22,
+				ColumnIndex = 23,
 				Name = "Previous SQL ID",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 23,
+				ColumnIndex = 24,
 				Name = "Previous Child Number",
 				DataType = typeof (decimal),
 				DatabaseDataType = Terminals.Decimal
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 24,
+				ColumnIndex = 25,
 				Name = "Previous Execution Start",
 				DataType = typeof (DateTime),
 				DatabaseDataType = Terminals.Date
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 25,
+				ColumnIndex = 26,
 				Name = "Previous Execution ID",
 				DataType = typeof (decimal),
 				DatabaseDataType = Terminals.Decimal
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 26,
+				ColumnIndex = 27,
 				Name = "Module",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 27,
+				ColumnIndex = 28,
 				Name = "Action",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 28,
+				ColumnIndex = 29,
 				Name = "Client Info",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 29,
+				ColumnIndex = 30,
 				Name = "Logon Time",
 				DataType = typeof (DateTime),
 				DatabaseDataType = Terminals.Date
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 30,
+				ColumnIndex = 31,
 				Name = "Parallel DML",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 31,
+				ColumnIndex = 32,
 				Name = "Failover Type",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 32,
+				ColumnIndex = 33,
 				Name = "Failover Method",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 33,
+				ColumnIndex = 34,
 				Name = "Failed Over",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 34,
+				ColumnIndex = 35,
 				Name = "Resource Consumer Group",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 35,
+				ColumnIndex = 36,
 				Name = "Parallel DML Status",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 36,
+				ColumnIndex = 37,
 				Name = "Parallel DDL Status",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 37,
+				ColumnIndex = 38,
 				Name = "Parallel Query Status",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 38,
+				ColumnIndex = 39,
 				Name = "Event",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 39,
+				ColumnIndex = 40,
 				Name = "Parameter 1 Text",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 40,
+				ColumnIndex = 41,
 				Name = "Parameter 1",
 				DataType = typeof (decimal),
 				DatabaseDataType = Terminals.Decimal
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 41,
+				ColumnIndex = 42,
 				Name = "Parameter 2 Text",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 42,
+				ColumnIndex = 43,
 				Name = "Parameter 2",
 				DataType = typeof (decimal),
 				DatabaseDataType = Terminals.Decimal
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 43,
+				ColumnIndex = 44,
 				Name = "Parameter 3 Text",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 44,
+				ColumnIndex = 45,
 				Name = "Parameter 3",
 				DataType = typeof (decimal),
 				DatabaseDataType = Terminals.Decimal
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 45,
+				ColumnIndex = 46,
 				Name = "Wait Class",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 46,
+				ColumnIndex = 47,
 				Name = "Wait Time",
 				DataType = typeof (decimal),
 				DatabaseDataType = Terminals.Decimal
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 47,
+				ColumnIndex = 48,
 				Name = "State",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 48,
+				ColumnIndex = 49,
 				Name = "Wait Time Microseconds",
 				DataType = typeof (decimal),
 				DatabaseDataType = Terminals.Decimal
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 49,
+				ColumnIndex = 50,
 				Name = "Remaining Time Microseconds",
 				DataType = typeof (decimal),
 				DatabaseDataType = Terminals.Decimal
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 50,
+				ColumnIndex = 51,
 				Name = "Time Since Last Wait Microseconds",
 				DataType = typeof (decimal),
 				DatabaseDataType = Terminals.Decimal
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 51,
+				ColumnIndex = 52,
 				Name = "Service Name",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 52,
+				ColumnIndex = 53,
 				Name = "SQL Trace",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 53,
+				ColumnIndex = 54,
 				Name = "Trace Identifier",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 54,
+				ColumnIndex = 55,
 				Name = "Trace File",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 55,
+				ColumnIndex = 56,
 				Name = "PGA Used Memory",
 				DataType = typeof (decimal),
 				DatabaseDataType = Terminals.Decimal,
@@ -420,7 +427,7 @@ namespace SqlPad.Oracle
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 56,
+				ColumnIndex = 57,
 				Name = "PGA Allocated Memory",
 				DataType = typeof (decimal),
 				DatabaseDataType = Terminals.Decimal,
@@ -428,7 +435,7 @@ namespace SqlPad.Oracle
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 57,
+				ColumnIndex = 58,
 				Name = "PGA Freeable Memory",
 				DataType = typeof (decimal),
 				DatabaseDataType = Terminals.Decimal,
@@ -436,7 +443,7 @@ namespace SqlPad.Oracle
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 58,
+				ColumnIndex = 59,
 				Name = "PGA Maximum Memory",
 				DataType = typeof (decimal),
 				DatabaseDataType = Terminals.Decimal,
@@ -444,35 +451,35 @@ namespace SqlPad.Oracle
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 59,
+				ColumnIndex = 60,
 				Name = "Process ID",
 				DataType = typeof (decimal),
 				DatabaseDataType = Terminals.Decimal
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 60,
+				ColumnIndex = 61,
 				Name = "Operating System ID",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 61,
+				ColumnIndex = 62,
 				Name = "Operating System Process ID",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Varchar2
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 62,
+				ColumnIndex = 63,
 				Name = "Current Command Text",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Clob
 			},
 			new ColumnHeader
 			{
-				ColumnIndex = 63,
+				ColumnIndex = 64,
 				Name = "Preceding Command Text",
 				DataType = typeof (string),
 				DatabaseDataType = Terminals.Clob
@@ -556,6 +563,7 @@ namespace SqlPad.Oracle
 									Serial = Convert.ToInt32(reader["SERIAL#"]),
 									Server = (string)reader["SERVER"],
 									ServiceName = OracleReaderValueConvert.ToString(reader["SERVICE_NAME"]),
+									InstanceId = Convert.ToInt32(reader["INSTANCE_ID"]),
 									SessionAddress = (string)reader["SADDR"],
 									SqlId = OracleReaderValueConvert.ToString(reader["SQL_ID"]),
 									SqlTrace = (string)reader["SQL_TRACE"],
@@ -645,6 +653,23 @@ namespace SqlPad.Oracle
 				};
 
 			yield return new ContextAction("Navigate to trace file", executionHandler, null);
+
+			if (!String.Equals(sessionValues.Status, "Killed"))
+			{
+				executionHandler =
+					new CommandExecutionHandler
+					{
+						ExecutionHandlerAsync = (context, cancellationToken) => KillSession(sessionValues, cancellationToken)
+					};
+
+				yield return new ContextAction("Kill", executionHandler, null, true);
+			}
+		}
+
+		private async Task KillSession(OracleSessionValues sessionData, CancellationToken cancellationToken)
+		{
+			var commandText = $"ALTER SYSTEM KILL SESSION '{sessionData.Id}, {sessionData.Serial}, @{sessionData.InstanceId}' IMMEDIATE";
+			await SetSessionTracing(sessionData, commandText, cancellationToken);
 		}
 
 		private async Task EnableSessionTracing(OracleSessionValues sessionData, string traceIdentifier, bool waits, bool binds, CancellationToken cancellationToken)
@@ -688,393 +713,399 @@ END;";
 		}
 	}
 
-	[DebuggerDisplay("OracleSessionValues(Id={Id}, Serial={Serial}, SqlId={SqlId}, ChildNumber={ChildNumber}, ExecutionId={ExecutionId}, ExecutionStart={ExecutionStart})")]
+	[DebuggerDisplay("OracleSessionValues(InstanceId={InstanceId}; Id={Id}; Serial={Serial}; SqlId={SqlId}; ChildNumber={ChildNumber}; ExecutionId={ExecutionId}; ExecutionStart={ExecutionStart})")]
 	public class OracleSessionValues : IDatabaseSessionValues
 	{
-		public object[] Values { get; } = new object[64];
+		public object[] Values { get; } = new object[65];
+
+		public int InstanceId
+		{
+			get { return (int)Values[0]; }
+			set { Values[0] = value; }
+		}
 
 		public string SessionAddress
 		{
-			get { return (string)Values[0]; }
-			set { Values[0] = value; }
+			get { return (string)Values[1]; }
+			set { Values[1] = value; }
 		}
 
 		public int Id
 		{
-			get { return (int)Values[1]; }
-			set { Values[1] = value; }
+			get { return (int)Values[2]; }
+			set { Values[2] = value; }
 		}
 
 		public int? OwnerSessionId
 		{
-			get { return (int?)Values[2]; }
-			set { Values[2] = value; }
-		}
-
-		public int Serial
-		{
-			get { return (int)Values[3]; }
+			get { return (int?)Values[3]; }
 			set { Values[3] = value; }
 		}
 
-		public long AuditingSessionId
+		public int Serial
 		{
 			get { return (int)Values[4]; }
 			set { Values[4] = value; }
 		}
 
-		public string ProcessAddress
+		public long AuditingSessionId
 		{
-			get { return (string)Values[5]; }
+			get { return (int)Values[5]; }
 			set { Values[5] = value; }
 		}
 
-		public string UserName
+		public string ProcessAddress
 		{
 			get { return (string)Values[6]; }
 			set { Values[6] = value; }
 		}
 
-		public string TransactionAddress
+		public string UserName
 		{
 			get { return (string)Values[7]; }
 			set { Values[7] = value; }
 		}
 
-		public string LockWait
+		public string TransactionAddress
 		{
 			get { return (string)Values[8]; }
 			set { Values[8] = value; }
 		}
 
-		public string Status
+		public string LockWait
 		{
 			get { return (string)Values[9]; }
 			set { Values[9] = value; }
 		}
 
-		public string Server
+		public string Status
 		{
 			get { return (string)Values[10]; }
 			set { Values[10] = value; }
 		}
 
-		public string SchemaName
+		public string Server
 		{
 			get { return (string)Values[11]; }
 			set { Values[11] = value; }
 		}
 
-		public string OperatingSystemUser
+		public string SchemaName
 		{
 			get { return (string)Values[12]; }
 			set { Values[12] = value; }
 		}
 
-		public string Process
+		public string OperatingSystemUser
 		{
 			get { return (string)Values[13]; }
 			set { Values[13] = value; }
 		}
 
-		public string Machine
+		public string Process
 		{
 			get { return (string)Values[14]; }
 			set { Values[14] = value; }
 		}
 
-		public int? Port
+		public string Machine
 		{
-			get { return (int?)Values[15]; }
+			get { return (string)Values[15]; }
 			set { Values[15] = value; }
 		}
 
-		public string Program
+		public int? Port
 		{
-			get { return (string)Values[16]; }
+			get { return (int?)Values[16]; }
 			set { Values[16] = value; }
 		}
 
-		public string Type
+		public string Program
 		{
 			get { return (string)Values[17]; }
 			set { Values[17] = value; }
 		}
 
-		public string SqlId
+		public string Type
 		{
 			get { return (string)Values[18]; }
 			set { Values[18] = value; }
 		}
 
+		public string SqlId
+		{
+			get { return (string)Values[19]; }
+			set { Values[19] = value; }
+		}
+
 		public int? ChildNumber
 		{
-			get { return (int?)Values[19]; }
-			set { Values[19] = value; }
+			get { return (int?)Values[20]; }
+			set { Values[20] = value; }
 		}
 
 		public DateTime? ExecutionStart
 		{
-			get { return (DateTime?)Values[20]; }
-			set { Values[20] = value; }
+			get { return (DateTime?)Values[21]; }
+			set { Values[21] = value; }
 		}
 
 		public int? ExecutionId
 		{
-			get { return (int?)Values[21]; }
-			set { Values[21] = value; }
+			get { return (int?)Values[22]; }
+			set { Values[22] = value; }
 		}
 
 		public string PrecedingSqlId
 		{
-			get { return (string)Values[22]; }
-			set { Values[22] = value; }
+			get { return (string)Values[23]; }
+			set { Values[23] = value; }
 		}
 
 		public int? PrecedingChildNumber
 		{
-			get { return (int?)Values[23]; }
-			set { Values[23] = value; }
+			get { return (int?)Values[24]; }
+			set { Values[24] = value; }
 		}
 
 		public DateTime? PrecedingExecutionStart
 		{
-			get { return (DateTime?)Values[24]; }
-			set { Values[24] = value; }
+			get { return (DateTime?)Values[25]; }
+			set { Values[25] = value; }
 		}
 
 		public int? PrecedingExecutionId
 		{
-			get { return (int?)Values[25]; }
-			set { Values[25] = value; }
-		}
-
-		public string Module
-		{
-			get { return (string)Values[26]; }
+			get { return (int?)Values[26]; }
 			set { Values[26] = value; }
 		}
 
-		public string Action
+		public string Module
 		{
 			get { return (string)Values[27]; }
 			set { Values[27] = value; }
 		}
 
-		public string ClientInfo
+		public string Action
 		{
 			get { return (string)Values[28]; }
 			set { Values[28] = value; }
 		}
 
-		public DateTime LogonTime
+		public string ClientInfo
 		{
-			get { return (DateTime)Values[29]; }
+			get { return (string)Values[29]; }
 			set { Values[29] = value; }
 		}
 
-		public string ParallelDmlEnabled
+		public DateTime LogonTime
 		{
-			get { return (string)Values[30]; }
+			get { return (DateTime)Values[30]; }
 			set { Values[30] = value; }
 		}
 
-		public string FailoverType
+		public string ParallelDmlEnabled
 		{
 			get { return (string)Values[31]; }
 			set { Values[31] = value; }
 		}
 
-		public string FailoverMethod
+		public string FailoverType
 		{
 			get { return (string)Values[32]; }
 			set { Values[32] = value; }
 		}
 
-		public string FailedOver
+		public string FailoverMethod
 		{
 			get { return (string)Values[33]; }
 			set { Values[33] = value; }
 		}
 
-		public string ResourceConsumeGroup
+		public string FailedOver
 		{
 			get { return (string)Values[34]; }
 			set { Values[34] = value; }
 		}
 
-		public string ParallelDmlStatus
+		public string ResourceConsumeGroup
 		{
 			get { return (string)Values[35]; }
 			set { Values[35] = value; }
 		}
 
-		public string ParallelDdlStatus
+		public string ParallelDmlStatus
 		{
 			get { return (string)Values[36]; }
 			set { Values[36] = value; }
 		}
 
-		public string ParallelQueryStatus
+		public string ParallelDdlStatus
 		{
 			get { return (string)Values[37]; }
 			set { Values[37] = value; }
 		}
 
-		public string Event
+		public string ParallelQueryStatus
 		{
 			get { return (string)Values[38]; }
 			set { Values[38] = value; }
 		}
 
-		public string Parameter1Text
+		public string Event
 		{
 			get { return (string)Values[39]; }
 			set { Values[39] = value; }
 		}
 
+		public string Parameter1Text
+		{
+			get { return (string)Values[40]; }
+			set { Values[40] = value; }
+		}
+
 		public decimal Parameter1
 		{
-			get { return (decimal)Values[40]; }
-			set { Values[40] = value; }
+			get { return (decimal)Values[41]; }
+			set { Values[41] = value; }
 		}
 
 		public string Parameter2Text
 		{
-			get { return (string)Values[41]; }
-			set { Values[41] = value; }
+			get { return (string)Values[42]; }
+			set { Values[42] = value; }
 		}
 
 		public decimal Parameter2
 		{
-			get { return (decimal)Values[42]; }
-			set { Values[42] = value; }
+			get { return (decimal)Values[43]; }
+			set { Values[43] = value; }
 		}
 
 		public string Parameter3Text
 		{
-			get { return (string)Values[43]; }
-			set { Values[43] = value; }
+			get { return (string)Values[44]; }
+			set { Values[44] = value; }
 		}
 
 		public decimal Parameter3
 		{
-			get { return (decimal)Values[44]; }
-			set { Values[44] = value; }
+			get { return (decimal)Values[45]; }
+			set { Values[45] = value; }
 		}
 
 		public string WaitClass
 		{
-			get { return (string)Values[45]; }
-			set { Values[45] = value; }
+			get { return (string)Values[46]; }
+			set { Values[46] = value; }
 		}
 
 		public long? WaitTime
 		{
-			get { return (long?)Values[46]; }
-			set { Values[46] = value; }
+			get { return (long?)Values[47]; }
+			set { Values[47] = value; }
 		}
 
 		public string State
 		{
-			get { return (string)Values[47]; }
-			set { Values[47] = value; }
-		}
-
-		public long? WaitTimeMicroseconds
-		{
-			get { return (long?)Values[48]; }
+			get { return (string)Values[48]; }
 			set { Values[48] = value; }
 		}
 
-		public long? RemainingTimeMicroseconds
+		public long? WaitTimeMicroseconds
 		{
 			get { return (long?)Values[49]; }
 			set { Values[49] = value; }
 		}
 
-		public long? TimeSinceLastWaitMicroseconds
+		public long? RemainingTimeMicroseconds
 		{
 			get { return (long?)Values[50]; }
 			set { Values[50] = value; }
 		}
 
-		public string ServiceName
+		public long? TimeSinceLastWaitMicroseconds
 		{
-			get { return (string)Values[51]; }
+			get { return (long?)Values[51]; }
 			set { Values[51] = value; }
 		}
 
-		public string SqlTrace
+		public string ServiceName
 		{
 			get { return (string)Values[52]; }
 			set { Values[52] = value; }
 		}
 
-		public string TraceId
+		public string SqlTrace
 		{
 			get { return (string)Values[53]; }
 			set { Values[53] = value; }
 		}
 
-		public string TraceFile
+		public string TraceId
 		{
 			get { return (string)Values[54]; }
 			set { Values[54] = value; }
 		}
 
-		public long? ProgramGlobalAreaUsedMemoryBytes
+		public string TraceFile
 		{
-			get { return (long?)Values[55]; }
+			get { return (string)Values[55]; }
 			set { Values[55] = value; }
 		}
 
-		public long? ProgramGlobalAreaAllocatedMemoryBytes
+		public long? ProgramGlobalAreaUsedMemoryBytes
 		{
 			get { return (long?)Values[56]; }
 			set { Values[56] = value; }
 		}
 
-		public long? ProgramGlobalAreaFreeableMemoryBytes
+		public long? ProgramGlobalAreaAllocatedMemoryBytes
 		{
 			get { return (long?)Values[57]; }
 			set { Values[57] = value; }
 		}
 
-		public long? ProgramGlobalAreaMaximumMemoryBytes
+		public long? ProgramGlobalAreaFreeableMemoryBytes
 		{
 			get { return (long?)Values[58]; }
 			set { Values[58] = value; }
 		}
 
-		public int? ProcessIdentifier
+		public long? ProgramGlobalAreaMaximumMemoryBytes
 		{
-			get { return (int?)Values[59]; }
+			get { return (long?)Values[59]; }
 			set { Values[59] = value; }
 		}
 
-		public int? OperatingSystemIdentifier
+		public int? ProcessIdentifier
 		{
 			get { return (int?)Values[60]; }
 			set { Values[60] = value; }
 		}
 
-		public int? OperatingSystemProcessIdentifier
+		public int? OperatingSystemIdentifier
 		{
 			get { return (int?)Values[61]; }
 			set { Values[61] = value; }
 		}
 
+		public int? OperatingSystemProcessIdentifier
+		{
+			get { return (int?)Values[62]; }
+			set { Values[62] = value; }
+		}
+
 		public string CurrentCommandText
 		{
-			get { return ((OracleSimpleValue)Values[62]).Value; }
-			set { Values[62] = new OracleSimpleValue(value); }
+			get { return ((OracleSimpleValue)Values[63]).Value; }
+			set { Values[63] = new OracleSimpleValue(value); }
 		}
 
 		public string PrecedingCommandText
 		{
-			get { return ((OracleSimpleValue)Values[63]).Value; }
-			set { Values[63] = new OracleSimpleValue(value); }
+			get { return ((OracleSimpleValue)Values[64]).Value; }
+			set { Values[64] = new OracleSimpleValue(value); }
 		}
 
 		public OracleSessionValues Clone()

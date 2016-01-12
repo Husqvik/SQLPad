@@ -11,9 +11,9 @@ namespace SqlPad
 {
 	public class SqlTextEditor : TextEditor
 	{
-		public static readonly DependencyPropertyKey CurrentLineKey = DependencyProperty.RegisterReadOnly("CurrentLine", typeof(int), typeof(SqlTextEditor), new FrameworkPropertyMetadata(0));
-		public static readonly DependencyPropertyKey CurrentColumnKey = DependencyProperty.RegisterReadOnly("CurrentColumn", typeof(int), typeof(SqlTextEditor), new FrameworkPropertyMetadata(0));
-		public static readonly DependencyPropertyKey CurrentSelectionLengthKey = DependencyProperty.RegisterReadOnly("CurrentSelectionLength", typeof(int?), typeof(SqlTextEditor), new FrameworkPropertyMetadata(null));
+		public static readonly DependencyPropertyKey CurrentLineKey = DependencyProperty.RegisterReadOnly(nameof(CurrentLine), typeof(int), typeof(SqlTextEditor), new FrameworkPropertyMetadata(0));
+		public static readonly DependencyPropertyKey CurrentColumnKey = DependencyProperty.RegisterReadOnly(nameof(CurrentColumn), typeof(int), typeof(SqlTextEditor), new FrameworkPropertyMetadata(0));
+		public static readonly DependencyPropertyKey CurrentSelectionLengthKey = DependencyProperty.RegisterReadOnly(nameof(CurrentSelectionLength), typeof(int?), typeof(SqlTextEditor), new FrameworkPropertyMetadata(null));
 
 		private const double FontSizeMin = 8;
 		private const double FontSizeMax = 72;
@@ -30,6 +30,8 @@ namespace SqlPad
 
 		protected override void OnInitialized(EventArgs e)
 		{
+			Options.AllowScrollBelowDocument = true;
+
 			base.OnInitialized(e);
 
 			TextArea.Caret.PositionChanged += CaretPositionChangedHandler;

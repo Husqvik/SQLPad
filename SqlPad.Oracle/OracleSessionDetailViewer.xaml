@@ -49,7 +49,7 @@
 				</Style>
 			</TabItem.Style>
 
-			<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+			<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsDeferredScrollingEnabled="True">
 				<StackPanel>
 					<DataGrid x:Name="SessionDataGrid"
 							  CanUserDeleteRows="False"
