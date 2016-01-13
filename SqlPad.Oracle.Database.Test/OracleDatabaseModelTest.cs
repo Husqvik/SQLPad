@@ -697,7 +697,7 @@ SELECT /*+ parallel(g1 2) parallel(g2 2) monitor */ avg(g1.val * 10000 + g2.val)
 				var databaseSessions = await databaseMonitor.GetAllSessionDataAsync(CancellationToken.None);
 				var sessionValues = (OracleSessionValues)databaseSessions.Rows.Single(s => s.Id == connectionAdapter.SessionId).ProviderValues;
 
-				var monitorDataProvider = new SqlMonitorDataProvider(sessionValues.Id, sessionValues.ExecutionStart.Value, sessionValues.ExecutionId.Value, sessionValues.SqlId, sessionValues.ChildNumber.Value);
+				var monitorDataProvider = new SqlMonitorDataProvider(sessionValues.InstanceId, sessionValues.Id, sessionValues.ExecutionStart.Value, sessionValues.ExecutionId.Value, sessionValues.SqlId, sessionValues.ChildNumber.Value);
 				await OracleDatabaseModel.UpdateModelAsync(ConnectionString.ConnectionString, null, CancellationToken.None, false, monitorDataProvider);
 				var planItemCollection = monitorDataProvider.ItemCollection;
 				var sessionMonitorDataProvider = new SessionMonitorDataProvider(planItemCollection);

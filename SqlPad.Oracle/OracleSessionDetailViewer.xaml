@@ -65,9 +65,12 @@
 							  ItemsSource="{Binding Source={StaticResource SortedSessionItems}}"
 							  MaxColumnWidth="{Binding ElementName=SessionDataGrid, Path=ActualWidth}"
 							  Sorting="SessionDataGridSortingHandler"
+							  AlternationCount="2"
+							  AlternatingRowBackground="#FAFAFA"
 							  BeginningEdit="SessionDataGridBeginningEditCancelTextInputHandler">
 						<DataGrid.Columns>
-							<DataGridTextColumn Header="SID" Binding="{Binding SessionId, Converter={StaticResource SessionIdSummaryConverter}}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Header="Instance" Binding="{Binding SessionIdentifier.InstanceId, Converter={StaticResource SessionIdSummaryConverter}}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Header="SID" Binding="{Binding SessionIdentifier.SessionId, Converter={StaticResource SessionIdSummaryConverter}}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
 							<DataGridTextColumn Header="PX server group" Binding="{Binding ParallelServerGroup}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
 							<DataGridTextColumn Header="PX server set" Binding="{Binding ParallelServerSet}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
 							<DataGridTextColumn Header="PX server#" Binding="{Binding ParallelServerNumber}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
@@ -120,7 +123,8 @@
 							  Width="{Binding ElementName=SessionDataGrid, Path=ActualWidth}"
 							  BeginningEdit="SessionDataGridBeginningEditCancelTextInputHandler">
 						<DataGrid.Columns>
-							<DataGridTextColumn Binding="{Binding SessionId, Converter={StaticResource SessionIdSummaryConverter}}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" Width="0" />
+							<DataGridTextColumn Binding="{Binding SessionIdentifier.SessionId, Converter={StaticResource SessionIdSummaryConverter}}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" Width="0" />
+							<DataGridTextColumn ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" Width="0" />
 							<DataGridTextColumn ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
 							<DataGridTextColumn ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
 							<DataGridTextColumn ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />

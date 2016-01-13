@@ -196,7 +196,7 @@ namespace SqlPad.Oracle
 
 				if (!String.IsNullOrEmpty(_oracleSessionValues.SqlId) && _oracleSessionValues.ExecutionId.HasValue)
 				{
-					var monitorDataProvider = new SqlMonitorDataProvider(_oracleSessionValues.Id, _oracleSessionValues.ExecutionStart.Value, _oracleSessionValues.ExecutionId.Value, _oracleSessionValues.SqlId, _oracleSessionValues.ChildNumber.Value);
+					var monitorDataProvider = new SqlMonitorDataProvider(_oracleSessionValues.InstanceId, _oracleSessionValues.Id, _oracleSessionValues.ExecutionStart.Value, _oracleSessionValues.ExecutionId.Value, _oracleSessionValues.SqlId, _oracleSessionValues.ChildNumber.Value);
 					await OracleDatabaseModel.UpdateModelAsync(OracleConnectionStringRepository.GetBackgroundConnectionString(_connectionString.ConnectionString), null, cancellationToken, false, monitorDataProvider);
 
 					_planItemCollection = monitorDataProvider.ItemCollection;
@@ -256,7 +256,7 @@ namespace SqlPad.Oracle
 	public class SessionSummaryCollection : List<SqlMonitorSessionItem>
 	{
 		private ObservableCollection<SqlMonitorSessionItem> _items;
-		private int _queryCoordinatorSessionId;
+		private SessionIdentifier _queryCoordinatorSessionId;
 
 		private SqlMonitorSessionItem SummaryItem { get; } = new SqlMonitorSessionItem();
 
@@ -275,7 +275,7 @@ namespace SqlPad.Oracle
 			}
 
 			_items = planItemCollection.SessionItems;
-			_queryCoordinatorSessionId = planItemCollection.SessionId;
+			_queryCoordinatorSessionId = planItemCollection.SessionIdentifier;
 
 			_items.CollectionChanged += ItemsCollectionChangedHandler;
 		}
@@ -284,7 +284,7 @@ namespace SqlPad.Oracle
 		{
 			foreach (SqlMonitorSessionItem newItem in args.NewItems)
 			{
-				if (_queryCoordinatorSessionId == newItem.SessionId)
+				if (_queryCoordinatorSessionId == newItem.SessionIdentifier)
 				{
 					SummaryItem.IsCrossInstance = newItem.IsCrossInstance;
 					SummaryItem.ParallelServersAllocated = newItem.ParallelServersAllocated;

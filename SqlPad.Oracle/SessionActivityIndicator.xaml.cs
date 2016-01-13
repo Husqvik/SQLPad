@@ -81,7 +81,7 @@ namespace SqlPad.Oracle
 
 			var diagnosticsTooltipBuilder = new StringBuilder();
 			var sampleRangeSeconds = (SessionItem.ActiveSessionHistoryItems.LastOrDefault()?.SampleTime - SessionItem.ActiveSessionHistoryItems.FirstOrDefault()?.SampleTime)?.TotalSeconds;
-			diagnosticsTooltipBuilder.AppendLine($"SID: {SessionItem.SessionId}; execution start: {executionStart}; last sample: {SessionItem.PlanItemCollection.LastSampleTime.Value}; samples: {SessionItem.ActiveSessionHistoryItems.Count}; idle: {(sampleRangeSeconds ?? 0) - SessionItem.ActiveSessionHistoryItems.Count} s");
+			diagnosticsTooltipBuilder.AppendLine($"Instance: {SessionItem.SessionIdentifier.InstanceId}; SID: {SessionItem.SessionIdentifier.SessionId}; execution start: {executionStart}; last sample: {SessionItem.PlanItemCollection.LastSampleTime.Value}; samples: {SessionItem.ActiveSessionHistoryItems.Count}; idle: {(sampleRangeSeconds ?? 0) - SessionItem.ActiveSessionHistoryItems.Count} s");
 
 			var lastCpuActivity = 1;
 			var lastWaitingActivity = 1;

@@ -116,6 +116,8 @@
 							  CanUserResizeRows="False"
 							  RowStyle="{StaticResource DefaultDataGridRowHeight}"
 							  BeginningEdit="ResultGridBeginningEditCancelTextInputHandler"
+							  AlternationCount="2"
+							  AlternatingRowBackground="#FAFAFA"
 							  HorizontalGridLinesBrush="LightGray"
 							  VerticalGridLinesBrush="LightGray">
 

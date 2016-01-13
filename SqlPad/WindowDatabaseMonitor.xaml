@@ -62,8 +62,10 @@
 		          Style="{StaticResource ResultSetDataGrid}"
 		          ItemsSource="{Binding Source={StaticResource FilteredDatabaseSessions}, IsAsync=True}"
 		          MaxColumnWidth="{Binding ElementName=SessionDataGrid, Path=ActualWidth}"
+		          AlternationCount="2"
+		          AlternatingRowBackground="#FAFAFA"
 		          BeginningEdit="DataGridBeginningEditCancelTextInputHandler"
-				  ContextMenuOpening="SessionGridContextMenuOpeningHandler"
+		          ContextMenuOpening="SessionGridContextMenuOpeningHandler"
 		          SelectionChanged="SessionDataGridSelectionChangedHandler"
 		          Sorting="SessionDataGridSortingHandler"
 		          MouseDoubleClick="SessionDataGridMouseDoubleClickHandler">
