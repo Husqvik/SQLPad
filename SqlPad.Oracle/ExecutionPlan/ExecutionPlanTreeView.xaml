@@ -789,6 +789,8 @@
 						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding ActivityRatio, Converter={StaticResource ObjectToVisibilityConverter}}">
 							<Run Text="Activity: " /><Run Text="{Binding ActivityRatio, Converter={StaticResource RatioConverter}, ConverterParameter=1}" />
 							<Run Text=" " />
+							<Run Text="ASH samples: " /><Run Text="{Binding ActiveSessionHistorySampleCount}" />
+							<Run Text=" " />
 						</TextBlock>
 						<ContentControl Content="{Binding AllSessionSummaryPlanItem}" ContentTemplate="{StaticResource SqlMonitorSingleSessionDataTemplate}" />
 					</StackPanel>
@@ -842,7 +844,8 @@
 					<StackPanel.Resources>
 						<CollectionViewSource x:Key="SessionLongOperations" Source="{Binding SessionLongOperations}">
 							<CollectionViewSource.SortDescriptions>
-								<componentModel:SortDescription PropertyName="SessionId" />
+								<componentModel:SortDescription PropertyName="SessionIdentifier.InstanceId" />
+								<componentModel:SortDescription PropertyName="SessionIdentifier.SessionId" />
 							</CollectionViewSource.SortDescriptions>
 						</CollectionViewSource>
 					</StackPanel.Resources>

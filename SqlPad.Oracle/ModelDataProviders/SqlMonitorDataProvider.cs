@@ -155,8 +155,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 				if (_totalActiveSessionHistorySamples > 0)
 				{
-					var planItemSamples = (decimal)planItemActiveSessionHistoryItems.Value.Count;
-					planItemActiveSessionHistoryItems.Key.ActivityRatio = planItemSamples / _totalActiveSessionHistorySamples;
+					var planItemSamples = planItemActiveSessionHistoryItems.Value.Count;
+					planItemActiveSessionHistoryItems.Key.ActiveSessionHistorySampleCount = planItemSamples;
+					planItemActiveSessionHistoryItems.Key.ActivityRatio = (decimal)planItemSamples / _totalActiveSessionHistorySamples;
 				}
 			}
 		}
@@ -214,6 +215,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 		private SqlMonitorSessionPlanItem _allSessionSummaryPlanItem;
 		private bool _isBeingExecuted;
 		private decimal? _activityRatio;
+		private int _activeSessionHistorySampleCount;
 
 		private readonly ObservableCollection<SessionLongOperationCollection> _sessionLongOperations = new ObservableCollection<SessionLongOperationCollection>();
 		private readonly Dictionary<SessionIdentifier, SessionLongOperationCollection> _sessionLongOperationsItemMapping = new Dictionary<SessionIdentifier, SessionLongOperationCollection>();
@@ -242,6 +244,12 @@ namespace SqlPad.Oracle.ModelDataProviders
 		{
 			get { return _activityRatio; }
 			set { UpdateValueAndRaisePropertyChanged(ref _activityRatio, value); }
+		}
+
+		public int ActiveSessionHistorySampleCount
+		{
+			get { return _activeSessionHistorySampleCount; }
+			set { UpdateValueAndRaisePropertyChanged(ref _activeSessionHistorySampleCount, value); }
 		}
 
 		public SqlMonitorSessionPlanItem GetSessionPlanItem(SessionIdentifier sessionIdentifier)

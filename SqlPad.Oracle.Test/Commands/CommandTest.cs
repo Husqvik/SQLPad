@@ -1113,6 +1113,21 @@ WHERE
 			_editor.Text.ShouldBe("SELECT dual.DUMMY FROM dual");
 		}
 
+
+		[Test(Description = @""), STAThread]
+		public void TestExpandAsteriskCommandWithConnectByPseudocolumn()
+		{
+			_editor.Text = "SELECT * FROM dual CONNECT BY LEVEL <= 2";
+			_editor.CaretOffset = 7;
+
+			var commandSettings = new CommandSettingsModel();
+			ExecuteCommand(OracleCommands.ExpandAsterisk, new TestCommandSettings(commandSettings));
+
+			commandSettings.BooleanOptions.Count.ShouldBe(4);
+			var firstColumnName = commandSettings.BooleanOptions.Keys.First();
+			firstColumnName.ShouldBe("CONNECT_BY_ISLEAF");
+		}
+
 		[Test(Description = @""), STAThread]
 		public void TestExpandAsteriskCommandWithAmbiguousColumnName()
 		{

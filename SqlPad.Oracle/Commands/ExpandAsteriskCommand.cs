@@ -249,6 +249,11 @@ namespace SqlPad.Oracle.Commands
 
 				columnNames.InsertRange(0, pseudoColumns);
 
+				if (CurrentQueryBlock.HierarchicalClauseReference != null)
+				{
+					columnNames.InsertRange(0, CurrentQueryBlock.HierarchicalClauseReference.Pseudocolumns.Select(c => GetExpandedColumn(null, c, true)));
+				}
+
 				asteriskNode = asteriskReference.RootNode;
 			}
 
@@ -270,7 +275,7 @@ namespace SqlPad.Oracle.Commands
 
 		private static ExpandedColumn GetExpandedColumn(OracleReference objectReference, OracleColumn column, bool isPseudocolumn)
 		{
-			var nullable = objectReference.SchemaObject.GetTargetSchemaObject() is OracleView
+			var nullable = objectReference?.SchemaObject.GetTargetSchemaObject() is OracleView
 				? (bool?)null
 				: column.Nullable;
 
@@ -289,7 +294,9 @@ namespace SqlPad.Oracle.Commands
 		{
 			var simpleColumnName = columnName.ToSimpleIdentifier();
 			if (objectReference == null)
+			{
 				return simpleColumnName;
+			}
 
 			var objectPrefix = objectReference.FullyQualifiedObjectName.ToString();
 			var usedObjectPrefix = String.IsNullOrEmpty(objectPrefix)
