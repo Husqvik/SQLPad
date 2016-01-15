@@ -177,7 +177,8 @@ namespace SqlPad.Oracle
 				ColumnIndex = 21,
 				Name = "SQL Execution Start",
 				DataType = typeof (DateTime),
-				DatabaseDataType = Terminals.Date
+				DatabaseDataType = Terminals.Date,
+				CustomConverter = DateTimeLabelConverter.Instance
 			},
 			new ColumnHeader
 			{
@@ -205,7 +206,8 @@ namespace SqlPad.Oracle
 				ColumnIndex = 25,
 				Name = "Previous Execution Start",
 				DataType = typeof (DateTime),
-				DatabaseDataType = Terminals.Date
+				DatabaseDataType = Terminals.Date,
+				CustomConverter = DateTimeLabelConverter.Instance
 			},
 			new ColumnHeader
 			{
@@ -240,7 +242,8 @@ namespace SqlPad.Oracle
 				ColumnIndex = 30,
 				Name = "Logon Time",
 				DataType = typeof (DateTime),
-				DatabaseDataType = Terminals.Date
+				DatabaseDataType = Terminals.Date,
+				CustomConverter = DateTimeLabelConverter.Instance
 			},
 			new ColumnHeader
 			{

@@ -75,6 +75,8 @@ namespace SqlPad
 
 	public class DateTimeLabelConverter : ValueConverterBase
 	{
+		public static readonly DateTimeLabelConverter Instance = new DateTimeLabelConverter();
+
 		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			return value == null || (DateTime)value == DateTime.MinValue ? ValueNotAvailable : CellValueConverter.FormatDateTime((DateTime)value);
