@@ -77,7 +77,11 @@ namespace SqlPad
 	{
 		private readonly string _valueNotAvailablePlaceholder;
 
-		public DateTimeLabelConverter(string valueNotAvailablePlaceholder = ValueNotAvailable)
+		public DateTimeLabelConverter() : this(ValueNotAvailable)
+		{
+		}
+
+		public DateTimeLabelConverter(string valueNotAvailablePlaceholder)
 		{
 			_valueNotAvailablePlaceholder = valueNotAvailablePlaceholder;
 		}
