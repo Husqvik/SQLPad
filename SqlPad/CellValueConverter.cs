@@ -75,11 +75,16 @@ namespace SqlPad
 
 	public class DateTimeLabelConverter : ValueConverterBase
 	{
-		public static readonly DateTimeLabelConverter Instance = new DateTimeLabelConverter();
+		private readonly string _valueNotAvailablePlaceholder;
+
+		public DateTimeLabelConverter(string valueNotAvailablePlaceholder = ValueNotAvailable)
+		{
+			_valueNotAvailablePlaceholder = valueNotAvailablePlaceholder;
+		}
 
 		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			return value == null || (DateTime)value == DateTime.MinValue ? ValueNotAvailable : CellValueConverter.FormatDateTime((DateTime)value);
+			return value == null || (DateTime)value == DateTime.MinValue ? _valueNotAvailablePlaceholder : CellValueConverter.FormatDateTime((DateTime)value);
 		}
 	}
 
@@ -159,7 +164,7 @@ namespace SqlPad
 
 	public abstract class ValueConverterBase : IValueConverter
 	{
-		public static string ValueNotAvailable = "N/A";
+		public const string ValueNotAvailable = "N/A";
 
 		public abstract object Convert(object value, Type targetType, object parameter, CultureInfo culture);
 

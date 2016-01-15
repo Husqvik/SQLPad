@@ -23,6 +23,8 @@ namespace SqlPad.Oracle
 	{
 		private readonly ConnectionStringSettings _connectionString;
 
+		private static readonly DateTimeLabelConverter DateTimeConverter = new DateTimeLabelConverter(ConfigurationProvider.Configuration.ResultGrid.NullPlaceholder);
+
 		private static readonly ColumnHeader[] DatabaseSessionColumnHeaders =
 		{
 			new ColumnHeader
@@ -178,7 +180,7 @@ namespace SqlPad.Oracle
 				Name = "SQL Execution Start",
 				DataType = typeof (DateTime),
 				DatabaseDataType = Terminals.Date,
-				CustomConverter = DateTimeLabelConverter.Instance
+				CustomConverter = DateTimeConverter
 			},
 			new ColumnHeader
 			{
@@ -207,7 +209,7 @@ namespace SqlPad.Oracle
 				Name = "Previous Execution Start",
 				DataType = typeof (DateTime),
 				DatabaseDataType = Terminals.Date,
-				CustomConverter = DateTimeLabelConverter.Instance
+				CustomConverter = DateTimeConverter
 			},
 			new ColumnHeader
 			{
@@ -243,7 +245,7 @@ namespace SqlPad.Oracle
 				Name = "Logon Time",
 				DataType = typeof (DateTime),
 				DatabaseDataType = Terminals.Date,
-				CustomConverter = DateTimeLabelConverter.Instance
+				CustomConverter = DateTimeConverter
 			},
 			new ColumnHeader
 			{
