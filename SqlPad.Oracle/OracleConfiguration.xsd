@@ -1,20 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://husqvik.com/SqlPad/2014/08/Oracle" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://husqvik.com/SqlPad/2014/08/Oracle" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:local="http://husqvik.com/SqlPad/2014/08/Oracle">
   <xs:element name="OracleConfiguration">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="ExecutionPlan">
-          <xs:complexType>
-            <xs:sequence>
-              <xs:element name="TargetTable">
-                <xs:complexType>
-                  <xs:attribute name="Schema" type="xs:string" use="optional" />
-                  <xs:attribute name="Name" type="xs:string" use="required" />
-                </xs:complexType>
-              </xs:element>
-            </xs:sequence>
-          </xs:complexType>
-        </xs:element>
         <xs:element minOccurs="0" maxOccurs="1" name="StartupScript" type="xs:string" />
         <xs:element minOccurs="0" maxOccurs="1" name="TKProfPath" type="xs:string" />
         <xs:element minOccurs="0" maxOccurs="1" name="Connections">
@@ -24,6 +12,20 @@
                 <xs:complexType>
                   <xs:sequence>
                     <xs:element minOccurs="0" maxOccurs="1" name="StartupScript" type="xs:string" />
+                    <xs:element name="ExecutionPlan">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="TargetTable" type="local:TypeSchemaObject" />
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="TKProf" minOccurs="0" maxOccurs="1">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="TargetTable" type="local:TypeSchemaObject" />
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
                   </xs:sequence>
                   <xs:attribute name="ConnectionName" type="xs:string" use="required" />
                   <xs:attribute name="RemoteTraceDirectory" type="xs:string" use="optional" />
@@ -35,4 +37,9 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+
+  <xs:complexType name="TypeSchemaObject">
+    <xs:attribute name="Schema" type="xs:string" use="optional" />
+    <xs:attribute name="Name" type="xs:string" use="required" />
+  </xs:complexType>
 </xs:schema>

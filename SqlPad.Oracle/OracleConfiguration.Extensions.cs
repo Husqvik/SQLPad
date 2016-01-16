@@ -13,16 +13,6 @@ namespace SqlPad.Oracle
 		private static readonly XmlSerializer XmlSerializer = new XmlSerializer(typeof(OracleConfiguration));
 		private static readonly string ConfigurationFilePath = Path.Combine(ConfigurationProvider.FolderNameApplication, "OracleConfiguration.xml");
 
-		public static readonly OracleConfiguration Default =
-			new OracleConfiguration
-			{
-				executionPlanField =
-					new OracleConfigurationExecutionPlan
-					{
-						TargetTable = new OracleConfigurationExecutionPlanTargetTable()
-					}
-			};
-
 		public static OracleConfiguration Configuration { get; }
 
 		private IReadOnlyDictionary<string, OracleConfigurationConnection> _connectionConfigurations = new Dictionary<string, OracleConfigurationConnection>().AsReadOnly();
@@ -43,9 +33,25 @@ namespace SqlPad.Oracle
 				: String.Empty;
 		}
 
+		public OracleConfigurationConnection GetConnectionConfiguration(string connectionName)
+		{
+			OracleConfigurationConnection configuration;
+			if (_connectionConfigurations.TryGetValue(connectionName, out configuration) ||
+				_connectionConfigurations.TryGetValue("*", out configuration))
+			{
+				return configuration;
+			}
+
+			throw new InvalidOperationException($"Connection '{connectionName}' configuration not found in '{ConfigurationFilePath}' file. ");
+		}
+
 		static OracleConfiguration()
 		{
-			Configuration = Default;
+			Configuration =
+				new OracleConfiguration
+				{
+					Connections = new OracleConfigurationConnection[0]
+				};
 
 			if (!File.Exists(ConfigurationFilePath))
 			{

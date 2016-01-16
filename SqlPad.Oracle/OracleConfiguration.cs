@@ -24,23 +24,11 @@ namespace SqlPad.Oracle {
     [System.Xml.Serialization.XmlRootAttribute(Namespace="http://husqvik.com/SqlPad/2014/08/Oracle", IsNullable=false)]
     public partial class OracleConfiguration {
         
-        private OracleConfigurationExecutionPlan executionPlanField;
-        
         private string startupScriptField;
         
         private string tKProfPathField;
         
         private OracleConfigurationConnection[] connectionsField;
-        
-        /// <remarks/>
-        public OracleConfigurationExecutionPlan ExecutionPlan {
-            get {
-                return this.executionPlanField;
-            }
-            set {
-                this.executionPlanField = value;
-            }
-        }
         
         /// <remarks/>
         public string StartupScript {
@@ -80,12 +68,83 @@ namespace SqlPad.Oracle {
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/08/Oracle")]
-    public partial class OracleConfigurationExecutionPlan {
+    public partial class OracleConfigurationConnection {
         
-        private OracleConfigurationExecutionPlanTargetTable targetTableField;
+        private string startupScriptField;
+        
+        private OracleConfigurationConnectionExecutionPlan executionPlanField;
+        
+        private OracleConfigurationConnectionTKProf tKProfField;
+        
+        private string connectionNameField;
+        
+        private string remoteTraceDirectoryField;
         
         /// <remarks/>
-        public OracleConfigurationExecutionPlanTargetTable TargetTable {
+        public string StartupScript {
+            get {
+                return this.startupScriptField;
+            }
+            set {
+                this.startupScriptField = value;
+            }
+        }
+        
+        /// <remarks/>
+        public OracleConfigurationConnectionExecutionPlan ExecutionPlan {
+            get {
+                return this.executionPlanField;
+            }
+            set {
+                this.executionPlanField = value;
+            }
+        }
+        
+        /// <remarks/>
+        public OracleConfigurationConnectionTKProf TKProf {
+            get {
+                return this.tKProfField;
+            }
+            set {
+                this.tKProfField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string ConnectionName {
+            get {
+                return this.connectionNameField;
+            }
+            set {
+                this.connectionNameField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string RemoteTraceDirectory {
+            get {
+                return this.remoteTraceDirectoryField;
+            }
+            set {
+                this.remoteTraceDirectoryField = value;
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.6.81.0")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/08/Oracle")]
+    public partial class OracleConfigurationConnectionExecutionPlan {
+        
+        private TypeSchemaObject targetTableField;
+        
+        /// <remarks/>
+        public TypeSchemaObject TargetTable {
             get {
                 return this.targetTableField;
             }
@@ -100,8 +159,8 @@ namespace SqlPad.Oracle {
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/08/Oracle")]
-    public partial class OracleConfigurationExecutionPlanTargetTable {
+    [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://husqvik.com/SqlPad/2014/08/Oracle")]
+    public partial class TypeSchemaObject {
         
         private string schemaField;
         
@@ -136,43 +195,17 @@ namespace SqlPad.Oracle {
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/08/Oracle")]
-    public partial class OracleConfigurationConnection {
+    public partial class OracleConfigurationConnectionTKProf {
         
-        private string startupScriptField;
-        
-        private string connectionNameField;
-        
-        private string remoteTraceDirectoryField;
+        private TypeSchemaObject targetTableField;
         
         /// <remarks/>
-        public string StartupScript {
+        public TypeSchemaObject TargetTable {
             get {
-                return this.startupScriptField;
+                return this.targetTableField;
             }
             set {
-                this.startupScriptField = value;
-            }
-        }
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string ConnectionName {
-            get {
-                return this.connectionNameField;
-            }
-            set {
-                this.connectionNameField = value;
-            }
-        }
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string RemoteTraceDirectory {
-            get {
-                return this.remoteTraceDirectoryField;
-            }
-            set {
-                this.remoteTraceDirectoryField = value;
+                this.targetTableField = value;
             }
         }
     }

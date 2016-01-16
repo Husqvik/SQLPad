@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -22,7 +23,6 @@ namespace SqlPad.Oracle.Database.Test
 	public class OracleDatabaseModelTest : TemporaryDirectoryTestFixture
 	{
 		private const string LoopbackDatabaseLinkName = "HQ_PDB@LOOPBACK";
-		private const string ExplainPlanTableName = "EXPLAIN_PLAN";
 		private static readonly ConnectionStringSettings ConnectionString;
 
 		private const string ExplainPlanTestQuery =
@@ -38,10 +38,11 @@ WHERE
 
 		static OracleDatabaseModelTest()
 		{
-			OracleConfiguration.Configuration.ExecutionPlan.TargetTable.Name = ExplainPlanTableName;
 			ConfigurationProvider.Configuration.DataModel.DataModelRefreshPeriod = 1440;
 			var databaseConfiguration = (DatabaseConnectionConfigurationSection)ConfigurationManager.GetSection(DatabaseConnectionConfigurationSection.SectionName);
-			ConnectionString = ConfigurationManager.ConnectionStrings[databaseConfiguration.Infrastructures[0].ConnectionStringName];
+			var connectionStringName = databaseConfiguration.Infrastructures[0].ConnectionStringName;
+			ConnectionString = ConfigurationManager.ConnectionStrings[connectionStringName];
+			File.Copy("OracleConfiguration.xml", Path.Combine(ConfigurationProvider.FolderNameApplication, "OracleConfiguration.xml"));
 		}
 
 		[Test]
@@ -169,7 +170,7 @@ WHERE
 
 			connectionAdapter.TraceFileName.ShouldNotBe(null);
 			connectionAdapter.TraceFileName.ShouldNotBe(String.Empty);
-			connectionAdapter.SessionId.ShouldNotBe(null);
+			connectionAdapter.SessionIdentifier.ShouldNotBe(null);
 		}
 
 		[Test]
@@ -291,7 +292,7 @@ WHERE
 				blobValue.ToXml().ShouldBe("<![CDATA[QkxPQg==]]>");
 				blobValue.ToJson().ShouldBe("\"QkxPQg==\"");
 				firstRow[1].ShouldBeTypeOf<OracleClobValue>();
-				var expectedPreview = clobParameter.Substring(0, 1023) + OracleLargeTextValue.Ellipsis;
+				var expectedPreview = clobParameter.Substring(0, 1023) + CellValueConverter.Ellipsis;
 				var clobValue = (OracleClobValue)firstRow[1];
 				clobValue.ToString().ShouldBe(expectedPreview);
 				clobValue.DataTypeName.ShouldBe("CLOB");
@@ -409,10 +410,14 @@ WHERE
 		[Test]
 		public async Task TestDmlExecution()
 		{
+			var connectionConfiguration = OracleConfiguration.Configuration.GetConnectionConfiguration(ConnectionString.Name);
+			var targetTable = connectionConfiguration.ExecutionPlan.TargetTable;
+			var targetTableName = String.IsNullOrEmpty(targetTable.Schema) ? targetTable.Name : $"{targetTable.Schema}.{targetTable.Name}";
+
 			var executionModel =
 				new StatementExecutionModel
 				{
-					StatementText = $"DELETE {ExplainPlanTableName}",
+					StatementText = $"DELETE {targetTableName}",
 					BindVariables = new BindVariableModel[0],
 				};
 
@@ -695,9 +700,9 @@ SELECT /*+ parallel(g1 2) parallel(g2 2) monitor */ avg(g1.val * 10000 + g2.val)
 				Thread.Sleep(TimeSpan.FromSeconds(1));
 
 				var databaseSessions = await databaseMonitor.GetAllSessionDataAsync(CancellationToken.None);
-				var sessionValues = (OracleSessionValues)databaseSessions.Rows.Single(s => s.Id == connectionAdapter.SessionId).ProviderValues;
+				var sessionValues = (OracleSessionValues)databaseSessions.Rows.Single(s => s.Id == connectionAdapter.SessionIdentifier.Value.SessionId).ProviderValues;
 
-				var monitorDataProvider = new SqlMonitorDataProvider(sessionValues.InstanceId, sessionValues.Id, sessionValues.ExecutionStart.Value, sessionValues.ExecutionId.Value, sessionValues.SqlId, sessionValues.ChildNumber.Value);
+				var monitorDataProvider = new SqlMonitorDataProvider(sessionValues.Instance, sessionValues.Id, sessionValues.ExecutionStart.Value, sessionValues.ExecutionId.Value, sessionValues.SqlId, sessionValues.ChildNumber.Value);
 				await OracleDatabaseModel.UpdateModelAsync(ConnectionString.ConnectionString, null, CancellationToken.None, false, monitorDataProvider);
 				var planItemCollection = monitorDataProvider.ItemCollection;
 				var sessionMonitorDataProvider = new SessionMonitorDataProvider(planItemCollection);

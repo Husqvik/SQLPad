@@ -1,4 +1,4 @@
-SQLPad 0.4.0.174
+SQLPad 0.4.0.175
 ================
 
 SQLPad is an experimental SQL editor focused to quick and comfortable work.
@@ -226,9 +226,6 @@ Each connection string requires an infrastructure factory configuration record:
 #####OracleConfiguration.xml
 
 	<OracleConfiguration xmlns="http://husqvik.com/SqlPad/2014/08/Oracle">
-		<ExecutionPlan>
-			<TargetTable Name="EXPLAIN_PLAN" />
-		</ExecutionPlan>
 		<StartupScript>
 			-- Enter optional global script to execute when database connection is established.
 		</StartupScript>
@@ -238,6 +235,9 @@ Each connection string requires an infrastructure factory configuration record:
 				<StartupScript>
 					-- Enter optional script to execute when database connection is established.
 				</StartupScript>
+				<ExecutionPlan>
+					<TargetTable Name="EXPLAIN_PLAN" />
+				</ExecutionPlan>
 			</Connection>
 		</Connections>
 	</OracleConfiguration>
@@ -248,7 +248,7 @@ Each connection string requires an infrastructure factory configuration record:
 
 `TKProfPath` - optional path to `TKProf.exe`; enables transient kernel profile output for extended SQL trace (10046) files.
 
-`TargetTable` - table name used for EXPLAIN PLAN function; table is not created automatically and must be created manually using script:
+`ExecutionPlan/TargetTable` - table name used for EXPLAIN PLAN function; table is not created automatically and must be created manually using script:
 
 	CREATE GLOBAL TEMPORARY TABLE EXPLAIN_PLAN
 	(
