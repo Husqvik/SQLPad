@@ -45,7 +45,7 @@ namespace SqlPad.Oracle.Test
 
 		public override string TraceFileName { get; } = "OracleTestTraceFile.trc";
 
-		public override int? SessionId { get; } = 1;
+		public override SessionIdentifier? SessionIdentifier { get; } = new SessionIdentifier(1, 123);
 
 		public override Task<IReadOnlyList<ColumnHeader>> RefreshResult(ResultInfo resultInfo, CancellationToken cancellationToken)
 		{

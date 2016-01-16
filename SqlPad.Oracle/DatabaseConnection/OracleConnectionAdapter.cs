@@ -46,7 +46,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private string _userCommandSqlId;
 		private int _userCommandChildNumber;
 		private OracleTransaction _userTransaction;
-		private int? _userSessionId;
+		private SessionIdentifier? _userSessionIdentifier;
 		private TransactionInfo _userTransactionInfo;
 		private string _userTraceFileName = String.Empty;
 		private bool _userCommandHasCompilationErrors;
@@ -65,7 +65,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override string TraceFileName => _userTraceFileName;
 
-		public override int? SessionId => _userSessionId;
+		public override SessionIdentifier? SessionIdentifier => _userSessionIdentifier;
 
 		public OracleConnectionAdapter(OracleDatabaseModel databaseModel)
 		{
@@ -562,8 +562,15 @@ namespace SqlPad.Oracle.DatabaseConnection
 			{
 				await command.SetSchema(_currentSchema, cancellationToken);
 
-				command.CommandText = OracleDatabaseCommands.SelectCurrentSessionId;
-				_userSessionId = Convert.ToInt32(await command.ExecuteScalarAsynchronous(cancellationToken));
+				command.CommandText = OracleDatabaseCommands.SelectCurrentSessionIdentifierCommandText;
+
+				using (var reader = await command.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken))
+				{
+					if (reader.Read())
+					{
+						_userSessionIdentifier = new SessionIdentifier(Convert.ToInt32(reader["INSTANCE"]), Convert.ToInt32(reader["SID"]));
+					}
+				}
 
 				await RetrieveTraceFileName(cancellationToken);
 
@@ -606,7 +613,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				try
 				{
 					_userTraceFileName = (string)await command.ExecuteScalarAsynchronous(cancellationToken);
-					Trace.WriteLine($"Session ID {_userSessionId.Value} trace file name is {_userTraceFileName}. ");
+					Trace.WriteLine($"Instance {_userSessionIdentifier.Value.Instance} Session ID {_userSessionIdentifier.Value.SessionId} trace file name is {_userTraceFileName}. ");
 				}
 				catch (Exception e)
 				{
@@ -624,7 +631,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				Trace.WriteLine("User connection has been open. ");
 			}
 
-			if (isConnectionStateChanged || _userSessionId == null)
+			if (isConnectionStateChanged || _userSessionIdentifier == null)
 			{
 				await InitializeSession(cancellationToken);
 			}
@@ -681,7 +688,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 				if (batchExecutionModel.GatherExecutionStatistics)
 				{
-					_executionStatisticsDataProvider = new SessionExecutionStatisticsDataProvider(_databaseModel.StatisticsKeys, _userSessionId.Value);
+					_executionStatisticsDataProvider = new SessionExecutionStatisticsDataProvider(_databaseModel.StatisticsKeys, _userSessionIdentifier.Value.SessionId);
 					await _databaseModel.UpdateModelAsync(cancellationToken, true, _executionStatisticsDataProvider.SessionBeginExecutionStatisticsDataProvider);
 				}
 
@@ -870,7 +877,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			_databaseModel.Disconnect(exception);
 			_userTransaction = null;
-			_userSessionId = null;
+			_userSessionIdentifier = null;
 			return true;
 		}
 
@@ -1078,7 +1085,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				{
 					command.BindByName = true;
 					command.CommandText = OracleDatabaseCommands.SelectExecutionPlanIdentifiersCommandText;
-					command.AddSimpleParameter("SID", _userSessionId.Value);
+					command.AddSimpleParameter("SID", _userSessionIdentifier.Value.SessionId);
 
 					try
 					{

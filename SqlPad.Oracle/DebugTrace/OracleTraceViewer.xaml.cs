@@ -23,7 +23,7 @@ namespace SqlPad.Oracle.DebugTrace
 		public static readonly DependencyProperty IsTracingProperty = DependencyProperty.Register(nameof(IsTracing), typeof(bool), typeof(OracleTraceViewer), new FrameworkPropertyMetadata(false));
 		public static readonly DependencyProperty TraceFileNameProperty = DependencyProperty.Register(nameof(TraceFileName), typeof(string), typeof(OracleTraceViewer), new FrameworkPropertyMetadata(String.Empty));
 		public static readonly DependencyProperty TraceIdentifierProperty = DependencyProperty.Register(nameof(TraceIdentifier), typeof(string), typeof(OracleTraceViewer), new FrameworkPropertyMetadata(String.Empty));
-		public static readonly DependencyProperty SessionIdProperty = DependencyProperty.Register(nameof(SessionId), typeof(int?), typeof(OracleTraceViewer), new FrameworkPropertyMetadata());
+		public static readonly DependencyProperty SessionIdentifierProperty = DependencyProperty.Register(nameof(SessionIdentifier), typeof(SessionIdentifier?), typeof(OracleTraceViewer), new FrameworkPropertyMetadata());
 		public static readonly DependencyProperty TKProfEnabledProperty = DependencyProperty.Register(nameof(TKProfEnabled), typeof(bool), typeof(OracleTraceViewer), new FrameworkPropertyMetadata());
 		public static readonly DependencyProperty TKProfFileNameProperty = DependencyProperty.Register(nameof(TKProfFileName), typeof(string), typeof(OracleTraceViewer), new FrameworkPropertyMetadata(String.Empty));
 
@@ -49,10 +49,10 @@ namespace SqlPad.Oracle.DebugTrace
 		}
 
 		[Bindable(true)]
-		public int? SessionId
+		public SessionIdentifier? SessionIdentifier
 		{
-			get { return (int)GetValue(SessionIdProperty); }
-			set { SetValue(SessionIdProperty, value); }
+			get { return (SessionIdentifier)GetValue(SessionIdentifierProperty); }
+			set { SetValue(SessionIdentifierProperty, value); }
 		}
 
 		[Bindable(true)]
@@ -142,7 +142,7 @@ namespace SqlPad.Oracle.DebugTrace
 
 		private void UpdateSessionIdAndTraceFileName()
 		{
-			SessionId = _connectionAdapter.SessionId;
+			SessionIdentifier = _connectionAdapter.SessionIdentifier;
 
 			if (String.IsNullOrEmpty(_connectionAdapter.TraceFileName))
 			{

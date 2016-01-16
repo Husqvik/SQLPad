@@ -48,6 +48,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public abstract string TraceFileName { get; }
 
-		public abstract int? SessionId { get; }
+		public abstract SessionIdentifier? SessionIdentifier { get; }
 	}
 }

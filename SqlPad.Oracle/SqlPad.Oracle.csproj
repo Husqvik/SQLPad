@@ -170,6 +170,7 @@
     <Compile Include="SessionActivityIndicator.xaml.cs">
       <DependentUpon>SessionActivityIndicator.xaml</DependentUpon>
     </Compile>
+    <Compile Include="SessionIdentifier.cs" />
     <Compile Include="ToolTips\OracleToolTipBuilderVisitor.cs" />
     <Compile Include="SemanticModel\OracleColumnBuilderVisitor.cs" />
     <Compile Include="SemanticModel\OracleDataTypeReference.cs" />

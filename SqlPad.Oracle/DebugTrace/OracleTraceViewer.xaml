@@ -116,8 +116,9 @@
 				</Button.Style>
 			</Button>
 			
-			<TextBlock Visibility="{Binding SessionId, Converter={StaticResource ObjectToVisibilityConverter}}">
-				<Run Text="Session ID: "/><Run Text="{Binding SessionId}" />
+			<TextBlock Visibility="{Binding SessionIdentifier, Converter={StaticResource ObjectToVisibilityConverter}}">
+				<Run Text="Instance: "/><Run Text="{Binding SessionIdentifier.Instance, Mode=OneWay}" />
+				<Run Text="Session ID: "/><Run Text="{Binding SessionIdentifier.SessionId, Mode=OneWay}" />
 			</TextBlock>
 
 			<TextBlock Visibility="{Binding TraceFileName, Converter={StaticResource ObjectToVisibilityConverter}}">
