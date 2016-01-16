@@ -6,7 +6,6 @@
              xmlns:executionPlan="clr-namespace:SqlPad.Oracle.ExecutionPlan"
              xmlns:sqlPad="clr-namespace:SqlPad;assembly=SqlPad"
              xmlns:oracle="clr-namespace:SqlPad.Oracle"
-             xmlns:componentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
              xmlns:modelDataProviders="clr-namespace:SqlPad.Oracle.ModelDataProviders"
              mc:Ignorable="d"
              d:DesignHeight="160" d:DesignWidth="240"
@@ -15,15 +14,6 @@
 		<sqlPad:DataSpaceConverter x:Key="DataSpaceConverter" />
 		<sqlPad:ListAggregationConverter x:Key="ListAggregationConverter" />
 		<oracle:SessionIdSummaryConverter x:Key="SessionIdSummaryConverter" />
-
-		<CollectionViewSource x:Key="SortedSessionItems" Source="{Binding SessionItems}">
-			<CollectionViewSource.SortDescriptions>
-				<componentModel:SortDescription PropertyName="SessionIdentifier.Instance" />
-				<componentModel:SortDescription PropertyName="ParallelServerGroup" />
-				<componentModel:SortDescription PropertyName="ParallelServerSet" />
-				<componentModel:SortDescription PropertyName="ParallelServerNumber" />
-			</CollectionViewSource.SortDescriptions>
-		</CollectionViewSource>
 
 		<Style x:Key="CellRealOnly">
 			<Setter Property="TextBoxBase.IsReadOnly" Value="True" />
@@ -64,7 +54,7 @@
 							  AutoGenerateColumns="False"
 							  RowHeaderWidth="0"
 							  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-							  ItemsSource="{Binding Source={StaticResource SortedSessionItems}}"
+							  ItemsSource="{Binding SessionItems}"
 							  MaxColumnWidth="{Binding ElementName=SessionDataGrid, Path=ActualWidth}"
 							  Sorting="SessionDataGridSortingHandler"
 							  AlternationCount="2"
@@ -100,10 +90,10 @@
 							<DataGridTextColumn Header="PX servers requested" Binding="{Binding ParallelServersRequested}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
 							<DataGridCheckBoxColumn Header="Cross instance" Binding="{Binding IsCrossInstance}" IsReadOnly="True" />
 							<DataGridTextColumn Header="QC instance ID" Binding="{Binding ParallelServerQueryCoordinatorInstanceId}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
-							<DataGridTemplateColumn Header="Activity timeline">
+							<DataGridTemplateColumn Header="Activity timeline" Width="200">
 								<DataGridTemplateColumn.CellTemplate>
 									<DataTemplate DataType="modelDataProviders:SqlMonitorSessionItem">
-										<oracle:SessionActivityIndicator SessionItem="{Binding}" Width="200" Height="16" />
+										<oracle:SessionActivityIndicator SessionItem="{Binding}" Height="16" />
 									</DataTemplate>
 								</DataGridTemplateColumn.CellTemplate>
 							</DataGridTemplateColumn>

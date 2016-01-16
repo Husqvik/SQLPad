@@ -206,6 +206,12 @@ namespace SqlPad.Oracle
 					{
 						ExecutionPlanTreeView.RootItem = _planItemCollection.RootItem;
 						SessionItems = _planItemCollection.SessionItems;
+						var collectionView = CollectionViewSource.GetDefaultView(SessionItems);
+						collectionView.SortDescriptions.Add(new SortDescription { PropertyName = "SessionIdentifier.Instance" });
+						collectionView.SortDescriptions.Add(new SortDescription { PropertyName = "ParallelServerGroup" });
+						collectionView.SortDescriptions.Add(new SortDescription { PropertyName = "ParallelServerSet" });
+						collectionView.SortDescriptions.Add(new SortDescription { PropertyName = "ParallelServerNumber" });
+
 						SummarySession.Inititalize(_planItemCollection);
 
 						await SafeRefresh();

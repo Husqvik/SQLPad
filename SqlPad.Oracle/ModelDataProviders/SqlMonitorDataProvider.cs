@@ -1094,7 +1094,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 			var topActivities = _activeSessionHistoryItems
 				.GroupBy(i => i.Event)
-				.Select(g => new { Event = String.IsNullOrEmpty(g.Key) ? "On CPU" : g.Key, Count = g.Count() })
+				.Select(g => new { Event = String.IsNullOrEmpty(g.Key) ? "on CPU" : g.Key, Count = g.Count() })
 				.OrderByDescending(e => e.Count)
 				.Select(a => $"{a.Event} ({a.Count})")
 				.Take(4);
