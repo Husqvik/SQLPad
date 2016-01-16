@@ -118,28 +118,31 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public void AddActiveSessionHistoryItems(IEnumerable<ActiveSessionHistoryItem> historyItems)
 		{
-			foreach (var historyItem in historyItems)
+			foreach (var itemGroup in historyItems.GroupBy(i => i.SessionIdentifier))
 			{
-				if (LastSampleTime == null || historyItem.SampleTime > LastSampleTime)
-				{
-					LastSampleTime = historyItem.SampleTime;
-				}
-
 				SqlMonitorSessionItem sessionItem;
-				if (_sessionItemMapping.TryGetValue(historyItem.SessionIdentifier, out sessionItem))
+				if (_sessionItemMapping.TryGetValue(itemGroup.Key, out sessionItem))
 				{
-					sessionItem.AddActiveSessionHistoryItem(historyItem);
+					sessionItem.AddActiveSessionHistoryItems(itemGroup);
 				}
 
-				List<ActiveSessionHistoryItem> planHistoryItems;
-				if (!_planItemActiveSessionHistoryItems.TryGetValue(historyItem.PlanItem, out planHistoryItems))
+				foreach (var historyItem in itemGroup)
 				{
-					_planItemActiveSessionHistoryItems[historyItem.PlanItem] = planHistoryItems = new List<ActiveSessionHistoryItem>();
+					if (LastSampleTime == null || historyItem.SampleTime > LastSampleTime)
+					{
+						LastSampleTime = historyItem.SampleTime;
+					}
+
+					List<ActiveSessionHistoryItem> planHistoryItems;
+					if (!_planItemActiveSessionHistoryItems.TryGetValue(historyItem.PlanItem, out planHistoryItems))
+					{
+						_planItemActiveSessionHistoryItems[historyItem.PlanItem] = planHistoryItems = new List<ActiveSessionHistoryItem>();
+					}
+
+					planHistoryItems.Add(historyItem);
+
+					_totalActiveSessionHistorySamples++;
 				}
-
-				planHistoryItems.Add(historyItem);
-
-				_totalActiveSessionHistorySamples++;
 			}
 
 			if (LastSampleTime == null)
@@ -962,6 +965,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 		private long _physicalReadBytes;
 		private long _physicalWriteRequests;
 		private long _physicalWriteBytes;
+		private string _topActivities;
 
 		internal SqlMonitorPlanItemCollection PlanItemCollection { get; set; }
 
@@ -1103,10 +1107,24 @@ namespace SqlPad.Oracle.ModelDataProviders
 			set { UpdateValueAndRaisePropertyChanged(ref _javaExecutionTime, value); }
 		}
 
-		public void AddActiveSessionHistoryItem(ActiveSessionHistoryItem historyItem)
+		public string TopActivities
 		{
-			_activeSessionHistoryItems.Add(historyItem);
+			get { return _topActivities; }
+			private set { UpdateValueAndRaisePropertyChanged(ref _topActivities, value); }
 		}
+
+		public void AddActiveSessionHistoryItems(IEnumerable<ActiveSessionHistoryItem> historyItems)
+		{
+			_activeSessionHistoryItems.AddRange(historyItems);
+
+			var topActivities = _activeSessionHistoryItems
+				.GroupBy(i => i.Event)
+				.Select(g => new { Event = String.IsNullOrEmpty(g.Key) ? "On CPU" : g.Key, Count = g.Count() })
+				.OrderByDescending(e => e.Count)
+				.Take(3);
+
+			TopActivities = String.Join(", ", topActivities.Select(a => $"{a.Event} ({a.Count})"));
+        }
 	}
 
 	public struct SessionIdentifier
