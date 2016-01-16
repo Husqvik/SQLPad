@@ -19,13 +19,6 @@
                         </xs:sequence>
                       </xs:complexType>
                     </xs:element>
-                    <xs:element name="TKProf" minOccurs="0" maxOccurs="1">
-                      <xs:complexType>
-                        <xs:sequence>
-                          <xs:element name="TargetTable" type="local:TypeSchemaObject" />
-                        </xs:sequence>
-                      </xs:complexType>
-                    </xs:element>
                   </xs:sequence>
                   <xs:attribute name="ConnectionName" type="xs:string" use="required" />
                   <xs:attribute name="RemoteTraceDirectory" type="xs:string" use="optional" />

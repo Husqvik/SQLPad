@@ -693,7 +693,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			var queryCoordinatorSessionItems = new Dictionary<int, SqlMonitorSessionPlanItem>();
 			while (await reader.ReadAsynchronous(cancellationToken))
 			{
-				var sessionId = new SessionIdentifier(Convert.ToInt32(reader["SID"]), Convert.ToInt32(reader["INSTANCE_ID"]));
+				var sessionId = new SessionIdentifier(Convert.ToInt32(reader["INSTANCE_ID"]), Convert.ToInt32(reader["SID"]));
 				var planLineId = Convert.ToInt32(reader["PLAN_LINE_ID"]);
 				var planItem = DataModel.AllItems[planLineId];
 

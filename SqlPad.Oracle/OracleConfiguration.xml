@@ -11,9 +11,6 @@
       <ExecutionPlan>
         <TargetTable Name="TOAD_PLAN_TABLE" />
       </ExecutionPlan>
-      <TKProf>
-        <TargetTable Name="TKPROF_TABLE" />
-      </TKProf>
     </Connection>
   </Connections>
 </OracleConfiguration>

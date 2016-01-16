@@ -550,6 +550,8 @@
 					<ColumnDefinition Width="Auto" SharedSizeGroup="InstanceID" />
 					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleSID" />
 					<ColumnDefinition Width="Auto" SharedSizeGroup="SID" />
+					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleParallelProperties" />
+					<ColumnDefinition Width="Auto" SharedSizeGroup="ParallelProperties" />
 					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleStarts" />
 					<ColumnDefinition Width="Auto" SharedSizeGroup="Starts" />
 					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleOutputRows" />
@@ -568,42 +570,39 @@
 					<ColumnDefinition Width="Auto" SharedSizeGroup="WorkAreaMemory" />
 					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleWorkAreaTemp" />
 					<ColumnDefinition Width="Auto" SharedSizeGroup="WorkAreaTemp" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleParallelProperties" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="ParallelProperties" />
 				</Grid.ColumnDefinitions>
 
 				<TextBlock Grid.Column="0" Text="Instance: " Style="{StaticResource HideIfSessionIdEqualsZero}" />
 				<TextBlock Grid.Column="1" Text="{Binding SessionIdentifier.Instance}" Style="{StaticResource HideIfSessionIdEqualsZero}" Margin="0,0,4,0" TextAlignment="Right" />
 				<TextBlock Grid.Column="2" Text="SID: " Style="{StaticResource HideIfSessionIdEqualsZero}" />
 				<TextBlock Grid.Column="3" Text="{Binding SessionIdentifier.SessionId}" Style="{StaticResource HideIfSessionIdEqualsZero}" Margin="0,0,4,0" TextAlignment="Right" />
-				<TextBlock Grid.Column="4" Text="Starts: " Style="{StaticResource PlanStatisticValueStyle}" />
-				<TextBlock Grid.Column="5" Text="{Binding Starts, Converter={StaticResource PrettyPrintNumericConverter}}" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
-				<TextBlock Grid.Column="6" Text="Output rows: " Style="{StaticResource PlanStatisticValueStyle}" />
-				<TextBlock Grid.Column="7" Text="{Binding OutputRows, Converter={StaticResource PrettyPrintNumericConverter}}" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
-				<TextBlock Grid.Column="8" Text="Physical read requests: " Margin="4,0,0,0" Style="{StaticResource PlanStatisticValueStyle}" />
-				<TextBlock Grid.Column="9" Text="{Binding PhysicalReadRequests, Converter={StaticResource PrettyPrintNumericConverter}}" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
-				<TextBlock Grid.Column="10" Text="Physical read: " Style="{StaticResource PlanStatisticValueStyle}" />
-				<TextBlock Grid.Column="11" Text="{Binding PhysicalReadBytes, Converter={StaticResource DataSpaceConverter}}" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
-				<TextBlock Grid.Column="12" Text="Physical write requests: " Margin="4,0,0,0" Style="{StaticResource PlanStatisticValueStyle}" />
-				<TextBlock Grid.Column="13" Text="{Binding PhysicalWriteRequests, Converter={StaticResource PrettyPrintNumericConverter}}" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
-				<TextBlock Grid.Column="14" Text="Physical write: " Style="{StaticResource PlanStatisticValueStyle}" />
-				<TextBlock Grid.Column="15" Text="{Binding PhysicalWriteBytes, Converter={StaticResource DataSpaceConverter}}" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
-				<TextBlock Grid.Column="16" Text="I/O interconnection: " Margin="4,0,0,0" Style="{StaticResource PlanStatisticValueStyle}" />
-				<TextBlock Grid.Column="17" Text="{Binding IoInterconnectBytes, Converter={StaticResource DataSpaceConverter}}" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
-				<TextBlock Grid.Column="18" Text="Work area: " Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaMemoryMaxBytes, Converter={StaticResource ObjectToVisibilityConverter}}" />
-				<TextBlock Grid.Column="19" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaMemoryMaxBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
+				<TextBlock Grid.Column="4" Text="PX group/set/server#: " Style="{StaticResource HideIfParallelPropertiesNotAvailable}" />
+				<TextBlock Grid.Column="5" Style="{StaticResource HideIfParallelPropertiesNotAvailable}" TextAlignment="Right" Margin="0,0,4,0">
+					<Run Text="{Binding SessionItem.ParallelServerGroup}" /><Run Text="/" /><Run Text="{Binding SessionItem.ParallelServerSet}" /><Run Text="/" /><Run Text="{Binding SessionItem.ParallelServerNumber}" />
+				</TextBlock>
+				<TextBlock Grid.Column="6" Text="Starts: " Style="{StaticResource PlanStatisticValueStyle}" />
+				<TextBlock Grid.Column="7" Text="{Binding Starts, Converter={StaticResource PrettyPrintNumericConverter}}" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
+				<TextBlock Grid.Column="8" Text="Output rows: " Style="{StaticResource PlanStatisticValueStyle}" />
+				<TextBlock Grid.Column="9" Text="{Binding OutputRows, Converter={StaticResource PrettyPrintNumericConverter}}" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
+				<TextBlock Grid.Column="10" Text="Physical read requests: " Margin="4,0,0,0" Style="{StaticResource PlanStatisticValueStyle}" />
+				<TextBlock Grid.Column="11" Text="{Binding PhysicalReadRequests, Converter={StaticResource PrettyPrintNumericConverter}}" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
+				<TextBlock Grid.Column="12" Text="Physical read: " Style="{StaticResource PlanStatisticValueStyle}" />
+				<TextBlock Grid.Column="13" Text="{Binding PhysicalReadBytes, Converter={StaticResource DataSpaceConverter}}" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
+				<TextBlock Grid.Column="14" Text="Physical write requests: " Margin="4,0,0,0" Style="{StaticResource PlanStatisticValueStyle}" />
+				<TextBlock Grid.Column="15" Text="{Binding PhysicalWriteRequests, Converter={StaticResource PrettyPrintNumericConverter}}" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
+				<TextBlock Grid.Column="16" Text="Physical write: " Style="{StaticResource PlanStatisticValueStyle}" />
+				<TextBlock Grid.Column="17" Text="{Binding PhysicalWriteBytes, Converter={StaticResource DataSpaceConverter}}" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
+				<TextBlock Grid.Column="18" Text="I/O interconnection: " Margin="4,0,0,0" Style="{StaticResource PlanStatisticValueStyle}" />
+				<TextBlock Grid.Column="19" Text="{Binding IoInterconnectBytes, Converter={StaticResource DataSpaceConverter}}" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
+				<TextBlock Grid.Column="20" Text="Work area: " Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaMemoryMaxBytes, Converter={StaticResource ObjectToVisibilityConverter}}" />
+				<TextBlock Grid.Column="21" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaMemoryMaxBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
 					<Run Text="{Binding WorkAreaMemoryBytes, Converter={StaticResource DataSpaceConverter}}" />
 					<Run Text="(max: " /><Run Text="{Binding WorkAreaMemoryMaxBytes, Converter={StaticResource DataSpaceConverter}}" /><Run Text=")" />
 				</TextBlock>
-				<TextBlock Grid.Column="20" Text="Temp: " Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaTempMaxBytes, Converter={StaticResource ObjectToVisibilityConverter}}" />
-				<TextBlock Grid.Column="21" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaTempMaxBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
+				<TextBlock Grid.Column="22" Text="Temp: " Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaTempMaxBytes, Converter={StaticResource ObjectToVisibilityConverter}}" />
+				<TextBlock Grid.Column="23" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaTempMaxBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
 					<Run Text="{Binding WorkAreaTempBytes, Converter={StaticResource DataSpaceConverter}}" />
 					<Run Text="(max: " /><Run Text="{Binding WorkAreaTempMaxBytes, Converter={StaticResource DataSpaceConverter}}" /><Run Text=")" />
-				</TextBlock>
-
-				<TextBlock Grid.Column="22" Text="PX group/set/server#: " Style="{StaticResource HideIfParallelPropertiesNotAvailable}" />
-				<TextBlock Grid.Column="23" Style="{StaticResource HideIfParallelPropertiesNotAvailable}" TextAlignment="Right">
-					<Run Text="{Binding SessionItem.ParallelServerGroup}" /><Run Text="/" /><Run Text="{Binding SessionItem.ParallelServerSet}" /><Run Text="/" /><Run Text="{Binding SessionItem.ParallelServerNumber}" />
 				</TextBlock>
 			</Grid>
 		</DataTemplate>

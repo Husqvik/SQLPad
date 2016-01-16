@@ -74,8 +74,6 @@ namespace SqlPad.Oracle {
         
         private OracleConfigurationConnectionExecutionPlan executionPlanField;
         
-        private OracleConfigurationConnectionTKProf tKProfField;
-        
         private string connectionNameField;
         
         private string remoteTraceDirectoryField;
@@ -97,16 +95,6 @@ namespace SqlPad.Oracle {
             }
             set {
                 this.executionPlanField = value;
-            }
-        }
-        
-        /// <remarks/>
-        public OracleConfigurationConnectionTKProf TKProf {
-            get {
-                return this.tKProfField;
-            }
-            set {
-                this.tKProfField = value;
             }
         }
         
@@ -185,27 +173,6 @@ namespace SqlPad.Oracle {
             }
             set {
                 this.nameField = value;
-            }
-        }
-    }
-    
-    /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.6.81.0")]
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/08/Oracle")]
-    public partial class OracleConfigurationConnectionTKProf {
-        
-        private TypeSchemaObject targetTableField;
-        
-        /// <remarks/>
-        public TypeSchemaObject TargetTable {
-            get {
-                return this.targetTableField;
-            }
-            set {
-                this.targetTableField = value;
             }
         }
     }

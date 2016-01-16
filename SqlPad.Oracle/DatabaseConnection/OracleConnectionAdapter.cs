@@ -29,6 +29,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 	public class OracleConnectionAdapter : OracleConnectionAdapterBase
 	{
 		private const string ModuleNameSqlPadDatabaseModelBase = "Database model";
+		private const string UserCommand = "User command";
 
 		private static int _counter;
 
@@ -101,7 +102,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			try
 			{
-				await ExecuteSimpleCommandUsingUserConnection(commandText, cancellationToken);
+				await ExecuteSimpleCommandUsingUserConnection(commandText, "Activate trace events", cancellationToken);
 				Trace.WriteLine($"Enable trace event command executed successfully: \n{commandText}");
 
 				await RetrieveTraceFileName(cancellationToken);
@@ -117,12 +118,13 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 		}
 
-		private async Task ExecuteSimpleCommandUsingUserConnection(string commandText, CancellationToken cancellationToken)
+		private async Task ExecuteSimpleCommandUsingUserConnection(string commandText, string actionName, CancellationToken cancellationToken)
 		{
 			await EnsureUserConnectionOpen(cancellationToken);
 
 			using (var command = _userConnection.CreateCommand())
 			{
+				command.Connection.ActionName = actionName;
 				command.CommandText = commandText;
 				await command.ExecuteNonQueryAsynchronous(cancellationToken);
 			}
@@ -163,7 +165,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				_activeTraceEvents.Clear();
 			}
 
-			await ExecuteSimpleCommandUsingUserConnection(commandText, cancellationToken);
+			await ExecuteSimpleCommandUsingUserConnection(commandText, "Stop trace events", cancellationToken);
 			Trace.WriteLine($"Disable trace event command executed successfully: \n{commandText}");
 		}
 
@@ -556,13 +558,14 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private async Task InitializeSession(CancellationToken cancellationToken)
 		{
 			_userConnection.ModuleName = _moduleName;
-			_userConnection.ActionName = "User query";
+			_userConnection.ActionName = "Set default schema";
 
 			using (var command = _userConnection.CreateCommand())
 			{
 				await command.SetSchema(_currentSchema, cancellationToken);
 
 				command.CommandText = OracleDatabaseCommands.SelectCurrentSessionIdentifierCommandText;
+				_userConnection.ActionName = "Get session identifier";
 
 				using (var reader = await command.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken))
 				{
@@ -580,12 +583,14 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 		}
 
-		private static async Task ExecuteStartupScript(OracleCommand command, string startupScript, CancellationToken cancellationToken)
+		private async Task ExecuteStartupScript(OracleCommand command, string startupScript, CancellationToken cancellationToken)
 		{
 			if (String.IsNullOrWhiteSpace(startupScript))
 			{
 				return;
 			}
+
+			_userConnection.ActionName = "Execute startup script";
 
 			var statements = await OracleSqlParser.Instance.ParseAsync(startupScript, cancellationToken);
 			foreach (var statement in statements)
@@ -647,6 +652,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			using (var command = _userConnection.CreateCommand())
 			{
+				command.Connection.ActionName = "Set database output";
 				command.CommandText = $"CALL DBMS_OUTPUT.{(EnableDatabaseOutput ? "ENABLE(NULL)" : "DISABLE()")}";
 				await command.ExecuteNonQueryAsynchronous(cancellationToken);
 			}
@@ -691,6 +697,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 					_executionStatisticsDataProvider = new SessionExecutionStatisticsDataProvider(_databaseModel.StatisticsKeys, _userSessionIdentifier.Value.SessionId);
 					await _databaseModel.UpdateModelAsync(cancellationToken, true, _executionStatisticsDataProvider.SessionBeginExecutionStatisticsDataProvider);
 				}
+
+				_userConnection.ActionName = UserCommand;
 
 				foreach (var executionModel in batchExecutionModel.Statements)
 				{

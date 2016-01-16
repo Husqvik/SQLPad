@@ -44,7 +44,7 @@
 			<TabItem.Style>
 				<Style>
 					<Style.Triggers>
-						<DataTrigger Binding="{Binding SessionItems}" Value="0">
+						<DataTrigger Binding="{Binding SessionItems.Count}" Value="0">
 							<Setter Property="TabItem.Visibility" Value="Collapsed" />
 						</DataTrigger>
 					</Style.Triggers>
