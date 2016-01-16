@@ -47,7 +47,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 		private static void MapPartitionSegmentData(IDataRecord reader, PartitionDetailsModelBase model)
 		{
 			var highValue = OracleReaderValueConvert.ToString(reader["HIGH_VALUE"]);
-			model.HighValue = highValue.Length > HighValueMaxLength ? $"{highValue.Substring(0, HighValueMaxLength)}{OracleLargeTextValue.Ellipsis}" : highValue;
+			model.HighValue = highValue.Length > HighValueMaxLength ? $"{highValue.Substring(0, HighValueMaxLength)}{CellValueConverter.Ellipsis}" : highValue;
 			model.TablespaceName = OracleReaderValueConvert.ToString(reader["TABLESPACE_NAME"]);
 			model.Logging = (string)reader["LOGGING"] == "YES";
 			model.Compression = TextInfo.ToTitleCase(((string)reader["COMPRESSION"]).ToLowerInvariant());

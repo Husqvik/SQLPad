@@ -13,10 +13,12 @@
              DataContext="{Binding RelativeSource={RelativeSource Self}}">
 	<UserControl.Resources>
 		<sqlPad:DataSpaceConverter x:Key="DataSpaceConverter" />
+		<sqlPad:ListAggregationConverter x:Key="ListAggregationConverter" />
 		<oracle:SessionIdSummaryConverter x:Key="SessionIdSummaryConverter" />
 
 		<CollectionViewSource x:Key="SortedSessionItems" Source="{Binding SessionItems}">
 			<CollectionViewSource.SortDescriptions>
+				<componentModel:SortDescription PropertyName="SessionIdentifier.Instance" />
 				<componentModel:SortDescription PropertyName="ParallelServerGroup" />
 				<componentModel:SortDescription PropertyName="ParallelServerSet" />
 				<componentModel:SortDescription PropertyName="ParallelServerNumber" />
@@ -69,7 +71,7 @@
 							  AlternatingRowBackground="#FAFAFA"
 							  BeginningEdit="SessionDataGridBeginningEditCancelTextInputHandler">
 						<DataGrid.Columns>
-							<DataGridTextColumn Header="Instance" Binding="{Binding SessionIdentifier.InstanceId, Converter={StaticResource SessionIdSummaryConverter}}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
+							<DataGridTextColumn Header="Instance" Binding="{Binding SessionIdentifier.Instance, Converter={StaticResource SessionIdSummaryConverter}}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
 							<DataGridTextColumn Header="SID" Binding="{Binding SessionIdentifier.SessionId, Converter={StaticResource SessionIdSummaryConverter}}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
 							<DataGridTextColumn Header="PX server group" Binding="{Binding ParallelServerGroup}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
 							<DataGridTextColumn Header="PX server set" Binding="{Binding ParallelServerSet}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
@@ -105,7 +107,7 @@
 									</DataTemplate>
 								</DataGridTemplateColumn.CellTemplate>
 							</DataGridTemplateColumn>
-							<DataGridTextColumn Header="Top activities" Binding="{Binding TopActivities}" ElementStyle="{StaticResource CellRealOnly}" />
+							<DataGridTextColumn Header="Top activities" Binding="{Binding TopActivities, Converter={StaticResource ListAggregationConverter}}" ElementStyle="{StaticResource CellRealOnly}" />
 						</DataGrid.Columns>
 					</DataGrid>
 					

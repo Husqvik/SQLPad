@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
@@ -8,6 +10,8 @@ namespace SqlPad
 {
 	public class CellValueConverter : IValueConverter
 	{
+		public const string Ellipsis = "\u2026";
+
 		public static readonly CellValueConverter Instance = new CellValueConverter();
 
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -163,6 +167,22 @@ namespace SqlPad
 		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			return value == null ? ValueNotAvailable : System.Convert.ToDecimal(value).ToString("N0");
+		}
+	}
+
+	public class ListAggregationConverter : ValueConverterBase
+	{
+		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			var values = (IEnumerable<object>)value;
+			var maximumItemCount = (int?)parameter ?? 3;
+			var topItems = values.Take(maximumItemCount + 1).ToArray();
+			if (topItems.Length > maximumItemCount)
+			{
+				topItems[maximumItemCount] = CellValueConverter.Ellipsis;
+			}
+
+			return String.Join(", ", topItems);
 		}
 	}
 

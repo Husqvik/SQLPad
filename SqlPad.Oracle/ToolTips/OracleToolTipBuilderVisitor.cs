@@ -361,7 +361,7 @@ namespace SqlPad.Oracle.ToolTips
 
 			return defaultValue.Length < 256
 				? defaultValue
-				: $"{defaultValue.Substring(0, 255)}{OracleLargeTextValue.Ellipsis}";
+				: $"{defaultValue.Substring(0, 255)}{CellValueConverter.Ellipsis}";
 		}
 
 		private static void SetBasePartitionData(PartitionDetailsModelBase dataModel, OraclePartitionReference partitionReference)

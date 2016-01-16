@@ -267,8 +267,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 				case "REF":
 					targetType = typeof(object);
 					break;
-				default:
-					break;
 			}
 
 			return targetType;
@@ -466,7 +464,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				items = items.Select(i => String.Format("{0}{1}{0}", _enclosingCharacter, i));
 			}
 
-			return $"{DataTypeName}({String.Join(", ", items)}{(Array.Length > PreviewMaxItemCount ? $", {OracleLargeTextValue.Ellipsis} ({Array.Length} items)" : String.Empty)})";
+			return $"{DataTypeName}({String.Join(", ", items)}{(Array.Length > PreviewMaxItemCount ? $", {CellValueConverter.Ellipsis} ({Array.Length} items)" : String.Empty)})";
 		}
 
 		private static object ToPrintable(object value)
@@ -485,7 +483,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				: largeBinaryValue.Value.ToHexString();
 			
 			return hexValue.Length > LargeValuePreviewLength
-				? $"{hexValue.Substring(0, LargeValuePreviewLength)}{OracleLargeTextValue.Ellipsis}"
+				? $"{hexValue.Substring(0, LargeValuePreviewLength)}{CellValueConverter.Ellipsis}"
 			    : hexValue;
 		}
 	}

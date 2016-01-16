@@ -196,7 +196,7 @@ namespace SqlPad.Oracle
 
 				if (!String.IsNullOrEmpty(_oracleSessionValues.SqlId) && _oracleSessionValues.ExecutionId.HasValue)
 				{
-					var monitorDataProvider = new SqlMonitorDataProvider(_oracleSessionValues.InstanceId, _oracleSessionValues.Id, _oracleSessionValues.ExecutionStart.Value, _oracleSessionValues.ExecutionId.Value, _oracleSessionValues.SqlId, _oracleSessionValues.ChildNumber.Value);
+					var monitorDataProvider = new SqlMonitorDataProvider(_oracleSessionValues.Instance, _oracleSessionValues.Id, _oracleSessionValues.ExecutionStart.Value, _oracleSessionValues.ExecutionId.Value, _oracleSessionValues.SqlId, _oracleSessionValues.ChildNumber.Value);
 					await OracleDatabaseModel.UpdateModelAsync(OracleConnectionStringRepository.GetBackgroundConnectionString(_connectionString.ConnectionString), null, cancellationToken, false, monitorDataProvider);
 
 					_planItemCollection = monitorDataProvider.ItemCollection;

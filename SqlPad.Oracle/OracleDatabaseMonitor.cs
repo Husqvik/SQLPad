@@ -568,7 +568,7 @@ namespace SqlPad.Oracle
 									Serial = Convert.ToInt32(reader["SERIAL#"]),
 									Server = (string)reader["SERVER"],
 									ServiceName = OracleReaderValueConvert.ToString(reader["SERVICE_NAME"]),
-									InstanceId = Convert.ToInt32(reader["INSTANCE_ID"]),
+									Instance = Convert.ToInt32(reader["INSTANCE_ID"]),
 									SessionAddress = (string)reader["SADDR"],
 									SqlId = OracleReaderValueConvert.ToString(reader["SQL_ID"]),
 									SqlTrace = (string)reader["SQL_TRACE"],
@@ -673,7 +673,7 @@ namespace SqlPad.Oracle
 
 		private async Task KillSession(OracleSessionValues sessionData, CancellationToken cancellationToken)
 		{
-			var commandText = $"ALTER SYSTEM KILL SESSION '{sessionData.Id}, {sessionData.Serial}, @{sessionData.InstanceId}' IMMEDIATE";
+			var commandText = $"ALTER SYSTEM KILL SESSION '{sessionData.Id}, {sessionData.Serial}, @{sessionData.Instance}' IMMEDIATE";
 			await SetSessionTracing(sessionData, commandText, cancellationToken);
 		}
 
@@ -718,12 +718,12 @@ END;";
 		}
 	}
 
-	[DebuggerDisplay("OracleSessionValues(InstanceId={InstanceId}; Id={Id}; Serial={Serial}; SqlId={SqlId}; ChildNumber={ChildNumber}; ExecutionId={ExecutionId}; ExecutionStart={ExecutionStart})")]
+	[DebuggerDisplay("OracleSessionValues(Instance={Instance}; Id={Id}; Serial={Serial}; SqlId={SqlId}; ChildNumber={ChildNumber}; ExecutionId={ExecutionId}; ExecutionStart={ExecutionStart})")]
 	public class OracleSessionValues : IDatabaseSessionValues
 	{
 		public object[] Values { get; } = new object[65];
 
-		public int InstanceId
+		public int Instance
 		{
 			get { return (int)Values[0]; }
 			set { Values[0] = value; }

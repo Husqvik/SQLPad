@@ -166,7 +166,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 		}
 	}
 
-	[DebuggerDisplay("ActiveSessionHistoryItem (InstanceId={SessionIdentifier.InstanceId}; SessionId={SessionIdentifier.SessionId}; SessionSerial={SessionSerial}; SampleTime={SampleTime}; SessionState={SessionState})")]
+	[DebuggerDisplay("ActiveSessionHistoryItem (Instance={SessionIdentifier.Instance}; SessionId={SessionIdentifier.SessionId}; SessionSerial={SessionSerial}; SampleTime={SampleTime}; SessionState={SessionState})")]
 	public class ActiveSessionHistoryItem
 	{
 		public DateTime SampleTime { get; set; }
@@ -592,13 +592,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public SqlMonitorBuilder(int instanceId, int sessionId, string sqlId, DateTime executionStart, int executionId)
 		{
-			_sessionIdentifier =
-				new SessionIdentifier
-				{
-					InstanceId = instanceId,
-					SessionId = sessionId
-				};
-
+			_sessionIdentifier = new SessionIdentifier(instanceId, sessionId);
 			_sqlId = sqlId;
 			_executionStart = executionStart;
 			_executionId = executionId;
@@ -623,7 +617,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 			command.CommandText = OracleDatabaseCommands.SelectActiveSessionHistoryCommandText;
 			command.AddSimpleParameter("SID", DataModel.SessionIdentifier.SessionId);
-			command.AddSimpleParameter("INST_ID", DataModel.SessionIdentifier.InstanceId);
+			command.AddSimpleParameter("INST_ID", DataModel.SessionIdentifier.Instance);
 			command.AddSimpleParameter("SQL_EXEC_ID", DataModel.ExecutionId);
 			command.AddSimpleParameter("SAMPLE_TIME", lastSampleTime);
 			command.AddSimpleParameter("SQL_EXEC_START", DataModel.ExecutionStart);
@@ -635,13 +629,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 			while (await reader.ReadAsynchronous(cancellationToken))
 			{
-				var sessionIdentifier =
-					new SessionIdentifier
-					{
-						InstanceId = Convert.ToInt32(reader["INSTANCE_ID"]),
-						SessionId = Convert.ToInt32(reader["SESSION_ID"])
-					};
-
+				var sessionIdentifier = new SessionIdentifier(Convert.ToInt32(reader["INSTANCE_ID"]), Convert.ToInt32(reader["SESSION_ID"]));
 				var planLineId = OracleReaderValueConvert.ToInt32(reader["SQL_PLAN_LINE_ID"]);
 				if (planLineId == null)
 				{
@@ -694,7 +682,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 		{
 			command.CommandText = OracleDatabaseCommands.SelectPlanMonitorCommandText;
 			command.AddSimpleParameter("SID", DataModel.SessionIdentifier.SessionId);
-			command.AddSimpleParameter("INST_ID", DataModel.SessionIdentifier.InstanceId);
+			command.AddSimpleParameter("INST_ID", DataModel.SessionIdentifier.Instance);
 			command.AddSimpleParameter("SQL_ID", DataModel.SqlId);
 			command.AddSimpleParameter("SQL_EXEC_ID", DataModel.ExecutionId);
 			command.AddSimpleParameter("SQL_EXEC_START", DataModel.ExecutionStart);
@@ -705,13 +693,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			var queryCoordinatorSessionItems = new Dictionary<int, SqlMonitorSessionPlanItem>();
 			while (await reader.ReadAsynchronous(cancellationToken))
 			{
-				var sessionId =
-					new SessionIdentifier
-					{
-						SessionId = Convert.ToInt32(reader["SID"]),
-						InstanceId = Convert.ToInt32(reader["INSTANCE_ID"])
-					};
-
+				var sessionId = new SessionIdentifier(Convert.ToInt32(reader["SID"]), Convert.ToInt32(reader["INSTANCE_ID"]));
 				var planLineId = Convert.ToInt32(reader["PLAN_LINE_ID"]);
 				var planItem = DataModel.AllItems[planLineId];
 
@@ -777,7 +759,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 		{
 			command.CommandText = OracleDatabaseCommands.SelectSessionLongOperationCommandText;
 			command.AddSimpleParameter("SID", DataModel.SessionIdentifier.SessionId);
-			command.AddSimpleParameter("INST_ID", DataModel.SessionIdentifier.InstanceId);
+			command.AddSimpleParameter("INST_ID", DataModel.SessionIdentifier.Instance);
 			command.AddSimpleParameter("SQL_EXEC_ID", DataModel.ExecutionId);
 			command.AddSimpleParameter("SQL_EXEC_START", DataModel.ExecutionStart);
 		}
@@ -788,13 +770,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 			while (await reader.ReadAsynchronous(cancellationToken))
 			{
-				var sessionIdentifier =
-					new SessionIdentifier
-					{
-						InstanceId = Convert.ToInt32(reader["INSTANCE_ID"]),
-						SessionId = Convert.ToInt32(reader["SID"])
-					};
-
+				var sessionIdentifier = new SessionIdentifier(Convert.ToInt32(reader["INSTANCE_ID"]), Convert.ToInt32(reader["SID"]));
 				var planLineId = Convert.ToInt32(reader["SQL_PLAN_LINE_ID"]);
 				var planItem = DataModel.AllItems[planLineId];
 
@@ -863,7 +839,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 		{
 			command.CommandText = OracleDatabaseCommands.SelectSessionMonitorCommandText;
 			command.AddSimpleParameter("SID", DataModel.SessionIdentifier.SessionId);
-			command.AddSimpleParameter("INST_ID", DataModel.SessionIdentifier.InstanceId);
+			command.AddSimpleParameter("INST_ID", DataModel.SessionIdentifier.Instance);
 			command.AddSimpleParameter("SQL_ID", DataModel.SqlId);
 			command.AddSimpleParameter("SQL_EXEC_ID", DataModel.ExecutionId);
 			command.AddSimpleParameter("SQL_EXEC_START", DataModel.ExecutionStart);
@@ -895,12 +871,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 						IsCrossInstance = String.IsNullOrEmpty(isCrossInstanceRaw) ? (bool?)null : String.Equals(isCrossInstanceRaw, "Y"),
 						//Binds = String.IsNullOrEmpty(bindXml) ? null : XDocument.Parse(bindXml),
 						//Other = String.IsNullOrEmpty(otherXml) ? null : XDocument.Parse(otherXml),
-						SessionIdentifier =
-							new SessionIdentifier
-							{
-								InstanceId = Convert.ToInt32(reader["INSTANCE_ID"]),
-								SessionId = Convert.ToInt32(reader["SID"])
-							},
+						SessionIdentifier = new SessionIdentifier(Convert.ToInt32(reader["INSTANCE_ID"]), Convert.ToInt32(reader["SID"])),
 						ApplicationWaitTime = TimeSpan.FromTicks(Convert.ToInt64(reader["APPLICATION_WAIT_TIME"]) * 10),
 						BufferGets = Convert.ToInt64(reader["BUFFER_GETS"]),
 						ClusterWaitTime = TimeSpan.FromTicks(Convert.ToInt64(reader["CLUSTER_WAIT_TIME"]) * 10),
@@ -950,7 +921,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 		public override bool IsValid => DataModel.AllItems.Count > 0;
 	}
 
-	[DebuggerDisplay("SqlMonitorSessionItem (InstanceId={SessionIdentifier.InstanceId}l SessionId={SessionIdentifier.SessionId})")]
+	[DebuggerDisplay("SqlMonitorSessionItem (Instance={SessionIdentifier.Instance}l SessionId={SessionIdentifier.SessionId})")]
 	public class SqlMonitorSessionItem : ModelBase
 	{
 		private readonly ObservableCollection<ActiveSessionHistoryItem> _activeSessionHistoryItems = new ObservableCollection<ActiveSessionHistoryItem>();
@@ -973,7 +944,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 		private long _physicalReadBytes;
 		private long _physicalWriteRequests;
 		private long _physicalWriteBytes;
-		private string _topActivities;
+		private readonly List<string> _topActivities = new List<string>();
 
 		internal SqlMonitorPlanItemCollection PlanItemCollection { get; set; }
 
@@ -1115,11 +1086,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			set { UpdateValueAndRaisePropertyChanged(ref _javaExecutionTime, value); }
 		}
 
-		public string TopActivities
-		{
-			get { return _topActivities; }
-			private set { UpdateValueAndRaisePropertyChanged(ref _topActivities, value); }
-		}
+		public IReadOnlyList<string> TopActivities => _topActivities;
 
 		public void AddActiveSessionHistoryItems(IEnumerable<ActiveSessionHistoryItem> historyItems)
 		{
@@ -1129,21 +1096,30 @@ namespace SqlPad.Oracle.ModelDataProviders
 				.GroupBy(i => i.Event)
 				.Select(g => new { Event = String.IsNullOrEmpty(g.Key) ? "On CPU" : g.Key, Count = g.Count() })
 				.OrderByDescending(e => e.Count)
-				.Take(3);
+				.Select(a => $"{a.Event} ({a.Count})")
+				.Take(4);
 
-			TopActivities = String.Join(", ", topActivities.Select(a => $"{a.Event} ({a.Count})"));
-        }
+			_topActivities.Clear();
+			_topActivities.AddRange(topActivities);
+			RaisePropertyChanged(nameof(TopActivities));
+		}
 	}
 
 	public struct SessionIdentifier
 	{
-		public int InstanceId { get; set; }
+		public int Instance { get; }
 
-		public int SessionId { get; set; }
+		public int SessionId { get; }
+
+		public SessionIdentifier(int instance, int sessionId)
+		{
+			Instance = instance;
+			SessionId = sessionId;
+		}
 
 		public bool Equals(SessionIdentifier other)
 		{
-			return InstanceId == other.InstanceId && SessionId == other.SessionId;
+			return Instance == other.Instance && SessionId == other.SessionId;
 		}
 
 		public override bool Equals(object obj)
@@ -1156,7 +1132,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 		{
 			unchecked
 			{
-				return (InstanceId * 397) ^ SessionId;
+				return (Instance * 397) ^ SessionId;
 			}
 		}
 

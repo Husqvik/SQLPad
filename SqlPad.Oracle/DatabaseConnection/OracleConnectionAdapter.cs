@@ -482,7 +482,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 						var oracleString = reader.GetOracleString(i);
 						var stringValue = oracleString.IsNull
 							? String.Empty
-							: $"{oracleString.Value}{(oracleString.Value.Length == OracleDatabaseModel.InitialLongFetchSize ? OracleLargeTextValue.Ellipsis : null)}";
+							: $"{oracleString.Value}{(oracleString.Value.Length == OracleDatabaseModel.InitialLongFetchSize ? CellValueConverter.Ellipsis : null)}";
 
 						value = new OracleSimpleValue(stringValue);
 						break;
