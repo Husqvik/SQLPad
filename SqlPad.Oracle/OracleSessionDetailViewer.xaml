@@ -38,11 +38,11 @@
 		<TabItem Header="_Execution plan" x:Name="TabExecutionPlan">
 			<executionPlan:ExecutionPlanTreeView x:Name="ExecutionPlanTreeView" />
 		</TabItem>
-		<TabItem Header="_Parallel execution">
+		<TabItem Header="_Session details">
 			<TabItem.Style>
 				<Style>
 					<Style.Triggers>
-						<DataTrigger Binding="{Binding IsParallel}" Value="False">
+						<DataTrigger Binding="{Binding SessionItems}" Value="0">
 							<Setter Property="TabItem.Visibility" Value="Collapsed" />
 						</DataTrigger>
 					</Style.Triggers>
@@ -108,6 +108,7 @@
 							<DataGridTextColumn Header="Top activities" Binding="{Binding TopActivities}" ElementStyle="{StaticResource CellRealOnly}" />
 						</DataGrid.Columns>
 					</DataGrid>
+					
 					<DataGrid x:Name="SummaryDataGrid"
 							  CanUserDeleteRows="False"
 							  CanUserSortColumns="False"
@@ -123,6 +124,17 @@
 							  ItemsSource="{Binding SummarySession}"
 							  Width="{Binding ElementName=SessionDataGrid, Path=ActualWidth}"
 							  BeginningEdit="SessionDataGridBeginningEditCancelTextInputHandler">
+
+						<DataGrid.Style>
+							<Style>
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding IsParallel}" Value="False">
+										<Setter Property="DataGrid.Visibility" Value="Collapsed" />
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</DataGrid.Style>
+						
 						<DataGrid.Columns>
 							<DataGridTextColumn Binding="{Binding SessionIdentifier.SessionId, Converter={StaticResource SessionIdSummaryConverter}}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" Width="0" />
 							<DataGridTextColumn ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" Width="0" />

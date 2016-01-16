@@ -652,9 +652,12 @@
 					<ColumnDefinition Width="Auto" SharedSizeGroup="Completed" />
 				</Grid.ColumnDefinitions>
 				
-				<Border Grid.Column="0" BorderBrush="Black" BorderThickness="1">
-					<ProgressBar Maximum="{Binding ActiveLongOperationItem.TotalWork}" Value="{Binding ActiveLongOperationItem.SoFar}" Width="120" />
-				</Border>
+				<Grid Grid.Column="0">
+					<Border BorderBrush="Black" BorderThickness="1">
+						<ProgressBar Maximum="{Binding ActiveLongOperationItem.TotalWork}" Value="{Binding ActiveLongOperationItem.SoFar}" Width="120" />
+					</Border>
+					<TextBlock Text="{Binding ActiveLongOperationItem.ProgressRatio, Mode=OneWay, Converter={StaticResource RatioConverter}}" TextAlignment="Center" FontSize="9" />
+				</Grid>
 
 				<TextBlock Grid.Column="1" Text="Instance: " Margin="4,0,4,0" Style="{StaticResource OtherLabelStyle}" />
 				<TextBlock Grid.Column="2" Text="{Binding SessionIdentifier.InstanceId, Mode=OneWay}" Style="{StaticResource OtherLabelStyle}" TextAlignment="Right" />

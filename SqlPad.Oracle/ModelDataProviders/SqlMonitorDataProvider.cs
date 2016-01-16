@@ -366,7 +366,13 @@ namespace SqlPad.Oracle.ModelDataProviders
 		public long SoFar
 		{
 			get { return _soFar; }
-			set { UpdateValueAndRaisePropertyChanged(ref _soFar, value); }
+			set
+			{
+				if (UpdateValueAndRaisePropertyChanged(ref _soFar, value))
+				{
+					RaisePropertyChanged(nameof(ProgressRatio));
+				}
+			}
 		}
 
 		public long TotalWork
@@ -416,6 +422,8 @@ namespace SqlPad.Oracle.ModelDataProviders
 			get { return _message; }
 			set { UpdateValueAndRaisePropertyChanged(ref _message, value); }
 		}
+
+		public decimal ProgressRatio => SoFar / (decimal)TotalWork;
 	}
 
 	public class SqlMonitorSessionPlanItem : ModelBase
