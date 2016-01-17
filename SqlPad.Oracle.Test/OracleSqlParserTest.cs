@@ -7451,6 +7451,21 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 			}
+
+			public class AlterSequence
+			{
+				[Test(Description = @"")]
+				public void TestAlterMaterializedViewCompile()
+				{
+					const string statementText = @"ALTER SEQUENCE test_sequence INCREMENT BY 2 NOMAXVALUE NOMINVALUE CYCLE CACHE 5 NOORDER NOKEEP GLOBAL";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+			}
 		}
 
 		public class Truncate

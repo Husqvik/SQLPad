@@ -551,7 +551,40 @@
         <Sequence>
           <NonTerminal Id="AlterSynonym" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="AlterSequence" />
+        </Sequence>
         <!-- TODO: Add other objects -->
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AlterSequence">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Sequence" />
+          <NonTerminal Id="SchemaObject" />
+          <NonTerminal Id="AlterSequenceOptions" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AlterSequenceOptions">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="AlterSequenceOption" />
+          <NonTerminal Id="AlterSequenceOptions" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="AlterSequenceOption">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="CommonSequenceOption" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="OtherSequenceOption" />
+        </Sequence>
       </Sequences>
     </Rule>
 
@@ -17072,7 +17105,7 @@
     <Rule StartingNonTerminal="IdentityOption">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="CommonSequenceOption" />
+          <NonTerminal Id="CreateSequenceOption" />
         </Sequence>
         <Sequence>
           <Terminal Id="Start" />
@@ -17082,8 +17115,8 @@
         </Sequence>
       </Sequences>
     </Rule>
-
-    <Rule StartingNonTerminal="CommonSequenceOption">
+    
+    <Rule StartingNonTerminal="CreateSequenceOption">
       <Sequences>
         <Sequence>
           <Terminal Id="Start" />
@@ -17091,6 +17124,14 @@
           <Terminal Id="MathMinus" IsOptional="true" />
           <Terminal Id="IntegerLiteral" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="CommonSequenceOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="CommonSequenceOption">
+      <Sequences>
         <Sequence>
           <Terminal Id="Increment" />
           <Terminal Id="By" />
@@ -19551,8 +19592,16 @@
     <Rule StartingNonTerminal="SequenceOption">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="CommonSequenceOption" />
+          <NonTerminal Id="CreateSequenceOption" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="OtherSequenceOption" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="OtherSequenceOption">
+      <Sequences>
         <Sequence>
           <NonTerminal Id="KeepOrNoKeep" />
         </Sequence>
