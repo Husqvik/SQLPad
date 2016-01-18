@@ -423,8 +423,10 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 10);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
-			toolTip.Control.DataContext.ShouldBe("\"PUBLIC\".DBMS_RANDOM (Synonym) => SYS.DBMS_RANDOM (Package)");
+			toolTip.Control.ShouldBeTypeOf<ToolTipView>();
+			var dataModel = (ViewDetailsModel)((ToolTipView)toolTip.Control).DataContext;
+			dataModel.Title.ShouldBe("\"PUBLIC\".DBMS_RANDOM (Synonym) => SYS.DBMS_RANDOM (Package)");
+			dataModel.Comment.ShouldBe("The DBMS_RANDOM package provides a built-in random number generator. DBMS_RANDOM is not intended for cryptography.");
 		}
 
 		[Test(Description = @""), STAThread]
@@ -510,8 +512,10 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 40);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
-			toolTip.Control.DataContext.ShouldBe("\"PUBLIC\".DBMS_XPLAN (Synonym) => SYS.DBMS_XPLAN (Package)");
+			toolTip.Control.ShouldBeTypeOf<ToolTipView>();
+			var dataModel = (ViewDetailsModel)((ToolTipView)toolTip.Control).DataContext;
+			dataModel.Title.ShouldBe("\"PUBLIC\".DBMS_XPLAN (Synonym) => SYS.DBMS_XPLAN (Package)");
+			dataModel.Comment.ShouldBe("The DBMS_XPLAN package provides an easy way to display the output of the EXPLAIN PLAN command in several, predefined formats. You can also use the DBMS_XPLAN package to display the plan of a statement stored in the Automatic Workload Repository (AWR) or stored in a SQL tuning set. It further provides a way to display the SQL execution plan and SQL execution runtime statistics for cached SQL cursors based on the information stored in the V$SQL_PLAN and V$SQL_PLAN_STATISTICS_ALL fixed views. Finally, it displays plans from a SQL plan baseline.");
 		}
 
 		[Test(Description = @""), STAThread]
@@ -1044,8 +1048,10 @@ SELECT * FROM sampleData";
 			_documentRepository.UpdateStatements(query);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 7);
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
-			toolTip.Control.DataContext.ShouldBe("\"PUBLIC\".DBMS_OUTPUT (Synonym) => SYS.DBMS_OUTPUT (Package)");
+			toolTip.Control.ShouldBeTypeOf<ToolTipView>();
+			var dataModel = (ViewDetailsModel)((ToolTipView)toolTip.Control).DataContext;
+			dataModel.Title.ShouldBe("\"PUBLIC\".DBMS_OUTPUT (Synonym) => SYS.DBMS_OUTPUT (Package)");
+			dataModel.Comment.ShouldBe("The DBMS_OUTPUT package enables you to send messages from stored procedures, packages, and triggers. The package is especially useful for displaying PL/SQL debugging information.");
 		}
 
 		[Test(Description = @""), STAThread]
@@ -1188,6 +1194,23 @@ END;";
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 52);
 			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("Variable I: BINARY_INTEGER NOT NULL");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestToolTipOverImplicitCursorColumn()
+		{
+			const string plSqlCode =
+@"BEGIN
+	FOR implicit_cursor IN (SELECT dummy FROM dual) LOOP
+		dbms_output.put_line(implicit_cursor.dummy);
+	END LOOP;
+END;";
+
+			_documentRepository.UpdateStatements(plSqlCode);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 101);
+			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("Cursor column IMPLICIT_CURSOR.DUMMY: VARCHAR2(1 BYTE)");
 		}
 
 		[Test(Description = @""), STAThread]

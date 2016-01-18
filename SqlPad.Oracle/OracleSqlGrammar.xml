@@ -14122,18 +14122,9 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Open" />
-          <NonTerminal Id="PrefixedCursorIdentifier" />
+          <NonTerminal Id="BindVariableExpressionOrPlSqlTarget" />
           <NonTerminal Id="PlSqlParenthesisEnclosedExpressionList" IsOptional="true" />
           <Terminal Id="Semicolon" />
-        </Sequence>
-      </Sequences>
-    </Rule>
-
-    <Rule StartingNonTerminal="PrefixedCursorIdentifier">
-      <Sequences>
-        <Sequence>
-          <NonTerminal Id="Prefix" IsOptional="true" />
-          <Terminal Id="CursorIdentifier" />
         </Sequence>
       </Sequences>
     </Rule>

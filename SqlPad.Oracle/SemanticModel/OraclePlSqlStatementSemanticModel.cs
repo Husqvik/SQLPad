@@ -115,6 +115,7 @@ namespace SqlPad.Oracle.SemanticModel
 							new OraclePlSqlCursorVariable
 							{
 								Name = cursorIdentifier.Token.Value.ToQuotedIdentifier(),
+								IsImplicit = true,
 								Owner = program,
 								DefinitionNode = cursorIdentifier,
 								ScopeNode = cursorScopeNode
@@ -162,27 +163,6 @@ namespace SqlPad.Oracle.SemanticModel
 							};
 
 						program.Variables.Add(variable);
-					}
-
-					goto default;
-
-				case NonTerminals.PlSqlOpenStatement:
-					var cursorIdentifierNode = node[NonTerminals.PrefixedCursorIdentifier, Terminals.CursorIdentifier];
-
-					if (cursorIdentifierNode != null)
-					{
-						var cursorReference =
-							new OraclePlSqlVariableReference
-							{
-								RootNode = cursorIdentifierNode.ParentNode,
-								IdentifierNode = cursorIdentifierNode,
-								ObjectNode = cursorIdentifierNode.ParentNode[NonTerminals.ObjectPrefix, Terminals.ObjectIdentifier],
-								OwnerNode = cursorIdentifierNode.ParentNode[NonTerminals.SchemaPrefix, Terminals.SchemaIdentifier],
-								Container = program,
-								PlSqlProgram = program
-							};
-
-						program.PlSqlVariableReferences.Add(cursorReference);
 					}
 
 					goto default;
@@ -292,33 +272,30 @@ namespace SqlPad.Oracle.SemanticModel
 				return false;
 			}
 
-			var variablePrefix = plSqlReference.ObjectNode == null ? null : plSqlReference.FullyQualifiedObjectName.NormalizedName;
 			var program = plSqlReference.PlSqlProgram;
 
 			do
 			{
-				if (variablePrefix == null || GetScopeNames(program).Any(n => String.Equals(variablePrefix, n)))
+				foreach (var element in elements)
 				{
-					foreach (var element in elements)
+					var isLocal = program == element.Owner;
+					if (resolvedCollection.Count > 0 && !isLocal)
 					{
-						var isLocal = program == element.Owner;
-						if (resolvedCollection.Count > 0 && !isLocal)
-						{
-							break;
-						}
-
-						var isWithinScope = element.ScopeNode?.SourcePosition.Contains(plSqlReference.IdentifierNode.SourcePosition) ?? true;
-						var elementDefinitionIndex = element.DefinitionNode?.SourcePosition.IndexStart;
-						if (isWithinScope && String.Equals(element.Name, plSqlReference.NormalizedName) && elementDefinitionIndex < plSqlReference.IdentifierNode.SourcePosition.IndexStart)
-						{
-							resolvedCollection.Add(element);
-						}
+						break;
 					}
 
-					if (resolvedCollection.Count > 0)
+					var matchVisitor = new OraclePlSqlReferenceElementMatchVisitor(plSqlReference, program);
+					element.Accept(matchVisitor);
+
+					if (matchVisitor.IsMatch)
 					{
-						return true;
+						resolvedCollection.Add(element);
 					}
+				}
+
+				if (resolvedCollection.Count > 0)
+				{
+					return true;
 				}
 
 				program = program.Owner;
@@ -326,13 +303,6 @@ namespace SqlPad.Oracle.SemanticModel
 
 
 			return false;
-		}
-
-		private static IEnumerable<string> GetScopeNames(OraclePlSqlProgram program)
-		{
-			return String.IsNullOrEmpty(program.Name)
-				? program.Labels.Select(l => l.Name)
-				: Enumerable.Repeat(program.Name, 1);
 		}
 
 		private void ResolveSubProgramReferences(IEnumerable<OraclePlSqlProgram> programs)
@@ -876,13 +846,82 @@ namespace SqlPad.Oracle.SemanticModel
 		public StatementGrammarNode ScopeNode { get; set; }
 
 		public bool HasLocalScopeOnly => ScopeNode != null;
+
+		public virtual void Accept(IOraclePlSqlElementVisitor visitor)
+		{
+			visitor.VisitPlSqlElement(this);
+		}
 	}
 
+	public interface IOraclePlSqlElementVisitor
+	{
+		void VisitPlSqlElement(OraclePlSqlElement element);
+
+		void VisitPlSqlCursorVariable(OraclePlSqlCursorVariable cursorVariable);
+	}
+
+	public class OraclePlSqlReferenceElementMatchVisitor : IOraclePlSqlElementVisitor
+	{
+		private readonly OraclePlSqlReference _plSqlReference;
+		private readonly OraclePlSqlProgram _currentProgram;
+
+		public bool IsMatch { get; private set; }
+
+		public OraclePlSqlReferenceElementMatchVisitor(OraclePlSqlReference plSqlReference, OraclePlSqlProgram currentProgram)
+		{
+			_plSqlReference = plSqlReference;
+			_currentProgram = currentProgram;
+		}
+
+		public void VisitPlSqlElement(OraclePlSqlElement element)
+		{
+			var variablePrefix = _plSqlReference.ObjectNode == null ? null : _plSqlReference.FullyQualifiedObjectName.NormalizedName;
+			var isPrefixValid = variablePrefix == null || GetScopeNames(_currentProgram).Any(n => String.Equals(variablePrefix, n));
+			IsMatch = isPrefixValid && String.Equals(element.Name, _plSqlReference.NormalizedName) && IsWithinScope(element);
+		}
+
+		public void VisitPlSqlCursorVariable(OraclePlSqlCursorVariable cursorVariable)
+		{
+			if (_plSqlReference.OwnerNode != null || _plSqlReference.IdentifierNode == null)
+			{
+				return;
+			}
+
+			var bindVariableExpressionOrPlSqlTargetNode = _plSqlReference.RootNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.PlSqlStatementType), NonTerminals.BindVariableExpressionOrPlSqlTarget);
+			if (bindVariableExpressionOrPlSqlTargetNode != null && bindVariableExpressionOrPlSqlTargetNode.ParentNode.Id.In(NonTerminals.PlSqlOpenStatement, NonTerminals.PlSqlOpenForStatement, NonTerminals.PlSqlFetchStatement, NonTerminals.PlSqlCloseStatement))
+			{
+				VisitPlSqlElement(cursorVariable);
+				return;
+			}
+
+			var cursorName = _plSqlReference.ObjectNode?.Token.Value.ToQuotedIdentifier();
+			IsMatch =
+				IsWithinScope(cursorVariable) && String.Equals(cursorVariable.Name, cursorName) &&
+				(cursorVariable.SemanticModel == null || cursorVariable.SemanticModel.MainQueryBlock?.NamedColumns.Contains(_plSqlReference.NormalizedName) == true);
+		}
+
+		private bool IsWithinScope(OraclePlSqlElement element)
+		{
+			var isWithinScope = element.ScopeNode?.SourcePosition.Contains(_plSqlReference.IdentifierNode.SourcePosition) ?? true;
+			var elementDefinitionIndex = element.DefinitionNode?.SourcePosition.IndexStart;
+			return isWithinScope && elementDefinitionIndex < _plSqlReference.IdentifierNode.SourcePosition.IndexStart;
+		}
+
+		private static IEnumerable<string> GetScopeNames(OraclePlSqlProgram program)
+		{
+			return String.IsNullOrEmpty(program.Name)
+				? program.Labels.Select(l => l.Name)
+				: Enumerable.Repeat(program.Name, 1);
+		}
+	}
+
+	[DebuggerDisplay("OraclePlSqlVariable (Name={Name}; ErrorCode={ErrorCode})")]
 	public class OraclePlSqlException : OraclePlSqlElement
 	{
 		public int? ErrorCode { get; set; }
 	}
 
+	[DebuggerDisplay("OraclePlSqlVariable (Name={Name}; Nullable={Nullable}; IsConstant={IsConstant})")]
 	public class OraclePlSqlVariable : OraclePlSqlElement
 	{
 		public bool IsConstant { get; set; }
@@ -896,11 +935,20 @@ namespace SqlPad.Oracle.SemanticModel
 		public StatementGrammarNode DataTypeNode { get; set; }
 	}
 
+	[DebuggerDisplay("OraclePlSqlCursorVariable (Name={Name})")]
 	public class OraclePlSqlCursorVariable : OraclePlSqlVariable
 	{
+		public bool IsImplicit { get; set; }
+
 		public OracleStatementSemanticModel SemanticModel { get; set; }
+
+		public override void Accept(IOraclePlSqlElementVisitor visitor)
+		{
+			visitor.VisitPlSqlCursorVariable(this);
+		}
 	}
 
+	[DebuggerDisplay("OraclePlSqlParameter (Name={Name})")]
 	public class OraclePlSqlParameter : OraclePlSqlVariable
 	{
 		public ParameterDirection Direction { get; set; }
@@ -908,10 +956,12 @@ namespace SqlPad.Oracle.SemanticModel
 		public bool IsReadOnly => Direction == ParameterDirection.Input;
 	}
 
+	[DebuggerDisplay("OraclePlSqlType (Name={Name})")]
 	public class OraclePlSqlType : OraclePlSqlElement
 	{
 	}
 
+	[DebuggerDisplay("OraclePlSqlLabel (Name={Name})")]
 	public class OraclePlSqlLabel : OraclePlSqlElement
 	{
 		public StatementGrammarNode Node { get; set; }

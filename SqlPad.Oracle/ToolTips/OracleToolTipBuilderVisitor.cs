@@ -71,9 +71,20 @@ namespace SqlPad.Oracle.ToolTips
 
 		public void VisitProgramReference(OracleProgramReference programReference)
 		{
+			DocumentationPackage documentationPackage;
 			if (programReference.ObjectNode == _terminal)
 			{
-				BuildSimpleToolTip(programReference.SchemaObject);
+				if (programReference.SchemaObject != null)
+				{
+					var viewDetailModel = new ViewDetailsModel { Title = GetFullSchemaObjectToolTip(programReference.SchemaObject) };
+					ToolTip = new ToolTipView { DataContext = viewDetailModel };
+
+					if (TryGetPackageDocumentation(programReference.SchemaObject, out documentationPackage))
+					{
+						viewDetailModel.Comment = documentationPackage.Description.Value;
+					}
+				}
+
 				return;
 			}
 
@@ -83,7 +94,6 @@ namespace SqlPad.Oracle.ToolTips
 			}
 
 			var documentationBuilder = new StringBuilder();
-			DocumentationPackage documentationPackage;
 			if ((String.IsNullOrEmpty(programReference.Metadata.Identifier.Owner) || String.Equals(programReference.Metadata.Identifier.Package, OracleDatabaseModelBase.PackageBuiltInFunction)) &&
 			    programReference.Metadata.Type != ProgramType.StatementFunction && OracleHelpProvider.SqlFunctionDocumentation[programReference.Metadata.Identifier.Name].Any())
 			{
@@ -97,11 +107,9 @@ namespace SqlPad.Oracle.ToolTips
 					documentationBuilder.AppendLine(documentationFunction.Value);
 				}
 			}
-			else if (!String.IsNullOrEmpty(programReference.Metadata.Identifier.Package) && programReference.Metadata.Owner.GetTargetSchemaObject() != null &&
-			         OracleHelpProvider.PackageDocumentation.TryGetValue(programReference.Metadata.Owner.GetTargetSchemaObject().FullyQualifiedName, out documentationPackage) &&
-			         documentationPackage.SubPrograms != null)
+			else if (TryGetPackageDocumentation(programReference.SchemaObject, out documentationPackage))
 			{
-				var program = documentationPackage.SubPrograms.SingleOrDefault(sp => String.Equals(sp.Name, programReference.Metadata.Identifier.Name));
+				var program = documentationPackage.SubPrograms.SingleOrDefault(sp => String.Equals(sp.Name.ToQuotedIdentifier(), programReference.Metadata.Identifier.Name));
 				if (program != null)
 				{
 					documentationBuilder.AppendLine(program.Value);
@@ -109,6 +117,15 @@ namespace SqlPad.Oracle.ToolTips
 			}
 
 			ToolTip = new ToolTipProgram(programReference.Metadata.Identifier.FullyQualifiedIdentifier, documentationBuilder.ToString(), programReference.Metadata);
+		}
+
+		private static bool TryGetPackageDocumentation(OracleSchemaObject schemaObject, out DocumentationPackage documentationPackage)
+		{
+			documentationPackage = null;
+			schemaObject = schemaObject.GetTargetSchemaObject();
+			return schemaObject != null &&
+			       OracleHelpProvider.PackageDocumentation.TryGetValue(schemaObject.FullyQualifiedName, out documentationPackage) &&
+			       documentationPackage.SubPrograms != null;
 		}
 
 		public void VisitTypeReference(OracleTypeReference typeReference)
@@ -282,14 +299,30 @@ namespace SqlPad.Oracle.ToolTips
 					break;
 
 				case nameof(OraclePlSqlCursorVariable):
-					labelBuilder.AddElement("Cursor");
-					labelBuilder.AddElement(elementName);
-
 					var cursor = (OraclePlSqlCursorVariable)element;
-					if (cursor.SemanticModel != null)
+
+					if (variableReference.ObjectNode != null && variableReference.IdentifierNode == _terminal)
 					{
-						var queryText = cursor.SemanticModel.Statement.RootNode.GetText(variableReference.Container.SemanticModel.StatementText);
-						labelBuilder.AddElement(queryText);
+						labelBuilder.AddElement("Cursor column");
+
+						var columns = cursor.SemanticModel?.MainQueryBlock?.NamedColumns[variableReference.NormalizedName].ToArray();
+						var columnName = variableReference.NormalizedName.ToSimpleIdentifier();
+						var columnNameAndType = columns != null && columns.Length == 1 && !String.IsNullOrEmpty(columns[0].ColumnDescription.FullTypeName)
+							? $"{columnName}: {columns[0].ColumnDescription.FullTypeName}"
+							: columnName;
+
+						labelBuilder.AddElement($"{cursor.Name.ToSimpleIdentifier()}.{columnNameAndType}");
+					}
+					else
+					{
+						labelBuilder.AddElement(cursor.IsImplicit ? "Implicit cursor" : "Cursor");
+						labelBuilder.AddElement(elementName);
+
+						if (cursor.SemanticModel != null)
+						{
+							var queryText = cursor.SemanticModel.Statement.RootNode.GetText(variableReference.Container.SemanticModel.StatementText);
+							labelBuilder.AddElement(queryText);
+						}
 					}
 
 					break;

@@ -21,7 +21,7 @@
 			<GroupBox.Header>
 				<TextBlock Text="{Binding Title}" FontWeight="Bold"/>
 			</GroupBox.Header>
-			<TextBox Text="{Binding Comment}" Visibility="{Binding Comment, Converter={StaticResource ObjectToVisibilityConverter}}" Style="{StaticResource TextBoxBackgroundLessReadOnly}" />
+			<TextBox Text="{Binding Comment}" Visibility="{Binding Comment, Converter={StaticResource ObjectToVisibilityConverter}}" Style="{StaticResource TextBoxBackgroundLessReadOnly}" MaxWidth="480" TextWrapping="WrapWithOverflow" />
 		</GroupBox>
 
 		<toolTips:ConstraintList Padding="0" Constraints="{Binding ConstraintDetails}">

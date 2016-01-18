@@ -994,6 +994,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 				var refCursor = parameter.Value as OracleRefCursor;
 				if (refCursor != null)
 				{
+					if (refCursor.IsNull)
+					{
+						continue;
+					}
+
 					var refCursorInfo =
 						new RefCursorInfo
 						{
@@ -1029,7 +1034,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 						ImplicitCursorIndex = i
 					};
 
-				yield return AcquireRefCursor(command, command.ImplicitRefCursors[i], cursorInfo);
+				var refCursor = command.ImplicitRefCursors[i];
+				if (!refCursor.IsNull)
+				{
+					yield return AcquireRefCursor(command, refCursor, cursorInfo);
+				}
 			}
 		}
 

@@ -637,11 +637,22 @@ END;";
 
 			semanticModel.Programs.Count.ShouldBe(1);
 			var mainProgram = semanticModel.Programs[0];
-			mainProgram.Variables.Count.ShouldBe(2);
+			mainProgram.Variables.Count.ShouldBe(3);
 			mainProgram.Variables[0].Name.ShouldBe("\"TEST_CURSOR\"");
 			mainProgram.Variables[0].ShouldBeTypeOf<OraclePlSqlCursorVariable>();
 			var cursorVariable = (OraclePlSqlCursorVariable)mainProgram.Variables[0];
 			cursorVariable.SemanticModel.ShouldNotBe(null);
+
+			mainProgram.Variables[1].Name.ShouldBe("\"X\"");
+			mainProgram.Variables[2].Name.ShouldBe("\"IMPLICIT_CURSOR\"");
+
+			mainProgram.PlSqlVariableReferences.Count.ShouldBe(6);
+			var unreferencedVariables = mainProgram.PlSqlVariableReferences.Where(r => r.Variables.Count != 1).ToArray();
+
+			if (unreferencedVariables.Length > 0)
+			{
+				Assert.Fail($"Incorrect references:{Environment.NewLine}{String.Join(Environment.NewLine, unreferencedVariables.Select(v => v.RootNode.GetText(plsqlText)))}");
+			}
 		}
 
 		[Test]

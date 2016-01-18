@@ -17,11 +17,11 @@
 					        BorderThickness="{TemplateBinding BorderThickness}">
 						<Grid>
 							<Grid.RowDefinitions>
-								<RowDefinition Height="20" />
+								<RowDefinition Height="Auto" />
 								<RowDefinition Height="*" />
 							</Grid.RowDefinitions>
 							
-							<StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Visibility="{TemplateBinding IsPinnable, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Visibility="{TemplateBinding IsPinnable, Converter={StaticResource ObjectToVisibilityConverter}}" Margin="0,-1,-1,0">
 								<Button x:Name="ButtonPin" Content="Pin" Command="{x:Static local:PopupBase.PinPopupCommand}" />
 							</StackPanel>
 

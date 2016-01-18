@@ -148,7 +148,7 @@ namespace SqlPad.Oracle
 			var packageDocumentationExists = _packageDocumentation.TryGetValue(OracleObjectIdentifier.Create(identifier.Owner, identifier.Package), out packageDocumentation);
 			if (packageDocumentationExists)
 			{
-				var program = packageDocumentation.SubPrograms.SingleOrDefault(sp => String.Equals(sp.Name, identifier.Name));
+				var program = packageDocumentation.SubPrograms.SingleOrDefault(sp => String.Equals(sp.Name.ToQuotedIdentifier(), identifier.Name));
 				if (program != null)
 				{
 					Process.Start($"{packageDocumentation.Url}{program.ElementId}");
