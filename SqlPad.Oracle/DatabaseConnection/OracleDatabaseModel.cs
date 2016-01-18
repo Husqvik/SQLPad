@@ -323,16 +323,14 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public async override Task<ExecutionPlanItemCollection> ExplainPlanAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
 		{
-			var connectionConfiguration = OracleConfiguration.Configuration.GetConnectionConfiguration(ConnectionString.Name);
-			var targetTable = connectionConfiguration.ExecutionPlan.TargetTable;
+			var targetTable = OracleConfiguration.Configuration.GetExplainPlanTargetTable(ConnectionString.Name);
 			if (String.IsNullOrEmpty(targetTable.Name))
 			{
 				throw new InvalidOperationException($"OracleConfiguration/Connections/Connection[@ConnectionName = '{ConnectionString.Name}']/ExecutionPlan/TargetTable[Name] is missing. ");
 			}
 
 			var planKey = Convert.ToString(executionModel.StatementText.GetHashCode());
-			var targetTableIdentifier = OracleObjectIdentifier.Create(targetTable.Schema, targetTable.Name);
-			var explainPlanDataProvider = new ExplainPlanDataProvider(executionModel.StatementText, planKey, targetTableIdentifier);
+			var explainPlanDataProvider = new ExplainPlanDataProvider(executionModel.StatementText, planKey, targetTable);
 
 			await UpdateModelAsync(cancellationToken, false, explainPlanDataProvider.CreateExplainPlanUpdater, explainPlanDataProvider.LoadExplainPlanUpdater);
 

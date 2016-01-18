@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using System.Xml.Serialization;
+using SqlPad.Oracle.DataDictionary;
 
 namespace SqlPad.Oracle
 {
@@ -33,16 +34,17 @@ namespace SqlPad.Oracle
 				: String.Empty;
 		}
 
-		public OracleConfigurationConnection GetConnectionConfiguration(string connectionName)
+		public OracleObjectIdentifier GetExplainPlanTargetTable(string connectionName)
 		{
 			OracleConfigurationConnection configuration;
-			if (_connectionConfigurations.TryGetValue(connectionName, out configuration) ||
-				_connectionConfigurations.TryGetValue("*", out configuration))
+			if ((_connectionConfigurations.TryGetValue(connectionName, out configuration) && configuration.ExecutionPlan?.TargetTable != null) ||
+				_connectionConfigurations.TryGetValue("*", out configuration) && configuration.ExecutionPlan?.TargetTable != null)
 			{
-				return configuration;
+				var targetTable = configuration.ExecutionPlan.TargetTable;
+				return OracleObjectIdentifier.Create(targetTable.Schema, targetTable.Name);
 			}
 
-			throw new InvalidOperationException($"Connection '{connectionName}' configuration not found in '{ConfigurationFilePath}' file. ");
+			return OracleObjectIdentifier.Empty;
 		}
 
 		static OracleConfiguration()

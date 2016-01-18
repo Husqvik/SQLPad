@@ -410,9 +410,8 @@ WHERE
 		[Test]
 		public async Task TestDmlExecution()
 		{
-			var connectionConfiguration = OracleConfiguration.Configuration.GetConnectionConfiguration(ConnectionString.Name);
-			var targetTable = connectionConfiguration.ExecutionPlan.TargetTable;
-			var targetTableName = String.IsNullOrEmpty(targetTable.Schema) ? targetTable.Name : $"{targetTable.Schema}.{targetTable.Name}";
+			var targetTable = OracleConfiguration.Configuration.GetExplainPlanTargetTable(ConnectionString.Name);
+			var targetTableName = String.IsNullOrEmpty(targetTable.Owner) ? targetTable.Name : $"{targetTable.Owner}.{targetTable.Name}";
 
 			var executionModel =
 				new StatementExecutionModel
