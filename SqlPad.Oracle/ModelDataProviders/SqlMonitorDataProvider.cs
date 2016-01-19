@@ -423,7 +423,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			set { UpdateValueAndRaisePropertyChanged(ref _message, value); }
 		}
 
-		public decimal ProgressRatio => SoFar / (decimal)TotalWork;
+		public decimal ProgressRatio => TotalWork == 0 ? 1 : SoFar / (decimal)TotalWork;
 	}
 
 	public class SqlMonitorSessionPlanItem : ModelBase
