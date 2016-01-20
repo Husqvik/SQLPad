@@ -45,7 +45,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 	public class SqlMonitorPlanItemCollection : ExecutionPlanItemCollectionBase<SqlMonitorPlanItem>
 	{
 		private readonly Dictionary<SessionIdentifier, SqlMonitorSessionItem> _sessionItemMapping = new Dictionary<SessionIdentifier, SqlMonitorSessionItem>();
-		private readonly Dictionary<SqlMonitorPlanItem, List<ActiveSessionHistoryItem>> _planItemActiveSessionHistoryItems = new Dictionary<SqlMonitorPlanItem, List<ActiveSessionHistoryItem>>();
+		private readonly Dictionary<SqlMonitorPlanItem, Dictionary<SessionIdentifier, List<ActiveSessionHistoryItem>>> _planItemActiveSessionHistoryItems = new Dictionary<SqlMonitorPlanItem, Dictionary<SessionIdentifier, List<ActiveSessionHistoryItem>>>();
 
 		private int _totalActiveSessionHistorySamples;
 		private DateTime? _lastSampleTime;
@@ -133,10 +133,16 @@ namespace SqlPad.Oracle.ModelDataProviders
 						LastSampleTime = historyItem.SampleTime;
 					}
 
-					List<ActiveSessionHistoryItem> planHistoryItems;
-					if (!_planItemActiveSessionHistoryItems.TryGetValue(historyItem.PlanItem, out planHistoryItems))
+					Dictionary<SessionIdentifier, List<ActiveSessionHistoryItem>> sessionPlanHistoryItems;
+					if (!_planItemActiveSessionHistoryItems.TryGetValue(historyItem.PlanItem, out sessionPlanHistoryItems))
 					{
-						_planItemActiveSessionHistoryItems[historyItem.PlanItem] = planHistoryItems = new List<ActiveSessionHistoryItem>();
+						_planItemActiveSessionHistoryItems[historyItem.PlanItem] = sessionPlanHistoryItems = new Dictionary<SessionIdentifier, List<ActiveSessionHistoryItem>>();
+					}
+
+					List<ActiveSessionHistoryItem> planHistoryItems;
+					if (!sessionPlanHistoryItems.TryGetValue(historyItem.SessionIdentifier, out planHistoryItems))
+					{
+						sessionPlanHistoryItems[historyItem.SessionIdentifier] = planHistoryItems = new List<ActiveSessionHistoryItem>();
 					}
 
 					planHistoryItems.Add(historyItem);
@@ -154,14 +160,29 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 			foreach (var planItemActiveSessionHistoryItems in _planItemActiveSessionHistoryItems)
 			{
-				planItemActiveSessionHistoryItems.Key.IsBeingExecuted = planItemActiveSessionHistoryItems.Value.Last().SampleTime >= recentActivityThreshold;
+				planItemActiveSessionHistoryItems.Key.IsBeingExecuted = planItemActiveSessionHistoryItems.Value.Any(l => l.Value.Last().SampleTime >= recentActivityThreshold);
 
-				if (_totalActiveSessionHistorySamples > 0)
+				if (_totalActiveSessionHistorySamples == 0)
 				{
-					var planItemSamples = planItemActiveSessionHistoryItems.Value.Count;
-					planItemActiveSessionHistoryItems.Key.ActiveSessionHistorySampleCount = planItemSamples;
-					planItemActiveSessionHistoryItems.Key.ActivityRatio = (decimal)planItemSamples / _totalActiveSessionHistorySamples;
+					continue;
 				}
+
+				var allSessionPlanItemSamples = 0;
+				foreach (var parallelSessionItem in planItemActiveSessionHistoryItems.Key.ParallelSlaveSessionItems)
+				{
+					List<ActiveSessionHistoryItem> sessionHistoryItems;
+					var activeSessionHistorySampleCount = planItemActiveSessionHistoryItems.Value.TryGetValue(parallelSessionItem.SessionIdentifier, out sessionHistoryItems)
+						? sessionHistoryItems.Count
+						: 0;
+
+					parallelSessionItem.ActiveSessionHistorySampleCount = activeSessionHistorySampleCount;
+					parallelSessionItem.ActivityRatio = (decimal)activeSessionHistorySampleCount / _totalActiveSessionHistorySamples;
+
+					allSessionPlanItemSamples += parallelSessionItem.ActiveSessionHistorySampleCount;
+				}
+
+				planItemActiveSessionHistoryItems.Key.AllSessionSummaryPlanItem.ActiveSessionHistorySampleCount = allSessionPlanItemSamples;
+				planItemActiveSessionHistoryItems.Key.AllSessionSummaryPlanItem.ActivityRatio = (decimal)allSessionPlanItemSamples / _totalActiveSessionHistorySamples;
 			}
 		}
 	}
@@ -217,8 +238,6 @@ namespace SqlPad.Oracle.ModelDataProviders
 	{
 		private SqlMonitorSessionPlanItem _allSessionSummaryPlanItem;
 		private bool _isBeingExecuted;
-		private decimal? _activityRatio;
-		private int _activeSessionHistorySampleCount;
 
 		private readonly ObservableCollection<SessionLongOperationCollection> _sessionLongOperations = new ObservableCollection<SessionLongOperationCollection>();
 		private readonly Dictionary<SessionIdentifier, SessionLongOperationCollection> _sessionLongOperationsItemMapping = new Dictionary<SessionIdentifier, SessionLongOperationCollection>();
@@ -241,18 +260,6 @@ namespace SqlPad.Oracle.ModelDataProviders
 		{
 			get { return _isBeingExecuted; }
 			set { UpdateValueAndRaisePropertyChanged(ref _isBeingExecuted, value); }
-		}
-
-		public decimal? ActivityRatio
-		{
-			get { return _activityRatio; }
-			set { UpdateValueAndRaisePropertyChanged(ref _activityRatio, value); }
-		}
-
-		public int ActiveSessionHistorySampleCount
-		{
-			get { return _activeSessionHistorySampleCount; }
-			set { UpdateValueAndRaisePropertyChanged(ref _activeSessionHistorySampleCount, value); }
 		}
 
 		public SqlMonitorSessionPlanItem GetSessionPlanItem(SessionIdentifier sessionIdentifier)
@@ -439,6 +446,8 @@ namespace SqlPad.Oracle.ModelDataProviders
 		private long? _workAreaMemoryMaxBytes;
 		private long? _workAreaTempBytes;
 		private long? _workAreaTempMaxBytes;
+		private decimal? _activityRatio;
+		private int _activeSessionHistorySampleCount;
 		private SqlMonitorSessionItem _sessionItem;
 
 		public SessionIdentifier SessionIdentifier { get; set; }
@@ -513,6 +522,18 @@ namespace SqlPad.Oracle.ModelDataProviders
 		{
 			get { return _workAreaTempMaxBytes; }
 			set { UpdateValueAndRaisePropertyChanged(ref _workAreaTempMaxBytes, value); }
+		}
+
+		public decimal? ActivityRatio
+		{
+			get { return _activityRatio; }
+			set { UpdateValueAndRaisePropertyChanged(ref _activityRatio, value); }
+		}
+
+		public int ActiveSessionHistorySampleCount
+		{
+			get { return _activeSessionHistorySampleCount; }
+			set { UpdateValueAndRaisePropertyChanged(ref _activeSessionHistorySampleCount, value); }
 		}
 
 		public void Reset()
