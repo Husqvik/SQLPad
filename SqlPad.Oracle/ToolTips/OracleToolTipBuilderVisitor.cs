@@ -79,7 +79,7 @@ namespace SqlPad.Oracle.ToolTips
 					var viewDetailModel = new ViewDetailsModel { Title = GetFullSchemaObjectToolTip(programReference.SchemaObject) };
 					ToolTip = new ToolTipView { DataContext = viewDetailModel };
 
-					if (TryGetPackageDocumentation(programReference.SchemaObject, out documentationPackage))
+					if (OracleHelpProvider.TryGetPackageDocumentation(programReference.SchemaObject, out documentationPackage))
 					{
 						viewDetailModel.Comment = documentationPackage.Description.Value;
 					}
@@ -107,25 +107,21 @@ namespace SqlPad.Oracle.ToolTips
 					documentationBuilder.AppendLine(documentationFunction.Value);
 				}
 			}
-			else if (TryGetPackageDocumentation(programReference.SchemaObject, out documentationPackage))
+			else if (OracleHelpProvider.TryGetPackageDocumentation(programReference.SchemaObject, out documentationPackage))
 			{
 				var program = documentationPackage.SubPrograms.SingleOrDefault(sp => String.Equals(sp.Name.ToQuotedIdentifier(), programReference.Metadata.Identifier.Name));
 				if (program != null)
 				{
-					documentationBuilder.AppendLine(program.Value);
+					documentationBuilder.AppendLine(program.Description);
 				}
 			}
 
 			ToolTip = new ToolTipProgram(programReference.Metadata.Identifier.FullyQualifiedIdentifier, documentationBuilder.ToString(), programReference.Metadata);
 		}
 
-		private static bool TryGetPackageDocumentation(OracleSchemaObject schemaObject, out DocumentationPackage documentationPackage)
+		private static bool TryGetDataDictionaryObjectDocumentation(OracleObjectIdentifier objectIdentifier, out DocumentationDataDictionaryObject documentation)
 		{
-			documentationPackage = null;
-			schemaObject = schemaObject.GetTargetSchemaObject();
-			return schemaObject != null &&
-			       OracleHelpProvider.PackageDocumentation.TryGetValue(schemaObject.FullyQualifiedName, out documentationPackage) &&
-			       documentationPackage.SubPrograms != null;
+			return OracleHelpProvider.DataDictionaryObjectDocumentation.TryGetValue(objectIdentifier, out documentation);
 		}
 
 		public void VisitTypeReference(OracleTypeReference typeReference)
@@ -236,7 +232,17 @@ namespace SqlPad.Oracle.ToolTips
 
 					case OracleSchemaObjectType.View:
 						var viewDetailModel = new ViewDetailsModel { Title = toolTipText };
-						databaseModel.UpdateViewDetailsAsync(schemaObject.FullyQualifiedName, viewDetailModel, CancellationToken.None);
+
+						DocumentationDataDictionaryObject documentation;
+						if (TryGetDataDictionaryObjectDocumentation(schemaObject.FullyQualifiedName, out documentation) && !String.IsNullOrWhiteSpace(documentation.Value))
+						{
+							viewDetailModel.Comment = documentation.Value;
+						}
+						else
+						{
+							databaseModel.UpdateViewDetailsAsync(schemaObject.FullyQualifiedName, viewDetailModel, CancellationToken.None);
+						}
+
 						ToolTip = new ToolTipView { DataContext = viewDetailModel };
 						break;
 

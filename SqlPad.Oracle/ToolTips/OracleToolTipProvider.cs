@@ -173,8 +173,7 @@ namespace SqlPad.Oracle.ToolTips
 						return new ToolTipObject { Content = stackPanel };
 
 					case Terminals.ParameterIdentifier:
-						tip = GetParameterToolTip(semanticModel, node);
-						break;
+						return BuildParameterToolTip(semanticModel, node);
 
 					default:
 						var missingTokenLookupTerminal = GetTerminalForCandidateLookup(node, node.LastTerminalNode);
@@ -258,7 +257,7 @@ namespace SqlPad.Oracle.ToolTips
 			return new ToolTipSchema(dataModel);
 		}
 
-		private static string GetParameterToolTip(OracleStatementSemanticModel semanticModel, StatementGrammarNode node)
+		private static IToolTip BuildParameterToolTip(OracleStatementSemanticModel semanticModel, StatementGrammarNode node)
 		{
 			Func<ProgramParameterReference, bool> parameterFilter = p => p.OptionalIdentifierTerminal == node;
 			var programReference = semanticModel.AllReferenceContainers
@@ -272,12 +271,33 @@ namespace SqlPad.Oracle.ToolTips
 			}
 
 			var parameter = programReference.ParameterReferences.Single(parameterFilter);
+			var parameterName = parameter.OptionalIdentifierTerminal.Token.Value.ToQuotedIdentifier();
 
 			OracleProgramParameterMetadata parameterMetadata;
-			var parameterName = parameter.OptionalIdentifierTerminal.Token.Value.ToQuotedIdentifier();
-			return programReference.Metadata.NamedParameters.TryGetValue(parameterName, out parameterMetadata)
-				? $"{parameterMetadata.Name.ToSimpleIdentifier()}: {parameterMetadata.FullDataTypeName}"
-				: null;
+			if (!programReference.Metadata.NamedParameters.TryGetValue(parameterName, out parameterMetadata))
+			{
+				return null;
+			}
+
+			var comment = String.Empty;
+			DocumentationPackage packageDocumentation;
+			if (OracleHelpProvider.TryGetPackageDocumentation(programReference.Metadata.Owner, out packageDocumentation))
+			{
+				comment = packageDocumentation.SubPrograms.SingleOrDefault(p => String.Equals(p.Name.ToQuotedIdentifier(), programReference.Metadata.Identifier.Name))
+					?.Parameters?.SingleOrDefault(p => String.Equals(p.Name.ToQuotedIdentifier(), parameterName))
+					?.Value;
+			}
+
+			return
+				new ToolTipView
+				{
+					DataContext =
+						new ViewDetailsModel
+						{
+							Title = $"{parameterMetadata.Name.ToSimpleIdentifier()}: {parameterMetadata.FullDataTypeName}",
+							Comment = comment
+						}
+				};
 		}
 
 		private static IToolTip BuildAsteriskToolTip(OracleQueryBlock queryBlock, StatementGrammarNode asteriskTerminal)

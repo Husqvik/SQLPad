@@ -40,6 +40,16 @@ namespace SqlPad.Oracle
 			}
 		}
 
+		internal static IReadOnlyDictionary<OracleObjectIdentifier, DocumentationDataDictionaryObject> DataDictionaryObjectDocumentation
+		{
+			get
+			{
+				EnsureDocumentationDictionaries();
+
+				return _dataDictionaryObjects;
+			}
+		}
+
 		private static void EnsureDocumentationDictionaries()
 		{
 			if (_sqlFunctionDocumentation != null)
@@ -60,6 +70,15 @@ namespace SqlPad.Oracle
 
 				_dataDictionaryObjects = documentation.DataDictionary.ToDictionary(o => OracleObjectIdentifier.Create(OracleDatabaseModelBase.SchemaSys, o.Name));
 			}
+		}
+
+		internal static bool TryGetPackageDocumentation(OracleSchemaObject schemaObject, out DocumentationPackage documentationPackage)
+		{
+			documentationPackage = null;
+			schemaObject = schemaObject.GetTargetSchemaObject();
+			return schemaObject != null &&
+				   PackageDocumentation.TryGetValue(schemaObject.FullyQualifiedName, out documentationPackage) &&
+				   documentationPackage.SubPrograms != null;
 		}
 
 		public void ShowHelp(ActionExecutionContext executionContext)

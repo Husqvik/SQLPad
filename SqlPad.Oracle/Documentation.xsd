@@ -34,7 +34,7 @@
         <xs:element name="Packages">
           <xs:complexType>
             <xs:sequence>
-              <xs:element maxOccurs="unbounded" name="Package">
+              <xs:element name="Package" maxOccurs="unbounded">
                 <xs:complexType>
                   <xs:sequence>
                     <xs:element name="Description">
@@ -47,14 +47,28 @@
                     <xs:element name="SubPrograms" minOccurs="0">
                       <xs:complexType>
                         <xs:sequence>
-                          <xs:element maxOccurs="unbounded" name="SubProgram">
+                          <xs:element name="SubProgram" maxOccurs="unbounded">
                             <xs:complexType>
-                              <xs:simpleContent>
-                                <xs:extension base="xs:string">
-                                  <xs:attribute name="Name" type="xs:string" use="required" />
-                                  <xs:attribute name="ElementId" type="xs:string" use="required" />
-                                </xs:extension>
-                              </xs:simpleContent>
+                              <xs:sequence>
+                                <xs:element name="Description" type="xs:string" />
+                                <xs:element name="Parameters" minOccurs="0">
+                                  <xs:complexType>
+                                    <xs:sequence>
+                                      <xs:element name="Parameter" maxOccurs="unbounded">
+                                        <xs:complexType>
+                                          <xs:simpleContent>
+                                            <xs:extension base="xs:string">
+                                              <xs:attribute name="Name" type="xs:string" use="required" />
+                                            </xs:extension>
+                                          </xs:simpleContent>
+                                        </xs:complexType>
+                                      </xs:element>
+                                    </xs:sequence>
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:sequence>
+                              <xs:attribute name="Name" type="xs:string" use="required" />
+                              <xs:attribute name="ElementId" type="xs:string" use="required" />
                             </xs:complexType>
                           </xs:element>
                         </xs:sequence>
@@ -73,8 +87,12 @@
             <xs:sequence>
               <xs:element maxOccurs="unbounded" name="DataDictionaryObject">
                 <xs:complexType>
-                  <xs:attribute name="Name" type="xs:string" use="required" />
-                  <xs:attribute name="Url" type="xs:string" use="required" />
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute name="Name" type="xs:string" use="required" />
+                      <xs:attribute name="Url" type="xs:string" use="required" />
+                    </xs:extension>
+                  </xs:simpleContent>
                 </xs:complexType>
               </xs:element>
             </xs:sequence>

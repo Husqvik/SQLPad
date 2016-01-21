@@ -333,8 +333,7 @@ SELECT * FROM CTE";
 			toolTip.Control.DataContext.ShouldBeTypeOf<ViewDetailsModel>();
 			var dataModel = (ViewDetailsModel)toolTip.Control.DataContext;
 			dataModel.Title.ShouldBe("\"PUBLIC\".V$SESSION (Synonym) => SYS.V_$SESSION (View)");
-			dataModel.Comment.ShouldBe("This is a view comment. ");
-			dataModel.ConstraintDetails.Count.ShouldBeGreaterThan(0);
+			dataModel.Comment.ShouldBe("V$SESSION displays session information for each current session.");
 		}
 
 		[Test(Description = @""), STAThread]
@@ -1018,8 +1017,9 @@ FROM (
 			_documentRepository.UpdateStatements(query);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 30);
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
-			toolTip.Control.DataContext.ShouldBe("P: NUMBER");
+			toolTip.Control.ShouldBeTypeOf<ToolTipView>();
+			var dataModel = (ViewDetailsModel)toolTip.Control.DataContext;
+			dataModel.Title.ShouldBe("P: NUMBER");
 		}
 
 		[Test(Description = @""), STAThread]
