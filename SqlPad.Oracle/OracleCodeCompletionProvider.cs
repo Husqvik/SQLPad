@@ -204,16 +204,22 @@ namespace SqlPad.Oracle
 		public ICollection<ICodeCompletionItem> ResolveItems(SqlDocumentRepository sqlDocumentRepository, IDatabaseModel databaseModel, int cursorPosition, bool forcedInvokation)
 		{
 			if (sqlDocumentRepository?.Statements == null)
+			{
 				return EmptyCollection;
+			}
 
 			var completionType = new OracleCodeCompletionType(sqlDocumentRepository, sqlDocumentRepository.StatementText, cursorPosition);
 			//completionType.PrintResults();
 
 			if (completionType.InComment)
+			{
 				return EmptyCollection;
-			
+			}
+
 			if (!forcedInvokation && !completionType.JoinCondition && String.IsNullOrEmpty(completionType.TerminalValuePartUntilCaret) && !completionType.IsCursorTouchingIdentifier)
+			{
 				return EmptyCollection;
+			}
 
 			StatementGrammarNode currentTerminal;
 
@@ -231,7 +237,9 @@ namespace SqlPad.Oracle
 				currentTerminal = statement.GetNearestTerminalToPosition(cursorPosition);
 
 				if (completionType.InUnparsedData || currentTerminal == null)
+				{
 					return EmptyCollection;
+				}
 			}
 			else
 			{

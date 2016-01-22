@@ -1470,6 +1470,8 @@ namespace SqlPad
 
 		private async void CreateCodeCompletionWindow(bool forcedInvokation, int caretOffset)
 		{
+			var currentText = _documentRepository.StatementText;
+
 			IReadOnlyCollection<CompletionData> items;
 			try
 			{
@@ -1488,7 +1490,7 @@ namespace SqlPad
 				return;
 			}
 
-			if (!String.Equals(_documentRepository.StatementText, Editor.Text))
+			if (!String.Equals(currentText, Editor.Text))
 			{
 				return;
 			}
