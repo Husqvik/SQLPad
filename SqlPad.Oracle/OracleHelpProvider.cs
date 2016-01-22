@@ -15,9 +15,11 @@ namespace SqlPad.Oracle
 {
 	public class OracleHelpProvider : IHelpProvider
 	{
+		private static readonly object LockObject = new object();
 		private static ILookup<string, DocumentationFunction> _sqlFunctionDocumentation;
 		private static ILookup<string, DocumentationStatement> _statementDocumentation;
-		private static IReadOnlyDictionary<OracleObjectIdentifier, DocumentationPackage> _packageDocumentation;
+		private static IReadOnlyDictionary<OracleObjectIdentifier, DocumentationPackage> _packageDocumentations;
+		private static IReadOnlyDictionary<OracleProgramIdentifier, DocumentationPackageSubProgram> _packageProgramDocumentations;
 		private static IReadOnlyDictionary<OracleObjectIdentifier, DocumentationDataDictionaryObject> _dataDictionaryObjects;
 
 		internal static ILookup<string, DocumentationFunction> SqlFunctionDocumentation
@@ -30,13 +32,13 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		internal static IReadOnlyDictionary<OracleObjectIdentifier, DocumentationPackage> PackageDocumentation
+		internal static IReadOnlyDictionary<OracleObjectIdentifier, DocumentationPackage> PackageDocumentations
 		{
 			get
 			{
 				EnsureDocumentationDictionaries();
 
-				return _packageDocumentation;
+				return _packageDocumentations;
 			}
 		}
 
@@ -50,6 +52,16 @@ namespace SqlPad.Oracle
 			}
 		}
 
+		internal static IReadOnlyDictionary<OracleProgramIdentifier, DocumentationPackageSubProgram> PackageProgramDocumentations
+		{
+			get
+			{
+				EnsureDocumentationDictionaries();
+
+				return _packageProgramDocumentations;
+			}
+		}
+
 		private static void EnsureDocumentationDictionaries()
 		{
 			if (_sqlFunctionDocumentation != null)
@@ -57,18 +69,44 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			var folder = new Uri(Path.GetDirectoryName(typeof (OracleHelpProvider).Assembly.CodeBase)).LocalPath;
-			using (var reader = XmlReader.Create(Path.Combine(folder, "OracleDocumentation.xml")))
+			lock (LockObject)
 			{
-				var documentation = (Documentation)new XmlSerializer(typeof (Documentation)).Deserialize(reader);
+				if (_sqlFunctionDocumentation != null)
+				{
+					return;
+				}
 
-				_sqlFunctionDocumentation = documentation.Functions.ToLookup(f => f.Name.ToQuotedIdentifier());
+				var folder = new Uri(Path.GetDirectoryName(typeof (OracleHelpProvider).Assembly.CodeBase)).LocalPath;
+				using (var reader = XmlReader.Create(Path.Combine(folder, "OracleDocumentation.xml")))
+				{
+					var documentation = (Documentation)new XmlSerializer(typeof (Documentation)).Deserialize(reader);
 
-				_statementDocumentation = documentation.Statements.ToLookup(s => s.Name);
+					_sqlFunctionDocumentation = documentation.Functions.ToLookup(f => f.Name.ToQuotedIdentifier());
 
-				_packageDocumentation = documentation.Packages.ToDictionary(p => OracleObjectIdentifier.Create(OracleDatabaseModelBase.SchemaSys, p.Name));
+					_statementDocumentation = documentation.Statements.ToLookup(s => s.Name);
 
-				_dataDictionaryObjects = documentation.DataDictionary.ToDictionary(o => OracleObjectIdentifier.Create(OracleDatabaseModelBase.SchemaSys, o.Name));
+					_dataDictionaryObjects = documentation.DataDictionary.ToDictionary(o => OracleObjectIdentifier.Create(OracleDatabaseModelBase.SchemaSys, o.Name));
+
+					var packageDocumentations = new Dictionary<OracleObjectIdentifier, DocumentationPackage>();
+					var packageProgramDocumentations = new Dictionary<OracleProgramIdentifier, DocumentationPackageSubProgram>();
+					foreach (var packageDocumentation in documentation.Packages)
+					{
+						packageDocumentations.Add(OracleObjectIdentifier.Create(OracleDatabaseModelBase.SchemaSys, packageDocumentation.Name), packageDocumentation);
+
+						if (packageDocumentation.SubPrograms == null)
+						{
+							continue;
+						}
+
+						foreach (var subProgramDocumentation in packageDocumentation.SubPrograms)
+						{
+							packageProgramDocumentations[OracleProgramIdentifier.CreateFromValues(OracleDatabaseModelBase.SchemaSys, packageDocumentation.Name, subProgramDocumentation.Name)] = subProgramDocumentation;
+						}
+					}
+
+					_packageDocumentations = packageDocumentations.AsReadOnly();
+					_packageProgramDocumentations = packageProgramDocumentations.AsReadOnly();
+				}
 			}
 		}
 
@@ -77,7 +115,7 @@ namespace SqlPad.Oracle
 			documentationPackage = null;
 			schemaObject = schemaObject.GetTargetSchemaObject();
 			return schemaObject != null &&
-				   PackageDocumentation.TryGetValue(schemaObject.FullyQualifiedName, out documentationPackage) &&
+				   PackageDocumentations.TryGetValue(schemaObject.FullyQualifiedName, out documentationPackage) &&
 				   documentationPackage.SubPrograms != null;
 		}
 
@@ -113,7 +151,7 @@ namespace SqlPad.Oracle
 				if (package != null)
 				{
 					DocumentationPackage packageDocumentation;
-					var packageDocumentationExists = _packageDocumentation.TryGetValue(package.FullyQualifiedName, out packageDocumentation);
+					var packageDocumentationExists = _packageDocumentations.TryGetValue(package.FullyQualifiedName, out packageDocumentation);
 					if (packageDocumentationExists)
 					{
 						Process.Start(packageDocumentation.Url);
@@ -164,7 +202,7 @@ namespace SqlPad.Oracle
 			}
 
 			DocumentationPackage packageDocumentation;
-			var packageDocumentationExists = _packageDocumentation.TryGetValue(OracleObjectIdentifier.Create(identifier.Owner, identifier.Package), out packageDocumentation);
+			var packageDocumentationExists = _packageDocumentations.TryGetValue(OracleObjectIdentifier.Create(identifier.Owner, identifier.Package), out packageDocumentation);
 			if (packageDocumentationExists)
 			{
 				var program = packageDocumentation.SubPrograms.SingleOrDefault(sp => String.Equals(sp.Name.ToQuotedIdentifier(), identifier.Name));

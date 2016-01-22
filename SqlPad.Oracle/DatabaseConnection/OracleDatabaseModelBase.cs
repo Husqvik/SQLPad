@@ -206,13 +206,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			IEnumerable<OracleProgramMetadata> programMetadataSource = new List<OracleProgramMetadata>();
 			if (String.IsNullOrEmpty(identifier.Package) && (forceBuiltInFunction || String.IsNullOrEmpty(identifier.Owner)))
 			{
-				var programIdentifier =
-					new OracleProgramIdentifier
-					{
-						Owner = BuiltInFunctionPackageIdentifier.Owner,
-						Package = BuiltInFunctionPackageIdentifier.Name,
-						Name = identifier.Name
-					};
+				var programIdentifier = OracleProgramIdentifier.CreateFromValues(BuiltInFunctionPackageIdentifier.Owner, BuiltInFunctionPackageIdentifier.Name, identifier.Name);
 
 				if (AllObjects.TryGetValue(BuiltInFunctionPackageIdentifier, out schemaObject))
 				{
@@ -225,7 +219,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				{
 					if (includePlSqlObjects && AllObjects.TryGetValue(IdentifierDbmsStandard, out schemaObject))
 					{
-						programIdentifier.Package = PackageDbmsStandard;
+						programIdentifier = OracleProgramIdentifier.CreateFromValues(BuiltInFunctionPackageIdentifier.Owner, PackageDbmsStandard, identifier.Name);
 						programMetadataSource = BuiltInPackageProgramMetadata[programIdentifier];
 						result.Metadata = TryFindProgramOverload(programMetadataSource, identifier.Name, parameterCount, hasAnalyticClause, true);
 					}

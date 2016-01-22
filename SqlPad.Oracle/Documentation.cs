@@ -168,7 +168,7 @@ namespace SqlPad.Oracle {
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/08/Oracle")]
     public partial class DocumentationPackage {
         
-        private DocumentationPackageDescription descriptionField;
+        private string descriptionField;
         
         private DocumentationPackageSubProgram[] subProgramsField;
         
@@ -177,7 +177,7 @@ namespace SqlPad.Oracle {
         private string urlField;
         
         /// <remarks/>
-        public DocumentationPackageDescription Description {
+        public string Description {
             get {
                 return this.descriptionField;
             }
@@ -216,28 +216,6 @@ namespace SqlPad.Oracle {
             }
             set {
                 this.urlField = value;
-            }
-        }
-    }
-    
-    /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.0.30319.33440")]
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/08/Oracle")]
-    public partial class DocumentationPackageDescription {
-        
-        private string valueField;
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlTextAttribute()]
-        public string Value {
-            get {
-                return this.valueField;
-            }
-            set {
-                this.valueField = value;
             }
         }
     }

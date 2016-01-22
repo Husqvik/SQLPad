@@ -7,13 +7,13 @@ namespace SqlPad.Oracle.DataDictionary
 	[DebuggerDisplay("OracleProgramIdentifier (FullyQualifiedIdentifier={FullyQualifiedIdentifier}; Overload={Overload})")]
 	public struct OracleProgramIdentifier
 	{
-		public string Owner { get; set; }
+		public string Owner { get; private set; }
 
-		public string Name { get; set; }
+		public string Name { get; private set; }
 
-		public string Package { get; set; }
+		public string Package { get; private set; }
 
-		public int Overload { get; set; }
+		public int Overload { get; private set; }
 
 		public string FullyQualifiedIdentifier
 		{
@@ -37,26 +37,22 @@ namespace SqlPad.Oracle.DataDictionary
 			}
 		}
 
+		private OracleProgramIdentifier(string owner, string package, string name, int overload)
+		{
+			Owner = owner;
+			Package = package;
+			Name = name;
+			Overload = overload;
+		}
+
 		public static OracleProgramIdentifier CreateBuiltIn(string name)
 		{
-			return
-				new OracleProgramIdentifier
-				{
-					Owner = String.Empty,
-					Package = String.Empty,
-					Name = name
-				};
+			return new OracleProgramIdentifier(String.Empty, String.Empty, name, 0);
 		}
 
 		public static OracleProgramIdentifier CreateFromValues(string owner, string package, string name, int overload = 0)
 		{
-			return new OracleProgramIdentifier
-			{
-				Owner = owner.ToQuotedIdentifier(),
-				Package = package.ToQuotedIdentifier(),
-				Name = name.ToQuotedIdentifier(),
-				Overload = overload
-			};
+			return new OracleProgramIdentifier(owner.ToQuotedIdentifier(), package.ToQuotedIdentifier(), name.ToQuotedIdentifier(), overload);
 		}
 
 		#region Equality members
@@ -75,9 +71,9 @@ namespace SqlPad.Oracle.DataDictionary
 		{
 			unchecked
 			{
-				var hashCode = (Owner != null ? Owner.GetHashCode() : 0);
-				hashCode = (hashCode * 397) ^ (Name != null ? Name.GetHashCode() : 0);
-				hashCode = (hashCode * 397) ^ (Package != null ? Package.GetHashCode() : 0);
+				var hashCode = Owner?.GetHashCode() ?? 0;
+				hashCode = (hashCode * 397) ^ (Name?.GetHashCode() ?? 0);
+				hashCode = (hashCode * 397) ^ (Package?.GetHashCode() ?? 0);
 				return hashCode;
 			}
 		}

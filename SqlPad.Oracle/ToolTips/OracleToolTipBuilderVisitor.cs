@@ -81,7 +81,7 @@ namespace SqlPad.Oracle.ToolTips
 
 					if (OracleHelpProvider.TryGetPackageDocumentation(programReference.SchemaObject, out documentationPackage))
 					{
-						viewDetailModel.Comment = documentationPackage.Description.Value;
+						viewDetailModel.Comment = documentationPackage.Description;
 					}
 				}
 
