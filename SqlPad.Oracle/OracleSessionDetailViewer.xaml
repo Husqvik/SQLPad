@@ -26,20 +26,23 @@
 		</Style>
 	</UserControl.Resources>
 	
-	<TabControl>
-		<TabItem Header="_Execution plan" x:Name="TabExecutionPlan">
+	<StackPanel>
+		<Expander Header="_Execution plan" IsExpanded="True">
 			<executionPlan:ExecutionPlanTreeView x:Name="ExecutionPlanTreeView" />
-		</TabItem>
-		<TabItem Header="_Session details">
-			<TabItem.Style>
+		</Expander>
+		<Expander Header="_Session details" IsExpanded="True">
+			<Expander.Style>
 				<Style>
 					<Style.Triggers>
+						<DataTrigger Binding="{Binding SessionItems}" Value="{x:Null}">
+							<Setter Property="Expander.Visibility" Value="Collapsed" />
+						</DataTrigger>
 						<DataTrigger Binding="{Binding SessionItems.Count}" Value="0">
-							<Setter Property="TabItem.Visibility" Value="Collapsed" />
+							<Setter Property="Expander.Visibility" Value="Collapsed" />
 						</DataTrigger>
 					</Style.Triggers>
 				</Style>
-			</TabItem.Style>
+			</Expander.Style>
 
 			<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsDeferredScrollingEnabled="True">
 				<StackPanel>
@@ -161,6 +164,6 @@
 					</DataGrid>
 				</StackPanel>
 			</ScrollViewer>
-		</TabItem>
-	</TabControl>
+		</Expander>
+	</StackPanel>
 </UserControl>

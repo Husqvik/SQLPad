@@ -238,7 +238,6 @@ namespace SqlPad.Oracle
 			SummarySession.Clear();
 			IsParallel = false;
 			ExecutionPlanTreeView.RootItem = null;
-			TabExecutionPlan.IsSelected = true;
 		}
 
 		private EventHandler<DataGridBeginningEditEventArgs> SessionDataGridBeginningEditCancelTextInputHandler => App.DataGridBeginningEditCancelTextInputHandlerImplementation;
