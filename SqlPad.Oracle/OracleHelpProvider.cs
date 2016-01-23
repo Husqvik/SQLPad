@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
 using SqlPad.Commands;
@@ -117,6 +118,23 @@ namespace SqlPad.Oracle
 			return schemaObject != null &&
 				   PackageDocumentations.TryGetValue(schemaObject.FullyQualifiedName, out documentationPackage) &&
 				   documentationPackage.SubPrograms != null;
+		}
+
+		internal static string GetBuiltInSqlFunctionDocumentation(string sqlFunctionNormalizedName)
+		{
+			var documentationBuilder = new StringBuilder();
+
+			foreach (var documentationFunction in SqlFunctionDocumentation[sqlFunctionNormalizedName])
+			{
+				if (documentationBuilder.Length > 0)
+				{
+					documentationBuilder.AppendLine();
+				}
+
+				documentationBuilder.AppendLine(documentationFunction.Value);
+			}
+
+			return documentationBuilder.ToString();
 		}
 
 		public void ShowHelp(ActionExecutionContext executionContext)

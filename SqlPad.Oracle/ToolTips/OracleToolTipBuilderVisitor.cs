@@ -93,30 +93,22 @@ namespace SqlPad.Oracle.ToolTips
 				return;
 			}
 
-			var documentationBuilder = new StringBuilder();
+			string documentation = null;
 			if ((String.IsNullOrEmpty(programReference.Metadata.Identifier.Owner) || String.Equals(programReference.Metadata.Identifier.Package, OracleDatabaseModelBase.PackageBuiltInFunction)) &&
 			    programReference.Metadata.Type != ProgramType.StatementFunction && OracleHelpProvider.SqlFunctionDocumentation[programReference.Metadata.Identifier.Name].Any())
 			{
-				foreach (var documentationFunction in OracleHelpProvider.SqlFunctionDocumentation[programReference.Metadata.Identifier.Name])
-				{
-					if (documentationBuilder.Length > 0)
-					{
-						documentationBuilder.AppendLine();
-					}
-
-					documentationBuilder.AppendLine(documentationFunction.Value);
-				}
+				documentation = OracleHelpProvider.GetBuiltInSqlFunctionDocumentation(programReference.Metadata.Identifier.Name);
 			}
 			else if (OracleHelpProvider.TryGetPackageDocumentation(programReference.SchemaObject, out documentationPackage))
 			{
 				var program = documentationPackage.SubPrograms.SingleOrDefault(sp => String.Equals(sp.Name.ToQuotedIdentifier(), programReference.Metadata.Identifier.Name));
 				if (program != null)
 				{
-					documentationBuilder.AppendLine(program.Description);
+					documentation = program.Description;
 				}
 			}
 
-			ToolTip = new ToolTipProgram(programReference.Metadata.Identifier.FullyQualifiedIdentifier, documentationBuilder.ToString(), programReference.Metadata);
+			ToolTip = new ToolTipProgram(programReference.Metadata.Identifier.FullyQualifiedIdentifier, documentation, programReference.Metadata);
 		}
 
 		private static bool TryGetDataDictionaryObjectDocumentation(OracleObjectIdentifier objectIdentifier, out DocumentationDataDictionaryObject documentation)
