@@ -103,7 +103,11 @@
     <Compile Include="BindVariableModel.cs" />
     <Compile Include="Bookmarks\IconMargin.cs" />
     <Compile Include="CellValueConverter.cs" />
+    <Compile Include="ClipboardManager.cs" />
     <Compile Include="CSharpQueryClassGenerator.cs" />
+    <Compile Include="WindowClipboardHistory.xaml.cs">
+      <DependentUpon>WindowClipboardHistory.xaml</DependentUpon>
+    </Compile>
     <Compile Include="WindowDatabaseMonitor.xaml.cs">
       <DependentUpon>WindowDatabaseMonitor.xaml</DependentUpon>
     </Compile>
@@ -196,8 +200,8 @@
       <DependentUpon>EditDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="Extensions.cs" />
-    <Compile Include="FunctionOverloadList.xaml.cs">
-      <DependentUpon>FunctionOverloadList.xaml</DependentUpon>
+    <Compile Include="ProgramOverloadList.xaml.cs">
+      <DependentUpon>ProgramOverloadList.xaml</DependentUpon>
     </Compile>
     <Compile Include="Commands\GenericCommandHandler.cs" />
     <Compile Include="ICodeCompletionProvider.cs" />
@@ -239,6 +243,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="WindowClipboardHistory.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="WindowDatabaseMonitor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -259,7 +267,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="FunctionOverloadList.xaml">
+    <Page Include="ProgramOverloadList.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

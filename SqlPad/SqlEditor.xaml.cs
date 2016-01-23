@@ -70,7 +70,7 @@ namespace SqlPad
 				return;
 			}
 
-			_dynamicPopup.Child = new FunctionOverloadList { FunctionOverloads = functionOverloads, FontFamily = new FontFamily("Segoe UI") }.AsPopupChild();
+			_dynamicPopup.Child = new ProgramOverloadList { FunctionOverloads = functionOverloads, FontFamily = new FontFamily("Segoe UI") }.AsPopupChild();
 			//_isToolTipOpenByShortCut = true;
 
 			var rectangle = Editor.TextArea.Caret.CalculateCaretRectangle();

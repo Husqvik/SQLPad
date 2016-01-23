@@ -31,9 +31,9 @@ namespace SqlPad.Oracle
 			new OracleCodeCompletionItem { Name = JoinTypeCrossJoin, Priority = 4 }
 		};
 
-		public ICollection<FunctionOverloadDescription> ResolveProgramOverloads(SqlDocumentRepository documentRepository, int cursorPosition)
+		public ICollection<ProgramOverloadDescription> ResolveProgramOverloads(SqlDocumentRepository documentRepository, int cursorPosition)
 		{
-			var emptyCollection = new FunctionOverloadDescription[0];
+			var emptyCollection = new ProgramOverloadDescription[0];
 			var node = documentRepository.Statements.GetNodeAtPosition(cursorPosition);
 			if (node == null)
 			{
@@ -55,7 +55,7 @@ namespace SqlPad.Oracle
 						.ToArray();
 
 					return
-						new FunctionOverloadDescription
+						new ProgramOverloadDescription
 						{
 							Name = metadata.Identifier.FullyQualifiedIdentifier,
 							Parameters = parameters,

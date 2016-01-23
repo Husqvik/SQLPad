@@ -173,12 +173,17 @@ namespace SqlPad
 			_timerTimedNotification.Stop();
 		}
 
+		public void InsertText(string text)
+		{
+			Editor.Document.Insert(Editor.CaretOffset, text);
+		}
+
 		public void InsertStatement(string statementText)
 		{
 			var insertIndex = Editor.CaretOffset;
 			var builder = new StringBuilder(statementText);
 
-			var statement = _documentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
+			var statement = _documentRepository.Statements.GetStatementAtPosition(insertIndex);
 			if (statement?.RootNode != null)
 			{
 				insertIndex = statement.SourcePosition.IndexEnd + 1;
@@ -739,7 +744,7 @@ namespace SqlPad
 
 		private void ShowFunctionOverloads(object sender, ExecutedRoutedEventArgs args)
 		{
-			ICollection<FunctionOverloadDescription> functionOverloads;
+			ICollection<ProgramOverloadDescription> functionOverloads;
 
 			try
 			{
@@ -756,7 +761,7 @@ namespace SqlPad
 				return;
 			}
 
-			DynamicPopup.Child = new FunctionOverloadList { FunctionOverloads = functionOverloads, FontFamily = new FontFamily("Segoe UI") }.AsPopupChild();
+			DynamicPopup.Child = new ProgramOverloadList { FunctionOverloads = functionOverloads, FontFamily = new FontFamily("Segoe UI") }.AsPopupChild();
 			_isToolTipOpenByShortCut = true;
 
 			var rectangle = Editor.TextArea.Caret.CalculateCaretRectangle();

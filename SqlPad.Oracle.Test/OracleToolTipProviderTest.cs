@@ -573,7 +573,7 @@ SELECT * FROM CTE";
 			_documentRepository.UpdateStatements(query);
 
 			var functionOverloads = _codeCompletionProvider.ResolveProgramOverloads(_documentRepository, 30);
-			var functionOverloadList = new FunctionOverloadList { FunctionOverloads = functionOverloads };
+			var functionOverloadList = new ProgramOverloadList { FunctionOverloads = functionOverloads };
 			functionOverloadList.ViewOverloads.Items.Count.ShouldBe(1);
 			functionOverloadList.ViewOverloads.Items[0].ShouldBeTypeOf(typeof(TextBlock));
 
@@ -588,7 +588,7 @@ SELECT * FROM CTE";
 			_documentRepository.UpdateStatements(query);
 
 			var functionOverloads = _codeCompletionProvider.ResolveProgramOverloads(_documentRepository, 23);
-			var functionOverloadList = new FunctionOverloadList { FunctionOverloads = functionOverloads };
+			var functionOverloadList = new ProgramOverloadList { FunctionOverloads = functionOverloads };
 			functionOverloadList.ViewOverloads.Items.Count.ShouldBe(1);
 			functionOverloadList.ViewOverloads.Items[0].ShouldBeTypeOf(typeof(TextBlock));
 
@@ -603,7 +603,7 @@ SELECT * FROM CTE";
 			_documentRepository.UpdateStatements(query);
 
 			var functionOverloads = _codeCompletionProvider.ResolveProgramOverloads(_documentRepository, 27);
-			var functionOverloadList = new FunctionOverloadList { FunctionOverloads = functionOverloads };
+			var functionOverloadList = new ProgramOverloadList { FunctionOverloads = functionOverloads };
 			functionOverloadList.ViewOverloads.Items.Count.ShouldBe(1);
 			functionOverloadList.ViewOverloads.Items[0].ShouldBeTypeOf(typeof(TextBlock));
 
@@ -618,7 +618,7 @@ SELECT * FROM CTE";
 			_documentRepository.UpdateStatements(query);
 
 			var functionOverloads = _codeCompletionProvider.ResolveProgramOverloads(_documentRepository, 23);
-			var functionOverloadList = new FunctionOverloadList { FunctionOverloads = functionOverloads };
+			var functionOverloadList = new ProgramOverloadList { FunctionOverloads = functionOverloads };
 			functionOverloadList.ViewOverloads.Items.Count.ShouldBe(1);
 			functionOverloadList.ViewOverloads.Items[0].ShouldBeTypeOf(typeof(TextBlock));
 
@@ -633,7 +633,7 @@ SELECT * FROM CTE";
 			_documentRepository.UpdateStatements(query);
 
 			var functionOverloads = _codeCompletionProvider.ResolveProgramOverloads(_documentRepository, 33);
-			var functionOverloadList = new FunctionOverloadList { FunctionOverloads = functionOverloads };
+			var functionOverloadList = new ProgramOverloadList { FunctionOverloads = functionOverloads };
 			functionOverloadList.ViewOverloads.Items.Count.ShouldBe(1);
 			functionOverloadList.ViewOverloads.Items[0].ShouldBeTypeOf(typeof(TextBlock));
 
@@ -709,7 +709,7 @@ SELECT * FROM CTE";
 			_documentRepository.UpdateStatements(query);
 
 			var functionOverloads = _codeCompletionProvider.ResolveProgramOverloads(_documentRepository, 9);
-			var toolTip = new FunctionOverloadList { FunctionOverloads = functionOverloads };
+			var toolTip = new ProgramOverloadList { FunctionOverloads = functionOverloads };
 			toolTip.ViewOverloads.Items.Count.ShouldBe(0);
 		}
 

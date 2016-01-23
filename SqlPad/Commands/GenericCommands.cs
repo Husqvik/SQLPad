@@ -7,6 +7,7 @@ namespace SqlPad.Commands
 {
 	public static class GenericCommands
 	{
+		public static RoutedCommand ClipboardHistory = new RoutedCommand("ClipboardHistory", typeof(Window), new InputGestureCollection { new KeyGesture(Key.V, ModifierKeys.Control | ModifierKeys.Shift ) });
 		public static RoutedCommand CloseDocument = new RoutedCommand("CloseDocument", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F4, ModifierKeys.Control), new KeyGesture(Key.W, ModifierKeys.Control) });
 		public static RoutedCommand CloseAllDocumentsButThis = new RoutedCommand();
 		public static RoutedCommand OpenContainingFolder = new RoutedCommand();

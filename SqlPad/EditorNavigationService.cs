@@ -7,12 +7,15 @@ namespace SqlPad
 	public static class EditorNavigationService
 	{
 		private static readonly List<DocumentCursorPosition> DocumentCursorPositions = new List<DocumentCursorPosition>();
+		private static readonly HashSet<string> ClipboardHistoryEntries = new HashSet<string>();
 		private static Guid? _lastDocumentIdentifier;
 		private static int _lastCursorPosition = -1;
 
 		private static int _currentIndex;
 
 		public static bool IsEnabled { get; set; }
+
+		public static IReadOnlyCollection<string> ClipboardHistory { get; } = ClipboardHistoryEntries;
 
 		public static void Initialize(WorkDocument initialDocument = null)
 		{
@@ -28,6 +31,17 @@ namespace SqlPad
 			{
 				RegisterDocumentCursorPosition(initialDocument, initialDocument.CursorPosition);
 			}
+		}
+
+		public static void RegisterClipboardEntry(string text)
+		{
+			if (!IsEnabled)
+			{
+				return;
+			}
+
+			ClipboardHistoryEntries.Remove(text);
+			ClipboardHistoryEntries.Add(text);
 		}
 
 		public static void RegisterDocumentCursorPosition(WorkDocument workDocument, int cursorPosition)

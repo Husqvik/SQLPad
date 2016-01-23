@@ -4,12 +4,12 @@ namespace SqlPad
 {
 	public interface ICodeCompletionProvider
 	{
-		ICollection<FunctionOverloadDescription> ResolveProgramOverloads(SqlDocumentRepository documentRepository, int cursorPosition);
+		ICollection<ProgramOverloadDescription> ResolveProgramOverloads(SqlDocumentRepository documentRepository, int cursorPosition);
 
 		ICollection<ICodeCompletionItem> ResolveItems(SqlDocumentRepository sqlDocumentRepository, IDatabaseModel databaseModel, int cursorPosition, bool forcedInvokation);
 	}
 
-	public class FunctionOverloadDescription
+	public class ProgramOverloadDescription
 	{
 		public string Name { get; set; }
 

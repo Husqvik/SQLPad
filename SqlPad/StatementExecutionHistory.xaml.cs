@@ -33,9 +33,9 @@ namespace SqlPad
 			_collectionView.SortDescriptions.Add(new SortDescription("ExecutedAt", ListSortDirection.Descending));
 		}
 
-		private void MouseDownHandler(object sender, MouseButtonEventArgs e)
+		private void MouseDownHandler(object sender, MouseButtonEventArgs args)
 		{
-			if (e.ClickCount != 2)
+			if (args.ClickCount != 2)
 			{
 				return;
 			}
@@ -43,22 +43,22 @@ namespace SqlPad
 			App.MainWindow.ActiveDocument.InsertStatement(SelectedEntry.StatementText);
 		}
 
-		private void WindowClosingHandler(object sender, CancelEventArgs e)
+		private void WindowClosingHandler(object sender, CancelEventArgs args)
 		{
-			e.Cancel = true;
+			args.Cancel = true;
 			SearchPhraseTextBox.Text = String.Empty;
 			Hide();
 		}
 
-		private void ClearHistoryExecutedHandler(object sender, ExecutedRoutedEventArgs e)
+		private void ClearHistoryExecutedHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			_providerConfiguration.ClearStatementExecutionHistory();
 			_historyEntries.Clear();
 		}
 
-		private void RemoveHistoryEntryExecutedHandler(object sender, ExecutedRoutedEventArgs e)
+		private void RemoveHistoryEntryExecutedHandler(object sender, ExecutedRoutedEventArgs args)
 		{
-			var entry = (StatementExecutionHistoryEntry)e.Parameter;
+			var entry = (StatementExecutionHistoryEntry)args.Parameter;
 			_providerConfiguration.RemoveStatementExecutionHistoryEntry(entry);
 			_historyEntries.Remove(entry);
 		}
@@ -86,19 +86,19 @@ namespace SqlPad
 			Dispatcher.BeginInvoke(DispatcherPriority.Render, new Action(() => ListHistoryEntries.HighlightTextItems(TextSearchHelper.GetRegexPattern(searchedWords))));
 		}
 
-		private void CopyExecutedHandler(object sender, ExecutedRoutedEventArgs e)
+		private void CopyExecutedHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			Clipboard.SetText(SelectedEntry.StatementText);
 		}
 
-		private void HistoryViewScrollChangedHandler(object sender, ScrollChangedEventArgs e)
+		private void HistoryViewScrollChangedHandler(object sender, ScrollChangedEventArgs args)
 		{
 			HighlightText(TextSearchHelper.GetSearchedWords(SearchPhraseTextBox.Text));
 		}
 
-		private void WindowKeyDownHandler(object sender, KeyEventArgs e)
+		private void WindowKeyDownHandler(object sender, KeyEventArgs args)
 		{
-			if (e.Key == Key.Escape && Keyboard.Modifiers == ModifierKeys.None)
+			if (args.Key == Key.Escape && Keyboard.Modifiers == ModifierKeys.None)
 			{
 				Close();
 			}

@@ -5,18 +5,15 @@ using System.Windows.Documents;
 
 namespace SqlPad
 {
-	/// <summary>
-	/// Interaction logic for FunctionOverloadList.xaml
-	/// </summary>
-	public partial class FunctionOverloadList
+	public partial class ProgramOverloadList
 	{
 
-		public FunctionOverloadList()
+		public ProgramOverloadList()
 		{
 			InitializeComponent();
 		}
 
-		public ICollection<FunctionOverloadDescription> FunctionOverloads
+		public ICollection<ProgramOverloadDescription> FunctionOverloads
 		{
 			set
 			{
