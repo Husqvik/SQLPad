@@ -75,14 +75,14 @@ namespace SqlPad.Oracle.ToolTips
 			{
 				if (programReference.SchemaObject != null)
 				{
-					var viewDetailModel = new ViewDetailsModel { Title = GetFullSchemaObjectToolTip(programReference.SchemaObject) };
-					ToolTip = new ToolTipView { DataContext = viewDetailModel };
+					var viewDetailModel =
+						new ViewDetailsModel
+						{
+							Title = GetFullSchemaObjectToolTip(programReference.SchemaObject),
+							Comment = programReference.SchemaObject.Documentation
+						};
 
-					DocumentationPackage documentationPackage;
-					if (OracleHelpProvider.TryGetPackageDocumentation(programReference.SchemaObject, out documentationPackage))
-					{
-						viewDetailModel.Comment = documentationPackage.Description;
-					}
+					ToolTip = new ToolTipView { DataContext = viewDetailModel };
 				}
 
 				return;

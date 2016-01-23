@@ -280,11 +280,11 @@ namespace SqlPad.Oracle.ToolTips
 			}
 
 			var comment = String.Empty;
-			DocumentationPackage packageDocumentation;
-			if (OracleHelpProvider.TryGetPackageDocumentation(programReference.Metadata.Owner, out packageDocumentation))
+			DocumentationPackageSubProgram documentation;
+			if (OracleHelpProvider.PackageProgramDocumentations.TryGetValue(programReference.Metadata.Identifier, out documentation))
 			{
-				comment = packageDocumentation.SubPrograms.SingleOrDefault(p => String.Equals(p.Name.ToQuotedIdentifier(), programReference.Metadata.Identifier.Name))
-					?.Parameters?.SingleOrDefault(p => String.Equals(p.Name.ToQuotedIdentifier(), parameterName))
+				comment = documentation.Parameters
+					?.SingleOrDefault(p => String.Equals(p.Name.ToQuotedIdentifier(), parameterName))
 					?.Value;
 			}
 

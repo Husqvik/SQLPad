@@ -18,7 +18,6 @@ namespace SqlPad.Oracle
 		private static readonly object LockObject = new object();
 		private static ILookup<string, DocumentationFunction> _sqlFunctionDocumentation;
 		private static ILookup<string, DocumentationStatement> _statementDocumentation;
-		private static IReadOnlyDictionary<OracleObjectIdentifier, DocumentationPackage> _packageDocumentations;
 		private static IReadOnlyDictionary<OracleProgramIdentifier, DocumentationPackageSubProgram> _packageProgramDocumentations;
 		private static IReadOnlyDictionary<OracleObjectIdentifier, DocumentationDataDictionaryObject> _dataDictionaryObjects;
 
@@ -29,16 +28,6 @@ namespace SqlPad.Oracle
 				EnsureDocumentationDictionaries();
 
 				return _sqlFunctionDocumentation;
-			}
-		}
-
-		internal static IReadOnlyDictionary<OracleObjectIdentifier, DocumentationPackage> PackageDocumentations
-		{
-			get
-			{
-				EnsureDocumentationDictionaries();
-
-				return _packageDocumentations;
 			}
 		}
 
@@ -85,13 +74,25 @@ namespace SqlPad.Oracle
 
 					_statementDocumentation = documentation.Statements.ToLookup(s => s.Name);
 
-					_dataDictionaryObjects = documentation.DataDictionary.ToDictionary(o => OracleObjectIdentifier.Create(OracleObjectIdentifier.SchemaSys, o.Name));
+					var dataDictionaryObjects = documentation.DataDictionary.ToDictionary(o => OracleObjectIdentifier.Create(OracleObjectIdentifier.SchemaSys, o.Name));
+					_dataDictionaryObjects = dataDictionaryObjects.AsReadOnly();
 
 					var packageDocumentations = new Dictionary<OracleObjectIdentifier, DocumentationPackage>();
 					var packageProgramDocumentations = new Dictionary<OracleProgramIdentifier, DocumentationPackageSubProgram>();
 					foreach (var packageDocumentation in documentation.Packages)
 					{
-						packageDocumentations.Add(OracleObjectIdentifier.Create(OracleObjectIdentifier.SchemaSys, packageDocumentation.Name), packageDocumentation);
+						var packageIdentifier = OracleObjectIdentifier.Create(OracleObjectIdentifier.SchemaSys, packageDocumentation.Name);
+						packageDocumentations.Add(packageIdentifier, packageDocumentation);
+
+						var dataDictionaryObjectDocumentation =
+							new DocumentationDataDictionaryObject
+							{
+								Name = packageDocumentation.Name,
+								Value = packageDocumentation.Description,
+								Url = packageDocumentation.Url
+							};
+
+						dataDictionaryObjects.Add(packageIdentifier, dataDictionaryObjectDocumentation);
 
 						if (packageDocumentation.SubPrograms == null)
 						{
@@ -100,23 +101,14 @@ namespace SqlPad.Oracle
 
 						foreach (var subProgramDocumentation in packageDocumentation.SubPrograms)
 						{
+							subProgramDocumentation.PackageDocumentation = packageDocumentation;
 							packageProgramDocumentations[OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, packageDocumentation.Name, subProgramDocumentation.Name)] = subProgramDocumentation;
 						}
 					}
 
-					_packageDocumentations = packageDocumentations.AsReadOnly();
 					_packageProgramDocumentations = packageProgramDocumentations.AsReadOnly();
 				}
 			}
-		}
-
-		internal static bool TryGetPackageDocumentation(OracleSchemaObject schemaObject, out DocumentationPackage documentationPackage)
-		{
-			documentationPackage = null;
-			schemaObject = schemaObject.GetTargetSchemaObject();
-			return schemaObject != null &&
-				   PackageDocumentations.TryGetValue(schemaObject.FullyQualifiedName, out documentationPackage) &&
-				   documentationPackage.SubPrograms != null;
 		}
 
 		internal static string GetBuiltInSqlFunctionDocumentation(string sqlFunctionNormalizedName)
@@ -164,31 +156,11 @@ namespace SqlPad.Oracle
 			if (objectReference != null)
 			{
 				var targetObject = objectReference.SchemaObject.GetTargetSchemaObject();
-				var package = targetObject as OraclePackage;
-				if (package != null)
+				DocumentationDataDictionaryObject dataDictionaryObject;
+				var dataDictionaryObjectDocumentationFound = _dataDictionaryObjects.TryGetValue(targetObject.FullyQualifiedName, out dataDictionaryObject);
+				if (dataDictionaryObjectDocumentationFound)
 				{
-					DocumentationPackage packageDocumentation;
-					var packageDocumentationExists = _packageDocumentations.TryGetValue(package.FullyQualifiedName, out packageDocumentation);
-					if (packageDocumentationExists)
-					{
-						Process.Start(packageDocumentation.Url);
-					}
-				}
-
-				if (targetObject == null && objectReference.ObjectNodeObjectReferences.Count == 1)
-				{
-					targetObject = objectReference.ObjectNodeObjectReferences.Single().SchemaObject.GetTargetSchemaObject();
-				}
-
-				var view = targetObject as OracleView;
-				if (view != null)
-				{
-					DocumentationDataDictionaryObject dataDictionaryObject;
-					var dataDictionaryObjectDocumentationExists = _dataDictionaryObjects.TryGetValue(view.FullyQualifiedName, out dataDictionaryObject);
-					if (dataDictionaryObjectDocumentationExists)
-					{
-						Process.Start(dataDictionaryObject.Url);
-					}
+					Process.Start(dataDictionaryObject.Url);
 				}
 			}
 
@@ -212,21 +184,17 @@ namespace SqlPad.Oracle
 			var isBuiltInSqlFunction = (String.IsNullOrEmpty(identifier.Package) || String.Equals(identifier.Package, OracleObjectIdentifier.PackageBuiltInFunction));
 			if (isBuiltInSqlFunction)
 			{
-				foreach (var documentation in SqlFunctionDocumentation[identifier.Name])
+				foreach (var documentation in _sqlFunctionDocumentation[identifier.Name])
 				{
 					Process.Start(documentation.Url);
 				}
 			}
 
-			DocumentationPackage packageDocumentation;
-			var packageDocumentationExists = _packageDocumentations.TryGetValue(OracleObjectIdentifier.Create(identifier.Owner, identifier.Package), out packageDocumentation);
-			if (packageDocumentationExists)
+			DocumentationPackageSubProgram programDocumentation;
+			var packageProgramDocumentationExists = _packageProgramDocumentations.TryGetValue(identifier, out programDocumentation);
+			if (packageProgramDocumentationExists)
 			{
-				var program = packageDocumentation.SubPrograms.SingleOrDefault(sp => String.Equals(sp.Name.ToQuotedIdentifier(), identifier.Name));
-				if (program != null)
-				{
-					Process.Start($"{packageDocumentation.Url}{program.ElementId}");
-				}
+				Process.Start($"{programDocumentation.PackageDocumentation.Url}{programDocumentation.ElementId}");
 			}
 		}
 	}

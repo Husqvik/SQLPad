@@ -923,24 +923,11 @@ namespace SqlPad.Oracle
 						: String.Empty;
 
 					string description = null;
-					if (metadata.Owner != null && metadata.IsBuiltIn)
+					if (metadata.Owner != null || metadata.IsBuiltIn)
 					{
-						if (isPackage)
-						{
-							DocumentationPackage documentation;
-							OracleHelpProvider.TryGetPackageDocumentation(metadata.Owner.GetTargetSchemaObject(), out documentation);
-							description = documentation?.Description;
-						}
-						else if(String.IsNullOrEmpty(metadata.Identifier.Owner) || metadata.Owner.FullyQualifiedName == OracleObjectIdentifier.IdentifierBuiltInFunctionPackage || metadata.Owner.FullyQualifiedName == OracleObjectIdentifier.IdentifierDbmsStandard)
-						{
-							description = OracleHelpProvider.GetBuiltInSqlFunctionDocumentation(metadata.Identifier.Name);
-						}
-						else
-						{
-							DocumentationPackageSubProgram documentation;
-							OracleHelpProvider.PackageProgramDocumentations.TryGetValue(metadata.Identifier, out documentation);
-							description = documentation?.Description;
-						}
+						description = isPackage
+							? metadata.Owner?.Documentation
+							: metadata.Documentation;
 					}
 
 					return
@@ -960,7 +947,7 @@ namespace SqlPad.Oracle
 				});
 		}
 
-		private string GetAdditionalFunctionClause(OracleProgramMetadata[] metadataCollection)
+		private static string GetAdditionalFunctionClause(OracleProgramMetadata[] metadataCollection)
 		{
 			var metadata = metadataCollection[0];
 			var orderByClause = metadata.IsBuiltIn && metadata.Identifier.Name.In("\"NTILE\"", "\"ROW_NUMBER\"", "\"RANK\"", "\"DENSE_RANK\"", "\"LEAD\"", "\"LAG\"")
