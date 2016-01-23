@@ -212,7 +212,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			NotifyStatus("Built-in function metadata... ");
 			var stopwatch = Stopwatch.StartNew();
-			var metadata = GetFunctionMetadataCollection(OracleDatabaseCommands.SelectBuiltInFunctionMetadataCommandText, OracleDatabaseCommands.SelectBuiltInFunctionParameterMetadataCommandText, true);
+			var metadata = GetFunctionMetadataCollection(OracleDatabaseCommands.SelectBuiltInProgramMetadataCommandText, OracleDatabaseCommands.SelectBuiltInFunctionParameterMetadataCommandText, true);
 			Trace.WriteLine($"GetBuiltInFunctionMetadata finished in {stopwatch.Elapsed}. ");
 			return metadata;
 		}

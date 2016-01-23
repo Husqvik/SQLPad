@@ -6,7 +6,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 {
 	internal static class OracleDatabaseCommands
 	{
-		public const string SelectBuiltInFunctionMetadataCommandText =
+		public const string SelectBuiltInProgramMetadataCommandText =
 @"WITH PROGRAMS AS (
 	SELECT
 		ALL_PROCEDURES.OWNER,
@@ -49,10 +49,11 @@ SQL_FUNCTION_METADATA AS (
 			ANALYTIC,
 			AGGREGATE,
 			MAX(OFFLOADABLE) OFFLOADABLE,
+			-- incorrect metadata
 			CASE
 				WHEN NAME = 'CV' THEN 0
-				WHEN NAME IN ('LAG', 'LEAD') THEN 1 -- incorrect metadata
-				WHEN NAME IN ('JSON_QUERY', 'JSON_EXISTS', 'JSON_VALUE') THEN 2 -- incorrect metadata
+				WHEN NAME IN ('LAG', 'LEAD') THEN 1
+				WHEN NAME IN ('JSON_QUERY', 'JSON_EXISTS', 'JSON_VALUE') THEN 2
 				ELSE MINARGS
 			END MINARGS,
 			MAXARGS,
@@ -61,7 +62,7 @@ SQL_FUNCTION_METADATA AS (
 			V$SQLFN_METADATA
 		WHERE
 			DISP_TYPE NOT IN ('REL-OP', 'ARITHMATIC') AND
-			NAME NOT IN ('TRUNC', 'TO_CHAR') AND
+			NAME NOT IN ('TRUNC', 'TO_CHAR', 'TO_BINARY_DOUBLE', 'TO_BINARY_FLOAT') AND -- filter mixed definitions
 			(NAME LIKE 'OPTXML%' OR NAME NOT LIKE 'OPT%')
 		GROUP BY
 			NAME,
@@ -115,7 +116,7 @@ FROM
 	ALL_ARGUMENTS
 WHERE
 	OWNER = 'SYS'
-	AND PACKAGE_NAME = 'STANDARD'
+	AND PACKAGE_NAME IN ('STANDARD', 'DBMS_STANDARD')
 	AND OBJECT_NAME NOT LIKE '%SYS$%'
 	AND DATA_TYPE IS NOT NULL
 ORDER BY

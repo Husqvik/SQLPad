@@ -865,15 +865,16 @@ namespace SqlPad.Oracle
 		{
 			return databaseModel.AllSchemas.Values
 				.Where(s => !String.Equals(s.Name, OracleObjectIdentifier.SchemaPublic) && (!String.Equals(MakeSaveQuotedIdentifier(schemaNamePart), s.Name) && CodeCompletionSearchHelper.IsMatch(s.Name, schemaNamePart)))
-				.Select(s => new OracleCodeCompletionItem
-				             {
-								 Name = s.Name.ToSimpleIdentifier(),
-								 Text = s.Name.ToSimpleIdentifier(),
-								 StatementNode = node,
-								 Category = OracleCodeCompletionCategory.DatabaseSchema,
-								 InsertOffset = insertOffset,
-								 CategoryPriority = 1 + priorityOffset
-				             });
+				.Select(
+					s => new OracleCodeCompletionItem
+					{
+						Name = s.Name.ToSimpleIdentifier(),
+						Text = s.Name.ToSimpleIdentifier(),
+						StatementNode = node,
+						Category = OracleCodeCompletionCategory.DatabaseSchema,
+						InsertOffset = insertOffset,
+						CategoryPriority = 1 + priorityOffset
+					});
 		}
 
 		private IEnumerable<ICodeCompletionItem> GenerateCodeItems(string category, StatementGrammarNode node, int insertOffset, bool addParameterList, OracleDatabaseModelBase databaseModel, params OracleProgramMatcher[] matchers)
