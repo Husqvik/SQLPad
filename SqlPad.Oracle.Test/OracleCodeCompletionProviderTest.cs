@@ -4,7 +4,6 @@ using NUnit.Framework;
 using Shouldly;
 using System;
 using System.Diagnostics;
-using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.DataDictionary;
 using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
@@ -458,7 +457,7 @@ FROM
 		private static bool FilterRowSources(OracleSchemaObject schemaObject)
 		{
 			var targetObject = schemaObject.GetTargetSchemaObject();
-			return targetObject != null && schemaObject.Owner.In(OracleTestDatabaseModel.Instance.CurrentSchema, OracleDatabaseModelBase.SchemaPublic) && targetObject.Type.In(OracleSchemaObjectType.Table, OracleSchemaObjectType.View);
+			return targetObject != null && schemaObject.Owner.In(OracleTestDatabaseModel.Instance.CurrentSchema, OracleObjectIdentifier.SchemaPublic) && targetObject.Type.In(OracleSchemaObjectType.Table, OracleSchemaObjectType.View);
 		}
 
 		[Test(Description = @"")]

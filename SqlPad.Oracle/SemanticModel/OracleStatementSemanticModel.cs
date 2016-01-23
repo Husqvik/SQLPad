@@ -1514,7 +1514,7 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 
 			var isSchemaObjectInCurrentSchema = schemaObject.Owner == DatabaseModel.CurrentSchema.ToQuotedIdentifier();
-			var isAccessibleByPublicSynonym = schemaObject.Synonyms.Any(s => s.Owner == OracleDatabaseModelBase.SchemaPublic && s.Name == schemaObject.Name);
+			var isAccessibleByPublicSynonym = schemaObject.Synonyms.Any(s => s.Owner == OracleObjectIdentifier.SchemaPublic && s.Name == schemaObject.Name);
 			return isSchemaObjectInCurrentSchema || isAccessibleByPublicSynonym;
 		}
 
@@ -2249,7 +2249,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 			if (result.Metadata == null && String.IsNullOrEmpty(programReference.FullyQualifiedObjectName.NormalizedOwner))
 			{
-				var identifier = OracleProgramIdentifier.CreateFromValues(OracleDatabaseModelBase.SchemaPublic, originalIdentifier.Package, originalIdentifier.Name);
+				var identifier = OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaPublic, originalIdentifier.Package, originalIdentifier.Name);
 				result = _databaseModel.GetProgramMetadata(identifier, parameterCount, false, hasAnalyticClause, includePlSqlObjects);
 			}
 

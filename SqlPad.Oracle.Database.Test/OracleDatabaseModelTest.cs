@@ -476,7 +476,7 @@ END;",
 			var model = new ColumnDetailsModel();
 			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
-				await databaseModel.UpdateColumnDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DUAL\""), "\"DUMMY\"", model, CancellationToken.None);
+				await databaseModel.UpdateColumnDetailsAsync(new OracleObjectIdentifier(OracleObjectIdentifier.SchemaSys, "\"DUAL\""), "\"DUMMY\"", model, CancellationToken.None);
 			}
 
 			model.AverageValueSize.ShouldBe(2);
@@ -530,7 +530,7 @@ WHERE
 			var model = new ColumnDetailsModel();
 			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
-				await databaseModel.UpdateColumnDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"COL$\""), "\"OBJ#\"", model, CancellationToken.None);
+				await databaseModel.UpdateColumnDetailsAsync(new OracleObjectIdentifier(OracleObjectIdentifier.SchemaSys, "\"COL$\""), "\"OBJ#\"", model, CancellationToken.None);
 			}
 
 			model.IndexDetails.Count.ShouldBe(3);
@@ -549,7 +549,7 @@ WHERE
 
 			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
-				await databaseModel.UpdateTableDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DUAL\""), model, CancellationToken.None);
+				await databaseModel.UpdateTableDetailsAsync(new OracleObjectIdentifier(OracleObjectIdentifier.SchemaSys, "\"DUAL\""), model, CancellationToken.None);
 			}
 
 			model.AverageRowSize.ShouldBe(2);
@@ -570,7 +570,7 @@ WHERE
 
 			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
-				await databaseModel.UpdateTableDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"COL$\""), model, CancellationToken.None);
+				await databaseModel.UpdateTableDetailsAsync(new OracleObjectIdentifier(OracleObjectIdentifier.SchemaSys, "\"COL$\""), model, CancellationToken.None);
 			}
 
 			model.IndexDetails.Count.ShouldBe(3);
@@ -602,7 +602,7 @@ WHERE
 
 			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
-				await databaseModel.UpdateColumnDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"XS$OBJ\""), "TENANT", model, CancellationToken.None);
+				await databaseModel.UpdateColumnDetailsAsync(new OracleObjectIdentifier(OracleObjectIdentifier.SchemaSys, "\"XS$OBJ\""), "TENANT", model, CancellationToken.None);
 			}
 
 			model.ConstraintDetails.Count.ShouldBe(2);
@@ -648,7 +648,7 @@ WHERE
 		public async Task TestTableSpaceAllocationDataProvider()
 		{
 			var model = new TableDetailsModel();
-			var tableSpaceAllocationDataProvider = new TableSpaceAllocationDataProvider(model, new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DUAL\""), String.Empty);
+			var tableSpaceAllocationDataProvider = new TableSpaceAllocationDataProvider(model, new OracleObjectIdentifier(OracleObjectIdentifier.SchemaSys, "\"DUAL\""), String.Empty);
 
 			await ExecuteDataProvider(tableSpaceAllocationDataProvider);
 
@@ -729,7 +729,7 @@ SELECT /*+ parallel(g1 2) parallel(g2 2) monitor */ avg(g1.val * 10000 + g2.val)
 
 			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
-				await databaseModel.UpdateViewDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"DBA_DV_STATUS\""), model, CancellationToken.None);
+				await databaseModel.UpdateViewDetailsAsync(new OracleObjectIdentifier(OracleObjectIdentifier.SchemaSys, "\"DBA_DV_STATUS\""), model, CancellationToken.None);
 			}
 
 			model.ConstraintDetails.Count.ShouldBe(1);
@@ -754,7 +754,7 @@ SELECT /*+ parallel(g1 2) parallel(g2 2) monitor */ avg(g1.val * 10000 + g2.val)
 
 			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
-				await databaseModel.UpdateViewDetailsAsync(new OracleObjectIdentifier(OracleDatabaseModelBase.SchemaSys, "\"ALL_COL_PRIVS\""), model, CancellationToken.None);
+				await databaseModel.UpdateViewDetailsAsync(new OracleObjectIdentifier(OracleObjectIdentifier.SchemaSys, "\"ALL_COL_PRIVS\""), model, CancellationToken.None);
 			}
 
 			model.ConstraintDetails.Count.ShouldBe(0);

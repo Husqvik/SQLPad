@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using ProtoBuf.Meta;
-using SqlPad.Oracle.DatabaseConnection;
 
 namespace SqlPad.Oracle.DataDictionary
 {
@@ -44,12 +43,12 @@ namespace SqlPad.Oracle.DataDictionary
 		{
 			var metadataCollection = new List<OracleProgramMetadata>();
 			OracleSchemaObject package;
-			if (AllObjects.TryGetValue(OracleDatabaseModelBase.BuiltInFunctionPackageIdentifier, out package))
+			if (AllObjects.TryGetValue(OracleObjectIdentifier.IdentifierBuiltInFunctionPackage, out package))
 			{
 				metadataCollection.AddRange(((OraclePackage)package).Programs);
 			}
 
-			if (AllObjects.TryGetValue(OracleDatabaseModelBase.IdentifierDbmsStandard, out package))
+			if (AllObjects.TryGetValue(OracleObjectIdentifier.IdentifierDbmsStandard, out package))
 			{
 				metadataCollection.AddRange(((OraclePackage)package).Programs);
 			}

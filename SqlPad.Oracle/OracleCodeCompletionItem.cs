@@ -22,6 +22,8 @@ namespace SqlPad.Oracle
 
 		public string Text { get; set; }
 
+		public string Description { get; set; }
+
 		protected bool Equals(OracleCodeCompletionItem other)
 		{
 			return String.Equals(Category, other.Category) &&
@@ -31,7 +33,8 @@ namespace SqlPad.Oracle
 			       CategoryPriority == other.CategoryPriority &&
 			       InsertOffset == other.InsertOffset &&
 			       CaretOffset == other.CaretOffset &&
-			       String.Equals(Text, other.Text);
+			       String.Equals(Text, other.Text) &&
+			       String.Equals(Description, other.Description);
 		}
 
 		public override bool Equals(object obj)

@@ -278,7 +278,7 @@ namespace SqlPad.Oracle
 
 				if (!completionType.ReferenceIdentifier.HasSchemaIdentifier)
 				{
-					completionItems = completionItems.Concat(GenerateSchemaDataObjectItems(oracleDatabaseModel, OracleDatabaseModelBase.SchemaPublic, completionType.TerminalValuePartUntilCaret, terminalToReplace, insertOffset: extraOffset));
+					completionItems = completionItems.Concat(GenerateSchemaDataObjectItems(oracleDatabaseModel, OracleObjectIdentifier.SchemaPublic, completionType.TerminalValuePartUntilCaret, terminalToReplace, insertOffset: extraOffset));
 					completionItems = completionItems.Concat(GenerateSchemaItems(completionType.TerminalValuePartUntilCaret, terminalToReplace, extraOffset, oracleDatabaseModel));
 				}
 
@@ -318,7 +318,7 @@ namespace SqlPad.Oracle
 				(String.Equals(currentTerminal.Id, Terminals.ObjectAlias) && String.Equals(((OracleToken)currentTerminal.Token).UpperInvariantValue, TerminalValues.Join)))
 			{
 				completionItems = completionItems.Concat(GenerateSchemaDataObjectItems(oracleDatabaseModel, databaseModel.CurrentSchema.ToQuotedIdentifier(), null, null, insertOffset: extraOffset));
-				completionItems = completionItems.Concat(GenerateSchemaDataObjectItems(oracleDatabaseModel, OracleDatabaseModelBase.SchemaPublic, null, null, insertOffset: extraOffset));
+				completionItems = completionItems.Concat(GenerateSchemaDataObjectItems(oracleDatabaseModel, OracleObjectIdentifier.SchemaPublic, null, null, insertOffset: extraOffset));
 				completionItems = completionItems.Concat(GenerateSchemaItems(null, null, extraOffset, oracleDatabaseModel));
 				completionItems = completionItems.Concat(GenerateCommonTableExpressionReferenceItems(semanticModel, null, null, extraOffset));
 			}
@@ -358,7 +358,7 @@ namespace SqlPad.Oracle
 			if (completionType.DatabaseLink)
 			{
 				var databaseLinkItems = oracleDatabaseModel.DatabaseLinks.Values
-					.Where(l => l.FullyQualifiedName.NormalizedOwner.In(OracleDatabaseModelBase.SchemaPublic, oracleDatabaseModel.CurrentSchema.ToQuotedIdentifier()) &&
+					.Where(l => l.FullyQualifiedName.NormalizedOwner.In(OracleObjectIdentifier.SchemaPublic, oracleDatabaseModel.CurrentSchema.ToQuotedIdentifier()) &&
 					            (String.IsNullOrEmpty(completionType.TerminalValueUnderCursor) || !String.Equals(completionType.TerminalValueUnderCursor.ToQuotedIdentifier(), l.FullyQualifiedName.NormalizedName)) &&
 								CodeCompletionSearchHelper.IsMatch(l.FullyQualifiedName.Name, completionType.TerminalValuePartUntilCaret))
 					.Select(l => new OracleCodeCompletionItem
@@ -449,7 +449,7 @@ namespace SqlPad.Oracle
 				.Select(t =>
 				{
 					var name = t.Name.ToSimpleIdentifier();
-					var text = !String.IsNullOrEmpty(owner) || String.Equals(t.Owner, OracleDatabaseModelBase.SchemaPublic) || String.IsNullOrEmpty(t.Owner)
+					var text = !String.IsNullOrEmpty(owner) || String.Equals(t.Owner, OracleObjectIdentifier.SchemaPublic) || String.IsNullOrEmpty(t.Owner)
 						? name
 						: $"{t.Owner.ToSimpleIdentifier()}.{name}";
 
@@ -607,7 +607,7 @@ namespace SqlPad.Oracle
 							new ProgramMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectName().AsResultValue());
 
 						var publicSynonymPackageFunctionMatcher = new OracleProgramMatcher(
-							new ProgramMatchElement(OracleDatabaseModelBase.SchemaPublic).SelectSynonymOwner(),
+							new ProgramMatchElement(OracleObjectIdentifier.SchemaPublic).SelectSynonymOwner(),
 							new ProgramMatchElement(objectName).SelectSynonymPackage(),
 							new ProgramMatchElement(partialName) {AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName}.SelectSynonymName().AsResultValue());
 
@@ -637,8 +637,8 @@ namespace SqlPad.Oracle
 			{
 				var builtInPackageFunctionMatcher =
 					new OracleProgramMatcher(
-						new ProgramMatchElement(OracleDatabaseModelBase.SchemaSys).SelectOwner(),
-						new ProgramMatchElement(OracleDatabaseModelBase.PackageBuiltInFunction).SelectPackage(),
+						new ProgramMatchElement(OracleObjectIdentifier.SchemaSys).SelectOwner(),
+						new ProgramMatchElement(OracleObjectIdentifier.PackageBuiltInFunction).SelectPackage(),
 						new ProgramMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectName().AsResultValue());
 
 				var builtInNonSchemaFunctionMatcher =
@@ -662,7 +662,7 @@ namespace SqlPad.Oracle
 
 				var publicSynonymFunctionMatcher =
 					new OracleProgramMatcher(
-						new ProgramMatchElement(OracleDatabaseModelBase.SchemaPublic).SelectSynonymOwner(),
+						new ProgramMatchElement(OracleObjectIdentifier.SchemaPublic).SelectSynonymOwner(),
 						new ProgramMatchElement(null).SelectPackage(),
 						new ProgramMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectSynonymName().AsResultValue());
 
@@ -680,7 +680,7 @@ namespace SqlPad.Oracle
 
 				var publicSynonymPackageMatcher =
 					new OracleProgramMatcher(
-						new ProgramMatchElement(OracleDatabaseModelBase.SchemaPublic).SelectSynonymOwner(),
+						new ProgramMatchElement(OracleObjectIdentifier.SchemaPublic).SelectSynonymOwner(),
 						new ProgramMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectSynonymPackage().AsResultValue(),
 						null);
 
@@ -864,7 +864,7 @@ namespace SqlPad.Oracle
 		private IEnumerable<ICodeCompletionItem> GenerateSchemaItems(string schemaNamePart, StatementGrammarNode node, int insertOffset, OracleDatabaseModelBase databaseModel, int priorityOffset = 0)
 		{
 			return databaseModel.AllSchemas.Values
-				.Where(s => !String.Equals(s.Name, OracleDatabaseModelBase.SchemaPublic) && (!String.Equals(MakeSaveQuotedIdentifier(schemaNamePart), s.Name) && CodeCompletionSearchHelper.IsMatch(s.Name, schemaNamePart)))
+				.Where(s => !String.Equals(s.Name, OracleObjectIdentifier.SchemaPublic) && (!String.Equals(MakeSaveQuotedIdentifier(schemaNamePart), s.Name) && CodeCompletionSearchHelper.IsMatch(s.Name, schemaNamePart)))
 				.Select(s => new OracleCodeCompletionItem
 				             {
 								 Name = s.Name.ToSimpleIdentifier(),
@@ -899,12 +899,13 @@ namespace SqlPad.Oracle
 				{
 					var metadata = i.MetadataCollection[0];
 					var hasReservedWordName = metadata.IsBuiltIn && i.Name.CollidesWithReservedWord();
-					var functionName = hasReservedWordName
+					var programName = hasReservedWordName
 						? i.Name.Trim('"')
 						: i.Name;
 
 					var postFix = parameterList;
-					if (String.Equals(category, OracleCodeCompletionCategory.Package))
+					var isPackage = String.Equals(category, OracleCodeCompletionCategory.Package);
+					if (isPackage)
 					{
 						postFix = ".";
 					}
@@ -912,7 +913,7 @@ namespace SqlPad.Oracle
 					{
 						postFix = null;
 					}
-					else if (addParameterList && metadata.IsBuiltIn && metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramExtract)
+					else if (addParameterList && metadata.IsBuiltIn && Equals(metadata.Identifier, OracleDatabaseModelBase.IdentifierBuiltInProgramExtract))
 					{
 						postFix = "(DAY FROM )";
 					}
@@ -921,18 +922,40 @@ namespace SqlPad.Oracle
 						? GetAdditionalFunctionClause(i.MetadataCollection)
 						: String.Empty;
 
+					string description = null;
+					if (metadata.Owner != null && metadata.IsBuiltIn)
+					{
+						if (isPackage)
+						{
+							DocumentationPackage documentation;
+							OracleHelpProvider.TryGetPackageDocumentation(metadata.Owner.GetTargetSchemaObject(), out documentation);
+							description = documentation?.Description;
+						}
+						else if(String.IsNullOrEmpty(metadata.Identifier.Owner) || metadata.Owner.FullyQualifiedName == OracleObjectIdentifier.IdentifierBuiltInFunctionPackage || metadata.Owner.FullyQualifiedName == OracleObjectIdentifier.IdentifierDbmsStandard)
+						{
+							description = OracleHelpProvider.GetBuiltInSqlFunctionDocumentation(metadata.Identifier.Name);
+						}
+						else
+						{
+							DocumentationPackageSubProgram documentation;
+							OracleHelpProvider.PackageProgramDocumentations.TryGetValue(metadata.Identifier, out documentation);
+							description = documentation?.Description;
+						}
+					}
+
 					return
 						new OracleCodeCompletionItem
 						{
-							Name = functionName,
-							Text = $"{functionName}{postFix}{analyticClause}",
+							Name = programName,
+							Text = $"{programName}{postFix}{analyticClause}",
 							StatementNode = node,
 							Category = category,
 							InsertOffset = insertOffset,
-							CaretOffset = hasReservedWordName || category == OracleCodeCompletionCategory.Package || metadata.DisplayType == OracleProgramMetadata.DisplayTypeNoParenthesis
+							CaretOffset = hasReservedWordName || isPackage || String.Equals(metadata.DisplayType, OracleProgramMetadata.DisplayTypeNoParenthesis)
 								? 0
-								: (parameterListCaretOffset - analyticClause.Length),
-							CategoryPriority = 2
+								: parameterListCaretOffset - analyticClause.Length,
+							CategoryPriority = 2,
+							Description = description
 						};
 				});
 		}
@@ -975,7 +998,7 @@ namespace SqlPad.Oracle
 		private bool FilterSchema(OracleSchemaObject schemaObject, string activeSchema, string schemaName)
 		{
 			return String.IsNullOrEmpty(schemaName)
-				? String.Equals(schemaObject.Owner, activeSchema) || String.Equals(schemaObject.Owner, OracleDatabaseModelBase.SchemaPublic)
+				? String.Equals(schemaObject.Owner, activeSchema) || String.Equals(schemaObject.Owner, OracleObjectIdentifier.SchemaPublic)
 				: String.Equals(schemaObject.Owner, schemaName);
 		}
 
@@ -986,9 +1009,17 @@ namespace SqlPad.Oracle
 			var objectNamePartUpperInvariant = objectNamePart?.ToUpperInvariant() ?? String.Empty;
 			return objects
 				.Where(o => !String.Equals(safeObjectPartQuotedIdentifier, o.Identifier2) &&
-							(node == null || !String.Equals(safeTokenValueQuotedIdentifier, o.Identifier2)) && CodeCompletionSearchHelper.IsMatch(o.Identifier2, objectNamePart))
+				            (node == null || !String.Equals(safeTokenValueQuotedIdentifier, o.Identifier2)) && CodeCompletionSearchHelper.IsMatch(o.Identifier2, objectNamePart))
 				.Select(o =>
-					new OracleCodeCompletionItem
+				{
+					var schemaObject = o.SchemaObject.GetTargetSchemaObject();
+					DocumentationDataDictionaryObject documentation = null;
+					if (String.Equals(schemaObject?.Owner, OracleObjectIdentifier.SchemaSys))
+					{
+						OracleHelpProvider.DataDictionaryObjectDocumentation.TryGetValue(schemaObject.FullyQualifiedName, out documentation);
+					}
+
+					return new OracleCodeCompletionItem
 					{
 						Name = o.CompletionText,
 						Text = o.CompletionText + o.TextPostFix,
@@ -997,8 +1028,10 @@ namespace SqlPad.Oracle
 						Category = o.Category,
 						InsertOffset = insertOffset,
 						CaretOffset = o.CaretOffset,
-						CategoryPriority = categoryOffset
-					});
+						CategoryPriority = categoryOffset,
+						Description = documentation?.Value
+					};
+				});
 		}
 
 		private class ObjectReferenceCompletionData
@@ -1034,7 +1067,7 @@ namespace SqlPad.Oracle
 			return $"{preFix}{identifierPart}{postFix}".ToQuotedIdentifier();
 		}
 
-		private bool IsDataObject(OracleSchemaObject schemaObject)
+		private static bool IsDataObject(OracleSchemaObject schemaObject)
 		{
 			return schemaObject.GetTargetSchemaObject() is OracleDataObject;
 		}
@@ -1043,16 +1076,16 @@ namespace SqlPad.Oracle
 		{
 			// TODO: Make proper resolution of CTE accessibility
 			return model.QueryBlocks
-						.Where(qb => qb.Type == QueryBlockType.CommonTableExpression && qb.PrecedingConcatenatedQueryBlock == null && referenceNamePart.ToQuotedIdentifier() != qb.NormalizedAlias && CodeCompletionSearchHelper.IsMatch(qb.Alias, referenceNamePart))
-						.Select(qb => new OracleCodeCompletionItem
-						{
-							Name = qb.Alias,
-							Text = qb.Alias,
-							StatementNode = node,
-							Category = OracleCodeCompletionCategory.CommonTableExpression,
-							InsertOffset = insertOffset,
-							CategoryPriority = -1
-						});
+				.Where(qb => qb.Type == QueryBlockType.CommonTableExpression && qb.PrecedingConcatenatedQueryBlock == null && referenceNamePart.ToQuotedIdentifier() != qb.NormalizedAlias && CodeCompletionSearchHelper.IsMatch(qb.Alias, referenceNamePart))
+				.Select(qb => new OracleCodeCompletionItem
+				{
+					Name = qb.Alias,
+					Text = qb.Alias,
+					StatementNode = node,
+					Category = OracleCodeCompletionCategory.CommonTableExpression,
+					InsertOffset = insertOffset,
+					CategoryPriority = -1
+				});
 		}
 
 		private IEnumerable<ICodeCompletionItem> GenerateJoinConditionSuggestionItems(OracleDataObjectReference parentSchemaObject, OracleDataObjectReference joinedSchemaObject, OracleCodeCompletionType completionType, int insertOffset)

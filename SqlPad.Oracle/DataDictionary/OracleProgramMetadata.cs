@@ -13,9 +13,9 @@ namespace SqlPad.Oracle.DataDictionary
 		public const string DisplayTypeNoParenthesis = "NOPARENTHESIS";
 
 		private readonly int? _metadataMinimumArguments;
-
 		private readonly int? _metadataMaximumArguments;
 
+		private string _documentation;
 		private List<OracleProgramParameterMetadata> _parameters;
 		private Dictionary<string, OracleProgramParameterMetadata> _parameterDictionary;
 
@@ -141,6 +141,22 @@ namespace SqlPad.Oracle.DataDictionary
 		public string DisplayType { get; private set; }
 		
 		public OracleSchemaObject Owner { get; set; }
+
+		public string Documentation => _documentation ?? (_documentation = BuildDocumentation());
+
+		private string BuildDocumentation()
+		{
+			if ((String.IsNullOrEmpty(Identifier.Owner) || String.Equals(Identifier.Package, OracleObjectIdentifier.PackageBuiltInFunction)) &&
+			    Type != ProgramType.StatementFunction && OracleHelpProvider.SqlFunctionDocumentation[Identifier.Name].Any())
+			{
+				return OracleHelpProvider.GetBuiltInSqlFunctionDocumentation(Identifier.Name);
+			}
+
+			DocumentationPackageSubProgram documentation;
+			return OracleHelpProvider.PackageProgramDocumentations.TryGetValue(Identifier, out documentation)
+				? documentation.Description
+				: String.Empty;
+		}
 	}
 
 	[DebuggerDisplay("OracleProgramParameterMetadata (Name={Name}; Position={Position}; Sequence={Sequence}; DataLevel={DataLevel}; DataType={DataType}; CustomDataType={CustomDataType}; Direction={Direction}; IsOptional={IsOptional})")]

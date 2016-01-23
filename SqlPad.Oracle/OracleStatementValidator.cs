@@ -1252,7 +1252,7 @@ namespace SqlPad.Oracle
 								namedParameterExists = true;
 
 								OracleProgramParameterMetadata parameterMetadata;
-								if ((String.IsNullOrEmpty(programReference.Metadata.Identifier.Owner) || programReference.Metadata.Owner.FullyQualifiedName == OracleDatabaseModelBase.BuiltInFunctionPackageIdentifier) &&
+								if ((String.IsNullOrEmpty(programReference.Metadata.Identifier.Owner) || programReference.Metadata.Owner.FullyQualifiedName == OracleObjectIdentifier.IdentifierBuiltInFunctionPackage) &&
 									programReference.Metadata.Type != ProgramType.StatementFunction)
 								{
 									validationModel.IdentifierNodeValidity[parameterReference.OptionalIdentifierTerminal] =

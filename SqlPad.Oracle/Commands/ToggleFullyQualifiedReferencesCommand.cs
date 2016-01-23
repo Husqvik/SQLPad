@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using SqlPad.Commands;
-using SqlPad.Oracle.DatabaseConnection;
+using SqlPad.Oracle.DataDictionary;
 using SqlPad.Oracle.SemanticModel;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
@@ -53,7 +53,7 @@ namespace SqlPad.Oracle.Commands
 		private IEnumerable<TextSegment> GetMissingObjectReferenceQualifications()
 		{
 			return CurrentQueryBlock.ObjectReferences
-				.Where(o => o.OwnerNode == null && o.Type == ReferenceType.SchemaObject && o.SchemaObject != null && !String.Equals(o.SchemaObject.FullyQualifiedName.Owner, OracleDatabaseModelBase.SchemaPublic))
+				.Where(o => o.OwnerNode == null && o.Type == ReferenceType.SchemaObject && o.SchemaObject != null && !String.Equals(o.SchemaObject.FullyQualifiedName.Owner, OracleObjectIdentifier.SchemaPublic))
 				.Select(o =>
 					new TextSegment
 					{
@@ -76,8 +76,8 @@ namespace SqlPad.Oracle.Commands
 				var validObjectReference = column.ValidObjectReference;
 				var tableReference = validObjectReference as OracleDataObjectReference;
 				if (column.OwnerNode == null && validObjectReference.Type == ReferenceType.SchemaObject &&
-					(tableReference == null || tableReference.AliasNode == null) &&
-					validObjectReference.SchemaObject != null && !String.Equals(validObjectReference.SchemaObject.FullyQualifiedName.Owner, OracleDatabaseModelBase.SchemaPublic))
+					(tableReference?.AliasNode == null) &&
+					validObjectReference.SchemaObject != null && !String.Equals(validObjectReference.SchemaObject.FullyQualifiedName.Owner, OracleObjectIdentifier.SchemaPublic))
 				{
 					qualificationBuilder.Append(validObjectReference.SchemaObject.Owner.ToSimpleIdentifier());
 					qualificationBuilder.Append(".");

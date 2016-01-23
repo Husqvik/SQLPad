@@ -1,5 +1,4 @@
 ﻿using System;
-using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.DataDictionary;
 
 namespace SqlPad.Oracle.ToolTips
@@ -11,7 +10,7 @@ namespace SqlPad.Oracle.ToolTips
 			InitializeComponent();
 
 			DataContext = dataModel;
-			var objectType = String.Equals(dataModel.Schema.Name, OracleDatabaseModelBase.SchemaPublic)
+			var objectType = String.Equals(dataModel.Schema.Name, OracleObjectIdentifier.SchemaPublic)
 				? "Schema"
 				: "User/schema";
 

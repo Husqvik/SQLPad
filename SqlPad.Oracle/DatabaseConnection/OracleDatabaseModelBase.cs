@@ -13,13 +13,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 {
 	public abstract class OracleDatabaseModelBase : IDatabaseModel
 	{
-		public const string SchemaPublic = "\"PUBLIC\"";
-		public const string SchemaSys = "\"SYS\"";
-		public const string SchemaSystem = "\"SYSTEM\"";
-		public const string PackageBuiltInFunction = "\"STANDARD\"";
-		public const string PackageDbmsStandard = "\"DBMS_STANDARD\"";
-		public const string PackageDbmsRandom = "\"DBMS_RANDOM\"";
-		public const string PackageDbmsCrypto = "\"DBMS_CRYPTO\"";
 		public const string SystemParameterNameMaxStringSize = "max_string_size";
 		public const string BuiltInDataTypeIntervalYearToMonth = "INTERVAL YEAR TO MONTH";
 		public const string BuiltInDataTypeIntervalDayToSecond = "INTERVAL DAY TO SECOND";
@@ -36,25 +29,22 @@ namespace SqlPad.Oracle.DatabaseConnection
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramRatioToReport = OracleProgramIdentifier.CreateFromValues(null, null, "RATIO_TO_REPORT");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramSysConnectByPath = OracleProgramIdentifier.CreateFromValues(null, null, "SYS_CONNECT_BY_PATH");
 
-		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramRound = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "ROUND");
-		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramLevel = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "LEVEL");
-		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramRowNum = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "ROWNUM");
-		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramNextDay = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "NEXT_DAY");
-		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramSysContext = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "SYS_CONTEXT");
-		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramToChar = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "TO_CHAR");
-		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramToDate = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "TO_DATE");
-		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramToTimestamp = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "TO_TIMESTAMP");
-		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramToTimestampWithTimeZone = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "TO_TIMESTAMP_TZ");
-		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramTrunc = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "TRUNC");
-		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramConvert = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "CONVERT");
-		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramNumberToYearToMonthInterval = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "NUMTOYMINTERVAL");
-		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramNumberToDayToSecondInterval = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageBuiltInFunction, "NUMTODSINTERVAL");
-		internal static readonly OracleProgramIdentifier IdentifierDbmsRandomString = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageDbmsRandom, "STRING");
-		internal static readonly OracleProgramIdentifier IdentifierDbmsCryptoHash = OracleProgramIdentifier.CreateFromValues(SchemaSys, PackageDbmsCrypto, "HASH");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramRound = OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "ROUND");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramLevel = OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "LEVEL");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramRowNum = OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "ROWNUM");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramNextDay = OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "NEXT_DAY");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramSysContext = OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "SYS_CONTEXT");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramToChar = OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "TO_CHAR");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramToDate = OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "TO_DATE");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramToTimestamp = OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "TO_TIMESTAMP");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramToTimestampWithTimeZone = OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "TO_TIMESTAMP_TZ");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramTrunc = OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "TRUNC");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramConvert = OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "CONVERT");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramNumberToYearToMonthInterval = OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "NUMTOYMINTERVAL");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramNumberToDayToSecondInterval = OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "NUMTODSINTERVAL");
+		internal static readonly OracleProgramIdentifier IdentifierDbmsRandomString = OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageDbmsRandom, "STRING");
+		internal static readonly OracleProgramIdentifier IdentifierDbmsCryptoHash = OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageDbmsCrypto, "HASH");
 		
-		internal static readonly OracleObjectIdentifier BuiltInFunctionPackageIdentifier = OracleObjectIdentifier.Create(SchemaSys, PackageBuiltInFunction);
-		internal static readonly OracleObjectIdentifier IdentifierDbmsStandard = OracleObjectIdentifier.Create(SchemaSys, PackageDbmsStandard);
-
 		internal static readonly ICollection<string> BuiltInDataTypes =
 			new HashSet<string>
 			{
@@ -189,7 +179,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				new[]
 				{
 					OracleObjectIdentifier.Create(CurrentSchema, name),
-					OracleObjectIdentifier.Create(SchemaPublic, name)
+					OracleObjectIdentifier.Create(OracleObjectIdentifier.SchemaPublic, name)
 				};
 		}
 
@@ -206,9 +196,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 			IEnumerable<OracleProgramMetadata> programMetadataSource = new List<OracleProgramMetadata>();
 			if (String.IsNullOrEmpty(identifier.Package) && (forceBuiltInFunction || String.IsNullOrEmpty(identifier.Owner)))
 			{
-				var programIdentifier = OracleProgramIdentifier.CreateFromValues(BuiltInFunctionPackageIdentifier.Owner, BuiltInFunctionPackageIdentifier.Name, identifier.Name);
+				var builtInProgramPackage = OracleObjectIdentifier.IdentifierBuiltInFunctionPackage;
+				var programIdentifier = OracleProgramIdentifier.CreateFromValues(builtInProgramPackage.Owner, builtInProgramPackage.Name, identifier.Name);
 
-				if (AllObjects.TryGetValue(BuiltInFunctionPackageIdentifier, out schemaObject))
+				if (AllObjects.TryGetValue(builtInProgramPackage, out schemaObject))
 				{
 					programMetadataSource = BuiltInPackageProgramMetadata[programIdentifier];
 				}
@@ -217,9 +208,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 				if (result.Metadata == null)
 				{
-					if (includePlSqlObjects && AllObjects.TryGetValue(IdentifierDbmsStandard, out schemaObject))
+					if (includePlSqlObjects && AllObjects.TryGetValue(OracleObjectIdentifier.IdentifierDbmsStandard, out schemaObject))
 					{
-						programIdentifier = OracleProgramIdentifier.CreateFromValues(BuiltInFunctionPackageIdentifier.Owner, PackageDbmsStandard, identifier.Name);
+						programIdentifier = OracleProgramIdentifier.CreateFromValues(builtInProgramPackage.Owner, OracleObjectIdentifier.PackageDbmsStandard, identifier.Name);
 						programMetadataSource = BuiltInPackageProgramMetadata[programIdentifier];
 						result.Metadata = TryFindProgramOverload(programMetadataSource, identifier.Name, parameterCount, hasAnalyticClause, true);
 					}

@@ -28,7 +28,27 @@ namespace SqlPad
 			Node = codeCompletion.StatementNode;
 			_insertOffset = codeCompletion.InsertOffset;
 			_caretOffset = codeCompletion.CaretOffset;
-			Description = codeCompletion.Category;
+
+			Application.Current.Dispatcher.Invoke(() => BuildCodeCompletionItemDecription(codeCompletion));
+		}
+
+		private void BuildCodeCompletionItemDecription(ICodeCompletionItem codeCompletion)
+		{
+			var description =
+				new TextBlock
+				{
+					MaxWidth = 500,
+					TextWrapping = TextWrapping.WrapWithOverflow
+				};
+
+			description.Inlines.Add(new Bold(new Run(codeCompletion.Category)));
+
+			if (!String.IsNullOrWhiteSpace(codeCompletion.Description))
+			{
+				description.Inlines.Add(new Run($"{Environment.NewLine}{codeCompletion.Description}"));
+			}
+
+			Description = description;
 		}
 
 		public CompletionData(ICodeSnippet codeSnippet, DocumentPage documentPage)
@@ -36,10 +56,10 @@ namespace SqlPad
 			_documentPage = documentPage;
 			Snippet = codeSnippet;
 			Text = codeSnippet.Name;
-			Application.Current.Dispatcher.Invoke(BuildDecription);
+			Application.Current.Dispatcher.Invoke(BuildCodeSnippetDecription);
 		}
 
-		private void BuildDecription()
+		private void BuildCodeSnippetDecription()
 		{
 			var descriptionText = String.IsNullOrEmpty(Snippet.Description) ? null : $"{Environment.NewLine}{Snippet.Description}";
 			var description = new TextBlock();

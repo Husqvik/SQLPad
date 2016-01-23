@@ -71,7 +71,6 @@ namespace SqlPad.Oracle.ToolTips
 
 		public void VisitProgramReference(OracleProgramReference programReference)
 		{
-			DocumentationPackage documentationPackage;
 			if (programReference.ObjectNode == _terminal)
 			{
 				if (programReference.SchemaObject != null)
@@ -79,6 +78,7 @@ namespace SqlPad.Oracle.ToolTips
 					var viewDetailModel = new ViewDetailsModel { Title = GetFullSchemaObjectToolTip(programReference.SchemaObject) };
 					ToolTip = new ToolTipView { DataContext = viewDetailModel };
 
+					DocumentationPackage documentationPackage;
 					if (OracleHelpProvider.TryGetPackageDocumentation(programReference.SchemaObject, out documentationPackage))
 					{
 						viewDetailModel.Comment = documentationPackage.Description;
@@ -93,22 +93,7 @@ namespace SqlPad.Oracle.ToolTips
 				return;
 			}
 
-			string documentation = null;
-			if ((String.IsNullOrEmpty(programReference.Metadata.Identifier.Owner) || String.Equals(programReference.Metadata.Identifier.Package, OracleDatabaseModelBase.PackageBuiltInFunction)) &&
-			    programReference.Metadata.Type != ProgramType.StatementFunction && OracleHelpProvider.SqlFunctionDocumentation[programReference.Metadata.Identifier.Name].Any())
-			{
-				documentation = OracleHelpProvider.GetBuiltInSqlFunctionDocumentation(programReference.Metadata.Identifier.Name);
-			}
-			else if (OracleHelpProvider.TryGetPackageDocumentation(programReference.SchemaObject, out documentationPackage))
-			{
-				var program = documentationPackage.SubPrograms.SingleOrDefault(sp => String.Equals(sp.Name.ToQuotedIdentifier(), programReference.Metadata.Identifier.Name));
-				if (program != null)
-				{
-					documentation = program.Description;
-				}
-			}
-
-			ToolTip = new ToolTipProgram(programReference.Metadata.Identifier.FullyQualifiedIdentifier, documentation, programReference.Metadata);
+			ToolTip = new ToolTipProgram(programReference.Metadata.Identifier.FullyQualifiedIdentifier, programReference.Metadata.Documentation, programReference.Metadata);
 		}
 
 		private static bool TryGetDataDictionaryObjectDocumentation(OracleObjectIdentifier objectIdentifier, out DocumentationDataDictionaryObject documentation)

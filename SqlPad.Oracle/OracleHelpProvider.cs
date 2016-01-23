@@ -7,7 +7,6 @@ using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
 using SqlPad.Commands;
-using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.DataDictionary;
 using SqlPad.Oracle.SemanticModel;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
@@ -86,13 +85,13 @@ namespace SqlPad.Oracle
 
 					_statementDocumentation = documentation.Statements.ToLookup(s => s.Name);
 
-					_dataDictionaryObjects = documentation.DataDictionary.ToDictionary(o => OracleObjectIdentifier.Create(OracleDatabaseModelBase.SchemaSys, o.Name));
+					_dataDictionaryObjects = documentation.DataDictionary.ToDictionary(o => OracleObjectIdentifier.Create(OracleObjectIdentifier.SchemaSys, o.Name));
 
 					var packageDocumentations = new Dictionary<OracleObjectIdentifier, DocumentationPackage>();
 					var packageProgramDocumentations = new Dictionary<OracleProgramIdentifier, DocumentationPackageSubProgram>();
 					foreach (var packageDocumentation in documentation.Packages)
 					{
-						packageDocumentations.Add(OracleObjectIdentifier.Create(OracleDatabaseModelBase.SchemaSys, packageDocumentation.Name), packageDocumentation);
+						packageDocumentations.Add(OracleObjectIdentifier.Create(OracleObjectIdentifier.SchemaSys, packageDocumentation.Name), packageDocumentation);
 
 						if (packageDocumentation.SubPrograms == null)
 						{
@@ -101,7 +100,7 @@ namespace SqlPad.Oracle
 
 						foreach (var subProgramDocumentation in packageDocumentation.SubPrograms)
 						{
-							packageProgramDocumentations[OracleProgramIdentifier.CreateFromValues(OracleDatabaseModelBase.SchemaSys, packageDocumentation.Name, subProgramDocumentation.Name)] = subProgramDocumentation;
+							packageProgramDocumentations[OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, packageDocumentation.Name, subProgramDocumentation.Name)] = subProgramDocumentation;
 						}
 					}
 
@@ -210,7 +209,7 @@ namespace SqlPad.Oracle
 
 		private static void ShowSqlFunctionDocumentation(OracleProgramIdentifier identifier)
 		{
-			var isBuiltInSqlFunction = (String.IsNullOrEmpty(identifier.Package) || String.Equals(identifier.Package, OracleDatabaseModelBase.PackageBuiltInFunction));
+			var isBuiltInSqlFunction = (String.IsNullOrEmpty(identifier.Package) || String.Equals(identifier.Package, OracleObjectIdentifier.PackageBuiltInFunction));
 			if (isBuiltInSqlFunction)
 			{
 				foreach (var documentation in SqlFunctionDocumentation[identifier.Name])

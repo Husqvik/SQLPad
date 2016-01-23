@@ -8,7 +8,18 @@ namespace SqlPad.Oracle.DataDictionary
 	[DebuggerDisplay("OracleObjectIdentifier (Owner={Owner,nq}; Name={Name,nq})"), Serializable]
 	public struct OracleObjectIdentifier
 	{
+		public const string SchemaPublic = "\"PUBLIC\"";
+		public const string SchemaSys = "\"SYS\"";
+		public const string SchemaSystem = "\"SYSTEM\"";
+		public const string PackageBuiltInFunction = "\"STANDARD\"";
+		public const string PackageDbmsStandard = "\"DBMS_STANDARD\"";
+		public const string PackageDbmsRandom = "\"DBMS_RANDOM\"";
+		public const string PackageDbmsCrypto = "\"DBMS_CRYPTO\"";
+
 		public static readonly OracleObjectIdentifier Empty = new OracleObjectIdentifier(null, null);
+
+		internal static readonly OracleObjectIdentifier IdentifierBuiltInFunctionPackage = Create(SchemaSys, PackageBuiltInFunction);
+		internal static readonly OracleObjectIdentifier IdentifierDbmsStandard = Create(SchemaSys, PackageDbmsStandard);
 
 		public string Owner { get; private set; }
 

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using SqlPad.Oracle.DatabaseConnection;
 
 namespace SqlPad.Oracle.DataDictionary
 {
@@ -13,6 +12,8 @@ namespace SqlPad.Oracle.DataDictionary
 
 	public abstract class OracleSchemaObject : OracleObject
 	{
+		private string _documentation;
+
 		private HashSet<OracleSynonym> _synonyms; 
 
 		public DateTime Created { get; set; }
@@ -27,9 +28,28 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public string Name => FullyQualifiedName.NormalizedName;
 
-	    public string Owner => FullyQualifiedName.NormalizedOwner;
+		public string Owner => FullyQualifiedName.NormalizedOwner;
 
-	    public ICollection<OracleSynonym> Synonyms => _synonyms ?? (_synonyms = new HashSet<OracleSynonym>());
+		public ICollection<OracleSynonym> Synonyms => _synonyms ?? (_synonyms = new HashSet<OracleSynonym>());
+
+		public virtual string Documentation =>
+			DocumentationAvailable
+				? _documentation ?? (_documentation = BuildDocumentation())
+				: null;
+
+		protected virtual bool DocumentationAvailable { get; } = false;
+
+		protected string BuildDocumentation()
+		{
+			DocumentationDataDictionaryObject documentation;
+			if (String.Equals(FullyQualifiedName.NormalizedOwner, OracleObjectIdentifier.SchemaSys) &&
+				OracleHelpProvider.DataDictionaryObjectDocumentation.TryGetValue(FullyQualifiedName, out documentation))
+			{
+				return documentation.Value;
+			}
+
+			return null;
+		}
 	}
 
 	public abstract class OracleDataObject : OracleSchemaObject
@@ -97,6 +117,8 @@ namespace SqlPad.Oracle.DataDictionary
 		public string StatementText { get; set; }
 
 		public override string Type => OracleSchemaObjectType.View;
+
+		protected override bool DocumentationAvailable { get; } = true;
 	}
 
 	[DebuggerDisplay("OracleSynonym (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
@@ -104,9 +126,11 @@ namespace SqlPad.Oracle.DataDictionary
 	{
 		public OracleSchemaObject SchemaObject { get; set; }
 
-		public bool IsPublic => String.Equals(FullyQualifiedName.NormalizedOwner, OracleDatabaseModelBase.SchemaPublic);
+		public bool IsPublic => String.Equals(FullyQualifiedName.NormalizedOwner, OracleObjectIdentifier.SchemaPublic);
 
-	    public override string Type => OracleSchemaObjectType.Synonym;
+		public override string Type => OracleSchemaObjectType.Synonym;
+
+		public override string Documentation => SchemaObject?.Documentation;
 	}
 
 	[DebuggerDisplay("OracleTable (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
@@ -224,6 +248,8 @@ namespace SqlPad.Oracle.DataDictionary
 		public ICollection<OracleProgramMetadata> Programs => _programs;
 
 		public override string Type => OracleSchemaObjectType.Package;
+
+		protected override bool DocumentationAvailable { get; } = true;
 	}
 
 	public abstract class OracleSchemaProgram : OracleSchemaObject, IProgramCollection
@@ -354,7 +380,12 @@ namespace SqlPad.Oracle.DataDictionary
 	[DebuggerDisplay("OracleSchema (Name={Name}; Created={Created}; IsOracleMaintained={IsOracleMaintained}; IsCommon={IsCommon})")]
 	public struct OracleSchema
 	{
-		public static readonly OracleSchema Public = new OracleSchema { Name = OracleDatabaseModelBase.SchemaPublic, IsOracleMaintained = true };
+		public static readonly OracleSchema Public =
+			new OracleSchema
+			{
+				Name = OracleObjectIdentifier.SchemaPublic,
+				IsOracleMaintained = true
+			};
 
 		public string Name { get; set; }
 

@@ -878,7 +878,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 		}
 
-		private IEnumerable<OracleProgramMetadata> FilterFunctionsWithUnavailableMetadata(IEnumerable<OracleProgramMetadata> functions)
+		private static IEnumerable<OracleProgramMetadata> FilterFunctionsWithUnavailableMetadata(IEnumerable<OracleProgramMetadata> functions)
 		{
 			return functions.Where(m => m != null);
 		}
@@ -957,7 +957,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			var allSchemas = schemas.ToDictionary(s => s.Name);
 			_schemas = allSchemas.Values.Select(s => s.Name.Trim('"')).ToHashSet();
-			allSchemas.Add(SchemaPublic, OracleSchema.Public);
+			allSchemas.Add(OracleObjectIdentifier.SchemaPublic, OracleSchema.Public);
 			_allSchemas = new ReadOnlyDictionary<string, OracleSchema>(allSchemas);
 		}
 
