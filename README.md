@@ -1,4 +1,4 @@
-SQLPad 0.4.0.188
+SQLPad 0.4.0.189
 ================
 
 SQLPad is an experimental SQL editor focused to quick and comfortable work.
@@ -101,6 +101,8 @@ F1                         - Show documentation (built-in SQL functions and pack
 CTRL + ALT + H             - Show execution history
 
 SHIFT + F6                 - Rename symbol
+
+CTRL + SHIFT + V           - Clipboard history
 
 Context actions
 ---------------

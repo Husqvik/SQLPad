@@ -6,8 +6,10 @@ namespace SqlPad
 {
 	public static class EditorNavigationService
 	{
+		private const int MaximumClipboardEntries = 32;
+
 		private static readonly List<DocumentCursorPosition> DocumentCursorPositions = new List<DocumentCursorPosition>();
-		private static readonly HashSet<string> ClipboardHistoryEntries = new HashSet<string>();
+		private static readonly List<string> ClipboardHistoryEntries = new List<string>(MaximumClipboardEntries);
 		private static Guid? _lastDocumentIdentifier;
 		private static int _lastCursorPosition = -1;
 
@@ -15,7 +17,7 @@ namespace SqlPad
 
 		public static bool IsEnabled { get; set; }
 
-		public static IReadOnlyCollection<string> ClipboardHistory { get; } = ClipboardHistoryEntries;
+		public static IReadOnlyList<string> ClipboardHistory { get; } = ClipboardHistoryEntries.AsReadOnly();
 
 		public static void Initialize(WorkDocument initialDocument = null)
 		{
@@ -41,7 +43,13 @@ namespace SqlPad
 			}
 
 			ClipboardHistoryEntries.Remove(text);
-			ClipboardHistoryEntries.Add(text);
+
+			if (ClipboardHistoryEntries.Count == MaximumClipboardEntries)
+			{
+				ClipboardHistoryEntries.RemoveAt(MaximumClipboardEntries - 1);
+			}
+
+			ClipboardHistoryEntries.Insert(0, text);
 		}
 
 		public static void RegisterDocumentCursorPosition(WorkDocument workDocument, int cursorPosition)

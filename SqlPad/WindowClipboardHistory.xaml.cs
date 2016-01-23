@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Data;
@@ -36,7 +38,7 @@ namespace SqlPad
 				return;
 			}
 
-			PasteSelectedItem();
+			PasteSelectedClipboardEntry();
 		}
 
 		private static Key GetEntryHotKey(int index)
@@ -54,16 +56,40 @@ namespace SqlPad
 
 		private void PasteClickHandler(object sender, RoutedEventArgs args)
 		{
-			PasteSelectedItem();
+			PasteSelectedClipboardEntry();
 		}
 
-		private void PasteSelectedItem()
+		private void PasteSelectedClipboardEntry()
 		{
 			var collectionView = CollectionViewSource.GetDefaultView(_entries);
 			var clipboardEntry = (ClipboardEntry)collectionView.CurrentItem;
-			App.MainWindow.ActiveDocument.InsertText(clipboardEntry.Text);
+			PasteClipboardEntry(clipboardEntry);
+		}
 
+		private void PasteClipboardEntry(ClipboardEntry clipboardEntry)
+		{
+			App.MainWindow.ActiveDocument.InsertText(clipboardEntry.Text);
 			Close();
+		}
+
+		private void KeyDownHandler(object sender, KeyEventArgs args)
+		{
+			var key = args.Key;
+			if (key >= Key.NumPad0 && key <= Key.NumPad9)
+			{
+				key -= 40;
+			}
+
+			if (key < Key.D0 || key > Key.Z)
+			{
+				return;
+			}
+
+			var clipboardEntry = _entries.SingleOrDefault(e => e.HotKey == key);
+			if (clipboardEntry != null)
+			{
+				PasteClipboardEntry(clipboardEntry);
+			}
 		}
 	}
 
@@ -74,5 +100,17 @@ namespace SqlPad
 		public string Title { get; set; }
 
 		public string Text { get; set; }
+	}
+
+	internal class KeyToCharacterConverter : ValueConverterBase
+	{
+		private static readonly string[] Characters =
+			{ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
+
+		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			var index = (int)value - 34;
+			return Characters[index];
+		}
 	}
 }

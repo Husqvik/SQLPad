@@ -10,7 +10,12 @@
         WindowStartupLocation="CenterOwner"
         Title="Clipboard History" Width="640" Height="480"
         Loaded="LoadedHandler"
+        KeyDown="KeyDownHandler"
         DataContext="{Binding RelativeSource={RelativeSource Self}}">
+	<Window.Resources>
+		<sqlPad:KeyToCharacterConverter x:Key="KeyToCharacterConverter" />
+	</Window.Resources>
+
 	<Border Margin="4">
 		<Grid>
 			<Grid.RowDefinitions>
@@ -27,11 +32,11 @@
 					<DataTemplate>
 						<Grid Height="17" MouseDown="MouseDownHandler">
 							<Grid.ColumnDefinitions>
-								<ColumnDefinition SharedSizeGroup="HotKey" />
+								<ColumnDefinition SharedSizeGroup="HotKey" Width="16" />
 								<ColumnDefinition SharedSizeGroup="Text" />
 							</Grid.ColumnDefinitions>
 
-							<!--<TextBlock Grid.Column="0" Text="{Binding HotKey, Mode=OneWay}" />-->
+							<TextBlock Grid.Column="0" Text="{Binding HotKey, Converter={StaticResource KeyToCharacterConverter}}" />
 							<TextBlock Grid.Column="1" Text="{Binding Title}" />
 						</Grid>
 					</DataTemplate>
