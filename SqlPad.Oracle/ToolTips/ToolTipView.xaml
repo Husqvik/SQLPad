@@ -17,12 +17,8 @@
 	</toolTips:PopupBase.Resources>
 
 	<StackPanel>
-		<GroupBox BorderThickness="0">
-			<GroupBox.Header>
-				<TextBlock Text="{Binding Title}" FontWeight="Bold"/>
-			</GroupBox.Header>
-			<TextBox Text="{Binding Comment}" Visibility="{Binding Comment, Converter={StaticResource ObjectToVisibilityConverter}}" Style="{StaticResource TextBoxBackgroundLessReadOnly}" MaxWidth="480" TextWrapping="WrapWithOverflow" />
-		</GroupBox>
+		<TextBlock Text="{Binding Title}" FontWeight="Bold" Margin="4,2" />
+		<TextBox Text="{Binding Comment}" Visibility="{Binding Comment, Converter={StaticResource ObjectToVisibilityConverter}}" Style="{StaticResource TextBoxBackgroundLessReadOnly}" MaxWidth="480" TextWrapping="WrapWithOverflow" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" Margin="4,2" />
 
 		<toolTips:ConstraintList Padding="0" Constraints="{Binding ConstraintDetails}">
 			<toolTips:ConstraintList.Style>

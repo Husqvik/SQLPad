@@ -132,9 +132,9 @@ namespace SqlPad.Oracle.DebugTrace
 
 				IsTracing = !IsTracing;
 			}
-			catch (Exception e)
+			catch (Exception exception)
 			{
-				Messages.ShowError(e.Message);
+				Messages.ShowError(exception.Message);
 			}
 
 			UpdateSessionIdAndTraceFileName();
@@ -157,9 +157,16 @@ namespace SqlPad.Oracle.DebugTrace
 			TKProfEnabled = !String.IsNullOrEmpty(OracleConfiguration.Configuration.TKProfPath);
 		}
 
-		private void TraceFileNameHyperlinkClickHandler(object sender, RoutedEventArgs e)
+		private void TraceFileNameHyperlinkClickHandler(object sender, RoutedEventArgs args)
 		{
-			NavigateToTraceFile(TraceFileName);
+			try
+			{
+				NavigateToTraceFile(TraceFileName);
+			}
+			catch (Exception exception)
+			{
+				Messages.ShowError(exception.Message);
+			}
 		}
 
 		internal static void NavigateToTraceFile(string traceFileName)

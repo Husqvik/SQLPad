@@ -88,7 +88,7 @@
 		<StackPanel Grid.Row="1">
 			<StackPanel Orientation="Horizontal">
 				<TextBlock Text="Trace identifier: " />
-				<TextBox Text="{Binding TraceIdentifier}" Width="160" MaxLength="36">
+				<TextBox Text="{Binding TraceIdentifier}" Width="420" MaxLength="36">
 					<TextBox.Style>
 						<Style>
 							<Style.Triggers>
