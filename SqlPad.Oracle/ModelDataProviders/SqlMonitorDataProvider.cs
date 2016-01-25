@@ -172,9 +172,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 				}
 
 				var allSessionPlanItemSamples = 0;
+				List<ActiveSessionHistoryItem> sessionHistoryItems;
 				foreach (var parallelSessionItem in planItemActiveSessionHistoryItems.Key.ParallelSlaveSessionItems)
 				{
-					List<ActiveSessionHistoryItem> sessionHistoryItems;
 					var activeSessionHistorySampleCount = planItemActiveSessionHistoryItems.Value.TryGetValue(parallelSessionItem.SessionIdentifier, out sessionHistoryItems)
 						? sessionHistoryItems.Count
 						: 0;
@@ -184,6 +184,12 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 					allSessionPlanItemSamples += parallelSessionItem.ActiveSessionHistorySampleCount;
 				}
+
+				var queryCoordinatorPlanItemSamples = planItemActiveSessionHistoryItems.Value.TryGetValue(SessionIdentifier, out sessionHistoryItems)
+					? sessionHistoryItems.Count
+					: 0;
+
+				allSessionPlanItemSamples += queryCoordinatorPlanItemSamples;
 
 				planItemActiveSessionHistoryItems.Key.AllSessionSummaryPlanItem.ActiveSessionHistorySampleCount = allSessionPlanItemSamples;
 				planItemActiveSessionHistoryItems.Key.AllSessionSummaryPlanItem.ActivityRatio = (decimal)allSessionPlanItemSamples / _totalActiveSessionHistorySamples;
