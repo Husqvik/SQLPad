@@ -59,10 +59,18 @@ namespace SqlPad.Oracle.SemanticModel
 		{
 			foreach (var program in programs)
 			{
-				var declarationReferenceSourceNodes = program.RootNode.GetPathFilterDescendants(n => !String.Equals(n.Id, NonTerminals.ItemList2) && !String.Equals(n.Id, NonTerminals.ProgramBody) && !String.Equals(n.Id, NonTerminals.CursorDefinition), NonTerminals.PlSqlExpression);
+				var declarationReferenceSourceNodes = program.RootNode.GetPathFilterDescendants(n => !String.Equals(n.Id, NonTerminals.ItemList2) && !String.Equals(n.Id, NonTerminals.ProgramBody) && !String.Equals(n.Id, NonTerminals.CursorDefinition), NonTerminals.PlSqlExpression, NonTerminals.PlSqlDataType);
 				foreach (var sourceNode in declarationReferenceSourceNodes)
 				{
-					FindPlSqlReferences(program, sourceNode);
+					switch (sourceNode.Id)
+					{
+						case NonTerminals.PlSqlExpression:
+							FindPlSqlReferences(program, sourceNode);
+							break;
+						case NonTerminals.PlSqlDataType:
+							OracleReferenceBuilder.TryCreatePlSqlDataTypeReference(program, sourceNode);
+							break;
+					}
 				}
 
 				var programBodyNode = program.RootNode.GetPathFilterDescendants(n => !String.Equals(n.Id, NonTerminals.ProgramDeclareSection), NonTerminals.ProgramBody).FirstOrDefault();
@@ -259,7 +267,13 @@ namespace SqlPad.Oracle.SemanticModel
 
 			foreach (var exceptionReference in program.PlSqlExceptionReferences)
 			{
-				TryResolveLocalReference(exceptionReference, exceptionReference.PlSqlProgram.Exceptions, exceptionReference.Exceptions);
+				TryResolveLocalReference(exceptionReference, program.Exceptions, exceptionReference.Exceptions);
+			}
+
+			foreach (var dataTypeReference in program.DataTypeReferences)
+			{
+				//TryResolveLocalReference(dataTypeReference, program.Types, dataTypeReference.PlSqlTypes);
+				OracleReferenceBuilder.ResolveSchemaType(dataTypeReference);
 			}
 
 			ResolveSubProgramReferences(program.SubPrograms);

@@ -31,6 +31,7 @@ namespace SqlPad
 		protected override void OnInitialized(EventArgs e)
 		{
 			Options.AllowScrollBelowDocument = true;
+			Options.AllowToggleOverstrikeMode = true;
 
 			base.OnInitialized(e);
 

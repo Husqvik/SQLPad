@@ -50,7 +50,6 @@ namespace SqlPad.Oracle.SemanticModel
 		private readonly HashSet<StatementGrammarNode> _redundantTerminals = new HashSet<StatementGrammarNode>();
 		private readonly List<RedundantTerminalGroup> _redundantTerminalGroups = new List<RedundantTerminalGroup>();
 		private readonly OracleDatabaseModelBase _databaseModel;
-		private readonly OracleReferenceBuilder _referenceBuilder;
 		private readonly Dictionary<OracleSelectListColumn, List<OracleDataObjectReference>> _asteriskTableReferences = new Dictionary<OracleSelectListColumn, List<OracleDataObjectReference>>();
 		private readonly Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>> _accessibleQueryBlockRoot = new Dictionary<OracleQueryBlock, ICollection<StatementGrammarNode>>();
 		private readonly Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementGrammarNode, string>>> _objectReferenceCteRootNodes = new Dictionary<OracleDataObjectReference, ICollection<KeyValuePair<StatementGrammarNode, string>>>();
@@ -142,7 +141,6 @@ namespace SqlPad.Oracle.SemanticModel
 			_databaseModel = databaseModel;
 
 			MainObjectReferenceContainer = new OracleMainObjectReferenceContainer(this);
-			_referenceBuilder = new OracleReferenceBuilder(this);
 
 			NonQueryBlockTerminals = StatementGrammarNode.EmptyArray;
 		}
@@ -2882,7 +2880,7 @@ namespace SqlPad.Oracle.SemanticModel
 			var hasNotDatabaseLink = OracleReferenceBuilder.GetDatabaseLinkFromIdentifier(identifier) == null;
 			if (String.Equals(identifier.ParentNode.ParentNode.Id, NonTerminals.DataType))
 			{
-				var dataTypeReference = _referenceBuilder.CreateDataTypeReference(queryBlock, selectListColumn, placement, identifier);
+				var dataTypeReference = OracleReferenceBuilder.CreateDataTypeReference(queryBlock, selectListColumn, placement, identifier);
 				referenceContainer.DataTypeReferences.Add(dataTypeReference);
 				return dataTypeReference;
 			}

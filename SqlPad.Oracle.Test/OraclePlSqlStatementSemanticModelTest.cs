@@ -744,6 +744,26 @@ END;";
 		}
 
 		[Test]
+		public void TestDataTypeReferenceInVariableDeclaration()
+		{
+			const string plsqlText =
+@"DECLARE
+	variable sys.odcirawlist := sys.odcirawlist(0);
+BEGIN
+	NULL;
+END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
+
+			semanticModel.Programs.Count.ShouldBe(1);
+			var program = semanticModel.Programs[0];
+			program.DataTypeReferences.Count.ShouldBe(1);
+			var dataTypeReference = program.DataTypeReferences.First();
+			dataTypeReference.SchemaObject.ShouldNotBe(null);
+		}
+
+		[Test]
 		public void TestPackagePrograms()
 		{
 			const string plsqlText =

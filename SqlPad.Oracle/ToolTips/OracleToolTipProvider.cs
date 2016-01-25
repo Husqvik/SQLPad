@@ -149,7 +149,8 @@ namespace SqlPad.Oracle.ToolTips
 							?? semanticModel.GetProgramReference(node)
 							?? semanticModel.GetTypeReference(node)
 							?? semanticModel.GetPlSqlExceptionReference(node)
-							?? (OracleReference)semanticModel.GetPlSqlVariableReference(node);
+							?? semanticModel.GetPlSqlVariableReference(node)
+							?? GetObjectReference(semanticModel, node);
 
 						reference?.Accept(toolTipBuilderVisitor);
 						if (toolTipBuilderVisitor.ToolTip != null)

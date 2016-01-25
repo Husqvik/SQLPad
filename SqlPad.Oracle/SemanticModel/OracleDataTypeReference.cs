@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using SqlPad.Oracle.DataDictionary;
 
@@ -16,6 +17,8 @@ namespace SqlPad.Oracle.SemanticModel
 		public StatementGrammarNode ScaleNode { get; set; }
 		
 		public StatementGrammarNode LengthNode { get; set; }
+
+		public ICollection<OraclePlSqlType> PlSqlTypes { get; } = new List<OraclePlSqlType>();
 
 		public override void Accept(IOracleReferenceVisitor visitor)
 		{

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.SemanticModel;
@@ -10,36 +11,93 @@ namespace SqlPad.Oracle.DataDictionary
 {
 	internal class OracleReferenceBuilder
 	{
-		private readonly OracleStatementSemanticModel _semanticModel;
-
-		public OracleReferenceBuilder(OracleStatementSemanticModel semanticModel)
+		public static void TryCreatePlSqlDataTypeReference(OraclePlSqlProgram program, StatementGrammarNode dataTypeNode)
 		{
-			_semanticModel = semanticModel;
+			StatementGrammarNode ownerNode = null;
+			StatementGrammarNode typeIdentifier = null;
+
+			var firstChild = dataTypeNode[0];
+			if (String.Equals(firstChild.Id, NonTerminals.AssignmentStatementTarget))
+			{
+				var percentCharacterTypeOrRowTypeNotFound = dataTypeNode.ChildNodes.Count == 1;
+				if (percentCharacterTypeOrRowTypeNotFound)
+				{
+					var chainedIdentifiers = GatherChainedIdentifiers(firstChild).ToList();
+					if (chainedIdentifiers.Count <= 2)
+					{
+						typeIdentifier = chainedIdentifiers.Last();
+						ownerNode = chainedIdentifiers.FirstOrDefault(i => i != typeIdentifier);
+					}
+				}
+			}
+
+			if (typeIdentifier == null)
+			{
+				return;
+			}
+
+			var dataTypeReference =
+				new OracleDataTypeReference
+				{
+					RootNode = dataTypeNode,
+					Container = program,
+					OwnerNode = ownerNode,
+					ObjectNode = typeIdentifier
+				};
+
+			ResolveTypeMetadata(dataTypeReference);
+
+			program.DataTypeReferences.Add(dataTypeReference);
 		}
 
-		public OracleDataTypeReference CreateDataTypeReference(OracleQueryBlock queryBlock, OracleSelectListColumn selectListColumn, StatementPlacement placement, StatementGrammarNode typeIdentifier)
+		private static IEnumerable<StatementGrammarNode> GatherChainedIdentifiers(StatementGrammarNode assignmentStatementTargetNode)
+		{
+			var sourceNode = assignmentStatementTargetNode;
+
+			while (sourceNode != null)
+			{
+				var identifier = sourceNode[Terminals.PlSqlIdentifier];
+				if (identifier == null)
+				{
+					break;
+				}
+
+				yield return identifier;
+
+				sourceNode = sourceNode[NonTerminals.DotRecordAttributeChained];
+			}
+		}
+
+		public static OracleDataTypeReference CreateDataTypeReference(OracleQueryBlock queryBlock, OracleSelectListColumn selectListColumn, StatementPlacement placement, StatementGrammarNode typeIdentifier)
 		{
 			var dataTypeNode = typeIdentifier.ParentNode.ParentNode;
 			var dataTypeReference =
 				new OracleDataTypeReference
 				{
 					RootNode = dataTypeNode,
+					Owner = queryBlock,
+					Container = queryBlock,
 					OwnerNode = dataTypeNode[NonTerminals.SchemaDatatype, NonTerminals.SchemaPrefix, Terminals.SchemaIdentifier],
 					ObjectNode = typeIdentifier,
 					DatabaseLinkNode = String.Equals(typeIdentifier.Id, Terminals.DataTypeIdentifier) ? GetDatabaseLinkFromIdentifier(typeIdentifier) : null,
 					Placement = placement,
-					Owner = queryBlock,
 					SelectListColumn = selectListColumn
 				};
 
 			ResolveTypeMetadata(dataTypeReference);
 
-			if (dataTypeReference.DatabaseLinkNode == null && _semanticModel.HasDatabaseModel)
-			{
-				dataTypeReference.SchemaObject = _semanticModel.DatabaseModel.GetFirstSchemaObject<OracleTypeBase>(_semanticModel.DatabaseModel.GetPotentialSchemaObjectIdentifiers(dataTypeReference.FullyQualifiedObjectName));
-			}
+			ResolveSchemaType(dataTypeReference);
 
 			return dataTypeReference;
+		}
+
+		public static void ResolveSchemaType(OracleDataTypeReference dataTypeReference)
+		{
+			var semanticModel = dataTypeReference.Container.SemanticModel;
+			if (dataTypeReference.DatabaseLinkNode == null && semanticModel.HasDatabaseModel)
+			{
+				dataTypeReference.SchemaObject = semanticModel.DatabaseModel.GetFirstSchemaObject<OracleTypeBase>(semanticModel.DatabaseModel.GetPotentialSchemaObjectIdentifiers(dataTypeReference.FullyQualifiedObjectName));
+			}
 		}
 
 		public static StatementGrammarNode GetDatabaseLinkFromIdentifier(StatementGrammarNode identifier)
@@ -107,9 +165,9 @@ namespace SqlPad.Oracle.DataDictionary
 		{
 			var dataTypeNode = dataTypeReference.RootNode;
 
-			if (!String.Equals(dataTypeNode.Id, NonTerminals.DataType))
+			if (!String.Equals(dataTypeNode.Id, NonTerminals.DataType) && !String.Equals(dataTypeNode.Id, NonTerminals.PlSqlDataType))
 			{
-				throw new ArgumentException("Node ID must be 'DataType'. ", "dataTypeNode");
+				throw new ArgumentException("Node ID must be 'DataType' or 'PlSqlDataType'. ", "dataTypeNode");
 			}
 
 			var owner = String.Equals(dataTypeNode.FirstTerminalNode.Id, Terminals.SchemaIdentifier)

@@ -1096,7 +1096,7 @@ namespace SqlPad.Oracle
 				if (dataTypeReference.DatabaseLinkNode == null)
 				{
 					var dataTypeName = ((OracleToken)dataTypeReference.ObjectNode.Token).UpperInvariantValue;
-					if (dataTypeReference.SchemaObject == null && (String.Equals(dataTypeReference.ObjectNode.Id, Terminals.DataTypeIdentifier) && !OracleDatabaseModelBase.BuiltInDataTypes.Contains(dataTypeName)))
+					if (dataTypeReference.SchemaObject == null && dataTypeReference.ObjectNode.Id.IsIdentifier() && !OracleDatabaseModelBase.BuiltInDataTypes.Contains(dataTypeName))
 					{
 						validationModel.IdentifierNodeValidity[dataTypeReference.ObjectNode] =
 							new NodeValidationData { Node = dataTypeReference.ObjectNode, IsRecognized = false };
