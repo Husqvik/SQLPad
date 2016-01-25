@@ -118,6 +118,8 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public void AddActiveSessionHistoryItems(IEnumerable<ActiveSessionHistoryItem> historyItems)
 		{
+			var lastSampleTime = LastSampleTime;
+
 			foreach (var itemGroup in historyItems.GroupBy(i => i.SessionIdentifier))
 			{
 				SqlMonitorSessionItem sessionItem;
@@ -128,9 +130,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 				foreach (var historyItem in itemGroup)
 				{
-					if (LastSampleTime == null || historyItem.SampleTime > LastSampleTime)
+					if (lastSampleTime == null || historyItem.SampleTime > lastSampleTime)
 					{
-						LastSampleTime = historyItem.SampleTime;
+						lastSampleTime = historyItem.SampleTime;
 					}
 
 					Dictionary<SessionIdentifier, List<ActiveSessionHistoryItem>> sessionPlanHistoryItems;
@@ -151,10 +153,12 @@ namespace SqlPad.Oracle.ModelDataProviders
 				}
 			}
 
-			if (LastSampleTime == null)
+			if (lastSampleTime == null)
 			{
 				return;
 			}
+
+			LastSampleTime = lastSampleTime;
 
 			var recentActivityThreshold = LastSampleTime.Value.Add(-RefreshPeriod);
 
