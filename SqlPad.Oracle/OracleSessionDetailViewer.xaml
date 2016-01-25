@@ -14,6 +14,7 @@
 		<sqlPad:DataSpaceConverter x:Key="DataSpaceConverter" />
 		<sqlPad:ListAggregationConverter x:Key="ListAggregationConverter" />
 		<oracle:SessionIdSummaryConverter x:Key="SessionIdSummaryConverter" />
+		<sqlPad:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
 
 		<Style x:Key="CellRealOnly">
 			<Setter Property="TextBoxBase.IsReadOnly" Value="True" />
@@ -25,44 +26,44 @@
 			<Setter Property="Control.HorizontalContentAlignment" Value="Right" />
 		</Style>
 	</UserControl.Resources>
-	
-	<StackPanel>
-		<Expander Header="_Execution plan" IsExpanded="True">
-			<executionPlan:ExecutionPlanTreeView x:Name="ExecutionPlanTreeView" />
-		</Expander>
-		<Expander Header="_Session details" IsExpanded="True">
-			<Expander.Style>
-				<Style>
-					<Style.Triggers>
-						<DataTrigger Binding="{Binding SessionItems}" Value="{x:Null}">
-							<Setter Property="Expander.Visibility" Value="Collapsed" />
-						</DataTrigger>
-						<DataTrigger Binding="{Binding SessionItems.Count}" Value="0">
-							<Setter Property="Expander.Visibility" Value="Collapsed" />
-						</DataTrigger>
-					</Style.Triggers>
-				</Style>
-			</Expander.Style>
 
-			<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsDeferredScrollingEnabled="True">
+	<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsDeferredScrollingEnabled="True">
+		<StackPanel>
+			<Expander Header="_Execution plan" IsExpanded="True" Visibility="{Binding ElementName=ExecutionPlanTreeView, Path=RootItem, Converter={StaticResource ObjectToVisibilityConverter}}">
+				<executionPlan:ExecutionPlanTreeView x:Name="ExecutionPlanTreeView" />
+			</Expander>
+			<Expander Header="_Session details" IsExpanded="True">
+				<Expander.Style>
+					<Style>
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding SessionItems}" Value="{x:Null}">
+								<Setter Property="Expander.Visibility" Value="Collapsed" />
+							</DataTrigger>
+							<DataTrigger Binding="{Binding SessionItems.Count}" Value="0">
+								<Setter Property="Expander.Visibility" Value="Collapsed" />
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</Expander.Style>
+
 				<StackPanel>
 					<DataGrid x:Name="SessionDataGrid"
-							  CanUserDeleteRows="False"
-							  CanUserAddRows="False"
-							  CanUserResizeRows="False"
-							  SelectionUnit="FullRow"
-							  SelectionMode="Single"
-							  HorizontalGridLinesBrush="LightGray"
-							  VerticalGridLinesBrush="LightGray"
-							  AutoGenerateColumns="False"
-							  RowHeaderWidth="0"
-							  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-							  ItemsSource="{Binding SessionItems}"
-							  MaxColumnWidth="{Binding ElementName=SessionDataGrid, Path=ActualWidth}"
-							  Sorting="SessionDataGridSortingHandler"
-							  AlternationCount="2"
-							  AlternatingRowBackground="#FAFAFA"
-							  BeginningEdit="SessionDataGridBeginningEditCancelTextInputHandler">
+								CanUserDeleteRows="False"
+								CanUserAddRows="False"
+								CanUserResizeRows="False"
+								SelectionUnit="FullRow"
+								SelectionMode="Single"
+								HorizontalGridLinesBrush="LightGray"
+								VerticalGridLinesBrush="LightGray"
+								AutoGenerateColumns="False"
+								RowHeaderWidth="0"
+								ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+								ItemsSource="{Binding SessionItems}"
+								MaxColumnWidth="{Binding ElementName=SessionDataGrid, Path=ActualWidth}"
+								Sorting="SessionDataGridSortingHandler"
+								AlternationCount="2"
+								AlternatingRowBackground="#FAFAFA"
+								BeginningEdit="SessionDataGridBeginningEditCancelTextInputHandler">
 						<DataGrid.Columns>
 							<DataGridTextColumn Header="Instance" Binding="{Binding SessionIdentifier.Instance, Converter={StaticResource SessionIdSummaryConverter}}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
 							<DataGridTextColumn Header="SID" Binding="{Binding SessionIdentifier.SessionId, Converter={StaticResource SessionIdSummaryConverter}}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
@@ -105,20 +106,20 @@
 					</DataGrid>
 					
 					<DataGrid x:Name="SummaryDataGrid"
-							  CanUserDeleteRows="False"
-							  CanUserSortColumns="False"
-							  CanUserAddRows="False"
-							  CanUserResizeRows="False"
-							  SelectionUnit="FullRow"
-							  SelectionMode="Single"
-							  HorizontalGridLinesBrush="LightGray"
-							  VerticalGridLinesBrush="LightGray"
-							  AutoGenerateColumns="False"
-							  HeadersVisibility="None"
-							  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-							  ItemsSource="{Binding SummarySession}"
-							  Width="{Binding ElementName=SessionDataGrid, Path=ActualWidth}"
-							  BeginningEdit="SessionDataGridBeginningEditCancelTextInputHandler">
+								CanUserDeleteRows="False"
+								CanUserSortColumns="False"
+								CanUserAddRows="False"
+								CanUserResizeRows="False"
+								SelectionUnit="FullRow"
+								SelectionMode="Single"
+								HorizontalGridLinesBrush="LightGray"
+								VerticalGridLinesBrush="LightGray"
+								AutoGenerateColumns="False"
+								HeadersVisibility="None"
+								ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+								ItemsSource="{Binding SummarySession}"
+								Width="{Binding ElementName=SessionDataGrid, Path=ActualWidth}"
+								BeginningEdit="SessionDataGridBeginningEditCancelTextInputHandler">
 
 						<DataGrid.Style>
 							<Style>
@@ -163,7 +164,7 @@
 						</DataGrid.Columns>
 					</DataGrid>
 				</StackPanel>
-			</ScrollViewer>
-		</Expander>
-	</StackPanel>
+			</Expander>
+		</StackPanel>
+	</ScrollViewer>
 </UserControl>
