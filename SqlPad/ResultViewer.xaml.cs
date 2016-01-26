@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -359,7 +360,8 @@ namespace SqlPad
 		}
 		private void AppendRows(IEnumerable<object[]> rows)
 		{
-			_resultRows.AddRange(rows);
+			Dispatcher.Invoke(DispatcherPriority.DataBind, (Action<IEnumerable<object[]>>)(items => _resultRows.AddRange(items)), rows);
+
 			_outputViewer.StatusInfo.MoreRowsAvailable = _outputViewer.ConnectionAdapter.CanFetch(_resultInfo);
 		}
 
@@ -521,19 +523,7 @@ namespace SqlPad
 				ResultGrid.SelectedCells.Clear();
 			}
 
-			_isSelectingCells = true;
-
-			var selectedCells = ResultGrid.SelectedCells.ToHashSet();
-			foreach (object[] rowItems in ResultGrid.Items)
-			{
-				var cell = new DataGridCellInfo(rowItems, header.Column);
-				if (clearCurrentCells || !selectedCells.Contains(cell))
-				{
-					ResultGrid.SelectedCells.Add(cell);
-				}
-			}
-
-			_isSelectingCells = false;
+			ResultGrid.SelectedCells.GetType().InvokeMember("AddRegion", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.InvokeMethod, null, ResultGrid.SelectedCells, new object[] { 0, header.Column.DisplayIndex, ResultGrid.Items.Count, 1 });
 
 			SelectedRowIndex = ResultGrid.SelectedCells.Count;
 
