@@ -209,6 +209,7 @@ namespace SqlPad.Oracle.SemanticModel
 			var tokenValue = expressionNode.FirstTerminalNode.Token.Value;
 			string literalInferredDataTypeName = null;
 			var literalInferredDataType = new OracleDataType();
+			var nullable = false;
 			switch (expressionNode.FirstTerminalNode.Id)
 			{
 				case Terminals.StringLiteral:
@@ -227,6 +228,7 @@ namespace SqlPad.Oracle.SemanticModel
 					}
 
 					literalInferredDataType.Length = tokenValue.ToPlainString().Length;
+					nullable = literalInferredDataType.Length == 0;
 
 					break;
 				case Terminals.NumberLiteral:
@@ -275,7 +277,7 @@ namespace SqlPad.Oracle.SemanticModel
 			{
 				literalInferredDataType.FullyQualifiedName = OracleObjectIdentifier.Create(null, literalInferredDataTypeName);
 				column.DataType = literalInferredDataType;
-				column.Nullable = false;
+				column.Nullable = nullable;
 				return true;
 			}
 

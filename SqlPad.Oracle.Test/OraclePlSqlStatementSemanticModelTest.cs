@@ -703,7 +703,7 @@ END;";
 			Assert.DoesNotThrow(() => semanticModel.Build(CancellationToken.None));
 		}
 
-		[Test, Ignore]
+		[Test]
 		public void TestCursorColumnReference()
 		{
 			const string plsqlText =

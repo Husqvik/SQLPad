@@ -3308,5 +3308,22 @@ SELECT * FROM TABLE(f)";
 			var mainQueryBlock = semanticModel.QueryBlocks.Single();
 			mainQueryBlock.ProgramReferences.Count.ShouldBe(1);
 		}
+
+		[Test(Description = @"")]
+		public void TestColumnTypeDefinedByEmptyString()
+		{
+			const string query1 =
+@"WITH data AS (SELECT '' value FROM dual)
+SELECT value FROM data";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single().Validate();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
+			var mainQueryBlock = semanticModel.QueryBlocks.Single(qb => qb.Type == QueryBlockType.Normal);
+			mainQueryBlock.Columns.Count.ShouldBe(1);
+			mainQueryBlock.Columns[0].ColumnDescription.FullTypeName.ShouldBe("CHAR(0)");
+			mainQueryBlock.Columns[0].ColumnDescription.Nullable.ShouldBe(true);
+		}
 	}
 }

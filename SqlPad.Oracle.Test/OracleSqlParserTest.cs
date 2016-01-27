@@ -5491,6 +5491,18 @@ TABLESPACE TBS_HQ_PDB";
 				}
 
 				[Test(Description = @"")]
+				public void TestCreateTableWithPrimaryKeyConstraintPrecedingNotNullConstraint()
+				{
+					const string statementText = @"CREATE TABLE test_table (ID NUMBER PRIMARY KEY NOT NULL)";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
+
+				[Test(Description = @"")]
 				public void TestCreateExternalTableUsingDataPump()
 				{
 					const string statementText =

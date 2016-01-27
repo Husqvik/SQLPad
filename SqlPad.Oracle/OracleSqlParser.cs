@@ -672,7 +672,9 @@ namespace SqlPad.Oracle
 						if (result.Status == ParseStatus.SequenceNotFound)
 						{
 							if (workingNodes.Count == 0)
+							{
 								break;
+							}
 
 							isSequenceValid = false;
 							workingNodes.Add(alternativeNode.Clone());
@@ -713,7 +715,7 @@ namespace SqlPad.Oracle
 					if (bestCandidateTerminalCount > workingTerminalCount)
 					{
 						var currentTerminalCount = bestCandidateNodes.SelectMany(n => n.Terminals).TakeWhile(t => !t.Id.IsIdentifierOrAlias() && !t.Id.IsLiteral()).Count();
-						if (currentTerminalCount > workingTerminalCount)
+						if (currentTerminalCount > workingTerminalCount && workingNodes.FirstOrDefault()?.FirstTerminalNode.Id.IsIdentifierOrAlias() == true)
 						{
 							workingNodes.ForEach(n => n.IsGrammarValid = false);
 						}
@@ -721,7 +723,9 @@ namespace SqlPad.Oracle
 					#endregion
 
 					if (isSequenceValid)
+					{
 						break;
+					}
 				}
 			}
 

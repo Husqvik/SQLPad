@@ -148,7 +148,6 @@ namespace SqlPad
 
 		private IReadOnlyList<ColumnHeader> _columnHeaders;
 		private DateTime _lastRefresh;
-		private bool _isSelectingCells;
 		private bool _searchedTextHighlightUsed;
 
 		public TabItem TabItem { get; }
@@ -534,11 +533,6 @@ namespace SqlPad
 
 		private void ResultGridSelectedCellsChangedHandler(object sender, SelectedCellsChangedEventArgs e)
 		{
-			if (_isSelectingCells)
-			{
-				return;
-			}
-
 			SelectedRowIndex = ResultGrid.CurrentCell.Item == null
 				? 0
 				: ResultGrid.Items.IndexOf(ResultGrid.CurrentCell.Item) + 1;
