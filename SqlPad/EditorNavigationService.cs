@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Windows;
 
 namespace SqlPad
 {
@@ -35,9 +37,20 @@ namespace SqlPad
 			}
 		}
 
-		public static void RegisterClipboardEntry(string text)
+		public static void RegisterClipboardEntry()
 		{
-			if (!IsEnabled)
+			if (!IsEnabled || !Clipboard.ContainsText())
+			{
+				return;
+			}
+
+			string text;
+
+			try
+			{
+				text = Clipboard.GetText();
+			}
+			catch (COMException)
 			{
 				return;
 			}

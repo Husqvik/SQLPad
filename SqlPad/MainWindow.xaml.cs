@@ -129,12 +129,9 @@ namespace SqlPad
 			EditorNavigationService.Initialize(ActiveDocument.WorkDocument);
 		}
 
-		private void ClipboardChangedHandler(object sender, EventArgs eventArgs)
+		private static void ClipboardChangedHandler(object sender, EventArgs eventArgs)
 		{
-			if (Clipboard.ContainsText())
-			{
-				EditorNavigationService.RegisterClipboardEntry(Clipboard.GetText());
-			}
+			EditorNavigationService.RegisterClipboardEntry();
 		}
 
 		private void SaveAllCommandExecutedHandler(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
