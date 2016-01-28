@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
@@ -14,6 +15,8 @@ namespace SqlPad
 {
 	public static class WpfExtensions
 	{
+		private const BindingFlags FlagsNonPublicInstanceMethod = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.InvokeMethod;
+
 		public static T FindParentVisual<T>(this Visual child) where T : Visual
 		{
 			var parent = (Visual)VisualTreeHelper.GetParent(child);
@@ -170,6 +173,16 @@ namespace SqlPad
 		{
 			var propertyDescriptor = DependencyPropertyDescriptor.FromProperty(property, property.OwnerType);
 			propertyDescriptor.AddValueChanged(sourceObject, handler);
+		}
+
+		public static void SelectRegion(this DataGrid dataGrid, int rowIndex, int columnIndex, int rowCount, int columnCount)
+		{
+			dataGrid.SelectedCells.GetType().InvokeMember("AddRegion", FlagsNonPublicInstanceMethod, null, dataGrid.SelectedCells, new object[] { rowIndex, columnIndex, rowCount, columnCount });
+		}
+
+		public static void DeselectRegion(this DataGrid dataGrid, int rowIndex, int columnIndex, int rowCount, int columnCount)
+		{
+			dataGrid.SelectedCells.GetType().InvokeMember("RemoveRegion", FlagsNonPublicInstanceMethod, null, dataGrid.SelectedCells, new object[] { rowIndex, columnIndex, rowCount, columnCount });
 		}
 	}
 }

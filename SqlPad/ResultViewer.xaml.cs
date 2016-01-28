@@ -5,7 +5,6 @@ using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -233,7 +232,7 @@ namespace SqlPad
 			_refreshProgressBarTimer.Interval = interval;
 		}
 
-		private async void RefreshTimerTickHandler(object sender, EventArgs eventArgs)
+		private async void RefreshTimerTickHandler(object sender, EventArgs args)
 		{
 			if (IsBusy)
 			{
@@ -265,7 +264,7 @@ namespace SqlPad
 			ResultViewTabHeaderPopup.IsOpen = true;
 		}
 
-		private async void InitializedHandler(object sender, EventArgs e)
+		private async void InitializedHandler(object sender, EventArgs args)
 		{
 			await _outputViewer.ExecuteUsingCancellationToken(ApplyReferenceConstraints);
 		}
@@ -305,9 +304,9 @@ namespace SqlPad
 			}
 		}
 
-		private void CleanUpVirtualizedItemHandler(object sender, CleanUpVirtualizedItemEventArgs e)
+		private void CleanUpVirtualizedItemHandler(object sender, CleanUpVirtualizedItemEventArgs args)
 		{
-			e.Cancel = DataGridHelper.CanBeRecycled(e.UIElement);
+			args.Cancel = DataGridHelper.CanBeRecycled(args.UIElement);
 		}
 
 		private void CanFetchAllRowsHandler(object sender, CanExecuteRoutedEventArgs canExecuteRoutedEventArgs)
@@ -441,10 +440,10 @@ namespace SqlPad
 			return childRecordDataGrid;
 		}
 
-		private void ResultGridMouseDoubleClickHandler(object sender, MouseButtonEventArgs e)
+		private void ResultGridMouseDoubleClickHandler(object sender, MouseButtonEventArgs args)
 		{
 			var senderDataGrid = (DataGrid)sender;
-			var visual = e.OriginalSource as Visual;
+			var visual = args.OriginalSource as Visual;
 			var originalDataGrid = visual?.FindParentVisual<DataGrid>();
 			if (Equals(originalDataGrid, senderDataGrid))
 			{
@@ -488,14 +487,14 @@ namespace SqlPad
 			await ExportData((token, progress) => dataExporter.ExportToClipboardAsync(this, _outputViewer.DocumentPage.InfrastructureFactory.DataExportConverter, token, progress));
 		}
 
-		private async void ResultGridScrollChangedHandler(object sender, ScrollChangedEventArgs e)
+		private async void ResultGridScrollChangedHandler(object sender, ScrollChangedEventArgs args)
 		{
 			if (_searchedTextHighlightUsed)
 			{
 				HighlightSearchedText();
 			}
 
-			if (e.VerticalOffset + e.ViewportHeight != e.ExtentHeight)
+			if (args.VerticalOffset + args.ViewportHeight != args.ExtentHeight)
 			{
 				return;
 			}
@@ -508,21 +507,29 @@ namespace SqlPad
 			await _outputViewer.ExecuteUsingCancellationToken(FetchNextRows);
 		}
 
-		private void ColumnHeaderMouseClickHandler(object sender, RoutedEventArgs e)
+		private void ColumnHeaderMouseClickHandler(object sender, RoutedEventArgs args)
 		{
-			var header = e.OriginalSource as DataGridColumnHeader;
+			var header = args.OriginalSource as DataGridColumnHeader;
 			if (header == null)
 			{
 				return;
 			}
 
-			var clearCurrentCells = Keyboard.Modifiers != ModifierKeys.Shift;
+			var isControlPressed = Keyboard.Modifiers == ModifierKeys.Control;
+			var clearCurrentCells = Keyboard.Modifiers != ModifierKeys.Shift && !isControlPressed;
 			if (clearCurrentCells)
 			{
 				ResultGrid.SelectedCells.Clear();
 			}
 
-			ResultGrid.SelectedCells.GetType().InvokeMember("AddRegion", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.InvokeMethod, null, ResultGrid.SelectedCells, new object[] { 0, header.Column.DisplayIndex, ResultGrid.Items.Count, 1 });
+			if (isControlPressed && ResultGrid.SelectedCells.Count(c => c.Column.Equals(header.Column)) == ResultGrid.Items.Count)
+			{
+				ResultGrid.DeselectRegion(0, header.Column.DisplayIndex, ResultGrid.Items.Count, 1);
+			}
+			else
+			{
+				ResultGrid.SelectRegion(0, header.Column.DisplayIndex, ResultGrid.Items.Count, 1);
+			}
 
 			SelectedRowIndex = ResultGrid.SelectedCells.Count;
 
@@ -531,7 +538,7 @@ namespace SqlPad
 			ResultGrid.Focus();
 		}
 
-		private void ResultGridSelectedCellsChangedHandler(object sender, SelectedCellsChangedEventArgs e)
+		private void ResultGridSelectedCellsChangedHandler(object sender, SelectedCellsChangedEventArgs args)
 		{
 			SelectedRowIndex = ResultGrid.CurrentCell.Item == null
 				? 0
@@ -614,7 +621,7 @@ namespace SqlPad
 			SelectedCellInfoVisibility = Visibility.Visible;
 		}
 
-		private void DataGridTabHeaderPopupMouseLeaveHandler(object sender, MouseEventArgs e)
+		private void DataGridTabHeaderPopupMouseLeaveHandler(object sender, MouseEventArgs args)
 		{
 			var child = (FrameworkElement)ResultViewTabHeaderPopup.Child;
 			var position = Mouse.GetPosition(child);
@@ -624,7 +631,7 @@ namespace SqlPad
 			}
 		}
 
-		private void SearchTextChangedHandler(object sender, TextChangedEventArgs e)
+		private void SearchTextChangedHandler(object sender, TextChangedEventArgs args)
 		{
 			HighlightSearchedText();
 		}
@@ -651,25 +658,25 @@ namespace SqlPad
 			}
 		}
 
-		private void SearchPanelCloseClickHandler(object sender, ExecutedRoutedEventArgs e)
+		private void SearchPanelCloseClickHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			SearchPanel.Visibility = Visibility.Collapsed;
 			SearchPhraseTextBox.Text = String.Empty;
 		}
 
-		private void SearchPanelOpenClickHandler(object sender, ExecutedRoutedEventArgs e)
+		private void SearchPanelOpenClickHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			SearchPanel.Visibility = Visibility.Visible;
 			SearchPhraseTextBox.Focus();
 		}
 
-		private void ResultViewerDataGridKeyDownHandler(object sender, KeyEventArgs e)
+		private void ResultViewerDataGridKeyDownHandler(object sender, KeyEventArgs args)
 		{
 			var reraisedEvent =
-				new KeyEventArgs(e.KeyboardDevice, e.InputSource, e.Timestamp, e.Key)
+				new KeyEventArgs(args.KeyboardDevice, args.InputSource, args.Timestamp, args.Key)
 				{
 					RoutedEvent = Keyboard.KeyDownEvent,
-					Source = e.OriginalSource
+					Source = args.OriginalSource
 				};
 
 			_outputViewer.RaiseEvent(reraisedEvent);
