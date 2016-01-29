@@ -795,7 +795,7 @@ namespace SqlPad.Oracle
 						Priority = j.Priority,
 						Category = OracleCodeCompletionCategory.JoinMethod,
 						CategoryPriority = 1,
-						StatementNode = completionType.CurrentTerminal
+						StatementNode = completionType.EffectiveTerminal
 					});
 		}
 

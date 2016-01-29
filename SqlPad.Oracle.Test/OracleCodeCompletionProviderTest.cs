@@ -2253,6 +2253,14 @@ ON (EVENTS.ID = SRC.ID)";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 79, true, OracleCodeCompletionCategory.Column).ToList();
 			items.Count.ShouldBeGreaterThan(0);
 		}
+		[Test(Description = @"")]
+		public void TestJoinTypeSuggestingWithCursorAtClosingParenthesis()
+		{
+			const string statement = @"(SELECT count(*) FROM dual JO)";
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 29).ToList();
+			items.Count.ShouldBeGreaterThan(0);
+			items[0].StatementNode.FirstTerminalNode.Token.Value.ShouldBe("JO");
+		}
 
 		public class OracleCodeCompletionTypeTest
 		{
