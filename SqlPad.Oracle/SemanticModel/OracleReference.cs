@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using SqlPad.Oracle.DataDictionary;
 
 namespace SqlPad.Oracle.SemanticModel
@@ -7,6 +8,7 @@ namespace SqlPad.Oracle.SemanticModel
 	public abstract class OracleReference
 	{
 		private OracleObjectIdentifier? _fullyQualifiedName;
+		private HashSet<StatementGrammarNode> _allIdentifierTerminals;
 
 		protected OracleReference()
 		{
@@ -48,6 +50,8 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public OracleDatabaseLink DatabaseLink { get; set; }
 
+		public IReadOnlyCollection<StatementGrammarNode> AllIdentifierTerminals => _allIdentifierTerminals ?? (_allIdentifierTerminals = GetIdentifierTerminals());
+
 		public virtual void Accept(IOracleReferenceVisitor visitor)
 		{
 			throw new NotSupportedException();
@@ -62,6 +66,34 @@ namespace SqlPad.Oracle.SemanticModel
 			SelectListColumn = reference.SelectListColumn;
 			Container = reference.Container;
 			Placement = reference.Placement;
+		}
+
+		private HashSet<StatementGrammarNode> GetIdentifierTerminals()
+		{
+			var nodes = new HashSet<StatementGrammarNode>();
+			if (OwnerNode != null)
+			{
+				nodes.Add(OwnerNode);
+			}
+
+			if (ObjectNode != null)
+			{
+				nodes.Add(ObjectNode);
+			}
+
+			nodes.AddRange(GetAdditionalIdentifierTerminals());
+
+			if (DatabaseLinkNode != null)
+			{
+				nodes.AddRange(DatabaseLinkNode.Terminals);
+			}
+
+			return nodes;
+		}
+
+		protected virtual IEnumerable<StatementGrammarNode> GetAdditionalIdentifierTerminals()
+		{
+			return Enumerable.Empty<StatementGrammarNode>();
 		}
 	}
 }

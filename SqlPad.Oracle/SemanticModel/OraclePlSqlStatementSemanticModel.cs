@@ -825,6 +825,14 @@ namespace SqlPad.Oracle.SemanticModel
 		public OraclePlSqlProgram PlSqlProgram { get; set; }
 
 		public override string Name => IdentifierNode.Token.Value;
+
+		protected override IEnumerable<StatementGrammarNode> GetAdditionalIdentifierTerminals()
+		{
+			if (IdentifierNode != null)
+			{
+				yield return IdentifierNode;
+			}
+		}
 	}
 
 	[DebuggerDisplay("OraclePlSqlVariableReference (Name={Name}; Variables={Variables.Count})")]

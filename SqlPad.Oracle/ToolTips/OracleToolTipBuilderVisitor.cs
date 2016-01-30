@@ -22,6 +22,17 @@ namespace SqlPad.Oracle.ToolTips
 
 		public void VisitColumnReference(OracleColumnReference columnReference)
 		{
+			if (TryBuildSchemaTooltip(columnReference))
+			{
+				return;
+			}
+
+			if (columnReference.ObjectNode == _terminal)
+			{
+				columnReference.ValidObjectReference?.Accept(this);
+				return;
+			}
+
 			if (columnReference.ColumnDescription == null)
 			{
 				return;
@@ -71,6 +82,11 @@ namespace SqlPad.Oracle.ToolTips
 
 		public void VisitProgramReference(OracleProgramReference programReference)
 		{
+			if (TryBuildSchemaTooltip(programReference))
+			{
+				return;
+			}
+
 			if (programReference.ObjectNode == _terminal)
 			{
 				if (programReference.SchemaObject != null)
@@ -103,11 +119,21 @@ namespace SqlPad.Oracle.ToolTips
 
 		public void VisitTypeReference(OracleTypeReference typeReference)
 		{
+			if (TryBuildSchemaTooltip(typeReference))
+			{
+				return;
+			}
+
 			BuildSimpleToolTip(typeReference.SchemaObject);
 		}
 
 		public void VisitSequenceReference(OracleSequenceReference sequenceReference)
 		{
+			if (TryBuildSchemaTooltip(sequenceReference))
+			{
+				return;
+			}
+
 			var schemaObject = (OracleSequence)sequenceReference.SchemaObject.GetTargetSchemaObject();
 			if (schemaObject == null)
 			{
@@ -120,6 +146,11 @@ namespace SqlPad.Oracle.ToolTips
 
 		public void VisitTableCollectionReference(OracleTableCollectionReference tableCollectionReference)
 		{
+			if (TryBuildSchemaTooltip(tableCollectionReference))
+			{
+				return;
+			}
+
 			BuildSimpleToolTip(tableCollectionReference.SchemaObject);
 		}
 
@@ -168,6 +199,11 @@ namespace SqlPad.Oracle.ToolTips
 
 		public void VisitDataObjectReference(OracleDataObjectReference objectReference)
 		{
+			if (TryBuildSchemaTooltip(objectReference))
+			{
+				return;
+			}
+
 			if (objectReference.Type == ReferenceType.SchemaObject)
 			{
 				var schemaObject = objectReference.SchemaObject.GetTargetSchemaObject();
@@ -240,6 +276,11 @@ namespace SqlPad.Oracle.ToolTips
 
 		public void VisitDataTypeReference(OracleDataTypeReference dataTypeReference)
 		{
+			if (TryBuildSchemaTooltip(dataTypeReference))
+			{
+				return;
+			}
+
 			BuildSimpleToolTip(dataTypeReference.SchemaObject);
 		}
 
@@ -435,6 +476,29 @@ namespace SqlPad.Oracle.ToolTips
 				default:
 					return schemaObject.Type.ToLower();
 			}
+		}
+
+		private bool TryBuildSchemaTooltip(OracleReference reference)
+		{
+			if (reference.OwnerNode == _terminal)
+			{
+				BuildSchemaTooltip(reference.Container.SemanticModel.DatabaseModel);
+			}
+
+			return ToolTip != null;
+		}
+
+		private void BuildSchemaTooltip(OracleDatabaseModelBase databaseModel)
+		{
+			OracleSchema schema;
+			if (!databaseModel.AllSchemas.TryGetValue(_terminal.Token.Value.ToQuotedIdentifier(), out schema))
+			{
+				return;
+			}
+
+			var dataModel = new OracleSchemaModel { Schema = schema };
+			databaseModel.UpdateUserDetailsAsync(dataModel, CancellationToken.None);
+			ToolTip = new ToolTipSchema(dataModel);
 		}
 
 		private class ToolTipLabelBuilder

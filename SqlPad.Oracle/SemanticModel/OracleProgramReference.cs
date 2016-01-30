@@ -16,6 +16,14 @@ namespace SqlPad.Oracle.SemanticModel
 		
 		public override OracleProgramMetadata Metadata { get; set; }
 
+		protected override IEnumerable<StatementGrammarNode> GetAdditionalIdentifierTerminals()
+		{
+			if (ProgramIdentifierNode != null)
+			{
+				yield return ProgramIdentifierNode;
+			}
+		}
+
 		public override void Accept(IOracleReferenceVisitor visitor)
 		{
 			visitor.VisitProgramReference(this);

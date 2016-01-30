@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
-using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.DataDictionary;
 using SqlPad.Oracle.SemanticModel;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
@@ -91,21 +89,8 @@ namespace SqlPad.Oracle.ToolTips
 
 				switch (node.Id)
 				{
-					case Terminals.DataTypeIdentifier:
-					case Terminals.ObjectIdentifier:
-						var objectReference = GetObjectReference(semanticModel, node);
-						if (objectReference == null)
-						{
-							goto default;
-						}
-
-						objectReference.Accept(toolTipBuilderVisitor);
-						return toolTipBuilderVisitor.ToolTip;
-
 					case Terminals.Asterisk:
 						return BuildAsteriskToolTip(queryBlock, node);
-					case Terminals.SchemaIdentifier:
-						return BuildSchemaTooltip(semanticModel.DatabaseModel, node);
 					case Terminals.Min:
 					case Terminals.Max:
 					case Terminals.Sum:
@@ -144,14 +129,11 @@ namespace SqlPad.Oracle.ToolTips
 					case Terminals.PlSqlIdentifier:
 					case Terminals.ExceptionIdentifier:
 					case Terminals.CursorIdentifier:
+					case Terminals.DataTypeIdentifier:
+					case Terminals.ObjectIdentifier:
+					case Terminals.SchemaIdentifier:
 					case Terminals.Identifier:
-						var reference = semanticModel.GetColumnReference(node)
-							?? semanticModel.GetProgramReference(node)
-							?? semanticModel.GetTypeReference(node)
-							?? semanticModel.GetPlSqlExceptionReference(node)
-							?? semanticModel.GetPlSqlVariableReference(node)
-							?? GetObjectReference(semanticModel, node);
-
+						var reference = semanticModel.GetReference<OracleReference>(node);
 						reference?.Accept(toolTipBuilderVisitor);
 						if (toolTipBuilderVisitor.ToolTip != null)
 						{
@@ -162,7 +144,7 @@ namespace SqlPad.Oracle.ToolTips
 					case Terminals.DatabaseLinkIdentifier:
 					case Terminals.Dot:
 					case Terminals.AtCharacter:
-						var databaseLink = GetDatabaseLink(queryBlock, node);
+						var databaseLink = semanticModel.GetReference<OracleReference>(node)?.DatabaseLink;
 						if (databaseLink == null)
 						{
 							return null;
@@ -245,19 +227,6 @@ namespace SqlPad.Oracle.ToolTips
 			}
 		}
 
-		private static IToolTip BuildSchemaTooltip(OracleDatabaseModelBase databaseModel, StatementNode terminal)
-		{
-			OracleSchema schema;
-			if (!databaseModel.AllSchemas.TryGetValue(terminal.Token.Value.ToQuotedIdentifier(), out schema))
-			{
-				return null;
-			}
-
-			var dataModel = new OracleSchemaModel { Schema = schema };
-			databaseModel.UpdateUserDetailsAsync(dataModel, CancellationToken.None);
-			return new ToolTipSchema(dataModel);
-		}
-
 		private static IToolTip BuildParameterToolTip(OracleStatementSemanticModel semanticModel, StatementGrammarNode node)
 		{
 			Func<ProgramParameterReference, bool> parameterFilter = p => p.OptionalIdentifierTerminal == node;
@@ -333,24 +302,6 @@ namespace SqlPad.Oracle.ToolTips
 			return columns.Length == 0
 				? null
 				: new ToolTipAsterisk { Columns = columns };
-		}
-
-		private static OracleReference GetObjectReference(OracleStatementSemanticModel semanticModel, StatementGrammarNode terminal)
-		{
-			var objectReference = semanticModel.GetReference<OracleReference>(terminal);
-			var columnReference = objectReference as OracleColumnReference;
-			if (columnReference != null)
-			{
-				objectReference = columnReference.ValidObjectReference;
-			}
-
-			return objectReference;
-		}
-
-		private static OracleDatabaseLink GetDatabaseLink(OracleQueryBlock queryBlock, StatementGrammarNode terminal)
-		{
-			var databaseLinkReference = queryBlock?.DatabaseLinkReferences.SingleOrDefault(l => l.DatabaseLinkNode.Terminals.Contains(terminal));
-			return databaseLinkReference?.DatabaseLink;
 		}
 	}
 }

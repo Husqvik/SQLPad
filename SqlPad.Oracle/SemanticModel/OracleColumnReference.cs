@@ -61,6 +61,14 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 		}
 
+		protected override IEnumerable<StatementGrammarNode> GetAdditionalIdentifierTerminals()
+		{
+			if (_columnNode != null)
+			{
+				yield return _columnNode;
+			}
+		}
+
 		public override void Accept(IOracleReferenceVisitor visitor)
 		{
 			visitor.VisitColumnReference(this);

@@ -1284,6 +1284,38 @@ SELECT * FROM generator";
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestTooltipOverSchemaWithinPlSqlVariableDeclaration()
+		{
+			const string query =
+@"DECLARE
+	variable2 sys.odcirawlist := sys.odcirawlist(0);
+BEGIN
+	NULL;
+END;";
+
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 20);
+			toolTip.Control.ShouldBeTypeOf<ToolTipSchema>();
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestTooltipOverSchemaWithinPlSqlVariableDeclarationValue()
+		{
+			const string query =
+@"DECLARE
+	variable2 sys.odcirawlist := sys.odcirawlist(0);
+BEGIN
+	NULL;
+END;";
+
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 39);
+			toolTip.Control.ShouldBeTypeOf<ToolTipSchema>();
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestTooltipOverNomExistingColumn()
 		{
 			const string query = @"SELECT non_existing FROM dual";

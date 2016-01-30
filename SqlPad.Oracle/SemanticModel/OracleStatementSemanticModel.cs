@@ -2197,10 +2197,11 @@ namespace SqlPad.Oracle.SemanticModel
 			var typeReference =
 				new OracleTypeReference
 				{
-					OwnerNode = programReference.ObjectNode,
+					OwnerNode = programReference.OwnerNode ?? programReference.ObjectNode,
 					DatabaseLinkNode = programReference.DatabaseLinkNode,
 					DatabaseLink = programReference.DatabaseLink,
 					Owner = programReference.Owner,
+					Container = programReference.Container,
 					ParameterReferences = programReference.ParameterReferences,
 					ParameterListNode = programReference.ParameterListNode,
 					RootNode = programReference.RootNode,
@@ -2310,9 +2311,9 @@ namespace SqlPad.Oracle.SemanticModel
 			return AllReferenceContainers.SelectMany(c => c.SequenceReferences).SingleOrDefault(c => c.ObjectNode == sequenceIdentifer);
 		}
 
-		public T GetReference<T>(StatementGrammarNode objectIdentifer) where T : OracleReference
+		public T GetReference<T>(StatementGrammarNode identifer) where T : OracleReference
 		{
-			return AllReferenceContainers.SelectMany(c => c.AllReferences).OfType<T>().FirstOrDefault(c => c.ObjectNode == objectIdentifer);
+			return AllReferenceContainers.SelectMany(c => c.AllReferences).OfType<T>().FirstOrDefault(r => r.AllIdentifierTerminals.Contains(identifer));
 		}
 
 		public OracleQueryBlock GetQueryBlock(StatementGrammarNode node)
