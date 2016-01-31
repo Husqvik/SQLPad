@@ -21,8 +21,9 @@
 								<RowDefinition Height="*" />
 							</Grid.RowDefinitions>
 							
-							<StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Visibility="{TemplateBinding IsPinnable, Converter={StaticResource ObjectToVisibilityConverter}}" Margin="0,-1,-1,0">
-								<Button x:Name="ButtonPin" Content="Pin" Command="{x:Static local:PopupBase.PinPopupCommand}" />
+							<StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,-1,-1,0">
+								<Button x:Name="ButtonExtractDdl" Content="DDL" ToolTip="Extract DDL" Command="{x:Static local:PopupBase.ExtractDdlCommand}" Visibility="{TemplateBinding IsExtractDdlVisible, Converter={StaticResource ObjectToVisibilityConverter}}" />
+								<Button x:Name="ButtonPin" Content="Pin" Command="{x:Static local:PopupBase.PinPopupCommand}" Visibility="{TemplateBinding IsPinnable, Converter={StaticResource ObjectToVisibilityConverter}}" />
 							</StackPanel>
 
 							<ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
