@@ -7,7 +7,7 @@
 	<sqlPad:BooleanLabelConverter x:Key="BooleanConverter" />
 	<sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintIntegerConverter" />
 	<sqlPad:DataSpaceConverter x:Key="DataSpaceConverter" />
-	<sqlPad:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter"/>
+	<sqlPad:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
 	<sqlPad:StringConverter x:Key="StringConverter" />
 	<sqlPad:VisibilityCollapseIfZeroConverter x:Key="VisibilityCollapseIfZeroConverter" />
 
@@ -18,5 +18,4 @@
 		<Setter Property="TextBoxBase.BorderThickness" Value="0" />
 		<Setter Property="TextBoxBase.Padding" Value="-2,0,0,0" />
 	</Style>
-
 </ResourceDictionary>

@@ -68,7 +68,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Oracle.DataAccess" />
-    <Reference Include="Oracle.ManagedDataAccess, Version=4.121.2.0, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=MSIL" />
+    <Reference Include="Oracle.ManagedDataAccess" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="protobuf-net" />
@@ -172,6 +172,7 @@
       <DependentUpon>SessionActivityIndicator.xaml</DependentUpon>
     </Compile>
     <Compile Include="SessionIdentifier.cs" />
+    <Compile Include="ToolTips\CircularProgresBarConverters.cs" />
     <Compile Include="ToolTips\OracleToolTipBuilderVisitor.cs" />
     <Compile Include="SemanticModel\OracleColumnBuilderVisitor.cs" />
     <Compile Include="SemanticModel\OracleDataTypeReference.cs" />

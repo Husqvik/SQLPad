@@ -203,6 +203,12 @@ namespace SqlPad
 			}
 		}
 
+		public static void LogErrorAndShowMessage(Exception exception)
+		{
+			CreateErrorLog(exception);
+			Messages.ShowError(exception.ToString());
+		}
+
 		internal static void CreateErrorLog(object exceptionObject)
 		{
 			var mainWindow = (MainWindow)Current.MainWindow;

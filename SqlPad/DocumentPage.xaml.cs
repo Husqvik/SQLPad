@@ -1005,14 +1005,8 @@ namespace SqlPad
 			}
 			catch (Exception exception)
 			{
-				LogErrorAndShowMesage(exception);
+				App.LogErrorAndShowMessage(exception);
 			}
-		}
-
-		private void LogErrorAndShowMesage(Exception exception)
-		{
-			App.CreateErrorLog(exception);
-			Messages.ShowError(exception.ToString());
 		}
 
 		private void RedrawMultiEditSegments(bool forceRedraw = false)
@@ -1754,7 +1748,7 @@ namespace SqlPad
 				}
 				catch (Exception exception)
 				{
-					LogErrorAndShowMesage(exception);
+					App.LogErrorAndShowMessage(exception);
 				}
 
 				if (toolTip == null)
@@ -1932,7 +1926,7 @@ namespace SqlPad
 			}
 			catch (Exception exception)
 			{
-				LogErrorAndShowMesage(exception);
+				App.LogErrorAndShowMessage(exception);
 				return false;
 			}
 		}
