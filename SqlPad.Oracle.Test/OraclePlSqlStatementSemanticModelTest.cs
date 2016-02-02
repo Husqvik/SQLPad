@@ -764,6 +764,57 @@ END;";
 		}
 
 		[Test]
+		public void TestInvalidSyntaxtPlSqlVariableDeclarations()
+		{
+			const string plsqlText =
+@"DECLARE
+	invalid_declaration1 :;
+BEGIN
+	NULL;
+END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).First();
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel);
+
+			Assert.DoesNotThrow(() => semanticModel.Build(CancellationToken.None));
+		}
+
+		[Test, Ignore]
+		public void TestSpecificPlSqlReferences()
+		{
+			const string plsqlText =
+@"DECLARE
+	test_value1 BINARY_INTEGER;
+	test_value2 BOOLEAN := TRUE;
+	
+	PROCEDURE test_procedure1
+	IS
+	BEGIN
+		NULL;
+	END;
+	
+	PROCEDURE test_procedure2(p BOOLEAN)
+	IS
+	BEGIN
+		NULL;
+	END;
+BEGIN
+	test_procedure1;
+	test_procedure2(TRUE);
+END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
+
+			semanticModel.Programs.Count.ShouldBe(1);
+			var program = semanticModel.Programs[0];
+			var dataTypeReferences = program.DataTypeReferences.ToArray();
+			dataTypeReferences.Length.ShouldBe(2);
+			//dataTypeReferences[0].
+			program.ProgramReferences.Count.ShouldBe(2);
+		}
+
+		[Test]
 		public void TestPackagePrograms()
 		{
 			const string plsqlText =

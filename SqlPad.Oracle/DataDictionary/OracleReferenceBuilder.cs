@@ -17,7 +17,7 @@ namespace SqlPad.Oracle.DataDictionary
 			StatementGrammarNode typeIdentifier = null;
 
 			var firstChild = dataTypeNode[0];
-			if (String.Equals(firstChild.Id, NonTerminals.AssignmentStatementTarget))
+			if (String.Equals(firstChild?.Id, NonTerminals.AssignmentStatementTarget))
 			{
 				var percentCharacterTypeOrRowTypeNotFound = dataTypeNode.ChildNodes.Count == 1;
 				if (percentCharacterTypeOrRowTypeNotFound)
@@ -25,7 +25,7 @@ namespace SqlPad.Oracle.DataDictionary
 					var chainedIdentifiers = GatherChainedIdentifiers(firstChild).ToList();
 					if (chainedIdentifiers.Count <= 2)
 					{
-						typeIdentifier = chainedIdentifiers.Last();
+						typeIdentifier = chainedIdentifiers.LastOrDefault();
 						ownerNode = chainedIdentifiers.FirstOrDefault(i => i != typeIdentifier);
 					}
 				}
