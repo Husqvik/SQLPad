@@ -9,7 +9,9 @@ namespace SqlPad
 
 		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			return value == null ? ValueNotAvailable : PrettyPrint(System.Convert.ToDecimal(value));
+			return value == null
+				? parameter?.ToString() ?? ValueNotAvailable
+				: PrettyPrint(System.Convert.ToDecimal(value));
 		}
 
 		public static string PrettyPrint(decimal bytes)

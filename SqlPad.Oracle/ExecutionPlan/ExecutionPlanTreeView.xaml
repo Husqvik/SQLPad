@@ -7,6 +7,7 @@
              xmlns:sqlPad="clr-namespace:SqlPad;assembly=SqlPad"
              xmlns:modelDataProviders="clr-namespace:SqlPad.Oracle.ModelDataProviders"
              xmlns:componentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+             xmlns:system="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d"
              d:DesignHeight="160" d:DesignWidth="240">
 	<UserControl.Resources>
@@ -110,22 +111,22 @@
 			</Style.Triggers>
 		</Style>
 
-		<Style x:Key="PlanItemBaseStyle" TargetType="TextBlock">
+		<Style x:Key="PlanItemBaseStyle">
 			<Style.Setters>
-				<Setter Property="FontFamily" Value="Arial" />
+				<Setter Property="TextBlock.FontFamily" Value="Arial" />
 			</Style.Setters>
 		</Style>
 
-		<Style x:Key="ItemHeaderOther" TargetType="TextBlock" BasedOn="{StaticResource PlanItemBaseStyle}">
+		<Style x:Key="ItemHeaderOther" BasedOn="{StaticResource PlanItemBaseStyle}">
 			<Style.Setters>
-				<Setter Property="FontSize" Value="12" />
+				<Setter Property="TextBlock.FontSize" Value="12" />
 			</Style.Setters>
 		</Style>
 
-		<Style x:Key="ItemHeaderBold" TargetType="TextBlock" BasedOn="{StaticResource ItemHeaderOther}">
+		<Style x:Key="ItemHeaderBold" BasedOn="{StaticResource ItemHeaderOther}">
 			<Style.Setters>
-				<Setter Property="Foreground" Value="DarkBlue" />
-				<Setter Property="FontWeight" Value="Bold" />
+				<Setter Property="TextBlock.Foreground" Value="DarkBlue" />
+				<Setter Property="TextBlock.FontWeight" Value="Bold" />
 			</Style.Setters>
 		</Style>
 
@@ -154,19 +155,19 @@
 				</DataTrigger>
 			</Style.Triggers>
 		</Style>
-		<Style x:Key="ItemHeader" TargetType="TextBlock" BasedOn="{StaticResource ItemHeaderOther}">
+		<Style x:Key="ItemHeader" BasedOn="{StaticResource ItemHeaderOther}">
 			<Style.Setters>
-				<Setter Property="Foreground" Value="DarkBlue" />
+				<Setter Property="TextBlock.Foreground" Value="DarkBlue" />
 			</Style.Setters>
 		</Style>
-		<Style x:Key="OtherLabelStyle" TargetType="TextBlock" BasedOn="{StaticResource PlanItemBaseStyle}">
+		<Style x:Key="OtherLabelStyle" BasedOn="{StaticResource PlanItemBaseStyle}">
 			<Style.Setters>
-				<Setter Property="FontSize" Value="11" />
+				<Setter Property="TextBlock.FontSize" Value="11" />
 			</Style.Setters>
 		</Style>
-		<Style x:Key="PlanStatisticValueStyle" TargetType="TextBlock" BasedOn="{StaticResource OtherLabelStyle}">
+		<Style x:Key="PlanStatisticValueStyle" BasedOn="{StaticResource OtherLabelStyle}">
 			<Style.Setters>
-				<Setter Property="Foreground" Value="DarkRed" />
+				<Setter Property="TextBlock.Foreground" Value="DarkRed" />
 			</Style.Setters>
 		</Style>
 
@@ -514,27 +515,6 @@
 
 		<DataTemplate x:Key="SqlMonitorSingleSessionDataTemplate" DataType="modelDataProviders:SqlMonitorSessionPlanItem">
 			<Grid>
-				<Grid.Resources>
-					<Style x:Key="HideIfSessionIdEqualsZero" BasedOn="{StaticResource PlanStatisticValueStyle}" TargetType="TextBlock">
-						<Style.Triggers>
-							<DataTrigger Binding="{Binding SessionIdentifier.SessionId}" Value="0">
-								<Setter Property="Visibility" Value="Collapsed" />
-							</DataTrigger>
-						</Style.Triggers>
-					</Style>
-
-					<Style x:Key="HideIfParallelPropertiesNotAvailable" BasedOn="{StaticResource PlanStatisticValueStyle}" TargetType="TextBlock">
-						<Style.Triggers>
-							<DataTrigger Binding="{Binding SessionItem}" Value="{x:Null}">
-								<Setter Property="Visibility" Value="Collapsed" />
-							</DataTrigger>
-							<DataTrigger Binding="{Binding SessionItem.ParallelServerNumber}" Value="{x:Null}">
-								<Setter Property="Visibility" Value="Collapsed" />
-							</DataTrigger>
-						</Style.Triggers>
-					</Style>
-				</Grid.Resources>
-				
 				<Grid.Style>
 					<Style>
 						<Style.Triggers>
@@ -546,12 +526,6 @@
 				</Grid.Style>
 				
 				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleInstanceID" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="InstanceID" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleSID" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="SID" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleParallelProperties" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="ParallelProperties" />
 					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleActivityRatio" />
 					<ColumnDefinition Width="Auto" SharedSizeGroup="ActivityRatio" />
 					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleActivitySamples" />
@@ -576,39 +550,31 @@
 					<ColumnDefinition Width="Auto" SharedSizeGroup="WorkAreaTemp" />
 				</Grid.ColumnDefinitions>
 
-				<TextBlock Grid.Column="0" Text="Instance: " Style="{StaticResource HideIfSessionIdEqualsZero}" />
-				<TextBlock Grid.Column="1" Text="{Binding SessionIdentifier.Instance}" Style="{StaticResource HideIfSessionIdEqualsZero}" Margin="0,0,4,0" TextAlignment="Right" />
-				<TextBlock Grid.Column="2" Text="SID: " Style="{StaticResource HideIfSessionIdEqualsZero}" />
-				<TextBlock Grid.Column="3" Text="{Binding SessionIdentifier.SessionId}" Style="{StaticResource HideIfSessionIdEqualsZero}" Margin="0,0,4,0" TextAlignment="Right" />
-				<TextBlock Grid.Column="4" Text="PX group/set/server#: " Style="{StaticResource HideIfParallelPropertiesNotAvailable}" />
-				<TextBlock Grid.Column="5" Style="{StaticResource HideIfParallelPropertiesNotAvailable}" TextAlignment="Right" Margin="0,0,4,0">
-					<Run Text="{Binding SessionItem.ParallelServerGroup}" /><Run Text="/" /><Run Text="{Binding SessionItem.ParallelServerSet}" /><Run Text="/" /><Run Text="{Binding SessionItem.ParallelServerNumber}" />
-				</TextBlock>
-				<TextBlock Grid.Column="6" Text="Activity: " Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding ActivityRatio, Converter={StaticResource ObjectToVisibilityConverter}}" />
-				<TextBlock Grid.Column="7" Text="{Binding ActivityRatio, Converter={StaticResource RatioConverter}, ConverterParameter=1}" Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding ActivityRatio, Converter={StaticResource ObjectToVisibilityConverter}}" TextAlignment="Right" Margin="0,0,4,0" />
-				<TextBlock Grid.Column="8" Text="ASH samples: " Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding ActivityRatio, Converter={StaticResource ObjectToVisibilityConverter}}" />
-				<TextBlock Grid.Column="9" Text="{Binding ActiveSessionHistorySampleCount}" Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding ActivityRatio, Converter={StaticResource ObjectToVisibilityConverter}}" TextAlignment="Right" Margin="0,0,4,0" />
-				<TextBlock Grid.Column="10" Text="Starts: " Style="{StaticResource PlanStatisticValueStyle}" />
-				<TextBlock Grid.Column="11" Text="{Binding Starts, Converter={StaticResource PrettyPrintNumericConverter}}" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
-				<TextBlock Grid.Column="12" Text="Output rows: " Style="{StaticResource PlanStatisticValueStyle}" />
-				<TextBlock Grid.Column="13" Text="{Binding OutputRows, Converter={StaticResource PrettyPrintNumericConverter}}" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
-				<TextBlock Grid.Column="14" Text="Physical read requests: " Margin="4,0,0,0" Style="{StaticResource PlanStatisticValueStyle}" />
-				<TextBlock Grid.Column="15" Text="{Binding PhysicalReadRequests, Converter={StaticResource PrettyPrintNumericConverter}}" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
-				<TextBlock Grid.Column="16" Text="Physical read: " Style="{StaticResource PlanStatisticValueStyle}" />
-				<TextBlock Grid.Column="17" Text="{Binding PhysicalReadBytes, Converter={StaticResource DataSpaceConverter}}" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
-				<TextBlock Grid.Column="18" Text="Physical write requests: " Margin="4,0,0,0" Style="{StaticResource PlanStatisticValueStyle}" />
-				<TextBlock Grid.Column="19" Text="{Binding PhysicalWriteRequests, Converter={StaticResource PrettyPrintNumericConverter}}" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
-				<TextBlock Grid.Column="20" Text="Physical write: " Style="{StaticResource PlanStatisticValueStyle}" />
-				<TextBlock Grid.Column="21" Text="{Binding PhysicalWriteBytes, Converter={StaticResource DataSpaceConverter}}" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
-				<TextBlock Grid.Column="22" Text="I/O interconnection: " Margin="4,0,0,0" Style="{StaticResource PlanStatisticValueStyle}" />
-				<TextBlock Grid.Column="23" Text="{Binding IoInterconnectBytes, Converter={StaticResource DataSpaceConverter}}" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
-				<TextBlock Grid.Column="24" Text="Work area: " Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaMemoryMaxBytes, Converter={StaticResource ObjectToVisibilityConverter}}" />
-				<TextBlock Grid.Column="25" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaMemoryMaxBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
+				<TextBlock Grid.Column="0" Text="Activity: " Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding ActivityRatio, Converter={StaticResource ObjectToVisibilityConverter}}" />
+				<TextBlock Grid.Column="1" Text="{Binding ActivityRatio, Converter={StaticResource RatioConverter}, ConverterParameter=1}" Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding ActivityRatio, Converter={StaticResource ObjectToVisibilityConverter}}" TextAlignment="Right" Margin="0,0,4,0" />
+				<TextBlock Grid.Column="2" Text="ASH samples: " Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding ActivityRatio, Converter={StaticResource ObjectToVisibilityConverter}}" />
+				<TextBlock Grid.Column="3" Text="{Binding ActiveSessionHistorySampleCount}" Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding ActivityRatio, Converter={StaticResource ObjectToVisibilityConverter}}" TextAlignment="Right" Margin="0,0,4,0" />
+				<TextBlock Grid.Column="4" Text="Starts: " Style="{StaticResource PlanStatisticValueStyle}" />
+				<TextBlock Grid.Column="5" Text="{Binding Starts, Converter={StaticResource PrettyPrintNumericConverter}}" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
+				<TextBlock Grid.Column="6" Text="Output rows: " Style="{StaticResource PlanStatisticValueStyle}" />
+				<TextBlock Grid.Column="7" Text="{Binding OutputRows, Converter={StaticResource PrettyPrintNumericConverter}}" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
+				<TextBlock Grid.Column="8" Text="Physical read requests: " Margin="4,0,0,0" Style="{StaticResource PlanStatisticValueStyle}" />
+				<TextBlock Grid.Column="9" Text="{Binding PhysicalReadRequests, Converter={StaticResource PrettyPrintNumericConverter}}" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
+				<TextBlock Grid.Column="10" Text="Physical read: " Style="{StaticResource PlanStatisticValueStyle}" />
+				<TextBlock Grid.Column="11" Text="{Binding PhysicalReadBytes, Converter={StaticResource DataSpaceConverter}}" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
+				<TextBlock Grid.Column="12" Text="Physical write requests: " Margin="4,0,0,0" Style="{StaticResource PlanStatisticValueStyle}" />
+				<TextBlock Grid.Column="13" Text="{Binding PhysicalWriteRequests, Converter={StaticResource PrettyPrintNumericConverter}}" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
+				<TextBlock Grid.Column="14" Text="Physical write: " Style="{StaticResource PlanStatisticValueStyle}" />
+				<TextBlock Grid.Column="15" Text="{Binding PhysicalWriteBytes, Converter={StaticResource DataSpaceConverter}}" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
+				<TextBlock Grid.Column="16" Text="I/O interconnection: " Margin="4,0,0,0" Style="{StaticResource PlanStatisticValueStyle}" />
+				<TextBlock Grid.Column="17" Text="{Binding IoInterconnectBytes, Converter={StaticResource DataSpaceConverter}}" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
+				<TextBlock Grid.Column="18" Text="Work area: " Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaMemoryMaxBytes, Converter={StaticResource ObjectToVisibilityConverter}}" />
+				<TextBlock Grid.Column="19" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaMemoryMaxBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
 					<Run Text="{Binding WorkAreaMemoryBytes, Converter={StaticResource DataSpaceConverter}}" />
 					<Run Text="(max: " /><Run Text="{Binding WorkAreaMemoryMaxBytes, Converter={StaticResource DataSpaceConverter}}" /><Run Text=")" />
 				</TextBlock>
-				<TextBlock Grid.Column="26" Text="Temp: " Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaTempMaxBytes, Converter={StaticResource ObjectToVisibilityConverter}}" />
-				<TextBlock Grid.Column="27" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaTempMaxBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
+				<TextBlock Grid.Column="20" Text="Temp: " Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaTempMaxBytes, Converter={StaticResource ObjectToVisibilityConverter}}" />
+				<TextBlock Grid.Column="21" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaTempMaxBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
 					<Run Text="{Binding WorkAreaTempBytes, Converter={StaticResource DataSpaceConverter}}" />
 					<Run Text="(max: " /><Run Text="{Binding WorkAreaTempMaxBytes, Converter={StaticResource DataSpaceConverter}}" /><Run Text=")" />
 				</TextBlock>
@@ -627,13 +593,65 @@
 					</CollectionViewSource>
 				</Viewbox.Resources>
 
-				<ItemsControl ItemsSource="{Binding Source={StaticResource ParallelSlaveSessionItems}}" Grid.IsSharedSizeScope="True">
-					<ItemsControl.ItemTemplate>
-						<DataTemplate>
-							<ContentControl ContentTemplate="{StaticResource SqlMonitorSingleSessionDataTemplate}" Content="{Binding}" />
-						</DataTemplate>
-					</ItemsControl.ItemTemplate>
-				</ItemsControl>
+				<ListView ItemsSource="{Binding Source={StaticResource ParallelSlaveSessionItems}}" Background="Transparent" BorderThickness="0" Margin="-10,0,0,0">
+					<ListView.Resources>
+						<Style TargetType="GridViewColumnHeader">
+							<Setter Property="Margin" Value="2,0" />
+							<Setter Property="Background" Value="Transparent" />
+							<Setter Property="Template">
+								<Setter.Value>
+									<ControlTemplate TargetType="GridViewColumnHeader">
+										<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Text="{TemplateBinding Content}" Margin="6,0" Width="{TemplateBinding Width}" TextAlignment="Right" />
+									</ControlTemplate>
+								</Setter.Value>
+							</Setter>
+						</Style>
+					</ListView.Resources>
+					
+					<ListView.ItemContainerStyle>
+						<Style BasedOn="{StaticResource PlanStatisticValueStyle}">
+							<Setter Property="ListViewItem.HorizontalContentAlignment" Value="Right" />
+							<Setter Property="ListViewItem.Template">
+								<Setter.Value>
+									<ControlTemplate TargetType="ListViewItem">
+										<GridViewRowPresenter />
+									</ControlTemplate>
+								</Setter.Value>
+							</Setter>
+						</Style>
+					</ListView.ItemContainerStyle>
+
+					<ListView.View>
+						<GridView AllowsColumnReorder="False">
+							<GridViewColumn Header="Instance" DisplayMemberBinding="{Binding SessionIdentifier.Instance}" />
+							<GridViewColumn Header="SID" DisplayMemberBinding="{Binding SessionIdentifier.SessionId}" />
+							<GridViewColumn Header="PX group/set/server#">
+								<GridViewColumn.CellTemplate>
+									<DataTemplate DataType="modelDataProviders:SqlMonitorSessionPlanItem">
+										<StackPanel Orientation="Horizontal">
+											<TextBlock>
+												<Run Text="{Binding SessionItem.ParallelServerGroup}" /><Run Text="/" /><Run Text="{Binding SessionItem.ParallelServerSet}" /><Run Text="/" /><Run Text="{Binding SessionItem.ParallelServerNumber}" />
+											</TextBlock>
+										</StackPanel>
+									</DataTemplate>
+								</GridViewColumn.CellTemplate>
+							</GridViewColumn>
+							<GridViewColumn Header="Activity" DisplayMemberBinding="{Binding ActivityRatio, Converter={StaticResource RatioConverter}, ConverterParameter=1}" />
+							<GridViewColumn Header="ASH samples" DisplayMemberBinding="{Binding ActiveSessionHistorySampleCount, Converter={StaticResource PrettyPrintNumericConverter}}" />
+							<GridViewColumn Header="Starts" DisplayMemberBinding="{Binding Starts, Converter={StaticResource PrettyPrintNumericConverter}}" />
+							<GridViewColumn Header="Output rows" DisplayMemberBinding="{Binding OutputRows, Converter={StaticResource PrettyPrintNumericConverter}}" />
+							<GridViewColumn Header="Physical read requests" DisplayMemberBinding="{Binding PhysicalReadRequests, Converter={StaticResource PrettyPrintNumericConverter}}" />
+							<GridViewColumn Header="Physical read" DisplayMemberBinding="{Binding PhysicalReadBytes, Converter={StaticResource DataSpaceConverter}, ConverterParameter={x:Static system:String.Empty}}" />
+							<GridViewColumn Header="Physical write requests" DisplayMemberBinding="{Binding PhysicalWriteRequests, Converter={StaticResource PrettyPrintNumericConverter}}" />
+							<GridViewColumn Header="Physical write" DisplayMemberBinding="{Binding PhysicalWriteBytes, Converter={StaticResource DataSpaceConverter}, ConverterParameter={x:Static system:String.Empty}}" />
+							<GridViewColumn Header="I/O interconnection" DisplayMemberBinding="{Binding IoInterconnectBytes, Converter={StaticResource DataSpaceConverter}, ConverterParameter={x:Static system:String.Empty}}" />
+							<GridViewColumn Header="Work area" DisplayMemberBinding="{Binding WorkAreaMemoryBytes, Converter={StaticResource DataSpaceConverter}, ConverterParameter={x:Static system:String.Empty}}" />
+							<GridViewColumn Header="Work area max." DisplayMemberBinding="{Binding WorkAreaMemoryMaxBytes, Converter={StaticResource DataSpaceConverter}, ConverterParameter={x:Static system:String.Empty}}" />
+							<GridViewColumn Header="Temp" DisplayMemberBinding="{Binding WorkAreaTempBytes, Converter={StaticResource DataSpaceConverter}, ConverterParameter={x:Static system:String.Empty}}" Width="54" />
+							<GridViewColumn Header="Temp max." DisplayMemberBinding="{Binding WorkAreaTempMaxBytes, Converter={StaticResource DataSpaceConverter}, ConverterParameter={x:Static system:String.Empty}}" />
+						</GridView>
+					</ListView.View>
+				</ListView>
 			</Viewbox>
 		</DataTemplate>
 		
