@@ -811,15 +811,17 @@ namespace SqlPad.Oracle
 				}
 
 				builder.Clear();
-				var isFirstColumn = true;
 				var skipTablePrefix = skipFirstObjectIdentifier;
+				var separator = String.Empty;
 
 				foreach (var column in table.Columns)
 				{
-					if (!isFirstColumn)
+					if (column.Hidden)
 					{
-						builder.Append(", ");
+						continue;
 					}
+
+					builder.Append(separator);
 
 					if (!skipTablePrefix && !String.IsNullOrEmpty(table.FullyQualifiedObjectName.Name))
 					{
@@ -829,8 +831,8 @@ namespace SqlPad.Oracle
 					
 					builder.Append(column.Name.ToSimpleIdentifier());
 
-					isFirstColumn = false;
 					skipTablePrefix = false;
+					separator = ", ";
 				}
 
 				yield return

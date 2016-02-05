@@ -2253,6 +2253,7 @@ ON (EVENTS.ID = SRC.ID)";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 79, true, OracleCodeCompletionCategory.Column).ToList();
 			items.Count.ShouldBeGreaterThan(0);
 		}
+
 		[Test(Description = @"")]
 		public void TestJoinTypeSuggestingWithCursorAtClosingParenthesis()
 		{
@@ -2260,6 +2261,15 @@ ON (EVENTS.ID = SRC.ID)";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 29).ToList();
 			items.Count.ShouldBeGreaterThan(0);
 			items[0].StatementNode.FirstTerminalNode.Token.Value.ShouldBe("JO");
+		}
+
+		[Test(Description = @"")]
+		public void TestAsteriskSuggestionWithInvisibleColumns()
+		{
+			const string statement = @"SELECT T. FROM ""CaseSensitiveTable"" T";
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 9).ToList();
+			items.Count.ShouldBeGreaterThan(0);
+			items[0].Text.ShouldBe("\"CaseSensitiveColumn\", T.VIRTUAL_COLUMN");
 		}
 
 		public class OracleCodeCompletionTypeTest
