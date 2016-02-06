@@ -310,6 +310,8 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public override async Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 		{
+			var allocatedBytes = 0L;
+
 			while (await reader.ReadAsynchronous(cancellationToken))
 			{
 				var dataFileModel =
@@ -330,8 +332,12 @@ namespace SqlPad.Oracle.ModelDataProviders
 						OnlineStatus = (string)reader["ONLINE_STATUS"]
 					};
 
+				allocatedBytes += dataFileModel.UserSizeBytes;
+
 				DataModel.Datafiles.Add(dataFileModel);
 			}
+
+			DataModel.AllocatedBytes = allocatedBytes;
 		}
 	}
 

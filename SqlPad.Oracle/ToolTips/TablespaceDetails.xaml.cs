@@ -59,6 +59,7 @@ namespace SqlPad.Oracle.ToolTips
 		private string _predicateEvaluation;
 		private bool _isEncrypted;
 		private string _compressFor;
+		private long _allocatedBytes;
 		private long _usedBytes;
 
 		public ICollection<DatafileDetailModel> Datafiles { get; } = new ObservableCollection<DatafileDetailModel>();
@@ -193,6 +194,12 @@ namespace SqlPad.Oracle.ToolTips
 		{
 			get { return _compressFor; }
 			set { UpdateValueAndRaisePropertyChanged(ref _compressFor, value); }
+		}
+
+		public long AllocatedBytes
+		{
+			get { return _allocatedBytes; }
+			set { UpdateValueAndRaisePropertyChanged(ref _allocatedBytes, value); }
 		}
 
 		public long UsedBytes
