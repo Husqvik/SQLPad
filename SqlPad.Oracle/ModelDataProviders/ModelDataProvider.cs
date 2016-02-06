@@ -291,6 +291,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			DataModel.PredicateEvaluation = (string)reader["PREDICATE_EVALUATION"];
 			DataModel.IsEncrypted = String.Equals((string)reader["ENCRYPTED"], "YES");
 			DataModel.CompressFor = OracleReaderValueConvert.ToString(reader["COMPRESS_FOR"]);
+			DataModel.UsedBytes = Convert.ToInt64(reader["USED_BYTES"]);
 		}
 	}
 
