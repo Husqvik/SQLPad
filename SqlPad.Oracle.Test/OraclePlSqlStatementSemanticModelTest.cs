@@ -779,7 +779,7 @@ END;";
 			Assert.DoesNotThrow(() => semanticModel.Build(CancellationToken.None));
 		}
 
-		[Test, Ignore]
+		[Test]
 		public void TestSpecificPlSqlReferences()
 		{
 			const string plsqlText =
@@ -811,7 +811,10 @@ END;";
 			var dataTypeReferences = program.DataTypeReferences.ToArray();
 			dataTypeReferences.Length.ShouldBe(2);
 			//dataTypeReferences[0].
-			program.ProgramReferences.Count.ShouldBe(2);
+			var programReferences = program.ProgramReferences.ToArray();
+			programReferences.Length.ShouldBe(2);
+			programReferences[0].Metadata.ShouldNotBe(null);
+			programReferences[1].Metadata.ShouldNotBe(null);
 		}
 
 		[Test]

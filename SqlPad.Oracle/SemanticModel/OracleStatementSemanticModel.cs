@@ -2261,7 +2261,7 @@ namespace SqlPad.Oracle.SemanticModel
 			if (result.Metadata != null)
 			{
 				if (programReference.ObjectNode == null && programReference.Name[0] == '"' &&
-					(result.Metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramLevel || result.Metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramRowNum))
+				    (result.Metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramLevel || result.Metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramRowNum))
 				{
 					return null;
 				}
@@ -2271,6 +2271,20 @@ namespace SqlPad.Oracle.SemanticModel
 				{
 					programReference.OwnerNode = programReference.ObjectNode;
 					programReference.ObjectNode = null;
+				}
+			}
+			else if (programReference.ObjectNode == null)
+			{
+				var plSqlProgram = programReference.Container as OraclePlSqlProgram;
+				if (plSqlProgram != null)
+				{
+					foreach (var subProgram in plSqlProgram.SubPrograms)
+					{
+						if (String.Equals(programReference.NormalizedName, subProgram.Name))
+						{
+							result.Metadata = subProgram.Metadata;
+						}
+					}
 				}
 			}
 
@@ -2599,22 +2613,28 @@ namespace SqlPad.Oracle.SemanticModel
 				return false;
 			}
 
-			var programReference = new OracleProgramReference
-			{
-				ProgramIdentifierNode = columnReference.ColumnNode, DatabaseLinkNode = OracleReferenceBuilder.GetDatabaseLinkFromIdentifier(columnReference.ColumnNode), AnalyticClauseNode = null, ParameterListNode = null, ParameterReferences = null
-			};
+			var programReference =
+				new OracleProgramReference
+				{
+					ProgramIdentifierNode = columnReference.ColumnNode,
+					DatabaseLinkNode = OracleReferenceBuilder.GetDatabaseLinkFromIdentifier(columnReference.ColumnNode),
+					AnalyticClauseNode = null,
+					ParameterListNode = null,
+					ParameterReferences = null
+				};
 
 			programReference.CopyPropertiesFrom(columnReference);
 
 			UpdateProgramReferenceWithMetadata(programReference, includePlSqlObjects);
-			if (programReference.Metadata != null || programReference.SchemaObject != null)
+
+			if (programReference.Metadata == null && programReference.SchemaObject == null)
 			{
-				columnReference.Container.ProgramReferences.Add(programReference);
-				columnReference.Container.ColumnReferences.Remove(columnReference);
-				return true;
+				return TryResolveSequenceReference(columnReference);
 			}
 
-			return TryResolveSequenceReference(columnReference);
+			columnReference.Container.ProgramReferences.Add(programReference);
+			columnReference.Container.ColumnReferences.Remove(columnReference);
+			return true;
 		}
 
 		private static void ResolveConcatenatedQueryBlockOrderByReferences(OracleColumnReference columnReference)
