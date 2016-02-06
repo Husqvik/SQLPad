@@ -25,6 +25,8 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public bool ReferencesAllColumns => String.Equals(_columnNode.Token.Value, "*");
 
+		public StatementGrammarNode OldOuterJoinOperatorNode { get; set; }
+
 		public StatementGrammarNode ColumnNode
 		{
 			get { return _columnNode; }

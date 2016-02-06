@@ -48,7 +48,12 @@ namespace SqlPad.Oracle
 		public const string CurrentOfConditionAllowedOnlyWithinPlSqlScope = "Current of <cursor> condition is allowed only within PL/SQL scope";
 		public const string InsertOperationDisallowedOnVirtualColumns = "INSERT operation disallowed on virtual columns";
 		public const string DuplicateNameFoundInColumnAliasListForWithClause = "Duplicate name found in column alias list for WITH clause";
-		public const string NoChoicesMayAppearWithChoiceOthersInExceptionHandler = "No choices may appear with choice OTHERS in an exception handler";
+		public const string OldStyleOuterJoinCannotBeUsedWithAnsiJoins = "Old style outer join cannot be used with ANSI joins";
+
+		public static class PlSql
+		{
+			public const string NoChoicesMayAppearWithChoiceOthersInExceptionHandler = "No choices may appear with choice OTHERS in an exception handler";
+		}
 	}
 
 	public static class OracleSemanticErrorTooltipText

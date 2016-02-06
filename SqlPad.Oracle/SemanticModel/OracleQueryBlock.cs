@@ -97,7 +97,7 @@ namespace SqlPad.Oracle.SemanticModel
 		
 		public StatementGrammarNode OrderByClause { get; set; }
 		
-		public StatementGrammarNode HierarchicalQueryClause { get; private set; }
+		public StatementGrammarNode HierarchicalQueryClause { get; }
 
 		public StatementGrammarNode ExplicitColumnNameList { get; set; }
 
@@ -179,6 +179,8 @@ namespace SqlPad.Oracle.SemanticModel
 		public OracleQueryBlock OuterCorrelatedQueryBlock { get; set; }
 		
 		public OracleQueryBlock Parent { get; set; }
+
+		public bool ContainsAnsiJoin { get; set; }
 
 		public IEnumerable<OracleQueryBlock> AllPrecedingConcatenatedQueryBlocks
 		{

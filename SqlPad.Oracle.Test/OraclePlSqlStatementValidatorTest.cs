@@ -70,7 +70,7 @@ END;";
 			var nodeValidities = validationModel.InvalidNonTerminals.Values.ToArray();
 			nodeValidities.Length.ShouldBe(1);
 			nodeValidities[0].Node.Token.Value.ShouldBe("OTHERS");
-			nodeValidities[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.NoChoicesMayAppearWithChoiceOthersInExceptionHandler);
+			nodeValidities[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.PlSql.NoChoicesMayAppearWithChoiceOthersInExceptionHandler);
 		}
 	}
 }

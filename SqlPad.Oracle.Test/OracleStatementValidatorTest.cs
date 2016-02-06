@@ -3448,6 +3448,25 @@ END;";
 		}
 
 		[Test(Description = @"")]
+		public void TestOldStyleOuterJoinCannotBeUsedWithAnsiJoins()
+		{
+			const string sqlText = @"SELECT NULL FROM dual t1 JOIN dual t2 ON t1.dummy = t2.dummy WHERE t2.dummy(+) = 'X'";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var validationData = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			validationData.Count.ShouldBe(1);
+			validationData[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.OldStyleOuterJoinCannotBeUsedWithAnsiJoins);
+			var text = String.Concat(validationData[0].Node.Terminals.Select(t => t.Token.Value));
+
+			text.ShouldBe("(+)");
+		}
+
+		[Test(Description = @"")]
 		public void InsertIntoColumnClauseWithPrefixedColumnReferringNonExistingTable()
 		{
 			const string sqlText = @"INSERT INTO tmp (tmp.val) VALUES (1)";
