@@ -814,6 +814,7 @@ END;";
 			programReferences.Length.ShouldBe(2);
 			programReferences[0].Metadata.ShouldNotBe(null);
 			programReferences[0].Metadata.Parameters.Count.ShouldBe(1);
+			programReferences[0].Metadata.Parameters[0].FullDataTypeName.ShouldBe("BOOLEAN");
 			programReferences[1].Metadata.ShouldNotBe(null);
 			programReferences[1].Metadata.Parameters.Count.ShouldBe(0);
 

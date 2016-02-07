@@ -72,5 +72,23 @@ END;";
 			nodeValidities[0].Node.Token.Value.ShouldBe("OTHERS");
 			nodeValidities[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.PlSql.NoChoicesMayAppearWithChoiceOthersInExceptionHandler);
 		}
+
+		[Test(Description = @"")]
+		public void TestPlSqlBuiltInDataTypes()
+		{
+			const string plsqlText =
+@"DECLARE
+	test_value1 BINARY_INTEGER;
+	test_value2 PLS_INTEGER;
+	test_value3 BOOLEAN := TRUE;
+BEGIN
+	NULL;
+END;";
+			var statement = Parser.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = OracleStatementValidatorTest.BuildValidationModel(plsqlText, statement);
+			validationModel.IdentifierNodeValidity.Count.ShouldBe(0);
+		}
 	}
 }

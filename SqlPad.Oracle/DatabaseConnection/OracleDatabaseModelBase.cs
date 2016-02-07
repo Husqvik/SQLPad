@@ -75,6 +75,14 @@ namespace SqlPad.Oracle.DatabaseConnection
 				TerminalValues.NVarchar2,
 			};
 
+		internal static readonly IReadOnlyCollection<string> BuiltInPlSqlDataTypes =
+			new[]
+			{
+				TerminalValues.BinaryInteger,
+				TerminalValues.PlsInteger,
+				"BOOLEAN"
+			};
+
 		public abstract ConnectionStringSettings ConnectionString { get; }
 		
 		public abstract bool IsInitialized { get; }

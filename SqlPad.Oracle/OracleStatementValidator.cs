@@ -1141,7 +1141,8 @@ namespace SqlPad.Oracle
 				if (dataTypeReference.DatabaseLinkNode == null)
 				{
 					var dataTypeName = ((OracleToken)dataTypeReference.ObjectNode.Token).UpperInvariantValue;
-					if (dataTypeReference.SchemaObject == null && dataTypeReference.ObjectNode.Id.IsIdentifier() && !OracleDatabaseModelBase.BuiltInDataTypes.Contains(dataTypeName))
+					var allowPlSqlTypes = dataTypeReference.Container is OraclePlSqlProgram;
+					if (dataTypeReference.SchemaObject == null && dataTypeReference.ObjectNode.Id.IsIdentifier() && !IsBuiltInType(dataTypeName, allowPlSqlTypes))
 					{
 						validationModel.IdentifierNodeValidity[dataTypeReference.ObjectNode] =
 							new NodeValidationData { Node = dataTypeReference.ObjectNode, IsRecognized = false };
@@ -1195,6 +1196,12 @@ namespace SqlPad.Oracle
 						new NodeValidationData { Node = exceptionReference.IdentifierNode };
 				}
 			}
+		}
+
+		private static bool IsBuiltInType(string dataTypeName, bool allowPlSqlTypes)
+		{
+			return OracleDatabaseModelBase.BuiltInDataTypes.Contains(dataTypeName) ||
+			       (allowPlSqlTypes && OracleDatabaseModelBase.BuiltInPlSqlDataTypes.Contains(dataTypeName));
 		}
 
 		private static void ValidatePriorOperators(OracleValidationModel validationModel, IEnumerable<StatementGrammarNode> terminals)
@@ -1297,8 +1304,7 @@ namespace SqlPad.Oracle
 								namedParameterExists = true;
 
 								OracleProgramParameterMetadata parameterMetadata;
-								if ((String.IsNullOrEmpty(programReference.Metadata.Identifier.Owner) || programReference.Metadata.Owner.FullyQualifiedName == OracleObjectIdentifier.IdentifierBuiltInFunctionPackage) &&
-									programReference.Metadata.Type != ProgramType.StatementFunction)
+								if (programReference.Metadata.IsBuiltIn)
 								{
 									validationModel.IdentifierNodeValidity[parameterReference.OptionalIdentifierTerminal] =
 										new InvalidNodeValidationData(OracleSemanticErrorType.NamedParameterNotAllowed) { Node = parameterReference.OptionalIdentifierTerminal };
