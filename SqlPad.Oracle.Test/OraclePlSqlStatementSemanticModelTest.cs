@@ -785,7 +785,8 @@ END;";
 			const string plsqlText =
 @"DECLARE
 	test_value1 BINARY_INTEGER;
-	test_value2 BOOLEAN := TRUE;
+	test_value2 PLS_INTEGER;
+	test_value3 BOOLEAN := TRUE;
 	
 	PROCEDURE test_procedure1
 	IS
@@ -808,13 +809,19 @@ END;";
 
 			semanticModel.Programs.Count.ShouldBe(1);
 			var program = semanticModel.Programs[0];
-			var dataTypeReferences = program.DataTypeReferences.ToArray();
-			dataTypeReferences.Length.ShouldBe(2);
-			//dataTypeReferences[0].
+
 			var programReferences = program.ProgramReferences.ToArray();
 			programReferences.Length.ShouldBe(2);
 			programReferences[0].Metadata.ShouldNotBe(null);
+			programReferences[0].Metadata.Parameters.Count.ShouldBe(1);
 			programReferences[1].Metadata.ShouldNotBe(null);
+			programReferences[1].Metadata.Parameters.Count.ShouldBe(0);
+
+			program.PlSqlVariableReferences.Count.ShouldBe(0);
+
+			var dataTypeReferences = program.DataTypeReferences.ToArray();
+			dataTypeReferences.Length.ShouldBe(3);
+			//dataTypeReferences[0].
 		}
 
 		[Test]

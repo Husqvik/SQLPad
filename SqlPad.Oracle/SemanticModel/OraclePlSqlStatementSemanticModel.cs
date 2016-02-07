@@ -257,7 +257,7 @@ namespace SqlPad.Oracle.SemanticModel
 					variableResolved = !TryColumnReferenceAsProgramOrSequenceReference(columnReference, true);
 				}
 
-				if (variableResolved)
+				if (variableResolved && !IsBooleanLiteral(columnReference))
 				{
 					program.PlSqlVariableReferences.Add(variableReference);
 				}
@@ -277,6 +277,16 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 
 			ResolveSubProgramReferences(program.SubPrograms);
+		}
+
+		private static bool IsBooleanLiteral(OracleReference columnReference)
+		{
+			if (columnReference.ObjectNode != null)
+			{
+				return false;
+			}
+
+			return String.Equals(columnReference.NormalizedName, "\"TRUE\"") || String.Equals(columnReference.NormalizedName, "\"FALSE\"");
 		}
 
 		private static bool TryResolveLocalReference<TElement>(OraclePlSqlReference plSqlReference, IEnumerable<TElement> elements, ICollection<TElement> resolvedCollection) where TElement : OraclePlSqlElement
@@ -682,6 +692,7 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 
 			var returnParameterNode = parameterSourceNode[NonTerminals.PlSqlDataTypeWithoutConstraint];
+			var parameterPosition = 0;
 			if (returnParameterNode != null)
 			{
 				program.ReturnParameter =
@@ -692,6 +703,10 @@ namespace SqlPad.Oracle.SemanticModel
 						Nullable = true,
 						DataTypeNode = returnParameterNode
 					};
+
+				var returnTypeName = String.Concat(returnParameterNode.Terminals.Select(t => t.Token.Value));
+				program.Metadata.AddParameter(new OracleProgramParameterMetadata(null, parameterPosition, parameterPosition, 0, ParameterDirection.ReturnValue, returnTypeName, OracleObjectIdentifier.Empty, false));
+				parameterPosition++;
 			}
 
 			var parameterDeclarationList = parameterSourceNode?[NonTerminals.ParenthesisEnclosedParameterDeclarationList, NonTerminals.ParameterDeclarationList];
@@ -706,6 +721,11 @@ namespace SqlPad.Oracle.SemanticModel
 			{
 				var parameter = ResolveParameter(parameterDeclaration);
 				program.Parameters.Add(parameter);
+
+				var parameterMetadata = new OracleProgramParameterMetadata(parameter.Name, parameterPosition, parameterPosition, 0, parameter.Direction, parameter.DataType.IsPrimitive ? parameter.DataType.FullyQualifiedName.NormalizedName : null, parameter.DataType.IsPrimitive ? OracleObjectIdentifier.Empty : parameter.DataType.FullyQualifiedName, parameter.DefaultExpressionNode != null);
+				program.Metadata.AddParameter(parameterMetadata);
+
+				parameterPosition++;
 			}
 		}
 
@@ -728,6 +748,7 @@ namespace SqlPad.Oracle.SemanticModel
 				}
 
 				parameter.DataTypeNode = parameterDirectionDeclaration[NonTerminals.PlSqlDataTypeWithoutConstraint];
+				parameter.DataType = OracleReferenceBuilder.ResolveDataTypeFromNode(parameter.DataTypeNode);
 				parameter.DefaultExpressionNode = parameterDirectionDeclaration[NonTerminals.VariableDeclarationDefaultValue];
 			}
 

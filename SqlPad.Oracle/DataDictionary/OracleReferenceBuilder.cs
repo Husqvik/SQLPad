@@ -165,7 +165,8 @@ namespace SqlPad.Oracle.DataDictionary
 		{
 			var dataTypeNode = dataTypeReference.RootNode;
 
-			if (!String.Equals(dataTypeNode.Id, NonTerminals.DataType) && !String.Equals(dataTypeNode.Id, NonTerminals.PlSqlDataType))
+			var isSqlDataType = String.Equals(dataTypeNode.Id, NonTerminals.DataType);
+			if (!isSqlDataType && !String.Equals(dataTypeNode.Id, NonTerminals.PlSqlDataType) && !String.Equals(dataTypeNode.Id, NonTerminals.PlSqlDataTypeWithoutConstraint))
 			{
 				throw new ArgumentException("Node ID must be 'DataType' or 'PlSqlDataType'. ", "dataTypeNode");
 			}
