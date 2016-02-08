@@ -14,10 +14,15 @@ namespace SqlPad.FindReplace
 			return searchPhrase.ToUpperInvariant().Split(SearchPhraseSeparators, StringSplitOptions.RemoveEmptyEntries);
 		}
 
+		public static string GetRegexPattern(string searchPhrase)
+		{
+			return GetRegexPattern(GetSearchedWords(searchPhrase));
+		}
+
 		public static string GetRegexPattern(IEnumerable<string> searchedWords)
 		{
 			var regexPatterns = searchedWords.Select(w => $"({Regex.Escape(w)})");
 			return String.Join("|", regexPatterns);
-		}	
+		}
 	}
 }

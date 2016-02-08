@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -35,6 +36,7 @@ namespace SqlPad
 		public static readonly DependencyProperty SelectedRowIndexProperty = DependencyProperty.Register(nameof(SelectedRowIndex), typeof(int), typeof(ResultViewer), new UIPropertyMetadata(0));
 		public static readonly DependencyProperty AutoRefreshIntervalProperty = DependencyProperty.Register(nameof(AutoRefreshInterval), typeof(TimeSpan), typeof(ResultViewer), new UIPropertyMetadata(TimeSpan.FromSeconds(60), AutoRefreshIntervalChangedCallback));
 		public static readonly DependencyProperty AutoRefreshEnabledProperty = DependencyProperty.Register(nameof(AutoRefreshEnabled), typeof(bool), typeof(ResultViewer), new UIPropertyMetadata(false, AutoRefreshEnabledChangedCallback));
+		public static readonly DependencyProperty SearchMatchCountProperty = DependencyProperty.Register(nameof(SearchMatchCount), typeof(int?), typeof(ResultViewer), new UIPropertyMetadata());
 		#endregion
 
 		#region dependency property accessors
@@ -136,6 +138,13 @@ namespace SqlPad
 			{
 				resultViewer._refreshProgressBarTimer.Stop();
 			}
+		}
+
+		[Bindable(true)]
+		public int? SearchMatchCount
+		{
+			get { return (int?)GetValue(SearchMatchCountProperty); }
+			private set { SetValue(SearchMatchCountProperty, value); }
 		}
 		#endregion
 
@@ -633,14 +642,41 @@ namespace SqlPad
 
 		private void SearchTextChangedHandler(object sender, TextChangedEventArgs args)
 		{
+			SearchAndHighlightMatches();
+		}
+
+		private void SearchAndHighlightMatches()
+		{
+			var regexPattern = TextSearchHelper.GetRegexPattern(SearchPhraseTextBox.Text);
+
+			if (String.IsNullOrEmpty(regexPattern))
+			{
+				SearchMatchCount = null;
+			}
+			else
+			{
+				var regex = new Regex(regexPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+				var matchCount = 0;
+
+				foreach (var row in _resultRows)
+				{
+					foreach (var item in row)
+					{
+						var stringValue = (string)CellValueConverter.Instance.Convert(item, null, null, null);
+						matchCount += regex.Matches(stringValue).Count;
+					}
+				}
+
+				SearchMatchCount = matchCount;
+			}
+
 			HighlightSearchedText();
 		}
 
 		private void HighlightSearchedText()
 		{
-			var searchedWords = TextSearchHelper.GetSearchedWords(SearchPhraseTextBox.Text);
-			_searchedTextHighlightUsed |= searchedWords.Length > 0;
-			var regexPattern = TextSearchHelper.GetRegexPattern(searchedWords);
+			var regexPattern = TextSearchHelper.GetRegexPattern(SearchPhraseTextBox.Text);
+			_searchedTextHighlightUsed |= !String.IsNullOrEmpty(regexPattern);
 
 			foreach (var row in ResultGrid.GetDataGridRows())
 			{

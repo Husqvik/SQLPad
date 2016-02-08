@@ -59,8 +59,21 @@
 
 	<DockPanel LastChildFill="True">
 		<StackPanel x:Name="SearchPanel" Orientation="Horizontal" DockPanel.Dock="Top" Visibility="Collapsed">
-			<sqlPad:SearchTextBox x:Name="SearchPhraseTextBox" Watermark="Enter search phrase" DockPanel.Dock="Top" TextChanged="SearchTextChangedHandler" MaxLength="64" Width="200" HorizontalAlignment="Left" Margin="0,0,0,2" />
-			<Button Margin="2" Height="15" Width="15" HorizontalAlignment="Right" VerticalAlignment="Center" Command="{StaticResource CloseSearchBar}"
+			<sqlPad:SearchTextBox x:Name="SearchPhraseTextBox" Watermark="Enter search phrase" TextChanged="SearchTextChangedHandler" MaxLength="64" MinWidth="200" HorizontalAlignment="Left" />
+			<TextBlock Text="{Binding SearchMatchCount}" Visibility="{Binding SearchMatchCount, Converter={StaticResource ObjectToVisibilityConverter}}" VerticalAlignment="Center" Margin="8,0,0,0" />
+			<TextBlock Visibility="{Binding SearchMatchCount, Converter={StaticResource ObjectToVisibilityConverter}}" VerticalAlignment="Center">
+				<TextBlock.Style>
+					<Style>
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding SearchMatchCount}" Value="1">
+								<Setter Property="TextBlock.Text" Value=" match found. " />
+							</DataTrigger>
+						</Style.Triggers>
+						<Setter Property="TextBlock.Text" Value=" matches found. " />
+					</Style>
+				</TextBlock.Style>
+			</TextBlock>
+			<Button Margin="4,2" Height="16" Width="16" HorizontalAlignment="Right" VerticalAlignment="Center" Command="{StaticResource CloseSearchBar}"
 					VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Focusable="False">
 				<Path Data="M 0,0 L 8,8 M 8,0 L 0,8" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" />
 			</Button>
