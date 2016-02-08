@@ -179,7 +179,7 @@ namespace SqlPad.Oracle.DataDictionary
 
 			var builtInDataTypeNode = dataTypeNode[NonTerminals.BuiltInDataType];
 
-			string name = null;
+			var name = String.Empty;
 			if (!String.IsNullOrEmpty(owner))
 			{
 				var identifier = dataTypeNode[NonTerminals.SchemaDatatype, Terminals.DataTypeIdentifier];

@@ -3325,5 +3325,16 @@ SELECT value FROM data";
 			mainQueryBlock.Columns[0].ColumnDescription.FullTypeName.ShouldBe("CHAR(0)");
 			mainQueryBlock.Columns[0].ColumnDescription.Nullable.ShouldBe(true);
 		}
+
+		[Test(Description = @"")]
+		public void TestModelBuildWithPropagatedCastedDataType()
+		{
+			const string query1 = @"SELECT dummy FROM (SELECT CAST(dummy AS BINARY_FLOAT) dummy FROM DUAL)";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single().Validate();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			Assert.DoesNotThrow(() => OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel));
+		}
 	}
 }
