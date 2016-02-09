@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.DataDictionary;
 
 namespace SqlPad.Oracle.SemanticModel
@@ -71,7 +70,7 @@ namespace SqlPad.Oracle.SemanticModel
 				return;
 			}
 
-			if (programReference.ParameterReferences.Count == 2 && programMetadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramCast)
+			if (programReference.ParameterReferences.Count == 2 && programMetadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramCast)
 			{
 				var dataTypeNode = programReference.ParameterReferences[1].ParameterNode;
 				var dataTypeReference = programReference.Container.DataTypeReferences.SingleOrDefault(dt => dt.RootNode == dataTypeNode);

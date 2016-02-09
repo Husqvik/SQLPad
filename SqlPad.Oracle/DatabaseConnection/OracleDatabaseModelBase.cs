@@ -23,28 +23,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 		public const int DefaultMaxLengthNVarchar = 2000;
 		public const int DefaultMaxLengthRaw = 2000;
 
-		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramCast = OracleProgramIdentifier.CreateFromValues(null, null, "CAST");
-		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramExtract = OracleProgramIdentifier.CreateFromValues(null, null, "EXTRACT");
-		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramLnNvl = OracleProgramIdentifier.CreateFromValues(null, null, "LNNVL");
-		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramRatioToReport = OracleProgramIdentifier.CreateFromValues(null, null, "RATIO_TO_REPORT");
-		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramSysConnectByPath = OracleProgramIdentifier.CreateFromValues(null, null, "SYS_CONNECT_BY_PATH");
-
-		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramRound = OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "ROUND");
-		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramLevel = OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "LEVEL");
-		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramRowNum = OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "ROWNUM");
-		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramNextDay = OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "NEXT_DAY");
-		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramSysContext = OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "SYS_CONTEXT");
-		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramToChar = OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "TO_CHAR");
-		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramToDate = OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "TO_DATE");
-		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramToTimestamp = OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "TO_TIMESTAMP");
-		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramToTimestampWithTimeZone = OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "TO_TIMESTAMP_TZ");
-		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramTrunc = OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "TRUNC");
-		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramConvert = OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "CONVERT");
-		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramNumberToYearToMonthInterval = OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "NUMTOYMINTERVAL");
-		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramNumberToDayToSecondInterval = OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "NUMTODSINTERVAL");
-		internal static readonly OracleProgramIdentifier IdentifierDbmsRandomString = OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageDbmsRandom, "STRING");
-		internal static readonly OracleProgramIdentifier IdentifierDbmsCryptoHash = OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageDbmsCrypto, "HASH");
-		
 		internal static readonly ICollection<string> BuiltInDataTypes =
 			new HashSet<string>
 			{

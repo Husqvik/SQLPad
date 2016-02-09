@@ -17,19 +17,23 @@ namespace SqlPad.Oracle
 		private static readonly HashSet<OracleProgramIdentifier> SpecificCodeCompletionFunctionIdentifiers =
 				new HashSet<OracleProgramIdentifier>
 			{
-				OracleDatabaseModelBase.IdentifierBuiltInProgramConvert,
-				OracleDatabaseModelBase.IdentifierBuiltInProgramRound,
-				OracleDatabaseModelBase.IdentifierBuiltInProgramToChar,
-				OracleDatabaseModelBase.IdentifierBuiltInProgramTrunc,
-				OracleDatabaseModelBase.IdentifierBuiltInProgramToDate,
-				OracleDatabaseModelBase.IdentifierBuiltInProgramToTimestamp,
-				OracleDatabaseModelBase.IdentifierBuiltInProgramToTimestampWithTimeZone,
-				OracleDatabaseModelBase.IdentifierBuiltInProgramSysContext,
-				OracleDatabaseModelBase.IdentifierBuiltInProgramNextDay,
-				OracleDatabaseModelBase.IdentifierBuiltInProgramNumberToYearToMonthInterval,
-				OracleDatabaseModelBase.IdentifierBuiltInProgramNumberToDayToSecondInterval,
-				OracleDatabaseModelBase.IdentifierDbmsRandomString,
-				OracleDatabaseModelBase.IdentifierDbmsCryptoHash
+				OracleProgramIdentifier.IdentifierBuiltInProgramConvert,
+				OracleProgramIdentifier.IdentifierBuiltInProgramRegularExpressionReplace,
+				OracleProgramIdentifier.IdentifierBuiltInProgramRegularExpressionCount,
+				OracleProgramIdentifier.IdentifierBuiltInProgramRegularExpressionInstr,
+				OracleProgramIdentifier.IdentifierBuiltInProgramRegularExpressionSubstring,
+				OracleProgramIdentifier.IdentifierBuiltInProgramRound,
+				OracleProgramIdentifier.IdentifierBuiltInProgramToChar,
+				OracleProgramIdentifier.IdentifierBuiltInProgramTrunc,
+				OracleProgramIdentifier.IdentifierBuiltInProgramToDate,
+				OracleProgramIdentifier.IdentifierBuiltInProgramToTimestamp,
+				OracleProgramIdentifier.IdentifierBuiltInProgramToTimestampWithTimeZone,
+				OracleProgramIdentifier.IdentifierBuiltInProgramSysContext,
+				OracleProgramIdentifier.IdentifierBuiltInProgramNextDay,
+				OracleProgramIdentifier.IdentifierBuiltInProgramNumberToYearToMonthInterval,
+				OracleProgramIdentifier.IdentifierBuiltInProgramNumberToDayToSecondInterval,
+				OracleProgramIdentifier.IdentifierDbmsRandomString,
+				OracleProgramIdentifier.IdentifierDbmsCryptoHash
 			};
 
 		public static IEnumerable<ICodeCompletionItem> ResolveSpecificFunctionParameterCodeCompletionItems(StatementGrammarNode currentNode, IEnumerable<OracleCodeCompletionFunctionOverload> functionOverloads, OracleDatabaseModelBase databaseModel)
@@ -42,12 +46,12 @@ namespace SqlPad.Oracle
 			}
 
 			var truncFunctionOverload = specificFunctionOverloads
-				.FirstOrDefault(o => o.CurrentParameterIndex == 1 && o.ProgramMetadata.Identifier.In(OracleDatabaseModelBase.IdentifierBuiltInProgramTrunc, OracleDatabaseModelBase.IdentifierBuiltInProgramRound) &&
+				.FirstOrDefault(o => o.CurrentParameterIndex == 1 && o.ProgramMetadata.Identifier.In(OracleProgramIdentifier.IdentifierBuiltInProgramTrunc, OracleProgramIdentifier.IdentifierBuiltInProgramRound) &&
 				                     String.Equals(o.ProgramMetadata.Parameters[o.CurrentParameterIndex + 1].DataType, "VARCHAR2"));
 
 			if (truncFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(truncFunctionOverload))
 			{
-				var addRoundInformation = truncFunctionOverload.ProgramMetadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramRound;
+				var addRoundInformation = truncFunctionOverload.ProgramMetadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramRound;
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "CC", "CC - One greater than the first two digits of a four-digit year"));
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "YYYY", $"YYYY (YEAR) - Year{(addRoundInformation ? " (rounds up on July 1)" : null)}"));
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "I", "I (IYYY) - ISO Year"));
@@ -62,7 +66,7 @@ namespace SqlPad.Oracle
 			}
 
 			var toCharFunctionOverload = specificFunctionOverloads
-				.FirstOrDefault(o => o.CurrentParameterIndex == 1 && o.ProgramMetadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramToChar &&
+				.FirstOrDefault(o => o.CurrentParameterIndex == 1 && o.ProgramMetadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramToChar &&
 									 String.Equals(o.ProgramMetadata.Parameters[o.CurrentParameterIndex + 1].DataType, "VARCHAR2"));
 			if (toCharFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(toCharFunctionOverload))
 			{
@@ -81,7 +85,7 @@ namespace SqlPad.Oracle
 			}
 
 			toCharFunctionOverload = specificFunctionOverloads
-				.FirstOrDefault(o => o.CurrentParameterIndex == 2 && o.ProgramMetadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramToChar &&
+				.FirstOrDefault(o => o.CurrentParameterIndex == 2 && o.ProgramMetadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramToChar &&
 				                     String.Equals(o.ProgramMetadata.Parameters[o.CurrentParameterIndex + 1].DataType, "VARCHAR2"));
 			if (toCharFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(toCharFunctionOverload))
 			{
@@ -91,7 +95,7 @@ namespace SqlPad.Oracle
 			}
 
 			var toToDateOrTimestampFunctionOverload = specificFunctionOverloads
-				.FirstOrDefault(o => o.CurrentParameterIndex == 1 && o.ProgramMetadata.Identifier.In(OracleDatabaseModelBase.IdentifierBuiltInProgramToDate, OracleDatabaseModelBase.IdentifierBuiltInProgramToTimestamp, OracleDatabaseModelBase.IdentifierBuiltInProgramToTimestampWithTimeZone) &&
+				.FirstOrDefault(o => o.CurrentParameterIndex == 1 && o.ProgramMetadata.Identifier.In(OracleProgramIdentifier.IdentifierBuiltInProgramToDate, OracleProgramIdentifier.IdentifierBuiltInProgramToTimestamp, OracleProgramIdentifier.IdentifierBuiltInProgramToTimestampWithTimeZone) &&
 									 String.Equals(o.ProgramMetadata.Parameters[o.CurrentParameterIndex + 1].DataType, "VARCHAR2"));
 			if (toToDateOrTimestampFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(toToDateOrTimestampFunctionOverload))
 			{
@@ -100,7 +104,7 @@ namespace SqlPad.Oracle
 			}
 
 			var randomStringFunctionOverload = specificFunctionOverloads
-				.FirstOrDefault(o => o.CurrentParameterIndex == 0 && o.ProgramMetadata.Identifier.In(OracleDatabaseModelBase.IdentifierDbmsRandomString));
+				.FirstOrDefault(o => o.CurrentParameterIndex == 0 && o.ProgramMetadata.Identifier.In(OracleProgramIdentifier.IdentifierDbmsRandomString));
 			if (randomStringFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(randomStringFunctionOverload))
 			{
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "U", "U (u) - uppercase alpha characters"));
@@ -111,7 +115,7 @@ namespace SqlPad.Oracle
 			}
 
 			var dbmsCrptoHashFunctionOverload = specificFunctionOverloads
-				.FirstOrDefault(o => o.CurrentParameterIndex == 1 && o.ProgramMetadata.Identifier.In(OracleDatabaseModelBase.IdentifierDbmsCryptoHash));
+				.FirstOrDefault(o => o.CurrentParameterIndex == 1 && o.ProgramMetadata.Identifier.In(OracleProgramIdentifier.IdentifierDbmsCryptoHash));
 			if (dbmsCrptoHashFunctionOverload != null && HasSingleNumberLiteralParameterOrNoParameterToken(dbmsCrptoHashFunctionOverload))
 			{
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "1", "1 - DBMS_CRYPTO.HASH_MD4 - MD4", false));
@@ -123,7 +127,7 @@ namespace SqlPad.Oracle
 			}
 
 			var numberToYearToMonthIntervalFunctionOverload = specificFunctionOverloads
-				.FirstOrDefault(o => o.CurrentParameterIndex == 1 && o.ProgramMetadata.Identifier.In(OracleDatabaseModelBase.IdentifierBuiltInProgramNumberToYearToMonthInterval));
+				.FirstOrDefault(o => o.CurrentParameterIndex == 1 && o.ProgramMetadata.Identifier.In(OracleProgramIdentifier.IdentifierBuiltInProgramNumberToYearToMonthInterval));
 			if (numberToYearToMonthIntervalFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(numberToYearToMonthIntervalFunctionOverload))
 			{
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "MONTH", "MONTH"));
@@ -131,7 +135,7 @@ namespace SqlPad.Oracle
 			}
 
 			var numberToDayToSecondIntervalFunctionOverload = specificFunctionOverloads
-				.FirstOrDefault(o => o.CurrentParameterIndex == 1 && o.ProgramMetadata.Identifier.In(OracleDatabaseModelBase.IdentifierBuiltInProgramNumberToDayToSecondInterval));
+				.FirstOrDefault(o => o.CurrentParameterIndex == 1 && o.ProgramMetadata.Identifier.In(OracleProgramIdentifier.IdentifierBuiltInProgramNumberToDayToSecondInterval));
 			if (numberToDayToSecondIntervalFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(numberToDayToSecondIntervalFunctionOverload))
 			{
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "SECOND", "SECOND"));
@@ -140,7 +144,7 @@ namespace SqlPad.Oracle
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "DAY", "DAY"));
 			}
 
-			var nextDayFunctionOverload = specificFunctionOverloads.FirstOrDefault(o => o.ProgramMetadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramNextDay);
+			var nextDayFunctionOverload = specificFunctionOverloads.FirstOrDefault(o => o.ProgramMetadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramNextDay);
 			if (nextDayFunctionOverload != null && nextDayFunctionOverload.CurrentParameterIndex == 1)
 			{
 				var task = databaseModel.GetWeekdayNames(CancellationToken.None);
@@ -149,7 +153,7 @@ namespace SqlPad.Oracle
 				completionItems.AddRange(namespaceItems);
 			}
 
-			var sysContextFunctionOverload = specificFunctionOverloads.FirstOrDefault(o => o.ProgramMetadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramSysContext);
+			var sysContextFunctionOverload = specificFunctionOverloads.FirstOrDefault(o => o.ProgramMetadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramSysContext);
 			if (sysContextFunctionOverload != null)
 			{
 				if (sysContextFunctionOverload.CurrentParameterIndex == 0 && sysContextFunctionOverload.ProgramMetadata.Parameters[sysContextFunctionOverload.CurrentParameterIndex + 1].DataType == "VARCHAR2" &&
@@ -238,14 +242,33 @@ namespace SqlPad.Oracle
 				}
 			}
 
+			if (IsAtRegexModifierParameter(specificFunctionOverloads))
+			{
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "i", "i - specifies case-insensitive matching"));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "c", "c - specifies case-sensitive matching"));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "n", "n - allows the period (.), which is the match-any-character character, to match the newline character. If you omit this parameter, then the period does not match the newline character. "));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "m", "m - treats the source string as multiple lines. Oracle interprets the caret (^) and dollar sign ($) as the start and end, respectively, of any line anywhere in the source string, rather than only at the start or end of the entire source string. If you omit this parameter, then Oracle treats the source string as a single line. "));
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "x", "x - ignores whitespace characters. By default, whitespace characters match themselves. "));
+			}
+
 			var convertFunctionOverload = specificFunctionOverloads
-					.FirstOrDefault(o => (o.CurrentParameterIndex == 1 || o.CurrentParameterIndex == 2) && o.ProgramMetadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramConvert);
+					.FirstOrDefault(o => (o.CurrentParameterIndex == 1 || o.CurrentParameterIndex == 2) && o.ProgramMetadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramConvert);
 			if (convertFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(convertFunctionOverload))
 			{
 				completionItems.AddRange(databaseModel.CharacterSets.Select(cs => BuildParameterCompletionItem(currentNode, cs, cs)));
 			}
 
 			return completionItems;
+		}
+
+		private static bool IsAtRegexModifierParameter(IEnumerable<OracleCodeCompletionFunctionOverload> functionOverloads)
+		{
+			return functionOverloads
+				.Any(o =>
+					(o.ProgramMetadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramRegularExpressionCount && o.CurrentParameterIndex == 3) ||
+					(o.ProgramMetadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramRegularExpressionInstr && o.CurrentParameterIndex == 5) ||
+					(o.ProgramMetadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramRegularExpressionReplace && o.CurrentParameterIndex == 5) ||
+					(o.ProgramMetadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramRegularExpressionSubstring && o.CurrentParameterIndex == 4));
 		}
 
 		private static void BuildCommonDateFormatCompletionItems(StatementGrammarNode currentNode, ICollection<ICodeCompletionItem> completionItems)

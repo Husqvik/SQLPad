@@ -2261,7 +2261,7 @@ namespace SqlPad.Oracle.SemanticModel
 			if (result.Metadata != null)
 			{
 				if (programReference.ObjectNode == null && programReference.Name[0] == '"' &&
-				    (result.Metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramLevel || result.Metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramRowNum))
+				    (result.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramLevel || result.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramRowNum))
 				{
 					return null;
 				}

@@ -214,7 +214,7 @@ namespace SqlPad.Oracle.Test
 
 			#region SYS.DBMS_RANDOM
 			var dbmsRandom = (OraclePackage)AllObjectsInternal.Single(o => String.Equals(o.Name, OracleObjectIdentifier.PackageDbmsRandom) && String.Equals(o.Owner, OracleObjectIdentifier.SchemaSys));
-			var randomStringFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, IdentifierDbmsRandomString, false, false, false, false, true, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			var randomStringFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.IdentifierDbmsRandomString, false, false, false, false, true, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
 			randomStringFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
 			randomStringFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"OPT\"", 1, 1, 0, ParameterDirection.Input, "CHAR", OracleObjectIdentifier.Empty, false));
 			randomStringFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"LEN\"", 2, 2, 0, ParameterDirection.Input, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
@@ -395,20 +395,20 @@ namespace SqlPad.Oracle.Test
 
 			#region SYS.STANDARD
 			var builtInFunctionPackage = (OraclePackage)AllObjectsInternal.Single(o => o.FullyQualifiedName == OracleObjectIdentifier.IdentifierBuiltInFunctionPackage);
-			var truncFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, IdentifierBuiltInProgramTrunc, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
+			var truncFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.IdentifierBuiltInProgramTrunc, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
 			truncFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Date, OracleObjectIdentifier.Empty, false));
 			truncFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"LEFT\"", 1, 1, 0, ParameterDirection.Input, TerminalValues.Date, OracleObjectIdentifier.Empty, false));
 			truncFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"RIGHT\"", 2, 2, 0, ParameterDirection.Input, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
 			truncFunctionMetadata.Owner = builtInFunctionPackage;
 			builtInFunctionPackage.Programs.Add(truncFunctionMetadata);
 
-			var toCharFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, IdentifierBuiltInProgramToChar, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
+			var toCharFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.IdentifierBuiltInProgramToChar, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
 			toCharFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
 			toCharFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"LEFT\"", 1, 1, 0, ParameterDirection.Input, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
 			toCharFunctionMetadata.Owner = builtInFunctionPackage;
 			builtInFunctionPackage.Programs.Add(toCharFunctionMetadata);
 
-			var sysContextFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, IdentifierBuiltInProgramSysContext, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
+			var sysContextFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.IdentifierBuiltInProgramSysContext, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
 			sysContextFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
 			sysContextFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"NAMESPACE\"", 1, 1, 0, ParameterDirection.Input, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
 			sysContextFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"ATTRIBUTE\"", 2, 2, 0, ParameterDirection.Input, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
@@ -423,7 +423,7 @@ namespace SqlPad.Oracle.Test
 			toCharWithNlsParameterFunctionMetadata.Owner = builtInFunctionPackage;
 			builtInFunctionPackage.Programs.Add(toCharWithNlsParameterFunctionMetadata);
 
-			var roundFunctionOverload1Metadata = new OracleProgramMetadata(ProgramType.Function, IdentifierBuiltInProgramRound, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
+			var roundFunctionOverload1Metadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.IdentifierBuiltInProgramRound, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
 			roundFunctionOverload1Metadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
 			roundFunctionOverload1Metadata.AddParameter(new OracleProgramParameterMetadata("\"LEFT\"", 1, 1, 0, ParameterDirection.Input, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
 			roundFunctionOverload1Metadata.Owner = builtInFunctionPackage;
@@ -436,7 +436,7 @@ namespace SqlPad.Oracle.Test
 			roundFunctionOverload2Metadata.Owner = builtInFunctionPackage;
 			builtInFunctionPackage.Programs.Add(roundFunctionOverload2Metadata);
 
-			var convertFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, IdentifierBuiltInProgramConvert, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
+			var convertFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.IdentifierBuiltInProgramConvert, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
 			convertFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
 			convertFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"SRC\"", 1, 1, 0, ParameterDirection.Input, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
 			convertFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"DESTCSET\"", 2, 2, 0, ParameterDirection.Input, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
@@ -465,7 +465,7 @@ namespace SqlPad.Oracle.Test
 			reservedWordFunctionMetadata.Owner = builtInFunctionPackage;
 			builtInFunctionPackage.Programs.Add(reservedWordFunctionMetadata);
 
-			var levelFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, IdentifierBuiltInProgramLevel, false, false, false, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
+			var levelFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.IdentifierBuiltInProgramLevel, false, false, false, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
 			levelFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
 			levelFunctionMetadata.Owner = builtInFunctionPackage;
 			builtInFunctionPackage.Programs.Add(levelFunctionMetadata);
@@ -501,19 +501,30 @@ namespace SqlPad.Oracle.Test
 			nextDayFunctionMetadata.Owner = builtInFunctionPackage;
 			builtInFunctionPackage.Programs.Add(nextDayFunctionMetadata);
 
-			var numberToYearToMonthInterval = new OracleProgramMetadata(ProgramType.Function, IdentifierBuiltInProgramNumberToYearToMonthInterval, false, false, false, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeParenthesis, true);
+			var numberToYearToMonthInterval = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.IdentifierBuiltInProgramNumberToYearToMonthInterval, false, false, false, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeParenthesis, true);
 			numberToYearToMonthInterval.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, BuiltInDataTypeIntervalYearToMonth, OracleObjectIdentifier.Empty, false));
 			numberToYearToMonthInterval.AddParameter(new OracleProgramParameterMetadata("\"NUMERATOR\"", 1, 1, 0, ParameterDirection.Input, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
 			numberToYearToMonthInterval.AddParameter(new OracleProgramParameterMetadata("\"UNITS\"", 2, 2, 0, ParameterDirection.Input, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
 			numberToYearToMonthInterval.Owner = builtInFunctionPackage;
 			builtInFunctionPackage.Programs.Add(numberToYearToMonthInterval);
 
-			var numberToDayToSecondInterval = new OracleProgramMetadata(ProgramType.Function, IdentifierBuiltInProgramNumberToDayToSecondInterval, false, false, false, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeParenthesis, true);
+			var numberToDayToSecondInterval = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.IdentifierBuiltInProgramNumberToDayToSecondInterval, false, false, false, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeParenthesis, true);
 			numberToDayToSecondInterval.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, BuiltInDataTypeIntervalYearToMonth, OracleObjectIdentifier.Empty, false));
 			numberToDayToSecondInterval.AddParameter(new OracleProgramParameterMetadata("\"NUMERATOR\"", 1, 1, 0, ParameterDirection.Input, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
 			numberToDayToSecondInterval.AddParameter(new OracleProgramParameterMetadata("\"UNITS\"", 2, 2, 0, ParameterDirection.Input, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
 			numberToDayToSecondInterval.Owner = builtInFunctionPackage;
 			builtInFunctionPackage.Programs.Add(numberToDayToSecondInterval);
+
+			var regexReplace = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.IdentifierBuiltInProgramRegularExpressionReplace, false, false, false, true, false, false, 2, 6, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
+			regexReplace.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
+			regexReplace.AddParameter(new OracleProgramParameterMetadata("\"SRCSTR\"", 1, 1, 0, ParameterDirection.Input, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
+			regexReplace.AddParameter(new OracleProgramParameterMetadata("\"PATTERN\"", 2, 2, 0, ParameterDirection.Input, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
+			regexReplace.AddParameter(new OracleProgramParameterMetadata("\"REPLACESTR\"", 2, 2, 0, ParameterDirection.Input, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
+			regexReplace.AddParameter(new OracleProgramParameterMetadata("\"POSITION\"", 2, 2, 0, ParameterDirection.Input, TerminalValues.BinaryInteger, OracleObjectIdentifier.Empty, false));
+			regexReplace.AddParameter(new OracleProgramParameterMetadata("\"OCCURENCE\"", 2, 2, 0, ParameterDirection.Input, TerminalValues.BinaryInteger, OracleObjectIdentifier.Empty, false));
+			regexReplace.AddParameter(new OracleProgramParameterMetadata("\"MODIFIER\"", 2, 2, 0, ParameterDirection.Input, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
+			regexReplace.Owner = builtInFunctionPackage;
+			builtInFunctionPackage.Programs.Add(regexReplace);
 			#endregion
 
 			AllObjectDictionary = AllObjectsInternal.ToDictionary(o => o.FullyQualifiedName, o => o);
@@ -538,7 +549,7 @@ namespace SqlPad.Oracle.Test
 			var maxFunctionAnalyticMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(null, null, "MAX"), true, false, false, false, false, false, 1, 1, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
 			allProgramMetadata.Add(maxFunctionAnalyticMetadata);
 
-			var castFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, IdentifierBuiltInProgramCast, false, false, false, true, false, false, 1, 0, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
+			var castFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.IdentifierBuiltInProgramCast, false, false, false, true, false, false, 1, 0, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
 			allProgramMetadata.Add(castFunctionMetadata);
 
 			var maxFunctionAggregateMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(null, null, "MAX"), false, true, false, false, false, false, 1, 1, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
@@ -551,16 +562,16 @@ namespace SqlPad.Oracle.Test
 			var sysDateFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(null, null, "SYSDATE"), false, false, false, false, false, false, 0, 0, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNoParenthesis, true);
 			allProgramMetadata.Add(sysDateFunctionMetadata);
 
-			var lnNvlFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, IdentifierBuiltInProgramLnNvl, false, false, false, true, false, false, 1, 0, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNoParenthesis, true);
+			var lnNvlFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.IdentifierBuiltInProgramLnNvl, false, false, false, true, false, false, 1, 0, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNoParenthesis, true);
 			allProgramMetadata.Add(lnNvlFunctionMetadata);
 
-			var extractFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, IdentifierBuiltInProgramExtract, false, false, false, false, false, false, 1, 0, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
+			var extractFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.IdentifierBuiltInProgramExtract, false, false, false, false, false, false, 1, 0, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
 			allProgramMetadata.Add(extractFunctionMetadata);
 
-			var ratioToReportFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, IdentifierBuiltInProgramRatioToReport, true, false, false, false, false, false, 1, 1, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
+			var ratioToReportFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.IdentifierBuiltInProgramRatioToReport, true, false, false, false, false, false, 1, 1, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
 			allProgramMetadata.Add(ratioToReportFunctionMetadata);
 
-			var sysConnectByPathFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, IdentifierBuiltInProgramSysConnectByPath, false, false, false, false, false, false, 2, 2, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
+			var sysConnectByPathFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.IdentifierBuiltInProgramSysConnectByPath, false, false, false, false, false, false, 2, 2, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
 			allProgramMetadata.Add(sysConnectByPathFunctionMetadata);
 
 			AllProgramMetadataInternal = allProgramMetadata.ToLookup(m => m.Identifier);

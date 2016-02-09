@@ -1322,7 +1322,7 @@ namespace SqlPad.Oracle
 							}
 						}
 
-						if (programReference.Metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramLnNvl && programReference.ParameterReferences.Count == 1)
+						if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramLnNvl && programReference.ParameterReferences.Count == 1)
 						{
 							var parameterNode = programReference.ParameterReferences[0].ParameterNode;
 							if (parameterNode[NonTerminals.ChainedCondition] != null ||
@@ -1334,7 +1334,7 @@ namespace SqlPad.Oracle
 									new InvalidNodeValidationData(OracleSemanticErrorType.IncorrectUseOfLnNvlOperator) {Node = parameterNode};
 							}
 						}
-						else if (programReference.Metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramExtract && programReference.ParameterReferences.Count == 1)
+						else if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramExtract && programReference.ParameterReferences.Count == 1)
 						{
 							var extractElementNode = programReference.ParameterListNode[1];
 							var fromTerminal = programReference.ParameterListNode[2];
@@ -1364,7 +1364,7 @@ namespace SqlPad.Oracle
 					}
 
 					var orderByClause = programReference.AnalyticClauseNode[NonTerminals.OrderByClause];
-					if (programReference.Metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramRatioToReport && orderByClause != null)
+					if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramRatioToReport && orderByClause != null)
 					{
 						validationModel.ProgramNodeValidity[orderByClause] = new InvalidNodeValidationData(OracleSemanticErrorType.OrderByNotAllowedHere) { Node = orderByClause };
 					}
@@ -1386,9 +1386,9 @@ namespace SqlPad.Oracle
 				}
 				else
 				{
-					var isLevel = programReference.Metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramLevel;
+					var isLevel = programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramLevel;
 					if (isLevel ||
-					    programReference.Metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramSysConnectByPath)
+					    programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramSysConnectByPath)
 					{
 						if (programReference.Owner?.HierarchicalQueryClause?[NonTerminals.HierarchicalQueryConnectByClause] == null)
 						{
@@ -1406,7 +1406,7 @@ namespace SqlPad.Oracle
 
 						if (isLevel && ValidateIdentifierNodeOnly(programReference, validationModel)) return;
 					}
-					else if (programReference.Metadata.Identifier == OracleDatabaseModelBase.IdentifierBuiltInProgramRowNum)
+					else if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramRowNum)
 					{
 						if (ValidateIdentifierNodeOnly(programReference, validationModel)) return;
 					}

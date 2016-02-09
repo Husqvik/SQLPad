@@ -916,7 +916,7 @@ namespace SqlPad.Oracle
 					{
 						postFix = null;
 					}
-					else if (addParameterList && metadata.IsBuiltIn && Equals(metadata.Identifier, OracleDatabaseModelBase.IdentifierBuiltInProgramExtract))
+					else if (addParameterList && metadata.IsBuiltIn && Equals(metadata.Identifier, OracleProgramIdentifier.IdentifierBuiltInProgramExtract))
 					{
 						postFix = "(DAY FROM )";
 					}

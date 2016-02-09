@@ -2272,6 +2272,19 @@ ON (EVENTS.ID = SRC.ID)";
 			items[0].Text.ShouldBe("\"CaseSensitiveColumn\", T.VIRTUAL_COLUMN");
 		}
 
+		[Test(Description = @"")]
+		public void TestRegexModifierParameterSuggestion()
+		{
+			const string statement = @"SELECT regexp_replace (null, null, null, 1, 0, '') FROM dual";
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 48).ToList();
+			items.Count.ShouldBe(5);
+			items[0].Name.ShouldBe("c - specifies case-sensitive matching");
+			items[1].Name.ShouldBe("i - specifies case-insensitive matching");
+			items[2].Name.ShouldBe("m - treats the source string as multiple lines. Oracle interprets the caret (^) and dollar sign ($) as the start and end, respectively, of any line anywhere in the source string, rather than only at the start or end of the entire source string. If you omit this parameter, then Oracle treats the source string as a single line. ");
+			items[3].Name.ShouldBe("n - allows the period (.), which is the match-any-character character, to match the newline character. If you omit this parameter, then the period does not match the newline character. ");
+			items[4].Name.ShouldBe("x - ignores whitespace characters. By default, whitespace characters match themselves. ");
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)

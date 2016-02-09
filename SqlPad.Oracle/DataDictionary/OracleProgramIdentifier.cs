@@ -7,6 +7,32 @@ namespace SqlPad.Oracle.DataDictionary
 	[DebuggerDisplay("OracleProgramIdentifier (FullyQualifiedIdentifier={FullyQualifiedIdentifier}; Overload={Overload})")]
 	public struct OracleProgramIdentifier
 	{
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramCast = CreateFromValues(null, null, "CAST");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramExtract = CreateFromValues(null, null, "EXTRACT");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramLnNvl = CreateFromValues(null, null, "LNNVL");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramRatioToReport = CreateFromValues(null, null, "RATIO_TO_REPORT");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramSysConnectByPath = CreateFromValues(null, null, "SYS_CONNECT_BY_PATH");
+
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramRound = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "ROUND");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramLevel = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "LEVEL");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramNextDay = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "NEXT_DAY");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramRegularExpressionCount = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "REGEXP_COUNT");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramRegularExpressionInstr = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "REGEXP_INSTR");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramRegularExpressionReplace = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "REGEXP_REPLACE");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramRegularExpressionSubstring = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "REGEXP_SUBSTR");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramRowNum = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "ROWNUM");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramSysContext = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "SYS_CONTEXT");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramToChar = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "TO_CHAR");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramToDate = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "TO_DATE");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramToTimestamp = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "TO_TIMESTAMP");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramToTimestampWithTimeZone = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "TO_TIMESTAMP_TZ");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramTrunc = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "TRUNC");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramConvert = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "CONVERT");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramNumberToYearToMonthInterval = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "NUMTOYMINTERVAL");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramNumberToDayToSecondInterval = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "NUMTODSINTERVAL");
+		internal static readonly OracleProgramIdentifier IdentifierDbmsRandomString = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageDbmsRandom, "STRING");
+		internal static readonly OracleProgramIdentifier IdentifierDbmsCryptoHash = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageDbmsCrypto, "HASH");
+
 		public string Owner { get; private set; }
 
 		public string Name { get; private set; }
