@@ -271,13 +271,13 @@ namespace SqlPad
 					Template = (ControlTemplate)Resources["EditableTabHeaderControlTemplate"]
 				};
 
-			var contentBinding = new Binding("DocumentHeader") { Source = this, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged, Mode = BindingMode.TwoWay };
+			var contentBinding = new Binding(nameof(DocumentHeader)) { Source = this, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged, Mode = BindingMode.TwoWay };
 			header.SetBinding(ContentProperty, contentBinding);
-			var isModifiedBinding = new Binding("IsModified") { Source = this, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged };
+			var isModifiedBinding = new Binding(nameof(IsModified)) { Source = this, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged };
 			header.SetBinding(EditableTabHeaderControl.IsModifiedProperty, isModifiedBinding);
-			var isRunningBinding = new Binding("IsRunning") { Source = this, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged };
+			var isRunningBinding = new Binding(nameof(IsRunning)) { Source = this, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged };
 			header.SetBinding(EditableTabHeaderControl.IsRunningProperty, isRunningBinding);
-			var toolTipBinding = new Binding("DocumentHeaderToolTip") { Source = this, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged };
+			var toolTipBinding = new Binding(nameof(DocumentHeaderToolTip)) { Source = this, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged };
 			header.SetBinding(ToolTipProperty, toolTipBinding);
 
 			TabItem =
@@ -288,7 +288,7 @@ namespace SqlPad
 					Template = (ControlTemplate)Application.Current.Resources["TabItemControlTemplate"]
 				};
 
-			var backgroundBinding = new Binding("DocumentHeaderBackgroundColorCode") { Source = this, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged, Converter = TabHeaderBackgroundBrushConverter };
+			var backgroundBinding = new Binding(nameof(DocumentHeaderBackgroundColorCode)) { Source = this, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged, Converter = TabHeaderBackgroundBrushConverter };
 			TabItem.SetBinding(BackgroundProperty, backgroundBinding);
 		}
 

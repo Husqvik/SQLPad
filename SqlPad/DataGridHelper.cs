@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -176,9 +177,17 @@ namespace SqlPad
 					{
 						Content = contentContainer,
 						HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
-						VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-						MaxHeight = dockPanel.ActualHeight - headersPresenter.ActualHeight - SystemParameters.HorizontalScrollBarHeight - 4
+						VerticalScrollBarVisibility = ScrollBarVisibility.Auto
 					};
+
+				var scrollview = dataGrid.FindChildVisual<ScrollViewer>();
+
+				var binding = new MultiBinding { Converter = ChildContainerHeightConverter.Instance };
+				binding.Bindings.Add(new Binding(nameof(dockPanel.ActualHeight)) { Source = dockPanel });
+				binding.Bindings.Add(new Binding(nameof(headersPresenter.ActualHeight)) { Source = headersPresenter });
+				binding.Bindings.Add(new Binding(nameof(scrollview.ComputedHorizontalScrollBarVisibility)) { Source = scrollview });
+
+				contentContainer.SetBinding(FrameworkElement.MaxHeightProperty, binding);
 			}
 
 			row.Height = Double.NaN;
@@ -202,6 +211,25 @@ namespace SqlPad
 			//row.Height = 21;
 
 			keyEventArgs.Handled = true;
+		}
+
+		private class ChildContainerHeightConverter : IMultiValueConverter
+		{
+			public static readonly ChildContainerHeightConverter Instance = new ChildContainerHeightConverter();
+
+			public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+			{
+				var dockPanelActualHeight = (double)values[0];
+				var headersPresenterActualHeight = (double)values[1];
+				var dataGridComputedHorizontalScrollBarVisibility = (Visibility)values[2];
+				var scrollBarOffsetMultiplier = dataGridComputedHorizontalScrollBarVisibility == Visibility.Collapsed ? 1 : 2;
+				return dockPanelActualHeight - headersPresenterActualHeight - scrollBarOffsetMultiplier * SystemParameters.HorizontalScrollBarHeight - 8;
+			}
+
+			public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+			{
+				throw new NotSupportedException();
+			}
 		}
 	}
 }
