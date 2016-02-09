@@ -337,7 +337,10 @@ namespace SqlPad.Oracle.ModelDataProviders
 				DataModel.Datafiles.Add(dataFileModel);
 			}
 
-			DataModel.AllocatedBytes = allocatedBytes;
+			if (DataModel.Datafiles.Count > 0)
+			{
+				DataModel.AllocatedBytes = allocatedBytes;
+			}
 		}
 	}
 
