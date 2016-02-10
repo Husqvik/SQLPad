@@ -16,6 +16,7 @@ namespace SqlPad
 	{
 		public static readonly Object TagHighlight = new Object();
 		public static readonly Thickness DefaultTextBlockMargin = new Thickness(2, 0, 2, 0);
+		public static double DefaultRowHeight = 21;
 
 		public static void InitializeDataGridColumns(DataGrid dataGrid, IEnumerable<ColumnHeader> columnHeaders, IStatementValidator statementValidator, IConnectionAdapter connectionAdapter)
 		{
@@ -188,6 +189,9 @@ namespace SqlPad
 				binding.Bindings.Add(new Binding(nameof(scrollview.ComputedHorizontalScrollBarVisibility)) { Source = scrollview });
 
 				contentContainer.SetBinding(FrameworkElement.MaxHeightProperty, binding);
+
+				var nestedContainer = (NestedContainer)(row.Tag ?? (row.Tag = new NestedContainer()));
+				nestedContainer.Items.Add(contentContainer);
 			}
 
 			row.Height = Double.NaN;
@@ -207,8 +211,16 @@ namespace SqlPad
 			var element = (FrameworkElement)sender;
 			var cell = (DataGridCell)element.Parent;
 			cell.Content = element.Tag;
-			//var row = cell.FindParentVisual<DataGridRow>();
-			//row.Height = 21;
+			var row = cell.FindParentVisual<DataGridRow>();
+			var nestedContainer = (NestedContainer)row.Tag;
+			if (nestedContainer != null)
+			{
+				nestedContainer.Items.Remove(element);
+				if (nestedContainer.Items.Count == 0)
+				{
+					row.Height = DefaultRowHeight;
+				}
+			}
 
 			keyEventArgs.Handled = true;
 		}
@@ -230,6 +242,11 @@ namespace SqlPad
 			{
 				throw new NotSupportedException();
 			}
+		}
+
+		private class NestedContainer
+		{
+			public List<FrameworkElement> Items { get; } = new List<FrameworkElement>();
 		}
 	}
 }

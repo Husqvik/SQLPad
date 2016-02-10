@@ -503,7 +503,8 @@ namespace SqlPad
 				HighlightSearchedText();
 			}
 
-			if (args.VerticalOffset + args.ViewportHeight != args.ExtentHeight)
+			if (args.VerticalOffset + args.ViewportHeight != args.ExtentHeight ||
+				(args.ViewportHeight != 0 && args.VerticalChange == 0))
 			{
 				return;
 			}
