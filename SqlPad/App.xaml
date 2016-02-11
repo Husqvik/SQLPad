@@ -53,12 +53,11 @@
 
 		<Style x:Key="DefaultDataGridRowHeight">
 			<Style.Setters>
-				<Setter Property="DataGridRow.Height" Value="21"/>
+				<Setter Property="DataGridRow.Height" Value="{x:Static sqlPad:DataGridHelper.DefaultRowHeight}"/>
 			</Style.Setters>
 		</Style>
 
 		<Style x:Key="ResultSetDataGrid">
-			<Setter Property="DataGrid.EnableColumnVirtualization" Value="True" />
 			<Setter Property="DataGrid.EnableRowVirtualization" Value="True" />
 			<Setter Property="VirtualizingStackPanel.VirtualizationMode" Value="Recycling" />
 			<Setter Property="DataGrid.AutoGenerateColumns" Value="False" />

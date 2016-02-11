@@ -260,6 +260,11 @@ namespace SqlPad
 
 		private async Task ExecuteDatabaseCommandAsyncInternal(StatementBatchExecutionModel executionModel)
 		{
+			if (executionModel.Statements.Count == 0)
+			{
+				return;
+			}
+
 			var beforeExecutionText = DocumentPage.Editor.Text;
 
 			Initialize();
