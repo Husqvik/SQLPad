@@ -80,6 +80,7 @@
     <Reference Include="ICSharpCode.AvalonEdit" />
     <Reference Include="MoonPdfLib" />
     <Reference Include="Newtonsoft.Json" />
+    <Reference Include="PresentationFramework.Aero2" />
     <Reference Include="protobuf-net" />
     <Reference Include="System" />
     <Reference Include="System.Configuration" />

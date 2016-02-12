@@ -5,6 +5,7 @@
              xmlns:themes="clr-namespace:Xceed.Wpf.Toolkit.Themes;assembly=Xceed.Wpf.Toolkit"
              xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
              xmlns:findReplace="clr-namespace:SqlPad.FindReplace"
+			 xmlns:wpfThemes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
 		<sqlPad:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
@@ -13,25 +14,79 @@
 
 		<SolidColorBrush x:Key="PopupBackgroundBrush" Color="#F1F2F7"/>
 		<SolidColorBrush x:Key="PopupBorderBrush" Color="#767676"/>
-		
+
+		<ControlTemplate x:Key="DataGridNumericColumnHeaderControlTemplate" TargetType="{x:Type DataGridColumnHeader}">
+			<Grid>
+				<wpfThemes:DataGridHeaderBorder BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" IsClickable="{TemplateBinding CanUserSort}" IsPressed="{TemplateBinding IsPressed}" IsHovered="{TemplateBinding IsMouseOver}" Padding="{TemplateBinding Padding}" SortDirection="{TemplateBinding SortDirection}" SeparatorBrush="{TemplateBinding SeparatorBrush}" SeparatorVisibility="{TemplateBinding SeparatorVisibility}">
+					<StackPanel Orientation="Horizontal">
+						<ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+						<!--<ToggleButton Background="Transparent" Margin="6,0,0,0" VerticalAlignment="Center" Click="ButtonToggleBarChartClickHandler">
+							<ToggleButton.Content>
+								<Viewbox>
+									<Path Width="10" Height="10" Data="M1,2 L9,2 M1,5 L9,5 M1,8 L9,8" Stretch="None" Stroke="Black" />
+								</Viewbox>
+							</ToggleButton.Content>
+						</ToggleButton>-->
+					</StackPanel>
+				</wpfThemes:DataGridHeaderBorder>
+				<Thumb x:Name="PART_LeftHeaderGripper" HorizontalAlignment="Left">
+					<Thumb.Style>
+						<Style TargetType="{x:Type Thumb}">
+							<Setter Property="Width" Value="8"/>
+							<Setter Property="Background" Value="Transparent"/>
+							<Setter Property="Cursor" Value="SizeWE"/>
+							<Setter Property="Template">
+								<Setter.Value>
+									<ControlTemplate TargetType="{x:Type Thumb}">
+										<Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}"/>
+									</ControlTemplate>
+								</Setter.Value>
+							</Setter>
+						</Style>
+					</Thumb.Style>
+				</Thumb>
+				<Thumb x:Name="PART_RightHeaderGripper" HorizontalAlignment="Right">
+					<Thumb.Style>
+						<Style TargetType="{x:Type Thumb}">
+							<Setter Property="Width" Value="8"/>
+							<Setter Property="Background" Value="Transparent"/>
+							<Setter Property="Cursor" Value="SizeWE"/>
+							<Setter Property="Template">
+								<Setter.Value>
+									<ControlTemplate TargetType="{x:Type Thumb}">
+										<Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}"/>
+									</ControlTemplate>
+								</Setter.Value>
+							</Setter>
+						</Style>
+					</Thumb.Style>
+				</Thumb>
+			</Grid>
+		</ControlTemplate>
+
 		<findReplace:FindReplaceManager x:Key="FindReplaceManager" AllowReplace="True" />
 
 		<Style x:Key="CellTextBoxStyleReadOnly">
 			<Setter Property="TextBoxBase.IsReadOnly" Value="True" />
 			<Setter Property="TextBoxBase.IsReadOnlyCaretVisible" Value="True" />
 		</Style>
+		
 		<Style x:Key="CellStyleRightAlign">
 			<Setter Property="Block.TextAlignment" Value="Right" />
 		</Style>
+		
 		<Style x:Key="HeaderStyleRightAlign">
 			<Setter Property="Control.HorizontalContentAlignment" Value="Right" />
+			<Setter Property="DataGridColumnHeader.Template" Value="{StaticResource DataGridNumericColumnHeaderControlTemplate}" />
 		</Style>
+		
 		<Style x:Key="SingleRecordColumnName">
 			<Setter Property="TextBlock.HorizontalAlignment" Value="Stretch" />
 			<Setter Property="TextBlock.TextAlignment" Value="Left" />
 			<Setter Property="TextBlock.VerticalAlignment" Value="Center" />
 			<Setter Property="TextBlock.Margin" Value="2,0,2,0" />
 		</Style>
+		
 		<Style x:Key="SingleRecordCell">
 			<Setter Property="DataGridCell.Margin" Value="-1,-1,-1,-1" />
 			<Setter Property="DataGridCell.Background" Value="#F1F2F7" />
@@ -41,6 +96,7 @@
 				</Trigger>
 			</Style.Triggers>
 		</Style>
+		
 		<Style x:Key="EditingCellTextBox" BasedOn="{StaticResource CellTextBoxStyleReadOnly}">
 			<Setter Property="TextBox.HorizontalAlignment" Value="Stretch" />
 			<Setter Property="TextBox.TextAlignment" Value="Left" />

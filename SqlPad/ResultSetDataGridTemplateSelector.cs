@@ -23,6 +23,9 @@ namespace SqlPad
 		private readonly ColumnHeader _columnHeader;
 		protected readonly DataTemplate TextDataTemplate;
 		protected readonly DataTemplate HyperlinkDataTemplate;
+		protected readonly DataTemplate BarChartDataTemplate;
+
+		public bool UseBarChart { get; set; }
 
 		static ResultSetDataGridTemplateSelector()
 		{
@@ -46,6 +49,7 @@ namespace SqlPad
 			_connectionAdapter = connectionAdapter;
 			TextDataTemplate = CreateTextDataTemplate(bindingPath);
 			HyperlinkDataTemplate = CreateHyperlinkDataTemplate(bindingPath, CellHyperlinkClickHandler);
+			BarChartDataTemplate = CreateBarChartDataTemplate(bindingPath);
 		}
 
 		public override DataTemplate SelectTemplate(object item, DependencyObject container)
@@ -53,6 +57,11 @@ namespace SqlPad
 			if (item == null)
 			{
 				return null;
+			}
+
+			if (UseBarChart)
+			{
+				return BarChartDataTemplate;
 			}
 
 			var rowValues = (object[])item;
@@ -88,6 +97,12 @@ namespace SqlPad
 			hyperlinkFactory.SetBinding(FrameworkContentElement.TagProperty, new Binding { RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(DataGridCell), 1) });
 			textBlockFactory.AppendChild(hyperlinkFactory);
 			return new DataTemplate(typeof(DependencyObject)) { VisualTree = textBlockFactory };
+		}
+
+		private static DataTemplate CreateBarChartDataTemplate(string bindingPath)
+		{
+			var progressBarFactory = new FrameworkElementFactory(typeof(ProgressBar));
+			return new DataTemplate(typeof(DependencyObject)) { VisualTree = progressBarFactory };
 		}
 
 		private void CellHyperlinkClickHandler(object sender, RoutedEventArgs args)

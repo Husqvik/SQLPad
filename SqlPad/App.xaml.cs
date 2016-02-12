@@ -9,7 +9,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace SqlPad
 {
@@ -272,6 +274,20 @@ namespace SqlPad
 		{
 			//var splashScreen = new SplashScreen("ResourceName");
 			//splashScreen.Show(true, true);
+		}
+
+		private void ButtonToggleBarChartClickHandler(object sender, RoutedEventArgs e)
+		{
+			var toggleButton = (ToggleButton)sender;
+			var columnHeader = toggleButton.FindParentVisual<DataGridColumnHeader>();
+			var dataGridTemplateColumn = (DataGridTemplateColumn)columnHeader.Column;
+			var cellTemplateSelector = (ResultSetDataGridTemplateSelector)dataGridTemplateColumn.CellTemplateSelector;
+			cellTemplateSelector.UseBarChart = toggleButton.IsChecked ?? false;
+
+			var dataGrid = columnHeader.FindParentVisual<DataGrid>();
+
+			dataGridTemplateColumn.CellTemplateSelector = null;
+			dataGridTemplateColumn.CellTemplateSelector = cellTemplateSelector;
 		}
 	}
 }
