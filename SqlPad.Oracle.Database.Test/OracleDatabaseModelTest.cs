@@ -104,7 +104,7 @@ WHERE
 
 			var objectForScriptCreation = databaseModel.GetFirstSchemaObject<OracleSchemaObject>(databaseModel.GetPotentialSchemaObjectIdentifiers("SYS", "OBJ$"));
 			objectForScriptCreation.ShouldNotBe(null);
-			var objectScript = await databaseModel.GetObjectScriptAsync(objectForScriptCreation, CancellationToken.None);
+			var objectScript = await databaseModel.ObjectScriptExtractor.ExtractSchemaObjectScriptAsync(objectForScriptCreation, CancellationToken.None);
 
 			Trace.WriteLine("Object script output: " + Environment.NewLine + objectScript + Environment.NewLine);
 

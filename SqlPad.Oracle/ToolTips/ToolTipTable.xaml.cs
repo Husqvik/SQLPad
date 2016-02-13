@@ -3,16 +3,32 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
+using SqlPad.Oracle.DatabaseConnection;
+using SqlPad.Oracle.DataDictionary;
 
 namespace SqlPad.Oracle.ToolTips
 {
 	public partial class ToolTipTable
 	{
+		public IOracleObjectScriptExtractor ScriptExtractor { get; set; }
+
 		public ToolTipTable()
 		{
 			InitializeComponent();
+		}
+
+		protected override async Task<string> ExtractDdlAsync(CancellationToken cancellationToken)
+		{
+			if (ScriptExtractor == null)
+			{
+				throw new InvalidOperationException("Script extractor is not set. ");
+			}
+
+			return await ScriptExtractor.ExtractSchemaObjectScriptAsync(((TableDetailsModel)DataContext).Table, cancellationToken);
 		}
 	}
 
@@ -157,6 +173,8 @@ namespace SqlPad.Oracle.ToolTips
 		{
 			return _partitionDetailsDictionary[partitionName];
 		}
+
+		public OracleTable Table { get; set; }
 
 		public string Title { get; set; }
 

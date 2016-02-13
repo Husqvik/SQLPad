@@ -111,6 +111,7 @@
     <Compile Include="Commands\AddAliasCommand.cs" />
     <Compile Include="Commands\OracleCommandFactory.cs" />
     <Compile Include="CustomTypeCSharpWrapperClassGenerator.cs" />
+    <Compile Include="DatabaseConnection\OracleObjectScriptExtractor.cs" />
     <Compile Include="DataDictionary\OracleReferenceBuilder.cs" />
     <Compile Include="DebugTrace\OracleTraceEvent.cs" />
     <Compile Include="DebugTrace\OracleTraceIdentifier.cs" />

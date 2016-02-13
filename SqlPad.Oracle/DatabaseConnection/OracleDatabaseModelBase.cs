@@ -62,6 +62,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 			};
 
 		public abstract ConnectionStringSettings ConnectionString { get; }
+
+		public abstract IOracleObjectScriptExtractor ObjectScriptExtractor { get; }
 		
 		public abstract bool IsInitialized { get; }
 		
@@ -104,8 +106,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 		public abstract IConnectionAdapter CreateConnectionAdapter();
 
 		public abstract Task<ExecutionPlanItemCollection> ExplainPlanAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
-
-		public abstract Task<string> GetObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken, bool suppressUserCancellationException = true);
 
 		public abstract Task UpdatePartitionDetailsAsync(PartitionDetailsModel dataModel, CancellationToken cancellationToken);
 

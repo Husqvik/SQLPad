@@ -55,11 +55,13 @@ namespace SqlPad
 		{
 			columnTemplate.Header = columnHeader;
 
-			if (columnHeader.IsNumeric)
+			if (!columnHeader.IsNumeric)
 			{
-				columnTemplate.HeaderStyle = (Style)Application.Current.Resources["HeaderStyleRightAlign"];
-				columnTemplate.CellStyle = (Style)Application.Current.Resources["CellStyleRightAlign"];
+				return;
 			}
+
+			columnTemplate.HeaderStyle = (Style)Application.Current.Resources["HeaderStyleRightAlign"];
+			columnTemplate.CellStyle = (Style)Application.Current.Resources["CellStyleRightAlign"];
 		}
 
 		public static bool CanBeRecycled(UIElement row)

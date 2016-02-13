@@ -14,7 +14,7 @@ namespace SqlPad.Oracle.Commands
 {
 	internal class CreateScriptCommand : OracleCommandBase
 	{
-		private OracleSchemaObject _objectReference;
+		private OracleSchemaObject _schemaObject;
 		
 		public const string Title = "Create Script";
 
@@ -30,15 +30,15 @@ namespace SqlPad.Oracle.Commands
 				return false;
 			}
 
-			_objectReference = SemanticModel.AllReferenceContainers
+			_schemaObject = SemanticModel.AllReferenceContainers
 				.SelectMany(c => c.AllReferences)
 				.Where(c => (c.ObjectNode == CurrentNode || (c as OracleProgramReference)?.ProgramIdentifierNode == CurrentNode) && c.SchemaObject != null)
 				.Select(c => c.SchemaObject)
 				.SingleOrDefault();
 
-			if (_objectReference == null)
+			if (_schemaObject == null)
 			{
-				_objectReference = SemanticModel.AllReferenceContainers
+				_schemaObject = SemanticModel.AllReferenceContainers
 					.SelectMany(c => c.ColumnReferences)
 					.Where(c => c.ObjectNode == CurrentNode && c.ValidObjectReference?.SchemaObject != null)
 					.Select(c => c.ValidObjectReference.SchemaObject)
@@ -48,7 +48,7 @@ namespace SqlPad.Oracle.Commands
 			return
 				new CommandCanExecuteResult
 				{
-					CanExecute = _objectReference != null,
+					CanExecute = _schemaObject != null,
 					IsLongOperation = true
 				};
 		}
@@ -73,7 +73,7 @@ namespace SqlPad.Oracle.Commands
 
 			var databaseModel = (OracleDatabaseModelBase)ExecutionContext.DocumentRepository.ValidationModels[CurrentNode.Statement].SemanticModel.DatabaseModel;
 
-			var script = await databaseModel.GetObjectScriptAsync(_objectReference, cancellationToken);
+			var script = await databaseModel.ObjectScriptExtractor.ExtractSchemaObjectScriptAsync(_schemaObject, cancellationToken);
 			if (String.IsNullOrEmpty(script))
 			{
 				return;

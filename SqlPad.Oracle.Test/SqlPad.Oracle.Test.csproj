@@ -95,6 +95,7 @@
     <Compile Include="OracleTestConnectionAdapter.cs" />
     <Compile Include="OracleTestDatabaseModel.cs" />
     <Compile Include="OracleTestInfrastructureFactory.cs" />
+    <Compile Include="OracleTestObjectScriptExtractor.cs" />
     <Compile Include="OracleToolTipProviderTest.cs" />
     <Compile Include="OracleStatementValidatorTest.cs" />
     <Compile Include="OracleSqlParserTest.cs" />

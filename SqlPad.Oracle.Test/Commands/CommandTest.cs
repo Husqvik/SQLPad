@@ -1885,7 +1885,7 @@ FROM
 			CanExecuteCommand(OracleCommands.CreateScript).ShouldBe(true);
 			ExecuteCommand(OracleCommands.CreateScript, new TestCommandSettings(new CommandSettingsModel()));
 
-			var expectedResult = statementText + ";" + Environment.NewLine + Environment.NewLine + OracleTestDatabaseModel.SelectionTableCreateScript + ";";
+			var expectedResult = statementText + ";" + Environment.NewLine + Environment.NewLine + OracleTestObjectScriptExtractor.SelectionTableCreateScript + ";";
 			_editor.Text.ShouldBe(expectedResult);
 			_editor.CaretOffset.ShouldBe(17);
 		}

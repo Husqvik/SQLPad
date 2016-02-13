@@ -1056,28 +1056,13 @@ namespace SqlPad.Oracle.Test
 			}
 		};
 
-		internal const string SelectionTableCreateScript =
-@"CREATE TABLE ""HUSQVIK"".""SELECTION"" 
-(""SELECTION_ID"" NUMBER, 
-	""CURRENTSTARTED"" NUMBER, 
-	""CURRENTCOMPLETES"" NUMBER, 
-	""STATUS"" NUMBER, 
-	""RESPONDENTBUCKET_ID"" NUMBER, 
-	""PROJECT_ID"" NUMBER, 
-	""NAME"" VARCHAR2(100)
-   ) SEGMENT CREATION IMMEDIATE 
-PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 
-NOCOMPRESS LOGGING
-STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
-PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1
-BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
-TABLESPACE ""TBS_HQ_PDB""";
-
 		private static readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjectDictionary;
 
 		private static readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> ObjectsInternal;
 
 		public override ConnectionStringSettings ConnectionString => ConnectionStringInternal;
+
+		public override IOracleObjectScriptExtractor ObjectScriptExtractor { get; } = new OracleTestObjectScriptExtractor();
 
 		public override string CurrentSchema { get; set; }
 		
@@ -1366,11 +1351,6 @@ TABLESPACE ""TBS_HQ_PDB""";
 			planItemCollection.Freeze();
 
 			return Task.FromResult(planItemCollection);
-		}
-
-		public override Task<string> GetObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken, bool suppressUserCancellationException = true)
-		{
-			return Task.FromResult(SelectionTableCreateScript);
 		}
 
 		private static OracleDataType BuildPrimitiveDataType(string typeName, int? length = null, int? precision = null, int? scale = null, DataUnit dataUnit = DataUnit.NotApplicable)

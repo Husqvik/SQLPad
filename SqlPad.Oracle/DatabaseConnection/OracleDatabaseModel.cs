@@ -64,6 +64,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private OracleDatabaseModel(ConnectionStringSettings connectionString, string identifier)
 		{
+			ObjectScriptExtractor = new OracleObjectScriptExtractor(this);
+
 			_connectionString = connectionString;
 			var connectionStringBuilder = new OracleConnectionStringBuilder(_connectionString.ConnectionString) { SelfTuning = false, MinPoolSize = 1, IncrPoolSize = 1 };
 			if (String.IsNullOrWhiteSpace(connectionStringBuilder.UserID))
@@ -220,6 +222,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override ConnectionStringSettings ConnectionString => _connectionString;
 
+		public override IOracleObjectScriptExtractor ObjectScriptExtractor { get; }
+
 		public override bool IsInitialized => _isInitialized;
 
 		public override bool IsMetadataAvailable => _dataDictionary != OracleDataDictionary.EmptyDictionary;
@@ -335,13 +339,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 			await UpdateModelAsync(cancellationToken, false, explainPlanDataProvider.CreateExplainPlanUpdater, explainPlanDataProvider.LoadExplainPlanUpdater);
 
 			return explainPlanDataProvider.ItemCollection;
-		}
-
-		public async override Task<string> GetObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken, bool suppressUserCancellationException = true)
-		{
-			var scriptDataProvider = new ObjectScriptDataProvider(schemaObject);
-			await UpdateModelAsync(cancellationToken, false, scriptDataProvider);
-			return scriptDataProvider.ScriptText;
 		}
 
 		public async override Task UpdatePartitionDetailsAsync(PartitionDetailsModel dataModel, CancellationToken cancellationToken)

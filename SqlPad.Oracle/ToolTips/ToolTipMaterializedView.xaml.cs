@@ -14,7 +14,11 @@ namespace SqlPad.Oracle.ToolTips
 
 	public class MaterializedViewDetailsModel : TableDetailsModel
 	{
-		public OracleMaterializedView MaterializedView { get; set; }
+		public OracleMaterializedView MaterializedView
+		{
+			get { return (OracleMaterializedView)Table; }
+			set { Table = value; }
+		}
 
 		public string MaterializedViewTitle { get; set; }
 	}

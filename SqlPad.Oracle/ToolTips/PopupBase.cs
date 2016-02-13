@@ -58,6 +58,11 @@ namespace SqlPad.Oracle.ToolTips
 
 		protected virtual Task<string> ExtractDdlAsync(CancellationToken cancellationToken)
 		{
+			if (IsExtractDdlVisible)
+			{
+				throw new InvalidOperationException("ExtractDdlAsync must be overriden when IsExtractDdlVisible is enabled. ");
+			}
+
 			return Task.FromResult(String.Empty);
 		}
 

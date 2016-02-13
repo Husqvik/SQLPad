@@ -68,7 +68,7 @@ namespace SqlPad.Oracle.ToolTips
 				? $"{validObjectReference.FullyQualifiedObjectName}."
 				: null;
 
-			var qualifiedColumnName = isSchemaObject && targetSchemaObject.Type == OracleSchemaObjectType.Sequence
+			var qualifiedColumnName = isSchemaObject && String.Equals(targetSchemaObject.Type, OracleSchemaObjectType.Sequence)
 				? null
 				: $"{objectPrefix}{columnReference.Name.ToSimpleIdentifier()}";
 
@@ -229,18 +229,18 @@ namespace SqlPad.Oracle.ToolTips
 								MaterializedView = materializedView
 							};
 
-						SetPartitionKeys(dataModel, materializedView);
+						SetPartitionKeys(dataModel);
 
 						databaseModel.UpdateTableDetailsAsync(schemaObject.FullyQualifiedName, dataModel, CancellationToken.None);
 						ToolTip = new ToolTipMaterializedView { DataContext = dataModel };
 						break;
 
 					case OracleSchemaObjectType.Table:
-						dataModel = new TableDetailsModel { Title = toolTipText };
-						SetPartitionKeys(dataModel, (OracleTable)schemaObject);
+						dataModel = new TableDetailsModel { Title = toolTipText, Table = (OracleTable)schemaObject };
+						SetPartitionKeys(dataModel);
 
 						databaseModel.UpdateTableDetailsAsync(schemaObject.FullyQualifiedName, dataModel, CancellationToken.None);
-						ToolTip = new ToolTipTable { DataContext = dataModel };
+						ToolTip = new ToolTipTable { ScriptExtractor = databaseModel.ObjectScriptExtractor, DataContext = dataModel };
 						break;
 
 					case OracleSchemaObjectType.View:
@@ -269,7 +269,7 @@ namespace SqlPad.Oracle.ToolTips
 				ToolTip =
 					new ToolTipObject
 					{
-						DataContext = objectReference.FullyQualifiedObjectName + " (" + objectReference.Type.ToCategoryLabel() + ")"
+						DataContext = $"{objectReference.FullyQualifiedObjectName} ({objectReference.Type.ToCategoryLabel()})"
 					};
 			}
 		}
@@ -377,7 +377,7 @@ namespace SqlPad.Oracle.ToolTips
 		{
 			return variable.DataTypeNode == null
 				? String.Empty
-				: String.Join(null, variable.DataTypeNode.Terminals.Select(t => t.Token.Value));
+				: String.Concat(variable.DataTypeNode.Terminals.Select(t => t.Token.Value));
 		}
 
 		private static string GetDefaultExpression(OracleReferenceContainer program, OraclePlSqlVariable variable)
@@ -427,10 +427,10 @@ namespace SqlPad.Oracle.ToolTips
 			dataModel.Name = partitionReference.NormalizedName.Trim('"');
 		}
 
-		private static void SetPartitionKeys(TableDetailsModel tableDetails, OracleTable table)
+		private static void SetPartitionKeys(TableDetailsModel tableDetails)
 		{
-			tableDetails.PartitionKeys = String.Join(", ", table.PartitionKeyColumns.Select(c => c.ToSimpleIdentifier()));
-			tableDetails.SubPartitionKeys = String.Join(", ", table.SubPartitionKeyColumns.Select(c => c.ToSimpleIdentifier()));
+			tableDetails.PartitionKeys = String.Join(", ", tableDetails.Table.PartitionKeyColumns.Select(c => c.ToSimpleIdentifier()));
+			tableDetails.SubPartitionKeys = String.Join(", ", tableDetails.Table.SubPartitionKeyColumns.Select(c => c.ToSimpleIdentifier()));
 		}
 
 		private static string GetFullSchemaObjectToolTip(OracleSchemaObject schemaObject)

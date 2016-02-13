@@ -20,7 +20,6 @@
 	
 	<Grid>
 		<Image ToolTip="{Binding Diagnostics, RelativeSource={RelativeSource AncestorType=UserControl}}" ToolTipService.ShowDuration="{x:Static Member=system:Int32.MaxValue}">
-		<!--<Image>-->
 			<Image.Source>
 				<DrawingImage>
 					<DrawingImage.Drawing>
