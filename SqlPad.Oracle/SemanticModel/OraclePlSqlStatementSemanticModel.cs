@@ -566,6 +566,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 						case NonTerminals.TypeDefinition:
 							var typeIdentifierNode = declarationRoot[Terminals.TypeIdentifier];
+							var associativeArrayTypeDefinitionNode = declarationRoot[NonTerminals.TypeDefinitionSpecification, NonTerminals.CollectionTypeDefinition, NonTerminals.AssociativeArrayTypeDefinition];
 							if (typeIdentifierNode != null)
 							{
 								var type =
@@ -573,10 +574,17 @@ namespace SqlPad.Oracle.SemanticModel
 									{
 										Owner = program,
 										DefinitionNode = declarationRoot,
-										Name = typeIdentifierNode.Token.Value.ToQuotedIdentifier()
+										Name = typeIdentifierNode.Token.Value.ToQuotedIdentifier(),
+										IsAssociativeArray = associativeArrayTypeDefinitionNode?[Terminals.Index] != null
 									};
 
 								program.Types.Add(type);
+
+								var associativeArrayIndexTypeNode = associativeArrayTypeDefinitionNode?[NonTerminals.AssociativeArrayIndexType];
+								if (associativeArrayIndexTypeNode != null)
+								{
+									OracleReferenceBuilder.TryCreatePlSqlDataTypeReference(program, associativeArrayIndexTypeNode);
+								}
 							}
 
 							break;
@@ -1003,6 +1011,7 @@ namespace SqlPad.Oracle.SemanticModel
 	[DebuggerDisplay("OraclePlSqlType (Name={Name})")]
 	public class OraclePlSqlType : OraclePlSqlElement
 	{
+		public bool IsAssociativeArray { get; set; }
 	}
 
 	[DebuggerDisplay("OraclePlSqlLabel (Name={Name})")]

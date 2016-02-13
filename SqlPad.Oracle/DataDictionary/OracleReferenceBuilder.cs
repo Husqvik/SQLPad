@@ -17,18 +17,33 @@ namespace SqlPad.Oracle.DataDictionary
 			StatementGrammarNode typeIdentifier = null;
 
 			var firstChild = dataTypeNode[0];
-			if (String.Equals(firstChild?.Id, NonTerminals.AssignmentStatementTarget))
+			switch (firstChild?.Id)
 			{
-				var percentCharacterTypeOrRowTypeNotFound = dataTypeNode.ChildNodes.Count == 1;
-				if (percentCharacterTypeOrRowTypeNotFound)
-				{
-					var chainedIdentifiers = GatherChainedIdentifiers(firstChild).ToList();
-					if (chainedIdentifiers.Count <= 2)
+				case NonTerminals.AssignmentStatementTarget:
+					var percentCharacterTypeOrRowTypeNotFound = dataTypeNode.ChildNodes.Count == 1;
+					if (percentCharacterTypeOrRowTypeNotFound)
 					{
-						typeIdentifier = chainedIdentifiers.LastOrDefault();
-						ownerNode = chainedIdentifiers.FirstOrDefault(i => i != typeIdentifier);
+						var chainedIdentifiers = GatherChainedIdentifiers(firstChild).ToList();
+						if (chainedIdentifiers.Count <= 2)
+						{
+							typeIdentifier = chainedIdentifiers.LastOrDefault();
+							ownerNode = chainedIdentifiers.FirstOrDefault(i => i != typeIdentifier);
+						}
 					}
-				}
+
+					break;
+
+				case NonTerminals.BuiltInDataType:
+					typeIdentifier = firstChild.FirstTerminalNode;
+					break;
+
+				default:
+					if (String.Equals(dataTypeNode.Id, NonTerminals.AssociativeArrayIndexType) && firstChild?.Type == NodeType.Terminal)
+					{
+						typeIdentifier = firstChild;
+					}
+
+					break;
 			}
 
 			if (typeIdentifier == null)
@@ -166,9 +181,12 @@ namespace SqlPad.Oracle.DataDictionary
 			var dataTypeNode = dataTypeReference.RootNode;
 
 			var isSqlDataType = String.Equals(dataTypeNode.Id, NonTerminals.DataType);
-			if (!isSqlDataType && !String.Equals(dataTypeNode.Id, NonTerminals.PlSqlDataType) && !String.Equals(dataTypeNode.Id, NonTerminals.PlSqlDataTypeWithoutConstraint))
+			if (!isSqlDataType &&
+				!String.Equals(dataTypeNode.Id, NonTerminals.PlSqlDataType) &&
+				!String.Equals(dataTypeNode.Id, NonTerminals.PlSqlDataTypeWithoutConstraint) &&
+				!String.Equals(dataTypeNode.Id, NonTerminals.AssociativeArrayIndexType))
 			{
-				throw new ArgumentException("Node ID must be 'DataType' or 'PlSqlDataType'. ", "dataTypeNode");
+				throw new ArgumentException("RootNode ID must be 'DataType' or 'PlSqlDataType'. ", nameof(dataTypeReference));
 			}
 
 			var owner = String.Equals(dataTypeNode.FirstTerminalNode.Id, Terminals.SchemaIdentifier)

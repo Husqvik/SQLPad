@@ -826,6 +826,28 @@ END;";
 		}
 
 		[Test]
+		public void TestDataTypeReferencesInAssociativeArrayDeclaration()
+		{
+			const string plsqlText =
+@"DECLARE
+	TYPE test_table_type IS TABLE OF NUMBER INDEX BY BINARY_INTEGER;
+BEGIN
+	NULL;
+END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
+
+			semanticModel.Programs.Count.ShouldBe(1);
+			var program = semanticModel.Programs[0];
+
+			var dataTypeReferences = program.DataTypeReferences.OrderBy(r => r.RootNode.SourcePosition.IndexStart).ToArray();
+			dataTypeReferences.Length.ShouldBe(2);
+			dataTypeReferences[0].ResolvedDataType.FullyQualifiedName.ShouldBe(OracleDataType.NumberType.FullyQualifiedName);
+			dataTypeReferences[1].ResolvedDataType.FullyQualifiedName.ShouldBe(OracleDataType.BinaryIntegerType.FullyQualifiedName);
+		}
+
+		[Test]
 		public void TestPackagePrograms()
 		{
 			const string plsqlText =
