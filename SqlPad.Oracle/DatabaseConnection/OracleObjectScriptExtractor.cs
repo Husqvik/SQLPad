@@ -7,7 +7,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 {
 	public interface IOracleObjectScriptExtractor
 	{
-		Task<string> ExtractSchemaObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken, bool suppressUserCancellationException = false);
+		Task<string> ExtractSchemaObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken);
+
+		Task<string> ExtractNonSchemaObjectScriptAsync(string objectName, string objectType, CancellationToken cancellationToken);
 	}
 
 	public class OracleObjectScriptExtractor : IOracleObjectScriptExtractor
@@ -19,9 +21,20 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_databaseModel = databaseModel;
 		}
 
-		public async Task<string> ExtractSchemaObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken, bool suppressUserCancellationException)
+		public async Task<string> ExtractSchemaObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken)
 		{
 			var scriptDataProvider = new ObjectScriptDataProvider(schemaObject);
+			return await ExtractScriptInternal(cancellationToken, scriptDataProvider);
+		}
+
+		public async Task<string> ExtractNonSchemaObjectScriptAsync(string objectName, string objectType, CancellationToken cancellationToken)
+		{
+			var scriptDataProvider = new ObjectScriptDataProvider(objectName, objectType);
+			return await ExtractScriptInternal(cancellationToken, scriptDataProvider);
+		}
+
+		private async Task<string> ExtractScriptInternal(CancellationToken cancellationToken, ObjectScriptDataProvider scriptDataProvider)
+		{
 			var connectionString = OracleConnectionStringRepository.GetBackgroundConnectionString(_databaseModel.ConnectionString.ConnectionString);
 			await OracleDatabaseModel.UpdateModelAsync(connectionString, _databaseModel.CurrentSchema, cancellationToken, false, scriptDataProvider);
 			return scriptDataProvider.ScriptText;

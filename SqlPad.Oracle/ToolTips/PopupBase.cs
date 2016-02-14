@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using SqlPad.Oracle.DatabaseConnection;
 
 namespace SqlPad.Oracle.ToolTips
 {
@@ -13,6 +14,7 @@ namespace SqlPad.Oracle.ToolTips
 		public static readonly DependencyProperty IsPinnableProperty = DependencyProperty.Register(nameof(IsPinnable), typeof (bool), typeof (PopupBase), new FrameworkPropertyMetadata(true));
 		public static readonly DependencyProperty IsExtractDdlVisibleProperty = DependencyProperty.Register(nameof(IsExtractDdlVisible), typeof (bool), typeof (PopupBase), new FrameworkPropertyMetadata());
 		public static readonly DependencyProperty IsExtractingProperty = DependencyProperty.Register(nameof(IsExtracting), typeof (bool), typeof (PopupBase), new FrameworkPropertyMetadata());
+		public static readonly DependencyProperty ScriptExtractorProperty = DependencyProperty.Register(nameof(ScriptExtractor), typeof (IOracleObjectScriptExtractor), typeof (PopupBase), new FrameworkPropertyMetadata());
 
 		[Bindable(true)]
 		public bool IsPinnable
@@ -33,6 +35,13 @@ namespace SqlPad.Oracle.ToolTips
 		{
 			get { return (bool)GetValue(IsExtractingProperty); }
 			private set { SetValue(IsExtractingProperty, value); }
+		}
+
+		[Bindable(true)]
+		public IOracleObjectScriptExtractor ScriptExtractor
+		{
+			get { return (IOracleObjectScriptExtractor)GetValue(ScriptExtractorProperty); }
+			set { SetValue(ScriptExtractorProperty, value); }
 		}
 
 		public static readonly RoutedCommand PinPopupCommand = new RoutedCommand();
@@ -75,6 +84,11 @@ namespace SqlPad.Oracle.ToolTips
 		{
 			try
 			{
+				if (ScriptExtractor == null)
+				{
+					throw new InvalidOperationException("Script extractor is not set. ");
+				}
+
 				IsExtracting = true;
 
 				var ddl = await ExtractDdlAsync(CancellationToken.None);

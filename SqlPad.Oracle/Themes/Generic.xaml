@@ -138,7 +138,7 @@
 									<Button.Style>
 										<Style TargetType="Button">
 											<Setter Property="Content" Value="DDL" />
-											<Setter Property="ToolTip" Value="Extract DDL" />
+											<Setter Property="ToolTip" Value="Extract DDL to clipboard" />
 											<Style.Triggers>
 												<DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=local:PopupBase}, Path=IsExtracting}" Value="True">
 													<Setter Property="Button.ToolTip" Value="Extracting DDL..." />

@@ -1,11 +1,14 @@
-﻿<UserControl x:Class="SqlPad.Oracle.ToolTips.TablespaceDetails"
-             x:Name="TablespaceDetailControl"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             mc:Ignorable="d"
-             d:DesignHeight="28" d:DesignWidth="200">
+﻿<toolTips:PopupBase x:Class="SqlPad.Oracle.ToolTips.TablespaceDetails"
+                    x:Name="TablespaceDetailControl"
+                    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                    xmlns:toolTips="clr-namespace:SqlPad.Oracle.ToolTips"
+                    mc:Ignorable="d"
+                    IsPinnable="False"
+                    IsExtractDdlVisible="{Binding ElementName=TablespaceDetailControl, Path=IsDetailVisible}"
+                    d:DesignHeight="28" d:DesignWidth="200">
 	<UserControl.Resources>
 		<ResourceDictionary>
 			<ResourceDictionary.MergedDictionaries>
@@ -165,4 +168,5 @@
 			</Style>
 		</ContentControl.Style>
 	</ContentControl>
-</UserControl>
+</toolTips:PopupBase>
+

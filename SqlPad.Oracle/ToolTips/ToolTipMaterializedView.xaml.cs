@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Globalization;
+using System.Threading;
+using System.Threading.Tasks;
 using SqlPad.Oracle.DataDictionary;
 
 namespace SqlPad.Oracle.ToolTips
@@ -9,6 +11,11 @@ namespace SqlPad.Oracle.ToolTips
 		public ToolTipMaterializedView()
 		{
 			InitializeComponent();
+		}
+
+		protected override async Task<string> ExtractDdlAsync(CancellationToken cancellationToken)
+		{
+			return await ScriptExtractor.ExtractSchemaObjectScriptAsync(((MaterializedViewDetailsModel)DataContext).MaterializedView, cancellationToken);
 		}
 	}
 

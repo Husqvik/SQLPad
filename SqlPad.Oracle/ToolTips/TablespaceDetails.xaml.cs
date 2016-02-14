@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace SqlPad.Oracle.ToolTips
@@ -27,6 +29,11 @@ namespace SqlPad.Oracle.ToolTips
 		public TablespaceDetails()
 		{
 			InitializeComponent();
+		}
+
+		protected override async Task<string> ExtractDdlAsync(CancellationToken cancellationToken)
+		{
+			return await ScriptExtractor.ExtractNonSchemaObjectScriptAsync(Tablespace.Name, "TABLESPACE", cancellationToken);
 		}
 
 		private void TablespaceHyperlinkClickHandler(object sender, RoutedEventArgs e)

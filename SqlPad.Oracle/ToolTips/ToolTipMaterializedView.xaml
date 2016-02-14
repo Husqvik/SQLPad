@@ -6,6 +6,7 @@
                     xmlns:toolTips="clr-namespace:SqlPad.Oracle.ToolTips"
                     mc:Ignorable="d"
                     d:DesignHeight="640" d:DesignWidth="240"
+                    IsExtractDdlVisible="False"
                     Padding="4" d:DataContext="{d:DesignInstance toolTips:MaterializedViewDetailsModel}">
 
 	<toolTips:PopupBase.Resources>
@@ -61,6 +62,6 @@
 				<TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding RefreshGroup, Converter={StaticResource SimpleIdentifierConverter}}" Visibility="{Binding RefreshGroup, Converter={StaticResource ObjectToVisibilityConverter}}" />
 			</Grid>
 		</GroupBox>
-		<toolTips:ToolTipTable x:Name="ToolTipTable" Padding="0" IsPinnable="False" />
+		<toolTips:ToolTipTable x:Name="ToolTipTable" Padding="0" IsPinnable="False" IsExtractDdlVisible="False" />
 	</StackPanel>
 </toolTips:PopupBase>

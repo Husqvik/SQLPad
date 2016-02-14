@@ -7,15 +7,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
-using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.DataDictionary;
 
 namespace SqlPad.Oracle.ToolTips
 {
 	public partial class ToolTipTable
 	{
-		public IOracleObjectScriptExtractor ScriptExtractor { get; set; }
-
 		public ToolTipTable()
 		{
 			InitializeComponent();
@@ -23,11 +20,6 @@ namespace SqlPad.Oracle.ToolTips
 
 		protected override async Task<string> ExtractDdlAsync(CancellationToken cancellationToken)
 		{
-			if (ScriptExtractor == null)
-			{
-				throw new InvalidOperationException("Script extractor is not set. ");
-			}
-
 			return await ScriptExtractor.ExtractSchemaObjectScriptAsync(((TableDetailsModel)DataContext).Table, cancellationToken);
 		}
 	}
@@ -319,7 +311,7 @@ namespace SqlPad.Oracle.ToolTips
 			}
 
 			var populatedRatio = Math.Round(((decimal)storageBytes.Value - nonPopulatedBytes.Value) / storageBytes.Value * 100, 2);
-			var isPopulating = populationStatus == "STARTED";
+			var isPopulating = String.Equals(populationStatus, "STARTED");
 			var populationStatusLabel = isPopulating ? " - ongoing" : null;
 			var populatedRatioLabel = populatedRatio < 100 || isPopulating ? $"{populatedRatio} %" : null;
 			var populationStatusDetail = populatedRatio == 100 && populationStatusLabel == null
@@ -331,7 +323,7 @@ namespace SqlPad.Oracle.ToolTips
 
 		public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
 		{
-			throw new NotImplementedException();
+			throw new NotSupportedException();
 		}
 	}
 

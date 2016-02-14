@@ -707,24 +707,36 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 	internal class ObjectScriptDataProvider : ModelDataProvider<ModelBase>
 	{
-		private readonly OracleSchemaObject _schemaObject;
+		private readonly string _objectType;
+		private readonly string _commandText = OracleDatabaseCommands.SelectSimpleObjectScriptCommandText;
+		private readonly OracleObjectIdentifier _objectIdentifier;
 
 		public string ScriptText { get; private set; }
 
+		public ObjectScriptDataProvider(string objectName, string objectType) : base(null)
+		{
+			_objectIdentifier = OracleObjectIdentifier.Create(String.Empty, objectName);
+			_objectType = objectType;
+		}
+
 		public ObjectScriptDataProvider(OracleSchemaObject schemaObject) : base(null)
 		{
-			_schemaObject = schemaObject;
+			if (schemaObject.Type.In(OracleSchemaObjectType.Table, OracleSchemaObjectType.View, OracleSchemaObjectType.MaterializedView))
+			{
+				_commandText = OracleDatabaseCommands.SelectComplexObjectScriptCommandText;
+			}
+
+			_objectIdentifier = schemaObject.FullyQualifiedName;
+			_objectType = schemaObject.Type.Replace(' ', '_').ToUpperInvariant();
 		}
 
 		public override void InitializeCommand(OracleCommand command)
 		{
-			command.CommandText = _schemaObject.Type.In(OracleSchemaObjectType.Table, OracleSchemaObjectType.View, OracleSchemaObjectType.MaterializedView)
-				? OracleDatabaseCommands.SelectComplexObjectScriptCommandText
-				: OracleDatabaseCommands.SelectSimpleObjectScriptCommandText;
+			command.CommandText = _commandText;
 
-			command.AddSimpleParameter("OBJECT_TYPE", _schemaObject.Type.Replace(' ', '_').ToUpperInvariant());
-			command.AddSimpleParameter("NAME", _schemaObject.FullyQualifiedName.Name.Trim('"'));
-			command.AddSimpleParameter("SCHEMA", _schemaObject.FullyQualifiedName.Owner.Trim('"'));
+			command.AddSimpleParameter("OBJECT_TYPE", _objectType);
+			command.AddSimpleParameter("NAME", _objectIdentifier.Name.Trim('"'));
+			command.AddSimpleParameter("SCHEMA", _objectIdentifier.Owner.Trim('"'));
 		}
 
 		public override void MapScalarValue(object value)
