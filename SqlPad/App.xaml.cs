@@ -11,7 +11,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using System.Windows.Media;
 
 namespace SqlPad
 {
@@ -284,7 +283,7 @@ namespace SqlPad
 			var cellTemplateSelector = (ResultSetDataGridTemplateSelector)dataGridTemplateColumn.CellTemplateSelector;
 			cellTemplateSelector.UseBarChart = toggleButton.IsChecked ?? false;
 
-			var dataGrid = columnHeader.FindParentVisual<DataGrid>();
+			//var dataGrid = columnHeader.FindParentVisual<DataGrid>();
 
 			dataGridTemplateColumn.CellTemplateSelector = null;
 			dataGridTemplateColumn.CellTemplateSelector = cellTemplateSelector;

@@ -11,7 +11,7 @@ namespace SqlPad.Oracle.DataDictionary
 {
 	internal class OracleReferenceBuilder
 	{
-		public static void TryCreatePlSqlDataTypeReference(OraclePlSqlProgram program, StatementGrammarNode dataTypeNode)
+		public static bool TryCreatePlSqlDataTypeReference(OraclePlSqlProgram program, StatementGrammarNode dataTypeNode, out OracleDataTypeReference dataTypeReference)
 		{
 			StatementGrammarNode ownerNode = null;
 			StatementGrammarNode typeIdentifier = null;
@@ -38,20 +38,22 @@ namespace SqlPad.Oracle.DataDictionary
 					break;
 
 				default:
-					if (String.Equals(dataTypeNode.Id, NonTerminals.AssociativeArrayIndexType) && firstChild?.Type == NodeType.Terminal)
+					if (String.Equals(dataTypeNode.Id, NonTerminals.AssociativeArrayIndexType))
 					{
-						typeIdentifier = firstChild;
+						typeIdentifier = dataTypeNode.FirstTerminalNode;
 					}
 
 					break;
 			}
 
+			dataTypeReference = null;
+
 			if (typeIdentifier == null)
 			{
-				return;
+				return false;
 			}
 
-			var dataTypeReference =
+			dataTypeReference =
 				new OracleDataTypeReference
 				{
 					RootNode = dataTypeNode,
@@ -63,6 +65,7 @@ namespace SqlPad.Oracle.DataDictionary
 			ResolveTypeMetadata(dataTypeReference);
 
 			program.DataTypeReferences.Add(dataTypeReference);
+			return true;
 		}
 
 		private static IEnumerable<StatementGrammarNode> GatherChainedIdentifiers(StatementGrammarNode assignmentStatementTargetNode)
@@ -181,10 +184,11 @@ namespace SqlPad.Oracle.DataDictionary
 			var dataTypeNode = dataTypeReference.RootNode;
 
 			var isSqlDataType = String.Equals(dataTypeNode.Id, NonTerminals.DataType);
+			var isAssociativeArrayType = String.Equals(dataTypeNode.Id, NonTerminals.AssociativeArrayIndexType);
 			if (!isSqlDataType &&
 				!String.Equals(dataTypeNode.Id, NonTerminals.PlSqlDataType) &&
 				!String.Equals(dataTypeNode.Id, NonTerminals.PlSqlDataTypeWithoutConstraint) &&
-				!String.Equals(dataTypeNode.Id, NonTerminals.AssociativeArrayIndexType))
+				!isAssociativeArrayType)
 			{
 				throw new ArgumentException("RootNode ID must be 'DataType' or 'PlSqlDataType'. ", nameof(dataTypeReference));
 			}
@@ -195,7 +199,9 @@ namespace SqlPad.Oracle.DataDictionary
 
 			var dataType = dataTypeReference.ResolvedDataType = new OracleDataType();
 
-			var builtInDataTypeNode = dataTypeNode[NonTerminals.BuiltInDataType];
+			var builtInDataTypeNode = isAssociativeArrayType
+				? dataTypeNode
+				: dataTypeNode[NonTerminals.BuiltInDataType];
 
 			var name = String.Empty;
 			if (!String.IsNullOrEmpty(owner))

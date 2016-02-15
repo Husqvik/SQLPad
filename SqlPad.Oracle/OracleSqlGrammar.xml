@@ -6440,15 +6440,15 @@
           <NonTerminal Id="DataTypeVarcharSimplePrecision" />
         </Sequence>
         <Sequence>
+          <NonTerminal Id="BuiltInDataType" />
+        </Sequence>
+        <Sequence>
           <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="ObjectRowType" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="AssignmentStatementTarget" />
           <NonTerminal Id="PercentCharacterTypeOrRowType" IsOptional="true" />
-        </Sequence>
-        <Sequence>
-          <NonTerminal Id="BuiltInDataType" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -11413,6 +11413,9 @@
         <Sequence>
           <NonTerminal Id="FlashbackModeClause" />
         </Sequence>
+        <Sequence Comment="Not documented">
+          <Terminal Id="Permanent" />
+        </Sequence>
       </Sequences>
     </Rule>
     
@@ -13086,7 +13089,7 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="VarcharOrVarchar2OrString" />
-          <NonTerminal Id="ParenthesisEnclosedIntegerLiteral" />
+          <NonTerminal Id="DataTypeSimplePrecision" />
         </Sequence>
         <Sequence>
           <Terminal Id="Long" />
@@ -13115,7 +13118,7 @@
       <Sequences>
         <Sequence>
           <NonTerminal Id="VaryingArray" />
-          <NonTerminal Id="ParenthesisEnclosedIntegerLiteral" />
+          <NonTerminal Id="DataTypeSimplePrecision" />
           <Terminal Id="Of" />
           <Terminal Id="Ref" IsOptional="true" />
           <NonTerminal Id="ElementType" />
@@ -13135,16 +13138,6 @@
       </Sequences>
     </Rule>
       
-    <Rule StartingNonTerminal="ParenthesisEnclosedIntegerLiteral">
-      <Sequences>
-        <Sequence>
-          <Terminal Id="LeftParenthesis" />
-          <Terminal Id="IntegerLiteral" />
-          <Terminal Id="RightParenthesis" />
-        </Sequence>
-      </Sequences>
-    </Rule>
-    
     <Rule StartingNonTerminal="VaryingArray">
       <Sequences>
         <Sequence>
@@ -17906,7 +17899,7 @@
         <Sequence>
           <Terminal Id="StartOf" />
           <Terminal Id="Identifier" />
-          <NonTerminal Id="ParenthesisEnclosedIntegerLiteral" />
+          <NonTerminal Id="DataTypeSimplePrecision" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -18017,7 +18010,7 @@
           <Terminal Id="Unsigned" IsOptional="true" />
           <Terminal Id="Integer" />
           <Terminal Id="External" IsOptional="true" />
-          <NonTerminal Id="ParenthesisEnclosedIntegerLiteral" IsOptional="true" />
+          <NonTerminal Id="DataTypeSimplePrecision" IsOptional="true" />
           <NonTerminal Id="DelimiterSpecification" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -18034,7 +18027,7 @@
         <Sequence>
           <Terminal Id="Float" />
           <Terminal Id="External" IsOptional="true" />
-          <NonTerminal Id="ParenthesisEnclosedIntegerLiteral" IsOptional="true" />
+          <NonTerminal Id="DataTypeSimplePrecision" IsOptional="true" />
           <NonTerminal Id="DelimiterSpecification" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -18043,7 +18036,7 @@
         <Sequence>
           <Terminal Id="BinaryFloat" />
           <Terminal Id="External" IsOptional="true" />
-          <NonTerminal Id="ParenthesisEnclosedIntegerLiteral" IsOptional="true" />
+          <NonTerminal Id="DataTypeSimplePrecision" IsOptional="true" />
           <NonTerminal Id="DelimiterSpecification" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -18051,11 +18044,11 @@
         </Sequence>
         <Sequence>
           <Terminal Id="Raw" />
-          <NonTerminal Id="ParenthesisEnclosedIntegerLiteral" IsOptional="true" />
+          <NonTerminal Id="DataTypeSimplePrecision" IsOptional="true" />
         </Sequence>
         <Sequence>
           <Terminal Id="Char" />
-          <NonTerminal Id="ParenthesisEnclosedIntegerLiteral" IsOptional="true" />
+          <NonTerminal Id="DataTypeSimplePrecision" IsOptional="true" />
           <NonTerminal Id="DelimiterSpecification" IsOptional="true" />
           <NonTerminal Id="TrimSpecification" IsOptional="true" />
           <NonTerminal Id="DateFormatSpecification" IsOptional="true" />
@@ -18131,7 +18124,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="External" />
-          <NonTerminal Id="ParenthesisEnclosedIntegerLiteral" IsOptional="true" />
+          <NonTerminal Id="DataTypeSimplePrecision" IsOptional="true" />
           <NonTerminal Id="DelimiterSpecification" IsOptional="true" />
         </Sequence>
         <Sequence>

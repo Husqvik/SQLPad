@@ -498,7 +498,7 @@ namespace SqlPad.Oracle.ToolTips
 
 			var dataModel = new OracleSchemaModel { Schema = schema };
 			databaseModel.UpdateUserDetailsAsync(dataModel, CancellationToken.None);
-			ToolTip = new ToolTipSchema(dataModel);
+			ToolTip = new ToolTipSchema(dataModel) { ScriptExtractor = databaseModel.ObjectScriptExtractor };
 		}
 
 		private class ToolTipLabelBuilder

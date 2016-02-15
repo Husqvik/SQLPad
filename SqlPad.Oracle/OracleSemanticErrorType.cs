@@ -53,6 +53,7 @@ namespace SqlPad.Oracle
 		public static class PlSql
 		{
 			public const string NoChoicesMayAppearWithChoiceOthersInExceptionHandler = "No choices may appear with choice OTHERS in an exception handler";
+			public const string UnsupportedTableIndexType = "unsupported table index type";
 		}
 	}
 

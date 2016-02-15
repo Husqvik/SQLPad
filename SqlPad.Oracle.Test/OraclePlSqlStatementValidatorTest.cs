@@ -90,5 +90,26 @@ END;";
 			var validationModel = OracleStatementValidatorTest.BuildValidationModel(plsqlText, statement);
 			validationModel.IdentifierNodeValidity.Count.ShouldBe(0);
 		}
+
+		[Test(Description = @"")]
+		public void TestUndefinedAndInvalidAssociativeArrayIndexTypes()
+		{
+			const string plsqlText =
+@"DECLARE
+	TYPE test_table_type1 IS TABLE OF NUMBER INDEX BY undefined_type;
+	TYPE test_table_type2 IS TABLE OF NUMBER INDEX BY boolean;
+	TYPE test_table_type3 IS TABLE OF NUMBER INDEX BY varchar2(30);
+BEGIN
+	NULL;
+END;";
+			var statement = Parser.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = OracleStatementValidatorTest.BuildValidationModel(plsqlText, statement);
+			validationModel.IdentifierNodeValidity.Count.ShouldBe(1);
+			validationModel.InvalidNonTerminals.Count.ShouldBe(1);
+			var validationData = validationModel.InvalidNonTerminals.Values.First();
+			validationData.SemanticErrorType.ShouldBe(OracleSemanticErrorType.PlSql.UnsupportedTableIndexType);
+		}
 	}
 }

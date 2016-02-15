@@ -16,13 +16,15 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public IReadOnlyList<OraclePlSqlProgram> Programs => _programs.AsReadOnly();
 
+		public IEnumerable<OraclePlSqlProgram> AllPrograms => Programs.Concat(Programs.SelectMany(p => p.AllSubPrograms));
+
 		public override OracleQueryBlock MainQueryBlock { get; } = null;
 
 		public override IEnumerable<OracleReferenceContainer> AllReferenceContainers
 		{
 			get
 			{
-				var allPlSqlPrograms = Programs.Concat(Programs.SelectMany(p => p.AllSubPrograms)).ToArray();
+				var allPlSqlPrograms = AllPrograms.ToArray();
 				var allSSqlContainers = allPlSqlPrograms
 					.SelectMany(p => p.SqlModels)
 					.SelectMany(m => m.AllReferenceContainers);
@@ -68,7 +70,8 @@ namespace SqlPad.Oracle.SemanticModel
 							FindPlSqlReferences(program, sourceNode);
 							break;
 						case NonTerminals.PlSqlDataType:
-							OracleReferenceBuilder.TryCreatePlSqlDataTypeReference(program, sourceNode);
+							OracleDataTypeReference dataTypeReference;
+							OracleReferenceBuilder.TryCreatePlSqlDataTypeReference(program, sourceNode, out dataTypeReference);
 							break;
 					}
 				}
@@ -580,10 +583,11 @@ namespace SqlPad.Oracle.SemanticModel
 
 								program.Types.Add(type);
 
+								OracleDataTypeReference dataTypeReference;
 								var associativeArrayIndexTypeNode = associativeArrayTypeDefinitionNode?[NonTerminals.AssociativeArrayIndexType];
-								if (associativeArrayIndexTypeNode != null)
+								if (associativeArrayIndexTypeNode != null && OracleReferenceBuilder.TryCreatePlSqlDataTypeReference(program, associativeArrayIndexTypeNode, out dataTypeReference))
 								{
-									OracleReferenceBuilder.TryCreatePlSqlDataTypeReference(program, associativeArrayIndexTypeNode);
+									type.AssociativeArrayIndexDataTypeReference = dataTypeReference;
 								}
 							}
 
@@ -1012,6 +1016,8 @@ namespace SqlPad.Oracle.SemanticModel
 	public class OraclePlSqlType : OraclePlSqlElement
 	{
 		public bool IsAssociativeArray { get; set; }
+
+		public OracleDataTypeReference AssociativeArrayIndexDataTypeReference { get; set; }
 	}
 
 	[DebuggerDisplay("OraclePlSqlLabel (Name={Name})")]

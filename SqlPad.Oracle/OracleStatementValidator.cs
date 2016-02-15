@@ -21,6 +21,7 @@ namespace SqlPad.Oracle
 		private static readonly Regex IntervalYearToMonthValidator = new Regex(@"^\s*(?<Years>([+-]\s*)?[0-9]{1,9})\s*([-]\s*(?<Months>[0-9]{1,2}))?\s*$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 		private static readonly Regex IntervalDayToSecondValidator = new Regex(@"^\s*(?<Days>([+-]\s*)?[0-9]{1,9})\s*(?<Hours>[0-9]{1,2})?\s*(:\s*(?<Minutes>[0-9]{1,2}))?\s*(:\s*(?<Seconds>[0-9]{1,2}))?\s*(\.\s*(?<Fraction>[0-9]{1,9}))?\s*$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 		private static readonly Version MinimumJsonSupportVersion = new Version(12, 1, 0, 2);
+		private static readonly OracleObjectIdentifier[] AssociativeArrayIndexTypes = { OracleDataType.BinaryIntegerType.FullyQualifiedName, OracleObjectIdentifier.Create(null, TerminalValues.Varchar), OracleObjectIdentifier.Create(null, TerminalValues.Varchar2) };
 
 		public IStatementSemanticModel BuildSemanticModel(string statementText, StatementBase statementBase, IDatabaseModel databaseModel)
 		{
@@ -222,8 +223,37 @@ namespace SqlPad.Oracle
 			ValidateLiterals(validationModel);
 
 			ValidateVariousClauseSupport(validationModel);
+
+			ValidatePlSqlPrograms(validationModel);
 			
 			return validationModel;
+		}
+
+		private void ValidatePlSqlPrograms(OracleValidationModel validationModel)
+		{
+			var semanticModel = validationModel.SemanticModel as OraclePlSqlStatementSemanticModel;
+			if (semanticModel == null)
+			{
+				return;
+			}
+
+			foreach (var program in semanticModel.AllPrograms)
+			{
+				foreach (var plSqlType in program.Types)
+				{
+					if (!plSqlType.IsAssociativeArray || plSqlType.AssociativeArrayIndexDataTypeReference == null)
+					{
+						continue;
+					}
+
+					if (!validationModel.IdentifierNodeValidity.ContainsKey(plSqlType.AssociativeArrayIndexDataTypeReference.ObjectNode) &&
+					    !plSqlType.AssociativeArrayIndexDataTypeReference.ResolvedDataType.FullyQualifiedName.In(AssociativeArrayIndexTypes))
+					{
+						validationModel.InvalidNonTerminals[plSqlType.AssociativeArrayIndexDataTypeReference.RootNode] =
+							new InvalidNodeValidationData(OracleSemanticErrorType.PlSql.UnsupportedTableIndexType) { Node = plSqlType.AssociativeArrayIndexDataTypeReference.RootNode };
+					}
+				}
+			}
 		}
 
 		private void ValidateVariousClauseSupport(OracleValidationModel validationModel)
@@ -397,7 +427,7 @@ namespace SqlPad.Oracle
 			return Int32.TryParse(stringValue, out value) && value >= 0 && value < 60;
 		}
 
-		private void ValidateDataType(OracleValidationModel validationModel, OracleDataTypeReference dataTypeReference)
+		private static void ValidateDataType(OracleValidationModel validationModel, OracleDataTypeReference dataTypeReference)
 		{
 			var varcharLimit = OracleDatabaseModelBase.DefaultMaxLengthVarchar;
 			var nVarcharLimit = OracleDatabaseModelBase.DefaultMaxLengthNVarchar;
