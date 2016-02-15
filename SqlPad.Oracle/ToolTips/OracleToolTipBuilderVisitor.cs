@@ -232,15 +232,34 @@ namespace SqlPad.Oracle.ToolTips
 						SetPartitionKeys(dataModel);
 
 						databaseModel.UpdateTableDetailsAsync(schemaObject.FullyQualifiedName, dataModel, CancellationToken.None);
-						ToolTip = new ToolTipMaterializedView { DataContext = dataModel };
+						ToolTip =
+							new ToolTipMaterializedView
+							{
+								ScriptExtractor = databaseModel.ObjectScriptExtractor,
+								DataContext = dataModel
+							};
+
 						break;
 
 					case OracleSchemaObjectType.Table:
-						dataModel = new TableDetailsModel { Title = toolTipText, Table = (OracleTable)schemaObject };
+						dataModel =
+							new TableDetailsModel
+							{
+								Title = toolTipText,
+								Table = (OracleTable)schemaObject
+							};
+
 						SetPartitionKeys(dataModel);
 
 						databaseModel.UpdateTableDetailsAsync(schemaObject.FullyQualifiedName, dataModel, CancellationToken.None);
-						ToolTip = new ToolTipTable { ScriptExtractor = databaseModel.ObjectScriptExtractor, DataContext = dataModel };
+
+						ToolTip =
+							new ToolTipTable
+							{
+								ScriptExtractor = databaseModel.ObjectScriptExtractor,
+								DataContext = dataModel
+							};
+
 						break;
 
 					case OracleSchemaObjectType.View:
