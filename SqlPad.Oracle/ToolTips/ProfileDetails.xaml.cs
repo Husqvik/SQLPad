@@ -1,6 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Globalization;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace SqlPad.Oracle.ToolTips
@@ -27,6 +29,11 @@ namespace SqlPad.Oracle.ToolTips
 		public ProfileDetails()
 		{
 			InitializeComponent();
+		}
+
+		protected override async Task<string> ExtractDdlAsync(CancellationToken cancellationToken)
+		{
+			return await ScriptExtractor.ExtractNonSchemaObjectScriptAsync(Profile.Name, "PROFILE", cancellationToken);
 		}
 
 		private void ProfileHyperlinkClickHandler(object sender, RoutedEventArgs e)
