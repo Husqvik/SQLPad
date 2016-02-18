@@ -108,9 +108,13 @@ namespace SqlPad
 	{
 		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			var precision = parameter as int? ?? 0;
+			var stringValue = (string)parameter;
+			var precision = String.IsNullOrWhiteSpace(stringValue)
+				? 0
+				: System.Convert.ToInt32(stringValue);
+
 			var ratio = System.Convert.ToDecimal(value);
-			return value == null ? ValueNotAvailable : $"{Math.Round(ratio * 100, precision)} %";
+			return value == null ? ValueNotAvailable : $"{Math.Round(ratio * 100, precision, MidpointRounding.AwayFromZero)} %";
 		}
 	}
 

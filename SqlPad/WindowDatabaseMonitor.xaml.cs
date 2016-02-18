@@ -85,6 +85,7 @@ namespace SqlPad
 		private bool _isBusy;
 		private IDatabaseMonitor _databaseMonitor;
 		private IDatabaseSessionDetailViewer _sessionDetailViewer;
+		private IDictionary<string, double> _customProperties;
 
 		public IReadOnlyList<DatabaseSession> DatabaseSessions => _databaseSessions;
 
@@ -110,9 +111,10 @@ namespace SqlPad
 
 		public void RestoreAppearance()
 		{
-			var customProperties = WorkDocumentCollection.RestoreWindowProperties(this);
+			_customProperties = WorkDocumentCollection.RestoreWindowProperties(this);
+
 			double sessionDataGridHeight = 0;
-			if (customProperties?.TryGetValue(SessionDataGridHeightProperty, out sessionDataGridHeight) == true)
+			if (_customProperties?.TryGetValue(SessionDataGridHeightProperty, out sessionDataGridHeight) == true)
 			{
 				RowDefinitionSessionDataGrid.Height = new GridLength(sessionDataGridHeight);
 			}
@@ -124,6 +126,7 @@ namespace SqlPad
 			var infrastructureFactory = connectionConfiguration.InfrastructureFactory;
 			_databaseMonitor = infrastructureFactory.CreateDatabaseMonitor(CurrentConnection);
 			_sessionDetailViewer = _databaseMonitor.CreateSessionDetailViewer();
+			_sessionDetailViewer.RestoreConfiguration(_customProperties);
 
 			var providerConfiguration = WorkDocumentCollection.GetProviderConfiguration(CurrentConnection.ProviderName);
 			ActiveSessionOnly = providerConfiguration.DatabaseMonitorConfiguration.ActiveSessionOnly;
@@ -274,7 +277,21 @@ namespace SqlPad
 		{
 			e.Cancel = true;
 			Hide();
-			WorkDocumentCollection.StoreWindowProperties(this, new Dictionary<string, double> { { SessionDataGridHeightProperty, RowDefinitionSessionDataGrid.ActualHeight } });
+
+			StoreWindowConfiguration();
+		}
+
+		private void StoreWindowConfiguration()
+		{
+			_customProperties =
+				new Dictionary<string, double>
+				{
+					{ SessionDataGridHeightProperty, RowDefinitionSessionDataGrid.ActualHeight }
+				};
+
+			_sessionDetailViewer?.StoreConfiguration(_customProperties);
+
+			WorkDocumentCollection.StoreWindowProperties(this, _customProperties);
 		}
 
 		private void RefreshExecutedHandler(object sender, ExecutedRoutedEventArgs e)

@@ -41,6 +41,10 @@ namespace SqlPad.Oracle
 			private set { SetValue(SummarySessionProperty, value); }
 		}
 
+		private const string KeyExecutionPlanHeight = "ExecutionPlanHeight";
+		private const string KeyExpanderExecutionPlanIsExpanded = "ExpanderExecutionPlanIsExpanded";
+		private const string KeyExpanderSessionDetailsIsExpanded = "ExpanderSessionDetailsIsExpanded";
+
 		private static readonly object LockObject = new object();
 		private static readonly TimeSpan DefaultRefreshPeriod = TimeSpan.FromSeconds(10);
 
@@ -49,9 +53,10 @@ namespace SqlPad.Oracle
 
 		private bool _isBusy;
 		private bool _isSynchronizing;
+		private bool _autoRefreshEnabled;
+		private double? _expandedExecutionPlanHeight;
 		private SqlMonitorPlanItemCollection _planItemCollection;
 		private OracleSessionValues _oracleSessionValues;
-		private bool _autoRefreshEnabled;
 
 		public Control Control => this;
 
@@ -96,7 +101,11 @@ namespace SqlPad.Oracle
 					sourceColumn,
 					delegate
 					{
-						if (_isSynchronizing) return;
+						if (_isSynchronizing)
+						{
+							return;
+						}
+
 						_isSynchronizing = true;
 						summaryColumn.Width = sourceColumn.Width;
 						_isSynchronizing = false;
@@ -180,7 +189,7 @@ namespace SqlPad.Oracle
 		{
 			databaseSession = databaseSession.Owner ?? databaseSession;
 			var oracleSessionValues = (OracleSessionValues)databaseSession.ProviderValues;
-			if (_oracleSessionValues != null && _oracleSessionValues.Id == oracleSessionValues.Id &&  _oracleSessionValues.SqlId == oracleSessionValues.SqlId && _oracleSessionValues.ExecutionId == oracleSessionValues.ExecutionId)
+			if (_oracleSessionValues != null && _oracleSessionValues.Id == oracleSessionValues.Id && String.Equals(_oracleSessionValues.SqlId, oracleSessionValues.SqlId) && _oracleSessionValues.ExecutionId == oracleSessionValues.ExecutionId)
 			{
 				await Refresh(cancellationToken);
 				return;
@@ -240,21 +249,79 @@ namespace SqlPad.Oracle
 			ExecutionPlanTreeView.RootItem = null;
 		}
 
-		private EventHandler<DataGridBeginningEditEventArgs> SessionDataGridBeginningEditCancelTextInputHandler => App.DataGridBeginningEditCancelTextInputHandlerImplementation;
-
-		private void SessionDataGridSortingHandler(object sender, DataGridSortingEventArgs e)
+		public void StoreConfiguration(IDictionary<string, double> configurationProperties)
 		{
-			var dataGrid = (DataGrid)sender;
-			if (e.Column.SortDirection != ListSortDirection.Descending || Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+			if (ExpanderExecutionPlan.IsExpanded)
+			{
+				configurationProperties[KeyExecutionPlanHeight] = RowDefinitionExecutionPlan.ActualHeight;
+			}
+			else if (_expandedExecutionPlanHeight.HasValue)
+			{
+				configurationProperties[KeyExecutionPlanHeight] = _expandedExecutionPlanHeight.Value;
+			}
+
+			configurationProperties[KeyExpanderExecutionPlanIsExpanded] = Convert.ToDouble(ExpanderExecutionPlan.IsExpanded);
+			configurationProperties[KeyExpanderSessionDetailsIsExpanded] = Convert.ToDouble(ExpanderSessionDetails.IsExpanded);
+		}
+
+		public void RestoreConfiguration(IDictionary<string, double> configurationProperties)
+		{
+			if (configurationProperties == null)
 			{
 				return;
 			}
 
-			e.Column.SortDirection = null;
+			double value;
+			if (configurationProperties.TryGetValue(KeyExecutionPlanHeight, out value))
+			{
+				_expandedExecutionPlanHeight = value;
+				RowDefinitionExecutionPlan.Height = new GridLength(value);
+			}
+
+			if (configurationProperties.TryGetValue(KeyExpanderExecutionPlanIsExpanded, out value))
+			{
+				ExpanderExecutionPlan.IsExpanded = Convert.ToBoolean(value);
+			}
+
+			if (configurationProperties.TryGetValue(KeyExpanderSessionDetailsIsExpanded, out value))
+			{
+				ExpanderSessionDetails.IsExpanded = Convert.ToBoolean(value);
+			}
+		}
+
+		private EventHandler<DataGridBeginningEditEventArgs> SessionDataGridBeginningEditCancelTextInputHandler => App.DataGridBeginningEditCancelTextInputHandlerImplementation;
+
+		private void SessionDataGridSortingHandler(object sender, DataGridSortingEventArgs args)
+		{
+			var dataGrid = (DataGrid)sender;
+			if (args.Column.SortDirection != ListSortDirection.Descending || Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+			{
+				return;
+			}
+
+			args.Column.SortDirection = null;
 			dataGrid.Items.SortDescriptions.Clear();
 			dataGrid.Items.SortDescriptions.AddRange(DefaultSortDescriptions);
 			dataGrid.Items.Refresh();
-			e.Handled = true;
+			args.Handled = true;
+		}
+
+		private void ExpanderExecutionPlanExpandedHandler(object sender, RoutedEventArgs args)
+		{
+			if (_expandedExecutionPlanHeight.HasValue)
+			{
+				RowDefinitionExecutionPlan.Height = new GridLength(_expandedExecutionPlanHeight.Value, GridUnitType.Pixel);
+			}
+		}
+
+		private void ExpanderExecutionPlanCollapsedHandler(object sender, RoutedEventArgs args)
+		{
+			if (RowDefinitionExecutionPlan.ActualHeight > 0)
+			{
+				_expandedExecutionPlanHeight = RowDefinitionExecutionPlan.ActualHeight;
+			}
+
+			RowDefinitionExecutionPlan.Height = new GridLength(RowDefinitionExecutionPlan.MinHeight, GridUnitType.Pixel);
 		}
 	}
 

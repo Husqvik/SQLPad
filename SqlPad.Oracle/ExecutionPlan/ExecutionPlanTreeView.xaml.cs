@@ -47,12 +47,12 @@ namespace SqlPad.Oracle.ExecutionPlan
 			InitializeComponent();
 		}
 
-		private void SaveAsPngCanExecuteHandler(object sender, CanExecuteRoutedEventArgs e)
+		private void SaveAsPngCanExecuteHandler(object sender, CanExecuteRoutedEventArgs args)
 		{
-			e.CanExecute = TreeView.HasItems;
+			args.CanExecute = TreeView.HasItems;
 		}
 
-		private void SaveAsPngCanExecutedHandler(object sender, ExecutedRoutedEventArgs e)
+		private void SaveAsPngCanExecutedHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			var dialog = new SaveFileDialog { Filter = "PNG files (*.png)|*.png|All files (*.*)|*", OverwritePrompt = true };
 			if (dialog.ShowDialog() != true)
@@ -93,13 +93,18 @@ namespace SqlPad.Oracle.ExecutionPlan
 			}
 		}
 
-		private void TreeViewItemMouseLeftButtonDownHandler(object sender, MouseButtonEventArgs e)
+		private void TreeViewItemMouseLeftButtonDownHandler(object sender, MouseButtonEventArgs args)
 		{
 			var item = (TreeViewItem)sender;
 			if (item.IsSelected && (Keyboard.Modifiers == ModifierKeys.Shift || Keyboard.Modifiers == ModifierKeys.Control))
 			{
 				item.IsSelected = false;
 			}
+		}
+
+		private void TerminateBubbleEventHandler(object sender, RoutedEventArgs args)
+		{
+			args.Handled = true;
 		}
 	}
 

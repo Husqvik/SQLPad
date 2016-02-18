@@ -71,6 +71,10 @@ namespace SqlPad
 		Task Refresh(CancellationToken cancellationToken);
 
 		void Shutdown();
+
+		void StoreConfiguration(IDictionary<string, double> configurationProperties);
+
+		void RestoreConfiguration(IDictionary<string, double> configurationProperties);
 	}
 
 	public struct DatabaseSessions

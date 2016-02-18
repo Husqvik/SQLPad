@@ -29,34 +29,47 @@
 	</UserControl.Resources>
 
 	<Grid>
+		<Grid.Resources>
+			<Style x:Key="HideIfSessionDetailsNotAvailable">
+				<Style.Triggers>
+					<DataTrigger Binding="{Binding SessionItems}" Value="{x:Null}">
+						<Setter Property="UIElement.Visibility" Value="Collapsed" />
+					</DataTrigger>
+					<DataTrigger Binding="{Binding SessionItems.Count}" Value="0">
+						<Setter Property="UIElement.Visibility" Value="Collapsed" />
+					</DataTrigger>
+				</Style.Triggers>
+			</Style>
+		</Grid.Resources>
+		
 		<Grid.RowDefinitions>
-			<RowDefinition Height="*" MinHeight="24" />
+			<RowDefinition Height="*" MinHeight="24" x:Name="RowDefinitionExecutionPlan" />
 			<RowDefinition Height="Auto" />
-			<RowDefinition Height="*" MinHeight="24" />
+			<RowDefinition Height="*" />
 		</Grid.RowDefinitions>
 
-		<Expander Grid.Row="0" Header="_Execution plan" IsExpanded="True" Visibility="{Binding ElementName=ExecutionPlanTreeView, Path=RootItem, Converter={StaticResource ObjectToVisibilityConverter}}">
-			<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsDeferredScrollingEnabled="True">
-				<executionPlan:ExecutionPlanTreeView x:Name="ExecutionPlanTreeView" />
-			</ScrollViewer>
-		</Expander>
-
-		<GridSplitter Grid.Column="0" Grid.Row="1" Height="4" HorizontalAlignment="Stretch" ShowsPreview="True" VerticalAlignment="Center" Background="DimGray" />
-
-		<Expander Grid.Row="2" Header="_Session details" IsExpanded="True">
+		<Expander x:Name="ExpanderExecutionPlan" Grid.Row="0" Header="_Execution plan" IsExpanded="True" Visibility="{Binding ElementName=ExecutionPlanTreeView, Path=RootItem, Converter={StaticResource ObjectToVisibilityConverter}}" Expanded="ExpanderExecutionPlanExpandedHandler" Collapsed="ExpanderExecutionPlanCollapsedHandler">
 			<Expander.Style>
 				<Style>
 					<Style.Triggers>
 						<DataTrigger Binding="{Binding SessionItems}" Value="{x:Null}">
-							<Setter Property="Expander.Visibility" Value="Collapsed" />
+							<Setter Property="Grid.RowSpan" Value="3" />
 						</DataTrigger>
 						<DataTrigger Binding="{Binding SessionItems.Count}" Value="0">
-							<Setter Property="Expander.Visibility" Value="Collapsed" />
+							<Setter Property="Grid.RowSpan" Value="3" />
 						</DataTrigger>
 					</Style.Triggers>
 				</Style>
 			</Expander.Style>
 
+			<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsDeferredScrollingEnabled="True">
+				<executionPlan:ExecutionPlanTreeView x:Name="ExecutionPlanTreeView" />
+			</ScrollViewer>
+		</Expander>
+
+		<GridSplitter Grid.Column="0" Grid.Row="1" Height="4" HorizontalAlignment="Stretch" ShowsPreview="True" VerticalAlignment="Center" Background="DimGray" Style="{StaticResource HideIfSessionDetailsNotAvailable}" Visibility="{Binding ElementName=ExpanderExecutionPlan, Path=IsExpanded, Converter={StaticResource ObjectToVisibilityConverter}}" />
+
+		<Expander x:Name="ExpanderSessionDetails" Grid.Row="2" Header="_Session details" IsExpanded="True" Style="{StaticResource HideIfSessionDetailsNotAvailable}">
 			<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsDeferredScrollingEnabled="True">
 				<StackPanel>
 					<DataGrid x:Name="SessionDataGrid"

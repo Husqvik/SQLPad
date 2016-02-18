@@ -820,7 +820,9 @@
 					<Expander IsExpanded="False"
 							  Content="{Binding ParallelSlaveSessionItems}"
 							  ContentTemplate="{StaticResource SqlMonitorSessionListDataTemplate}"
-							  Template="{StaticResource ExpanderTemplate}">
+							  Template="{StaticResource ExpanderTemplate}"
+							  Expanded="TerminateBubbleEventHandler"
+							  Collapsed="TerminateBubbleEventHandler">
 						<Expander.Style>
 							<Style>
 								<Style.Triggers>

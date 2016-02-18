@@ -119,6 +119,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 		public void AddActiveSessionHistoryItems(IEnumerable<ActiveSessionHistoryItem> historyItems)
 		{
 			var lastSampleTime = LastSampleTime;
+			var planParallelSampleCount = new Dictionary<SqlMonitorPlanItem, decimal>();
 
 			foreach (var itemGroup in historyItems.GroupBy(i => i.SessionIdentifier))
 			{
@@ -141,6 +142,11 @@ namespace SqlPad.Oracle.ModelDataProviders
 						_planItemActiveSessionHistoryItems[historyItem.PlanItem] = sessionPlanHistoryItems = new Dictionary<SessionIdentifier, List<ActiveSessionHistoryItem>>();
 					}
 
+					if (!planParallelSampleCount.ContainsKey(historyItem.PlanItem))
+					{
+						planParallelSampleCount[historyItem.PlanItem] = historyItem.PlanItem.ParallelSlaveSessionItems.Sum(i => i.ActiveSessionHistorySampleCount);
+					}
+
 					List<ActiveSessionHistoryItem> planHistoryItems;
 					if (!sessionPlanHistoryItems.TryGetValue(historyItem.SessionIdentifier, out planHistoryItems))
 					{
@@ -150,6 +156,11 @@ namespace SqlPad.Oracle.ModelDataProviders
 					planHistoryItems.Add(historyItem);
 
 					_totalActiveSessionHistorySamples++;
+
+					if (historyItem.SessionIdentifier != SessionIdentifier)
+					{
+						planParallelSampleCount[historyItem.PlanItem]++;
+					}
 				}
 			}
 
@@ -180,9 +191,13 @@ namespace SqlPad.Oracle.ModelDataProviders
 						: 0;
 
 					parallelSessionItem.ActiveSessionHistorySampleCount = activeSessionHistorySampleCount;
-					parallelSessionItem.ActivityRatio = (decimal)activeSessionHistorySampleCount / _totalActiveSessionHistorySamples;
+					decimal planItemAllParallelSessionActiveSessionHistorySampleCount;
+					if (planParallelSampleCount.TryGetValue(planItemActiveSessionHistoryItems.Key, out planItemAllParallelSessionActiveSessionHistorySampleCount) && planItemAllParallelSessionActiveSessionHistorySampleCount > 0)
+					{
+						parallelSessionItem.ActivityRatio = activeSessionHistorySampleCount / planItemAllParallelSessionActiveSessionHistorySampleCount;
+					}
 
-					allSessionPlanItemSamples += parallelSessionItem.ActiveSessionHistorySampleCount;
+					allSessionPlanItemSamples += activeSessionHistorySampleCount;
 				}
 
 				var queryCoordinatorPlanItemSamples = planItemActiveSessionHistoryItems.Value.TryGetValue(SessionIdentifier, out sessionHistoryItems)
