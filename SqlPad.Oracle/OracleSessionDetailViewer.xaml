@@ -38,6 +38,9 @@
 					<DataTrigger Binding="{Binding SessionItems.Count}" Value="0">
 						<Setter Property="UIElement.Visibility" Value="Collapsed" />
 					</DataTrigger>
+					<DataTrigger Binding="{Binding ElementName=ExpanderExecutionPlan, Path=IsExpanded}" Value="False">
+						<Setter Property="GridSplitter.Visibility" Value="Collapsed" />
+					</DataTrigger>
 				</Style.Triggers>
 			</Style>
 		</Grid.Resources>
@@ -67,7 +70,7 @@
 			</ScrollViewer>
 		</Expander>
 
-		<GridSplitter Grid.Column="0" Grid.Row="1" Height="4" HorizontalAlignment="Stretch" ShowsPreview="True" VerticalAlignment="Center" Background="DimGray" Style="{StaticResource HideIfSessionDetailsNotAvailable}" Visibility="{Binding ElementName=ExpanderExecutionPlan, Path=IsExpanded, Converter={StaticResource ObjectToVisibilityConverter}}" />
+		<GridSplitter x:Name="Splitter" Grid.Column="0" Grid.Row="1" Height="4" HorizontalAlignment="Stretch" ShowsPreview="True" VerticalAlignment="Center" Background="DimGray" Style="{StaticResource HideIfSessionDetailsNotAvailable}" />
 
 		<Expander x:Name="ExpanderSessionDetails" Grid.Row="2" Header="_Session details" IsExpanded="True" Style="{StaticResource HideIfSessionDetailsNotAvailable}">
 			<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsDeferredScrollingEnabled="True">
