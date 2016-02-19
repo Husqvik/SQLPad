@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.Security;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Data;
 
@@ -44,39 +43,6 @@ namespace SqlPad
 		IConnectionAdapter CreateConnectionAdapter();
 	}
 
-	public interface IConnectionAdapter : IDisposable
-	{
-		IDatabaseModel DatabaseModel { get; }
-
-		IDebuggerSession DebuggerSession { get; }
-
-		bool CanFetch(ResultInfo resultInfo);
-
-		bool IsExecuting { get; }
-
-		bool EnableDatabaseOutput { get; set; }
-
-		string Identifier { get; set; }
-
-		Task<StatementExecutionBatchResult> ExecuteStatementAsync(StatementBatchExecutionModel executionModel, CancellationToken cancellationToken);
-
-		Task<StatementExecutionResult> ExecuteChildStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
-
-		Task<IReadOnlyList<ColumnHeader>> RefreshResult(ResultInfo resultInfo, CancellationToken cancellationToken);
-
-		Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken);
-
-		Task<IReadOnlyList<object[]>> FetchRecordsAsync(ResultInfo resultInfo, int rowCount, CancellationToken cancellationToken);
-
-		bool HasActiveTransaction { get; }
-
-		string TransanctionIdentifier { get; }
-
-		Task CommitTransaction();
-
-		Task RollbackTransaction();
-	}
-
 	public class ColumnHeader
 	{
 		public int ColumnIndex { get; set; }
@@ -108,6 +74,21 @@ namespace SqlPad
 		string ConstraintName { get; }
 
 		StatementExecutionModel CreateExecutionModel(object[] keys);
+	}
+
+	public interface IValueAggregator
+	{
+		void AddValue(object value);
+
+		string Minimum { get; }
+
+		string Maximum { get; }
+
+		string Average { get; }
+
+		string Sum { get; }
+
+		long Count { get; }
 	}
 
 	public class DatabaseModelConnectionErrorArgs : EventArgs

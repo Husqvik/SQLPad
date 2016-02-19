@@ -102,6 +102,11 @@ namespace SqlPad.Oracle
 		{
 			return new OracleDatabaseMonitor(connectionString);
 		}
+
+		public IValueAggregator CreateValueAggregator()
+		{
+			return new OracleValueAggregator();
+		}
 		#endregion
 	}
 }

@@ -47,6 +47,8 @@ namespace SqlPad
 		IHelpProvider CreateHelpProvider();
 
 		IDatabaseMonitor CreateDatabaseMonitor(ConnectionStringSettings connectionString);
+
+		IValueAggregator CreateValueAggregator();
 	}
 
 	public interface IDatabaseMonitor
