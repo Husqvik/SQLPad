@@ -3,7 +3,6 @@
 			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-			 xmlns:globalization="clr-namespace:System.Globalization;assembly=mscorlib"
 			 xmlns:dataExport="clr-namespace:SqlPad.DataExport"
 			 xmlns:sqlPad="clr-namespace:SqlPad"
 			 xmlns:system="clr-namespace:System;assembly=mscorlib"
@@ -119,7 +118,7 @@
 			</ScrollViewer>
 		</Popup>
 
-		<StackPanel DockPanel.Dock="Bottom" Visibility="{Binding SelectedCellInfoVisibility}" Orientation="Horizontal"
+		<StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Visibility="{Binding IsSelectedCellInfoVisible, Converter={StaticResource ObjectToVisibilityConverter}}"
 		            HorizontalAlignment="Right">
 			<StackPanel.Resources>
 				<Style TargetType="TextBox">
@@ -131,27 +130,19 @@
 			</StackPanel.Resources>
 
 			<TextBlock Text="Count: " />
-			<TextBox Text="{Binding SelectedCellValueCount}" IsReadOnly="True" IsReadOnlyCaretVisible="True" BorderThickness="0"
-			         Background="Transparent" />
-			<StackPanel Orientation="Horizontal" Visibility="{Binding SelectedCellNumericInfoVisibility}">
+			<TextBox Text="{Binding SelectedCellValueCount}" />
+
+			<StackPanel Orientation="Horizontal" Visibility="{Binding IsSelectedCellLimitInfoVisible, Converter={StaticResource ObjectToVisibilityConverter}}">
 				<TextBlock Text=" Min: " />
-				<TextBox Text="{Binding SelectedCellMin, ConverterCulture={x:Static globalization:CultureInfo.CurrentCulture}}"
-				         IsReadOnly="True" IsReadOnlyCaretVisible="True" BorderThickness="0" Background="Transparent" />
-			</StackPanel>
-			<StackPanel Orientation="Horizontal" Visibility="{Binding SelectedCellNumericInfoVisibility}">
+				<TextBox Text="{Binding SelectedCellMin, Converter={x:Static sqlPad:CellValueConverter.Instance}}" />
 				<TextBlock Text=" Max: " />
-				<TextBox Text="{Binding SelectedCellMax, ConverterCulture={x:Static globalization:CultureInfo.CurrentCulture}}"
-				         IsReadOnly="True" IsReadOnlyCaretVisible="True" BorderThickness="0" Background="Transparent" />
+				<TextBox Text="{Binding SelectedCellMax, Converter={x:Static sqlPad:CellValueConverter.Instance}}" />
 			</StackPanel>
-			<StackPanel Orientation="Horizontal" Visibility="{Binding SelectedCellNumericInfoVisibility}">
+			<StackPanel Orientation="Horizontal" Visibility="{Binding IsSelectedCellAggregatedInfoVisible, Converter={StaticResource ObjectToVisibilityConverter}}">
 				<TextBlock Text=" Sum: " />
-				<TextBox Text="{Binding SelectedCellSum, ConverterCulture={x:Static globalization:CultureInfo.CurrentCulture}}"
-				         IsReadOnly="True" IsReadOnlyCaretVisible="True" BorderThickness="0" Background="Transparent" />
-			</StackPanel>
-			<StackPanel Orientation="Horizontal" Visibility="{Binding SelectedCellNumericInfoVisibility}">
+				<TextBox Text="{Binding SelectedCellSum, Converter={x:Static sqlPad:CellValueConverter.Instance}}" />
 				<TextBlock Text=" Average: " />
-				<TextBox Text="{Binding SelectedCellAverage, ConverterCulture={x:Static globalization:CultureInfo.CurrentCulture}}"
-				         IsReadOnly="True" IsReadOnlyCaretVisible="True" BorderThickness="0" Background="Transparent" />
+				<TextBox Text="{Binding SelectedCellAverage, Converter={x:Static sqlPad:CellValueConverter.Instance}}" />
 			</StackPanel>
 		</StackPanel>
 

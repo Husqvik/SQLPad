@@ -562,7 +562,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override string ToString()
 		{
-			return _value.ToString();
+			return IsNull ? String.Empty : _value.ToString();
 		}
 	}
 
@@ -603,7 +603,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override string ToString()
 		{
-			return _value.ToString();
+			return IsNull ? String.Empty : _value.ToString();
 		}
 	}
 

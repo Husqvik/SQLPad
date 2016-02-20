@@ -78,17 +78,21 @@ namespace SqlPad
 
 	public interface IValueAggregator
 	{
-		void AddValue(object value);
+		bool AggregatedValuesAvailable { get; }
 
-		string Minimum { get; }
+		bool LimitValuesAvailable { get; }
 
-		string Maximum { get; }
+		object Minimum { get; }
 
-		string Average { get; }
+		object Maximum { get; }
 
-		string Sum { get; }
+		object Average { get; }
+
+		object Sum { get; }
 
 		long Count { get; }
+
+		void AddValue(object value);
 	}
 
 	public class DatabaseModelConnectionErrorArgs : EventArgs

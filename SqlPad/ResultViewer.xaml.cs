@@ -26,13 +26,14 @@ namespace SqlPad
 	public partial class ResultViewer
 	{
 		#region dependency properties registration
-		public static readonly DependencyProperty SelectedCellNumericInfoVisibilityProperty = DependencyProperty.Register(nameof(SelectedCellNumericInfoVisibility), typeof(Visibility), typeof(ResultViewer), new UIPropertyMetadata(Visibility.Collapsed));
-		public static readonly DependencyProperty SelectedCellInfoVisibilityProperty = DependencyProperty.Register(nameof(SelectedCellInfoVisibility), typeof(Visibility), typeof(ResultViewer), new UIPropertyMetadata(Visibility.Collapsed));
-		public static readonly DependencyProperty SelectedCellValueCountProperty = DependencyProperty.Register(nameof(SelectedCellValueCount), typeof(int), typeof(ResultViewer), new UIPropertyMetadata(0));
-		public static readonly DependencyProperty SelectedCellSumProperty = DependencyProperty.Register(nameof(SelectedCellSum), typeof(decimal), typeof(ResultViewer), new UIPropertyMetadata(0m));
-		public static readonly DependencyProperty SelectedCellAverageProperty = DependencyProperty.Register(nameof(SelectedCellAverage), typeof(decimal), typeof(ResultViewer), new UIPropertyMetadata(0m));
-		public static readonly DependencyProperty SelectedCellMinProperty = DependencyProperty.Register(nameof(SelectedCellMin), typeof(decimal), typeof(ResultViewer), new UIPropertyMetadata(0m));
-		public static readonly DependencyProperty SelectedCellMaxProperty = DependencyProperty.Register(nameof(SelectedCellMax), typeof(decimal), typeof(ResultViewer), new UIPropertyMetadata(0m));
+		public static readonly DependencyProperty IsSelectedCellLimitInfoVisibleProperty = DependencyProperty.Register(nameof(IsSelectedCellLimitInfoVisible), typeof(bool), typeof(ResultViewer), new UIPropertyMetadata());
+		public static readonly DependencyProperty IsSelectedCellAggregatedInfoVisibleProperty = DependencyProperty.Register(nameof(IsSelectedCellAggregatedInfoVisible), typeof(bool), typeof(ResultViewer), new UIPropertyMetadata());
+		public static readonly DependencyProperty IsSelectedCellInfoVisibleProperty = DependencyProperty.Register(nameof(IsSelectedCellInfoVisible), typeof(bool), typeof(ResultViewer), new UIPropertyMetadata());
+		public static readonly DependencyProperty SelectedCellValueCountProperty = DependencyProperty.Register(nameof(SelectedCellValueCount), typeof(long), typeof(ResultViewer), new UIPropertyMetadata(0L));
+		public static readonly DependencyProperty SelectedCellSumProperty = DependencyProperty.Register(nameof(SelectedCellSum), typeof(object), typeof(ResultViewer), new UIPropertyMetadata());
+		public static readonly DependencyProperty SelectedCellAverageProperty = DependencyProperty.Register(nameof(SelectedCellAverage), typeof(object), typeof(ResultViewer), new UIPropertyMetadata());
+		public static readonly DependencyProperty SelectedCellMinProperty = DependencyProperty.Register(nameof(SelectedCellMin), typeof(object), typeof(ResultViewer), new UIPropertyMetadata());
+		public static readonly DependencyProperty SelectedCellMaxProperty = DependencyProperty.Register(nameof(SelectedCellMax), typeof(object), typeof(ResultViewer), new UIPropertyMetadata());
 		public static readonly DependencyProperty SelectedRowIndexProperty = DependencyProperty.Register(nameof(SelectedRowIndex), typeof(int), typeof(ResultViewer), new UIPropertyMetadata(0));
 		public static readonly DependencyProperty AutoRefreshIntervalProperty = DependencyProperty.Register(nameof(AutoRefreshInterval), typeof(TimeSpan), typeof(ResultViewer), new UIPropertyMetadata(TimeSpan.FromSeconds(60), AutoRefreshIntervalChangedCallback));
 		public static readonly DependencyProperty AutoRefreshEnabledProperty = DependencyProperty.Register(nameof(AutoRefreshEnabled), typeof(bool), typeof(ResultViewer), new UIPropertyMetadata(false, AutoRefreshEnabledChangedCallback));
@@ -41,51 +42,58 @@ namespace SqlPad
 
 		#region dependency property accessors
 		[Bindable(true)]
-		public Visibility SelectedCellNumericInfoVisibility
+		public bool IsSelectedCellLimitInfoVisible
 		{
-			get { return (Visibility)GetValue(SelectedCellNumericInfoVisibilityProperty); }
-			private set { SetValue(SelectedCellNumericInfoVisibilityProperty, value); }
+			get { return (bool)GetValue(IsSelectedCellLimitInfoVisibleProperty); }
+			private set { SetValue(IsSelectedCellLimitInfoVisibleProperty, value); }
 		}
 
 		[Bindable(true)]
-		public Visibility SelectedCellInfoVisibility
+		public bool IsSelectedCellAggregatedInfoVisible
 		{
-			get { return (Visibility)GetValue(SelectedCellInfoVisibilityProperty); }
-			private set { SetValue(SelectedCellInfoVisibilityProperty, value); }
+			get { return (bool)GetValue(IsSelectedCellAggregatedInfoVisibleProperty); }
+			private set { SetValue(IsSelectedCellAggregatedInfoVisibleProperty, value); }
 		}
 
 		[Bindable(true)]
-		public int SelectedCellValueCount
+		public bool IsSelectedCellInfoVisible
 		{
-			get { return (int)GetValue(SelectedCellValueCountProperty); }
+			get { return (bool)GetValue(IsSelectedCellInfoVisibleProperty); }
+			private set { SetValue(IsSelectedCellInfoVisibleProperty, value); }
+		}
+
+		[Bindable(true)]
+		public long SelectedCellValueCount
+		{
+			get { return (long)GetValue(SelectedCellValueCountProperty); }
 			private set { SetValue(SelectedCellValueCountProperty, value); }
 		}
 
 		[Bindable(true)]
-		public decimal SelectedCellSum
+		public object SelectedCellSum
 		{
-			get { return (decimal)GetValue(SelectedCellSumProperty); }
+			get { return GetValue(SelectedCellSumProperty); }
 			private set { SetValue(SelectedCellSumProperty, value); }
 		}
 
 		[Bindable(true)]
-		public decimal SelectedCellAverage
+		public object SelectedCellAverage
 		{
-			get { return (decimal)GetValue(SelectedCellAverageProperty); }
+			get { return GetValue(SelectedCellAverageProperty); }
 			private set { SetValue(SelectedCellAverageProperty, value); }
 		}
 
 		[Bindable(true)]
-		public decimal SelectedCellMin
+		public object SelectedCellMin
 		{
-			get { return (decimal)GetValue(SelectedCellMinProperty); }
+			get { return GetValue(SelectedCellMinProperty); }
 			private set { SetValue(SelectedCellMinProperty, value); }
 		}
 
 		[Bindable(true)]
-		public decimal SelectedCellMax
+		public object SelectedCellMax
 		{
-			get { return (decimal)GetValue(SelectedCellMaxProperty); }
+			get { return GetValue(SelectedCellMaxProperty); }
 			private set { SetValue(SelectedCellMaxProperty, value); }
 		}
 
@@ -561,15 +569,12 @@ namespace SqlPad
 		{
 			if (ResultGrid.SelectedCells.Count <= 1)
 			{
-				SelectedCellInfoVisibility = Visibility.Collapsed;
+				IsSelectedCellInfoVisible = false;
 				return;
 			}
 
-			var sum = 0m;
-			var min = Decimal.MaxValue;
-			var max = Decimal.MinValue;
-			var count = 0;
-			var hasOnlyNumericValues = true;
+			var valueAggregator = _outputViewer.DocumentPage.InfrastructureFactory.CreateValueAggregator();
+
 			foreach (var selectedCell in ResultGrid.SelectedCells)
 			{
 				var columnHeader = selectedCell.Column.Header as ColumnHeader;
@@ -580,55 +585,28 @@ namespace SqlPad
 
 				var rowValues = (object[])selectedCell.Item;
 				var cellValue = rowValues[columnHeader.ColumnIndex];
-				var stringValue = cellValue.ToString();
-				if (String.IsNullOrEmpty(stringValue))
-				{
-					continue;
-				}
-
-				if (hasOnlyNumericValues)
-				{
-					try
-					{
-						var numericValue = Convert.ToDecimal(stringValue, CultureInfo.CurrentCulture);
-						sum += numericValue;
-
-						if (numericValue > max)
-						{
-							max = numericValue;
-						}
-
-						if (numericValue < min)
-						{
-							min = numericValue;
-						}
-					}
-					catch
-					{
-						hasOnlyNumericValues = false;
-					}
-				}
-
-				count++;
+				valueAggregator.AddValue(cellValue);
 			}
 
-			SelectedCellValueCount = count;
+			SelectedCellValueCount = valueAggregator.Count;
 
-			if (count > 0)
+			if (valueAggregator.Count > 0)
 			{
-				SelectedCellSum = sum;
-				SelectedCellMin = min;
-				SelectedCellMax = max;
-				SelectedCellAverage = sum / count;
+				SelectedCellSum = valueAggregator.Sum;
+				SelectedCellMin = valueAggregator.Minimum;
+				SelectedCellMax = valueAggregator.Maximum;
+				SelectedCellAverage = valueAggregator.Average;
 
-				SelectedCellNumericInfoVisibility = hasOnlyNumericValues ? Visibility.Visible : Visibility.Collapsed;
+				IsSelectedCellLimitInfoVisible = valueAggregator.LimitValuesAvailable;
+				IsSelectedCellAggregatedInfoVisible = valueAggregator.AggregatedValuesAvailable;
 			}
 			else
 			{
-				SelectedCellNumericInfoVisibility = Visibility.Collapsed;
+				IsSelectedCellLimitInfoVisible = false;
+				IsSelectedCellAggregatedInfoVisible = false;
 			}
 
-			SelectedCellInfoVisibility = Visibility.Visible;
+			IsSelectedCellInfoVisible = true;
 		}
 
 		private void DataGridTabHeaderPopupMouseLeaveHandler(object sender, MouseEventArgs args)
