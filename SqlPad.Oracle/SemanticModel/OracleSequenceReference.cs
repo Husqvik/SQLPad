@@ -11,15 +11,21 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public override string Name => ObjectNode.Token.Value;
 
-		public override IReadOnlyList<OracleColumn> Columns => EmptyArray;
-
-		public override IReadOnlyList<OracleColumn> Pseudocolumns => ((OracleSequence)SchemaObject).Columns;
-
 		public override ReferenceType Type => ReferenceType.SchemaObject;
 
 		public override void Accept(IOracleReferenceVisitor visitor)
 		{
 			visitor.VisitSequenceReference(this);
+		}
+
+		protected override IReadOnlyList<OracleColumn> BuildColumns()
+		{
+			return EmptyArray;
+		}
+
+		protected override IReadOnlyList<OracleColumn> BuildPseudocolumns()
+		{
+			return ((OracleSequence)SchemaObject).Columns;
 		}
 	}
 }

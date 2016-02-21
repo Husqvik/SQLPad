@@ -8,8 +8,6 @@ namespace SqlPad.Oracle.SemanticModel
 	[DebuggerDisplay("OracleSqlModelReference (Columns={_columns.Count})")]
 	public class OracleSqlModelReference : OracleDataObjectReference
 	{
-		private IReadOnlyList<OracleColumn> _columns;
-
 		public IReadOnlyList<OracleSelectListColumn> ColumnDefinitions { get; }
 
 		public OracleReferenceContainer SourceReferenceContainer { get; }
@@ -22,9 +20,9 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public override IEnumerable<OracleDataObjectReference> IncludeInnerReferences => base.IncludeInnerReferences.Concat(SourceReferenceContainer.ObjectReferences);
 
-		public override IReadOnlyList<OracleColumn> Columns
+		protected override IReadOnlyList<OracleColumn> BuildColumns()
 		{
-			get { return _columns ?? (_columns = ColumnDefinitions.Select(c => c.ColumnDescription).ToArray()); }
+			return ColumnDefinitions.Select(c => c.ColumnDescription).ToArray();
 		}
 
 		public StatementGrammarNode MeasureExpressionList { get; }

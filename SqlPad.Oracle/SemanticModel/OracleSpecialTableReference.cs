@@ -8,8 +8,6 @@ namespace SqlPad.Oracle.SemanticModel
 	[DebuggerDisplay("OracleSpecialTableReference (Alias={Name})")]
 	public class OracleSpecialTableReference : OracleDataObjectReference
 	{
-		private IReadOnlyList<OracleColumn> _columns; 
-
 		public StatementGrammarNode ColumnsClause { get; }
 
 		public OracleSpecialTableReference(OracleReferenceContainer referenceContainer, ReferenceType referenceType, IEnumerable<OracleSelectListColumn> columns, StatementGrammarNode columnsClause)
@@ -30,6 +28,9 @@ namespace SqlPad.Oracle.SemanticModel
 			return OracleObjectIdentifier.Create(null, Name);
 		}
 
-		public override IReadOnlyList<OracleColumn> Columns => _columns ?? (_columns = ColumnDefinitions.Select(c => c.ColumnDescription).ToArray());
+		protected override IReadOnlyList<OracleColumn> BuildColumns()
+		{
+			return ColumnDefinitions.Select(c => c.ColumnDescription).ToArray();
+		}
 	}
 }

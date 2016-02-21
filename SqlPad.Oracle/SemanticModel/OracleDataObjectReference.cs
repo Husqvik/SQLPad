@@ -9,15 +9,21 @@ namespace SqlPad.Oracle.SemanticModel
 {
 	public abstract class OracleObjectWithColumnsReference : OracleReference
 	{
+		private IReadOnlyList<OracleColumn> _columns;
+		private IReadOnlyList<OracleColumn> _pseudoColumns;
 		private readonly List<OracleQueryBlock> _queryBlocks = new List<OracleQueryBlock>();
 
-		public abstract IReadOnlyList<OracleColumn> Columns { get; }
+		public IReadOnlyList<OracleColumn> Columns => _columns ?? (_columns = BuildColumns());
 
-		public abstract IReadOnlyList<OracleColumn> Pseudocolumns { get; }
+		public IReadOnlyList<OracleColumn> Pseudocolumns => _pseudoColumns ?? (_pseudoColumns = BuildPseudocolumns());
 
 		public virtual ICollection<OracleQueryBlock> QueryBlocks => _queryBlocks;
 
 		public abstract ReferenceType Type { get; }
+
+		protected abstract IReadOnlyList<OracleColumn> BuildColumns();
+
+		protected abstract IReadOnlyList<OracleColumn> BuildPseudocolumns();
 	}
 
 	public class OracleHierarchicalClauseReference : OracleObjectWithColumnsReference
@@ -43,10 +49,6 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public override string Name { get; } = String.Empty;
 
-		public override IReadOnlyList<OracleColumn> Columns { get; } = EmptyArray;
-
-		public override IReadOnlyList<OracleColumn> Pseudocolumns { get; }
-
 		public override ReferenceType Type { get; } = ReferenceType.HierarchicalClause;
 
 		public bool HasNoCycleSupport { get; }
@@ -54,14 +56,22 @@ namespace SqlPad.Oracle.SemanticModel
 		public OracleHierarchicalClauseReference(bool hasNoCycleSupport)
 		{
 			HasNoCycleSupport = hasNoCycleSupport;
+		}
 
+		protected override IReadOnlyList<OracleColumn> BuildColumns()
+		{
+			return EmptyArray;
+		}
+
+		protected override IReadOnlyList<OracleColumn> BuildPseudocolumns()
+		{
 			var pseudoColumns = new List<OracleColumn>(2) { ConnectByIsLeafColumn };
-			if (hasNoCycleSupport)
+			if (HasNoCycleSupport)
 			{
 				pseudoColumns.Add(ConnectByIsCycleColumn);
 			}
 
-			Pseudocolumns = pseudoColumns;
+			return pseudoColumns.AsReadOnly();
 		}
 	}
 
@@ -82,9 +92,6 @@ namespace SqlPad.Oracle.SemanticModel
 	[DebuggerDisplay("OracleDataObjectReference (Owner={OwnerNode == null ? null : OwnerNode.Token.Value}; Table={Type != SqlPad.Oracle.SemanticModel.ReferenceType.InlineView ? ObjectNode.Token.Value : \"<Nested subquery>\"}; Alias={AliasNode == null ? null : AliasNode.Token.Value}; Type={Type}; IsOuterJoined={IsOuterJoined})")]
 	public class OracleDataObjectReference : OracleObjectWithColumnsReference
 	{
-		private IReadOnlyList<OracleColumn> _columns;
-		private IReadOnlyList<OracleColumn> _pseudoColumns;
-
 		internal static readonly string RowIdNormalizedName = TerminalValues.RowIdPseudocolumn.ToQuotedIdentifier();
 
 		public static readonly OracleDataObjectReference[] EmptyArray = new OracleDataObjectReference[0];
@@ -109,122 +116,108 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public virtual IEnumerable<OracleDataObjectReference> IncludeInnerReferences => Enumerable.Repeat(this, 1);
 
-		public override IReadOnlyList<OracleColumn> Pseudocolumns
+		protected override IReadOnlyList<OracleColumn> BuildPseudocolumns()
 		{
-			get
+			var pseudocolumns = new List<OracleColumn>();
+			var table = SchemaObject.GetTargetSchemaObject() as OracleTable;
+			if (Type != ReferenceType.SchemaObject || table == null)
 			{
-				if (_pseudoColumns != null)
-				{
-					return _pseudoColumns;
-				}
-
-				var pseudocolumns = new List<OracleColumn>();
-				var table = SchemaObject.GetTargetSchemaObject() as OracleTable;
-				if (Type == ReferenceType.SchemaObject && table != null)
-				{
-					if (table.Organization == OrganizationType.Heap || table.Organization == OrganizationType.Index)
-					{
-						var rowIdPseudocolumn =
-							new OracleColumn(true)
-							{
-								Name = RowIdNormalizedName,
-								DataType =
-									new OracleDataType
-									{
-										FullyQualifiedName = OracleObjectIdentifier.Create(null, table.Organization == OrganizationType.Index ? TerminalValues.UniversalRowId : TerminalValues.RowIdDataType)
-									}
-							};
-
-						pseudocolumns.Add(rowIdPseudocolumn);
-					}
-
-					if (FlashbackOption == FlashbackOption.None || FlashbackOption == FlashbackOption.AsOf)
-					{
-						var rowSystemChangeNumberPseudocolumn =
-							new OracleColumn(true)
-							{
-								Name = "\"ORA_ROWSCN\"",
-								DataType = OracleDataType.NumberType
-							};
-
-						pseudocolumns.Add(rowSystemChangeNumberPseudocolumn);
-					}
-					else if ((FlashbackOption & FlashbackOption.Versions) == FlashbackOption.Versions)
-					{
-						var flashbackVersionColumns =
-							new[]
-								{
-									new OracleColumn(true)
-									{
-										Name = "\"VERSIONS_STARTTIME\"",
-										DataType = OracleDataType.CreateTimestampDataType(0)
-									},
-									new OracleColumn(true)
-									{
-										Name = "\"VERSIONS_ENDTIME\"",
-										DataType = OracleDataType.CreateTimestampDataType(0)
-									},
-									new OracleColumn(true)
-									{
-										Name = "\"VERSIONS_STARTSCN\"",
-										DataType = OracleDataType.NumberType
-									},
-									new OracleColumn(true)
-									{
-										Name = "\"VERSIONS_ENDSCN\"",
-										DataType = OracleDataType.NumberType
-									},
-									new OracleColumn(true)
-									{
-										Name = "\"VERSIONS_OPERATION\"",
-										DataType = new OracleDataType {FullyQualifiedName = OracleObjectIdentifier.Create(null, TerminalValues.Varchar2), Unit = DataUnit.Byte, Length = 1}
-									},
-									new OracleColumn(true)
-									{
-										Name = "\"VERSIONS_XID\"",
-										DataType = new OracleDataType {FullyQualifiedName = OracleObjectIdentifier.Create(null, TerminalValues.Raw), Length = 8}
-									}
-								};
-
-						pseudocolumns.AddRange(flashbackVersionColumns);
-					}
-				}
-
-				return _pseudoColumns = pseudocolumns.AsReadOnly();
+				return pseudocolumns.AsReadOnly();
 			}
+
+			if (table.Organization == OrganizationType.Heap || table.Organization == OrganizationType.Index)
+			{
+				var rowIdPseudocolumn =
+					new OracleColumn(true)
+					{
+						Name = RowIdNormalizedName,
+						DataType =
+							new OracleDataType
+							{
+								FullyQualifiedName = OracleObjectIdentifier.Create(null, table.Organization == OrganizationType.Index ? TerminalValues.UniversalRowId : TerminalValues.RowIdDataType)
+							}
+					};
+
+				pseudocolumns.Add(rowIdPseudocolumn);
+			}
+
+			if (FlashbackOption == FlashbackOption.None || FlashbackOption == FlashbackOption.AsOf)
+			{
+				var rowSystemChangeNumberPseudocolumn =
+					new OracleColumn(true)
+					{
+						Name = "\"ORA_ROWSCN\"",
+						DataType = OracleDataType.NumberType
+					};
+
+				pseudocolumns.Add(rowSystemChangeNumberPseudocolumn);
+			}
+			else if ((FlashbackOption & FlashbackOption.Versions) == FlashbackOption.Versions)
+			{
+				var flashbackVersionColumns =
+					new[]
+					{
+						new OracleColumn(true)
+						{
+							Name = "\"VERSIONS_STARTTIME\"",
+							DataType = OracleDataType.CreateTimestampDataType(0)
+						},
+						new OracleColumn(true)
+						{
+							Name = "\"VERSIONS_ENDTIME\"",
+							DataType = OracleDataType.CreateTimestampDataType(0)
+						},
+						new OracleColumn(true)
+						{
+							Name = "\"VERSIONS_STARTSCN\"",
+							DataType = OracleDataType.NumberType
+						},
+						new OracleColumn(true)
+						{
+							Name = "\"VERSIONS_ENDSCN\"",
+							DataType = OracleDataType.NumberType
+						},
+						new OracleColumn(true)
+						{
+							Name = "\"VERSIONS_OPERATION\"",
+							DataType = new OracleDataType {FullyQualifiedName = OracleObjectIdentifier.Create(null, TerminalValues.Varchar2), Unit = DataUnit.Byte, Length = 1}
+						},
+						new OracleColumn(true)
+						{
+							Name = "\"VERSIONS_XID\"",
+							DataType = new OracleDataType {FullyQualifiedName = OracleObjectIdentifier.Create(null, TerminalValues.Raw), Length = 8}
+						}
+					};
+
+				pseudocolumns.AddRange(flashbackVersionColumns);
+			}
+
+			return pseudocolumns.AsReadOnly();
 		}
 
-		public override IReadOnlyList<OracleColumn> Columns
+		protected override IReadOnlyList<OracleColumn> BuildColumns()
 		{
-			get
+			var columns = new List<OracleColumn>();
+			if (Type == ReferenceType.SchemaObject)
 			{
-				if (_columns != null)
+				var dataObject = SchemaObject.GetTargetSchemaObject() as OracleDataObject;
+				if (dataObject != null)
 				{
-					return _columns;
+					columns.AddRange(dataObject.Columns.Values);
 				}
-
-				var columns = new List<OracleColumn>();
-				if (Type == ReferenceType.SchemaObject)
-				{
-					var dataObject = SchemaObject.GetTargetSchemaObject() as OracleDataObject;
-					if (dataObject != null)
-					{
-						columns.AddRange(dataObject.Columns.Values);
-					}
-				}
-				else
-				{
-					var queryColumns = QueryBlocks.SelectMany(qb => qb.Columns)
-						.Where(c => !c.IsAsterisk)
-						.Select(c => c.ColumnDescription);
-
-					columns.AddRange(queryColumns);
-				}
-
-				return _columns = columns.AsReadOnly();
 			}
+			else
+			{
+				var queryColumns = QueryBlocks.SelectMany(qb => qb.Columns)
+					.Where(c => !c.IsAsterisk)
+					.Select(c => c.ColumnDescription);
+
+				columns.AddRange(queryColumns);
+			}
+
+			return columns.AsReadOnly();
 		}
-		
+
 		public StatementGrammarNode AliasNode { get; set; }
 
 		public FlashbackOption FlashbackOption { get; set; }

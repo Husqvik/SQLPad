@@ -11,8 +11,6 @@ namespace SqlPad.Oracle.SemanticModel
 	[DebuggerDisplay("OraclePivotTableReference (Columns={Columns.Count})")]
 	public class OraclePivotTableReference : OracleDataObjectReference
 	{
-		private IReadOnlyList<OracleColumn> _columns;
-
 		private readonly List<string> _columnNameExtensions = new List<string>();
 		private bool? _areUnpivotColumnSourceDataTypesMatched;
 
@@ -33,8 +31,6 @@ namespace SqlPad.Oracle.SemanticModel
 		public bool? AreUnpivotColumnSourceDataTypesMatched => _areUnpivotColumnSourceDataTypesMatched ?? (_areUnpivotColumnSourceDataTypesMatched = ResolveUnpivotColumnSourceDataTypesMatching());
 
 		public override IEnumerable<OracleDataObjectReference> IncludeInnerReferences => base.IncludeInnerReferences.Concat(Enumerable.Repeat(SourceReference, 1));
-
-		public override IReadOnlyList<OracleColumn> Columns => _columns ?? ResolvePivotClauseColumns();
 
 		public IReadOnlyList<OracleSelectListColumn> PivotColumns { get; private set; }
 
@@ -135,7 +131,7 @@ namespace SqlPad.Oracle.SemanticModel
 			return true;
 		}
 
-		private IReadOnlyList<OracleColumn> ResolvePivotClauseColumns()
+		protected override IReadOnlyList<OracleColumn> BuildColumns()
 		{
 			var columns = new List<OracleColumn>();
 			var pivotColumns = new List<OracleSelectListColumn>();
@@ -241,7 +237,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 			PivotColumns = pivotColumns.AsReadOnly();
 
-			return _columns = columns.AsReadOnly();
+			return columns.AsReadOnly();
 		}
 
 		private IEnumerable<OracleSelectListColumn> ResolvePivotColumns()

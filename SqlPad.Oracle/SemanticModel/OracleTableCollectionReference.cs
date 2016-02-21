@@ -7,7 +7,6 @@ namespace SqlPad.Oracle.SemanticModel
 	[DebuggerDisplay("OracleTableCollectionReference (OwnerNode={OwnerNode == null ? null : OwnerNode.Token.Value}; ObjectNode={ObjectNode == null ? null : ObjectNode.Token.Value})")]
 	public class OracleTableCollectionReference : OracleDataObjectReference
 	{
-		private IReadOnlyList<OracleColumn> _columns;
 		private OracleReference _rowSourceReference;
 
 		public OracleReference RowSourceReference
@@ -36,19 +35,17 @@ namespace SqlPad.Oracle.SemanticModel
 			return OracleObjectIdentifier.Create(null, Name);
 		}
 
-		public override IReadOnlyList<OracleColumn> Columns => _columns ?? BuildColumns();
-
 		public override void Accept(IOracleReferenceVisitor visitor)
 		{
 			visitor.VisitTableCollectionReference(this);
 		}
 
-		private IReadOnlyList<OracleColumn> BuildColumns()
+		protected override IReadOnlyList<OracleColumn> BuildColumns()
 		{
 			var columnBuilderVisitor = new OracleColumnBuilderVisitor();
 			_rowSourceReference?.Accept(columnBuilderVisitor);
 
-			return _columns = columnBuilderVisitor.Columns;
+			return columnBuilderVisitor.Columns;
 		}
 	}
 }
