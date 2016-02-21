@@ -40,9 +40,14 @@ namespace SqlPad.Oracle.ToolTips
 
 		private static string BuildTypeLabel(OracleProgramMetadata metadata)
 		{
-			if (metadata.Type == ProgramType.StatementFunction)
+			switch (metadata.Type)
 			{
-				return "Statement defined function";
+				case ProgramType.StatementFunction:
+					return "Statement defined function";
+				case ProgramType.PackageFunction:
+					return "Package function";
+				case ProgramType.PackageProcedure:
+					return "Package procedure";
 			}
 
 			var label = String.IsNullOrEmpty(metadata.Identifier.Owner)

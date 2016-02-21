@@ -214,6 +214,8 @@ namespace SqlPad.Oracle.DataDictionary
 		StatementFunction,
 		ObjectConstructor,
 		CollectionConstructor,
-		MemberFunction
+		MemberFunction,
+		PackageFunction,
+		PackageProcedure
 	}
 }

@@ -3327,6 +3327,21 @@ SELECT value FROM data";
 		}
 
 		[Test(Description = @"")]
+		public void TestAsteriskColumnTypePropagation()
+		{
+			const string query1 = @"SELECT dual.* FROM (SELECT dummy FROM dual) dual";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single().Validate();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
+			var mainQueryBlock = semanticModel.QueryBlocks.Last();
+			mainQueryBlock.Columns.Count.ShouldBe(2);
+			mainQueryBlock.Columns[0].IsAsterisk.ShouldBe(true);
+			mainQueryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe("VARCHAR2(1 BYTE)");
+		}
+
+		[Test(Description = @"")]
 		public void TestModelBuildWithPropagatedCastedDataType()
 		{
 			const string query1 = @"SELECT dummy FROM (SELECT CAST(dummy AS BINARY_FLOAT) dummy FROM DUAL)";

@@ -2073,6 +2073,8 @@ namespace SqlPad.Oracle.SemanticModel
 
 				foreach (var objectReference in asteriskTableReference.Value)
 				{
+					var sourceColumns = objectReference.Columns;
+
 					IEnumerable<OracleSelectListColumn> exposedColumns;
 					switch (objectReference.Type)
 					{
@@ -2093,7 +2095,7 @@ namespace SqlPad.Oracle.SemanticModel
 						case ReferenceType.TableCollection:
 						case ReferenceType.SqlModel:
 						case ReferenceType.PivotTable:
-							exposedColumns = objectReference.Columns
+							exposedColumns = sourceColumns
 								.Where(c => !c.Hidden)
 								.Select(c =>
 									new OracleSelectListColumn(this, asteriskColumn)
@@ -2278,7 +2280,13 @@ namespace SqlPad.Oracle.SemanticModel
 				var plSqlProgram = programReference.Container as OraclePlSqlProgram;
 				if (plSqlProgram != null)
 				{
-					foreach (var subProgram in plSqlProgram.SubPrograms)
+					var accessiblePrograms = (IEnumerable<OraclePlSqlProgram>)plSqlProgram.SubPrograms;
+					if (plSqlProgram.Owner?.Type == PlSqlProgramType.PackageProgram)
+					{
+						accessiblePrograms = accessiblePrograms.Concat(plSqlProgram.Owner.SubPrograms);
+					}
+
+					foreach (var subProgram in accessiblePrograms)
 					{
 						if (String.Equals(programReference.NormalizedName, subProgram.Name))
 						{

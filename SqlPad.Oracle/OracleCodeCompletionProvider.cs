@@ -159,6 +159,12 @@ namespace SqlPad.Oracle
 					metadataSource.AddRange(programReference.Owner.AccessibleAttachedFunctions.Where(m => String.Equals(m.Identifier.Name, programReference.Metadata.Identifier.Name)));
 				}
 
+				var plSqlProgram = programReference.Container as OraclePlSqlProgram;
+				if (plSqlProgram != null)
+				{
+					metadataSource.AddRange(plSqlProgram.SubPrograms.Where(p => String.Equals(p.Name, programReference.Metadata.Identifier.Name)).Select(p => p.Metadata));
+				}
+
 				matchedMetadata.AddRange(metadataSource.Where(m => IsMetadataMatched(m, programReference, currentParameterIndex)).OrderBy(m => m.Parameters.Count));
 			}
 			else
@@ -852,15 +858,16 @@ namespace SqlPad.Oracle
 			var text = String.IsNullOrEmpty(objectPrefix)
 				? columnName.ToSimpleIdentifier()
 				: $"{objectPrefix}.{columnName.ToSimpleIdentifier()}";
-			
-			return new OracleCodeCompletionItem
-			       {
-					   Name = text,
-					   Text = text,
-				       StatementNode = nodeToReplace,
-				       Category = category,
-					   CategoryPriority = -1
-			       };
+
+			return
+				new OracleCodeCompletionItem
+				{
+					Name = text,
+					Text = text,
+					StatementNode = nodeToReplace,
+					Category = category,
+					CategoryPriority = -1
+				};
 		}
 
 		private IEnumerable<ICodeCompletionItem> GenerateSchemaItems(string schemaNamePart, StatementGrammarNode node, int insertOffset, OracleDatabaseModelBase databaseModel, int priorityOffset = 0)

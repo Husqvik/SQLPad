@@ -764,13 +764,27 @@ END;";
 		}
 
 		[Test]
-		public void TestInvalidSyntaxtPlSqlVariableDeclarations()
+		public void TestModelBuildWithInvalidSyntaxtPlSqlVariableDeclarations()
 		{
 			const string plsqlText =
 @"DECLARE
 	invalid_declaration1 :;
 BEGIN
 	NULL;
+END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).First();
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel);
+
+			Assert.DoesNotThrow(() => semanticModel.Build(CancellationToken.None));
+		}
+
+		[Test]
+		public void TestModelBuildWithUnfinishedParameterDesclaration()
+		{
+			const string plsqlText =
+@"CREATE PACKAGE BODY test_package IS
+	PROCEDURE test_function1(p) IS BEGIN NULL; END;
 END;";
 
 			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).First();
@@ -823,6 +837,31 @@ END;";
 			var dataTypeReferences = program.DataTypeReferences.ToArray();
 			dataTypeReferences.Length.ShouldBe(3);
 			//dataTypeReferences[0].
+		}
+
+		[Test]
+		public void TestInnerPackageProgramReferences()
+		{
+			const string plsqlText =
+@"CREATE PACKAGE BODY test_package IS
+	PROCEDURE test_procedure1 IS BEGIN NULL; END;
+	FUNCTION test_function1(p NUMBER) RETURN NUMBER IS BEGIN NULL; END;
+	PROCEDURE test_procedure2 IS result NUMBER; BEGIN test_procedure1; result := test_function1(0); END;
+END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
+
+			semanticModel.Programs.Count.ShouldBe(1);
+			var package = semanticModel.Programs[0];
+
+			package.SubPrograms.Count.ShouldBe(3);
+			var testProcedure2 = package.SubPrograms[2];
+
+			var programReferences = testProcedure2.ProgramReferences.ToArray();
+			programReferences.Length.ShouldBe(2);
+			programReferences[0].Metadata.ShouldNotBe(null);
+			programReferences[1].Metadata.ShouldNotBe(null);
 		}
 
 		[Test]

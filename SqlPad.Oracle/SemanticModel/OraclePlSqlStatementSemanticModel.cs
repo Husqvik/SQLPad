@@ -455,7 +455,7 @@ namespace SqlPad.Oracle.SemanticModel
 					var programType = isPlSqlBlock ? PlSqlProgramType.PlSqlBlock : PlSqlProgramType.NestedProgram;
 
 					subProgram =
-						new OraclePlSqlProgram(nameTerminal?.Token.Value.ToQuotedIdentifier(), isFunction ? ProgramType.Function : ProgramType.Procedure, programType, this)
+						new OraclePlSqlProgram(nameTerminal?.Token.Value.ToQuotedIdentifier(), isFunction ? ProgramType.PackageFunction : ProgramType.PackageProcedure, programType, this)
 						{
 							Owner = program,
 							RootNode = childNode,
@@ -763,6 +763,10 @@ namespace SqlPad.Oracle.SemanticModel
 				parameter.DataType = OracleReferenceBuilder.ResolveDataTypeFromNode(parameter.DataTypeNode);
 				parameter.DefaultExpressionNode = parameterDirectionDeclaration[NonTerminals.VariableDeclarationDefaultValue];
 			}
+			else
+			{
+				parameter.DataType = OracleDataType.Empty;
+			}
 
 			parameter.Direction = direction;
 
@@ -778,7 +782,7 @@ namespace SqlPad.Oracle.SemanticModel
 		NestedProgram
 	}
 
-	[DebuggerDisplay("OraclePlSqlProgram (Name={Name}; ObjectOwner={ObjectIdentifier.Owner}; ObjectName={ObjectIdentifier.Name})")]
+	[DebuggerDisplay("OraclePlSqlProgram (Name={Name}; Type={Type}; ObjectOwner={ObjectIdentifier.Owner}; ObjectName={ObjectIdentifier.Name})")]
 	public class OraclePlSqlProgram : OracleReferenceContainer
 	{
 		public OraclePlSqlProgram(string normalizedName, ProgramType programType, PlSqlProgramType plSqlProgramType, OraclePlSqlStatementSemanticModel semanticModel) : base(semanticModel)
