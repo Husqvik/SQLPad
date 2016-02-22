@@ -865,6 +865,38 @@ END;";
 		}
 
 		[Test]
+		public void TestInaccessibleProgramReferences()
+		{
+			const string plsqlText =
+@"CREATE PACKAGE BODY test_package IS
+	PROCEDURE test_procedure2 IS result NUMBER; BEGIN test_procedure1; result := test_function1(0); END;
+	PROCEDURE test_procedure1 IS BEGIN NULL; END;
+	FUNCTION test_function1(p NUMBER) RETURN NUMBER IS BEGIN NULL; END;
+END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
+
+			semanticModel.Programs.Count.ShouldBe(1);
+			var package = semanticModel.Programs[0];
+
+			package.SubPrograms.Count.ShouldBe(3);
+			var testProcedure2 = package.SubPrograms[0];
+
+			var variableReferences = testProcedure2.PlSqlVariableReferences.ToArray();
+			variableReferences.Length.ShouldBe(2);
+			variableReferences[0].Variables.Count.ShouldBe(0);
+			variableReferences[0].Name.ShouldBe("test_procedure1");
+			variableReferences[1].Variables.Count.ShouldBe(1);
+			variableReferences[1].Name.ShouldBe("result");
+
+			var programReferences = testProcedure2.ProgramReferences.ToArray();
+			programReferences.Length.ShouldBe(1);
+			programReferences[0].Name.ShouldBe("test_function1");
+			programReferences[0].Metadata.ShouldBe(null);
+		}
+
+		[Test]
 		public void TestDataTypeReferencesInAssociativeArrayDeclaration()
 		{
 			const string plsqlText =

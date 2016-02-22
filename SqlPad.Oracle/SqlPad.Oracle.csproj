@@ -170,6 +170,7 @@
       <DependentUpon>OracleSessionDetailViewer.xaml</DependentUpon>
     </Compile>
     <Compile Include="OracleValueAggregator.cs" />
+    <Compile Include="SemanticModel\OraclePlSqlProgram.cs" />
     <Compile Include="SessionActivityIndicator.xaml.cs">
       <DependentUpon>SessionActivityIndicator.xaml</DependentUpon>
     </Compile>

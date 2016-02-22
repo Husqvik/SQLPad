@@ -2281,9 +2281,9 @@ namespace SqlPad.Oracle.SemanticModel
 				if (plSqlProgram != null)
 				{
 					var accessiblePrograms = (IEnumerable<OraclePlSqlProgram>)plSqlProgram.SubPrograms;
-					if (plSqlProgram.Owner?.Type == PlSqlProgramType.PackageProgram)
+					if (plSqlProgram.Master.Type == PlSqlProgramType.PackageProgram)
 					{
-						accessiblePrograms = accessiblePrograms.Concat(plSqlProgram.Owner.SubPrograms);
+						accessiblePrograms = accessiblePrograms.Concat(plSqlProgram.Owner.SubPrograms.Where(p => p.RootNode.SourcePosition.IndexStart < plSqlProgram.RootNode.SourcePosition.IndexStart));
 					}
 
 					foreach (var subProgram in accessiblePrograms)
