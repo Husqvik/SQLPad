@@ -421,7 +421,11 @@ namespace SqlPad
 			}
 
 			EditorNavigationService.IsEnabled = false;
-			documentPage.Editor.CaretOffset = Math.Min(documentCursorPosition.CursorPosition, documentPage.Editor.Document.TextLength - 1);
+			if (documentPage.Editor.Document.TextLength > 0)
+			{
+				documentPage.Editor.CaretOffset = Math.Min(documentCursorPosition.CursorPosition, documentPage.Editor.Document.TextLength - 1);
+			}
+
 			DocumentTabControl.SelectedItem = documentPage.TabItem;
 			documentPage.Editor.ScrollToCaret();
 			EditorNavigationService.IsEnabled = true;
