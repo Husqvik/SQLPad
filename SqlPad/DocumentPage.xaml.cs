@@ -537,6 +537,11 @@ namespace SqlPad
 			WorkDocument.EnableDatabaseOutput = ActiveOutputViewer.EnableDatabaseOutput;
 			WorkDocument.KeepDatabaseOutputHistory = ActiveOutputViewer.KeepDatabaseOutputHistory;
 
+			if (ActiveOutputViewer.ActiveResultViewer != null)
+			{
+				WorkDocument.RefreshInterval = ActiveOutputViewer.ActiveResultViewer.AutoRefreshInterval;
+			}
+
 			var textView = Editor.TextArea.TextView;
 			WorkDocument.VisualLeft = textView.ScrollOffset.X;
 			WorkDocument.VisualTop = textView.ScrollOffset.Y;
