@@ -319,7 +319,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 			catch (OracleException exception)
 			{
-				TryHandleNetworkError(exception);
+				TryHandleConnectionTerminatedError(exception);
 				throw;
 			}
 			finally
@@ -802,8 +802,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 				var executionException = new StatementExecutionException(batchResult, exception);
 
-				var isNetworkException = TryHandleNetworkError(exception);
-				if (isNetworkException)
+				var isConnectionTerminated = TryHandleConnectionTerminatedError(exception);
+				if (isConnectionTerminated)
 				{
 					throw executionException;
 				}
@@ -872,10 +872,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 		}
 
-		private bool TryHandleNetworkError(OracleException exception)
+		private bool TryHandleConnectionTerminatedError(OracleException exception)
 		{
 			var errorCode = (OracleErrorCode)exception.Number;
-			if (!errorCode.In(OracleErrorCode.EndOfFileOnCommunicationChannel, OracleErrorCode.NotConnectedToOracle, OracleErrorCode.TnsPacketWriterFailure, OracleErrorCode.SessionTerminatedByDebugger))
+			if (!errorCode.In(OracleErrorCode.EndOfFileOnCommunicationChannel, OracleErrorCode.NotConnectedToOracle, OracleErrorCode.TnsPacketWriterFailure, OracleErrorCode.SessionTerminatedByDebugger, OracleErrorCode.UnableToSendBreak))
 			{
 				return false;
 			}
