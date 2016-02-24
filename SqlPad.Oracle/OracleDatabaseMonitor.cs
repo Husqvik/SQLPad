@@ -659,16 +659,13 @@ namespace SqlPad.Oracle
 
 			yield return new ContextAction("Navigate to trace file", executionHandler, null);
 
-			if (!String.Equals(sessionValues.Status, "Killed"))
-			{
-				executionHandler =
-					new CommandExecutionHandler
-					{
-						ExecutionHandlerAsync = (context, cancellationToken) => KillSession(sessionValues, cancellationToken)
-					};
+			executionHandler =
+				new CommandExecutionHandler
+				{
+					ExecutionHandlerAsync = (context, cancellationToken) => KillSession(sessionValues, cancellationToken)
+				};
 
-				yield return new ContextAction("Kill", executionHandler, null, true);
-			}
+			yield return new ContextAction("Kill", executionHandler, null, true);
 		}
 
 		private async Task KillSession(OracleSessionValues sessionData, CancellationToken cancellationToken)

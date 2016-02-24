@@ -802,7 +802,13 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 				var executionException = new StatementExecutionException(batchResult, exception);
 
-				if (!TryHandleNetworkError(exception) && exception.Number == (int)OracleErrorCode.UserInvokedCancellation)
+				var isNetworkException = TryHandleNetworkError(exception);
+				if (isNetworkException)
+				{
+					throw executionException;
+				}
+
+				if (exception.Number == (int)OracleErrorCode.UserInvokedCancellation)
 				{
 					return batchResult;
 				}
