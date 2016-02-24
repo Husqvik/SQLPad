@@ -193,6 +193,7 @@ namespace SqlPad.Oracle
 			else
 			{
 				AggregatedValuesAvailable = false;
+				LimitValuesAvailable = false;
 			}
 
 			if (_valueType == ValueType.None)

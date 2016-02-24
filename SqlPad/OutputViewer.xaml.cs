@@ -126,7 +126,12 @@ namespace SqlPad
 			{
 				foreach (var resultInfoColumnHeaders in statementResult.ResultInfoColumnHeaders.Where(r => r.Key.Type == ResultIdentifierType.UserDefined))
 				{
-					var resultViewer = new ResultViewer(this, statementResult, resultInfoColumnHeaders.Key, resultInfoColumnHeaders.Value);
+					var resultViewer =
+						new ResultViewer(this, statementResult, resultInfoColumnHeaders.Key, resultInfoColumnHeaders.Value)
+						{
+							AutoRefreshInterval = DocumentPage.WorkDocument.RefreshInterval
+						};
+
 					resultViewer.TabItem.AddHandler(Selector.SelectedEvent, (RoutedEventHandler)ResultTabSelectedHandler);
 
 					if (ActiveResultViewer == null)
@@ -154,6 +159,12 @@ namespace SqlPad
 				item.Close();
 			}
 
+			if (ActiveResultViewer == null)
+			{
+				return;
+			}
+
+			DocumentPage.WorkDocument.RefreshInterval = ActiveResultViewer.AutoRefreshInterval;
 			ActiveResultViewer = null;
 		}
 

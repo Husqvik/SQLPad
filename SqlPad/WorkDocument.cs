@@ -11,6 +11,7 @@ namespace SqlPad
 		private const string ExtensionSqlx = ".SQLX";
 		public const string DefaultDocumentHeaderBackgroundColorCode = "#FFFFFFFF";
 		private double _fontSize;
+		private TimeSpan _refreshInterval;
 		private List<bool> _foldingStates;
 		private HashSet<BreakpointData> _breakpoints;
 		private string[] _watchItems;
@@ -108,6 +109,20 @@ namespace SqlPad
 				return _fontSize;
 			}
 			set { _fontSize = value; }
+		}
+
+		public TimeSpan RefreshInterval
+		{
+			get
+			{
+				if (_refreshInterval == TimeSpan.Zero)
+				{
+					_refreshInterval = TimeSpan.FromSeconds(60);
+				}
+
+				return _refreshInterval;
+			}
+			set { _refreshInterval = value; }
 		}
 
 		public ICollection<BreakpointData> Breakpoints => _breakpoints ?? (_breakpoints = new HashSet<BreakpointData>());

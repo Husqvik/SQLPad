@@ -2073,7 +2073,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 				foreach (var objectReference in asteriskTableReference.Value)
 				{
-					var sourceColumns = objectReference.Columns;
+					var sourceColumns = ResolveSourceColumnDescriptions(objectReference);
 
 					IEnumerable<OracleSelectListColumn> exposedColumns;
 					switch (objectReference.Type)
@@ -2146,6 +2146,11 @@ namespace SqlPad.Oracle.SemanticModel
 					}
 				}
 			}
+		}
+
+		private static IEnumerable<OracleColumn> ResolveSourceColumnDescriptions(OracleObjectWithColumnsReference objectReference)
+		{
+			return objectReference.Columns;
 		}
 
 		private IEnumerable<OracleSelectListColumn> ExposeUsingAsterisk(OracleSelectListColumn asteriskColumn, IEnumerable<OracleSelectListColumn> columns)

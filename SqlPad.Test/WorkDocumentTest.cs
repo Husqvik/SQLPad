@@ -36,6 +36,7 @@ namespace SqlPad.Test
 					KeepDatabaseOutputHistory = true,
 					FontSize = 16,
 					DebuggerViewDefaultTabIndex = 1,
+					RefreshInterval = TimeSpan.FromSeconds(900),
 					WatchItems = new[] { watchVariable1, watchVariable2 }
 				};
 
@@ -57,7 +58,7 @@ namespace SqlPad.Test
 
 			var fileInfo = new FileInfo(Path.Combine(TempDirectoryName, "WorkArea", WorkDocumentCollection.ConfigurationFileName));
 			fileInfo.Exists.ShouldBe(true);
-			fileInfo.Length.ShouldBe(389);
+			fileInfo.Length.ShouldBe(396);
 
 			WorkDocumentCollection.Configure();
 			WorkDocumentCollection.WorkingDocuments.Count.ShouldBe(1);
@@ -79,6 +80,7 @@ namespace SqlPad.Test
 			deserializedWorkingDocument.EnableDatabaseOutput.ShouldBe(newWorkingDocument.EnableDatabaseOutput);
 			deserializedWorkingDocument.KeepDatabaseOutputHistory.ShouldBe(newWorkingDocument.KeepDatabaseOutputHistory);
 			deserializedWorkingDocument.FontSize.ShouldBe(newWorkingDocument.FontSize);
+			deserializedWorkingDocument.RefreshInterval.ShouldBe(newWorkingDocument.RefreshInterval);
 			deserializedWorkingDocument.DebuggerViewDefaultTabIndex.ShouldBe(newWorkingDocument.DebuggerViewDefaultTabIndex);
 			deserializedWorkingDocument.WatchItems.Length.ShouldBe(newWorkingDocument.WatchItems.Length);
 			deserializedWorkingDocument.WatchItems[0].ShouldBe(watchVariable1);
