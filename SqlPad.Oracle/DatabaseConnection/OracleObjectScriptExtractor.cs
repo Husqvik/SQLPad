@@ -7,7 +7,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 {
 	public interface IOracleObjectScriptExtractor
 	{
-		Task<string> ExtractSchemaObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken);
+		Task<string> ExtractSchemaObjectScriptAsync(OracleObject schemaObject, CancellationToken cancellationToken);
 
 		Task<string> ExtractNonSchemaObjectScriptAsync(string objectName, string objectType, CancellationToken cancellationToken);
 	}
@@ -21,7 +21,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_databaseModel = databaseModel;
 		}
 
-		public async Task<string> ExtractSchemaObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken)
+		public async Task<string> ExtractSchemaObjectScriptAsync(OracleObject schemaObject, CancellationToken cancellationToken)
 		{
 			var scriptDataProvider = new ObjectScriptDataProvider(schemaObject);
 			return await ExtractScriptInternal(cancellationToken, scriptDataProvider);

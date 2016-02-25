@@ -486,9 +486,10 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 30);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
-			var toolTipText = GetDatabaseLinkToolTipText(toolTip);
-			toolTipText.ShouldBe("\"PUBLIC\".HQ_PDB_LOOPBACK (localhost:1521/hq_pdb)");
+			toolTip.Control.ShouldBeTypeOf<ToolTipDatabaseLink>();
+			var databaseLink = (OracleDatabaseLink)((ToolTipDatabaseLink)toolTip.Control).DataContext;
+			databaseLink.FullyQualifiedName.ShouldBe(OracleObjectIdentifier.Create("\"PUBLIC\"", "HQ_PDB_LOOPBACK"));
+			databaseLink.Host.ShouldBe("localhost:1521/hq_pdb");
 		}
 
 		[Test(Description = @""), STAThread]
@@ -697,9 +698,9 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 34);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
-			var toolTipText = GetDatabaseLinkToolTipText(toolTip);
-			toolTipText.ShouldBe("\"PUBLIC\".HQ_PDB_LOOPBACK (localhost:1521/hq_pdb)");
+			var databaseLink = (OracleDatabaseLink)((ToolTipDatabaseLink)toolTip.Control).DataContext;
+			databaseLink.FullyQualifiedName.ShouldBe(OracleObjectIdentifier.Create("\"PUBLIC\"", "HQ_PDB_LOOPBACK"));
+			databaseLink.Host.ShouldBe("localhost:1521/hq_pdb");
 		}
 
 		[Test(Description = @""), STAThread]
@@ -1341,11 +1342,6 @@ END;";
 			
 			var bold = (Bold)inline;
 			return String.Concat(bold.Inlines.Select(GetTextFromInline));
-		}
-
-		private static string GetDatabaseLinkToolTipText(IToolTip toolTip)
-		{
-			return ((TextBlock)((StackPanel)((ContentControl)toolTip.Control).Content).Children[1]).Text;
 		}
 	}
 }

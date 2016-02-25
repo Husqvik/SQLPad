@@ -8,6 +8,8 @@ namespace SqlPad.Oracle.DataDictionary
 	public abstract class OracleObject
 	{
 		public OracleObjectIdentifier FullyQualifiedName { get; set; }
+
+		public abstract string Type { get; }
 	}
 
 	public abstract class OracleSchemaObject : OracleObject
@@ -23,8 +25,6 @@ namespace SqlPad.Oracle.DataDictionary
 		public bool IsValid { get; set; }
 
 		public bool IsTemporary { get; set; }
-
-		public abstract string Type { get; }
 
 		public string Name => FullyQualifiedName.NormalizedName;
 
@@ -95,7 +95,7 @@ namespace SqlPad.Oracle.DataDictionary
 		
 		public DateTime? LastRefresh { get; set; }
 
-		public override string Type => OracleSchemaObjectType.MaterializedView;
+		public override string Type => OracleObjectType.MaterializedView;
 	}
 
 	public enum MaterializedViewRefreshMode
@@ -116,7 +116,7 @@ namespace SqlPad.Oracle.DataDictionary
 	{
 		public string StatementText { get; set; }
 
-		public override string Type => OracleSchemaObjectType.View;
+		public override string Type => OracleObjectType.View;
 
 		protected override bool DocumentationAvailable { get; } = true;
 	}
@@ -128,7 +128,7 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public bool IsPublic => String.Equals(FullyQualifiedName.NormalizedOwner, OracleObjectIdentifier.SchemaPublic);
 
-		public override string Type => OracleSchemaObjectType.Synonym;
+		public override string Type => OracleObjectType.Synonym;
 
 		public override string Documentation => SchemaObject?.Documentation;
 	}
@@ -145,7 +145,7 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public bool IsInternal { get; set; }
 
-		public override string Type => OracleSchemaObjectType.Table;
+		public override string Type => OracleObjectType.Table;
 
 	    public IDictionary<string, OraclePartition> Partitions { get; set; }
 
@@ -167,11 +167,14 @@ namespace SqlPad.Oracle.DataDictionary
 		private Dictionary<string, OracleSubPartition> _subPartitions;
 
 		public IDictionary<string, OracleSubPartition> SubPartitions => _subPartitions ?? (_subPartitions = new Dictionary<string, OracleSubPartition>());
+
+		public override string Type { get; } = OracleObjectType.Partition;
 	}
 
 	[DebuggerDisplay("OracleSubPartition (Name={Name}; Position={Position})")]
 	public class OracleSubPartition : OraclePartitionBase
 	{
+		public override string Type { get; } = OracleObjectType.SubPartition;
 	}
 
 	[DebuggerDisplay("OracleSequence (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
@@ -230,7 +233,7 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public bool CanCycle { get; set; }
 
-		public override string Type => OracleSchemaObjectType.Sequence;
+		public override string Type => OracleObjectType.Sequence;
 	}
 
 	public interface IProgramCollection
@@ -247,7 +250,7 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public ICollection<OracleProgramMetadata> Programs => _programs;
 
-		public override string Type => OracleSchemaObjectType.Package;
+		public override string Type => OracleObjectType.Package;
 
 		protected override bool DocumentationAvailable { get; } = true;
 	}
@@ -262,13 +265,13 @@ namespace SqlPad.Oracle.DataDictionary
 	[DebuggerDisplay("OracleFunction (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
 	public class OracleFunction : OracleSchemaProgram
 	{
-		public override string Type => OracleSchemaObjectType.Function;
+		public override string Type => OracleObjectType.Function;
 	}
 
 	[DebuggerDisplay("OracleProcedure (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
 	public class OracleProcedure : OracleSchemaProgram
 	{
-		public override string Type => OracleSchemaObjectType.Procedure;
+		public override string Type => OracleObjectType.Procedure;
 	}
 
 	public abstract class OracleTypeBase : OracleSchemaObject
@@ -280,7 +283,7 @@ namespace SqlPad.Oracle.DataDictionary
 
 		private OracleProgramMetadata _constructorMetadata;
 		
-		public override string Type => OracleSchemaObjectType.Type;
+		public override string Type => OracleObjectType.Type;
 
 	    public abstract string TypeCode { get; }
 
@@ -410,7 +413,7 @@ namespace SqlPad.Oracle.DataDictionary
 		External
 	}
 
-	public static class OracleSchemaObjectType
+	public static class OracleObjectType
 	{
 		public const string Table = "TABLE";
 		public const string View = "VIEW";
@@ -421,5 +424,9 @@ namespace SqlPad.Oracle.DataDictionary
 		public const string Package = "PACKAGE";
 		public const string Procedure = "PROCEDURE";
 		public const string Type = "TYPE";
+		public const string Partition = "PARTITION";
+		public const string SubPartition = "SUBPARTITION";
+		public const string DatabaseLink = "DB_LINK";
+		public const string Constraint = "CONSTRAINT";
 	}
 }

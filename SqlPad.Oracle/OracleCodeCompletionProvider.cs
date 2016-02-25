@@ -786,7 +786,7 @@ namespace SqlPad.Oracle
 		private bool FilterOtherSchemaObject(OracleSchemaObject schemaObject, bool sequencesAllowed)
 		{
 			var targetObject = schemaObject.GetTargetSchemaObject();
-			return targetObject != null && (String.Equals(targetObject.Type, OracleSchemaObjectType.Type) || (sequencesAllowed && String.Equals(targetObject.Type, OracleSchemaObjectType.Sequence)));
+			return targetObject != null && (String.Equals(targetObject.Type, OracleObjectType.Type) || (sequencesAllowed && String.Equals(targetObject.Type, OracleObjectType.Sequence)));
 		}
 
 		private IEnumerable<OracleCodeCompletionItem> CreateJoinTypeCompletionItems(OracleCodeCompletionType completionType)
@@ -1050,7 +1050,7 @@ namespace SqlPad.Oracle
 		    private bool IsSchemaType()
 			{
 				var targetObject = SchemaObject.GetTargetSchemaObject();
-				return targetObject != null && targetObject.Type == OracleSchemaObjectType.Type;
+				return targetObject != null && targetObject.Type == OracleObjectType.Type;
 			}
 		}
 

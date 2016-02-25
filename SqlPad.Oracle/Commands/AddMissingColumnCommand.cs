@@ -29,7 +29,7 @@ namespace SqlPad.Oracle.Commands
 
 			_table = GetSingleObjectReference(_missingColumn);
 			return _missingColumn.ColumnNodeColumnReferences.Count == 0 && _missingColumn.ColumnNodeObjectReferences.Count <= 1 &&
-			       _table != null && _table.Type == OracleSchemaObjectType.Table;
+			       _table != null && _table.Type == OracleObjectType.Table;
 		}
 
 		private static OracleDataObject GetSingleObjectReference(OracleColumnReference column)
@@ -49,7 +49,7 @@ namespace SqlPad.Oracle.Commands
 				}
 			}
 
-			return dataObject != null && dataObject.Type == OracleSchemaObjectType.Table
+			return dataObject != null && dataObject.Type == OracleObjectType.Table
 				? (OracleDataObject)dataObject
 				: null;
 		}

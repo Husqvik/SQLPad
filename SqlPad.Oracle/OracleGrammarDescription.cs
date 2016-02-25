@@ -962,7 +962,6 @@ namespace SqlPad.Oracle
 			public const string ParenthesisEnclosedIdentifier = "ParenthesisEnclosedIdentifier";
 			public const string ParenthesisEnclosedIdentifierList = "ParenthesisEnclosedIdentifierList";
 			public const string ParenthesisEnclosedIdentityOptions = "ParenthesisEnclosedIdentityOptions";
-			public const string ParenthesisEnclosedIntegerLiteral = "ParenthesisEnclosedIntegerLiteral";
 			public const string ParenthesisEnclosedLargeObjectPartitionStorageList = "ParenthesisEnclosedLargeObjectPartitionStorageList";
 			public const string ParenthesisEnclosedLargeObjectStorageParameters = "ParenthesisEnclosedLargeObjectStorageParameters";
 			public const string ParenthesisEnclosedLargeObjectSubpartitionStorageClause = "ParenthesisEnclosedLargeObjectSubpartitionStorageClause";
@@ -1096,7 +1095,6 @@ namespace SqlPad.Oracle
 			public const string Prefix = "Prefix";
 			public const string PrefixedAsterisk = "PrefixedAsterisk";
 			public const string PrefixedColumnReference = "PrefixedColumnReference";
-			public const string PrefixedCursorIdentifier = "PrefixedCursorIdentifier";
 			public const string PrefixedExceptionIdentifier = "PrefixedExceptionIdentifier";
 			public const string PrefixedIdentifier = "PrefixedIdentifier";
 			public const string PrefixedIdentifierList = "PrefixedIdentifierList";

@@ -692,15 +692,15 @@ namespace SqlPad.Oracle.DatabaseConnection
 			OracleSchemaObject schemaObject = null;
 			switch (objectType)
 			{
-				case OracleSchemaObjectType.Table:
+				case OracleObjectType.Table:
 					if (allObjects.TryGetValue(objectTypeIdentifer, out schemaObject))
 					{
-						goto case OracleSchemaObjectType.MaterializedView;
+						goto case OracleObjectType.MaterializedView;
 					}
 					
 					goto default;
-				case OracleSchemaObjectType.MaterializedView:
-				case OracleSchemaObjectType.Type:
+				case OracleObjectType.MaterializedView:
+				case OracleObjectType.Type:
 					if (schemaObject == null && allObjects.TryGetValue(objectTypeIdentifer, out schemaObject))
 					{
 						schemaObject.Created = created;

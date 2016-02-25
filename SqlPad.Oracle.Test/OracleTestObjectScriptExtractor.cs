@@ -34,7 +34,7 @@ TABLESPACE ""TBS_HQ_PDB""";
    ALTER DATABASE DATAFILE 
   'E:\ORACLE\ORADATA\HQ12C\HQ_PDB\TBS_HQ_PDB.DBF' RESIZE 15032385536";
 
-		public Task<string> ExtractSchemaObjectScriptAsync(OracleSchemaObject schemaObject, CancellationToken cancellationToken)
+		public Task<string> ExtractSchemaObjectScriptAsync(OracleObject schemaObject, CancellationToken cancellationToken)
 		{
 			return Task.FromResult(SelectionTableCreateScript);
 		}

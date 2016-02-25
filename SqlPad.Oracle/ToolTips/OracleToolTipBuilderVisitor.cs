@@ -48,8 +48,8 @@ namespace SqlPad.Oracle.ToolTips
 				ColumnDetailsModel dataModel;
 				switch (targetSchemaObject.Type)
 				{
-					case OracleSchemaObjectType.Table:
-					case OracleSchemaObjectType.MaterializedView:
+					case OracleObjectType.Table:
+					case OracleObjectType.MaterializedView:
 						dataModel = BuildColumnDetailsModel(databaseModel, columnReference);
 						ToolTip = columnReference.ColumnDescription.IsPseudocolumn
 							? (IToolTip)new ToolTipViewColumn(dataModel)
@@ -57,7 +57,7 @@ namespace SqlPad.Oracle.ToolTips
 
 						return;
 
-					case OracleSchemaObjectType.View:
+					case OracleObjectType.View:
 						dataModel = BuildColumnDetailsModel(databaseModel, columnReference);
 						ToolTip = new ToolTipViewColumn(dataModel);
 						return;
@@ -68,7 +68,7 @@ namespace SqlPad.Oracle.ToolTips
 				? $"{validObjectReference.FullyQualifiedObjectName}."
 				: null;
 
-			var qualifiedColumnName = isSchemaObject && String.Equals(targetSchemaObject.Type, OracleSchemaObjectType.Sequence)
+			var qualifiedColumnName = isSchemaObject && String.Equals(targetSchemaObject.Type, OracleObjectType.Sequence)
 				? null
 				: $"{objectPrefix}{columnReference.Name.ToSimpleIdentifier()}";
 
@@ -219,13 +219,13 @@ namespace SqlPad.Oracle.ToolTips
 
 				switch (schemaObject.Type)
 				{
-					case OracleSchemaObjectType.MaterializedView:
+					case OracleObjectType.MaterializedView:
 						var materializedView = (OracleMaterializedView)schemaObject;
 						dataModel =
 							new MaterializedViewDetailsModel
 							{
 								MaterializedViewTitle = toolTipText,
-								Title = GetObjectTitle(OracleObjectIdentifier.Create(materializedView.Owner, materializedView.TableName), OracleSchemaObjectType.Table.ToLower()),
+								Title = GetObjectTitle(OracleObjectIdentifier.Create(materializedView.Owner, materializedView.TableName), OracleObjectType.Table.ToLower()),
 								MaterializedView = materializedView
 							};
 
@@ -241,7 +241,7 @@ namespace SqlPad.Oracle.ToolTips
 
 						break;
 
-					case OracleSchemaObjectType.Table:
+					case OracleObjectType.Table:
 						dataModel =
 							new TableDetailsModel
 							{
@@ -262,7 +262,7 @@ namespace SqlPad.Oracle.ToolTips
 
 						break;
 
-					case OracleSchemaObjectType.View:
+					case OracleObjectType.View:
 						var viewDetailModel = new ViewDetailsModel { Title = toolTipText };
 
 						DocumentationDataDictionaryObject documentation;
@@ -278,7 +278,7 @@ namespace SqlPad.Oracle.ToolTips
 						ToolTip = new ToolTipView { DataContext = viewDetailModel };
 						break;
 
-					case OracleSchemaObjectType.Sequence:
+					case OracleObjectType.Sequence:
 						ToolTip = new ToolTipSequence(toolTipText, (OracleSequence)schemaObject);
 						break;
 				}
@@ -481,7 +481,7 @@ namespace SqlPad.Oracle.ToolTips
 		{
 			switch (schemaObject.Type)
 			{
-				case OracleSchemaObjectType.Type:
+				case OracleObjectType.Type:
 					if (schemaObject is OracleTypeObject)
 					{
 						return "Object type";

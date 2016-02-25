@@ -212,7 +212,7 @@ namespace SqlPad.Oracle
 				return null;
 			}
 
-			return metadata.Owner.Type == OracleSchemaObjectType.Function
+			return metadata.Owner.Type == OracleObjectType.Function
 				? synonyms.Select(s => s.Name)
 				: Enumerable.Repeat(metadata.Identifier.Name, 1);
 		}
@@ -225,7 +225,7 @@ namespace SqlPad.Oracle
 				return null;
 			}
 
-			return metadata.Owner.Type == OracleSchemaObjectType.Function
+			return metadata.Owner.Type == OracleObjectType.Function
 				? null
 				: synonyms.Select(s => s.Name);
 		}

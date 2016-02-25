@@ -719,9 +719,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 			_objectType = objectType;
 		}
 
-		public ObjectScriptDataProvider(OracleSchemaObject schemaObject) : base(null)
+		public ObjectScriptDataProvider(OracleObject schemaObject) : base(null)
 		{
-			if (schemaObject.Type.In(OracleSchemaObjectType.Table, OracleSchemaObjectType.View, OracleSchemaObjectType.MaterializedView))
+			if (schemaObject.Type.In(OracleObjectType.Table, OracleObjectType.View, OracleObjectType.MaterializedView))
 			{
 				_commandText = OracleDatabaseCommands.SelectComplexObjectScriptCommandText;
 			}

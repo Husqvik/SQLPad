@@ -28,6 +28,8 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public bool IsPrimitive => !FullyQualifiedName.HasOwner;
 
+		public override string Type { get; } = OracleObjectType.Type;
+
 		public static OracleDataType CreateTimestampDataType(int precision)
 		{
 			return new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, TerminalValues.Timestamp), Precision = precision };

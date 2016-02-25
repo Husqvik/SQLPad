@@ -11,5 +11,7 @@ namespace SqlPad.Oracle.DataDictionary
 		public string Host { get; set; }
 		
 		public DateTime Created { get; set; }
+
+		public override string Type { get; } = OracleObjectType.DatabaseLink;
 	}
 }

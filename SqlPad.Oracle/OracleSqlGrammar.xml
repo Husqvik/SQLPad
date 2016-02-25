@@ -10603,9 +10603,7 @@
           <Terminal Id="Authenticated" />
           <Terminal Id="By" />
           <Terminal Id="Identifier" />
-          <Terminal Id="Identified" />
-          <Terminal Id="By" />
-          <Terminal Id="Identifier" />
+          <NonTerminal Id="IdentifiedByClause" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -10617,9 +10615,7 @@
         </Sequence>
         <Sequence>
           <Terminal Id="Identifier" />
-          <Terminal Id="Identified" />
-          <Terminal Id="By" />
-          <Terminal Id="Identifier" />
+          <NonTerminal Id="IdentifiedByClause" IsOptional="true" Comment="Obligatory in documentation" />
           <NonTerminal Id="DatabaseLinkAuthetication" IsOptional="true" />
         </Sequence>
       </Sequences>

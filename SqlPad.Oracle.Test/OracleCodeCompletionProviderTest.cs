@@ -457,7 +457,7 @@ FROM
 		private static bool FilterRowSources(OracleSchemaObject schemaObject)
 		{
 			var targetObject = schemaObject.GetTargetSchemaObject();
-			return targetObject != null && schemaObject.Owner.In(OracleTestDatabaseModel.Instance.CurrentSchema, OracleObjectIdentifier.SchemaPublic) && targetObject.Type.In(OracleSchemaObjectType.Table, OracleSchemaObjectType.View);
+			return targetObject != null && schemaObject.Owner.In(OracleTestDatabaseModel.Instance.CurrentSchema, OracleObjectIdentifier.SchemaPublic) && targetObject.Type.In(OracleObjectType.Table, OracleObjectType.View);
 		}
 
 		[Test(Description = @"")]

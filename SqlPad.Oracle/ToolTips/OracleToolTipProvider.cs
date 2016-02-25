@@ -150,10 +150,11 @@ namespace SqlPad.Oracle.ToolTips
 							return null;
 						}
 
-						var stackPanel = new StackPanel();
-						stackPanel.Children.Add(new TextBlock(new Bold(new Run("Database link"))));
-						stackPanel.Children.Add(new TextBlock { Text = $"{databaseLink.FullyQualifiedName} ({databaseLink.Host})" });
-						return new ToolTipObject { Content = stackPanel };
+						return
+							new ToolTipDatabaseLink(databaseLink)
+							{
+								ScriptExtractor = semanticModel.DatabaseModel.ObjectScriptExtractor,
+							};
 
 					case Terminals.ParameterIdentifier:
 						return BuildParameterToolTip(semanticModel, node);

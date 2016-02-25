@@ -5,7 +5,7 @@ namespace SqlPad.Oracle.DataDictionary
 {
 	public abstract class OracleConstraint : OracleObject
 	{
-		public abstract ConstraintType Type { get; }
+		public abstract ConstraintType ConstraintType { get; }
 
 		public OracleSchemaObject OwnerObject { get; set; }
 
@@ -18,24 +18,26 @@ namespace SqlPad.Oracle.DataDictionary
 		public bool IsValidated { get; set; }
 
 		public bool IsRelied { get; set; }
+
+		public override string Type { get; } = OracleObjectType.Constraint;
 	}
 
 	[DebuggerDisplay("OraclePrimaryKeyConstraint (Name={FullyQualifiedName.Name}; IsEnabled={IsEnabled}; IsDeferrable={IsDeferrable}; IsValidated={IsValidated}; IsRelied={IsRelied})")]
 	public class OraclePrimaryKeyConstraint : OracleUniqueConstraint
 	{
-		public override ConstraintType Type => ConstraintType.PrimaryKey;
+		public override ConstraintType ConstraintType => ConstraintType.PrimaryKey;
 	}
 
 	[DebuggerDisplay("OracleUniqueConstraint (Name={FullyQualifiedName.Name}; IsEnabled={IsEnabled}; IsDeferrable={IsDeferrable}; IsValidated={IsValidated}; IsRelied={IsRelied})")]
 	public class OracleUniqueConstraint : OracleConstraint
 	{
-		public override ConstraintType Type => ConstraintType.Unique;
+		public override ConstraintType ConstraintType => ConstraintType.Unique;
 	}
 
 	[DebuggerDisplay("OracleCheckConstraint (Name={FullyQualifiedName.Name}; IsEnabled={IsEnabled}; IsDeferrable={IsDeferrable}; IsValidated={IsValidated}; IsRelied={IsRelied})")]
 	public class OracleCheckConstraint : OracleConstraint
 	{
-		public override ConstraintType Type => ConstraintType.Check;
+		public override ConstraintType ConstraintType => ConstraintType.Check;
 	}
 
 	[DebuggerDisplay("OracleForeignKeyConstraint (Name={FullyQualifiedName.Name}; IsEnabled={IsEnabled}; IsDeferrable={IsDeferrable}; IsValidated={IsValidated}; IsRelied={IsRelied})")]
@@ -47,7 +49,7 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public DeleteRule DeleteRule { get; set; }
 
-		public override ConstraintType Type => ConstraintType.ForeignKey;
+		public override ConstraintType ConstraintType => ConstraintType.ForeignKey;
 	}
 
 	public enum ConstraintType

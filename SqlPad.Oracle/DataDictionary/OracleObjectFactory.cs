@@ -49,19 +49,19 @@ namespace SqlPad.Oracle.DataDictionary
 		{
 			switch (objectType)
 			{
-				case OracleSchemaObjectType.Table:
+				case OracleObjectType.Table:
 					return new OracleTable();
-				case OracleSchemaObjectType.View:
+				case OracleObjectType.View:
 					return new OracleView();
-				case OracleSchemaObjectType.Synonym:
+				case OracleObjectType.Synonym:
 					return new OracleSynonym();
-				case OracleSchemaObjectType.Function:
+				case OracleObjectType.Function:
 					return new OracleFunction();
-				case OracleSchemaObjectType.Procedure:
+				case OracleObjectType.Procedure:
 					return new OracleProcedure();
-				case OracleSchemaObjectType.Sequence:
+				case OracleObjectType.Sequence:
 					return new OracleSequence();
-				case OracleSchemaObjectType.Package:
+				case OracleObjectType.Package:
 					return new OraclePackage();
 				default:
 					throw new InvalidOperationException($"Object type '{objectType}' not supported. ");
