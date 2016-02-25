@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Oracle.DataAccess.Client;
 using SqlPad.Oracle.DatabaseConnection;
 
 namespace SqlPad.Oracle.ToolTips
@@ -98,6 +99,11 @@ namespace SqlPad.Oracle.ToolTips
 				}
 
 				IsExtracting = false;
+			}
+			catch (OracleException exception)
+			{
+				IsExtracting = false;
+				Messages.ShowError(exception.Message);
 			}
 			catch (Exception exception)
 			{

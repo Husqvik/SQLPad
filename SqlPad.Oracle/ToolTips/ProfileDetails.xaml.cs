@@ -31,9 +31,9 @@ namespace SqlPad.Oracle.ToolTips
 			InitializeComponent();
 		}
 
-		protected override async Task<string> ExtractDdlAsync(CancellationToken cancellationToken)
+		protected override Task<string> ExtractDdlAsync(CancellationToken cancellationToken)
 		{
-			return await ScriptExtractor.ExtractNonSchemaObjectScriptAsync(Profile.Name, "PROFILE", cancellationToken);
+			return ScriptExtractor.ExtractNonSchemaObjectScriptAsync(Profile.Name, "PROFILE", cancellationToken);
 		}
 
 		private void ProfileHyperlinkClickHandler(object sender, RoutedEventArgs e)

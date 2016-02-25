@@ -13,9 +13,9 @@ namespace SqlPad.Oracle.ToolTips
 			InitializeComponent();
 		}
 
-		protected override async Task<string> ExtractDdlAsync(CancellationToken cancellationToken)
+		protected override Task<string> ExtractDdlAsync(CancellationToken cancellationToken)
 		{
-			return await ScriptExtractor.ExtractSchemaObjectScriptAsync(((MaterializedViewDetailsModel)DataContext).MaterializedView, cancellationToken);
+			return ScriptExtractor.ExtractSchemaObjectScriptAsync(((MaterializedViewDetailsModel)DataContext).MaterializedView, cancellationToken);
 		}
 	}
 

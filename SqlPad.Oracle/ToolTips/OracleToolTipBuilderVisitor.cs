@@ -263,7 +263,12 @@ namespace SqlPad.Oracle.ToolTips
 						break;
 
 					case OracleObjectType.View:
-						var viewDetailModel = new ViewDetailsModel { Title = toolTipText };
+						var viewDetailModel =
+							new ViewDetailsModel
+							{
+								Title = toolTipText,
+								View = (OracleView)schemaObject
+							};
 
 						DocumentationDataDictionaryObject documentation;
 						if (TryGetDataDictionaryObjectDocumentation(schemaObject.FullyQualifiedName, out documentation) && !String.IsNullOrWhiteSpace(documentation.Value))
@@ -275,7 +280,14 @@ namespace SqlPad.Oracle.ToolTips
 							databaseModel.UpdateViewDetailsAsync(schemaObject.FullyQualifiedName, viewDetailModel, CancellationToken.None);
 						}
 
-						ToolTip = new ToolTipView { DataContext = viewDetailModel };
+						ToolTip =
+							new ToolTipView
+							{
+								IsExtractDdlVisible = true,
+								ScriptExtractor = databaseModel.ObjectScriptExtractor,
+								DataContext = viewDetailModel
+							};
+						
 						break;
 
 					case OracleObjectType.Sequence:
