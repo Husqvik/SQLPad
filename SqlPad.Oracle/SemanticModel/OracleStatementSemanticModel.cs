@@ -3077,7 +3077,7 @@ namespace SqlPad.Oracle.SemanticModel
 							parameterNodes.AddIfNotNull(parameterList[NonTerminals.AsDataType, NonTerminals.DataType]);
 							break;
 						case NonTerminals.XmlQueryParameterClause:
-							parameterNodes.AddIfNotNull(parameterList[Terminals.StringLiteral]);
+							parameterNodes.AddIfNotNull(parameterList[NonTerminals.Expression]);
 							break;
 						case NonTerminals.XmlElementParameterClause:
 							var xmlElementParameter = parameterList[NonTerminals.XmlNameOrEvaluatedName];

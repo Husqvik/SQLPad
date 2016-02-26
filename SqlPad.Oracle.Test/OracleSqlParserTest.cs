@@ -2649,6 +2649,16 @@ ORDER BY symbol, tstamp";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
+		[Test(Description = @"")]
+		public void TestXmlQueryWithExpressionAndNullOnEmptyClause()
+		{
+			const string statement1 = @"SELECT xmlquery(to_char(1) RETURNING CONTENT NULL ON EMPTY) FROM dual";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+		}
+
 		public class PlSql
 		{
 			[Test(Description = @"")]

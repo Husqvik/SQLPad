@@ -873,6 +873,7 @@ namespace SqlPad.Oracle
 			public const string NotNull = "NotNull";
 			public const string NullIfOrNoNullIf = "NullIfOrNoNullIf";
 			public const string NullNaNOrInfinite = "NullNaNOrInfinite";
+			public const string NullOnEmpty = "NullOnEmpty";
 			public const string NullOrStringOrNumberLiteralOrParenthesisEnclosedStringOrIntegerLiteralList = "NullOrStringOrNumberLiteralOrParenthesisEnclosedStringOrIntegerLiteralList";
 			public const string NullsClause = "NullsClause";
 			public const string NumericOrDecimalOrDec = "NumericOrDecimalOrDec";

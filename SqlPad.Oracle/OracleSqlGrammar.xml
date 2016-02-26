@@ -10213,11 +10213,22 @@
       <Sequences>
         <Sequence>
           <Terminal Id="LeftParenthesis" />
-          <Terminal Id="StringLiteral" />
+          <NonTerminal Id="Expression" />
           <NonTerminal Id="XmlPassingClause" IsOptional="true" />
           <Terminal Id="Returning" />
           <Terminal Id="Content" />
+          <NonTerminal Id="NullOnEmpty" IsOptional="true" />
           <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="NullOnEmpty">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Null" />
+          <Terminal Id="On" />
+          <Terminal Id="Empty" />
         </Sequence>
       </Sequences>
     </Rule>
