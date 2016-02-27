@@ -910,10 +910,10 @@ se";
 		{
 			const string statement = @"SELECT SQLPAD.SQLPAD_FUNCTION(D) FROM DUAL";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 31).ToList();
-			items.Count.ShouldBe(8);
+			items.Count.ShouldBe(9);
 			items[0].Text.ShouldBe("DUAL.DUMMY");
-			items[7].Name.ShouldBe("DUMP");
-			items[7].Text.ShouldBe("DUMP()");
+			items[8].Name.ShouldBe("DUMP");
+			items[8].Text.ShouldBe("DUMP()");
 		}
 
 		[Test(Description = @"")]
@@ -1034,6 +1034,20 @@ se";
 			items[0].Name.ShouldBe("NLS_NUMERIC_CHARACTERS = '<decimal separator><group separator>' NLS_CURRENCY = 'currency_symbol' NLS_ISO_CURRENCY = <territory> NLS_DATE_LANGUAGE = <language>");
 			items[0].Text.ShouldBe("'NLS_NUMERIC_CHARACTERS = ''<decimal separator><group separator>'' NLS_CURRENCY = ''currency_symbol'' NLS_ISO_CURRENCY = <territory> NLS_DATE_LANGUAGE = <language>'");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+		}
+
+		[Test(Description = @"")]
+		public void TestDbmsMetadataObjectTypeSpecialParameterCompletion()
+		{
+			const string statement = @"SELECT dbms_metadata.get_ddl() FROM dual";
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 29).ToList();
+			items.Count.ShouldBe(73);
+			items[0].Name.ShouldBe("AQ_QUEUE");
+			items[0].Text.ShouldBe("'AQ_QUEUE'");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+			items[72].Name.ShouldBe("XS_USER");
+			items[72].Text.ShouldBe("'XS_USER'");
+			items[72].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 		}
 
 		[Test(Description = @"")]

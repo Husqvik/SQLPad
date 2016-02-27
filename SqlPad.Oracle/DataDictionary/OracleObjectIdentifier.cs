@@ -15,11 +15,13 @@ namespace SqlPad.Oracle.DataDictionary
 		public const string PackageDbmsStandard = "\"DBMS_STANDARD\"";
 		public const string PackageDbmsRandom = "\"DBMS_RANDOM\"";
 		public const string PackageDbmsCrypto = "\"DBMS_CRYPTO\"";
+		public const string PackageDbmsMetadata = "\"DBMS_METADATA\"";
 
 		public static readonly OracleObjectIdentifier Empty = new OracleObjectIdentifier(null, null);
 
 		internal static readonly OracleObjectIdentifier IdentifierBuiltInFunctionPackage = Create(SchemaSys, PackageBuiltInFunction);
 		internal static readonly OracleObjectIdentifier IdentifierDbmsStandard = Create(SchemaSys, PackageDbmsStandard);
+		internal static readonly OracleObjectIdentifier IdentifierDbmsMetadata = Create(SchemaSys, PackageDbmsMetadata);
 
 		public string Owner { get; private set; }
 

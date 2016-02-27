@@ -310,6 +310,33 @@ namespace SqlPad.Oracle.Test
 					SchemaObject = dbmsOutput,
 					IsValid = true
 				};
+
+			synonym.SchemaObject.Synonyms.Add(synonym);
+
+			AllObjectsInternal.Add(synonym);
+			#endregion
+
+			#region SYS.DBMS_METADATA
+			var dbmsMetadata = (OraclePackage)AllObjectsInternal.Single(o => String.Equals(o.Name, "\"DBMS_METADATA\"") && String.Equals(o.Owner, OracleObjectIdentifier.SchemaSys));
+			var getDdlFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("SYS", "DBMS_METADATA", "GET_DDL"), false, false, false, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, false);
+			getDdlFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 1, 0, ParameterDirection.ReturnValue, "CLOB", OracleObjectIdentifier.Empty, false));
+			getDdlFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"OBJECT_TYPE\"", 1, 2, 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			getDdlFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"NAME\"", 2, 3, 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			getDdlFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"SCHEMA\"", 3, 4, 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, true));
+			getDdlFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"VERSION\"", 4, 5, 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, true));
+			getDdlFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"MODEL\"", 5, 6, 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, true));
+			getDdlFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"TRANSFORM\"", 6, 7, 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, true));
+			getDdlFunctionMetadata.Owner = dbmsMetadata;
+			dbmsMetadata.Programs.Add(getDdlFunctionMetadata);
+
+			synonym =
+				new OracleSynonym
+				{
+					FullyQualifiedName = OracleObjectIdentifier.Create(OracleObjectIdentifier.SchemaPublic, "DBMS_METADATA"),
+					SchemaObject = dbmsMetadata,
+					IsValid = true
+				};
+
 			synonym.SchemaObject.Synonyms.Add(synonym);
 
 			AllObjectsInternal.Add(synonym);
@@ -970,6 +997,11 @@ namespace SqlPad.Oracle.Test
 			new OraclePackage
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"AS_PDF3\""),
+				IsValid = true
+			},
+			new OraclePackage
+			{
+				FullyQualifiedName = OracleObjectIdentifier.IdentifierDbmsMetadata,
 				IsValid = true
 			},
 			new OraclePackage

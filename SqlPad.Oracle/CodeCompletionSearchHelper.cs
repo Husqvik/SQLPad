@@ -39,7 +39,11 @@ namespace SqlPad.Oracle
 		public static IEnumerable<ICodeCompletionItem> ResolveSpecificFunctionParameterCodeCompletionItems(StatementGrammarNode currentNode, IEnumerable<OracleCodeCompletionFunctionOverload> functionOverloads, OracleDatabaseModelBase databaseModel)
 		{
 			var completionItems = new List<ICodeCompletionItem>();
-			var specificFunctionOverloads = functionOverloads.Where(m => SpecificCodeCompletionFunctionIdentifiers.Contains(m.ProgramMetadata.Identifier)).ToArray();
+			var specificFunctionOverloads =
+				functionOverloads
+					.Where(o => SpecificCodeCompletionFunctionIdentifiers.Contains(o.ProgramMetadata.Identifier) || IsDbmsMetadata(o.ProgramMetadata))
+					.ToArray();
+
 			if (specificFunctionOverloads.Length == 0 || !currentNode.Id.In(Terminals.StringLiteral, Terminals.NumberLiteral, Terminals.LeftParenthesis, Terminals.Comma))
 			{
 				return completionItems;
@@ -250,6 +254,91 @@ namespace SqlPad.Oracle
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "m", "m - treats the source string as multiple lines. Oracle interprets the caret (^) and dollar sign ($) as the start and end, respectively, of any line anywhere in the source string, rather than only at the start or end of the entire source string. If you omit this parameter, then Oracle treats the source string as a single line. "));
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "x", "x - ignores whitespace characters. By default, whitespace characters match themselves. "));
 			}
+			else if (IsAtDbmsMetadataObjectTypeParameter(specificFunctionOverloads))
+			{
+				var parameters =
+					new[]
+					{
+						"AQ_QUEUE",
+						"AQ_QUEUE_TABLE",
+						"AQ_TRANSFORM",
+						"ASSOCIATION",
+						"AUDIT",
+						"AUDIT_OBJ",
+						"CLUSTER",
+						"COMMENT",
+						"CONSTRAINT",
+						"CONTEXT",
+						"DATABASE_EXPORT",
+						"DB_LINK",
+						"DEFAULT_ROLE",
+						"DIMENSION",
+						"DIRECTORY",
+						"FGA_POLICY",
+						"FUNCTION",
+						"INDEX_STATISTICS",
+						"INDEX",
+						"INDEXTYPE",
+						"JAVA_SOURCE",
+						"JOB",
+						"LIBRARY",
+						"MATERIALIZED_VIEW",
+						"MATERIALIZED_VIEW_LOG",
+						"OBJECT_GRANT",
+						"OPERATOR",
+						"PACKAGE",
+						"PACKAGE_SPEC",
+						"PACKAGE_BODY",
+						"PROCEDURE",
+						"PROFILE",
+						"PROXY",
+						"REF_CONSTRAINT",
+						"REFRESH_GROUP",
+						"RESOURCE_COST",
+						"RLS_CONTEXT",
+						"RLS_GROUP",
+						"RLS_POLICY",
+						"RMGR_CONSUMER_GROUP",
+						"RMGR_INTITIAL_CONSUMER_GROUP",
+						"RMGR_PLAN",
+						"RMGR_PLAN_DIRECTIVE",
+						"ROLE",
+						"ROLE_GRANT",
+						"ROLLBACK_SEGMENT",
+						"SCHEMA_EXPORT",
+						"SEQUENCE",
+						"SYNONYM",
+						"SYSTEM_GRANT",
+						"TABLE",
+						"TABLE_DATA",
+						"TABLE_EXPORT",
+						"TABLE_STATISTICS",
+						"TABLESPACE",
+						"TABLESPACE_QUOTA",
+						"TRANSPORTABLE_EXPORT",
+						"TRIGGER",
+						"TRUSTED_DB_LINK",
+						"TYPE",
+						"TYPE_SPEC",
+						"TYPE_BODY",
+						"USER",
+						"VIEW",
+						"XMLSCHEMA",
+						"XS_USER",
+						"XS_ROLE",
+						"XS_ROLESET",
+						"XS_ROLE_GRANT",
+						"XS_SECURITY_CLASS",
+						"XS_DATA_SECURITY",
+						"XS_ACL",
+						"XS_ACL_PARAM"
+					};
+
+				foreach (var parameter in parameters)
+				{
+					completionItems.Add(BuildParameterCompletionItem(currentNode, parameter, parameter));
+				}
+			}
 
 			var convertFunctionOverload = specificFunctionOverloads
 					.FirstOrDefault(o => (o.CurrentParameterIndex == 1 || o.CurrentParameterIndex == 2) && o.ProgramMetadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramConvert);
@@ -259,6 +348,11 @@ namespace SqlPad.Oracle
 			}
 
 			return completionItems;
+		}
+
+		private static bool IsAtDbmsMetadataObjectTypeParameter(IEnumerable<OracleCodeCompletionFunctionOverload> functionOverloads)
+		{
+			return functionOverloads.Any(o => IsDbmsMetadata(o.ProgramMetadata) && o.ProgramMetadata.Parameters.Count >= o.CurrentParameterIndex + 1 && String.Equals(o.ProgramMetadata.Parameters[o.CurrentParameterIndex + 1].Name, "\"OBJECT_TYPE\""));
 		}
 
 		private static bool IsAtRegexModifierParameter(IEnumerable<OracleCodeCompletionFunctionOverload> functionOverloads)
@@ -319,6 +413,11 @@ namespace SqlPad.Oracle
 			var firstParameter = functionOverload.ProgramReference.ParameterReferences[parameterIndex.Value];
 			var parameterExpression = firstParameter.ParameterNode[NonTerminals.Expression];
 			return parameterExpression != null && parameterExpression.ChildNodes.Count == 1 && parameterExpression.ChildNodes[0].Id == literalTerminalId;
+		}
+
+		private static bool IsDbmsMetadata(OracleProgramMetadata metadata)
+		{
+			return metadata.Owner.GetTargetSchemaObject()?.FullyQualifiedName == OracleObjectIdentifier.IdentifierDbmsMetadata;
 		}
 
 		private static OracleCodeCompletionItem BuildParameterCompletionItem(StatementGrammarNode node, string parameterValue, string description, bool addApostrophes = true)
