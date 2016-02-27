@@ -101,7 +101,7 @@ namespace SqlPad.Oracle.DataDictionary
 
 		private int ResolveMinimumArguments()
 		{
-			if (Type == ProgramType.Procedure)
+			if (Type == ProgramType.Procedure || Type == ProgramType.PackageProcedure)
 			{
 				return MinimumParameterCount;
 			}
@@ -122,7 +122,7 @@ namespace SqlPad.Oracle.DataDictionary
 
 		private int ResolveMaximumArguments()
 		{
-			if (Type == ProgramType.Procedure)
+			if (Type == ProgramType.Procedure || Type == ProgramType.PackageProcedure)
 			{
 				return RootParameters.Count();
 			}

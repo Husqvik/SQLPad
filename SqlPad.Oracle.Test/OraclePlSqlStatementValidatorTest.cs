@@ -111,5 +111,24 @@ END;";
 			var validationData = validationModel.InvalidNonTerminals.Values.First();
 			validationData.SemanticErrorType.ShouldBe(OracleSemanticErrorType.PlSql.UnsupportedTableIndexType);
 		}
+
+		[Test(Description = @"")]
+		public void TestParametrizedPackageProcedureInvokation()
+		{
+			const string plsqlText =
+@"DECLARE
+	PROCEDURE test_procedure2(p BOOLEAN) IS BEGIN NULL; END;
+BEGIN
+	test_procedure2(p => TRUE);
+END;";
+			var statement = Parser.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = OracleStatementValidatorTest.BuildValidationModel(plsqlText, statement);
+			validationModel.ProgramNodeValidity.Count.ShouldBe(1);
+			var validationData = validationModel.ProgramNodeValidity.Values.First();
+			validationData.IsRecognized.ShouldBe(true);
+			validationData.SemanticErrorType.ShouldBe(null);
+		}
 	}
 }
