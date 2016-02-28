@@ -5,7 +5,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:toolTips="clr-namespace:SqlPad.Oracle.ToolTips"
              xmlns:dataDictionary="clr-namespace:SqlPad.Oracle.DataDictionary"
-             mc:Ignorable="d" 
+             mc:Ignorable="d"
+             IsExtractDdlVisible="True"
              d:DesignHeight="160" d:DesignWidth="240"
 			 Padding="4" d:DataContext="{d:DesignInstance dataDictionary:OracleSequence}">
     <StackPanel>

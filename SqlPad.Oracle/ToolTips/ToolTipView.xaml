@@ -6,7 +6,7 @@
              xmlns:toolTips="clr-namespace:SqlPad.Oracle.ToolTips"
              mc:Ignorable="d" 
              d:DesignHeight="114" d:DesignWidth="570"
-			 Padding="4" d:DataContext="{d:DesignInstance toolTips:ViewDetailsModel}">
+			 Padding="4" d:DataContext="{d:DesignInstance toolTips:ObjectDetailsModel}">
 
 	<toolTips:PopupBase.Resources>
 		<ResourceDictionary>

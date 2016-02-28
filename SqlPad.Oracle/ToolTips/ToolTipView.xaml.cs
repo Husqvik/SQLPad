@@ -13,15 +13,15 @@ namespace SqlPad.Oracle.ToolTips
 
 		protected override Task<string> ExtractDdlAsync(CancellationToken cancellationToken)
 		{
-			return ScriptExtractor.ExtractSchemaObjectScriptAsync(((ViewDetailsModel)DataContext).View, cancellationToken);
+			return ScriptExtractor.ExtractSchemaObjectScriptAsync(((ObjectDetailsModel)DataContext).Object, cancellationToken);
 		}
 	}
 
-	public class ViewDetailsModel : ModelWithConstraints, IModelWithComment
+	public class ObjectDetailsModel : ModelWithConstraints, IModelWithComment
 	{
 		private string _comment;
 
-		public OracleView View { get; set; }
+		public OracleObject Object { get; set; }
 
 		public string Title { get; set; }
 

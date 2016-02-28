@@ -330,8 +330,8 @@ SELECT * FROM CTE";
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 20);
 
 			toolTip.Control.ShouldBeTypeOf<ToolTipView>();
-			toolTip.Control.DataContext.ShouldBeTypeOf<ViewDetailsModel>();
-			var dataModel = (ViewDetailsModel)toolTip.Control.DataContext;
+			toolTip.Control.DataContext.ShouldBeTypeOf<ObjectDetailsModel>();
+			var dataModel = (ObjectDetailsModel)toolTip.Control.DataContext;
 			dataModel.Title.ShouldBe("\"PUBLIC\".V$SESSION (Synonym) => SYS.V_$SESSION (View)");
 			dataModel.Comment.ShouldBe("V$SESSION displays session information for each current session.");
 		}
@@ -423,7 +423,7 @@ SELECT * FROM CTE";
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 10);
 
 			toolTip.Control.ShouldBeTypeOf<ToolTipView>();
-			var dataModel = (ViewDetailsModel)((ToolTipView)toolTip.Control).DataContext;
+			var dataModel = (ObjectDetailsModel)((ToolTipView)toolTip.Control).DataContext;
 			dataModel.Title.ShouldBe("\"PUBLIC\".DBMS_RANDOM (Synonym) => SYS.DBMS_RANDOM (Package)");
 			dataModel.Comment.ShouldBe("The DBMS_RANDOM package provides a built-in random number generator. DBMS_RANDOM is not intended for cryptography.");
 		}
@@ -513,7 +513,7 @@ SELECT * FROM CTE";
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 40);
 
 			toolTip.Control.ShouldBeTypeOf<ToolTipView>();
-			var dataModel = (ViewDetailsModel)((ToolTipView)toolTip.Control).DataContext;
+			var dataModel = (ObjectDetailsModel)((ToolTipView)toolTip.Control).DataContext;
 			dataModel.Title.ShouldBe("\"PUBLIC\".DBMS_XPLAN (Synonym) => SYS.DBMS_XPLAN (Package)");
 			dataModel.Comment.ShouldBe("The DBMS_XPLAN package provides an easy way to display the output of the EXPLAIN PLAN command in several, predefined formats. You can also use the DBMS_XPLAN package to display the plan of a statement stored in the Automatic Workload Repository (AWR) or stored in a SQL tuning set. It further provides a way to display the SQL execution plan and SQL execution runtime statistics for cached SQL cursors based on the information stored in the V$SQL_PLAN and V$SQL_PLAN_STATISTICS_ALL fixed views. Finally, it displays plans from a SQL plan baseline.");
 		}
@@ -1019,7 +1019,7 @@ FROM (
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 30);
 			toolTip.Control.ShouldBeTypeOf<ToolTipView>();
-			var dataModel = (ViewDetailsModel)toolTip.Control.DataContext;
+			var dataModel = (ObjectDetailsModel)toolTip.Control.DataContext;
 			dataModel.Title.ShouldBe("P: NUMBER");
 		}
 
@@ -1050,7 +1050,7 @@ SELECT * FROM sampleData";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 7);
 			toolTip.Control.ShouldBeTypeOf<ToolTipView>();
-			var dataModel = (ViewDetailsModel)((ToolTipView)toolTip.Control).DataContext;
+			var dataModel = (ObjectDetailsModel)((ToolTipView)toolTip.Control).DataContext;
 			dataModel.Title.ShouldBe("\"PUBLIC\".DBMS_OUTPUT (Synonym) => SYS.DBMS_OUTPUT (Package)");
 			dataModel.Comment.ShouldBe("The DBMS_OUTPUT package enables you to send messages from stored procedures, packages, and triggers. The package is especially useful for displaying PL/SQL debugging information.");
 		}

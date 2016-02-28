@@ -113,7 +113,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public abstract Task UpdateTableDetailsAsync(OracleObjectIdentifier schemaObject, TableDetailsModel dataModel, CancellationToken cancellationToken);
 
-		public abstract Task UpdateViewDetailsAsync(OracleObjectIdentifier objectIdentifier, ViewDetailsModel dataModel, CancellationToken cancellationToken);
+		public abstract Task UpdateViewDetailsAsync(OracleObjectIdentifier objectIdentifier, ObjectDetailsModel dataModel, CancellationToken cancellationToken);
 
 		public abstract Task<IReadOnlyList<string>> GetRemoteTableColumnsAsync(string databaseLink, OracleObjectIdentifier schemaObject, CancellationToken cancellationToken);
 		

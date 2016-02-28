@@ -87,18 +87,28 @@ namespace SqlPad.Oracle.ToolTips
 				return;
 			}
 
+			var scriptExtractor = programReference.Container.SemanticModel.DatabaseModel.ObjectScriptExtractor;
+
 			if (programReference.ObjectNode == _terminal)
 			{
-				if (programReference.SchemaObject != null)
+				var targetObject = programReference.SchemaObject.GetTargetSchemaObject();
+				if (targetObject != null)
 				{
-					var viewDetailModel =
-						new ViewDetailsModel
+					var objectDetailModel =
+						new ObjectDetailsModel
 						{
 							Title = GetFullSchemaObjectToolTip(programReference.SchemaObject),
-							Comment = programReference.SchemaObject.Documentation
+							Comment = programReference.SchemaObject.Documentation,
+							Object = targetObject
 						};
 
-					ToolTip = new ToolTipView { DataContext = viewDetailModel };
+					ToolTip =
+						new ToolTipView
+						{
+							ScriptExtractor = scriptExtractor,
+							IsExtractDdlVisible = true,
+							DataContext = objectDetailModel
+						};
 				}
 
 				return;
@@ -109,7 +119,11 @@ namespace SqlPad.Oracle.ToolTips
 				return;
 			}
 
-			ToolTip = new ToolTipProgram(programReference.Metadata.Identifier.FullyQualifiedIdentifier, programReference.Metadata.Documentation, programReference.Metadata);
+			ToolTip =
+				new ToolTipProgram(programReference.Metadata.Identifier.FullyQualifiedIdentifier, programReference.Metadata.Documentation, programReference.Metadata)
+				{
+					ScriptExtractor = scriptExtractor
+				};
 		}
 
 		private static bool TryGetDataDictionaryObjectDocumentation(OracleObjectIdentifier objectIdentifier, out DocumentationDataDictionaryObject documentation)
@@ -141,7 +155,11 @@ namespace SqlPad.Oracle.ToolTips
 			}
 
 			var toolTipText = GetFullSchemaObjectToolTip(sequenceReference.SchemaObject);
-			ToolTip = new ToolTipSequence(toolTipText, schemaObject);
+			ToolTip =
+				new ToolTipSequence(toolTipText, schemaObject)
+				{
+					ScriptExtractor = sequenceReference.Container.SemanticModel.DatabaseModel.ObjectScriptExtractor
+				};
 		}
 
 		public void VisitTableCollectionReference(OracleTableCollectionReference tableCollectionReference)
@@ -263,21 +281,21 @@ namespace SqlPad.Oracle.ToolTips
 						break;
 
 					case OracleObjectType.View:
-						var viewDetailModel =
-							new ViewDetailsModel
+						var objectDetailModel =
+							new ObjectDetailsModel
 							{
 								Title = toolTipText,
-								View = (OracleView)schemaObject
+								Object = schemaObject
 							};
 
 						DocumentationDataDictionaryObject documentation;
 						if (TryGetDataDictionaryObjectDocumentation(schemaObject.FullyQualifiedName, out documentation) && !String.IsNullOrWhiteSpace(documentation.Value))
 						{
-							viewDetailModel.Comment = documentation.Value;
+							objectDetailModel.Comment = documentation.Value;
 						}
 						else
 						{
-							databaseModel.UpdateViewDetailsAsync(schemaObject.FullyQualifiedName, viewDetailModel, CancellationToken.None);
+							databaseModel.UpdateViewDetailsAsync(schemaObject.FullyQualifiedName, objectDetailModel, CancellationToken.None);
 						}
 
 						ToolTip =
@@ -285,7 +303,7 @@ namespace SqlPad.Oracle.ToolTips
 							{
 								IsExtractDdlVisible = true,
 								ScriptExtractor = databaseModel.ObjectScriptExtractor,
-								DataContext = viewDetailModel
+								DataContext = objectDetailModel
 							};
 						
 						break;

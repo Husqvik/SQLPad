@@ -725,7 +725,7 @@ SELECT /*+ parallel(g1 2) parallel(g2 2) monitor */ avg(g1.val * 10000 + g2.val)
 		[Test]
 		public async Task TestViewDetailDataProvider()
 		{
-			var model = new ViewDetailsModel();
+			var model = new ObjectDetailsModel();
 
 			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
@@ -750,7 +750,7 @@ SELECT /*+ parallel(g1 2) parallel(g2 2) monitor */ avg(g1.val * 10000 + g2.val)
 		[Test]
 		public async Task TestViewCommentDataProvider()
 		{
-			var model = new ViewDetailsModel();
+			var model = new ObjectDetailsModel();
 
 			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{

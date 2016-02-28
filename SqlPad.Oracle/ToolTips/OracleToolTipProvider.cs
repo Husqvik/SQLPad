@@ -263,7 +263,7 @@ namespace SqlPad.Oracle.ToolTips
 				new ToolTipView
 				{
 					DataContext =
-						new ViewDetailsModel
+						new ObjectDetailsModel
 						{
 							Title = $"{parameterMetadata.Name.ToSimpleIdentifier()}: {parameterMetadata.FullDataTypeName}",
 							Comment = comment

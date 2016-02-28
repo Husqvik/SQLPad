@@ -1,4 +1,6 @@
-﻿using SqlPad.Oracle.DataDictionary;
+﻿using System.Threading;
+using System.Threading.Tasks;
+using SqlPad.Oracle.DataDictionary;
 
 namespace SqlPad.Oracle.ToolTips
 {
@@ -11,6 +13,11 @@ namespace SqlPad.Oracle.ToolTips
 			LabelTitle.Text = title;
 
 			DataContext = sequence;
+		}
+
+		protected override Task<string> ExtractDdlAsync(CancellationToken cancellationToken)
+		{
+			return ScriptExtractor.ExtractSchemaObjectScriptAsync((OracleSequence)DataContext, cancellationToken);
 		}
 	}
 }

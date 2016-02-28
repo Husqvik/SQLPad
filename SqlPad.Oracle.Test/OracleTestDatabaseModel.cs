@@ -1299,7 +1299,7 @@ namespace SqlPad.Oracle.Test
 			dataModel.InMemoryCompression = "Disabled";
 		}
 
-		public override Task UpdateViewDetailsAsync(OracleObjectIdentifier schemaObject, ViewDetailsModel dataModel, CancellationToken cancellationToken)
+		public override Task UpdateViewDetailsAsync(OracleObjectIdentifier schemaObject, ObjectDetailsModel dataModel, CancellationToken cancellationToken)
 		{
 			dataModel.Comment = "This is a view comment. ";
 

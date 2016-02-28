@@ -369,7 +369,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			await UpdateModelAsync(cancellationToken, true, tableDetailDataProvider, tableCommentDataProvider, spaceAllocationDataProvider, tableInMemorySpaceAllocationDataProvider, indexDetailDataProvider, indexColumnDataProvider, partitionDataProvider.PartitionDetailDataProvider, partitionDataProvider.SubPartitionDetailDataProvider, tablespaceDetailDataProvider, datafileDataProvider);
 		}
 
-		public async override Task UpdateViewDetailsAsync(OracleObjectIdentifier objectIdentifier, ViewDetailsModel dataModel, CancellationToken cancellationToken)
+		public async override Task UpdateViewDetailsAsync(OracleObjectIdentifier objectIdentifier, ObjectDetailsModel dataModel, CancellationToken cancellationToken)
 		{
 			var viewCommentDataProvider = new CommentDataProvider(dataModel, objectIdentifier, null);
 			var columnConstraintDataProvider = new ConstraintDataProvider(dataModel, objectIdentifier, null);

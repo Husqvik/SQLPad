@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Globalization;
+using System.Threading;
+using System.Threading.Tasks;
 using SqlPad.Oracle.DataDictionary;
 
 namespace SqlPad.Oracle.ToolTips
@@ -13,7 +15,18 @@ namespace SqlPad.Oracle.ToolTips
 			LabelTitle.Text = title;
 			LabelDocumentation.Text = documentation;
 
+			IsExtractDdlVisible =
+				programMetadata.Type != ProgramType.PackageProcedure &&
+				programMetadata.Type != ProgramType.PackageFunction &&
+				programMetadata.Owner != null &&
+				String.IsNullOrEmpty(programMetadata.Identifier.Package);
+
 			DataContext = programMetadata;
+		}
+
+		protected override Task<string> ExtractDdlAsync(CancellationToken cancellationToken)
+		{
+			return ScriptExtractor.ExtractSchemaObjectScriptAsync(((OracleProgramMetadata)DataContext).Owner, cancellationToken);
 		}
 	}
 
