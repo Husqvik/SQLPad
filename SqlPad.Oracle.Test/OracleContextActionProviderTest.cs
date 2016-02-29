@@ -71,9 +71,9 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query1 = @"SELECT DUMMY FROM (SELECT DUMMY FROM DUAL) t2, Dual";
 
-			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 49).SingleOrDefault(a => a.Name == AddAliasCommand.Title);
-			action.ShouldNotBe(null);
-			action.Name.ShouldBe("Add Alias");
+			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 49).Where(a => a.Name == AddAliasCommand.Title).ToArray();
+			actions.Length.ShouldBe(1);
+			actions[0].Name.ShouldBe("Add Alias");
 		}
 
 		[Test(Description = @""), STAThread]

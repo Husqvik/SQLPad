@@ -10,6 +10,8 @@ namespace SqlPad.Oracle.Commands
 	{
 		public const string Title = "Toggle quoted notation";
 
+		private StatementGrammarNode _sourceNode;
+
 		private ToggleQuotedNotationCommand(ActionExecutionContext executionContext)
 			: base(executionContext)
 		{
@@ -17,8 +19,16 @@ namespace SqlPad.Oracle.Commands
 
 		protected override CommandCanExecuteResult CanExecute()
 		{
-			return CurrentNode != null && CurrentQueryBlock != null && CurrentNode.Id == Terminals.Select &&
-			       GetReplacedSegments().Any();
+			if (CurrentNode == null || CurrentNode != CurrentNode.Statement.RootNode.FirstTerminalNode)
+			{
+				return false;
+			}
+
+			_sourceNode = CurrentQueryBlock != null && CurrentNode.Id == Terminals.Select
+				? CurrentQueryBlock.RootNode
+				: CurrentNode.Statement.RootNode;
+
+			return GetReplacedSegments().Any();
 		}
 
 		protected override void Execute()
@@ -29,7 +39,7 @@ namespace SqlPad.Oracle.Commands
 		private IEnumerable<TextSegment> GetReplacedSegments()
 		{
 			bool? enableQuotes = null;
-			foreach (var identifier in CurrentQueryBlock.RootNode.Terminals.Where(t => t.Id.IsIdentifierOrAlias() && t.Token.Value.ToQuotedIdentifier() != t.Token.Value.ToSimpleIdentifier() && !t.Token.Value.CollidesWithReservedWord()))
+			foreach (var identifier in _sourceNode.Terminals.Where(t => t.Id.IsIdentifierOrAlias() && t.Token.Value.ToQuotedIdentifier() != t.Token.Value.ToSimpleIdentifier() && !t.Token.Value.CollidesWithReservedWord()))
 			{
 				if (!enableQuotes.HasValue)
 				{
