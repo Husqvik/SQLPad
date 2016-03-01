@@ -919,6 +919,32 @@ END;";
 		}
 
 		[Test]
+		public void TestModelBuildWithMistypedPlSqlVariableDeclaration()
+		{
+			const string plsqlText =
+@"CREATE OR REPLACE PACKAGE BODY MV_PANELMANAGEMENT
+AS
+    statistics_view_count CONSTANT INTEGER := 11;
+
+    PROCEDURE DROP_CONSTRAINTS IS BEGIN NULL; END;
+    
+    PROCEDURE REFRESH_SOURCES
+    IS
+        job)
+    BEGIN
+        BEGIN
+            job_statement := job_statement;
+        END;
+    END;
+END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).First();
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel);
+
+			Assert.DoesNotThrow(() => semanticModel.Build(CancellationToken.None));
+		}
+
+		[Test]
 		public void TestPackagePrograms()
 		{
 			const string plsqlText =
