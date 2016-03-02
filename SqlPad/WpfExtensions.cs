@@ -86,18 +86,27 @@ namespace SqlPad
 
 		public static void HighlightTextItems(this DependencyObject target, string regexPattern)
 		{
+			var regex = String.IsNullOrEmpty(regexPattern)
+				? null
+				: new Regex(regexPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+			HighlightTextItems(target, regex);
+		}
+
+		private static void HighlightTextItems(this DependencyObject target, Regex regex)
+		{
 			for (var i = 0; i < VisualTreeHelper.GetChildrenCount(target); i++)
 			{
 				if (target is ListViewItem || target is ListBoxItem || target is DataGridCell)
 				{
-					HighlightText(target, regexPattern);
+					HighlightText(target, regex);
 				}
 
-				HighlightTextItems(VisualTreeHelper.GetChild(target, i), regexPattern);
+				HighlightTextItems(VisualTreeHelper.GetChild(target, i), regex);
 			}
 		}
 
-		private static void HighlightText(DependencyObject dependencyObject, string regexPattern)
+		private static void HighlightText(DependencyObject dependencyObject, Regex regex)
 		{
 			if (dependencyObject == null)
 			{
@@ -109,22 +118,22 @@ namespace SqlPad
 			{
 				for (var i = 0; i < VisualTreeHelper.GetChildrenCount(dependencyObject); i++)
 				{
-					HighlightText(VisualTreeHelper.GetChild(dependencyObject, i), regexPattern);
+					HighlightText(VisualTreeHelper.GetChild(dependencyObject, i), regex);
 				}
 			}
 			else
 			{
 				var inlines = textBlock.Inlines;
-				var inlineCount = inlines.Count;
 				var firstRun = inlines.FirstInline as Run;
 				if (firstRun == null)
 				{
 					return;
 				}
 
+				var inlineCount = inlines.Count;
 				var text = textBlock.Text;
 
-				if (regexPattern.Length == 0)
+				if (regex == null)
 				{
 					if (inlineCount == 1 && String.Equals(firstRun.Text, text))
 					{
@@ -136,7 +145,6 @@ namespace SqlPad
 					return;
 				}
 
-				var regex = new Regex(regexPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 				var substrings = regex.Split(text);
 				var index = 0;
 				if (substrings.Length == inlineCount && inlines.All(i => (i as Run)?.Text.Length == substrings[index++].Length))

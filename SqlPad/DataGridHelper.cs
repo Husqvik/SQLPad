@@ -161,9 +161,38 @@ namespace SqlPad
 			}
 		}
 
+		public static DataGridRow GetRow(this DataGrid dataGrid, int rowIndex)
+		{
+			dataGrid.UpdateLayout();
+			dataGrid.ScrollIntoView(dataGrid.Items[rowIndex]);
+
+			return (DataGridRow)dataGrid.ItemContainerGenerator.ContainerFromIndex(rowIndex);
+		}
+
+		public static DataGridCell GetCell(this DataGrid dataGrid, int rowIndex, int columnIndex)
+		{
+			var rowContainer = dataGrid.GetRow(rowIndex);
+			if (rowContainer == null)
+			{
+				throw new ArgumentException("Row index was not found. ", nameof(rowIndex));
+			}
+
+			dataGrid.ScrollIntoView(rowContainer, dataGrid.Columns[columnIndex]);
+			var presenter = rowContainer.FindChildVisual<DataGridCellsPresenter>();
+
+			return (DataGridCell)presenter.ItemContainerGenerator.ContainerFromIndex(columnIndex);
+		}
+
 		private static TextBlock CreateTextBlock(string text)
 		{
-			return new TextBlock { Text = text, TextAlignment = TextAlignment.Left, VerticalAlignment = VerticalAlignment.Center, Margin = DefaultTextBlockMargin };
+			return
+				new TextBlock
+				{
+					Text = text,
+					TextAlignment = TextAlignment.Left,
+					VerticalAlignment = VerticalAlignment.Center,
+					Margin = DefaultTextBlockMargin
+				};
 		}
 
 		private static FrameworkElement ConfigureAndWrapUsingScrollViewerIfNeeded(Visual cell, object originalContent, FrameworkElement contentContainer)

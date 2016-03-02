@@ -58,7 +58,7 @@
 
 	<DockPanel LastChildFill="True">
 		<StackPanel x:Name="SearchPanel" Orientation="Horizontal" DockPanel.Dock="Top" Visibility="Collapsed">
-			<sqlPad:SearchTextBox x:Name="SearchPhraseTextBox" Watermark="Enter search phrase" TextChanged="SearchTextChangedHandler" MaxLength="64" MinWidth="200" HorizontalAlignment="Left" />
+			<sqlPad:SearchTextBox x:Name="SearchPhraseTextBox" Watermark="Enter search phrase" TextChanged="SearchTextChangedHandler" KeyDown="SearchPhraseTextBoxKeyDownHandler" MaxLength="64" MinWidth="200" HorizontalAlignment="Left" />
 			<TextBlock Text="{Binding SearchMatchCount}" Visibility="{Binding SearchMatchCount, Converter={StaticResource ObjectToVisibilityConverter}}" VerticalAlignment="Center" Margin="8,0,0,0" />
 			<TextBlock Visibility="{Binding SearchMatchCount, Converter={StaticResource ObjectToVisibilityConverter}}" VerticalAlignment="Center">
 				<TextBlock.Style>

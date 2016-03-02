@@ -165,6 +165,7 @@ namespace SqlPad
 		private IReadOnlyList<ColumnHeader> _columnHeaders;
 		private DateTime _lastRefresh;
 		private bool _searchedTextHighlightUsed;
+		private LastSearchedCell _lastSearchedCell = LastSearchedCell.Empty;
 
 		public TabItem TabItem { get; }
 
@@ -634,22 +635,26 @@ namespace SqlPad
 			}
 			else
 			{
-				var regex = new Regex(regexPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-				var matchCount = 0;
-
+				var totalMatchCount = 0;
+				var regex = BuildSearchRegularExpression(regexPattern);
 				foreach (var row in _resultRows)
 				{
 					foreach (var item in row)
 					{
 						var stringValue = (string)CellValueConverter.Instance.Convert(item, null, null, null);
-						matchCount += regex.Matches(stringValue).Count;
+						totalMatchCount += regex.Matches(stringValue).Count;
 					}
 				}
 
-				SearchMatchCount = matchCount;
+				SearchMatchCount = totalMatchCount;
 			}
 
 			HighlightSearchedText();
+		}
+
+		private static Regex BuildSearchRegularExpression(string regexPattern)
+		{
+			return new Regex(regexPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 		}
 
 		private void HighlightSearchedText()
@@ -659,12 +664,7 @@ namespace SqlPad
 
 			foreach (var row in ResultGrid.GetDataGridRows())
 			{
-				if (row == null)
-				{
-					break;
-				}
-
-				if (!ResultGrid.IsInViewport(row))
+				if (row == null || !ResultGrid.IsInViewport(row))
 				{
 					continue;
 				}
@@ -677,6 +677,7 @@ namespace SqlPad
 		{
 			SearchPanel.Visibility = Visibility.Collapsed;
 			SearchPhraseTextBox.Text = String.Empty;
+			_lastSearchedCell = LastSearchedCell.Empty;
 		}
 
 		private void SearchPanelOpenClickHandler(object sender, ExecutedRoutedEventArgs args)
@@ -695,6 +696,58 @@ namespace SqlPad
 				};
 
 			_outputViewer.RaiseEvent(reraisedEvent);
+		}
+
+		private void SearchPhraseTextBoxKeyDownHandler(object sender, KeyEventArgs args)
+		{
+			if (args.Key != Key.Enter)
+			{
+				return;
+			}
+
+			ScrollToNextSearchedCell();
+		}
+
+		private void ScrollToNextSearchedCell()
+		{
+			var regexPattern = TextSearchHelper.GetRegexPattern(SearchPhraseTextBox.Text);
+			var regex = BuildSearchRegularExpression(regexPattern);
+
+			var rowIndex = 0;
+			foreach (var row in _resultRows)
+			{
+				var columnIndex = 0;
+				foreach (var item in row)
+				{
+					var stringValue = (string)CellValueConverter.Instance.Convert(item, null, null, null);
+					var matchCount = regex.Matches(stringValue).Count;
+					if (matchCount > 0 &&
+						(rowIndex > _lastSearchedCell.Row || (rowIndex == _lastSearchedCell.Row && columnIndex > _lastSearchedCell.Column)))
+					{
+						_lastSearchedCell = new LastSearchedCell(rowIndex, columnIndex);
+						ResultGrid.GetCell(rowIndex, columnIndex);
+						return;
+					}
+
+					columnIndex++;
+				}
+
+				rowIndex++;
+			}
+		}
+
+		private struct LastSearchedCell
+		{
+			public static readonly LastSearchedCell Empty = new LastSearchedCell(-1, -1);
+
+			public readonly int Row;
+			public readonly int Column;
+
+			public LastSearchedCell(int row, int column)
+			{
+				Row = row;
+				Column = column;
+			}
 		}
 	}
 
