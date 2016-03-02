@@ -2055,8 +2055,8 @@ namespace SqlPad
 			{
 				DisableCodeCompletion();
 
-				var clipboardText = Clipboard.GetText();
-				if (_multiNodeEditor != null && e.Key.In(Key.V, Key.Insert) && !String.IsNullOrEmpty(clipboardText))
+				string clipboardText;
+				if (_multiNodeEditor != null && e.Key.In(Key.V, Key.Insert) && isControlPressed && ClipboardManager.TryGetClipboardText(out clipboardText))
 				{
 					_multiNodeEditor.Replace(clipboardText);
 				}

@@ -31,6 +31,20 @@ namespace SqlPad
 			NativeMethods.AddClipboardFormatListener(windowHandle);
 		}
 
+		public static bool TryGetClipboardText(out string text)
+		{
+			try
+			{
+				text = Clipboard.GetText();
+				return !String.IsNullOrEmpty(text);
+			}
+			catch (COMException)
+			{
+				text = null;
+				return false;
+			}
+		}
+
 		private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
 		{
 			if (msg == NativeMethods.ClipboardUpdate)

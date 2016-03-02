@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Windows;
 
 namespace SqlPad
@@ -45,12 +44,7 @@ namespace SqlPad
 			}
 
 			string text;
-
-			try
-			{
-				text = Clipboard.GetText();
-			}
-			catch (COMException)
+			if (!ClipboardManager.TryGetClipboardText(out text))
 			{
 				return;
 			}
