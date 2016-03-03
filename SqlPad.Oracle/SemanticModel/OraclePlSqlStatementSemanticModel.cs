@@ -703,7 +703,7 @@ namespace SqlPad.Oracle.SemanticModel
 					break;
 			}
 
-			var returnParameterNode = parameterSourceNode[NonTerminals.PlSqlDataTypeWithoutConstraint];
+			var returnParameterNode = parameterSourceNode?[NonTerminals.PlSqlDataTypeWithoutConstraint];
 			var parameterPosition = 0;
 			if (returnParameterNode != null)
 			{

@@ -945,6 +945,17 @@ END;";
 		}
 
 		[Test]
+		public void TestModelBuildWithIncompleteFunctionDefinition()
+		{
+			const string plsqlText = @"CREATE OR REPLACE FUNCTION";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).First();
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel);
+
+			Assert.DoesNotThrow(() => semanticModel.Build(CancellationToken.None));
+		}
+
+		[Test]
 		public void TestPackagePrograms()
 		{
 			const string plsqlText =
