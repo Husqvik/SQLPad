@@ -2514,9 +2514,25 @@ MODEL
 
 			ExecuteCommand(OracleCommands.SplitString);
 
-			const string expectedResult = @"SELECT q'|some|' || q'|text|' FROM dual";
+			const string expectedResult = @"SELECT q'|some|' ||  || q'|text|' FROM dual";
 
 			_editor.Text.ShouldBe(expectedResult);
+			_editor.CaretOffset.ShouldBe(20);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestSplitStringCommandAfterOffApostrophe()
+		{
+			const string statementText = @"SELECT 'some''text' FROM dual";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 14;
+
+			ExecuteCommand(OracleCommands.SplitString);
+
+			const string expectedResult = @"SELECT 'some''' ||  || 'text' FROM dual";
+
+			_editor.Text.ShouldBe(expectedResult);
+			_editor.CaretOffset.ShouldBe(19);
 		}
 
 		[Test(Description = @""), STAThread]

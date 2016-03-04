@@ -13,10 +13,9 @@ namespace SqlPad.Oracle.Commands
 
 		private int _trimIndex;
 		private bool _isQuotedString;
+		private int _positionInString;
 
 		private string LiteralValue => CurrentNode.Token.Value;
-
-		private int PositionInString => ExecutionContext.CaretOffset - CurrentNode.SourcePosition.IndexStart;
 
 		private SplitStringCommand(ActionExecutionContext executionContext)
 			: base(executionContext)
@@ -33,24 +32,27 @@ namespace SqlPad.Oracle.Commands
 
 			_trimIndex = OracleExtensions.GetTrimIndex(LiteralValue, out _isQuotedString);
 			var endOffset = _isQuotedString ? 1 : 0;
+			_positionInString = ExecutionContext.CaretOffset - CurrentNode.SourcePosition.IndexStart;
 
-			return PositionInString >= _trimIndex && PositionInString < LiteralValue.Length - endOffset && !IsAfterOddApostrophe;
+			if (IsAfterOddApostrophe())
+			{
+				_positionInString++;
+			}
+
+			return _positionInString >= _trimIndex && _positionInString < LiteralValue.Length - endOffset;
 		}
 
-		private bool IsAfterOddApostrophe
+		private bool IsAfterOddApostrophe()
 		{
-			get
+			if (_isQuotedString || LiteralValue[_positionInString] != SingleQuoteCharacter)
 			{
-				if (_isQuotedString || LiteralValue[PositionInString] != SingleQuoteCharacter)
-				{
-					return false;
-				}
-
-				return LiteralValue.Substring(0, PositionInString)
-					.Reverse()
-					.TakeWhile(c => c == SingleQuoteCharacter)
-					.Count() % 2 == 1;
+				return false;
 			}
+
+			return LiteralValue.Substring(0, _positionInString)
+				.Reverse()
+				.TakeWhile(c => c == SingleQuoteCharacter)
+				.Count() % 2 == 1;
 		}
 
 		protected override void Execute()
@@ -58,16 +60,18 @@ namespace SqlPad.Oracle.Commands
 			var stringInitializer = _isQuotedString ? LiteralValue.Substring(0, _trimIndex) : "'";
 			var stringFinalizer = _isQuotedString ? LiteralValue.Substring(LiteralValue.Length - 2, 2) : "'";
 
-			var firstPart = LiteralValue.Substring(0, PositionInString);
-			var secondPart = LiteralValue.Substring(PositionInString);
+			var firstPart = LiteralValue.Substring(0, _positionInString);
+			var secondPart = LiteralValue.Substring(_positionInString);
 
 			ExecutionContext.SegmentsToReplace.Add(
 				new TextSegment
 				{
 					IndextStart = CurrentNode.SourcePosition.IndexStart,
 					Length = CurrentNode.SourcePosition.Length,
-					Text = $"{firstPart}{stringFinalizer} || {stringInitializer}{secondPart}"
+					Text = $"{firstPart}{stringFinalizer} ||  || {stringInitializer}{secondPart}"
 				});
+
+			ExecutionContext.CaretOffset = CurrentNode.SourcePosition.IndexStart + firstPart.Length + stringFinalizer.Length + 4;
 		}
 	}
 }

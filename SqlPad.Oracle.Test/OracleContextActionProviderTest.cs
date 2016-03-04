@@ -469,17 +469,5 @@ namespace SqlPad.Oracle.Test
 			action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 19).SingleOrDefault(a => a.Name == SplitStringCommand.Title);
 			action.ShouldNotBe(null);
 		}
-
-		[Test(Description = @""), STAThread]
-		public void TestSplitStringCommmandNotAvailableAfterOddApostrophe()
-		{
-			const string query1 = @"SELECT 'some''text' FROM DUAL";
-
-			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 13).SingleOrDefault(a => a.Name == SplitStringCommand.Title);
-			action.ShouldBe(null);
-
-			action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 14).SingleOrDefault(a => a.Name == SplitStringCommand.Title);
-			action.ShouldNotBe(null);
-		}
 	}
 }

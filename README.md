@@ -1,4 +1,4 @@
-SQLPad 0.4.0.250
+SQLPad 0.4.0.251
 ================
 
 SQLPad is an experimental SQL editor focused to quick and comfortable work.
@@ -159,6 +159,8 @@ Convert ORDER BY number column reference
 #####@Literal
 
 Convert to bind variable
+
+Split string
 
 
 #####@*
