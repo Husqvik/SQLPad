@@ -140,6 +140,11 @@ namespace SqlPad.Oracle
 				actionList.Add(new ContextAction(GenerateCustomTypeCSharpWrapperClassCommand.Title, OracleCommands.GenerateCustomTypeCSharpWrapperClass, executionContext));
 			}
 
+			if (OracleCommands.SplitString.CanExecuteHandler(executionContext))
+			{
+				actionList.Add(new ContextAction(SplitStringCommand.Title, OracleCommands.SplitString, executionContext));
+			}
+
 			var actions = ResolveAmbiguousColumnCommand.ResolveCommandHandlers(semanticModel, currentTerminal)
 				.Select(c => new ContextAction("Resolve as " + c.Name, c, executionContext));
 

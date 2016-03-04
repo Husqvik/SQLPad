@@ -15,7 +15,7 @@ namespace SqlPad.Oracle
 {
 	public class OracleSqlParser : ISqlParser
 	{
-		private const char SingleQuote = '\'';
+		private const char SingleQuoteCharacter = '\'';
 		private static readonly Assembly LocalAssembly = typeof(OracleSqlParser).Assembly;
 		private static readonly XmlSerializer XmlSerializer = new XmlSerializer(typeof(SqlGrammar));
 		private static readonly Dictionary<string, SqlGrammarRule> NonTerminalRules;
@@ -144,10 +144,10 @@ namespace SqlPad.Oracle
 		{
 			switch (character)
 			{
-				case SingleQuote:
+				case SingleQuoteCharacter:
 					bool isQuotedString;
 					var trimToIndex = OracleExtensions.GetTrimIndex(tokenValue, out isQuotedString) - (isQuotedString ? 2 : 1);
-					return tokenValue[0] != SingleQuote && (trimToIndex == 0 || tokenValue[trimToIndex] != SingleQuote);
+					return tokenValue[0] != SingleQuoteCharacter && (trimToIndex == 0 || tokenValue[trimToIndex] != SingleQuoteCharacter);
 				
 				case '"':
 					return tokenValue[0] != '"';

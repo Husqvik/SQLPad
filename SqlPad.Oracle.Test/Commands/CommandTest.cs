@@ -2506,6 +2506,20 @@ MODEL
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestSplitStringCommand()
+		{
+			const string statementText = @"SELECT q'|sometext|' FROM dual";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 14;
+
+			ExecuteCommand(OracleCommands.SplitString);
+
+			const string expectedResult = @"SELECT q'|some|' || q'|text|' FROM dual";
+
+			_editor.Text.ShouldBe(expectedResult);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestGenerateCustomTypeCSharpWrapperClassCommand()
 		{
 			const string statementText = @"SELECT SYS.ODCIARGDESC() FROM DUAL";

@@ -69,9 +69,11 @@ namespace SqlPad.Oracle
 		{
 			var trimToIndex = 1;
 			isQuotedString = false;
-			if (oracleString[0] == 'n' || oracleString[0] == 'N')
+			var firstCharacter = oracleString[0];
+			if (firstCharacter == 'n' || firstCharacter == 'N')
 			{
-				if ((oracleString[1] == 'q' || oracleString[1] == 'Q'))
+				var secondCharacter = oracleString[1];
+				if (secondCharacter == 'q' || secondCharacter == 'Q')
 				{
 					trimToIndex = 4;
 					isQuotedString = true;
@@ -81,7 +83,7 @@ namespace SqlPad.Oracle
 					trimToIndex = 2;
 				}
 			}
-			else if (oracleString[0] == 'q' || oracleString[0] == 'Q')
+			else if (firstCharacter == 'q' || firstCharacter == 'Q')
 			{
 				trimToIndex = 3;
 				isQuotedString = true;

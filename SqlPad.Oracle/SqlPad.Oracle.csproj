@@ -84,6 +84,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CodeCompletionSearchHelper.cs" />
+    <Compile Include="Commands\SplitStringCommand.cs" />
     <Compile Include="Commands\PropagateColumnCommand.cs" />
     <Compile Include="Commands\AddCreateTableAsCommand.cs" />
     <Compile Include="Commands\AddMissingColumnCommand.cs" />

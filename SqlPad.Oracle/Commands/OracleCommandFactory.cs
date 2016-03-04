@@ -32,6 +32,7 @@ namespace SqlPad.Oracle.Commands
 		public static readonly CommandExecutionHandler ExpandAsterisk = OracleCommandBase.CreateStandardExecutionHandler<ExpandAsteriskCommand>("ExpandAsterisk");
 		public static readonly CommandExecutionHandler GenerateCustomTypeCSharpWrapperClass = OracleCommandBase.CreateStandardExecutionHandler<GenerateCustomTypeCSharpWrapperClassCommand>("GenerateCustomTypeCSharpWrapperClass");
 		public static readonly CommandExecutionHandler PropagateColumn = OracleCommandBase.CreateStandardExecutionHandler<PropagateColumnCommand>("PropagateColumn");
+		public static readonly CommandExecutionHandler SplitString = OracleCommandBase.CreateStandardExecutionHandler<SplitStringCommand>("SplitString");
 		public static readonly CommandExecutionHandler ToggleFullyQualifiedReferences = OracleCommandBase.CreateStandardExecutionHandler<ToggleFullyQualifiedReferencesCommand>("ToggleFullyQualifiedReferences");
 		public static readonly CommandExecutionHandler ToggleQuotedNotation = OracleCommandBase.CreateStandardExecutionHandler<ToggleQuotedNotationCommand>("ToggleQuotedNotation");
 		public static readonly CommandExecutionHandler UnnestInlineView = OracleCommandBase.CreateStandardExecutionHandler<UnnestInlineViewCommand>(UnnestInlineViewCommand.Title);

@@ -436,5 +436,50 @@ namespace SqlPad.Oracle.Test
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 7).SingleOrDefault(a => a.Name == GenerateCustomTypeCSharpWrapperClassCommand.Title);
 			action.ShouldBe(null);
 		}
+
+		[Test(Description = @""), STAThread]
+		public void TestSplitStringCommmand()
+		{
+			const string query1 = @"SELECT 'sometext' FROM DUAL";
+
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 12).SingleOrDefault(a => a.Name == SplitStringCommand.Title);
+			action.ShouldNotBe(null);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestSplitStringCommmandNotAvailableAtQuotedPrefix()
+		{
+			const string query1 = @"SELECT nq'|sometext|' FROM DUAL";
+
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 10).SingleOrDefault(a => a.Name == SplitStringCommand.Title);
+			action.ShouldBe(null);
+
+			action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 11).SingleOrDefault(a => a.Name == SplitStringCommand.Title);
+			action.ShouldNotBe(null);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestSplitStringCommmandNotAvailableAtQuotedPostfix()
+		{
+			const string query1 = @"SELECT nq'|sometext|' FROM DUAL";
+
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 20).SingleOrDefault(a => a.Name == SplitStringCommand.Title);
+			action.ShouldBe(null);
+
+			action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 19).SingleOrDefault(a => a.Name == SplitStringCommand.Title);
+			action.ShouldNotBe(null);
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestSplitStringCommmandNotAvailableAfterOddApostrophe()
+		{
+			const string query1 = @"SELECT 'some''text' FROM DUAL";
+
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 13).SingleOrDefault(a => a.Name == SplitStringCommand.Title);
+			action.ShouldBe(null);
+
+			action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 14).SingleOrDefault(a => a.Name == SplitStringCommand.Title);
+			action.ShouldNotBe(null);
+		}
 	}
 }
