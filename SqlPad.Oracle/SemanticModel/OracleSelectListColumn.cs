@@ -104,20 +104,36 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private OracleColumn BuildColumnDescription()
 		{
-			var columnDescription = IsDirectReference && ColumnReferences.Count == 1
-				? ColumnReferences[0].ColumnDescription
+			var columnReference = IsDirectReference && ColumnReferences.Count == 1
+				? ColumnReferences[0]
 				: null;
+
+			var columnDescription = columnReference?.ColumnDescription;
 
 			_columnDescription =
 				new OracleColumn
 				{
 					Name = ColumnName,
-					Nullable = columnDescription == null || columnDescription.Nullable,
-					DataType = columnDescription == null ? OracleDataType.Empty : columnDescription.DataType,
-					CharacterSize = columnDescription?.CharacterSize
+					Nullable = columnDescription == null,
+					DataType = OracleDataType.Empty
 				};
 
-			if (columnDescription == null && !IsAsterisk && RootNode.TerminalCount > 0)
+			if (columnDescription != null)
+			{
+				_columnDescription.Nullable = columnDescription.Nullable;
+				_columnDescription.DataType = columnDescription.DataType;
+				_columnDescription.CharacterSize = columnDescription.CharacterSize;
+
+				if (!_columnDescription.Nullable)
+				{
+					var objectReference = columnReference.ValidObjectReference as OracleDataObjectReference;
+					if (objectReference != null)
+					{
+						_columnDescription.Nullable = objectReference.IsOuterJoined;
+					}
+				}
+			}
+			else if (!IsAsterisk && RootNode.TerminalCount > 0)
 			{
 				var expressionNode = RootNode[0];
 				if (String.Equals(expressionNode.Id, NonTerminals.AliasedExpression))

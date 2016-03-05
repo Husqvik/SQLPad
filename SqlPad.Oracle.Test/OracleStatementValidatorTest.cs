@@ -3467,7 +3467,7 @@ END;";
 		}
 
 		[Test(Description = @"")]
-		public void InsertIntoColumnClauseWithPrefixedColumnReferringNonExistingTable()
+		public void TestInsertIntoColumnClauseWithPrefixedColumnReferringNonExistingTable()
 		{
 			const string sqlText = @"INSERT INTO tmp (tmp.val) VALUES (1)";
 
@@ -3478,6 +3478,20 @@ END;";
 			var validationModel = BuildValidationModel(sqlText, statement);
 
 			validationModel.ColumnNodeValidity.Values.Count(c => !c.IsRecognized).ShouldBe(1);
+		}
+
+		[Test(Description = @"")]
+		public void TestNullabilityOfLeftJoinedNotNullColumn()
+		{
+			const string sqlText = @"SELECT c1, c2 FROM (SELECT t1.selection_id c1, t2.selection_id c2 FROM selection t1 LEFT JOIN selection t2 ON 1 = 0) WHERE c2 IS NULL";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			validationModel.Suggestions.Count().ShouldBe(0);
 		}
 	}
 }
