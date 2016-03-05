@@ -147,7 +147,13 @@ namespace SqlPad.Oracle
 				case SingleQuoteCharacter:
 					bool isQuotedString;
 					var trimToIndex = OracleExtensions.GetTrimIndex(tokenValue, out isQuotedString) - (isQuotedString ? 2 : 1);
-					return tokenValue[0] != SingleQuoteCharacter && (trimToIndex == 0 || tokenValue[trimToIndex] != SingleQuoteCharacter);
+					var tokenValueLength = tokenValue.Length;
+					if (trimToIndex >= tokenValueLength)
+					{
+						trimToIndex = tokenValueLength - 1;
+					}
+
+					return tokenValue[0] != SingleQuoteCharacter && (tokenValue[trimToIndex] != SingleQuoteCharacter);
 				
 				case '"':
 					return tokenValue[0] != '"';

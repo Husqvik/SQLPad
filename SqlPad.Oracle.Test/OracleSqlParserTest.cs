@@ -7745,6 +7745,7 @@ USING 'localhost:1521/hqpdb'";
 				Parser.CanAddPairCharacter("nqVODKA", '\'').ShouldBe(true);
 				Parser.CanAddPairCharacter("qVODKA", '\'').ShouldBe(true);
 				Parser.CanAddPairCharacter("'", '\'').ShouldBe(false);
+				Parser.CanAddPairCharacter("q", '\'').ShouldBe(true);
 			}
 		}
 
