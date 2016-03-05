@@ -1407,6 +1407,7 @@ namespace SqlPad
 
 		private void InsertPairCharacter(string pairCharacter)
 		{
+			Editor.Document.BeginUpdate();
 			Editor.Document.Insert(Editor.CaretOffset, pairCharacter);
 			Editor.CaretOffset--;
 		}
@@ -1437,7 +1438,7 @@ namespace SqlPad
 					pairCharacterHandled = IsNextCharacterBlank() || IsAtValidClosingParenthesis();
 					if (pairCharacterHandled)
 					{
-						InsertPairCharacter("()");
+						InsertPairCharacter(")");
 					}
 
 					break;
@@ -1445,7 +1446,7 @@ namespace SqlPad
 					pairCharacterHandled = !PreviousPairCharacterExists(text, '"', '"') && IsNextCharacterBlank() && _documentRepository.CanAddPairCharacter(Editor.CaretOffset, '"');
 					if (pairCharacterHandled)
 					{
-						InsertPairCharacter("\"\"");
+						InsertPairCharacter("\"");
 					}
 					
 					break;
@@ -1453,7 +1454,7 @@ namespace SqlPad
 					pairCharacterHandled = !PreviousPairCharacterExists(text, '\'', '\'') && IsNextCharacterBlank() && _documentRepository.CanAddPairCharacter(Editor.CaretOffset, '\'');
 					if (pairCharacterHandled)
 					{
-						InsertPairCharacter("''");
+						InsertPairCharacter("'");
 					}
 
 					break;
@@ -1490,7 +1491,6 @@ namespace SqlPad
 
 				if (HandlePairCharacterInsertion(e.Text))
 				{
-					e.Handled = true;
 					return;
 				}
 			}
