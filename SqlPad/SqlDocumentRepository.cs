@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,7 +18,7 @@ namespace SqlPad
 
 	    public string StatementText { get; private set; }
 
-		public IDictionary<StatementBase, IValidationModel> ValidationModels { get; private set; } = new Dictionary<StatementBase, IValidationModel>();
+		public IReadOnlyDictionary<StatementBase, IValidationModel> ValidationModels { get; private set; } = new Dictionary<StatementBase, IValidationModel>().AsReadOnly();
 
 	    public SqlDocumentRepository(ISqlParser parser, IStatementValidator validator, IDatabaseModel databaseModel, string statementText = null)
 		{
@@ -43,16 +42,33 @@ namespace SqlPad
 		{
 			var statements = _parser.Parse(statementText);
 			var validationModels = statements.ToDictionary(s => s, s => _validator.BuildValidationModel(_validator.BuildSemanticModel(statementText, s, _databaseModel)));
-			UpdateStatementsInternal(statementText, statements, validationModels);
+			UpdateStatementsInternal(statementText, new ValidationResult { Statements = statements, ValidationModels = validationModels });
 		}
 
 		public async Task UpdateStatementsAsync(string statementText, CancellationToken cancellationToken)
 		{
+			var result = await BuildValidationModelsInternalAsync(statementText, cancellationToken);
+			UpdateStatementsInternal(statementText, result);
+		}
+
+		public async Task<IEnumerable<IValidationModel>> BuildValidationModelsAsync(string statementText, CancellationToken cancellationToken)
+		{
+			var result = await BuildValidationModelsInternalAsync(statementText, cancellationToken);
+			return result.ValidationModels.Values;
+		}
+
+		private async Task<ValidationResult> BuildValidationModelsInternalAsync(string statementText, CancellationToken cancellationToken)
+		{
 			try
 			{
 				var statements = await _parser.ParseAsync(statementText, cancellationToken);
-				var validationModels =  await BuildValidationModelsAsync(statements, statementText, cancellationToken);
-				UpdateStatementsInternal(statementText, statements, validationModels);
+
+				return
+					new ValidationResult
+					{
+						Statements = statements,
+						ValidationModels = await BuildValidationModelsAsync(statements, statementText, cancellationToken)
+					};
 			}
 			catch (OperationCanceledException)
 			{
@@ -65,7 +81,7 @@ namespace SqlPad
 			}
 		}
 
-		private async Task<IDictionary<StatementBase, IValidationModel>> BuildValidationModelsAsync(StatementCollection statements, string statementText, CancellationToken cancellationToken)
+		private async Task<IReadOnlyDictionary<StatementBase, IValidationModel>> BuildValidationModelsAsync(StatementCollection statements, string statementText, CancellationToken cancellationToken)
 		{
 			var dictionary = new Dictionary<StatementBase, IValidationModel>();
 			foreach (var statement in statements)
@@ -75,16 +91,16 @@ namespace SqlPad
 				dictionary.Add(statement, validationModel);
 			}
 
-			return new ReadOnlyDictionary<StatementBase, IValidationModel>(dictionary);
+			return dictionary.AsReadOnly();
 		}
 
-		private void UpdateStatementsInternal(string statementText, StatementCollection statements, IDictionary<StatementBase, IValidationModel> validationModels)
+		private void UpdateStatementsInternal(string statementText, ValidationResult result)
 		{
 			lock (_lockObject)
 			{
-				Statements = statements;
+				Statements = result.Statements;
 				//_precedingValidationModels = _validationModels;
-				ValidationModels = validationModels;
+				ValidationModels = result.ValidationModels;
 				StatementText = statementText;
 			}
 		}
@@ -130,6 +146,12 @@ namespace SqlPad
 		{
 			var token = Statements.Tokens.FirstOrDefault(t => caretOffset >= t.Index && caretOffset <= t.Index + t.Value.Length);
 			return token == null || _parser.CanAddPairCharacter(token.Value, character);
+		}
+
+		private struct ValidationResult
+		{
+			public StatementCollection Statements;
+			public IReadOnlyDictionary<StatementBase, IValidationModel> ValidationModels;
 		}
 	}
 }

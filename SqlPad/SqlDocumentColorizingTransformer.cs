@@ -35,7 +35,7 @@ namespace SqlPad
 
 		private ISqlParser _parser;
 		private StatementCollection _statements;
-		private IDictionary<StatementBase, IValidationModel> _validationModels;
+		private IReadOnlyDictionary<StatementBase, IValidationModel> _validationModels;
 
 		public StatementBase ActiveStatement { get; private set; }
 

@@ -46,7 +46,7 @@ namespace SqlPad
 		private IStatementFormatter _statementFormatter;
 		private IToolTipProvider _toolTipProvider;
 		private INavigationService _navigationService;
-		private IHelpProvider _createHelpProvider;
+		private IHelpProvider _helpProvider;
 
 		private MultiNodeEditor _multiNodeEditor;
 		private CancellationTokenSource _parsingCancellationTokenSource;
@@ -414,15 +414,16 @@ namespace SqlPad
 			_statementFormatter = InfrastructureFactory.CreateSqlFormatter(new SqlFormatterOptions());
 			_toolTipProvider = InfrastructureFactory.CreateToolTipProvider();
 			_navigationService = InfrastructureFactory.CreateNavigationService();
-			_createHelpProvider = InfrastructureFactory.CreateHelpProvider();
+			_helpProvider = InfrastructureFactory.CreateHelpProvider();
+			var parser = InfrastructureFactory.CreateParser();
 
-			_colorizingTransformer.SetParser(InfrastructureFactory.CreateParser());
+			_colorizingTransformer.SetParser(parser);
 
 			InitializeSpecificCommandBindings();
 
 			DatabaseModel = InfrastructureFactory.CreateDatabaseModel(ConfigurationProvider.ConnectionStrings[_connectionString.Name], DocumentHeader);
 			SchemaLabel = InfrastructureFactory.SchemaLabel;
-			_documentRepository = new SqlDocumentRepository(InfrastructureFactory.CreateParser(), InfrastructureFactory.CreateStatementValidator(), DatabaseModel);
+			_documentRepository = new SqlDocumentRepository(parser, InfrastructureFactory.CreateStatementValidator(), DatabaseModel);
 
 			DisposeOutputViewers();
 			AddNewOutputViewer();
@@ -783,7 +784,8 @@ namespace SqlPad
 				return;
 			}
 
-			args.CanExecute = BuildStatementExecutionModel(false).Count > 0;
+			var executionConfiguration = ResolveStatementsToExecute(false);
+			args.CanExecute = executionConfiguration.ExecutionModels.Count > 0 || executionConfiguration.UnparsedText != null;
 		}
 
 		private void ExecuteDatabaseCommandWithActualExecutionPlanHandler(object sender, ExecutedRoutedEventArgs args)
@@ -796,22 +798,32 @@ namespace SqlPad
 			ExecuteDatabaseCommandHandlerInternal(false);
 		}
 
-		private async void ExecuteDatabaseCommandHandlerInternal(bool gatherExecutionStatistics)
+		private async Task<IReadOnlyList<StatementExecutionModel>> GetExecutionModels(StatementExecutionConfiguration executionConfiguration)
 		{
-			if (ActiveOutputViewer.IsPinned)
+			if (executionConfiguration.ExecutionModels.Count > 0)
 			{
-				try
-				{
-					AddNewOutputViewer();
-				}
-				catch (InvalidOperationException e)
-				{
-					Messages.ShowInformation(e.Message);
-					return;
-				}
+				return executionConfiguration.ExecutionModels;
 			}
 
-			var executionModels = BuildStatementExecutionModel(true);
+			var validationModels = await _documentRepository.BuildValidationModelsAsync(executionConfiguration.UnparsedText, CancellationToken.None);
+			var bindVariables = new BindVariableModel[0];
+			return validationModels
+				.Select(m =>
+					new StatementExecutionModel
+					{
+						StatementText = m.Statement.RootNode.SourcePosition == SourcePosition.Empty
+							? executionConfiguration.UnparsedText
+							: m.Statement.RootNode.GetText(executionConfiguration.UnparsedText),
+						ValidationModel = m,
+						BindVariables = bindVariables
+					})
+				.ToArray();
+		}
+
+		private async void ExecuteDatabaseCommandHandlerInternal(bool gatherExecutionStatistics)
+		{
+			var executionConfiguration = ResolveStatementsToExecute(true);
+			var executionModels = await GetExecutionModels(executionConfiguration);
 			var executionModel =
 				new StatementBatchExecutionModel
 				{
@@ -826,10 +838,23 @@ namespace SqlPad
 				return;
 			}
 
+			if (ActiveOutputViewer.IsPinned)
+			{
+				try
+				{
+					AddNewOutputViewer();
+				}
+				catch (InvalidOperationException e)
+				{
+					Messages.ShowInformation(e.Message);
+					return;
+				}
+			}
+
 			await ActiveOutputViewer.ExecuteDatabaseCommandAsync(executionModel);
 		}
 
-		private IReadOnlyList<StatementExecutionModel> BuildStatementExecutionModel(bool includeStatementText)
+		private StatementExecutionConfiguration ResolveStatementsToExecute(bool includeStatementText)
 		{
 			var executionModels = new List<StatementExecutionModel>();
 
@@ -897,7 +922,19 @@ namespace SqlPad
 					});
 			}
 
-			return executionModels;
+			var executionConfiguration =
+				new StatementExecutionConfiguration
+				{
+					ExecutionModels = executionModels
+				};
+
+			if (executionModels.Count == 0 && Editor.SelectionLength > 0)
+			{
+				var selectedSegments = Editor.TextArea.Selection.Segments.Select(Editor.Document.GetText);
+				executionConfiguration.UnparsedText = $"{new String(' ', Editor.SelectionStart)}{String.Join(Environment.NewLine, selectedSegments)}";
+			}
+
+			return executionConfiguration;
 		}
 
 		public void Dispose()
@@ -1280,7 +1317,11 @@ namespace SqlPad
 				return;
 			}
 
-			var statements = new List<StatementBase>(BuildStatementExecutionModel(false).Select(m => m.ValidationModel.Statement));
+			var statements =
+				ResolveStatementsToExecute(false).ExecutionModels
+					.Select(m => m.ValidationModel.Statement)
+					.ToArray();
+
 			if (statements.All(s => s.BindVariables.Count == 0))
 			{
 				BindVariables = new BindVariableModel[0];
@@ -2104,7 +2145,8 @@ namespace SqlPad
 
 		private async void ExecuteExplainPlanCommandHandler(object sender, ExecutedRoutedEventArgs args)
 		{
-			var executionModels = BuildStatementExecutionModel(true);
+			var executionConfiguration = ResolveStatementsToExecute(true);
+			var executionModels = await GetExecutionModels(executionConfiguration);
 			if (executionModels.Count > 1)
 			{
 				Messages.ShowInformation("Multiple statements are not supported. ");
@@ -2171,7 +2213,7 @@ namespace SqlPad
 		private void ShowHelpHandler(object sender, ExecutedRoutedEventArgs e)
 		{
 			var executionContext = ActionExecutionContext.Create(Editor, _documentRepository);
-			_createHelpProvider.ShowHelp(executionContext);
+			_helpProvider.ShowHelp(executionContext);
 		}
 
 		private void BindVariableEditorGotFocusHandler(object sender, RoutedEventArgs e)
@@ -2211,22 +2253,31 @@ namespace SqlPad
 			var bindVariableModel = (BindVariableModel)button.DataContext;
 			if (button.IsChecked == true)
 			{
-				if (!File.Exists(Convert.ToString(bindVariableModel.Value)))
+				if (File.Exists(Convert.ToString(bindVariableModel.Value)))
 				{
-					var dialog = new OpenFileDialog {Filter = "All files (*.*)|*"};
-					if (dialog.ShowDialog() != true)
-					{
-						button.IsChecked = false;
-						return;
-					}
-
-					bindVariableModel.Value = dialog.FileName;
+					return;
 				}
+
+				var dialog = new OpenFileDialog { Filter = "All files (*.*)|*" };
+				if (dialog.ShowDialog() != true)
+				{
+					button.IsChecked = false;
+					return;
+				}
+
+				bindVariableModel.Value = dialog.FileName;
 			}
 			else
 			{
 				bindVariableModel.Value = String.Empty;
 			}
+		}
+
+		private struct StatementExecutionConfiguration
+		{
+			public IReadOnlyList<StatementExecutionModel> ExecutionModels;
+
+			public string UnparsedText;
 		}
 	}
 
