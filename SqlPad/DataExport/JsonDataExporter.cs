@@ -15,7 +15,9 @@ namespace SqlPad.DataExport
 		private const string QuoteCharacter = "\"";
 		private const string EscapedQuote = "\\\"";
 
-		public string FileNameFilter => "JSON files (*.json)|*.json|All files (*.*)|*";
+		public string Name { get; } = "JSON";
+
+		public string FileNameFilter { get; } = "JSON files (*.json)|*.json|All files (*.*)|*";
 
 		public bool HasAppendSupport { get; } = false;
 

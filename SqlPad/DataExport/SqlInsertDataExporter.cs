@@ -7,6 +7,8 @@ namespace SqlPad.DataExport
 {
 	public class SqlInsertDataExporter : SqlBaseDataExporter
 	{
+		public override string Name { get; } = "SQL insert";
+
 		protected override string BuildSqlCommandTemplate(IEnumerable<string> columnHeaders)
 		{
 			var headerArray = columnHeaders.ToArray();

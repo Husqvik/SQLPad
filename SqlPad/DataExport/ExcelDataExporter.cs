@@ -12,7 +12,9 @@ namespace SqlPad.DataExport
 {
 	public class ExcelDataExporter : IDataExporter
 	{
-		public string FileNameFilter => "Excel files (*.xlsx)|*.xlsx|All files (*.*)|*";
+		public string Name { get; } = "Excel";
+
+		public string FileNameFilter { get; } = "Excel files (*.xlsx)|*.xlsx|All files (*.*)|*";
 
 		public bool HasAppendSupport { get; } = true;
 

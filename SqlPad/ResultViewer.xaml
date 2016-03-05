@@ -3,9 +3,9 @@
 			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-			 xmlns:dataExport="clr-namespace:SqlPad.DataExport"
 			 xmlns:sqlPad="clr-namespace:SqlPad"
 			 xmlns:system="clr-namespace:System;assembly=mscorlib"
+			 xmlns:dataExport="clr-namespace:SqlPad.DataExport"
 			 mc:Ignorable="d"
 			 d:DesignHeight="140" d:DesignWidth="384"
 			 Initialized="InitializedHandler"
@@ -34,15 +34,6 @@
 		<RoutedCommand x:Key="GenerateCSharpQueryClassCommand" />
 		<RoutedCommand x:Key="FetchAllRowsCommand" />
 		<RoutedCommand x:Key="RefreshCommand" />
-
-		<dataExport:CsvDataExporter x:Key="CsvDataExporter" />
-		<dataExport:TsvDataExporter x:Key="TsvDataExporter" />
-		<dataExport:HtmlDataExporter x:Key="HtmlDataExporter" />
-		<dataExport:JsonDataExporter x:Key="JsonDataExporter" />
-		<dataExport:SqlInsertDataExporter x:Key="SqlInsertDataExporter" />
-		<dataExport:SqlUpdateDataExporter x:Key="SqlUpdateDataExporter" />
-		<dataExport:XmlDataExporter x:Key="XmlDataExporter" />
-		<dataExport:ExcelDataExporter x:Key="ExcelDataExporter" />
 
 		<RoutedCommand x:Key="CloseSearchBar" />
 	</UserControl.Resources>
@@ -205,37 +196,37 @@
 					<MenuItem Header="_Refresh" Command="{StaticResource RefreshCommand}" />
 					<MenuItem Header="Export to _file">
 						<MenuItem Header="_Comma-separated value..." Command="{StaticResource ExportToCsvFileCommand}"
-						          CommandParameter="{StaticResource CsvDataExporter}" />
+						          CommandParameter="{x:Static dataExport:DataExporters.Csv}" />
 						<MenuItem Header="_Excel sheet..." Command="{StaticResource ExportToExcelFileCommand}"
-						          CommandParameter="{StaticResource ExcelDataExporter}" />
+						          CommandParameter="{x:Static dataExport:DataExporters.Excel}" />
 						<MenuItem Header="_Tab-separated value..." Command="{StaticResource ExportToTsvFileCommand}"
-						          CommandParameter="{StaticResource TsvDataExporter}" />
+						          CommandParameter="{x:Static dataExport:DataExporters.Tsv}" />
 						<MenuItem Header="_HTML..." Command="{StaticResource ExportToHtmlFileCommand}"
-						          CommandParameter="{StaticResource HtmlDataExporter}" />
+						          CommandParameter="{x:Static dataExport:DataExporters.Html}" />
 						<MenuItem Header="_JSON..." Command="{StaticResource ExportToJsonFileCommand}"
-						          CommandParameter="{StaticResource JsonDataExporter}" />
+						          CommandParameter="{x:Static dataExport:DataExporters.Json}" />
 						<MenuItem Header="SQL _INSERT..." Command="{StaticResource ExportToSqlInsertFileCommand}"
-						          CommandParameter="{StaticResource SqlInsertDataExporter}" />
+						          CommandParameter="{x:Static dataExport:DataExporters.SqlInsert}" />
 						<MenuItem Header="SQL _UPDATE..." Command="{StaticResource ExportToSqlUpdateFileCommand}"
-						          CommandParameter="{StaticResource SqlUpdateDataExporter}" />
+						          CommandParameter="{x:Static dataExport:DataExporters.SqlUpdate}" />
 						<MenuItem Header="_XML..." Command="{StaticResource ExportToXmlFileCommand}"
-						          CommandParameter="{StaticResource XmlDataExporter}" />
+						          CommandParameter="{x:Static dataExport:DataExporters.Xml}" />
 					</MenuItem>
 					<MenuItem Header="Export to _clipboard">
 						<MenuItem Header="_Comma-separated value..." Command="{StaticResource ExportToCsvClipboardCommand}"
-						          CommandParameter="{StaticResource CsvDataExporter}" />
+						          CommandParameter="{x:Static dataExport:DataExporters.Csv}" />
 						<MenuItem Header="_Tab-separated value..." Command="{StaticResource ExportToTsvClipboardCommand}"
-						          CommandParameter="{StaticResource TsvDataExporter}" />
+						          CommandParameter="{x:Static dataExport:DataExporters.Tsv}" />
 						<MenuItem Header="_HTML..." Command="{StaticResource ExportToHtmlClipboardCommand}"
-						          CommandParameter="{StaticResource HtmlDataExporter}" />
+						          CommandParameter="{x:Static dataExport:DataExporters.Html}" />
 						<MenuItem Header="_JSON..." Command="{StaticResource ExportToJsonClipboardCommand}"
-						          CommandParameter="{StaticResource JsonDataExporter}" />
+						          CommandParameter="{x:Static dataExport:DataExporters.Json}" />
 						<MenuItem Header="SQL _INSERT..." Command="{StaticResource ExportToSqlInsertClipboardCommand}"
-						          CommandParameter="{StaticResource SqlInsertDataExporter}" />
+						          CommandParameter="{x:Static dataExport:DataExporters.SqlInsert}" />
 						<MenuItem Header="SQL _UPDATE..." Command="{StaticResource ExportToSqlUpdateClipboardCommand}"
-						          CommandParameter="{StaticResource SqlUpdateDataExporter}" />
+						          CommandParameter="{x:Static dataExport:DataExporters.SqlUpdate}" />
 						<MenuItem Header="_XML..." Command="{StaticResource ExportToXmlClipboardCommand}"
-						          CommandParameter="{StaticResource XmlDataExporter}" />
+						          CommandParameter="{x:Static dataExport:DataExporters.Xml}" />
 					</MenuItem>
 					<MenuItem Header="_Generate C# query class" Command="{StaticResource GenerateCSharpQueryClassCommand}" />
 				</ContextMenu>

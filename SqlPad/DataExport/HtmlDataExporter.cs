@@ -14,7 +14,9 @@ namespace SqlPad.DataExport
 		private const string QuoteCharacter = "\"";
 		private const string EscapedQuote = "&quot;";
 
-		public string FileNameFilter => "HTML files (*.html)|*.html|All files (*.*)|*";
+		public string Name { get; } = "HTML";
+
+		public string FileNameFilter { get; } = "HTML files (*.html)|*.html|All files (*.*)|*";
 
 		public bool HasAppendSupport { get; } = false;
 

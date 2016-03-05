@@ -22,7 +22,9 @@ namespace SqlPad.DataExport
 				Encoding = Encoding.UTF8
 			};
 
-		public string FileNameFilter => "XML files (*.xml)|*.xml|All files (*.*)|*";
+		public string Name { get; } = "XML";
+
+		public string FileNameFilter { get; } = "XML files (*.xml)|*.xml|All files (*.*)|*";
 
 		public bool HasAppendSupport { get; } = false;
 

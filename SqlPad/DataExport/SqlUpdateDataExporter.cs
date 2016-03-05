@@ -10,7 +10,9 @@ namespace SqlPad.DataExport
 {
 	public abstract class SqlBaseDataExporter : IDataExporter
 	{
-		public string FileNameFilter => "SQL files (*.sql)|*.sql|All files (*.*)|*";
+		public abstract string Name { get; }
+
+		public string FileNameFilter { get; } = "SQL files (*.sql)|*.sql|All files (*.*)|*";
 
 		public bool HasAppendSupport { get; } = false;
 
@@ -65,6 +67,8 @@ namespace SqlPad.DataExport
 	public class SqlUpdateDataExporter : SqlBaseDataExporter
 	{
 		private const string UpdateColumnClauseMask = "{0} = {{{1}}}";
+
+		public override string Name { get; } = "SQL update";
 
 		protected override string BuildSqlCommandTemplate(IEnumerable<string> columnHeaders)
 		{

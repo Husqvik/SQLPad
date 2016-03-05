@@ -16,9 +16,11 @@ namespace SqlPad.DataExport
 		private const string DoubleQuotes = "\"\"";
 		private const string CsvSeparator = ";";
 
-		protected virtual string Separator => CsvSeparator;
+		public virtual string Name { get; } = "Comma separated value";
 
-		public virtual string FileNameFilter => "CSV files (*.csv)|*.csv|All files (*.*)|*";
+		protected virtual string Separator { get; } = CsvSeparator;
+
+		public virtual string FileNameFilter { get; } = "CSV files (*.csv)|*.csv|All files (*.*)|*";
 
 		public bool HasAppendSupport { get; } = false;
 
