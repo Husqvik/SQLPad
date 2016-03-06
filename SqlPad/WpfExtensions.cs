@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
@@ -123,15 +124,41 @@ namespace SqlPad
 			}
 			else
 			{
+				string text = null;
+
 				var inlines = textBlock.Inlines;
-				var firstRun = inlines.FirstInline as Run;
+				var firstInline = inlines.FirstInline;
+				var hyperlink = firstInline as Hyperlink;
+				if (hyperlink != null)
+				{
+					inlines = hyperlink.Inlines;
+					firstInline = inlines.FirstInline;
+
+					var textBuilder = new StringBuilder();
+
+					foreach (var inline in inlines)
+					{
+						var run = inline as Run;
+						if (run != null)
+						{
+							textBuilder.Append(run.Text);
+						}
+					}
+
+					text = textBuilder.ToString();
+				}
+
+				var firstRun = firstInline as Run;
 				if (firstRun == null)
 				{
 					return;
 				}
 
 				var inlineCount = inlines.Count;
-				var text = textBlock.Text;
+				if (hyperlink == null)
+				{
+					text = textBlock.Text;
+				}
 
 				if (regex == null)
 				{
