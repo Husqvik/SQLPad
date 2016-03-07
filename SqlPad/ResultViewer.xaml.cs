@@ -263,7 +263,7 @@ namespace SqlPad
 				async ct => await App.SafeActionAsync(
 					async () =>
 					{
-						_columnHeaders = await _outputViewer.ConnectionAdapter.RefreshResult(_resultInfo, ct);
+						await _outputViewer.ConnectionAdapter.RefreshResult(_executionResult, ct);
 						_resultRows.Clear();
 						await ApplyReferenceConstraints(ct);
 						await FetchNextRows(ct);

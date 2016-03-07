@@ -47,9 +47,9 @@ namespace SqlPad.Oracle.Test
 
 		public override SessionIdentifier? SessionIdentifier { get; } = new SessionIdentifier(1, 123);
 
-		public override Task<IReadOnlyList<ColumnHeader>> RefreshResult(ResultInfo resultInfo, CancellationToken cancellationToken)
+		public override Task RefreshResult(StatementExecutionResult result, CancellationToken cancellationToken)
 		{
-			return Task.FromResult(ColumnHeaders);
+			return Task.FromResult(result);
 		}
 
 		public override Task<StatementExecutionBatchResult> ExecuteStatementAsync(StatementBatchExecutionModel executionModel, CancellationToken cancellationToken)

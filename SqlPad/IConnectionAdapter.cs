@@ -23,7 +23,7 @@ namespace SqlPad
 
 		Task<StatementExecutionResult> ExecuteChildStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
 
-		Task<IReadOnlyList<ColumnHeader>> RefreshResult(ResultInfo resultInfo, CancellationToken cancellationToken);
+		Task RefreshResult(StatementExecutionResult result, CancellationToken cancellationToken);
 
 		Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken);
 

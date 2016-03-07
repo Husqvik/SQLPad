@@ -289,19 +289,26 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return ExecuteUserStatementAsync(executionModel, false, cancellationToken);
 		}
 
-		public async override Task<IReadOnlyList<ColumnHeader>> RefreshResult(ResultInfo resultInfo, CancellationToken cancellationToken)
+		public async override Task RefreshResult(StatementExecutionResult result, CancellationToken cancellationToken)
 		{
 			_isExecuting = true;
+			DateTime? executedAt = null;
 
 			try
 			{
 				await EnsureUserConnectionOpen(cancellationToken);
 
+				var resultInfo = result.ResultInfoColumnHeaders.Keys.Last();
 				var commandReader = ReinitializeResultInfo(resultInfo);
 				OracleDataReader dataReader;
+
+				executedAt = DateTime.Now;
+				var stopWatch = Stopwatch.StartNew();
+
 				if (commandReader.RefCursorInfo.Parameter != null || commandReader.RefCursorInfo.ImplicitCursorIndex.HasValue)
 				{
 					await commandReader.Command.ExecuteNonQueryAsynchronous(cancellationToken);
+					stopWatch.Stop();
 					dataReader = commandReader.RefCursorInfo.Parameter != null
 						? ((OracleRefCursor)commandReader.RefCursorInfo.Parameter.Value).GetDataReader()
 						: commandReader.Command.ImplicitRefCursors[commandReader.RefCursorInfo.ImplicitCursorIndex.Value].GetDataReader();
@@ -309,21 +316,30 @@ namespace SqlPad.Oracle.DatabaseConnection
 				else
 				{
 					dataReader = await commandReader.Command.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken);
+					stopWatch.Stop();
 				}
 
 				_commandReaders[resultInfo] = new CommandReader { Command = commandReader.Command, Reader = dataReader, RefCursorInfo = commandReader.RefCursorInfo };
 				var columnHeaders = GetColumnHeadersFromReader(dataReader);
 				_resultInfoColumnHeaders[resultInfo] = columnHeaders;
 
-				return columnHeaders;
+				result.Exception = null;
+				result.Duration = stopWatch.Elapsed;
+				result.ResultInfoColumnHeaders =
+					new Dictionary<ResultInfo, IReadOnlyList<ColumnHeader>>
+					{
+						{ resultInfo, columnHeaders }
+					}.AsReadOnly();
 			}
 			catch (OracleException exception)
 			{
 				TryHandleConnectionTerminatedError(exception);
+				result.Exception = exception;
 				throw;
 			}
 			finally
 			{
+				result.ExecutedAt = executedAt;
 				_isExecuting = false;
 			}
 		}

@@ -26,7 +26,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public abstract Task<StatementExecutionResult> ExecuteChildStatementAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
 
-		public abstract Task<IReadOnlyList<ColumnHeader>> RefreshResult(ResultInfo resultInfo, CancellationToken cancellationToken);
+		public abstract Task RefreshResult(StatementExecutionResult result, CancellationToken cancellationToken);
 
 		public abstract Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken);
 
