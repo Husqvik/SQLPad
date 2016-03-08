@@ -129,7 +129,23 @@
 									</DataTemplate>
 								</DataGridTemplateColumn.CellTemplate>
 							</DataGridTemplateColumn>
-							<DataGridTextColumn Header="Top activities" Binding="{Binding TopActivities, Converter={StaticResource ListAggregationConverter}}" ElementStyle="{StaticResource CellRealOnly}" />
+							<DataGridTemplateColumn Header="Top activities">
+								<DataGridTemplateColumn.CellTemplate>
+									<DataTemplate DataType="modelDataProviders:SqlMonitorSessionItem">
+										<TextBlock Text="{Binding TopActivities, Converter={StaticResource ListAggregationConverter}}" Style="{StaticResource CellRealOnly}">
+											<TextBlock.ToolTip>
+												<ItemsControl ItemsSource="{Binding TopActivities}">
+													<ItemsControl.ItemTemplate>
+														<DataTemplate>
+															<TextBlock Text="{Binding}" />
+														</DataTemplate>
+													</ItemsControl.ItemTemplate>
+												</ItemsControl>
+											</TextBlock.ToolTip>
+										</TextBlock>
+									</DataTemplate>
+								</DataGridTemplateColumn.CellTemplate>
+							</DataGridTemplateColumn>
 						</DataGrid.Columns>
 					</DataGrid>
 

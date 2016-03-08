@@ -990,7 +990,8 @@ namespace SqlPad.Oracle.ModelDataProviders
 		private long _physicalReadBytes;
 		private long _physicalWriteRequests;
 		private long _physicalWriteBytes;
-		private readonly List<string> _topActivities = new List<string>();
+		private readonly List<Activity> _activities = new List<Activity>();
+		private readonly List<Activity> _topActivities = new List<Activity>();
 
 		internal SqlMonitorPlanItemCollection PlanItemCollection { get; set; }
 
@@ -1132,22 +1133,45 @@ namespace SqlPad.Oracle.ModelDataProviders
 			set { UpdateValueAndRaisePropertyChanged(ref _javaExecutionTime, value); }
 		}
 
-		public IReadOnlyList<string> TopActivities => _topActivities;
+		public IReadOnlyList<Activity> Activities => _activities;
+
+		public IReadOnlyList<Activity> TopActivities => _topActivities;
 
 		public void AddActiveSessionHistoryItems(IEnumerable<ActiveSessionHistoryItem> historyItems)
 		{
 			_activeSessionHistoryItems.AddRange(historyItems);
 
-			var topActivities = _activeSessionHistoryItems
+			var activities = _activeSessionHistoryItems
 				.GroupBy(i => i.Event)
-				.Select(g => new { Event = String.IsNullOrEmpty(g.Key) ? "on CPU" : g.Key, Count = g.Count() })
-				.OrderByDescending(e => e.Count)
-				.Select(a => $"{a.Event} ({a.Count})")
-				.Take(4);
+				.Select(g =>
+					new Activity
+					{
+						Event = String.IsNullOrEmpty(g.Key) ? "on CPU" : g.Key,
+						SampleCount = g.Count(),
+						TotalSampleCount = _activeSessionHistoryItems.Count
+					})
+				.OrderByDescending(e => e.SampleCount);
 
+			_activities.Clear();
+			_activities.AddRange(activities);
 			_topActivities.Clear();
-			_topActivities.AddRange(topActivities);
-			RaisePropertyChanged(nameof(TopActivities));
+			_topActivities.AddRange(activities.Take(4));
+
+			RaisePropertyChanged(nameof(Activities), nameof(TopActivities));
+		}
+	}
+
+	public class Activity
+	{
+		public string Event { get; set; }
+
+		public int SampleCount { get; set; }
+
+		public int TotalSampleCount { get; set; }
+
+		public override string ToString()
+		{
+			return $"{Event} ({SampleCount} sample{(SampleCount == 1 ? null : "s")}; {Math.Round((decimal)SampleCount / TotalSampleCount * 100)} %)";
 		}
 	}
 }
