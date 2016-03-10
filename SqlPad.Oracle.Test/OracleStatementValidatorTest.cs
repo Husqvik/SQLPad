@@ -3493,5 +3493,19 @@ END;";
 
 			validationModel.Suggestions.Count().ShouldBe(0);
 		}
+
+		[Test(Description = @"")]
+		public void TestNullabilityOfLeftJoinedNotNullColumnExposedUsingAsterisk()
+		{
+			const string sqlText = @"SELECT NULL FROM (SELECT t2.* FROM selection t1 LEFT JOIN selection t2 ON 1 = 0) WHERE selection_id IS NULL";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			validationModel.Suggestions.Count().ShouldBe(0);
+		}
 	}
 }

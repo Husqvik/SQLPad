@@ -2092,6 +2092,7 @@ namespace SqlPad.Oracle.SemanticModel
 							var specialTableReference = (OracleSpecialTableReference)objectReference;
 							exposedColumns = ExposeUsingAsterisk(asteriskColumn, specialTableReference.ColumnDefinitions);
 							break;
+
 						case ReferenceType.TableCollection:
 						case ReferenceType.SqlModel:
 						case ReferenceType.PivotTable:
@@ -2104,10 +2105,12 @@ namespace SqlPad.Oracle.SemanticModel
 										ColumnDescription = c
 									});
 							break;
+
 						case ReferenceType.CommonTableExpression:
 						case ReferenceType.InlineView:
 							exposedColumns = ExposeUsingAsterisk(asteriskColumn, objectReference.QueryBlocks.SelectMany(qb => qb.Columns).Where(c => !c.IsAsterisk));
 							break;
+
 						default:
 							throw new NotImplementedException($"Reference '{objectReference.Type}' is not implemented yet. ");
 					}
@@ -2148,12 +2151,18 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 		}
 
-		private static IEnumerable<OracleColumn> ResolveSourceColumnDescriptions(OracleObjectWithColumnsReference objectReference)
+		private static IEnumerable<OracleColumn> ResolveSourceColumnDescriptions(OracleDataObjectReference objectReference)
 		{
-			return objectReference.Columns;
+			foreach (var column in objectReference.Columns)
+			{
+				var exposedColumn = column.Clone();
+				exposedColumn.Nullable = column.Nullable || objectReference.IsOuterJoined;
+
+				yield return exposedColumn;
+			}
 		}
 
-		private IEnumerable<OracleSelectListColumn> ExposeUsingAsterisk(OracleSelectListColumn asteriskColumn, IEnumerable<OracleSelectListColumn> columns)
+		private static IEnumerable<OracleSelectListColumn> ExposeUsingAsterisk(OracleSelectListColumn asteriskColumn, IEnumerable<OracleSelectListColumn> columns)
 		{
 			foreach (var column in columns)
 			{
