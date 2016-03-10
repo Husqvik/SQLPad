@@ -40,7 +40,8 @@ namespace SqlPad.Oracle.DataDictionary
 					DataType = DataType,
 					Name = Name,
 					CharacterSize = CharacterSize,
-					Nullable = Nullable
+					Nullable = Nullable,
+					Hidden = Hidden
 				};
 		}
 

@@ -3342,6 +3342,22 @@ SELECT value FROM data";
 		}
 
 		[Test(Description = @"")]
+		public void TestAsteriskInvisibleColumnPropagation()
+		{
+			const string query1 = @"SELECT * FROM (SELECT * FROM ""CaseSensitiveTable"")";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single().Validate();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
+			var mainQueryBlock = semanticModel.QueryBlocks.Last();
+			mainQueryBlock.Columns.Count.ShouldBe(3);
+			mainQueryBlock.Columns[0].IsAsterisk.ShouldBe(true);
+			mainQueryBlock.Columns[1].NormalizedName.ShouldBe("\"CaseSensitiveColumn\"");
+			mainQueryBlock.Columns[2].NormalizedName.ShouldBe("\"VIRTUAL_COLUMN\"");
+		}
+
+		[Test(Description = @"")]
 		public void TestModelBuildWithPropagatedCastedDataType()
 		{
 			const string query1 = @"SELECT dummy FROM (SELECT CAST(dummy AS BINARY_FLOAT) dummy FROM DUAL)";
