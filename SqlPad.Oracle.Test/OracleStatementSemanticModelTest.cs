@@ -3358,6 +3358,20 @@ SELECT value FROM data";
 		}
 
 		[Test(Description = @"")]
+		public void TestXmlRootParameterResolution()
+		{
+			const string query1 = @"SELECT xmlroot(xmlelement(""x"", NULL), version '1.0') FROM dual";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single().Validate();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
+			var mainQueryBlock = semanticModel.QueryBlocks.Single();
+			var xmlRootReference = mainQueryBlock.AllProgramReferences.Single(p => p.Name == "xmlroot");
+			xmlRootReference.ParameterReferences.Count.ShouldBe(1);
+		}
+
+		[Test(Description = @"")]
 		public void TestModelBuildWithPropagatedCastedDataType()
 		{
 			const string query1 = @"SELECT dummy FROM (SELECT CAST(dummy AS BINARY_FLOAT) dummy FROM DUAL)";

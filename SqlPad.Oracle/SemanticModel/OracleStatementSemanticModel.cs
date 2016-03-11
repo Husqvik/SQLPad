@@ -3053,9 +3053,25 @@ namespace SqlPad.Oracle.SemanticModel
 			var newProgramReferences = new List<OracleProgramReference>();
 			foreach (var identifierNode in grammarSpecificFunctions.Select(n => n.FirstTerminalNode).Distinct())
 			{
-				var rootNode = String.Equals(identifierNode.Id, Terminals.NegationOrNull) ? identifierNode.GetAncestor(NonTerminals.Condition) : identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.AnalyticFunctionCall) ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.AggregateFunctionCall) ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.TrimFunction) ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.CharacterCodeFunction) ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.ExtractFunction) ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.CastOrXmlCastFunction) ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.XmlElementClause)
-					//?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.XmlAggregateClause)
-				                                                                                                                                 ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.XmlSimpleFunctionClause) ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.XmlParseFunction) ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.XmlQueryClause) ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.XmlRootFunction) ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.XmlSerializeFunction) ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.JsonQueryClause) ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.JsonExistsClause) ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.JsonValueClause);
+				var rootNode =
+					String.Equals(identifierNode.Id, Terminals.NegationOrNull)
+						? identifierNode.GetAncestor(NonTerminals.Condition)
+						: identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.AnalyticFunctionCall)
+						  ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.AggregateFunctionCall)
+						  ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.TrimFunction)
+						  ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.CharacterCodeFunction)
+						  ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.ExtractFunction)
+						  ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.CastOrXmlCastFunction)
+						  ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.XmlElementClause)
+						  //?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.XmlAggregateClause)
+						  ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.XmlSimpleFunctionClause)
+						  ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.XmlParseFunction)
+						  ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.XmlQueryClause)
+						  ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.XmlRootFunction)
+						  ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.XmlSerializeFunction)
+						  ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.JsonQueryClause)
+						  ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.JsonExistsClause)
+						  ?? identifierNode.GetPathFilterAncestor(NodeFilters.BreakAtExpression, NonTerminals.JsonValueClause);
 
 				StatementGrammarNode analyticClauseNode = null;
 				switch (rootNode.Id)
@@ -3101,6 +3117,7 @@ namespace SqlPad.Oracle.SemanticModel
 						case NonTerminals.XmlSerializeFunctionParameterClause:
 						case NonTerminals.TrimParameterClause:
 						case NonTerminals.CharacterCodeParameterClause:
+						case NonTerminals.XmlRootFunctionParameterClause:
 							parameterNodes.AddIfNotNull(parameterList[NonTerminals.Expression]);
 							break;
 						case NonTerminals.JsonQueryParameterClause:
