@@ -183,7 +183,7 @@ namespace SqlPad.Oracle.SemanticModel
 					RootNode = RootNode,
 					ExplicitNormalizedName = ExplicitNormalizedName,
 					IsDirectReference = true,
-					_columnDescription = _columnDescription,
+					_columnDescription = ColumnDescription,
 					_normalizedName = _normalizedName
 				};
 		}

@@ -2090,7 +2090,7 @@ namespace SqlPad.Oracle.SemanticModel
 						case ReferenceType.XmlTable:
 						case ReferenceType.JsonTable:
 							var specialTableReference = (OracleSpecialTableReference)objectReference;
-							exposedColumns = ExposeUsingAsterisk(asteriskColumn, specialTableReference.ColumnDefinitions);
+							exposedColumns = ExposeUsingAsterisk(specialTableReference, asteriskColumn, specialTableReference.ColumnDefinitions);
 							break;
 
 						case ReferenceType.TableCollection:
@@ -2108,7 +2108,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 						case ReferenceType.CommonTableExpression:
 						case ReferenceType.InlineView:
-							exposedColumns = ExposeUsingAsterisk(asteriskColumn, objectReference.QueryBlocks.SelectMany(qb => qb.Columns).Where(c => !c.IsAsterisk));
+							exposedColumns = ExposeUsingAsterisk(objectReference, asteriskColumn, objectReference.QueryBlocks.SelectMany(qb => qb.Columns).Where(c => !c.IsAsterisk));
 							break;
 
 						default:
@@ -2162,12 +2162,15 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 		}
 
-		private static IEnumerable<OracleSelectListColumn> ExposeUsingAsterisk(OracleSelectListColumn asteriskColumn, IEnumerable<OracleSelectListColumn> columns)
+		private static IEnumerable<OracleSelectListColumn> ExposeUsingAsterisk(OracleDataObjectReference objectReference, OracleSelectListColumn asteriskColumn, IEnumerable<OracleSelectListColumn> columns)
 		{
 			foreach (var column in columns)
 			{
 				column.RegisterOuterReference();
-				yield return column.AsImplicit(asteriskColumn);
+				var exposedColumn = column.AsImplicit(asteriskColumn);
+				exposedColumn.ColumnDescription.Nullable = column.ColumnDescription.Nullable || objectReference.IsOuterJoined;
+
+				yield return exposedColumn;
 			}
 		}
 
