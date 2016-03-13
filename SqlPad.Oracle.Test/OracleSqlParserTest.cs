@@ -2659,6 +2659,16 @@ ORDER BY symbol, tstamp";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
+		[Test(Description = @""), Ignore]
+		public void TestParenthesisEnclosedObjectMember()
+		{
+			const string statement1 = @"(((httpuritype('http://www.yr.no/place/Sweden/Stockholm/Stockholm/forecast.xml')).getxml())).getclobval() FROM dual";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+		}
+
 		public class PlSql
 		{
 			[Test(Description = @"")]
