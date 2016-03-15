@@ -1,4 +1,4 @@
-SQLPad 0.4.0.262
+SQLPad 0.4.0.263
 ================
 
 SQLPad is an experimental SQL editor focused to quick and comfortable work.
@@ -103,6 +103,8 @@ CTRL + ALT + H             - Show execution history
 SHIFT + F6                 - Rename symbol
 
 CTRL + SHIFT + V           - Clipboard history
+
+CTRL + ALT + M             - Database monitor
 
 Context actions
 ---------------
@@ -318,6 +320,8 @@ Screenshots
 ![Database output](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/DatabaseOutput.png)
 ![Trace events](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/TraceEvents.png)
 ![Statement execution history](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/StatementExecutionHistory.png)
+#####Database Monitor
+![Database Monitor overview 1](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/DatabaseMonitor1.png)
 
 Known issues
 ------------

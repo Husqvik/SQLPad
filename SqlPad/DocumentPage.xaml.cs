@@ -1631,7 +1631,7 @@ namespace SqlPad
 
 		private void UpdateCompletionItemHighlight()
 		{
-			if (_completionWindow == null)
+			if (_completionWindow == null || _completionWindow.StartOffset > _completionWindow.EndOffset)
 			{
 				return;
 			}
@@ -1639,9 +1639,17 @@ namespace SqlPad
 			var firstItem = (CompletionData)_completionWindow.CompletionList.CompletionData[0];
 			if (firstItem.Snippet != null || firstItem.Node != null)
 			{
-				_completionWindow.StartOffset = firstItem.Snippet == null
+				var startOffset = firstItem.Snippet == null
 					? firstItem.Node.SourcePosition.IndexStart
 					: firstItem.Snippet.SourceToReplace.IndexStart;
+
+				if (startOffset > _completionWindow.EndOffset)
+				{
+					_completionWindow.Close();
+					return;
+				}
+
+				_completionWindow.StartOffset = startOffset;
 			}
 
 			var length = _completionWindow.EndOffset - _completionWindow.StartOffset;
