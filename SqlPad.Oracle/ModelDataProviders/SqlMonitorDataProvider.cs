@@ -118,97 +118,110 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public void AddActiveSessionHistoryItems(IEnumerable<ActiveSessionHistoryItem> historyItems)
 		{
-			var lastSampleTime = LastSampleTime;
-			var planParallelSampleCount = new Dictionary<SqlMonitorPlanItem, decimal>();
-
-			foreach (var itemGroup in historyItems.GroupBy(i => i.SessionIdentifier))
+			lock (_planItemActiveSessionHistoryItems)
 			{
-				SqlMonitorSessionItem sessionItem;
-				if (_sessionItemMapping.TryGetValue(itemGroup.Key, out sessionItem))
+				var lastSampleTime = LastSampleTime;
+				var planParallelSampleCount = new Dictionary<SqlMonitorPlanItem, decimal>();
+
+				foreach (var itemGroup in historyItems.Where(IsNewer).GroupBy(i => i.SessionIdentifier))
 				{
-					sessionItem.AddActiveSessionHistoryItems(itemGroup);
+					SqlMonitorSessionItem sessionItem;
+					if (_sessionItemMapping.TryGetValue(itemGroup.Key, out sessionItem))
+					{
+						sessionItem.AddActiveSessionHistoryItems(itemGroup);
+					}
+
+					foreach (var historyItem in itemGroup)
+					{
+						if (IsNewer(historyItem, lastSampleTime))
+						{
+							lastSampleTime = historyItem.SampleTime;
+						}
+
+						Dictionary<SessionIdentifier, List<ActiveSessionHistoryItem>> sessionPlanHistoryItems;
+						if (!_planItemActiveSessionHistoryItems.TryGetValue(historyItem.PlanItem, out sessionPlanHistoryItems))
+						{
+							_planItemActiveSessionHistoryItems[historyItem.PlanItem] = sessionPlanHistoryItems = new Dictionary<SessionIdentifier, List<ActiveSessionHistoryItem>>();
+						}
+
+						if (!planParallelSampleCount.ContainsKey(historyItem.PlanItem))
+						{
+							planParallelSampleCount[historyItem.PlanItem] = historyItem.PlanItem.ParallelSlaveSessionItems.Sum(i => i.ActiveSessionHistorySampleCount);
+						}
+
+						List<ActiveSessionHistoryItem> planHistoryItems;
+						if (!sessionPlanHistoryItems.TryGetValue(historyItem.SessionIdentifier, out planHistoryItems))
+						{
+							sessionPlanHistoryItems[historyItem.SessionIdentifier] = planHistoryItems = new List<ActiveSessionHistoryItem>();
+						}
+
+						planHistoryItems.Add(historyItem);
+
+						_totalActiveSessionHistorySamples++;
+
+						if (historyItem.SessionIdentifier != SessionIdentifier)
+						{
+							planParallelSampleCount[historyItem.PlanItem]++;
+						}
+					}
 				}
 
-				foreach (var historyItem in itemGroup)
+				if (lastSampleTime == null)
 				{
-					if (lastSampleTime == null || historyItem.SampleTime > lastSampleTime)
-					{
-						lastSampleTime = historyItem.SampleTime;
-					}
-
-					Dictionary<SessionIdentifier, List<ActiveSessionHistoryItem>> sessionPlanHistoryItems;
-					if (!_planItemActiveSessionHistoryItems.TryGetValue(historyItem.PlanItem, out sessionPlanHistoryItems))
-					{
-						_planItemActiveSessionHistoryItems[historyItem.PlanItem] = sessionPlanHistoryItems = new Dictionary<SessionIdentifier, List<ActiveSessionHistoryItem>>();
-					}
-
-					if (!planParallelSampleCount.ContainsKey(historyItem.PlanItem))
-					{
-						planParallelSampleCount[historyItem.PlanItem] = historyItem.PlanItem.ParallelSlaveSessionItems.Sum(i => i.ActiveSessionHistorySampleCount);
-					}
-
-					List<ActiveSessionHistoryItem> planHistoryItems;
-					if (!sessionPlanHistoryItems.TryGetValue(historyItem.SessionIdentifier, out planHistoryItems))
-					{
-						sessionPlanHistoryItems[historyItem.SessionIdentifier] = planHistoryItems = new List<ActiveSessionHistoryItem>();
-					}
-
-					planHistoryItems.Add(historyItem);
-
-					_totalActiveSessionHistorySamples++;
-
-					if (historyItem.SessionIdentifier != SessionIdentifier)
-					{
-						planParallelSampleCount[historyItem.PlanItem]++;
-					}
-				}
-			}
-
-			if (lastSampleTime == null)
-			{
-				return;
-			}
-
-			LastSampleTime = lastSampleTime;
-
-			var recentActivityThreshold = LastSampleTime.Value.Add(-RefreshPeriod);
-
-			foreach (var planItemActiveSessionHistoryItems in _planItemActiveSessionHistoryItems)
-			{
-				planItemActiveSessionHistoryItems.Key.IsBeingExecuted = planItemActiveSessionHistoryItems.Value.Any(l => l.Value.Last().SampleTime >= recentActivityThreshold);
-
-				if (_totalActiveSessionHistorySamples == 0)
-				{
-					continue;
+					return;
 				}
 
-				var allSessionPlanItemSamples = 0;
-				List<ActiveSessionHistoryItem> sessionHistoryItems;
-				foreach (var parallelSessionItem in planItemActiveSessionHistoryItems.Key.ParallelSlaveSessionItems)
+				LastSampleTime = lastSampleTime;
+
+				var recentActivityThreshold = LastSampleTime.Value.Add(-RefreshPeriod);
+
+				foreach (var planItemActiveSessionHistoryItems in _planItemActiveSessionHistoryItems)
 				{
-					var activeSessionHistorySampleCount = planItemActiveSessionHistoryItems.Value.TryGetValue(parallelSessionItem.SessionIdentifier, out sessionHistoryItems)
+					planItemActiveSessionHistoryItems.Key.IsBeingExecuted = planItemActiveSessionHistoryItems.Value.Any(l => l.Value.Last().SampleTime >= recentActivityThreshold);
+
+					if (_totalActiveSessionHistorySamples == 0)
+					{
+						continue;
+					}
+
+					var allSessionPlanItemSamples = 0;
+					List<ActiveSessionHistoryItem> sessionHistoryItems;
+					foreach (var parallelSessionItem in planItemActiveSessionHistoryItems.Key.ParallelSlaveSessionItems)
+					{
+						var activeSessionHistorySampleCount = planItemActiveSessionHistoryItems.Value.TryGetValue(parallelSessionItem.SessionIdentifier, out sessionHistoryItems)
+							? sessionHistoryItems.Count
+							: 0;
+
+						parallelSessionItem.ActiveSessionHistorySampleCount = activeSessionHistorySampleCount;
+						decimal planItemAllParallelSessionActiveSessionHistorySampleCount;
+						if (planParallelSampleCount.TryGetValue(planItemActiveSessionHistoryItems.Key, out planItemAllParallelSessionActiveSessionHistorySampleCount) && planItemAllParallelSessionActiveSessionHistorySampleCount > 0)
+						{
+							parallelSessionItem.ActivityRatio = activeSessionHistorySampleCount / planItemAllParallelSessionActiveSessionHistorySampleCount;
+						}
+
+						allSessionPlanItemSamples += activeSessionHistorySampleCount;
+					}
+
+					var queryCoordinatorPlanItemSamples = planItemActiveSessionHistoryItems.Value.TryGetValue(SessionIdentifier, out sessionHistoryItems)
 						? sessionHistoryItems.Count
 						: 0;
 
-					parallelSessionItem.ActiveSessionHistorySampleCount = activeSessionHistorySampleCount;
-					decimal planItemAllParallelSessionActiveSessionHistorySampleCount;
-					if (planParallelSampleCount.TryGetValue(planItemActiveSessionHistoryItems.Key, out planItemAllParallelSessionActiveSessionHistorySampleCount) && planItemAllParallelSessionActiveSessionHistorySampleCount > 0)
-					{
-						parallelSessionItem.ActivityRatio = activeSessionHistorySampleCount / planItemAllParallelSessionActiveSessionHistorySampleCount;
-					}
+					allSessionPlanItemSamples += queryCoordinatorPlanItemSamples;
 
-					allSessionPlanItemSamples += activeSessionHistorySampleCount;
+					planItemActiveSessionHistoryItems.Key.AllSessionSummaryPlanItem.ActiveSessionHistorySampleCount = allSessionPlanItemSamples;
+					planItemActiveSessionHistoryItems.Key.AllSessionSummaryPlanItem.ActivityRatio = (decimal)allSessionPlanItemSamples / _totalActiveSessionHistorySamples;
 				}
-
-				var queryCoordinatorPlanItemSamples = planItemActiveSessionHistoryItems.Value.TryGetValue(SessionIdentifier, out sessionHistoryItems)
-					? sessionHistoryItems.Count
-					: 0;
-
-				allSessionPlanItemSamples += queryCoordinatorPlanItemSamples;
-
-				planItemActiveSessionHistoryItems.Key.AllSessionSummaryPlanItem.ActiveSessionHistorySampleCount = allSessionPlanItemSamples;
-				planItemActiveSessionHistoryItems.Key.AllSessionSummaryPlanItem.ActivityRatio = (decimal)allSessionPlanItemSamples / _totalActiveSessionHistorySamples;
 			}
+		}
+
+		private bool IsNewer(ActiveSessionHistoryItem historyItem)
+		{
+			return IsNewer(historyItem, LastSampleTime);
+		}
+
+		private static bool IsNewer(ActiveSessionHistoryItem historyItem, DateTime? lastSampleTime)
+		{
+			return lastSampleTime == null || historyItem.SampleTime > lastSampleTime;
 		}
 	}
 
