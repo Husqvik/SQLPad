@@ -699,6 +699,20 @@
 							</Style.Triggers>
 						</Style>
 					</TextBlock.Style>
+					
+					<TextBlock.ToolTip>
+						<ItemsControl ItemsSource="{Binding CompletedSessionLongOperationItems}">
+							<ItemsControl.ItemTemplate>
+								<DataTemplate>
+									<TextBlock>
+										<Run Text="{Binding Message}" />
+										<Run Text="(" /><Run Text="{Binding Elapsed}" /><Run Text=")" />
+									</TextBlock>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+					</TextBlock.ToolTip>
+					
 					<Run Text="(+" />
 					<Run Text="{Binding CompletedSessionLongOperationItems.Count, Mode=OneWay}" />
 					<Run Text="completed operation(s))" />

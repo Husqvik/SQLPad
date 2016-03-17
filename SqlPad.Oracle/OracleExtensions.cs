@@ -61,11 +61,12 @@ namespace SqlPad.Oracle
 			}
 
 			bool isQuotedString;
-			var trimToIndex = GetTrimIndex(oracleString, out isQuotedString);
+			char? quoteInitializer;
+			var trimToIndex = GetTrimIndex(oracleString, out isQuotedString, out quoteInitializer);
 			return oracleString.Substring(trimToIndex, oracleString.Length - trimToIndex - (isQuotedString ? 2 : 1));
 		}
 
-		internal static int GetTrimIndex(string oracleString, out bool isQuotedString)
+		internal static int GetTrimIndex(string oracleString, out bool isQuotedString, out char? quoteInitializer)
 		{
 			var trimToIndex = 1;
 			isQuotedString = false;
@@ -88,6 +89,10 @@ namespace SqlPad.Oracle
 				trimToIndex = 3;
 				isQuotedString = true;
 			}
+
+			quoteInitializer = isQuotedString && oracleString.Length >= trimToIndex
+				? oracleString[trimToIndex - 1]
+				: (char?)null;
 
 			return trimToIndex;
 		}
@@ -164,16 +169,16 @@ namespace SqlPad.Oracle
 
 		public static OracleObjectIdentifier ExtractObjectIdentifier(this StatementGrammarNode node)
 		{
-			var queryTableExpression = node.GetPathFilterAncestor(n => n.Id != NonTerminals.FromClause, NonTerminals.QueryTableExpression);
+			var queryTableExpression = node.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.FromClause), NonTerminals.QueryTableExpression);
 
-			var tableIdentifierNode = queryTableExpression.ChildNodes.SingleOrDefault(n => n.Id == Terminals.ObjectIdentifier);
+			var tableIdentifierNode = queryTableExpression.ChildNodes.SingleOrDefault(n => String.Equals(n.Id, Terminals.ObjectIdentifier));
 
 			if (tableIdentifierNode == null)
 			{
 				return OracleObjectIdentifier.Empty;
 			}
 
-			var schemaPrefixNode = queryTableExpression.ChildNodes.SingleOrDefault(n => n.Id == NonTerminals.SchemaPrefix);
+			var schemaPrefixNode = queryTableExpression.ChildNodes.SingleOrDefault(n => String.Equals(n.Id, NonTerminals.SchemaPrefix));
 		    schemaPrefixNode = schemaPrefixNode?.ChildNodes.First();
 
 		    return OracleObjectIdentifier.Create(schemaPrefixNode, tableIdentifierNode, null);
@@ -186,28 +191,28 @@ namespace SqlPad.Oracle
 
 		public static bool IsWithinExpression(this StatementGrammarNode node)
 		{
-			return node.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.Expression) != null;
+			return node.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.QueryBlock), NonTerminals.Expression) != null;
 		}
 
 		public static bool IsWithinSelectClause(this StatementGrammarNode node)
 		{
-			var selectListNode = node.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.SelectList);
+			var selectListNode = node.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.QueryBlock), NonTerminals.SelectList);
 			return node.Id == Terminals.Select || selectListNode != null;
 		}
 
 		public static bool IsWithinGroupByClause(this StatementGrammarNode node)
 		{
-			return node.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.GroupByClause) != null;
+			return node.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.QueryBlock), NonTerminals.GroupByClause) != null;
 		}
 
 		public static bool IsWithinHavingClause(this StatementGrammarNode node)
 		{
-			return node.GetPathFilterAncestor(n => n.Id != NonTerminals.QueryBlock, NonTerminals.HavingClause) != null;
+			return node.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.QueryBlock), NonTerminals.HavingClause) != null;
 		}
 
 		public static bool IsWithinOrderByClause(this StatementGrammarNode node)
 		{
-			return node.GetPathFilterAncestor(n => n.Id != NonTerminals.Subquery, NonTerminals.OrderByClause) != null;
+			return node.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.Subquery), NonTerminals.OrderByClause) != null;
 		}
 
 		public static StatementGrammarNode GetParentExpression(this StatementGrammarNode node)

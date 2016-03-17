@@ -30,7 +30,8 @@ namespace SqlPad.Oracle.Commands
 				return false;
 			}
 
-			_trimIndex = OracleExtensions.GetTrimIndex(LiteralValue, out _isQuotedString);
+			char? quoteInitializer;
+			_trimIndex = OracleExtensions.GetTrimIndex(LiteralValue, out _isQuotedString, out quoteInitializer);
 			var endOffset = _isQuotedString ? 1 : 0;
 			_positionInString = ExecutionContext.CaretOffset - CurrentNode.SourcePosition.IndexStart;
 

@@ -65,8 +65,35 @@ namespace SqlPad.Oracle
 			var correlatedSegments = FindCorrespondingBeginIfAndCaseTerminals(terminal);
 			var semanticModel = (OracleStatementSemanticModel)executionContext.DocumentRepository.ValidationModels[terminal.Statement].SemanticModel;
 			correlatedSegments.AddRange(FindCorrespondingColumnAndExpression(semanticModel, terminal));
+			correlatedSegments.AddRange(FindCorrespondingStringQuotation(terminal, executionContext.CaretOffset));
 
 			return correlatedSegments.AsReadOnly();
+		}
+
+		private static IEnumerable<SourcePosition> FindCorrespondingStringQuotation(StatementGrammarNode terminal, int cursorPosition)
+		{
+			if (!String.Equals(terminal.Id, Terminals.StringLiteral))
+			{
+				yield break;
+			}
+
+			bool isQuotedString;
+			char? quoteInitializer;
+			var value = terminal.Token.Value;
+			var trimIndex = OracleExtensions.GetTrimIndex(value, out isQuotedString, out quoteInitializer);
+
+			if (!isQuotedString)
+			{
+				yield break;
+			}
+
+			var startPosition = terminal.SourcePosition.IndexStart;
+			yield return SourcePosition.Create(startPosition, startPosition + trimIndex - 1);
+
+			if (value[value.Length - 1] == '\'')
+			{
+				yield return SourcePosition.Create(startPosition + value.Length - 2, startPosition + value.Length - 1);
+			}
 		}
 
 		private static IReadOnlyList<SourcePosition> FindCorrespondingColumnAndExpression(OracleStatementSemanticModel semanticModel, StatementGrammarNode terminal)

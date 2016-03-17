@@ -146,7 +146,8 @@ namespace SqlPad.Oracle
 			{
 				case SingleQuoteCharacter:
 					bool isQuotedString;
-					var trimToIndex = OracleExtensions.GetTrimIndex(tokenValue, out isQuotedString) - (isQuotedString ? 2 : 1);
+					char? quoteInitializer;
+					var trimToIndex = OracleExtensions.GetTrimIndex(tokenValue, out isQuotedString, out quoteInitializer) - (isQuotedString ? 2 : 1);
 					var tokenValueLength = tokenValue.Length;
 					if (trimToIndex >= tokenValueLength)
 					{
@@ -299,7 +300,7 @@ namespace SqlPad.Oracle
 						continue;
 					}
 
-					if (item.Id == parent.ChildNodes[index].Id)
+					if (String.Equals(item.Id, parent.ChildNodes[index].Id))
 					{
 						if (index == childNodeIndex)
 						{
@@ -333,7 +334,7 @@ namespace SqlPad.Oracle
 				.Cast<ISqlGrammarRuleSequenceItem>()
 				.TakeWhileInclusive(i => !i.IsRequired);
 
-			var isInputSequence = inputItems.Any(i => i.Id == parentNode.ChildNodes[0].Id);
+			var isInputSequence = inputItems.Any(i => String.Equals(i.Id, parentNode.ChildNodes[0].Id));
 
 			return isInputSequence
 				? Enumerable.Repeat(sequence, 1)
