@@ -58,8 +58,8 @@ namespace SqlPad.Oracle.ExecutionPlan
 					_leafItems.Add(item);
 				}
 
-				var costRatio = item.Cost.HasValue && RootItem.Cost.HasValue && RootItem.Cost > 0
-					? Math.Round(item.Cost.Value / (decimal)RootItem.Cost)
+				var costRatio = item.Cost.HasValue && RootItem.Cost > 0
+					? Math.Round(item.Cost.Value / (decimal)RootItem.Cost, 2)
 					: (decimal?)null;
 
 				item.CostRatio = costRatio;

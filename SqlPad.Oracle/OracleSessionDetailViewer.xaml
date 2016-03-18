@@ -7,6 +7,7 @@
              xmlns:sqlPad="clr-namespace:SqlPad;assembly=SqlPad"
              xmlns:oracle="clr-namespace:SqlPad.Oracle"
              xmlns:modelDataProviders="clr-namespace:SqlPad.Oracle.ModelDataProviders"
+             xmlns:system="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d"
              d:DesignHeight="160" d:DesignWidth="240"
              DataContext="{Binding RelativeSource={RelativeSource Self}}">
@@ -132,7 +133,7 @@
 							<DataGridTemplateColumn Header="Top activities">
 								<DataGridTemplateColumn.CellTemplate>
 									<DataTemplate DataType="modelDataProviders:SqlMonitorSessionItem">
-										<TextBlock Text="{Binding TopActivities, Converter={StaticResource ListAggregationConverter}}" Style="{StaticResource CellRealOnly}">
+										<TextBlock Text="{Binding TopActivities, Converter={StaticResource ListAggregationConverter}}" Style="{StaticResource CellRealOnly}" ToolTipService.ShowDuration="{x:Static Member=system:Int32.MaxValue}">
 											<TextBlock.ToolTip>
 												<ItemsControl ItemsSource="{Binding TopActivities}">
 													<ItemsControl.ItemTemplate>
