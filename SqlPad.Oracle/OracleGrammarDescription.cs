@@ -113,7 +113,6 @@ namespace SqlPad.Oracle
 			public const string AnalyticClause = "AnalyticClause";
 			public const string AnalyticFunction = "AnalyticFunction";
 			public const string AnalyticFunctionCall = "AnalyticFunctionCall";
-			public const string AnalyticOrKeepClause = "AnalyticOrKeepClause";
 			public const string AnalyticOrKeepClauseOrModelAggregateFunctionExpression = "AnalyticOrKeepClauseOrModelAggregateFunctionExpression";
 			public const string AnalyzedObject = "AnalyzedObject";
 			public const string AnalyzeOption = "AnalyzeOption";

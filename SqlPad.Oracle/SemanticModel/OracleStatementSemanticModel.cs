@@ -2617,10 +2617,7 @@ namespace SqlPad.Oracle.SemanticModel
 				new OracleProgramReference
 				{
 					ProgramIdentifierNode = columnReference.ColumnNode,
-					DatabaseLinkNode = OracleReferenceBuilder.GetDatabaseLinkFromIdentifier(columnReference.ColumnNode),
-					AnalyticClauseNode = null,
-					ParameterListNode = null,
-					ParameterReferences = null
+					DatabaseLinkNode = OracleReferenceBuilder.GetDatabaseLinkFromIdentifier(columnReference.ColumnNode)
 				};
 
 			programReference.CopyPropertiesFrom(columnReference);
@@ -3058,7 +3055,7 @@ namespace SqlPad.Oracle.SemanticModel
 						analyticClauseNode = rootNode[NonTerminals.AnalyticClause];
 						break;
 					case NonTerminals.AggregateFunctionCall:
-						analyticClauseNode = rootNode[NonTerminals.AnalyticOrKeepClauseOrModelAggregateFunctionExpression, NonTerminals.AnalyticOrKeepClause, NonTerminals.AnalyticClause] ?? rootNode[NonTerminals.OverQueryPartitionClause];
+						analyticClauseNode = rootNode[NonTerminals.AnalyticOrKeepClauseOrModelAggregateFunctionExpression, NonTerminals.AnalyticClause] ?? rootNode[NonTerminals.OverQueryPartitionClause];
 						break;
 				}
 
@@ -3116,10 +3113,19 @@ namespace SqlPad.Oracle.SemanticModel
 					}
 				}
 
-				var programReference = new OracleProgramReference
-				{
-					ProgramIdentifierNode = identifierNode, RootNode = rootNode, Owner = queryBlock, Container = queryBlock, AnalyticClauseNode = analyticClauseNode, ParameterListNode = parameterList, ParameterReferences = parameterNodes.Select(n => new ProgramParameterReference { ParameterNode = n }).ToArray(), SelectListColumn = selectListColumn, Placement = placement
-				};
+				var programReference =
+					new OracleProgramReference
+					{
+						ProgramIdentifierNode = identifierNode,
+						RootNode = rootNode,
+						Owner = queryBlock,
+						Container = queryBlock,
+						AnalyticClauseNode = analyticClauseNode,
+						ParameterListNode = parameterList,
+						ParameterReferences = parameterNodes.Select(n => new ProgramParameterReference { ParameterNode = n }).ToArray(),
+						SelectListColumn = selectListColumn,
+						Placement = placement
+					};
 
 				programReferences.Add(programReference);
 				newProgramReferences.Add(programReference);

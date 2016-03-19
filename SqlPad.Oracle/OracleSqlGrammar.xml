@@ -6298,18 +6298,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
-    <Rule StartingNonTerminal="AnalyticOrKeepClause">
-      <Sequences>
-        <Sequence>
-          <NonTerminal Id="AnalyticClause" />
-        </Sequence>
-        <Sequence>
-          <NonTerminal Id="KeepClause" />
-        </Sequence>
-      </Sequences>
-    </Rule>
-    
+
     <Rule StartingNonTerminal="ExpressionOrMultiset">
       <Sequences>
         <Sequence>
@@ -8974,7 +8963,10 @@
     <Rule StartingNonTerminal="AnalyticOrKeepClauseOrModelAggregateFunctionExpression">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="AnalyticOrKeepClause" />
+          <NonTerminal Id="AnalyticClause" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="KeepClause" />
         </Sequence>
         <Sequence>
           <Terminal Id="LeftBracket" />
