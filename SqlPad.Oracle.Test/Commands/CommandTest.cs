@@ -214,6 +214,18 @@ FROM
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestAddAliasCommandAtTableWithFlashbackClause()
+		{
+			_editor.Text = @"SELECT dual.dummy FROM dual AS OF TIMESTAMP sysdate - 1";
+			_editor.CaretOffset = 23;
+
+			CanExecuteCommand(OracleCommands.AddAlias).ShouldBe(true);
+			ExecuteCommand(OracleCommands.AddAlias, new TestCommandSettings(new CommandSettingsModel { Value = "d" }));
+
+			_editor.Text.ShouldBe(@"SELECT d.dummy FROM dual AS OF TIMESTAMP sysdate - 1 d");
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestAddAliasCommandWithWhereGroupByAndHavingClauses()
 		{
 			_editor.Text = "SELECT SELECTION.RESPONDENTBUCKET_ID, PROJECT_ID FROM SELECTION WHERE SELECTION.NAME = NAME GROUP BY SELECTION.RESPONDENTBUCKET_ID, PROJECT_ID HAVING COUNT(SELECTION.SELECTION_ID) = COUNT(SELECTION_ID)";

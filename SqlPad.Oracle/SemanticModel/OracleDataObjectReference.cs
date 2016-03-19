@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using SqlPad.Oracle.DataDictionary;
+using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
 namespace SqlPad.Oracle.SemanticModel
@@ -220,8 +221,33 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public StatementGrammarNode AliasNode { get; set; }
 
-		public FlashbackOption FlashbackOption { get; set; }
-		
+		public StatementGrammarNode FlashbackClauseNode { get; set; }
+
+		public FlashbackOption FlashbackOption
+		{
+			get
+			{
+				var flashbackOption = FlashbackOption.None;
+				var table = SchemaObject.GetTargetSchemaObject() as OracleTable;
+				if (table == null || FlashbackClauseNode == null)
+				{
+					return flashbackOption;
+				}
+
+				if (FlashbackClauseNode[NonTerminals.FlashbackVersionsClause] != null)
+				{
+					flashbackOption |= FlashbackOption.Versions;
+				}
+
+				if (FlashbackClauseNode[NonTerminals.FlashbackAsOfClause] != null)
+				{
+					flashbackOption |= FlashbackOption.AsOf;
+				}
+
+				return flashbackOption;
+			}
+		}
+
 		public override ReferenceType Type { get; }
 
 		public override void Accept(IOracleReferenceVisitor visitor)

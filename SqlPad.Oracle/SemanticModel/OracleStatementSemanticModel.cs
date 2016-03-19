@@ -641,7 +641,7 @@ namespace SqlPad.Oracle.SemanticModel
 							_objectReferenceCteRootNodes[objectReference] = commonTableExpressions;
 						}
 
-						FindFlashbackOption(objectReference);
+						objectReference.FlashbackClauseNode = objectReference.RootNode.GetSingleDescendant(NonTerminals.FlashbackQueryClause);
 
 						FindExplicitPartitionReferences(queryTableExpression, objectReference);
 					}
@@ -701,31 +701,6 @@ namespace SqlPad.Oracle.SemanticModel
 					kvp.Value.RemoveAt(index);
 					kvp.Value.Insert(index, pivotTableReference);
 				}
-			}
-		}
-
-		private void FindFlashbackOption(OracleDataObjectReference objectReference)
-		{
-			var table = objectReference.SchemaObject.GetTargetSchemaObject() as OracleTable;
-			if (table == null)
-			{
-				return;
-			}
-
-			var flashbackQueryClause = objectReference.RootNode.GetSingleDescendant(NonTerminals.FlashbackQueryClause);
-			if (flashbackQueryClause == null)
-			{
-				return;
-			}
-
-			if (flashbackQueryClause[NonTerminals.FlashbackVersionsClause] != null)
-			{
-				objectReference.FlashbackOption |= FlashbackOption.Versions;
-			}
-
-			if (flashbackQueryClause[NonTerminals.FlashbackAsOfClause] != null)
-			{
-				objectReference.FlashbackOption |= FlashbackOption.AsOf;
 			}
 		}
 

@@ -147,7 +147,7 @@ namespace SqlPad.Oracle.Commands
 				textSegment =
 					new TextSegment
 					{
-						IndextStart = (dataObjectReference.DatabaseLinkNode ?? dataObjectReference.ObjectNode).SourcePosition.IndexEnd + 1,
+						IndextStart = (dataObjectReference.FlashbackClauseNode ?? dataObjectReference.DatabaseLinkNode ?? dataObjectReference.ObjectNode).SourcePosition.IndexEnd + 1,
 						Length = 0,
 						Text = $" {alias}"
 					};
