@@ -2659,6 +2659,16 @@ ORDER BY symbol, tstamp";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
+		[Test(Description = @"")]
+		public void TestAggregateFunctionWithinModelClause()
+		{
+			const string statement1 = @"SELECT NULL FROM dual MODEL DIMENSION BY (dummy d1, dummy d2) MEASURES (0 x) RULES (x[ANY, ANY] = max(x)[ANY, cv()])";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+		}
+
 		[Test(Description = @""), Ignore]
 		public void TestParenthesisEnclosedObjectMember()
 		{

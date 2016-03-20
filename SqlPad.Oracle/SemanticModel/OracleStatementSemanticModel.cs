@@ -1043,10 +1043,12 @@ namespace SqlPad.Oracle.SemanticModel
 					{
 						continue;
 					}
-					
+
 					foreach (var identifier in GetIdentifiers(assignmentExpression))
 					{
-						if (identifier.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.ModelRulesClauseAssignment), NonTerminals.ConditionOrExpressionList) == null)
+						if (identifier.GetPathFilterAncestor(
+							n => !String.Equals(n.Id, NonTerminals.ModelRulesClauseAssignment),
+							n => String.Equals(n.Id, NonTerminals.ConditionOrExpressionOrSingleColumnForLoopList) || String.Equals(n.Id, NonTerminals.ConditionOrExpressionList)) == null)
 						{
 							ruleMeasureIdentifiers.Add(identifier);
 						}

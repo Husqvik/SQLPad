@@ -8982,10 +8982,7 @@
           <NonTerminal Id="MultiColumnForLoop" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="SingleColumnForLoopList" />
-        </Sequence>
-        <Sequence>
-          <NonTerminal Id="ConditionOrExpressionList" />
+          <NonTerminal Id="ConditionOrExpressionOrSingleColumnForLoopList" />
         </Sequence>
       </Sequences>
     </Rule>
