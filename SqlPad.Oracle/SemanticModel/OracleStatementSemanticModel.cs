@@ -1038,6 +1038,12 @@ namespace SqlPad.Oracle.SemanticModel
 					
 					ruleMeasureIdentifiers.Add(cellAssignment.FirstTerminalNode);
 
+					var orderByClause = modelRulesClauseAssignment[NonTerminals.OrderByClause];
+					if (orderByClause != null)
+					{
+						ruleDimensionIdentifiers.AddRange(GetIdentifiers(orderByClause));
+					}
+
 					var assignmentExpression = modelRulesClauseAssignment[NonTerminals.Expression];
 					if (assignmentExpression == null)
 					{

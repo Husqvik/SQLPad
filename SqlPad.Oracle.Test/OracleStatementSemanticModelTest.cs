@@ -1858,6 +1858,33 @@ FROM
 		}
 
 		[Test(Description = @"")]
+		public void TestSqlModelRuleOrderByReference()
+		{
+			const string query1 =
+@"SELECT
+	NULL
+FROM
+	dual
+MODEL
+	DIMENSION BY (dummy)
+	MEASURES (0 measure)
+	RULES UPDATE (
+		measure[ANY] ORDER BY dummy, undefined = 0
+	)";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
+
+			var queryBlock = semanticModel.MainQueryBlock;
+			var dimensionReferenceContainer = queryBlock.ModelReference.DimensionReferenceContainer;
+			dimensionReferenceContainer.ColumnReferences.Count.ShouldBe(2);
+			dimensionReferenceContainer.ColumnReferences[0].ColumnNode.Token.Value.ShouldBe("dummy");
+			dimensionReferenceContainer.ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+			dimensionReferenceContainer.ColumnReferences[1].ColumnNode.Token.Value.ShouldBe("undefined");
+			dimensionReferenceContainer.ColumnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(0);
+		}
+
+		[Test(Description = @"")]
 		public void TestSqlModelReferenceInnerReferences()
 		{
 			const string query1 =

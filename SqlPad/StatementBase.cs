@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace SqlPad
@@ -18,6 +17,8 @@ namespace SqlPad
 		public StatementGrammarNode RootNode { get; set; }
 
 		public StatementGrammarNode TerminatorNode { get; set; }
+
+		public int LastSourceIndex => TerminatorNode?.SourcePosition.IndexStart ?? SourcePosition.IndexEnd + 1;
 
 		public IEnumerable<StatementCommentNode> Comments
 		{
@@ -92,17 +93,5 @@ namespace SqlPad
 		{
 			return RootNode?.GetNearestTerminalToPosition(position, filter);
 		}
-	}
-
-	[DebuggerDisplay("FoldingSection (Placeholder={Placeholder}; Range={FoldingStart + \"-\" + FoldingEnd})")]
-	public class FoldingSection
-	{
-		public int FoldingStart { get; set; }
-
-		public int FoldingEnd { get; set; }
-		
-		public string Placeholder { get; set; }
-		
-		public bool IsNested { get; set; }
 	}
 }

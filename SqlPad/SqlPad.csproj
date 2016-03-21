@@ -106,6 +106,7 @@
     <Compile Include="CellValueConverter.cs" />
     <Compile Include="ClipboardManager.cs" />
     <Compile Include="CSharpQueryClassGenerator.cs" />
+    <Compile Include="FoldingSection.cs" />
     <Compile Include="IConnectionAdapter.cs" />
     <Compile Include="WindowClipboardHistory.xaml.cs">
       <DependentUpon>WindowClipboardHistory.xaml</DependentUpon>

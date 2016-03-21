@@ -864,7 +864,7 @@ namespace SqlPad
 			foreach (var validationModel in _documentRepository.ValidationModels.Values)
 			{
 				var statement = validationModel.Statement;
-				if (Editor.SelectionStart > statement.RootNode.SourcePosition.IndexEnd + 1)
+				if (Editor.SelectionStart > statement.SourcePosition.IndexEnd + 1)
 				{
 					continue;
 				}
@@ -877,7 +877,7 @@ namespace SqlPad
 					}
 
 					selectionStart = statement.SourcePosition.IndexStart;
-					selectionEnd = statement.RootNode.SourcePosition.IndexEnd + 1;
+					selectionEnd = statement.LastSourceIndex;
 					isOnlyStatement = false;
 				}
 
@@ -890,10 +890,10 @@ namespace SqlPad
 				selectionStart = selectionStartAfterStatementStart
 					? selectionStart
 					: statement.SourcePosition.IndexStart;
-				var selectionEndBeforeStatementEnd = selectionEnd < statement.RootNode.SourcePosition.IndexEnd + 1;
+				var selectionEndBeforeStatementEnd = selectionEnd < statement.LastSourceIndex;
 				var statementIndexEnd = selectionEndBeforeStatementEnd
 					? selectionEnd
-					: statement.RootNode.SourcePosition.IndexEnd + 1;
+					: statement.LastSourceIndex;
 
 				string statementText = null;
 				if (includeStatementText)
