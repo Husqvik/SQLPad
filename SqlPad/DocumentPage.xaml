@@ -293,7 +293,7 @@
 											<ColumnDefinition Width="*" />
 											<ColumnDefinition Width="Auto"/>
 										</Grid.ColumnDefinitions>
-										<TextBox Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}" GotFocus="BindVariableEditorGotFocusHandler" LostFocus="BindVariableEditorLostFocus" Height="22" VerticalContentAlignment="Center" />
+										<sqlPad:SqlPadTextBox Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}" GotFocus="BindVariableEditorGotFocusHandler" LostFocus="BindVariableEditorLostFocus" Height="22" VerticalContentAlignment="Center" />
 										<ToggleButton Content="F" IsChecked="{Binding IsFilePath}" Click="BindVariableFromFileClickHandler" Grid.Column="1" Width="18" ToolTip="Toggle to use file as data input">
 											<ToggleButton.Style>
 												<Style>

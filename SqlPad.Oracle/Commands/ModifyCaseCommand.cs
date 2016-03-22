@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Windows.Input;
 using SqlPad.Commands;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 
@@ -11,18 +10,18 @@ namespace SqlPad.Oracle.Commands
 		private readonly ActionExecutionContext _executionContext;
 		private readonly Func<string, string> _changeCaseFunction;
 
-		public static readonly CommandExecutionHandler MakeUpperCase = new CommandExecutionHandler
-		{
-			Name = "MakeUpperCase",
-			DefaultGestures = new InputGestureCollection { new KeyGesture(Key.U, ModifierKeys.Control | ModifierKeys.Shift) },
-			ExecutionHandler = MakeUpperCaseHandler
-		};
-
 		public static readonly CommandExecutionHandler MakeLowerCase = new CommandExecutionHandler
 		{
 			Name = "MakeLowerCase",
-			DefaultGestures = new InputGestureCollection { new KeyGesture(Key.U, ModifierKeys.Control) },
+			DefaultGestures = SqlPadTextBox.MakeLowerCaseDefaultGestures,
 			ExecutionHandler = MakeLowerCaseHandler
+		};
+
+		public static readonly CommandExecutionHandler MakeUpperCase = new CommandExecutionHandler
+		{
+			Name = "MakeUpperCase",
+			DefaultGestures = SqlPadTextBox.MakeUpperCaseDefaultGestures,
+			ExecutionHandler = MakeUpperCaseHandler
 		};
 
 		private static void MakeLowerCaseHandler(ActionExecutionContext executionContext)
