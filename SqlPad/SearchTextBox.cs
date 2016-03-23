@@ -6,17 +6,13 @@ namespace SqlPad
 {
 	public class SearchTextBox : WatermarkTextBox
 	{
+		private static readonly RoutedCommand ClearPhraseCommand = new RoutedCommand("ClearPhrase", typeof(SearchTextBox), new InputGestureCollection { new KeyGesture(Key.Escape) });
+
 		public SearchTextBox()
 		{
-			KeyDown += KeyDownHandler;
-		}
+			SqlPadTextBox.ConfigureCommands(this);
 
-		private void KeyDownHandler(object sender, KeyEventArgs keyEventArgs)
-		{
-			if (keyEventArgs.Key == Key.Escape)
-			{
-				Text = String.Empty;
-			}
+			CommandBindings.Add(new CommandBinding(ClearPhraseCommand, (s, args) => Text = String.Empty, SqlPadTextBox.BuildCanExecuteIfWritableAndSelectionNotEmpty(this)));
 		}
 	}
 }

@@ -1,4 +1,3 @@
-using System;
 using System.Globalization;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -13,42 +12,49 @@ namespace SqlPad
 		private static readonly RoutedCommand MakeLowerCaseCommand = new RoutedCommand("MakeLowerCase", typeof(SqlPadTextBox), MakeLowerCaseDefaultGestures);
 		private static readonly RoutedCommand MakeUpperCaseCommand = new RoutedCommand("MakeUpperCase", typeof(SqlPadTextBox), MakeUpperCaseDefaultGestures);
 
-		private string Replacement => Text.Substring(SelectionStart, SelectionLength);
-
-		protected override void OnInitialized(EventArgs e)
+		public static void ConfigureCommands(TextBox textBox)
 		{
-			base.OnInitialized(e);
-
-			CommandBindings.Add(new CommandBinding(MakeLowerCaseCommand, LowerCaseExecuted, CanExecuteModifyCase));
-			CommandBindings.Add(new CommandBinding(MakeUpperCaseCommand, UpperCaseExecuted, CanExecuteModifyCase));
+			var canExecuteRoutedEventHandler = BuildCanExecuteIfWritableAndSelectionNotEmpty(textBox);
+			textBox.CommandBindings.Add(new CommandBinding(MakeLowerCaseCommand, (s, args) => LowerCaseExecuted(textBox), canExecuteRoutedEventHandler));
+			textBox.CommandBindings.Add(new CommandBinding(MakeUpperCaseCommand, (s, args) => UpperCaseExecuted(textBox), canExecuteRoutedEventHandler));
 		}
 
-		private void CanExecuteModifyCase(object sender, CanExecuteRoutedEventArgs args)
+		public static CanExecuteRoutedEventHandler BuildCanExecuteIfWritableAndSelectionNotEmpty(TextBox textBox)
 		{
-			args.CanExecute = !IsReadOnly && SelectionLength > 0;
+			return (s, args) => args.CanExecute = CanExecuteModifyCase(textBox);
 		}
 
-		private void LowerCaseExecuted(object sender, ExecutedRoutedEventArgs args)
+		public SqlPadTextBox()
 		{
-			var replacement = Replacement.ToLower(CultureInfo.CurrentUICulture);
-			ReplaceSelectedText(replacement);
+			ConfigureCommands(this);
 		}
 
-		private void UpperCaseExecuted(object sender, ExecutedRoutedEventArgs args)
+		private static bool CanExecuteModifyCase(TextBox textBox)
 		{
-			var replacement = Replacement.ToUpper(CultureInfo.CurrentUICulture);
-			ReplaceSelectedText(replacement);
+			return !textBox.IsReadOnly && textBox.SelectionLength > 0;
 		}
 
-		private void ReplaceSelectedText(string replacement)
+		private static void LowerCaseExecuted(TextBox textBox)
 		{
-			var originalSelectionStart = SelectionStart;
-			var originalSelectionLength = SelectionLength;
+			var replacement = textBox.SelectedText.ToLower(CultureInfo.CurrentUICulture);
+			ReplaceSelectedText(textBox, replacement);
+		}
 
-			Text = Text.Remove(SelectionStart, SelectionLength).Insert(SelectionStart, replacement);
+		private static void UpperCaseExecuted(TextBox textBox)
+		{
+			var replacement = textBox.SelectedText.ToUpper(CultureInfo.CurrentUICulture);
+			ReplaceSelectedText(textBox, replacement);
+		}
 
-			SelectionStart = originalSelectionStart;
-			SelectionLength = originalSelectionLength;
+		private static void ReplaceSelectedText(TextBox textBox, string replacement)
+		{
+			var originalSelectionStart = textBox.SelectionStart;
+			var originalSelectionLength = textBox.SelectionLength;
+
+			textBox.Text = textBox.Text.Remove(textBox.SelectionStart, textBox.SelectionLength).Insert(textBox.SelectionStart, replacement);
+
+			textBox.SelectionStart = originalSelectionStart;
+			textBox.SelectionLength = originalSelectionLength;
 		}
 	}
 }
