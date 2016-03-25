@@ -1317,13 +1317,31 @@ END;";
 		}
 
 		[Test(Description = @""), STAThread]
-		public void TestTooltipOverNomExistingColumn()
+		public void TestTooltipOverNonExistingColumn()
 		{
 			const string query = @"SELECT non_existing FROM dual";
 
 			_documentRepository.UpdateStatements(query);
 
 			Assert.DoesNotThrow(() => _toolTipProvider.GetToolTip(_documentRepository, 7));
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestTooltipOverAggregateFunctionWithinPivotClause()
+		{
+			const string query =
+@"SELECT
+	NULL
+FROM
+	dual
+PIVOT (
+    max(dummy)
+    FOR (dummy) IN ('X')
+)";
+
+			_documentRepository.UpdateStatements(query);
+
+			Assert.DoesNotThrow(() => _toolTipProvider.GetToolTip(_documentRepository, 43));
 		}
 
 		private static string GetTextFromTextBlock(TextBlock textBlock)

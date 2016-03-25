@@ -683,7 +683,7 @@ namespace SqlPad.Oracle.SemanticModel
 			if (pivotExpressions != null)
 			{
 				var grammarSpecificFunctions = GetGrammarSpecificFunctionNodes(pivotExpressions);
-				CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, null, pivotTableReference.SourceReferenceContainer.ProgramReferences, StatementPlacement.PivotClause, null);
+				CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, pivotTableReference.Owner, pivotTableReference.SourceReferenceContainer.ProgramReferences, StatementPlacement.PivotClause, null);
 			}
 
 			foreach (var kvp in _asteriskTableReferences)
