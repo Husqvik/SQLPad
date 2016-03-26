@@ -104,7 +104,7 @@ namespace SqlPad.Oracle.Commands
 
 					goto case Terminals.ColumnAlias;
 				case Terminals.ColumnAlias:
-					nodes = GetColumnUsages();
+					nodes = GetColumnUsages(_semanticModel, _currentNode, false);
 					break;
 				default:
 					throw new NotSupportedException($"Terminal '{_currentNode.Id}' is not supported. ");
@@ -289,11 +289,6 @@ namespace SqlPad.Oracle.Commands
 			return nodes;
 		}
 
-		private IEnumerable<StatementGrammarNode> GetColumnUsages()
-		{
-			return GetColumnUsages(_semanticModel, _currentNode, false);
-		}
-
 		internal static IEnumerable<StatementGrammarNode> GetColumnUsages(OracleStatementSemanticModel semanticModel, StatementGrammarNode columnNode, bool onlyAliasOrigin)
 		{
 			IEnumerable<StatementGrammarNode> nodes;
@@ -359,7 +354,7 @@ namespace SqlPad.Oracle.Commands
 			{
 				nodes = new[] { columnNode };
 				var queryBlock = semanticModel.GetQueryBlock(columnNode);
-				selectListColumn = queryBlock.Columns.SingleOrDefault(c => c.AliasNode == columnNode);
+				selectListColumn = queryBlock.Columns.SingleOrDefault(c => c.AliasNode == columnNode || c.ExplicitAliasNode == columnNode);
 
 				if (selectListColumn == null)
 				{
@@ -486,7 +481,13 @@ namespace SqlPad.Oracle.Commands
 		internal static IEnumerable<StatementGrammarNode> GetParentQueryBlockReferences(OracleSelectListColumn selectListColumn)
 		{
 			var nodes = Enumerable.Empty<StatementGrammarNode>();
-			if (selectListColumn?.AliasNode == null)
+			if (selectListColumn == null)
+			{
+				return nodes;
+			}
+
+			var aliasNode = selectListColumn.ExplicitAliasNode ?? selectListColumn.AliasNode;
+			if (aliasNode == null)
 			{
 				return nodes;
 			}

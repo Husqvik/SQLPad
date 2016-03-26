@@ -1217,11 +1217,12 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 
 			var columnEnumerator = queryBlock.Columns.Where(c => !c.IsAsterisk).GetEnumerator();
-			foreach (var name in queryBlock.ExplicitColumnNames.Values)
+			foreach (var kvp in queryBlock.ExplicitColumnNames)
 			{
 				if (columnEnumerator.MoveNext())
 				{
-					columnEnumerator.Current.ExplicitNormalizedName = name;
+					columnEnumerator.Current.ExplicitAliasNode = kvp.Key;
+					columnEnumerator.Current.ExplicitNormalizedName = kvp.Value;
 				}
 				else
 				{

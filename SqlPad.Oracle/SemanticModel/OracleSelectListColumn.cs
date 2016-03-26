@@ -49,6 +49,8 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public string ExplicitNormalizedName { get; set; }
 
+		public StatementGrammarNode ExplicitAliasNode { get; set; }
+
 		public bool HasExplicitAlias => !IsAsterisk && HasExplicitDefinition && String.Equals(RootNode.LastTerminalNode.Id, Terminals.ColumnAlias);
 
 		public StatementGrammarNode AliasNode

@@ -1036,6 +1036,28 @@ WHERE
 			foundSegments[2].DisplayOptions.ShouldBe(DisplayOptions.Usage);
 		}
 
+		[Test(Description = @""), STAThread]
+		public void TestFindColumnUsagesInCommonTableExpression()
+		{
+			const string sql =
+@"WITH data (seq) AS (
+	SELECT 1 FROM dual
+)
+SELECT
+	seq
+FROM
+	data";
+
+			var foundSegments = FindUsagesOrdered(sql, 11);
+			foundSegments.Count.ShouldBe(2);
+			foundSegments[0].IndextStart.ShouldBe(11);
+			foundSegments[0].Length.ShouldBe(3);
+			//foundSegments[0].DisplayOptions.ShouldBe(DisplayOptions.Definition);
+			foundSegments[1].IndextStart.ShouldBe(55);
+			foundSegments[1].Length.ShouldBe(3);
+			foundSegments[1].DisplayOptions.ShouldBe(DisplayOptions.Usage);
+		}
+
 		private void ValidateCommonResults1(IList<TextSegment> foundSegments)
 		{
 			foundSegments.Count.ShouldBe(6);
@@ -1255,7 +1277,7 @@ WHERE
 SELECT VAL FROM CTE";
 
 			var foundSegments = FindUsagesOrdered(statement, 10);
-			foundSegments.Count.ShouldBe(1);
+			foundSegments.Count.ShouldBe(2);
 		}
 
 		[Test(Description = @""), STAThread]

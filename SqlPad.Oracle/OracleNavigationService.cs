@@ -234,13 +234,13 @@ namespace SqlPad.Oracle
 			return insertTarget.Columns.Keys.Skip(columnIndex).First();
 		}
 
-		private static T FindItemAndIndexIndex<T>(IEnumerable<T> nodes, Func<T, bool> predicate, out int? index)
+		private static T FindItemAndIndexIndex<T>(IEnumerable<T> items, Func<T, bool> predicate, out int? index)
 		{
-			if (nodes != null)
+			if (items != null)
 			{
 				var matchIndex = 0;
 
-				foreach (var node in nodes)
+				foreach (var node in items)
 				{
 					if (predicate(node))
 					{
