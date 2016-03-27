@@ -50,7 +50,7 @@ namespace SqlPad.Oracle.Commands
 				return;
 			}
 
-			foreach (var terminal in FindUsagesCommand.GetParentQueryBlockReferences(column))
+			foreach (var terminal in FindUsagesCommand.GetParentQueryBlockColumnUsages(column))
 			{
 				segmentsToReplace.Add
 					(new TextSegment

@@ -1052,7 +1052,7 @@ FROM
 			foundSegments.Count.ShouldBe(2);
 			foundSegments[0].IndextStart.ShouldBe(11);
 			foundSegments[0].Length.ShouldBe(3);
-			//foundSegments[0].DisplayOptions.ShouldBe(DisplayOptions.Definition);
+			foundSegments[0].DisplayOptions.ShouldBe(DisplayOptions.Definition);
 			foundSegments[1].IndextStart.ShouldBe(55);
 			foundSegments[1].Length.ShouldBe(3);
 			foundSegments[1].DisplayOptions.ShouldBe(DisplayOptions.Usage);
@@ -1277,7 +1277,15 @@ FROM
 SELECT VAL FROM CTE";
 
 			var foundSegments = FindUsagesOrdered(statement, 10);
-			foundSegments.Count.ShouldBe(2);
+			foundSegments.Count.ShouldBe(4);
+			foundSegments[0].IndextStart.ShouldBe(9);
+			foundSegments[0].DisplayOptions.ShouldBe(DisplayOptions.Definition);
+			foundSegments[1].IndextStart.ShouldBe(61);
+			foundSegments[1].DisplayOptions.ShouldBe(DisplayOptions.Usage);
+			foundSegments[2].IndextStart.ShouldBe(84);
+			foundSegments[2].DisplayOptions.ShouldBe(DisplayOptions.Usage);
+			foundSegments[3].IndextStart.ShouldBe(104);
+			foundSegments[3].DisplayOptions.ShouldBe(DisplayOptions.Usage);
 		}
 
 		[Test(Description = @""), STAThread]

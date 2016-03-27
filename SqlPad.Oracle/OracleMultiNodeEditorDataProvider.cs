@@ -131,7 +131,7 @@ namespace SqlPad.Oracle
 
 					if (selectListColumn != null)
 					{
-						multiNodeData.SynchronizedSegments = FindUsagesCommand.GetParentQueryBlockReferences(selectListColumn)
+						multiNodeData.SynchronizedSegments = FindUsagesCommand.GetParentQueryBlockColumnUsages(selectListColumn)
 							.TakeWhile(t => String.Equals(t.Token.Value.ToQuotedIdentifier(), selectListColumn.NormalizedName))
 							.Select(t => t.SourcePosition)
 							.ToArray();

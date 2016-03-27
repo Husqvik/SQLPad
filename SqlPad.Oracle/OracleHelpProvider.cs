@@ -137,7 +137,7 @@ namespace SqlPad.Oracle
 			}
 
 			var semanticModel = (OracleStatementSemanticModel)executionContext.DocumentRepository.ValidationModels[statement].SemanticModel;
-			var terminal = statement.GetTerminalAtPosition(executionContext.CaretOffset, n => !String.Equals(n.Id, Terminals.Comma) && !String.Equals(n.Id, Terminals.Dot) && !String.Equals(n.Id, Terminals.RightParenthesis));
+			var terminal = statement.GetTerminalAtPosition(executionContext.CaretOffset, n => !String.Equals(n.Id, Terminals.Comma) && !String.Equals(n.Id, Terminals.Dot) && !String.Equals(n.Id, Terminals.RightParenthesis) && !String.Equals(n.Id, Terminals.LeftParenthesis));
 			if (terminal == null)
 			{
 				return;

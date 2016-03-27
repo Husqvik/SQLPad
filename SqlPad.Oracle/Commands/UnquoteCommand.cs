@@ -54,7 +54,7 @@ namespace SqlPad.Oracle.Commands
 				var unquotedColumnAlias = column.NormalizedName.Trim('"');
 				if (column.HasExplicitAlias || String.Equals(column.NormalizedName.ToSimpleIdentifier(), unquotedColumnAlias))
 				{
-					foreach (var terminal in FindUsagesCommand.GetParentQueryBlockReferences(column))
+					foreach (var terminal in FindUsagesCommand.GetParentQueryBlockColumnUsages(column))
 					{
 						ExecutionContext.SegmentsToReplace.Add(
 							new TextSegment
