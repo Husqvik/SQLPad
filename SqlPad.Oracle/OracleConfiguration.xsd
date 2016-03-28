@@ -4,7 +4,9 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element minOccurs="0" maxOccurs="1" name="StartupScript" type="xs:string" />
+        
         <xs:element minOccurs="0" maxOccurs="1" name="TKProfPath" type="xs:string" />
+        
         <xs:element minOccurs="0" maxOccurs="1" name="Connections">
           <xs:complexType>
             <xs:sequence>
@@ -27,6 +29,21 @@
             </xs:sequence>
           </xs:complexType>
         </xs:element>
+        
+        <xs:element minOccurs="0" maxOccurs="1" name="Formatter">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element minOccurs="0" maxOccurs="1" name="Casing">
+                <xs:complexType>
+                  <xs:attribute name="Identifier" type="local:Casing" use="optional" />
+                  <xs:attribute name="Alias" type="local:Casing" use="optional" />
+                  <xs:attribute name="Keyword" type="local:Casing" use="optional" />
+                  <xs:attribute name="ReservedWord" type="local:Casing" use="optional" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -35,4 +52,12 @@
     <xs:attribute name="Schema" type="xs:string" use="optional" />
     <xs:attribute name="Name" type="xs:string" use="required" />
   </xs:complexType>
+
+  <xs:simpleType name="Casing">
+    <xs:restriction base="xs:string" >
+      <xs:enumeration value="Upper"/>
+      <xs:enumeration value="Lower"/>
+      <xs:enumeration value="InitialCapital"/>
+    </xs:restriction>
+  </xs:simpleType>
 </xs:schema>

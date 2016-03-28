@@ -228,8 +228,9 @@
 						<sqlPad:StaticResourceBinding ResourceKey="FindReplaceManager" Path="ReplaceBinding" />
 						<sqlPad:StaticResourceBinding ResourceKey="FindReplaceManager" Path="FindNextBinding" />
 						<CommandBinding Command="commands:GenericCommands.FindUsages" Executed="FindUsages" />
-						<CommandBinding Command="commands:GenericCommands.FormatStatement" Executed="FormatStatement" />
-						<CommandBinding Command="commands:GenericCommands.FormatStatementAsSingleLine" Executed="FormatStatementAsSingleLine" />
+						<CommandBinding Command="commands:GenericCommands.FormatStatement" Executed="FormatStatementHandler" />
+						<CommandBinding Command="commands:GenericCommands.FormatStatementAsSingleLine" Executed="FormatStatementAsSingleLineHandler" />
+						<CommandBinding Command="commands:GenericCommands.NormalizeStatement" Executed="NormalizeStatementHandler" />
 						<CommandBinding Command="commands:GenericCommands.ListContextActions" Executed="ListContextActions" />
 						<CommandBinding Command="commands:GenericCommands.ListCodeGenerationItems" Executed="ListGenerateCodeItems" />
 						<CommandBinding Command="commands:GenericCommands.NavigateToDefinitionRoot" Executed="NavigateToDefinition" />

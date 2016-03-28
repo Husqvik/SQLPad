@@ -68,9 +68,9 @@ namespace SqlPad.Oracle
 			return new OracleMultiNodeEditorDataProvider();
 		}
 
-		public IStatementFormatter CreateSqlFormatter(SqlFormatterOptions options)
+		public IStatementFormatter CreateSqlFormatter()
 		{
-			return new OracleStatementFormatter(options);
+			return new OracleStatementFormatter();
 		}
 
 		public IToolTipProvider CreateToolTipProvider()

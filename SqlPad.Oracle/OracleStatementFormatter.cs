@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using SqlPad.Commands;
@@ -10,7 +11,7 @@ namespace SqlPad.Oracle
 {
 	public class OracleStatementFormatter : IStatementFormatter
 	{
-		struct LineBreakSettings
+		private struct LineBreakSettings
 		{
 			public string NonTerminalId { get; set; }
 			public string ChildNodeId { get; set; }
@@ -20,18 +21,18 @@ namespace SqlPad.Oracle
 		}
 
 		[Flags]
-		enum LineBreakPosition
+		private enum LineBreakPosition
 		{
 			None = 0,
 			BeforeNode = 1,
 			AfterNode = 2,
 		}
 
-		private readonly SqlFormatterOptions _options;
-		
 		public CommandExecutionHandler ExecutionHandler { get; }
 
 		public CommandExecutionHandler SingleLineExecutionHandler { get; }
+
+		public CommandExecutionHandler NormalizeHandler { get; }
 
 		private static readonly HashSet<LineBreakSettings> LineBreaks =
 			new HashSet<LineBreakSettings>
@@ -52,6 +53,10 @@ namespace SqlPad.Oracle
 				new LineBreakSettings { NonTerminalId = NonTerminals.HavingClause, ChildNodeId = Terminals.Having, BreakPosition = n => LineBreakPosition.BeforeNode | LineBreakPosition.AfterNode, GetIndentationBefore = n => -1, GetIndentationAfter = n => 1 },
 				new LineBreakSettings { NonTerminalId = NonTerminals.OrderByClause, ChildNodeId = Terminals.Order, BreakPosition = GetOrderByBreakPosition, GetIndentationBefore = n => -1 },
 				new LineBreakSettings { NonTerminalId = NonTerminals.OrderByClause, ChildNodeId = Terminals.By, BreakPosition = GetOrderByBreakPosition, GetIndentationAfter = n => 1 },
+				new LineBreakSettings { NonTerminalId = NonTerminals.HierarchicalQueryConnectByClause, ChildNodeId = Terminals.Connect, BreakPosition = n => LineBreakPosition.BeforeNode, GetIndentationBefore = n => -1 },
+				new LineBreakSettings { NonTerminalId = NonTerminals.HierarchicalQueryConnectByClause, ChildNodeId = Terminals.By, BreakPosition = n => LineBreakPosition.AfterNode, GetIndentationAfter = n => 1 },
+				new LineBreakSettings { NonTerminalId = NonTerminals.HierarchicalQueryStartWithClause, ChildNodeId = Terminals.Start, BreakPosition = n => LineBreakPosition.BeforeNode, GetIndentationBefore = n => -1 },
+				new LineBreakSettings { NonTerminalId = NonTerminals.HierarchicalQueryStartWithClause, ChildNodeId = Terminals.With, BreakPosition = n => LineBreakPosition.AfterNode, GetIndentationAfter = n => 1 },
 				new LineBreakSettings { NonTerminalId = NonTerminals.OrderExpressionChained, ChildNodeId = Terminals.Comma, BreakPosition = GetOrderByBreakPosition },
 				new LineBreakSettings { NonTerminalId = NonTerminals.CommonTableExpressionListChained, ChildNodeId = Terminals.Comma, BreakPosition = n => LineBreakPosition.AfterNode, GetIndentationAfter = n => -1 },
 				new LineBreakSettings { NonTerminalId = NonTerminals.SubqueryFactoringClause, ChildNodeId = Terminals.With, BreakPosition = n => LineBreakPosition.AfterNode, GetIndentationAfter = n => 1 },
@@ -173,10 +178,48 @@ namespace SqlPad.Oracle
 				Terminals.PercentCharacter
 			};
 
-		public OracleStatementFormatter(SqlFormatterOptions options)
-		{
-			_options = options;
+		private static readonly HashSet<string> GrammarSpecificFunctions =
+			new HashSet<string>
+			{
+				Terminals.Min,
+				Terminals.Max,
+				Terminals.Sum,
+				Terminals.Avg,
+				Terminals.FirstValue,
+				Terminals.Count,
+				Terminals.Cast,
+				Terminals.Trim,
+				Terminals.CharacterCode,
+				Terminals.Variance,
+				Terminals.StandardDeviation,
+				Terminals.LastValue,
+				Terminals.Lead,
+				Terminals.Lag,
+				Terminals.ListAggregation,
+				Terminals.CumulativeDistribution,
+				Terminals.Rank,
+				Terminals.DenseRank,
+				Terminals.PercentileDiscreteDistribution,
+				Terminals.PercentileContinuousDistribution,
+				Terminals.NegationOrNull,
+				Terminals.RowIdPseudocolumn,
+				Terminals.RowNumberPseudocolumn,
+				Terminals.User,
+				Terminals.Level,
+				Terminals.Extract,
+				Terminals.JsonQuery,
+				Terminals.JsonExists,
+				Terminals.JsonValue,
+				Terminals.XmlCast,
+				Terminals.XmlElement,
+				Terminals.XmlSerialize,
+				Terminals.XmlParse,
+				Terminals.XmlQuery,
+				Terminals.XmlRoot
+			};
 
+		public OracleStatementFormatter()
+		{
 			ExecutionHandler =
 				new CommandExecutionHandler
 				{
@@ -192,6 +235,60 @@ namespace SqlPad.Oracle
 					DefaultGestures = GenericCommands.FormatStatementAsSingleLine.InputGestures,
 					ExecutionHandler = c => new SingleLineStatementFormatter(c).FormatStatements()
 				};
+
+			NormalizeHandler =
+				new CommandExecutionHandler
+				{
+					Name = "NormalizeStatement",
+					DefaultGestures = GenericCommands.NormalizeStatement.InputGestures,
+					ExecutionHandler = c => new StatementNormalizer(c).FormatStatements()
+				};
+		}
+
+		private static string FormatTerminal(StatementGrammarNode terminal)
+		{
+			var options = OracleConfiguration.Configuration.Formatter.Casing;
+			var value = terminal.Token.Value;
+			if (terminal.Id.IsIdentifier() || GrammarSpecificFunctions.Contains(terminal.Id))
+			{
+				return value.IsQuoted()
+					? value
+					: FormatTerminalValue(value, options.Identifier);
+			}
+
+			if (terminal.Id.IsAlias())
+			{
+				return value.IsQuoted()
+					? value
+					: FormatTerminalValue(value, options.Alias);
+			}
+
+			if (terminal.IsReservedWord)
+			{
+				return FormatTerminalValue(value, options.ReservedWord);
+			}
+
+			if (!String.Equals(terminal.Id, Terminals.StringLiteral))
+			{
+				return FormatTerminalValue(value, options.Keyword);
+			}
+
+			return value;
+		}
+
+		private static string FormatTerminalValue(string value, Casing casing)
+		{
+			switch (casing)
+			{
+				case Casing.Upper:
+					return value.ToUpper(CultureInfo.CurrentCulture);
+				case Casing.Lower:
+					return value.ToLower(CultureInfo.CurrentCulture);
+				case Casing.InitialCapital:
+					return CultureInfo.CurrentCulture.TextInfo.ToTitleCase(value.ToLower(CultureInfo.CurrentCulture));
+				default:
+					throw new NotSupportedException();
+			}
 		}
 
 		private abstract class StatementFormatterBase
@@ -215,6 +312,38 @@ namespace SqlPad.Oracle
 						: statements.Where(s => s.SourcePosition.IndexStart < ExecutionContext.SelectionEnd && s.SourcePosition.IndexEnd >= ExecutionContext.SelectionStart);
 				}
 			} 
+		}
+
+		private class StatementNormalizer : StatementFormatterBase
+		{
+			public StatementNormalizer(ActionExecutionContext executionContext)
+				: base(executionContext)
+			{
+			}
+
+			public override void FormatStatements()
+			{
+				foreach (var statement in Statements)
+				{
+					Normalize(statement);
+				}
+			}
+
+			private void Normalize(StatementBase statement)
+			{
+				foreach (var terminal in statement.AllTerminals)
+				{
+					var segment =
+						new TextSegment
+						{
+							IndextStart = terminal.SourcePosition.IndexStart,
+							Length = terminal.SourcePosition.Length,
+							Text = FormatTerminal(terminal)
+						};
+
+					ExecutionContext.SegmentsToReplace.Add(segment);
+				}
+			}
 		}
 
 		private class SingleLineStatementFormatter : StatementFormatterBase

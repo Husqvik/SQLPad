@@ -44,6 +44,7 @@ namespace SqlPad.Commands
 		public static RoutedCommand ShowDatabaseMonitor = new RoutedCommand("ShowDatabaseMonitor", typeof(Window), new InputGestureCollection { new KeyGesture(Key.M, ModifierKeys.Control | ModifierKeys.Alt) });
 		public static RoutedCommand FormatStatement = new RoutedCommand("FormatStatement", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F, ModifierKeys.Control | ModifierKeys.Alt) });
 		public static RoutedCommand FormatStatementAsSingleLine = new RoutedCommand("FormatStatementAsSingleLine", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F, ModifierKeys.Shift | ModifierKeys.Alt) });
+		public static RoutedCommand NormalizeStatement = new RoutedCommand("NormalizeStatement", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F, ModifierKeys.Control | ModifierKeys.Shift) });
 		public static RoutedCommand FindUsages = new RoutedCommand("FindUsages", typeof(TextEditor), new InputGestureCollection { new KeyGesture(Key.F11, ModifierKeys.Alt | ModifierKeys.Shift) });
 		public static RoutedCommand CancelUserAction = new RoutedCommand("CancelUserAction", typeof(UserControl), new InputGestureCollection { new KeyGesture(Key.Escape) });
 		public static RoutedCommand RefreshContent = new RoutedCommand("RefreshContent", typeof(UserControl), new InputGestureCollection { new KeyGesture(Key.F5) });

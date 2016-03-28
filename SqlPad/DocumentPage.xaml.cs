@@ -167,7 +167,7 @@ namespace SqlPad
 			InitializeTabItem();
 		}
 
-		private void TimedNotificationTickHandler(object sender, EventArgs e)
+		private void TimedNotificationTickHandler(object sender, EventArgs args)
 		{
 			TimedNotificationMessage = String.Empty;
 			_timerTimedNotification.Stop();
@@ -411,7 +411,7 @@ namespace SqlPad
 			_codeCompletionProvider = InfrastructureFactory.CreateCodeCompletionProvider();
 			_codeSnippetProvider = InfrastructureFactory.CreateSnippetProvider();
 			_contextActionProvider = InfrastructureFactory.CreateContextActionProvider();
-			_statementFormatter = InfrastructureFactory.CreateSqlFormatter(new SqlFormatterOptions());
+			_statementFormatter = InfrastructureFactory.CreateSqlFormatter();
 			_toolTipProvider = InfrastructureFactory.CreateToolTipProvider();
 			_navigationService = InfrastructureFactory.CreateNavigationService();
 			_helpProvider = InfrastructureFactory.CreateHelpProvider();
@@ -471,12 +471,12 @@ namespace SqlPad
 			Save();
 		}
 
-		private void SaveAsCommandExecutedHandler(object sender, ExecutedRoutedEventArgs e)
+		private void SaveAsCommandExecutedHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			SaveAs();
 		}
 
-		private void OpenContainingFolderCommandExecutedHandler(object sender, ExecutedRoutedEventArgs e)
+		private void OpenContainingFolderCommandExecutedHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			Process.Start("explorer.exe", "/select," + WorkDocument.File.FullName);
 		}
@@ -650,7 +650,7 @@ namespace SqlPad
 			ConnectionErrorMessage = exception.Message;
 		}
 
-		private void ButtonReconnectClickHandler(object sender, RoutedEventArgs e)
+		private void ButtonReconnectClickHandler(object sender, RoutedEventArgs args)
 		{
 			ConnectionStatus = ConnectionStatus.Connecting;
 
@@ -695,7 +695,7 @@ namespace SqlPad
 			args.CanExecute = _documentRepository.StatementText == Editor.Text;
 		}
 
-		private void ShowCodeCompletionOptions(object sender, ExecutedRoutedEventArgs e)
+		private void ShowCodeCompletionOptions(object sender, ExecutedRoutedEventArgs args)
 		{
 			CreateCodeCompletionWindow(true, Editor.CaretOffset);
 		}
@@ -711,7 +711,7 @@ namespace SqlPad
 			ActiveOutputViewer.CancelUserAction();
 		}
 
-		private void ShowTokenCommandExecutionHandler(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
+		private void ShowTokenCommandExecutionHandler(object sender, ExecutedRoutedEventArgs ags)
 		{
 			var tokens = InfrastructureFactory.CreateTokenReader(_documentRepository.StatementText).GetTokens(true).ToArray();
 			var message = "Parsed: " + String.Join(", ", tokens.Where(t => t.CommentType == CommentType.None).Select(t => "{" + t.Value + "}"));
@@ -719,14 +719,18 @@ namespace SqlPad
 			MessageBox.Show(message, "Tokens", MessageBoxButton.OK, MessageBoxImage.Information);
 		}
 
-		private void FormatStatement(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
+		private void FormatStatementHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			GenericCommandHandler.ExecuteEditCommand(_documentRepository, Editor, _statementFormatter.ExecutionHandler.ExecutionHandler);
 		}
 
-		private void FormatStatementAsSingleLine(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
+		private void FormatStatementAsSingleLineHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			GenericCommandHandler.ExecuteEditCommand(_documentRepository, Editor, _statementFormatter.SingleLineExecutionHandler.ExecutionHandler);
+		}
+		private void NormalizeStatementHandler(object sender, ExecutedRoutedEventArgs args)
+		{
+			GenericCommandHandler.ExecuteEditCommand(_documentRepository, Editor, _statementFormatter.NormalizeHandler.ExecutionHandler);
 		}
 
 		private void NavigateToQueryBlockRoot(object sender, ExecutedRoutedEventArgs args)
@@ -1070,7 +1074,7 @@ namespace SqlPad
 			}
 		}
 
-		private void PageLoadedHandler(object sender, RoutedEventArgs e)
+		private void PageLoadedHandler(object sender, RoutedEventArgs args)
 		{
 			if (_isInitializing)
 			{
@@ -1137,7 +1141,7 @@ namespace SqlPad
 			Editor.Focus();
 		}
 
-		private void ApplicationDeactivatedHandler(object sender, EventArgs eventArgs)
+		private void ApplicationDeactivatedHandler(object sender, EventArgs args)
 		{
 			DynamicPopup.IsOpen = false;
 		}
@@ -1149,7 +1153,7 @@ namespace SqlPad
 			_isToolTipOpenByShortCut = false;
 		}
 
-		private void CaretPositionChangedHandler(object sender, EventArgs eventArgs)
+		private void CaretPositionChangedHandler(object sender, EventArgs args)
 		{
 			EditorNavigationService.RegisterDocumentCursorPosition(WorkDocument, Editor.CaretOffset);
 
@@ -1579,19 +1583,19 @@ namespace SqlPad
 			_completionWindow.Show();
 		}
 
-		private void CompletionListScrollChanged(object sender, RoutedEventArgs e)
+		private void CompletionListScrollChanged(object sender, RoutedEventArgs args)
 		{
 			UpdateCompletionItemHighlight();
 		}
 
-		private void CompletionWindowClosedHadler(object sender, EventArgs e)
+		private void CompletionWindowClosedHadler(object sender, EventArgs args)
 		{
 			_completionWindow.SizeChanged -= CompletionWindowSizeChangedHandler;
 			_completionWindow.CompletionList.ListBox.RemoveHandler(ScrollViewer.ScrollChangedEvent, (RoutedEventHandler)CompletionListScrollChanged);
 			_completionWindow = null;
 		}
 
-		private void CompletionWindowSizeChangedHandler(object sender, SizeChangedEventArgs e)
+		private void CompletionWindowSizeChangedHandler(object sender, SizeChangedEventArgs args)
 		{
 			if (_completionWindow.MinWidth < _completionWindow.Width)
 			{
@@ -1606,7 +1610,7 @@ namespace SqlPad
 			Parse();
 		}
 
-		private void EditorTextChangedHandler(object sender, EventArgs e)
+		private void EditorTextChangedHandler(object sender, EventArgs args)
 		{
 			if (_isInitializing)
 			{
@@ -1762,14 +1766,14 @@ namespace SqlPad
 			}
 		}
 
-		void MouseHoverHandler(object sender, MouseEventArgs e)
+		private void MouseHoverHandler(object sender, MouseEventArgs args)
 		{
 			if (_isToolTipOpenByShortCut || _isToolTipOpenByCaretChange || DynamicPopup.IsOpen)
 			{
 				return;
 			}
 
-			var visualPosition = e.GetPosition(Editor);
+			var visualPosition = args.GetPosition(Editor);
 			var position = Editor.GetPositionFromPoint(visualPosition);
 			if (!position.HasValue || _documentRepository.Statements == null)
 			{
@@ -1778,7 +1782,7 @@ namespace SqlPad
 
 			var visualLine = Editor.TextArea.TextView.GetVisualLine(position.Value.Line);
 			var textLine = visualLine.GetTextLine(position.Value.VisualColumn, position.Value.IsAtEndOfLine);
-			var textVisualPosition = e.GetPosition(Editor.TextArea.TextView);
+			var textVisualPosition = args.GetPosition(Editor.TextArea.TextView);
 			if (textVisualPosition.X > textLine.Width)
 			{
 				return;
@@ -1819,10 +1823,10 @@ namespace SqlPad
 			DynamicPopup.HorizontalOffset = 0;
 			DynamicPopup.VerticalOffset = 0;
 			DynamicPopup.IsOpen = true;
-			e.Handled = true;
+			args.Handled = true;
 		}
 
-		private void ToolTipPinHandler(object sender, EventArgs eventArgs)
+		private void ToolTipPinHandler(object sender, EventArgs args)
 		{
 			DynamicPopup.IsOpen = false;
 			
@@ -1911,14 +1915,14 @@ namespace SqlPad
 			return builder.ToString();
 		}
 
-		private void MouseMoveHandler(object sender, MouseEventArgs e)
+		private void MouseMoveHandler(object sender, MouseEventArgs args)
 		{
 			if (!DynamicPopup.IsOpen)
 			{
 				return;
 			}
 
-			var position = e.GetPosition(DynamicPopup.Child);
+			var position = args.GetPosition(DynamicPopup.Child);
 
 			if (position.Y < -Editor.FontSize || position.Y > DynamicPopup.Child.RenderSize.Height || position.X < 0 || position.X > DynamicPopup.Child.RenderSize.Width)
 			{
@@ -2040,7 +2044,7 @@ namespace SqlPad
 			return _contextActionMenu.Items.Count > 0;
 		}
 
-		private void EditorKeyUpHandler(object sender, KeyEventArgs e)
+		private void EditorKeyUpHandler(object sender, KeyEventArgs args)
 		{
 			if (Editor.Document.IsInUpdate)
 			{
@@ -2055,7 +2059,7 @@ namespace SqlPad
 			}
 		}
 
-		private void EditorKeyDownHandler(object sender, KeyEventArgs e)
+		private void EditorKeyDownHandler(object sender, KeyEventArgs args)
 		{
 			_isToolTipOpenByShortCut = false;
 
@@ -2064,8 +2068,8 @@ namespace SqlPad
 				DynamicPopup.IsOpen = false;
 			}
 
-			var isReturn = e.Key == Key.Return;
-			var isEscape = e.Key == Key.Escape;
+			var isReturn = args.Key == Key.Return;
+			var isEscape = args.Key == Key.Escape;
 			if (isReturn || isEscape)
 			{
 				DisableCodeCompletion();
@@ -2082,7 +2086,7 @@ namespace SqlPad
 						_backgroundRenderer.ActiveSnippet = null;
 					}
 
-					e.Handled = true;
+					args.Handled = true;
 				}
 
 				if (_multiNodeEditor != null)
@@ -2093,38 +2097,38 @@ namespace SqlPad
 						_multiNodeEditor.Cancel();
 					}
 
-					e.Handled = true;
+					args.Handled = true;
 					_multiNodeEditor = null;
 					RedrawMultiEditSegments(true);
 				}
 			}
 
 			var isControlPressed = Keyboard.Modifiers == ModifierKeys.Control;
-			if (e.Key == Key.Back || e.Key == Key.Delete || (e.Key.In(Key.V, Key.Z, Key.Insert) && isControlPressed))
+			if (args.Key == Key.Back || args.Key == Key.Delete || (args.Key.In(Key.V, Key.Z, Key.Insert) && isControlPressed))
 			{
 				DisableCodeCompletion();
 
 				string clipboardText;
-				if (_multiNodeEditor != null && e.Key.In(Key.V, Key.Insert) && isControlPressed && ClipboardManager.TryGetClipboardText(out clipboardText))
+				if (_multiNodeEditor != null && args.Key.In(Key.V, Key.Insert) && isControlPressed && ClipboardManager.TryGetClipboardText(out clipboardText))
 				{
 					_multiNodeEditor.Replace(clipboardText);
 				}
 			}
 
-			_undoExecuted = isControlPressed && e.Key == Key.Z;
+			_undoExecuted = isControlPressed && args.Key == Key.Z;
 
-			if ((e.Key == Key.Back || e.Key == Key.Delete) && _multiNodeEditor != null)
+			if ((args.Key == Key.Back || args.Key == Key.Delete) && _multiNodeEditor != null)
 			{
 				Editor.Document.BeginUpdate();
 
-				if (!_multiNodeEditor.RemoveCharacter(e.Key == Key.Back))
+				if (!_multiNodeEditor.RemoveCharacter(args.Key == Key.Back))
 				{
 					_multiNodeEditor = null;
 				}
 
 				RedrawMultiEditSegments(true);
 			}
-			else if (e.Key == Key.Back && Editor.Document.TextLength > Editor.CaretOffset)
+			else if (args.Key == Key.Back && Editor.Document.TextLength > Editor.CaretOffset)
 			{
 				if (AreConsencutive('(', ')') ||
 				    AreConsencutive('"', '"') ||
@@ -2165,27 +2169,27 @@ namespace SqlPad
 			}
 		}
 
-		private void CompilationErrorHandler(object sender, CompilationErrorArgs e)
+		private void CompilationErrorHandler(object sender, CompilationErrorArgs args)
 		{
-			var failedStatementSourcePosition = e.CompilationError.Statement.SourcePosition;
+			var failedStatementSourcePosition = args.CompilationError.Statement.SourcePosition;
 			var isStatementUnchanged = _documentRepository.Statements.Any(s => failedStatementSourcePosition == s.SourcePosition);
 			if (!isStatementUnchanged)
 			{
 				return;
 			}
 
-			Editor.TextArea.Caret.Line = e.CompilationError.Line;
-			Editor.TextArea.Caret.Column = e.CompilationError.Column;
+			Editor.TextArea.Caret.Line = args.CompilationError.Line;
+			Editor.TextArea.Caret.Column = args.CompilationError.Column;
 			Editor.ScrollToCaret();
 			Editor.Focus();
 		}
 
-		private void ExpandAllFoldingsExecutedHandler(object sender, ExecutedRoutedEventArgs e)
+		private void ExpandAllFoldingsExecutedHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			SetAllFoldingIsFolded(false);
 		}
 
-		private void CollapseAllFoldingsExecutedHandler(object sender, ExecutedRoutedEventArgs e)
+		private void CollapseAllFoldingsExecutedHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			SetAllFoldingIsFolded(true);
 		}
@@ -2198,33 +2202,33 @@ namespace SqlPad
 			}
 		}
 
-		private void CollapseAllFoldingsCanExecuteHandler(object sender, CanExecuteRoutedEventArgs e)
+		private void CollapseAllFoldingsCanExecuteHandler(object sender, CanExecuteRoutedEventArgs args)
 		{
-			e.CanExecute = _foldingStrategy.FoldingManager.AllFoldings.Any(f => !f.IsFolded);
+			args.CanExecute = _foldingStrategy.FoldingManager.AllFoldings.Any(f => !f.IsFolded);
 		}
 
-		private void ExpandAllFoldingsCanExecuteHandler(object sender, CanExecuteRoutedEventArgs e)
+		private void ExpandAllFoldingsCanExecuteHandler(object sender, CanExecuteRoutedEventArgs args)
 		{
-			e.CanExecute = _foldingStrategy.FoldingManager.AllFoldings.Any(f => f.IsFolded);
+			args.CanExecute = _foldingStrategy.FoldingManager.AllFoldings.Any(f => f.IsFolded);
 		}
 
-		private void EditorZoomInHandler(object sender, ExecutedRoutedEventArgs e)
+		private void EditorZoomInHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			Editor.ZoomIn();
 		}
 
-		private void EditorZoomOutHandler(object sender, ExecutedRoutedEventArgs e)
+		private void EditorZoomOutHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			Editor.ZoomOut();
 		}
 
-		private void ShowHelpHandler(object sender, ExecutedRoutedEventArgs e)
+		private void ShowHelpHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			var executionContext = ActionExecutionContext.Create(Editor, _documentRepository);
 			_helpProvider.ShowHelp(executionContext);
 		}
 
-		private void BindVariableEditorGotFocusHandler(object sender, RoutedEventArgs e)
+		private void BindVariableEditorGotFocusHandler(object sender, RoutedEventArgs args)
 		{
 			var bindVariable = (BindVariableModel)((FrameworkElement)sender).DataContext;
 			var executionContext = ActionExecutionContext.Create(Editor, _documentRepository);
@@ -2233,14 +2237,14 @@ namespace SqlPad
 			AddHighlightSegments(executionContext.SegmentsToReplace);
 		}
 
-		private void BindVariableEditorLostFocus(object sender, RoutedEventArgs e)
+		private void BindVariableEditorLostFocus(object sender, RoutedEventArgs args)
 		{
 			ClearLastHighlight();
 		}
 
-		private void CloseOutputViewerClickHandler(object sender, RoutedEventArgs e)
+		private void CloseOutputViewerClickHandler(object sender, RoutedEventArgs args)
 		{
-			var outputViewer = (OutputViewer)((Button)e.Source).CommandParameter;
+			var outputViewer = (OutputViewer)((Button)args.Source).CommandParameter;
 			_outputViewers.Remove(outputViewer);
 			if (ActiveOutputViewer == null)
 			{
@@ -2250,12 +2254,12 @@ namespace SqlPad
 			outputViewer.Dispose();
 		}
 
-		private void ShowExecutionHistoryExecutedHandler(object sender, ExecutedRoutedEventArgs e)
+		private void ShowExecutionHistoryExecutedHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			App.ShowExecutionHistory(_providerConfiguration.ProviderName);
 		}
 
-		private void BindVariableFromFileClickHandler(object sender, RoutedEventArgs e)
+		private void BindVariableFromFileClickHandler(object sender, RoutedEventArgs args)
 		{
 			var button = (ToggleButton)sender;
 			var bindVariableModel = (BindVariableModel)button.DataContext;

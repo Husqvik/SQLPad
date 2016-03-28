@@ -52,7 +52,19 @@ namespace SqlPad.Oracle
 			Configuration =
 				new OracleConfiguration
 				{
-					Connections = new OracleConfigurationConnection[0]
+					Connections = new OracleConfigurationConnection[0],
+					Formatter =
+						new OracleConfigurationFormatter
+						{
+							Casing =
+								new OracleConfigurationFormatterCasing
+								{
+									Identifier = Casing.Upper,
+									Alias = Casing.Upper,
+									Keyword = Casing.Upper,
+									ReservedWord = Casing.Upper
+								}
+						}
 				};
 
 			if (!File.Exists(ConfigurationFilePath))

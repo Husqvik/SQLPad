@@ -34,7 +34,7 @@ namespace SqlPad
 
 		IMultiNodeEditorDataProvider CreateMultiNodeEditorDataProvider();
 
-		IStatementFormatter CreateSqlFormatter(SqlFormatterOptions options);
+		IStatementFormatter CreateSqlFormatter();
 
 		IToolTipProvider CreateToolTipProvider();
 

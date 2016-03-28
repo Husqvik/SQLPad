@@ -6,10 +6,6 @@ namespace SqlPad
 	{
 		CommandExecutionHandler ExecutionHandler { get; }
 		CommandExecutionHandler SingleLineExecutionHandler { get; }
-	}
-
-	public class SqlFormatterOptions
-	{
-		
+		CommandExecutionHandler NormalizeHandler { get; }
 	}
 }

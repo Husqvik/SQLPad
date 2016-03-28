@@ -9,7 +9,7 @@ namespace SqlPad.Oracle.Test
 	public class OracleStatementFormatterTest
 	{
 		private readonly SqlDocumentRepository _documentRepository = TestFixture.CreateDocumentRepository();
-		private static readonly OracleStatementFormatter Formatter = new OracleStatementFormatter(new SqlFormatterOptions());
+		private static readonly OracleStatementFormatter Formatter = new OracleStatementFormatter();
 
 		[Test(Description = @"")]
 		public void TestBasicFormat()
@@ -299,6 +299,25 @@ END;";
 @"BEGIN
 	NULL;
 END;";
+
+			AssertFormattedResult(executionContext, expectedFormat);
+		}
+
+		[Test(Description = @"")]
+		public void TestHierarchicalClauseFormatting()
+		{
+			const string sourceFormat = "SELECT NULL FROM dual START WITH 1 = 1 CONNECT BY LEVEL <= 3";
+			var executionContext = ExecuteFormatCommand(sourceFormat);
+
+			const string expectedFormat =
+@"SELECT
+	NULL
+FROM
+	dual
+START WITH
+	1 = 1
+CONNECT BY
+	LEVEL <= 3";
 
 			AssertFormattedResult(executionContext, expectedFormat);
 		}
