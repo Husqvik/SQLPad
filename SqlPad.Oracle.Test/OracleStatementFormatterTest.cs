@@ -11,6 +11,16 @@ namespace SqlPad.Oracle.Test
 		private readonly SqlDocumentRepository _documentRepository = TestFixture.CreateDocumentRepository();
 		private static readonly OracleStatementFormatter Formatter = new OracleStatementFormatter();
 
+		[TearDown]
+		public void TearDown()
+		{
+			var casing = OracleConfiguration.Configuration.Formatter.Casing;
+			casing.Identifier = Casing.Keep;
+			casing.Alias = Casing.Keep;
+			casing.ReservedWord = Casing.Keep;
+			casing.Keyword = Casing.Keep;
+		}
+
 		[Test(Description = @"")]
 		public void TestBasicFormat()
 		{
@@ -318,6 +328,27 @@ START WITH
 	1 = 1
 CONNECT BY
 	LEVEL <= 3";
+
+			AssertFormattedResult(executionContext, expectedFormat);
+		}
+
+		[Test(Description = @"")]
+		public void TestCasing()
+		{
+			var casing = OracleConfiguration.Configuration.Formatter.Casing;
+			casing.Identifier = Casing.Lower;
+			casing.Alias = Casing.Keep;
+			casing.ReservedWord = Casing.Upper;
+			casing.Keyword = Casing.InitialCapital;
+
+			const string sourceFormat = "SeLeCt dUmMy aS aLiAs FrOm DuAl";
+			var executionContext = ExecuteFormatCommand(sourceFormat);
+
+			const string expectedFormat =
+@"SELECT
+	dummy As aLiAs
+FROM
+	dual";
 
 			AssertFormattedResult(executionContext, expectedFormat);
 		}

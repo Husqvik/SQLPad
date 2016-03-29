@@ -202,10 +202,6 @@ namespace SqlPad.Oracle
 				Terminals.PercentileDiscreteDistribution,
 				Terminals.PercentileContinuousDistribution,
 				Terminals.NegationOrNull,
-				Terminals.RowIdPseudocolumn,
-				Terminals.RowNumberPseudocolumn,
-				Terminals.User,
-				Terminals.Level,
 				Terminals.Extract,
 				Terminals.JsonQuery,
 				Terminals.JsonExists,
@@ -245,32 +241,38 @@ namespace SqlPad.Oracle
 				};
 		}
 
-		private static string FormatTerminal(StatementGrammarNode terminal)
+		private static string FormatTerminal(StatementNode node)
 		{
-			var options = OracleConfiguration.Configuration.Formatter.Casing;
+			var terminal = node as StatementGrammarNode;
+			if (terminal == null)
+			{
+				return node.Token.Value;
+			}
+
+			var settings = OracleConfiguration.Configuration.Formatter.Casing;
 			var value = terminal.Token.Value;
 			if (terminal.Id.IsIdentifier() || GrammarSpecificFunctions.Contains(terminal.Id))
 			{
 				return value.IsQuoted()
 					? value
-					: FormatTerminalValue(value, options.Identifier);
+					: FormatTerminalValue(value, settings.Identifier);
 			}
 
 			if (terminal.Id.IsAlias())
 			{
 				return value.IsQuoted()
 					? value
-					: FormatTerminalValue(value, options.Alias);
+					: FormatTerminalValue(value, settings.Alias);
 			}
 
 			if (terminal.IsReservedWord)
 			{
-				return FormatTerminalValue(value, options.ReservedWord);
+				return FormatTerminalValue(value, settings.ReservedWord);
 			}
 
 			if (!String.Equals(terminal.Id, Terminals.StringLiteral))
 			{
-				return FormatTerminalValue(value, options.Keyword);
+				return FormatTerminalValue(value, settings.Keyword);
 			}
 
 			return value;
@@ -280,6 +282,8 @@ namespace SqlPad.Oracle
 		{
 			switch (casing)
 			{
+				case Casing.Keep:
+					return value;
 				case Casing.Upper:
 					return value.ToUpper(CultureInfo.CurrentCulture);
 				case Casing.Lower:
@@ -381,7 +385,7 @@ namespace SqlPad.Oracle
 						builder.Append(' ');
 					}
 
-					builder.Append(terminal.Token.Value);
+					builder.Append(FormatTerminal(terminal));
 
 					if (precedingNode == null)
 					{
@@ -467,10 +471,10 @@ namespace SqlPad.Oracle
 						continue;
 					}
 
-					var lineBreakSettings = LineBreaks.SingleOrDefault(s => s.NonTerminalId == startNode.Id && s.ChildNodeId == grammarNode.Id);
+					var lineBreakSettings = LineBreaks.SingleOrDefault(s => String.Equals(s.NonTerminalId, startNode.Id) && String.Equals(s.ChildNodeId, grammarNode.Id));
 					if (String.IsNullOrEmpty(lineBreakSettings.NonTerminalId))
 					{
-						lineBreakSettings = LineBreaks.SingleOrDefault(s => s.NonTerminalId == startNode.Id && String.IsNullOrEmpty(s.ChildNodeId));
+						lineBreakSettings = LineBreaks.SingleOrDefault(s => String.Equals(s.NonTerminalId, startNode.Id) && String.IsNullOrEmpty(s.ChildNodeId));
 					}
 
 					var breakSettingsFound = !String.IsNullOrEmpty(lineBreakSettings.NonTerminalId);
@@ -513,7 +517,7 @@ namespace SqlPad.Oracle
 							stringBuilder.Append(' ');
 						}
 
-						stringBuilder.Append(grammarNode.Token.Value);
+						stringBuilder.Append(FormatTerminal(grammarNode));
 
 						skipSpaceBeforeToken = SkipSpaceTerminalIds.Contains(grammarNode.Id) || grammarNode.Id.In(Terminals.Dot, Terminals.Colon, Terminals.AtCharacter);
 

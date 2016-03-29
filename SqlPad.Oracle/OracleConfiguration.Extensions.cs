@@ -59,10 +59,10 @@ namespace SqlPad.Oracle
 							Casing =
 								new OracleConfigurationFormatterCasing
 								{
-									Identifier = Casing.Upper,
-									Alias = Casing.Upper,
-									Keyword = Casing.Upper,
-									ReservedWord = Casing.Upper
+									Identifier = Casing.Keep,
+									Alias = Casing.Keep,
+									Keyword = Casing.Keep,
+									ReservedWord = Casing.Keep
 								}
 						}
 				};

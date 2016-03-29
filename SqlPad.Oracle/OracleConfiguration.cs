@@ -330,6 +330,9 @@ namespace SqlPad.Oracle {
     public enum Casing {
         
         /// <remarks/>
+        Keep,
+        
+        /// <remarks/>
         Upper,
         
         /// <remarks/>

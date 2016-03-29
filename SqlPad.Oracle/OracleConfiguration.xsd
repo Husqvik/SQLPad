@@ -55,6 +55,7 @@
 
   <xs:simpleType name="Casing">
     <xs:restriction base="xs:string" >
+      <xs:enumeration value="Keep"/>
       <xs:enumeration value="Upper"/>
       <xs:enumeration value="Lower"/>
       <xs:enumeration value="InitialCapital"/>
