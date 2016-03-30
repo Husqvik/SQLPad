@@ -11,6 +11,7 @@ namespace SqlPad.Oracle
 {
 	public partial class OracleConfiguration
 	{
+		private const string AllConnections = "*";
 		private static readonly XmlSerializer XmlSerializer = new XmlSerializer(typeof(OracleConfiguration));
 		private static readonly string ConfigurationFilePath = Path.Combine(ConfigurationProvider.FolderNameApplication, "OracleConfiguration.xml");
 
@@ -21,9 +22,11 @@ namespace SqlPad.Oracle
 		public string GetRemoteTraceDirectory(string connectionName)
 		{
 			OracleConfigurationConnection configuration;
-			return _connectionConfigurations.TryGetValue(connectionName, out configuration)
-				? configuration.RemoteTraceDirectory
-				: String.Empty;
+			return
+				(_connectionConfigurations.TryGetValue(connectionName, out configuration) && !String.IsNullOrWhiteSpace(configuration.RemoteTraceDirectory)) ||
+				_connectionConfigurations.TryGetValue(AllConnections, out configuration)
+					? configuration.RemoteTraceDirectory
+					: String.Empty;
 		}
 
 		public string GetConnectionStartupScript(string connectionName)
@@ -38,7 +41,7 @@ namespace SqlPad.Oracle
 		{
 			OracleConfigurationConnection configuration;
 			if ((_connectionConfigurations.TryGetValue(connectionName, out configuration) && configuration.ExecutionPlan?.TargetTable != null) ||
-				_connectionConfigurations.TryGetValue("*", out configuration) && configuration.ExecutionPlan?.TargetTable != null)
+				_connectionConfigurations.TryGetValue(AllConnections, out configuration) && configuration.ExecutionPlan?.TargetTable != null)
 			{
 				var targetTable = configuration.ExecutionPlan.TargetTable;
 				return OracleObjectIdentifier.Create(targetTable.Schema, targetTable.Name);
