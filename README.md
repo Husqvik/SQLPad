@@ -70,6 +70,8 @@ CTRL + ALT + F             - Format statement
 
 SHIFT + ALT + F            - Format statement into single line
 
+CTRL + SHIFT + F           - Statement normalization
+
 SHIFT + ALT + F11          - Find usages (column/object identifiers/aliases, functions, bind variables, literals)
 
 ESC                        - Cancel executing command
