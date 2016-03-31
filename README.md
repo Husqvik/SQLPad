@@ -246,6 +246,9 @@ Each connection string requires an infrastructure factory configuration record:
 				</ExecutionPlan>
 			</Connection>
 		</Connections>
+		<Formatter>
+			<Casing Identifier="Lower" Alias="Lower" Keyword="Upper" ReservedWord="Upper" />
+		</Formatter>
 	</OracleConfiguration>
 
 `StartupScript` - optional initialization script executed when connection to database is established
