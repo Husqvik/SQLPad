@@ -81,12 +81,6 @@ namespace SqlPad.Oracle.DataDictionary
 			return uniqueIdentifiers;
 		}
 
-		public static string MergeIdentifiersIntoSimpleString(string identifier1, string identifier2)
-		{
-			var ownerPrefix = String.IsNullOrEmpty(identifier1) ? null : $"{identifier1.ToSimpleIdentifier()}.";
-			return $"{ownerPrefix}{identifier2.ToSimpleIdentifier()}";
-		}
-
 		#region Overrides of ValueType
 		public override string ToString()
 		{

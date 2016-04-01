@@ -278,7 +278,7 @@ namespace SqlPad.Oracle
 			return value;
 		}
 
-		private static string FormatTerminalValue(string value, Casing casing)
+		internal static string FormatTerminalValue(string value, Casing casing)
 		{
 			switch (casing)
 			{

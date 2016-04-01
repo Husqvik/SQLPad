@@ -31,6 +31,8 @@ namespace SqlPad.Oracle
 			new OracleCodeCompletionItem { Name = JoinTypeCrossJoin, Priority = 4 }
 		};
 
+		private static OracleConfigurationFormatterCasing FormatSettings => OracleConfiguration.Configuration.Formatter.Casing;
+
 		public ICollection<ProgramOverloadDescription> ResolveProgramOverloads(SqlDocumentRepository documentRepository, int cursorPosition)
 		{
 			var emptyCollection = new ProgramOverloadDescription[0];
@@ -791,22 +793,29 @@ namespace SqlPad.Oracle
 
 		private IEnumerable<OracleCodeCompletionItem> CreateJoinTypeCompletionItems(OracleCodeCompletionType completionType)
 		{
+			var formatOption = FormatSettings.Keyword;
+
 			return JoinClauseTemplates
 				.Where(c => !completionType.ExistsTerminalValue || c.Name.StartsWith(completionType.TerminalValueUnderCursor.ToUpperInvariant()))
 				.Select(j =>
-					new OracleCodeCompletionItem
-					{
-						Name = j.Name,
-						Text = j.Name,
-						Priority = j.Priority,
-						Category = OracleCodeCompletionCategory.JoinMethod,
-						CategoryPriority = 1,
-						StatementNode = completionType.EffectiveTerminal
-					});
+				{
+					var joinType = OracleStatementFormatter.FormatTerminalValue(j.Name, formatOption);
+					return
+						new OracleCodeCompletionItem
+						{
+							Name = joinType,
+							Text = joinType,
+							Priority = j.Priority,
+							Category = OracleCodeCompletionCategory.JoinMethod,
+							CategoryPriority = 1,
+							StatementNode = completionType.EffectiveTerminal
+						};
+				});
 		}
 
 		private IEnumerable<OracleCodeCompletionItem> CreateAsteriskColumnCompletionItems(IEnumerable<OracleObjectWithColumnsReference> tables, bool skipFirstObjectIdentifier, StatementGrammarNode nodeToReplace)
 		{
+			var formatOption = FormatSettings.Identifier;
 			var builder = new StringBuilder();
 			
 			foreach (var table in tables)
@@ -819,6 +828,16 @@ namespace SqlPad.Oracle
 				builder.Clear();
 				var skipTablePrefix = skipFirstObjectIdentifier;
 				var separator = String.Empty;
+				var rowSourceFullName = String.Empty;
+
+				if (table.FullyQualifiedObjectName.HasOwner)
+				{
+					var rowSourceOwner = table.FullyQualifiedObjectName.Owner.ToSimpleIdentifier();
+					rowSourceFullName = $"{OracleStatementFormatter.FormatTerminalValue(rowSourceOwner, formatOption)}.";
+				}
+
+				var rowSourceName = table.FullyQualifiedObjectName.Name.ToSimpleIdentifier();
+				rowSourceFullName = $"{rowSourceFullName}{OracleStatementFormatter.FormatTerminalValue(rowSourceName, formatOption)}";
 
 				foreach (var column in table.Columns)
 				{
@@ -831,11 +850,11 @@ namespace SqlPad.Oracle
 
 					if (!skipTablePrefix && !String.IsNullOrEmpty(table.FullyQualifiedObjectName.Name))
 					{
-						builder.Append(table.FullyQualifiedObjectName);
+						builder.Append(rowSourceFullName);
 						builder.Append(".");
 					}
 					
-					builder.Append(column.Name.ToSimpleIdentifier());
+					builder.Append(OracleStatementFormatter.FormatTerminalValue(column.Name.ToSimpleIdentifier(), formatOption));
 
 					skipTablePrefix = false;
 					separator = ", ";
@@ -844,7 +863,7 @@ namespace SqlPad.Oracle
 				yield return
 					new OracleCodeCompletionItem
 					{
-						Name = (skipFirstObjectIdentifier || String.IsNullOrEmpty(table.FullyQualifiedObjectName.Name) ? String.Empty : table.FullyQualifiedObjectName + ".") + "*",
+						Name = (skipFirstObjectIdentifier || String.IsNullOrEmpty(table.FullyQualifiedObjectName.Name) ? String.Empty : $"{rowSourceFullName}.") + "*",
 						Text = builder.ToString(),
 						StatementNode = nodeToReplace,
 						CategoryPriority = -2,
@@ -855,9 +874,11 @@ namespace SqlPad.Oracle
 
 		private ICodeCompletionItem CreateColumnCodeCompletionItem(string columnName, string objectPrefix, StatementGrammarNode nodeToReplace, string category = OracleCodeCompletionCategory.Column)
 		{
+			var formatOption = FormatSettings.Identifier;
+			columnName = OracleStatementFormatter.FormatTerminalValue(columnName.ToSimpleIdentifier(), formatOption);
 			var text = String.IsNullOrEmpty(objectPrefix)
-				? columnName.ToSimpleIdentifier()
-				: $"{objectPrefix}.{columnName.ToSimpleIdentifier()}";
+				? columnName
+				: $"{OracleStatementFormatter.FormatTerminalValue(objectPrefix, formatOption)}.{columnName}";
 
 			return
 				new OracleCodeCompletionItem
@@ -872,17 +893,23 @@ namespace SqlPad.Oracle
 
 		private IEnumerable<ICodeCompletionItem> GenerateSchemaItems(string schemaNamePart, StatementGrammarNode node, int insertOffset, OracleDatabaseModelBase databaseModel, int priorityOffset = 0)
 		{
+			var formatOption = FormatSettings.Identifier;
+
 			return databaseModel.AllSchemas.Values
 				.Where(s => !String.Equals(s.Name, OracleObjectIdentifier.SchemaPublic) && (!String.Equals(MakeSaveQuotedIdentifier(schemaNamePart), s.Name) && CodeCompletionSearchHelper.IsMatch(s.Name, schemaNamePart)))
 				.Select(
-					s => new OracleCodeCompletionItem
+					s =>
 					{
-						Name = s.Name.ToSimpleIdentifier(),
-						Text = s.Name.ToSimpleIdentifier(),
-						StatementNode = node,
-						Category = OracleCodeCompletionCategory.DatabaseSchema,
-						InsertOffset = insertOffset,
-						CategoryPriority = 1 + priorityOffset
+						var schemaItem = OracleStatementFormatter.FormatTerminalValue(s.Name.ToSimpleIdentifier(), formatOption); 
+						return new OracleCodeCompletionItem
+						{
+							Name = schemaItem,
+							Text = schemaItem,
+							StatementNode = node,
+							Category = OracleCodeCompletionCategory.DatabaseSchema,
+							InsertOffset = insertOffset,
+							CategoryPriority = 1 + priorityOffset
+						};
 					});
 		}
 
@@ -897,6 +924,7 @@ namespace SqlPad.Oracle
 			}
 
 			var quotedSchemaName = databaseModel.CurrentSchema.ToQuotedIdentifier();
+			var formatOption = FormatSettings.Identifier;
 
 			return databaseModel.AllProgramMetadata
 				.SelectMany(g => g)
@@ -912,6 +940,8 @@ namespace SqlPad.Oracle
 					var programName = hasReservedWordName
 						? i.Name.Trim('"')
 						: i.Name;
+
+					programName = OracleStatementFormatter.FormatTerminalValue(programName, formatOption);
 
 					var postFix = parameterList;
 					var isPackage = String.Equals(category, OracleCodeCompletionCategory.Package);
@@ -1016,18 +1046,20 @@ namespace SqlPad.Oracle
 						OracleHelpProvider.DataDictionaryObjectDocumentation.TryGetValue(schemaObject.FullyQualifiedName, out documentation);
 					}
 
-					return new OracleCodeCompletionItem
-					{
-						Name = o.CompletionText,
-						Text = o.CompletionText + o.TextPostFix,
-						Priority = String.IsNullOrEmpty(objectNamePart) || o.CompletionText.TrimStart('"').ToUpperInvariant().StartsWith(objectNamePartUpperInvariant) ? 0 : 1,
-						StatementNode = node,
-						Category = o.Category,
-						InsertOffset = insertOffset,
-						CaretOffset = o.CaretOffset,
-						CategoryPriority = categoryOffset,
-						Description = documentation?.Value
-					};
+					var completionText = o.CompletionText;
+					return
+						new OracleCodeCompletionItem
+						{
+							Name = completionText,
+							Text = $"{completionText}{o.TextPostFix}",
+							Priority = String.IsNullOrEmpty(objectNamePart) || completionText.TrimStart('"').ToUpperInvariant().StartsWith(objectNamePartUpperInvariant) ? 0 : 1,
+							StatementNode = node,
+							Category = o.Category,
+							InsertOffset = insertOffset,
+							CaretOffset = o.CaretOffset,
+							CategoryPriority = categoryOffset,
+							Description = documentation?.Value
+						};
 				});
 		}
 
@@ -1039,7 +1071,7 @@ namespace SqlPad.Oracle
 			
 			public string Identifier2 { get; set; }
 
-			public string CompletionText => OracleObjectIdentifier.MergeIdentifiersIntoSimpleString(Identifier1, Identifier2);
+			public string CompletionText => MergeIdentifiersIntoSimpleString(Identifier1, Identifier2);
 
 		    public string Category { get; set; }
 
@@ -1050,8 +1082,15 @@ namespace SqlPad.Oracle
 		    private bool IsSchemaType()
 			{
 				var targetObject = SchemaObject.GetTargetSchemaObject();
-				return targetObject != null && targetObject.Type == OracleObjectType.Type;
+				return targetObject != null && String.Equals(targetObject.Type, OracleObjectType.Type);
 			}
+		}
+
+		private static string MergeIdentifiersIntoSimpleString(string identifier1, string identifier2)
+		{
+			var formatOption = FormatSettings.Identifier;
+			var ownerPrefix = String.IsNullOrEmpty(identifier1) ? null : $"{OracleStatementFormatter.FormatTerminalValue(identifier1.ToSimpleIdentifier(), formatOption)}.";
+			return $"{ownerPrefix}{OracleStatementFormatter.FormatTerminalValue(identifier2.ToSimpleIdentifier(), formatOption)}";
 		}
 
 		private string MakeSaveQuotedIdentifier(string identifierPart)
@@ -1071,17 +1110,22 @@ namespace SqlPad.Oracle
 
 		private IEnumerable<ICodeCompletionItem> GenerateCommonTableExpressionReferenceItems(OracleStatementSemanticModel model, string referenceNamePart, StatementGrammarNode node, int insertOffset)
 		{
+			var formatOption = FormatSettings.Alias;
 			// TODO: Make proper resolution of CTE accessibility
 			return model.QueryBlocks
 				.Where(qb => qb.Type == QueryBlockType.CommonTableExpression && qb.PrecedingConcatenatedQueryBlock == null && referenceNamePart.ToQuotedIdentifier() != qb.NormalizedAlias && CodeCompletionSearchHelper.IsMatch(qb.Alias, referenceNamePart))
-				.Select(qb => new OracleCodeCompletionItem
+				.Select(qb =>
 				{
-					Name = qb.Alias,
-					Text = qb.Alias,
-					StatementNode = node,
-					Category = OracleCodeCompletionCategory.CommonTableExpression,
-					InsertOffset = insertOffset,
-					CategoryPriority = -1
+					var alias = OracleStatementFormatter.FormatTerminalValue(qb.Alias, formatOption);
+					return new OracleCodeCompletionItem
+					{
+						Name = alias,
+						Text = alias,
+						StatementNode = node,
+						Category = OracleCodeCompletionCategory.CommonTableExpression,
+						InsertOffset = insertOffset,
+						CategoryPriority = -1
+					};
 				});
 		}
 
@@ -1136,22 +1180,25 @@ namespace SqlPad.Oracle
 			var builder = new StringBuilder();
 			if (!skipOnTerminal)
 			{
-				builder.Append(Terminals.On.ToUpperInvariant());
+				builder.Append(OracleStatementFormatter.FormatTerminalValue(TerminalValues.On, FormatSettings.ReservedWord));
 				builder.Append(" ");
 			}
 
 			var logicalOperator = String.Empty;
+			var formatOption = FormatSettings.Identifier;
 
 			for (var i = 0; i < keySourceColumns.Count; i++)
 			{
+				var sourceObjectName = MergeIdentifiersIntoSimpleString(OracleStatementFormatter.FormatTerminalValue(sourceObject.Owner.ToSimpleIdentifier(), formatOption), OracleStatementFormatter.FormatTerminalValue(sourceObject.Name.ToSimpleIdentifier(), formatOption));
+				var targetObjectName = MergeIdentifiersIntoSimpleString(OracleStatementFormatter.FormatTerminalValue(targetObject.Owner.ToSimpleIdentifier(), formatOption), OracleStatementFormatter.FormatTerminalValue(targetObject.Name.ToSimpleIdentifier(), formatOption));
 				builder.Append(logicalOperator);
-				builder.Append(swapSides ? targetObject : sourceObject);
+				builder.Append(swapSides ? targetObjectName : sourceObjectName);
 				builder.Append('.');
-				builder.Append((swapSides ? keyTargetColumns[i] : keySourceColumns[i]).ToSimpleIdentifier());
+				builder.Append(OracleStatementFormatter.FormatTerminalValue((swapSides ? keyTargetColumns[i] : keySourceColumns[i]).ToSimpleIdentifier(), formatOption));
 				builder.Append(" = ");
-				builder.Append(swapSides ? sourceObject : targetObject);
+				builder.Append(swapSides ? sourceObjectName : targetObjectName);
 				builder.Append('.');
-				builder.Append((swapSides ? keySourceColumns[i] : keyTargetColumns[i]).ToSimpleIdentifier());
+				builder.Append(OracleStatementFormatter.FormatTerminalValue((swapSides ? keySourceColumns[i] : keyTargetColumns[i]).ToSimpleIdentifier(), formatOption));
 
 				logicalOperator = " AND ";
 			}
