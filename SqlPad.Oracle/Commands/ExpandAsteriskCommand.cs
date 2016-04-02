@@ -163,6 +163,7 @@ namespace SqlPad.Oracle.Commands
 
 		private TextSegment GetSegmentToReplace()
 		{
+			var formatOption = OracleConfiguration.Configuration.Formatter.Casing.Identifier;
 			var columnNames = _settingsModel.BooleanOptions.Values
 				.Where(v => v.Value)
 				.Select(v => v.OptionIdentifier)
@@ -173,7 +174,7 @@ namespace SqlPad.Oracle.Commands
 				return TextSegment.Empty;
 			}
 
-			var builder = new StringBuilder(String.Join(", ", columnNames));
+			var builder = new StringBuilder(String.Join(", ", columnNames.Select(c => OracleStatementFormatter.FormatTerminalValue(c, formatOption))));
 			var addSpacePrefix =
 				_asteriskNode.SourcePosition.IndexStart - 1 == _asteriskNode.PrecedingTerminal?.SourcePosition.IndexEnd &&
 				!String.Equals(_asteriskNode.PrecedingTerminal.Id, Terminals.Comma);
