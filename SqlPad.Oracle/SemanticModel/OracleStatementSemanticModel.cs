@@ -26,6 +26,7 @@ namespace SqlPad.Oracle.SemanticModel
 			Terminals.JsonQuery,
 			Terminals.JsonValue,
 			//Terminals.XmlAggregate,
+			Terminals.Cast,
 			Terminals.XmlCast,
 			Terminals.XmlElement,
 			//Terminals.XmlForest,
@@ -2888,7 +2889,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		protected IEnumerable<StatementGrammarNode> GetGrammarSpecificFunctionNodes(StatementGrammarNode sourceNode, Func<StatementGrammarNode, bool> filter = null)
 		{
-			return sourceNode.GetPathFilterDescendants(n => NodeFilters.BreakAtNestedQueryBlock(n) && (filter == null || filter(n)), Terminals.Count, Terminals.Trim, Terminals.CharacterCode, Terminals.Cast, Terminals.NegationOrNull, Terminals.JsonExists, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, NonTerminals.WithinGroupAggregationFunction);
+			return sourceNode.GetPathFilterDescendants(n => NodeFilters.BreakAtNestedQueryBlock(n) && (filter == null || filter(n)), Terminals.Count, Terminals.Trim, Terminals.CharacterCode, Terminals.Cast, Terminals.XmlRoot, Terminals.NegationOrNull, Terminals.JsonExists, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, NonTerminals.WithinGroupAggregationFunction);
 		}
 
 		protected void ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(OracleQueryBlock queryBlock, OracleReferenceContainer referenceContainer, IEnumerable<StatementGrammarNode> identifiers, StatementPlacement placement, OracleSelectListColumn selectListColumn, Func<StatementGrammarNode, StatementGrammarNode> getPrefixNonTerminalFromIdentiferFunction = null, Func<StatementGrammarNode, IEnumerable<StatementGrammarNode>> getFunctionCallNodesFromIdentifierFunction = null)
@@ -2975,7 +2976,9 @@ namespace SqlPad.Oracle.SemanticModel
 			else
 			{
 				var columnExpressions = StatementGrammarNode.GetAllChainedClausesByPath(queryBlock.SelectList[NonTerminals.AliasedExpressionOrAllTableColumns], n => n.ParentNode, NonTerminals.SelectExpressionExpressionChainedList, NonTerminals.AliasedExpressionOrAllTableColumns);
-				var columnExpressionsIdentifierLookup = queryBlock.Terminals.Where(t => t.SourcePosition.IndexStart >= queryBlock.SelectList.SourcePosition.IndexStart && t.SourcePosition.IndexEnd <= queryBlock.SelectList.SourcePosition.IndexEnd && (StandardIdentifierIds.Contains(t.Id) || t.ParentNode.Id.In(NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, NonTerminals.WithinGroupAggregationFunction) || String.Equals(t.ParentNode.ParentNode.Id, NonTerminals.DataType))).ToLookup(t => t.GetAncestor(NonTerminals.AliasedExpressionOrAllTableColumns));
+				var columnExpressionsIdentifierLookup = queryBlock.Terminals
+					.Where(t => t.SourcePosition.IndexStart >= queryBlock.SelectList.SourcePosition.IndexStart && t.SourcePosition.IndexEnd <= queryBlock.SelectList.SourcePosition.IndexEnd && (StandardIdentifierIds.Contains(t.Id) || t.ParentNode.Id.In(NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, NonTerminals.WithinGroupAggregationFunction) || String.Equals(t.ParentNode.ParentNode.Id, NonTerminals.DataType)))
+					.ToLookup(t => t.GetAncestor(NonTerminals.AliasedExpressionOrAllTableColumns));
 
 				foreach (var columnExpression in columnExpressions)
 				{
@@ -3022,7 +3025,7 @@ namespace SqlPad.Oracle.SemanticModel
 							column.AliasNode = identifiers[0];
 						}
 
-						var grammarSpecificFunctions = columnExpressionIdentifiers.Where(t => t.Id.In(Terminals.Count, Terminals.Trim, Terminals.CharacterCode, Terminals.NegationOrNull, Terminals.Extract, Terminals.JsonQuery, Terminals.JsonExists, Terminals.JsonValue /*, Terminals.XmlAggregate*/, Terminals.XmlCast, Terminals.XmlElement, /*Terminals.XmlForest, */Terminals.XmlRoot, Terminals.XmlParse, Terminals.XmlQuery, Terminals.XmlSerialize)).Concat(columnExpressionIdentifiers.Where(t => t.ParentNode.Id.In(NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, NonTerminals.WithinGroupAggregationFunction)).Select(t => t.ParentNode));
+						var grammarSpecificFunctions = GetGrammarSpecificFunctionNodes(columnExpression);
 
 						CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, queryBlock, column.ProgramReferences, StatementPlacement.SelectList, column);
 					}

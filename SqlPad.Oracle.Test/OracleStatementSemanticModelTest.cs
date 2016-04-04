@@ -3408,5 +3408,19 @@ SELECT value FROM data";
 
 			Assert.DoesNotThrow(() => OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel));
 		}
+
+		[Test(Description = @"")]
+		public void TestCastFunctionResolution()
+		{
+			const string query1 = @"SELECT cast(1 AS NUMBER) FROM dual";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single().Validate();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
+			var mainQueryBlock = semanticModel.QueryBlocks.Single();
+			var castFunctionReference = mainQueryBlock.AllProgramReferences.Single();
+			castFunctionReference.Metadata.ShouldNotBe(null);
+		}
 	}
 }
