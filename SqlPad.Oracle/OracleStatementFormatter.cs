@@ -253,16 +253,12 @@ namespace SqlPad.Oracle
 			var value = terminal.Token.Value;
 			if (terminal.Id.IsIdentifier() || GrammarSpecificFunctions.Contains(terminal.Id))
 			{
-				return value.IsQuoted()
-					? value
-					: FormatTerminalValue(value, settings.Identifier);
+				return FormatTerminalValue(value, settings.Identifier);
 			}
 
 			if (terminal.Id.IsAlias())
 			{
-				return value.IsQuoted()
-					? value
-					: FormatTerminalValue(value, settings.Alias);
+				return FormatTerminalValue(value, settings.Alias);
 			}
 
 			if (terminal.IsReservedWord)
@@ -278,9 +274,14 @@ namespace SqlPad.Oracle
 			return value;
 		}
 
-		internal static string FormatTerminalValue(string value, Casing casing)
+		internal static string FormatTerminalValue(string value, Casing formatOption)
 		{
-			switch (casing)
+			if (value.IsQuoted())
+			{
+				return value;
+			}
+
+			switch (formatOption)
 			{
 				case Casing.Keep:
 					return value;

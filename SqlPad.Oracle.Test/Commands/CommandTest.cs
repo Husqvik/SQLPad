@@ -91,6 +91,12 @@ WHERE
 			_documentRepository = TestFixture.CreateDocumentRepository();
 		}
 
+		[TearDown]
+		public void TearDown()
+		{
+			OracleConfiguration.Configuration.Formatter.Casing.Reset();
+		}
+
 		private class TestCommandSettings : ICommandSettingsProvider
 		{
 			private readonly bool _isValueValid;
@@ -1145,6 +1151,19 @@ FROM
 			ExecuteCommand(OracleCommands.ExpandAsterisk, new TestCommandSettings(new CommandSettingsModel()));
 
 			_editor.Text.ShouldBe("SELECT dual.DUMMY FROM dual");
+		}
+
+		[Test(Description = @""), STAThread]
+		public void TestExpandAsteriskCommandWithQuotedIdentifierAndLowerFormatOption()
+		{
+			OracleConfiguration.Configuration.Formatter.Casing.Identifier = Casing.Lower;
+
+			_editor.Text = "SELECT * FROM \"CaseSensitiveTable\"";
+			_editor.CaretOffset = 7;
+
+			ExecuteCommand(OracleCommands.ExpandAsterisk, new TestCommandSettings(new CommandSettingsModel()));
+
+			_editor.Text.ShouldBe("SELECT \"CaseSensitiveTable\".\"CaseSensitiveColumn\", \"CaseSensitiveTable\".virtual_column FROM \"CaseSensitiveTable\"");
 		}
 
 

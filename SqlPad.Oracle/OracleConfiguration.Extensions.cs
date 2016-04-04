@@ -59,14 +59,7 @@ namespace SqlPad.Oracle
 					Formatter =
 						new OracleConfigurationFormatter
 						{
-							Casing =
-								new OracleConfigurationFormatterCasing
-								{
-									Identifier = Casing.Keep,
-									Alias = Casing.Keep,
-									Keyword = Casing.Keep,
-									ReservedWord = Casing.Keep
-								}
+							Casing = new OracleConfigurationFormatterCasing()
 						}
 				};
 
@@ -91,6 +84,22 @@ namespace SqlPad.Oracle
 			{
 				Trace.WriteLine("Configuration loading failed: " + e);
 			}
+		}
+	}
+
+	public partial class OracleConfigurationFormatterCasing
+	{
+		public OracleConfigurationFormatterCasing()
+		{
+			Reset();
+		}
+
+		public void Reset()
+		{
+			Identifier = Casing.Keep;
+			Alias = Casing.Keep;
+			Keyword = Casing.Keep;
+			ReservedWord = Casing.Keep;
 		}
 	}
 }

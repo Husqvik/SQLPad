@@ -76,10 +76,17 @@ namespace SqlPad.Oracle.Commands
 				var databaseLinkIdentifier = String.Concat(databaseLinkReference.DatabaseLinkNode.Terminals.Select(t => t.Token.Value));
 				var remoteObjectIdenrifier = OracleObjectIdentifier.Create(databaseLinkReference.OwnerNode, databaseLinkReference.ObjectNode, null);
 				var columnNames = await CurrentQueryBlock.SemanticModel.DatabaseModel.GetRemoteTableColumnsAsync(databaseLinkIdentifier, remoteObjectIdenrifier, cancellationToken);
-				expandedColumns.AddRange(columnNames.Select(n => new ExpandedColumn { ColumnName = $"{databaseLinkReference.FullyQualifiedObjectName}.{n.ToSimpleIdentifier()}"}));
+				expandedColumns.AddRange(
+					columnNames.Select(
+						n =>
+							new ExpandedColumn
+							{
+								OwnerIdentifier = databaseLinkReference.FullyQualifiedObjectName,
+								ColumnName = n.ToSimpleIdentifier()
+							}));
 			}
 
-			foreach (var expandedColumn in expandedColumns.Distinct(c => c.ColumnName))
+			foreach (var expandedColumn in expandedColumns.Distinct(c => c.ColumnNameLabel))
 			{
 				var descriptionContent = new Grid();
 				descriptionContent.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star), SharedSizeGroup = "ColumnName" });
@@ -126,12 +133,12 @@ namespace SqlPad.Oracle.Commands
 					columnNameLabel.Foreground = dataTypeLabel.Foreground = nullableLabel.Foreground = Brushes.DimGray;
 				}
 
-				columnNameLabel.Text = $"{expandedColumn.ColumnName}{extraInformation}";
+				columnNameLabel.Text = $"{expandedColumn.ColumnNameLabel}{extraInformation}";
 
 				_settingsModel.AddBooleanOption(
 					new BooleanOption
 					{
-						OptionIdentifier = expandedColumn.ColumnName,
+						OptionIdentifier = expandedColumn.ColumnNameLabel,
 						DescriptionContent = descriptionContent,
 						Value = !expandedColumn.IsPseudocolumn && !expandedColumn.IsHidden && useDefaultSettings,
 						Tag = expandedColumn
@@ -163,10 +170,9 @@ namespace SqlPad.Oracle.Commands
 
 		private TextSegment GetSegmentToReplace()
 		{
-			var formatOption = OracleConfiguration.Configuration.Formatter.Casing.Identifier;
 			var columnNames = _settingsModel.BooleanOptions.Values
 				.Where(v => v.Value)
-				.Select(v => v.OptionIdentifier)
+				.Select(v => ((ExpandedColumn)v.Tag).FormattedColumn)
 				.ToArray();
 
 			if (columnNames.Length == 0)
@@ -174,7 +180,7 @@ namespace SqlPad.Oracle.Commands
 				return TextSegment.Empty;
 			}
 
-			var builder = new StringBuilder(String.Join(", ", columnNames.Select(c => OracleStatementFormatter.FormatTerminalValue(c, formatOption))));
+			var builder = new StringBuilder(String.Join(", ", columnNames));
 			var addSpacePrefix =
 				_asteriskNode.SourcePosition.IndexStart - 1 == _asteriskNode.PrecedingTerminal?.SourcePosition.IndexEnd &&
 				!String.Equals(_asteriskNode.PrecedingTerminal.Id, Terminals.Comma);
@@ -283,7 +289,8 @@ namespace SqlPad.Oracle.Commands
 			return
 				new ExpandedColumn
 				{
-					ColumnName = GetColumnName(objectReference, OracleCodeCompletionProvider.GetPrettyColumnName(column.Name)),
+					OwnerIdentifier = objectReference?.FullyQualifiedObjectName ?? OracleObjectIdentifier.Empty,
+					ColumnName = OracleCodeCompletionProvider.GetPrettyColumnName(column.Name),
 					DataType = column.FullTypeName,
 					Nullable = nullable,
 					IsPseudocolumn = isPseudocolumn,
@@ -291,26 +298,12 @@ namespace SqlPad.Oracle.Commands
 				};
 		}
 
-		private static string GetColumnName(OracleReference objectReference, string columnName)
-		{
-			var simpleColumnName = columnName.ToSimpleIdentifier();
-			if (objectReference == null)
-			{
-				return simpleColumnName;
-			}
-
-			var objectPrefix = objectReference.FullyQualifiedObjectName.ToString();
-			var usedObjectPrefix = String.IsNullOrEmpty(objectPrefix)
-				? null
-				: $"{objectPrefix}.";
-
-			return $"{usedObjectPrefix}{simpleColumnName}";
-		}
-
-		[DebuggerDisplay("ExpandedColumn (ColumnName={ColumnName}; IsPseudocolumn={IsPseudocolumn}; IsHidden={IsHidden})")]
+		[DebuggerDisplay("ExpandedColumn (OwnerIdentifier={OwnerIdentifier}; ColumnName={ColumnName}; IsPseudocolumn={IsPseudocolumn}; IsHidden={IsHidden})")]
 		private struct ExpandedColumn
 		{
-			public string ColumnName { get; set; }
+			public OracleObjectIdentifier OwnerIdentifier { private get; set; }
+
+			public string ColumnName { private get; set; }
 			
 			public string DataType { get; set; }
 			
@@ -319,6 +312,23 @@ namespace SqlPad.Oracle.Commands
 			public bool IsHidden { get; set; }
 
 			public bool? Nullable { get; set; }
+
+			public string ColumnNameLabel => BuildQualifiedColumnLabel(OwnerIdentifier, ColumnName, false);
+
+			public string FormattedColumn => BuildQualifiedColumnLabel(OwnerIdentifier, ColumnName, true);
+
+			private static string BuildQualifiedColumnLabel(OracleObjectIdentifier columnOwner, string columnName, bool applyFormatting)
+			{
+				var prefix = String.IsNullOrEmpty(columnOwner.Name) ? null : $"{(applyFormatting ? columnOwner.ToFormattedString() : columnOwner.ToString())}.";
+				columnName = columnName.ToSimpleIdentifier();
+				if (applyFormatting)
+				{
+					var formatOption = OracleConfiguration.Configuration.Formatter.Casing.Identifier;
+					columnName = OracleStatementFormatter.FormatTerminalValue(columnName, formatOption);
+				}
+
+				return $"{prefix}{columnName}";
+			}
 		}
 	}
 }

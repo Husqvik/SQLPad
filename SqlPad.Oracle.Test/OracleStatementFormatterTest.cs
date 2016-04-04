@@ -14,11 +14,7 @@ namespace SqlPad.Oracle.Test
 		[TearDown]
 		public void TearDown()
 		{
-			var casing = OracleConfiguration.Configuration.Formatter.Casing;
-			casing.Identifier = Casing.Keep;
-			casing.Alias = Casing.Keep;
-			casing.ReservedWord = Casing.Keep;
-			casing.Keyword = Casing.Keep;
+			OracleConfiguration.Configuration.Formatter.Casing.Reset();
 		}
 
 		[Test(Description = @"")]

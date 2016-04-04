@@ -89,6 +89,13 @@ namespace SqlPad.Oracle.DataDictionary
 		}
 		#endregion
 
+		public string ToFormattedString()
+		{
+			var formatOption = OracleConfiguration.Configuration.Formatter.Casing.Identifier;
+			var ownerPrefix = !HasOwner ? null : $"{OracleStatementFormatter.FormatTerminalValue(Owner.ToSimpleIdentifier(), formatOption)}.";
+			return $"{ownerPrefix}{OracleStatementFormatter.FormatTerminalValue(Name.ToSimpleIdentifier(), formatOption)}";
+		}
+
 		public string ToNormalizedString()
 		{
 			var ownerPrefix = !HasOwner ? null : NormalizedOwner + ".";
