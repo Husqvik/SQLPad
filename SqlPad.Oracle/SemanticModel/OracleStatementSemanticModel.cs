@@ -2020,11 +2020,12 @@ namespace SqlPad.Oracle.SemanticModel
 						}
 					}
 
-					databaseLinkBuilder.Append(terminal.Token.Value.Trim('"'));
+					var tokenValue = terminal.Token.Value.Trim('"');
+					databaseLinkBuilder.Append(tokenValue);
 
 					if (!hasInstanceDefinition)
 					{
-						databaseLinkWithoutInstanceBuilder.Append(terminal.Token.Value);
+						databaseLinkWithoutInstanceBuilder.Append(tokenValue);
 					}
 				}
 

@@ -3410,6 +3410,17 @@ SELECT value FROM data";
 		}
 
 		[Test(Description = @"")]
+		public void TestModelBuildWithQuotedDatabaseLinkNameWithoutDomain()
+		{
+			const string query1 = @"SELECT * FROM dual@""dblink""";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single().Validate();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			Assert.DoesNotThrow(() => OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel));
+		}
+
+		[Test(Description = @"")]
 		public void TestCastFunctionResolution()
 		{
 			const string query1 = @"SELECT cast(1 AS NUMBER) FROM dual";
