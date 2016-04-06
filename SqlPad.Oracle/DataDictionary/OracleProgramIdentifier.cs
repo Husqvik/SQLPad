@@ -13,6 +13,7 @@ namespace SqlPad.Oracle.DataDictionary
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramRatioToReport = CreateFromValues(null, null, "RATIO_TO_REPORT");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramSysConnectByPath = CreateFromValues(null, null, "SYS_CONNECT_BY_PATH");
 
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramExists = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "EXISTS");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramRound = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "ROUND");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramLevel = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "LEVEL");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramNextDay = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "NEXT_DAY");

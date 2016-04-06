@@ -924,7 +924,8 @@ namespace SqlPad.Oracle
 			}
 
 			var quotedSchemaName = databaseModel.CurrentSchema.ToQuotedIdentifier();
-			var formatOption = FormatSettings.Identifier;
+			var formatOptionIdentifier = FormatSettings.Identifier;
+			var formatOptionReservedWord = FormatSettings.ReservedWord;
 
 			return databaseModel.AllProgramMetadata
 				.SelectMany(g => g)
@@ -937,10 +938,15 @@ namespace SqlPad.Oracle
 				{
 					var metadata = i.MetadataCollection[0];
 					var hasReservedWordName = metadata.IsBuiltIn && i.Name.CollidesWithReservedWord();
-					var programName = hasReservedWordName
-						? i.Name.Trim('"')
-						: i.Name;
 
+					var programName = i.Name;
+					var formatOption = formatOptionIdentifier;
+					if (hasReservedWordName)
+					{
+						programName = i.Name.Trim('"');
+						formatOption = formatOptionReservedWord;
+					}
+					
 					programName = OracleStatementFormatter.FormatTerminalValue(programName, formatOption);
 
 					var postFix = parameterList;

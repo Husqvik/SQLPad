@@ -15,6 +15,7 @@ namespace SqlPad.Oracle.DataDictionary
 		public static readonly OracleDataType BinaryIntegerType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, TerminalValues.BinaryInteger) };
 		public static readonly OracleDataType XmlType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(OracleObjectIdentifier.SchemaSys, OracleTypeBase.TypeCodeXml) };
 		public static readonly OracleDataType DynamicCollectionType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, "DYNAMIC"), IsDynamicCollection = true };
+		public static readonly OracleDataType PlSqlBooleanType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, "PL/SQL BOOLEAN") };
 
 		public bool IsDynamicCollection { get; private set; }
 

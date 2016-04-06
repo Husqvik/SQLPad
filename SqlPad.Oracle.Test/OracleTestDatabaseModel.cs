@@ -542,6 +542,11 @@ namespace SqlPad.Oracle.Test
 			numberToDayToSecondInterval.Owner = builtInFunctionPackage;
 			builtInFunctionPackage.Programs.Add(numberToDayToSecondInterval);
 
+			var exists = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.IdentifierBuiltInProgramExists, false, false, false, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeParenthesis, true);
+			exists.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, OracleDataType.PlSqlBooleanType.FullyQualifiedName.Name, OracleObjectIdentifier.Empty, false));
+			exists.Owner = builtInFunctionPackage;
+			builtInFunctionPackage.Programs.Add(exists);
+
 			var regexReplace = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.IdentifierBuiltInProgramRegularExpressionReplace, false, false, false, true, false, false, 2, 6, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
 			regexReplace.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
 			regexReplace.AddParameter(new OracleProgramParameterMetadata("\"SRCSTR\"", 1, 1, 0, ParameterDirection.Input, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));

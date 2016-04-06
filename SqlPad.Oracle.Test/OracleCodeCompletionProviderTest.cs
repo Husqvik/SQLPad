@@ -16,6 +16,12 @@ namespace SqlPad.Oracle.Test
 		private readonly SqlDocumentRepository _documentRepository = TestFixture.CreateDocumentRepository();
 		private static readonly Func<ICodeCompletionItem, bool> FilterProgramItems = i => !i.Category.In(OracleCodeCompletionCategory.PackageFunction, OracleCodeCompletionCategory.Package, OracleCodeCompletionCategory.SchemaFunction, OracleCodeCompletionCategory.BuiltInFunction);
 
+		[SetUp]
+		public void Setup()
+		{
+			OracleConfiguration.Configuration.Formatter.Casing.Reset();
+		}
+
 		[Test(Description = @"")]
 		public void TestCodeCompletionAfterEachCharacter()
 		{
@@ -1227,7 +1233,7 @@ se";
 		{
 			const string statement = @"UPDATE SELECTION SET PROJECT_ID = 998 WHERE E";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 45).ToList();
-			items.Count.ShouldBe(9);
+			items.Count.ShouldBe(10);
 		}
 
 		[Test(Description = @"")]
@@ -2284,6 +2290,18 @@ ON (EVENTS.ID = SRC.ID)";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 9).ToList();
 			items.Count.ShouldBeGreaterThan(0);
 			items[0].Text.ShouldBe("\"CaseSensitiveColumn\", T.VIRTUAL_COLUMN");
+		}
+
+		[Test(Description = @"")]
+		public void TestFunctionSuggestionRepresentedByKeyword()
+		{
+			OracleConfiguration.Configuration.Formatter.Casing.Identifier = Casing.Lower;
+			OracleConfiguration.Configuration.Formatter.Casing.ReservedWord = Casing.Upper;
+
+			const string statement = @"SELECT NULL FROM dual WHERE exi";
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 31).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Text.ShouldBe("EXISTS");
 		}
 
 		[Test(Description = @"")]
