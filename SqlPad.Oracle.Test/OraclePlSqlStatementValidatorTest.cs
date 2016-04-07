@@ -130,5 +130,20 @@ END;";
 			validationData.IsRecognized.ShouldBe(true);
 			validationData.SemanticErrorType.ShouldBe(null);
 		}
+
+		[Test(Description = @"")]
+		public void TestStatementValidationWithFunctionHavingSameParameterNameAtDifferentDataLevels()
+		{
+			const string plsqlText =
+@"DECLARE
+	l_http_request utl_http.req;
+BEGIN
+	l_http_request := utl_http.begin_request(url => 'https://github.com/Husqvik.atom');
+END;";
+			var statement = Parser.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			Assert.DoesNotThrow(() => OracleStatementValidatorTest.BuildValidationModel(plsqlText, statement));
+		}
 	}
 }

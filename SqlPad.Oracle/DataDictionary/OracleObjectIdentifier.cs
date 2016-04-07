@@ -16,6 +16,7 @@ namespace SqlPad.Oracle.DataDictionary
 		public const string PackageDbmsRandom = "\"DBMS_RANDOM\"";
 		public const string PackageDbmsCrypto = "\"DBMS_CRYPTO\"";
 		public const string PackageDbmsMetadata = "\"DBMS_METADATA\"";
+		public const string PackageUtlHttp = "\"UTL_HTTP\"";
 
 		public static readonly OracleObjectIdentifier Empty = new OracleObjectIdentifier(null, null);
 

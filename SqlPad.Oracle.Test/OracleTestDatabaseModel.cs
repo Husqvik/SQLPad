@@ -342,84 +342,6 @@ namespace SqlPad.Oracle.Test
 			AllObjectsInternal.Add(synonym);
 			#endregion
 
-			var uncompilableFunction = (OracleFunction)AllObjectsInternal.Single(o => String.Equals(o.Name, "\"UNCOMPILABLE_FUNCTION\"") && String.Equals(o.Owner, InitialSchema));
-			uncompilableFunction.Metadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "UNCOMPILABLE_FUNCTION"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
-			uncompilableFunction.Metadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
-			uncompilableFunction.Metadata.Owner = uncompilableFunction;
-
-			var uncompilablePackage = (OraclePackage)AllObjectsInternal.Single(o => String.Equals(o.Name, "\"UNCOMPILABLE_PACKAGE\"") && String.Equals(o.Owner, InitialSchema));
-			var uncompilablePackageFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), "UNCOMPILABLE_PACKAGE", "FUNCTION"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
-			uncompilablePackageFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
-			uncompilablePackage.Programs.Add(uncompilablePackageFunctionMetadata);
-			uncompilablePackageFunctionMetadata.Owner = uncompilablePackage;
-
-			var userCountFunction = (OracleFunction)AllObjectsInternal.Single(o => String.Equals(o.Name, "\"COUNT\"") && String.Equals(o.Owner, InitialSchema));
-			userCountFunction.Metadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "COUNT"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
-			userCountFunction.Metadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
-			userCountFunction.Metadata.Owner = userCountFunction;
-
-			var sqlPadProcedure = (OracleProcedure)AllObjectsInternal.Single(o => String.Equals(o.Name, "\"SQLPAD_PROCEDURE\"") && String.Equals(o.Owner, InitialSchema));
-			sqlPadProcedure.Metadata = new OracleProgramMetadata(ProgramType.Procedure, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "SQLPAD_PROCEDURE"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
-			sqlPadProcedure.Metadata.Owner = sqlPadProcedure;
-
-			var sqlPadFunction = (OracleFunction)AllObjectsInternal.Single(o => String.Equals(o.Name, "\"SQLPAD_FUNCTION\"") && String.Equals(o.Owner, InitialSchema));
-			sqlPadFunction.Metadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "SQLPAD_FUNCTION"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
-			sqlPadFunction.Metadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
-			sqlPadFunction.Metadata.Owner = sqlPadFunction;
-
-			synonym =
-				new OracleSynonym
-				{
-					FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "SYNONYM_TO_SQLPAD_FUNCTION"),
-					SchemaObject = AllObjectsInternal.Single(o => String.Equals(o.Name, "\"SQLPAD_FUNCTION\"") && String.Equals(o.Owner, InitialSchema)),
-					IsValid = true
-				};
-			
-			synonym.SchemaObject.Synonyms.Add(synonym);
-
-			AllObjectsInternal.Add(synonym);
-
-			var testFunction = (OracleFunction)AllObjectsInternal.Single(o => String.Equals(o.Name, "\"TESTFUNC\"") && String.Equals(o.Owner, InitialSchema));
-			testFunction.Metadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "TESTFUNC"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
-			testFunction.Metadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
-			testFunction.Metadata.AddParameter(new OracleProgramParameterMetadata("\"PARAM\"", 1, 1, 0, ParameterDirection.ReturnValue, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
-			testFunction.Metadata.Owner = testFunction;
-
-			var sqlPadPackage = (OraclePackage)AllObjectsInternal.Single(o => String.Equals(o.Name, "\"SQLPAD\"") && String.Equals(o.Owner, InitialSchema));
-			var packageSqlPadFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), "SQLPAD", "SQLPAD_FUNCTION"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
-			packageSqlPadFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
-			packageSqlPadFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"P\"", 1, 1, 0, ParameterDirection.Input, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
-			packageSqlPadFunctionMetadata.Owner = sqlPadPackage;
-			sqlPadPackage.Programs.Add(packageSqlPadFunctionMetadata);
-
-			var packageSqlPadPipelinedFunctionWithCursorParameterMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), "SQLPAD", "CURSOR_FUNCTION"), false, false, true, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
-			packageSqlPadPipelinedFunctionWithCursorParameterMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 1, 0, ParameterDirection.ReturnValue, OracleTypeCollection.OracleCollectionTypeNestedTable, OracleObjectIdentifier.Create(OracleObjectIdentifier.SchemaSys, "DBMS_XPLAN_TYPE_TABLE"), false));
-			packageSqlPadPipelinedFunctionWithCursorParameterMetadata.AddParameter(new OracleProgramParameterMetadata(null, 1, 2, 1, ParameterDirection.ReturnValue, OracleTypeBase.TypeCodeObject, OracleObjectIdentifier.Create(OracleObjectIdentifier.SchemaSys, "DBMS_XPLAN_TYPE"), false));
-			packageSqlPadPipelinedFunctionWithCursorParameterMetadata.AddParameter(new OracleProgramParameterMetadata("\"I\"", 1, 3, 0, ParameterDirection.Input, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
-			packageSqlPadPipelinedFunctionWithCursorParameterMetadata.AddParameter(new OracleProgramParameterMetadata("\"C1\"", 2, 4, 0, ParameterDirection.Input, "REF CURSOR", OracleObjectIdentifier.Empty, false));
-			packageSqlPadPipelinedFunctionWithCursorParameterMetadata.AddParameter(new OracleProgramParameterMetadata("\"C2\"", 3, 28, 0, ParameterDirection.Input, "REF CURSOR", OracleObjectIdentifier.Empty, false));
-			packageSqlPadPipelinedFunctionWithCursorParameterMetadata.Owner = sqlPadPackage;
-			sqlPadPackage.Programs.Add(packageSqlPadPipelinedFunctionWithCursorParameterMetadata);
-
-			var packageSqlPadPipelinedFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), "SQLPAD", "PIPELINED_FUNCTION"), false, false, true, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
-			packageSqlPadPipelinedFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, OracleTypeCollection.OracleCollectionTypeNestedTable, OracleObjectIdentifier.Create(OracleObjectIdentifier.SchemaSys, "ODCIDATELIST"), false));
-			packageSqlPadPipelinedFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 1, 1, 1, ParameterDirection.ReturnValue, TerminalValues.Date, OracleObjectIdentifier.Empty, false));
-			packageSqlPadPipelinedFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"DATE_FROM\"", 1, 2, 0, ParameterDirection.Input, TerminalValues.Date, OracleObjectIdentifier.Empty, false));
-			packageSqlPadPipelinedFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"DATE_TO\"", 2, 3, 0, ParameterDirection.Input, TerminalValues.Date, OracleObjectIdentifier.Empty, false));
-			packageSqlPadPipelinedFunctionMetadata.Owner = sqlPadPackage;
-			sqlPadPackage.Programs.Add(packageSqlPadPipelinedFunctionMetadata);
-
-			var sqlPadProcedureMetadata = new OracleProgramMetadata(ProgramType.Procedure, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "SQLPAD_PROCEDURE"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
-			sqlPadProcedureMetadata.Owner = sqlPadPackage;
-			sqlPadPackage.Programs.Add(sqlPadProcedureMetadata);
-
-			var asPdfPackage = (OraclePackage)AllObjectsInternal.Single(o => o.Name == "\"AS_PDF3\"" && o.Owner == InitialSchema);
-			var asPdfPackageFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), "AS_PDF3", "STR_LEN"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
-			asPdfPackageFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
-			asPdfPackageFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"P_TXT\"", 1, 1, 0, ParameterDirection.Input, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
-			asPdfPackage.Programs.Add(asPdfPackageFunctionMetadata);
-			asPdfPackageFunctionMetadata.Owner = asPdfPackage;
-
 			#region SYS.STANDARD
 			var builtInFunctionPackage = (OraclePackage)AllObjectsInternal.Single(o => o.FullyQualifiedName == OracleObjectIdentifier.IdentifierBuiltInFunctionPackage);
 			var truncFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.IdentifierBuiltInProgramTrunc, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
@@ -557,6 +479,114 @@ namespace SqlPad.Oracle.Test
 			regexReplace.AddParameter(new OracleProgramParameterMetadata("\"MODIFIER\"", 2, 2, 0, ParameterDirection.Input, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
 			regexReplace.Owner = builtInFunctionPackage;
 			builtInFunctionPackage.Programs.Add(regexReplace);
+			#endregion
+
+			#region SYS.UTL_HTTP
+			var utlHttp = (OraclePackage)AllObjectsInternal.Single(o => String.Equals(o.Name, OracleObjectIdentifier.PackageUtlHttp) && String.Equals(o.Owner, OracleObjectIdentifier.SchemaSys));
+			var beginRequestFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("SYS", "UTL_HTTP", "BEGIN_REQUEST"), false, false, false, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, false);
+			beginRequestFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 1, 0, ParameterDirection.ReturnValue, null, OracleObjectIdentifier.Empty, false));
+			beginRequestFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"URL\"", 1, 2, 1, ParameterDirection.Output, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			beginRequestFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"METHOD\"", 2, 3, 1, ParameterDirection.Output, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			beginRequestFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"HTTP_VERSION\"", 3, 4, 1, ParameterDirection.Output, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			beginRequestFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"PRIVATE_HNDL\"", 4, 5, 1, ParameterDirection.Output, "BINARY_INTEGER", OracleObjectIdentifier.Empty, false));
+			beginRequestFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"URL\"", 1, 6, 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			beginRequestFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"METHOD\"", 2, 7, 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, true));
+			beginRequestFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"HTTP_VERSION\"", 3, 8, 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, true));
+			beginRequestFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"REQUEST_CONTEXT\"", 4, 9, 0, ParameterDirection.Input, "BINARY_INTEGER", OracleObjectIdentifier.Empty, true));
+			beginRequestFunctionMetadata.Owner = utlHttp;
+			utlHttp.Programs.Add(beginRequestFunctionMetadata);
+
+			synonym =
+				new OracleSynonym
+				{
+					FullyQualifiedName = OracleObjectIdentifier.Create(OracleObjectIdentifier.SchemaPublic, OracleObjectIdentifier.PackageUtlHttp),
+					SchemaObject = utlHttp,
+					IsValid = true
+				};
+
+			synonym.SchemaObject.Synonyms.Add(synonym);
+
+			AllObjectsInternal.Add(synonym);
+			#endregion
+
+			#region user functions
+			var uncompilableFunction = (OracleFunction)AllObjectsInternal.Single(o => String.Equals(o.Name, "\"UNCOMPILABLE_FUNCTION\"") && String.Equals(o.Owner, InitialSchema));
+			uncompilableFunction.Metadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "UNCOMPILABLE_FUNCTION"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			uncompilableFunction.Metadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
+			uncompilableFunction.Metadata.Owner = uncompilableFunction;
+
+			var uncompilablePackage = (OraclePackage)AllObjectsInternal.Single(o => String.Equals(o.Name, "\"UNCOMPILABLE_PACKAGE\"") && String.Equals(o.Owner, InitialSchema));
+			var uncompilablePackageFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), "UNCOMPILABLE_PACKAGE", "FUNCTION"), false, false, false, false, true, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			uncompilablePackageFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
+			uncompilablePackage.Programs.Add(uncompilablePackageFunctionMetadata);
+			uncompilablePackageFunctionMetadata.Owner = uncompilablePackage;
+
+			var userCountFunction = (OracleFunction)AllObjectsInternal.Single(o => String.Equals(o.Name, "\"COUNT\"") && String.Equals(o.Owner, InitialSchema));
+			userCountFunction.Metadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "COUNT"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			userCountFunction.Metadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
+			userCountFunction.Metadata.Owner = userCountFunction;
+
+			var sqlPadProcedure = (OracleProcedure)AllObjectsInternal.Single(o => String.Equals(o.Name, "\"SQLPAD_PROCEDURE\"") && String.Equals(o.Owner, InitialSchema));
+			sqlPadProcedure.Metadata = new OracleProgramMetadata(ProgramType.Procedure, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "SQLPAD_PROCEDURE"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			sqlPadProcedure.Metadata.Owner = sqlPadProcedure;
+
+			var sqlPadFunction = (OracleFunction)AllObjectsInternal.Single(o => String.Equals(o.Name, "\"SQLPAD_FUNCTION\"") && String.Equals(o.Owner, InitialSchema));
+			sqlPadFunction.Metadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "SQLPAD_FUNCTION"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			sqlPadFunction.Metadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
+			sqlPadFunction.Metadata.Owner = sqlPadFunction;
+
+			synonym =
+				new OracleSynonym
+				{
+					FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "SYNONYM_TO_SQLPAD_FUNCTION"),
+					SchemaObject = AllObjectsInternal.Single(o => String.Equals(o.Name, "\"SQLPAD_FUNCTION\"") && String.Equals(o.Owner, InitialSchema)),
+					IsValid = true
+				};
+
+			synonym.SchemaObject.Synonyms.Add(synonym);
+
+			AllObjectsInternal.Add(synonym);
+
+			var testFunction = (OracleFunction)AllObjectsInternal.Single(o => String.Equals(o.Name, "\"TESTFUNC\"") && String.Equals(o.Owner, InitialSchema));
+			testFunction.Metadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "TESTFUNC"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			testFunction.Metadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
+			testFunction.Metadata.AddParameter(new OracleProgramParameterMetadata("\"PARAM\"", 1, 1, 0, ParameterDirection.ReturnValue, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
+			testFunction.Metadata.Owner = testFunction;
+
+			var sqlPadPackage = (OraclePackage)AllObjectsInternal.Single(o => String.Equals(o.Name, "\"SQLPAD\"") && String.Equals(o.Owner, InitialSchema));
+			var packageSqlPadFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), "SQLPAD", "SQLPAD_FUNCTION"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			packageSqlPadFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
+			packageSqlPadFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"P\"", 1, 1, 0, ParameterDirection.Input, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
+			packageSqlPadFunctionMetadata.Owner = sqlPadPackage;
+			sqlPadPackage.Programs.Add(packageSqlPadFunctionMetadata);
+
+			var packageSqlPadPipelinedFunctionWithCursorParameterMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), "SQLPAD", "CURSOR_FUNCTION"), false, false, true, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			packageSqlPadPipelinedFunctionWithCursorParameterMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 1, 0, ParameterDirection.ReturnValue, OracleTypeCollection.OracleCollectionTypeNestedTable, OracleObjectIdentifier.Create(OracleObjectIdentifier.SchemaSys, "DBMS_XPLAN_TYPE_TABLE"), false));
+			packageSqlPadPipelinedFunctionWithCursorParameterMetadata.AddParameter(new OracleProgramParameterMetadata(null, 1, 2, 1, ParameterDirection.ReturnValue, OracleTypeBase.TypeCodeObject, OracleObjectIdentifier.Create(OracleObjectIdentifier.SchemaSys, "DBMS_XPLAN_TYPE"), false));
+			packageSqlPadPipelinedFunctionWithCursorParameterMetadata.AddParameter(new OracleProgramParameterMetadata("\"I\"", 1, 3, 0, ParameterDirection.Input, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
+			packageSqlPadPipelinedFunctionWithCursorParameterMetadata.AddParameter(new OracleProgramParameterMetadata("\"C1\"", 2, 4, 0, ParameterDirection.Input, "REF CURSOR", OracleObjectIdentifier.Empty, false));
+			packageSqlPadPipelinedFunctionWithCursorParameterMetadata.AddParameter(new OracleProgramParameterMetadata("\"C2\"", 3, 28, 0, ParameterDirection.Input, "REF CURSOR", OracleObjectIdentifier.Empty, false));
+			packageSqlPadPipelinedFunctionWithCursorParameterMetadata.Owner = sqlPadPackage;
+			sqlPadPackage.Programs.Add(packageSqlPadPipelinedFunctionWithCursorParameterMetadata);
+
+			var packageSqlPadPipelinedFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), "SQLPAD", "PIPELINED_FUNCTION"), false, false, true, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			packageSqlPadPipelinedFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, OracleTypeCollection.OracleCollectionTypeNestedTable, OracleObjectIdentifier.Create(OracleObjectIdentifier.SchemaSys, "ODCIDATELIST"), false));
+			packageSqlPadPipelinedFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 1, 1, 1, ParameterDirection.ReturnValue, TerminalValues.Date, OracleObjectIdentifier.Empty, false));
+			packageSqlPadPipelinedFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"DATE_FROM\"", 1, 2, 0, ParameterDirection.Input, TerminalValues.Date, OracleObjectIdentifier.Empty, false));
+			packageSqlPadPipelinedFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"DATE_TO\"", 2, 3, 0, ParameterDirection.Input, TerminalValues.Date, OracleObjectIdentifier.Empty, false));
+			packageSqlPadPipelinedFunctionMetadata.Owner = sqlPadPackage;
+			sqlPadPackage.Programs.Add(packageSqlPadPipelinedFunctionMetadata);
+
+			var sqlPadProcedureMetadata = new OracleProgramMetadata(ProgramType.Procedure, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "SQLPAD_PROCEDURE"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			sqlPadProcedureMetadata.Owner = sqlPadPackage;
+			sqlPadPackage.Programs.Add(sqlPadProcedureMetadata);
+
+			var asPdfPackage = (OraclePackage)AllObjectsInternal.Single(o => o.Name == "\"AS_PDF3\"" && o.Owner == InitialSchema);
+			var asPdfPackageFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), "AS_PDF3", "STR_LEN"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
+			asPdfPackageFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
+			asPdfPackageFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"P_TXT\"", 1, 1, 0, ParameterDirection.Input, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
+			asPdfPackage.Programs.Add(asPdfPackageFunctionMetadata);
+			asPdfPackageFunctionMetadata.Owner = asPdfPackage;
 			#endregion
 
 			AllObjectDictionary = AllObjectsInternal.ToDictionary(o => o.FullyQualifiedName, o => o);
@@ -1012,6 +1042,11 @@ namespace SqlPad.Oracle.Test
 			new OraclePackage
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction),
+				IsValid = true
+			},
+			new OraclePackage
+			{
+				FullyQualifiedName = OracleObjectIdentifier.Create(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageUtlHttp),
 				IsValid = true
 			},
 			new OracleTypeObject

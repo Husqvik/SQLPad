@@ -71,7 +71,7 @@ namespace SqlPad.Oracle.DataDictionary
 		private IReadOnlyDictionary<string, OracleProgramParameterMetadata> BuildParameterDictionary()
 		{
 			return _parameterDictionary = Parameters
-				.Where(p => p.Direction != ParameterDirection.ReturnValue && !String.IsNullOrEmpty(p.Name))
+				.Where(p => p.DataLevel == 0 && p.Direction != ParameterDirection.ReturnValue && !String.IsNullOrEmpty(p.Name))
 				.ToDictionary(p => p.Name);
 		}
 
