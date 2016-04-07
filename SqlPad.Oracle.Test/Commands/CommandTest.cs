@@ -94,7 +94,7 @@ WHERE
 		[TearDown]
 		public void TearDown()
 		{
-			OracleConfiguration.Configuration.Formatter.Casing.Reset();
+			OracleConfiguration.Configuration.Formatter.FormatOptions.Reset();
 		}
 
 		private class TestCommandSettings : ICommandSettingsProvider
@@ -1156,7 +1156,7 @@ FROM
 		[Test(Description = @""), STAThread]
 		public void TestExpandAsteriskCommandWithQuotedIdentifierAndLowerFormatOption()
 		{
-			OracleConfiguration.Configuration.Formatter.Casing.Identifier = Casing.Lower;
+			OracleConfiguration.Configuration.Formatter.FormatOptions.Identifier = FormatOption.Lower;
 
 			_editor.Text = "SELECT * FROM \"CaseSensitiveTable\"";
 			_editor.CaretOffset = 7;

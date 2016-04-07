@@ -31,7 +31,7 @@ namespace SqlPad.Oracle
 			new OracleCodeCompletionItem { Name = JoinTypeCrossJoin, Priority = 4 }
 		};
 
-		private static OracleConfigurationFormatterCasing FormatSettings => OracleConfiguration.Configuration.Formatter.Casing;
+		private static OracleConfigurationFormatterFormatOptions FormatSettings => OracleConfiguration.Configuration.Formatter.FormatOptions;
 
 		public ICollection<ProgramOverloadDescription> ResolveProgramOverloads(SqlDocumentRepository documentRepository, int cursorPosition)
 		{

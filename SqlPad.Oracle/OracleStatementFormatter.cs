@@ -249,32 +249,32 @@ namespace SqlPad.Oracle
 				return node.Token.Value;
 			}
 
-			var settings = OracleConfiguration.Configuration.Formatter.Casing;
+			var formatOptions = OracleConfiguration.Configuration.Formatter.FormatOptions;
 			var value = terminal.Token.Value;
 			if (terminal.Id.IsIdentifier() || GrammarSpecificFunctions.Contains(terminal.Id))
 			{
-				return FormatTerminalValue(value, settings.Identifier);
+				return FormatTerminalValue(value, formatOptions.Identifier);
 			}
 
 			if (terminal.Id.IsAlias())
 			{
-				return FormatTerminalValue(value, settings.Alias);
+				return FormatTerminalValue(value, formatOptions.Alias);
 			}
 
 			if (terminal.IsReservedWord)
 			{
-				return FormatTerminalValue(value, settings.ReservedWord);
+				return FormatTerminalValue(value, formatOptions.ReservedWord);
 			}
 
 			if (!String.Equals(terminal.Id, Terminals.StringLiteral))
 			{
-				return FormatTerminalValue(value, settings.Keyword);
+				return FormatTerminalValue(value, formatOptions.Keyword);
 			}
 
 			return value;
 		}
 
-		internal static string FormatTerminalValue(string value, Casing formatOption)
+		internal static string FormatTerminalValue(string value, FormatOption formatOption)
 		{
 			if (value.IsQuoted())
 			{
@@ -283,13 +283,13 @@ namespace SqlPad.Oracle
 
 			switch (formatOption)
 			{
-				case Casing.Keep:
+				case FormatOption.Keep:
 					return value;
-				case Casing.Upper:
+				case FormatOption.Upper:
 					return value.ToUpper(CultureInfo.CurrentCulture);
-				case Casing.Lower:
+				case FormatOption.Lower:
 					return value.ToLower(CultureInfo.CurrentCulture);
-				case Casing.InitialCapital:
+				case FormatOption.InitialCapital:
 					return CultureInfo.CurrentCulture.TextInfo.ToTitleCase(value.ToLower(CultureInfo.CurrentCulture));
 				default:
 					throw new NotSupportedException();

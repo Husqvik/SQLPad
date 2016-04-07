@@ -91,7 +91,7 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public string ToFormattedString()
 		{
-			var formatOption = OracleConfiguration.Configuration.Formatter.Casing.Identifier;
+			var formatOption = OracleConfiguration.Configuration.Formatter.FormatOptions.Identifier;
 			var ownerPrefix = !HasOwner ? null : $"{OracleStatementFormatter.FormatTerminalValue(Owner.ToSimpleIdentifier(), formatOption)}.";
 			return $"{ownerPrefix}{OracleStatementFormatter.FormatTerminalValue(Name.ToSimpleIdentifier(), formatOption)}";
 		}

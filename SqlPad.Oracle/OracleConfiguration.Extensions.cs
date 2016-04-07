@@ -59,7 +59,7 @@ namespace SqlPad.Oracle
 					Formatter =
 						new OracleConfigurationFormatter
 						{
-							Casing = new OracleConfigurationFormatterCasing()
+							FormatOptions = new OracleConfigurationFormatterFormatOptions()
 						}
 				};
 
@@ -87,19 +87,19 @@ namespace SqlPad.Oracle
 		}
 	}
 
-	public partial class OracleConfigurationFormatterCasing
+	public partial class OracleConfigurationFormatterFormatOptions
 	{
-		public OracleConfigurationFormatterCasing()
+		public OracleConfigurationFormatterFormatOptions()
 		{
 			Reset();
 		}
 
 		public void Reset()
 		{
-			Identifier = Casing.Keep;
-			Alias = Casing.Keep;
-			Keyword = Casing.Keep;
-			ReservedWord = Casing.Keep;
+			Identifier = FormatOption.Keep;
+			Alias = FormatOption.Keep;
+			Keyword = FormatOption.Keep;
+			ReservedWord = FormatOption.Keep;
 		}
 	}
 }

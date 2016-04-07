@@ -323,7 +323,7 @@ namespace SqlPad.Oracle.Commands
 				columnName = columnName.ToSimpleIdentifier();
 				if (applyFormatting)
 				{
-					var formatOption = OracleConfiguration.Configuration.Formatter.Casing.Identifier;
+					var formatOption = OracleConfiguration.Configuration.Formatter.FormatOptions.Identifier;
 					columnName = OracleStatementFormatter.FormatTerminalValue(columnName, formatOption);
 				}
 

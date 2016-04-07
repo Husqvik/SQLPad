@@ -197,15 +197,15 @@ namespace SqlPad.Oracle {
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/08/Oracle")]
     public partial class OracleConfigurationFormatter {
         
-        private OracleConfigurationFormatterCasing casingField;
+        private OracleConfigurationFormatterFormatOptions formatOptionsField;
         
         /// <remarks/>
-        public OracleConfigurationFormatterCasing Casing {
+        public OracleConfigurationFormatterFormatOptions FormatOptions {
             get {
-                return this.casingField;
+                return this.formatOptionsField;
             }
             set {
-                this.casingField = value;
+                this.formatOptionsField = value;
             }
         }
     }
@@ -216,27 +216,27 @@ namespace SqlPad.Oracle {
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/08/Oracle")]
-    public partial class OracleConfigurationFormatterCasing {
+    public partial class OracleConfigurationFormatterFormatOptions {
         
-        private Casing identifierField;
+        private FormatOption identifierField;
         
         private bool identifierFieldSpecified;
         
-        private Casing aliasField;
+        private FormatOption aliasField;
         
         private bool aliasFieldSpecified;
         
-        private Casing keywordField;
+        private FormatOption keywordField;
         
         private bool keywordFieldSpecified;
         
-        private Casing reservedWordField;
+        private FormatOption reservedWordField;
         
         private bool reservedWordFieldSpecified;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public Casing Identifier {
+        public FormatOption Identifier {
             get {
                 return this.identifierField;
             }
@@ -258,7 +258,7 @@ namespace SqlPad.Oracle {
         
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public Casing Alias {
+        public FormatOption Alias {
             get {
                 return this.aliasField;
             }
@@ -280,7 +280,7 @@ namespace SqlPad.Oracle {
         
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public Casing Keyword {
+        public FormatOption Keyword {
             get {
                 return this.keywordField;
             }
@@ -302,7 +302,7 @@ namespace SqlPad.Oracle {
         
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public Casing ReservedWord {
+        public FormatOption ReservedWord {
             get {
                 return this.reservedWordField;
             }
@@ -327,7 +327,7 @@ namespace SqlPad.Oracle {
     [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.0.30319.33440")]
     [System.SerializableAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://husqvik.com/SqlPad/2014/08/Oracle")]
-    public enum Casing {
+    public enum FormatOption {
         
         /// <remarks/>
         Keep,

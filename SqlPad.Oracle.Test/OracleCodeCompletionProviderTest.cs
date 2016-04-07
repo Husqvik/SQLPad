@@ -19,7 +19,7 @@ namespace SqlPad.Oracle.Test
 		[SetUp]
 		public void Setup()
 		{
-			OracleConfiguration.Configuration.Formatter.Casing.Reset();
+			OracleConfiguration.Configuration.Formatter.FormatOptions.Reset();
 		}
 
 		[Test(Description = @"")]
@@ -2295,8 +2295,8 @@ ON (EVENTS.ID = SRC.ID)";
 		[Test(Description = @"")]
 		public void TestFunctionSuggestionRepresentedByKeyword()
 		{
-			OracleConfiguration.Configuration.Formatter.Casing.Identifier = Casing.Lower;
-			OracleConfiguration.Configuration.Formatter.Casing.ReservedWord = Casing.Upper;
+			OracleConfiguration.Configuration.Formatter.FormatOptions.Identifier = FormatOption.Lower;
+			OracleConfiguration.Configuration.Formatter.FormatOptions.ReservedWord = FormatOption.Upper;
 
 			const string statement = @"SELECT NULL FROM dual WHERE exi";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 31).ToList();

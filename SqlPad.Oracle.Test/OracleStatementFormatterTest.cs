@@ -14,7 +14,7 @@ namespace SqlPad.Oracle.Test
 		[TearDown]
 		public void TearDown()
 		{
-			OracleConfiguration.Configuration.Formatter.Casing.Reset();
+			OracleConfiguration.Configuration.Formatter.FormatOptions.Reset();
 		}
 
 		[Test(Description = @"")]
@@ -331,11 +331,11 @@ CONNECT BY
 		[Test(Description = @"")]
 		public void TestCasing()
 		{
-			var casing = OracleConfiguration.Configuration.Formatter.Casing;
-			casing.Identifier = Casing.Lower;
-			casing.Alias = Casing.Keep;
-			casing.ReservedWord = Casing.Upper;
-			casing.Keyword = Casing.InitialCapital;
+			var formatOptions = OracleConfiguration.Configuration.Formatter.FormatOptions;
+			formatOptions.Identifier = FormatOption.Lower;
+			formatOptions.Alias = FormatOption.Keep;
+			formatOptions.ReservedWord = FormatOption.Upper;
+			formatOptions.Keyword = FormatOption.InitialCapital;
 
 			const string sourceFormat = "SeLeCt dUmMy aS aLiAs FrOm DuAl";
 			var executionContext = ExecuteFormatCommand(sourceFormat);
