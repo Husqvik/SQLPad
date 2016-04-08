@@ -21,7 +21,7 @@ namespace SqlPad
 		private readonly SqlEditorBackgroundRenderer _backgroundRenderer;
 		private readonly Popup _dynamicPopup;
 
-		private IHelpProvider _createHelpProvider;
+		private IHelpProvider _helpProvider;
 		private ICodeCompletionProvider _codeCompletionProvider;
 		private INavigationService _navigationService;
 
@@ -47,7 +47,7 @@ namespace SqlPad
 
 		public void Initialize(IInfrastructureFactory infrastructureFactory, IDatabaseModel databaseModel)
 		{
-			_createHelpProvider = infrastructureFactory.CreateHelpProvider();
+			_helpProvider = infrastructureFactory.CreateHelpProvider();
 			_codeCompletionProvider = infrastructureFactory.CreateCodeCompletionProvider();
 			_navigationService = infrastructureFactory.CreateNavigationService();
 			_colorizingTransformer.SetParser(infrastructureFactory.CreateParser());
@@ -153,7 +153,15 @@ namespace SqlPad
 		private void ShowHelpHandler(object sender, ExecutedRoutedEventArgs e)
 		{
 			var executionContext = ActionExecutionContext.Create(Editor, DocumentRepository);
-			_createHelpProvider.ShowHelp(executionContext);
+
+			try
+			{
+				_helpProvider.ShowHelp(executionContext);
+			}
+			catch (Exception exception)
+			{
+				App.LogErrorAndShowMessage(exception);
+			}
 		}
 	}
 

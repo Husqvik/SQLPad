@@ -156,8 +156,8 @@ namespace SqlPad.Oracle
 			if (objectReference != null)
 			{
 				var targetObject = objectReference.SchemaObject.GetTargetSchemaObject();
-				DocumentationDataDictionaryObject dataDictionaryObject;
-				var dataDictionaryObjectDocumentationFound = _dataDictionaryObjects.TryGetValue(targetObject.FullyQualifiedName, out dataDictionaryObject);
+				DocumentationDataDictionaryObject dataDictionaryObject = null;
+				var dataDictionaryObjectDocumentationFound = targetObject != null && _dataDictionaryObjects.TryGetValue(targetObject.FullyQualifiedName, out dataDictionaryObject);
 				if (dataDictionaryObjectDocumentationFound)
 				{
 					Process.Start(dataDictionaryObject.Url);

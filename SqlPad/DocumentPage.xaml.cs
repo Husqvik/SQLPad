@@ -2225,7 +2225,15 @@ namespace SqlPad
 		private void ShowHelpHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			var executionContext = ActionExecutionContext.Create(Editor, _documentRepository);
-			_helpProvider.ShowHelp(executionContext);
+
+			try
+			{
+				_helpProvider.ShowHelp(executionContext);
+			}
+			catch (Exception exception)
+			{
+				App.LogErrorAndShowMessage(exception);
+			}
 		}
 
 		private void BindVariableEditorGotFocusHandler(object sender, RoutedEventArgs args)
