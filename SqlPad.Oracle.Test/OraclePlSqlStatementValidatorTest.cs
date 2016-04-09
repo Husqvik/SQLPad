@@ -145,5 +145,23 @@ END;";
 
 			Assert.DoesNotThrow(() => OracleStatementValidatorTest.BuildValidationModel(plsqlText, statement));
 		}
+
+		[Test(Description = @"")]
+		public void TestPlSqlVarcharMaximumPrecision()
+		{
+			const string plsqlText =
+@"DECLARE
+	value1 VARCHAR2(32767);
+	value2 NVARCHAR2(16383);
+	value3 RAW(32767);
+BEGIN
+	NULL;
+END;";
+			var statement = Parser.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = OracleStatementValidatorTest.BuildValidationModel(plsqlText, statement);
+			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
+		}
 	}
 }

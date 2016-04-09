@@ -432,12 +432,21 @@ namespace SqlPad.Oracle
 			var varcharLimit = OracleDatabaseModelBase.DefaultMaxLengthVarchar;
 			var nVarcharLimit = OracleDatabaseModelBase.DefaultMaxLengthNVarchar;
 			var rawLimit = OracleDatabaseModelBase.DefaultMaxLengthRaw;
+
 			if (validationModel.SemanticModel.HasDatabaseModel)
 			{
 				var databaseModel = validationModel.SemanticModel.DatabaseModel;
 				varcharLimit = databaseModel.MaximumVarcharLength;
 				nVarcharLimit = databaseModel.MaximumNVarcharLength;
 				rawLimit = databaseModel.MaximumRawLength;
+			}
+
+			var isWithinPlSqlContext = dataTypeReference.Container is OraclePlSqlProgram;
+			if (isWithinPlSqlContext)
+			{
+				varcharLimit = OracleDatabaseModelBase.PlSqlMaxLengthVarchar;
+				nVarcharLimit = OracleDatabaseModelBase.PlSqlMaxLengthNVarchar;
+				rawLimit = OracleDatabaseModelBase.PlSqlMaxLengthRaw;
 			}
 
 			var dataType = dataTypeReference.ResolvedDataType;
@@ -543,7 +552,7 @@ namespace SqlPad.Oracle
 
 		private static void ValidateDataTypeMaximumLength(OracleValidationModel validationModel, OracleDataTypeReference dataTypeReference, int maximumLength)
 		{
-			if (!(dataTypeReference.ResolvedDataType.Length > maximumLength))
+			if (dataTypeReference.ResolvedDataType.Length <= maximumLength)
 			{
 				return;
 			}

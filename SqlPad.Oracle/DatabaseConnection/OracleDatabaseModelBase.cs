@@ -22,6 +22,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 		public const int DefaultMaxLengthVarchar = 4000;
 		public const int DefaultMaxLengthNVarchar = 2000;
 		public const int DefaultMaxLengthRaw = 2000;
+		public const int PlSqlMaxLengthVarchar = 32767;
+		public const int PlSqlMaxLengthNVarchar = 16383;
+		public const int PlSqlMaxLengthRaw = 32767;
 
 		internal static readonly ICollection<string> BuiltInDataTypes =
 			new HashSet<string>
