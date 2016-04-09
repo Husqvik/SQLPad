@@ -92,6 +92,7 @@
     <Compile Include="Commands\BindVariableLiteralConversionCommand.cs" />
     <Compile Include="Commands\ConvertOrderByNumberColumnReferencesCommand.cs" />
     <Compile Include="Commands\GenerateCustomTypeCSharpWrapperClassCommand.cs" />
+    <Compile Include="Commands\SqlTextBuilder.cs" />
     <Compile Include="Commands\UnquoteCommand.cs" />
     <Compile Include="Commands\CreateScriptCommand.cs" />
     <Compile Include="Commands\AddInsertIntoColumnListCommand.cs" />

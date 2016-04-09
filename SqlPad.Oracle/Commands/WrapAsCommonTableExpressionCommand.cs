@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Text;
 using SqlPad.Commands;
 using SqlPad.Oracle.SemanticModel;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
@@ -56,11 +55,11 @@ namespace SqlPad.Oracle.Commands
 				.OrderByDescending(qb => qb.RootNode.SourcePosition.IndexStart)
 				.FirstOrDefault();
 
-			var builder = new StringBuilder();
+			var builder = new SqlTextBuilder();
 			var startIndex = SemanticModel.Statement.RootNode.SourcePosition.IndexStart;
 			if (lastCte == null)
 			{
-				builder.Append("WITH ");
+				builder.AppendReservedWord("WITH ");
 			}
 			else if (CurrentQueryBlock.Type == QueryBlockType.CommonTableExpression)
 			{
@@ -68,11 +67,12 @@ namespace SqlPad.Oracle.Commands
 			}
 			else
 			{
-				builder.Append(", ");
+				builder.AppendText(", ");
 				startIndex = lastCte.RootNode.GetAncestor(NonTerminals.CommonTableExpression).SourcePosition.IndexEnd + 1;
 			}
 
-			builder.Append(tableAlias + " AS (");
+			builder.AppendText(tableAlias);
+			builder.AppendKeyword(" AS (");
 			var subqueryIndextStart = queryBlock.RootNode.SourcePosition.IndexStart;
 			var subqueryIndexEnd = CurrentQueryBlock.OrderByClause == null
 				? CurrentQueryBlock.RootNode.SourcePosition.IndexEnd
@@ -80,17 +80,17 @@ namespace SqlPad.Oracle.Commands
 
 			var subqueryLength = subqueryIndexEnd - subqueryIndextStart + 1;
 			var subquery = ExecutionContext.StatementText.Substring(subqueryIndextStart, subqueryLength);
-			builder.Append(subquery);
-			builder.Append(")");
+			builder.AppendText(subquery);
+			builder.AppendText(")");
 
 			if (CurrentQueryBlock.Type == QueryBlockType.CommonTableExpression)
 			{
-				builder.Append(", ");
+				builder.AppendText(", ");
 			}
 
 			if (lastCte == null)
 			{
-				builder.Append(" ");	
+				builder.AppendText(" ");
 			}
 
 			ExecutionContext.SegmentsToReplace.Add(
@@ -100,15 +100,18 @@ namespace SqlPad.Oracle.Commands
 					Length = 0,
 					Text = builder.ToString()
 				});
-			
-			builder = new StringBuilder("SELECT ");
+
+			var formatOptions = OracleConfiguration.Configuration.Formatter.FormatOptions;
+
+			builder = new SqlTextBuilder();
+			builder.AppendReservedWord("SELECT ");
 			var columnList = String.Join(", ", queryBlock.Columns
 				.Where(c => !c.IsAsterisk && !String.IsNullOrEmpty(c.NormalizedName))
-				.Select(c => $"{tableAlias}.{c.NormalizedName.ToSimpleIdentifier()}"));
+				.Select(c => $"{tableAlias}.{OracleStatementFormatter.FormatTerminalValue(c.NormalizedName.ToSimpleIdentifier(), formatOptions.Identifier)}"));
 			
-			builder.Append(columnList);
-			builder.Append(" FROM ");
-			builder.Append(tableAlias);
+			builder.AppendText(columnList);
+			builder.AppendReservedWord(" FROM ");
+			builder.AppendText(tableAlias);
 
 			ExecutionContext.SegmentsToReplace.Add(
 				new TextSegment
