@@ -1,4 +1,4 @@
-SQLPad 0.4.0.288
+SQLPad 0.4.0.289
 ================
 
 SQLPad is an experimental SQL editor focused to quick and comfortable work.
@@ -249,7 +249,7 @@ Each connection string requires an infrastructure factory configuration record:
 			</Connection>
 		</Connections>
 		<Formatter>
-			<Casing Identifier="Lower" Alias="Lower" Keyword="Upper" ReservedWord="Upper" />
+			<FormatOptions Identifier="Lower" Alias="Lower" Keyword="Upper" ReservedWord="Upper" />
 		</Formatter>
 	</OracleConfiguration>
 

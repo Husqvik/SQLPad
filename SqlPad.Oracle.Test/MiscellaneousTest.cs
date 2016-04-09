@@ -32,6 +32,30 @@ namespace SqlPad.Oracle.Test
 				var simpleIdentifier = quotedIdentifier.ToSimpleIdentifier();
 				simpleIdentifier.ShouldBe(quotedIdentifier);
 			}
+
+			[Test(Description = @"")]
+			public void TestNormalStringPlainText()
+			{
+				const string literal = "'some''text'";
+				var text = literal.ToPlainString();
+				text.ShouldBe("some'text");
+			}
+
+			[Test(Description = @"")]
+			public void TestQuotedStringPlainText()
+			{
+				const string literal = "q'|some''text|'";
+				var text = literal.ToPlainString();
+				text.ShouldBe("some''text");
+			}
+
+			[Test(Description = @"")]
+			public void TestInvalidQuotedStringPlainText()
+			{
+				const string literal = "q'|some''text'";
+				var text = literal.ToPlainString();
+				text.ShouldBe("some''text");
+			}
 		}
 
 		[TestFixture]

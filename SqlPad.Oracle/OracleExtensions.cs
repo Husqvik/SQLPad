@@ -10,6 +10,7 @@ namespace SqlPad.Oracle
 {
 	public static class OracleExtensions
 	{
+		private const string ApostropheCharacter = "'";
 		private const string QuoteCharacter = "\"";
 
 		public static bool RequiresQuotes(this string identifier)
@@ -63,7 +64,27 @@ namespace SqlPad.Oracle
 			bool isQuotedString;
 			char? quoteInitializer;
 			var trimToIndex = GetTrimIndex(oracleString, out isQuotedString, out quoteInitializer);
-			return oracleString.Substring(trimToIndex, oracleString.Length - trimToIndex - (isQuotedString ? 2 : 1));
+			var length = oracleString.Length;
+			var value = oracleString.Substring(trimToIndex);
+			var trimEnd = isQuotedString && length >= trimToIndex
+				? $"{oracleString[trimToIndex - 1]}'"
+				: ApostropheCharacter;
+
+			if (value.EndsWith(trimEnd))
+			{
+				value = value.Remove(value.Length - trimEnd.Length);
+			}
+			else if (value.EndsWith(ApostropheCharacter))
+			{
+				value = value.Remove(value.Length - 1);
+			}
+
+			if (!isQuotedString)
+			{
+				value = value.Replace("''", "'");
+			}
+
+			return value;
 		}
 
 		internal static int GetTrimIndex(string oracleString, out bool isQuotedString, out char? quoteInitializer)
