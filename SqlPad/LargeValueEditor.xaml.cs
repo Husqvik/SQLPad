@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -19,6 +20,7 @@ namespace SqlPad
 	public partial class LargeValueEditor
 	{
 		private static readonly string SyntaxHighlightingNameJavaScript;
+		private static readonly IHighlightingDefinition XmlHighlightingDefinition = HighlightingManager.Instance.GetDefinition("XML");
 
 		private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 		private readonly ILargeValue _largeValue;
@@ -64,7 +66,7 @@ namespace SqlPad
 				if (largeTextValue != null)
 				{
 					TabText.Visibility = Visibility.Visible;
-					TabControl.SelectedItem = TabText;
+					TabText.IsSelected = true;
 
 					_isXml = true;
 					using (var reader = new XmlTextReader(new StringReader(largeTextValue.Value)))
@@ -95,17 +97,21 @@ namespace SqlPad
 
 					if (_isXml)
 					{
-						TextEditor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("XML");
+						TextEditor.SyntaxHighlighting = XmlHighlightingDefinition;
 					}
 					else if (_isJson)
 					{
 						TextEditor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition(SyntaxHighlightingNameJavaScript);
 					}
+
+					TabRaw.Visibility = Visibility.Visible;
+					HexEditor.Text = await BinaryDataHelper.FormatBinaryDataAsync(Encoding.UTF8.GetBytes(largeTextValue.Value), _cancellationTokenSource.Token);
+					LoadingNotification.Visibility = Visibility.Collapsed;
 				}
 				else if (_largeBinaryValue != null)
 				{
 					TabRaw.Visibility = Visibility.Visible;
-					TabControl.SelectedItem = TabRaw;
+					TabRaw.IsSelected = true;
 
 					HexEditor.Text = await BinaryDataHelper.FormatBinaryDataAsync(_largeBinaryValue.Value, _cancellationTokenSource.Token);
 					LoadingNotification.Visibility = Visibility.Collapsed;
@@ -114,7 +120,7 @@ namespace SqlPad
 				else if (collectionValue != null)
 				{
 					TabCollection.Visibility = Visibility.Visible;
-					TabControl.SelectedItem = TabCollection;
+					TabCollection.IsSelected = true;
 					var columnTemplate = DataGridHelper.CreateDataGridTemplateColumn(collectionValue.ColumnHeader);
 					CollectionViewer.Columns.Add(columnTemplate);
 					CollectionViewer.ItemsSource = collectionValue.Records.Cast<object>().Select(r => new [] { r }).ToArray();
@@ -122,7 +128,7 @@ namespace SqlPad
 				else if (complexType != null)
 				{
 					TabComplexType.Visibility = Visibility.Visible;
-					TabControl.SelectedItem = TabComplexType;
+					TabComplexType.IsSelected = true;
 					ComplexTypeViewer.ComplexType = complexType;
 				}
 			}
@@ -153,7 +159,7 @@ namespace SqlPad
 				{
 					PdfViewer.Open(new MemorySource(_largeBinaryValue.Value), password);
 					TabPdf.Visibility = Visibility.Visible;
-					TabControl.SelectedItem = TabPdf;
+					TabPdf.IsSelected = true;
 					return true;
 				}
 				catch (MissingOrInvalidPdfPasswordException)
@@ -237,7 +243,7 @@ namespace SqlPad
 
 				ImageViewer.Source = bitmapImage;
 				TabImage.Visibility = Visibility.Visible;
-				TabControl.SelectedItem = TabImage;
+				TabImage.IsSelected = true;
 				return true;
 			}
 			catch

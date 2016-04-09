@@ -54,22 +54,19 @@
 
 		<ControlTemplate x:Key="EditableTabHeaderControlTemplate" TargetType="{x:Type sqlPad:EditableTabHeaderControl}">
 			<StackPanel Orientation="Horizontal">
+				<StackPanel.Resources>
+					<Style TargetType="TextBlock">
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=TabItem, Mode=FindAncestor, AncestorLevel=1}, Path=IsSelected}" Value="True">
+								<Setter Property="TextBlock.FontWeight" Value="Bold" />
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</StackPanel.Resources>
+
 				<Grid>
-					<TextBox x:Name="PART_TabHeader"
-							 Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Content, Mode=TwoWay}"
-							 Visibility="Collapsed" />
-					<TextBlock x:Name="PART_TextBlock"
-					           Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Content, Mode=TwoWay}">
-						<TextBlock.Style>
-							<Style>
-								<Style.Triggers>
-									<DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=TabItem, Mode=FindAncestor, AncestorLevel=1}, Path=IsSelected}" Value="True">
-										<Setter Property="TextBlock.FontWeight" Value="Bold" />
-									</DataTrigger>
-								</Style.Triggers>
-							</Style>
-						</TextBlock.Style>
-					</TextBlock>
+					<TextBox x:Name="PART_TabHeader" Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Content, Mode=TwoWay}" Visibility="Collapsed" />
+					<TextBlock x:Name="PART_TextBlock" Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Content, Mode=TwoWay}" />
 				</Grid>
 				<TextBlock x:Name="PART_ModifiedNotification" Text="*" Visibility="Collapsed" />
 				<TextBlock x:Name="PART_RunningNotification" Text=" (running)" Visibility="Collapsed" />

@@ -455,15 +455,14 @@ WHERE
 		}
 
 		[Test, STAThread]
-		public void TestLargeTextValueEditorInitialization()
+		public async void TestLargeTextValueEditorInitialization()
 		{
 			var editor = new LargeValueEditor("Dummy", new TestLargeTextValue());
-			var task = (Task) typeof (LargeValueEditor).GetMethod("SetEditorValue", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(editor, null);
-			task.Wait();
+			await (Task)typeof(LargeValueEditor).GetMethod("SetEditorValue", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(editor, null);
 			
 			editor.TextEditor.Text.ShouldBe(TestLargeTextValue.TextValue);
 			editor.TabText.Visibility.ShouldBe(Visibility.Visible);
-			editor.TabRaw.Visibility.ShouldBe(Visibility.Collapsed);
+			editor.TabRaw.Visibility.ShouldBe(Visibility.Visible);
 		}
 
 		private class TestLargeTextValue : ILargeTextValue

@@ -79,10 +79,9 @@ namespace SqlPad.Oracle.SemanticModel
 				var programBodyNode = program.RootNode.GetPathFilterDescendants(n => !String.Equals(n.Id, NonTerminals.ProgramDeclareSection), NonTerminals.ProgramBody).FirstOrDefault();
 				if (programBodyNode != null)
 				{
-					foreach (var statementTypeNode in programBodyNode.GetPathFilterDescendants(n => !String.Equals(n.Id, NonTerminals.PlSqlSqlStatement) && !String.Equals(n.Id, NonTerminals.PlSqlStatementList) && !(String.Equals(n.Id, NonTerminals.PlSqlStatementType) && n[NonTerminals.PlSqlBlock] != null), NonTerminals.PlSqlStatementType))
+					foreach (var statementTypeNode in GetPlSqlStatements(programBodyNode))
 					{
-						var statementNode = statementTypeNode[0];
-						FindPlSqlReferences(program, statementNode);
+						FindPlSqlReferences(program, statementTypeNode[0]);
 					}
 
 					var exceptionHandlerListNode = programBodyNode[NonTerminals.PlSqlExceptionClause, NonTerminals.PlSqlExceptionHandlerList];
@@ -92,11 +91,25 @@ namespace SqlPad.Oracle.SemanticModel
 						{
 							CreatePlSqlExceptionReference(program, prefixedExceptionIdentifierNode);
 						}
+
+						var exceptionHandlerStatementLists = StatementGrammarNode.GetAllChainedClausesByPath(exceptionHandlerListNode[NonTerminals.PlSqlExceptionHandler, NonTerminals.PlSqlStatementList], null, NonTerminals.PlSqlExceptionHandlerList, NonTerminals.PlSqlExceptionHandler, NonTerminals.PlSqlStatementList);
+						foreach (var statementList in exceptionHandlerStatementLists)
+						{
+							foreach (var statementTypeNode in GetPlSqlStatements(statementList))
+							{
+								FindPlSqlReferences(program, statementTypeNode[0]);
+							}
+						}
 					}
 				}
 
 				FindPlSqlReferences(program.SubPrograms);
 			}
+		}
+
+		private static IEnumerable<StatementGrammarNode> GetPlSqlStatements(StatementGrammarNode sourceNode)
+		{
+			return sourceNode.GetPathFilterDescendants(n => !String.Equals(n.Id, NonTerminals.PlSqlSqlStatement) && !String.Equals(n.Id, NonTerminals.PlSqlStatementList) && !(String.Equals(n.Id, NonTerminals.PlSqlStatementType) && n[NonTerminals.PlSqlBlock] != null), NonTerminals.PlSqlStatementType);
 		}
 
 		private void FindPlSqlReferences(OraclePlSqlProgram program, StatementGrammarNode node)

@@ -8,7 +8,8 @@
         Height="640" Width="960"
         MinWidth="640" MinHeight="360"
         ResizeMode="CanResizeWithGrip"
-        Drop="DropObjectHandler">
+        Drop="DropObjectHandler"
+        Icon="SqlPad.ico">
 
 	<Window.TaskbarItemInfo>
 		<TaskbarItemInfo />

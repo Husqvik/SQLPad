@@ -560,6 +560,28 @@ END;";
 		}
 
 		[Test]
+		public void TestReferenceWithinExceptionClause()
+		{
+			const string plsqlText =
+@"BEGIN
+	NULL;
+EXCEPTION
+	WHEN others THEN
+    	dbms_output.put_line('It''s broken. ');
+END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
+
+			semanticModel.Programs.Count.ShouldBe(1);
+			semanticModel.Programs[0].ProgramReferences.Count.ShouldBe(1);
+			var putLineReference = semanticModel.Programs[0].ProgramReferences.First();
+			putLineReference.Metadata.ShouldNotBe(null);
+		}
+
+		[Test]
 		public void TestVariableReferenceInNestedPlSqlBlock()
 		{
 			const string plsqlText =
