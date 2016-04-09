@@ -26,6 +26,7 @@ namespace SqlPad.Oracle
 				OracleProgramIdentifier.IdentifierBuiltInProgramToChar,
 				OracleProgramIdentifier.IdentifierBuiltInProgramTrunc,
 				OracleProgramIdentifier.IdentifierBuiltInProgramToDate,
+				OracleProgramIdentifier.IdentifierBuiltInProgramToNumber,
 				OracleProgramIdentifier.IdentifierBuiltInProgramToTimestamp,
 				OracleProgramIdentifier.IdentifierBuiltInProgramToTimestampWithTimeZone,
 				OracleProgramIdentifier.IdentifierBuiltInProgramSysContext,
@@ -89,7 +90,7 @@ namespace SqlPad.Oracle
 			}
 
 			toCharFunctionOverload = specificFunctionOverloads
-				.FirstOrDefault(o => o.CurrentParameterIndex == 2 && o.ProgramMetadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramToChar &&
+				.FirstOrDefault(o => o.CurrentParameterIndex == 2 && o.ProgramMetadata.Identifier.In(OracleProgramIdentifier.IdentifierBuiltInProgramToChar, OracleProgramIdentifier.IdentifierBuiltInProgramToNumber) &&
 				                     String.Equals(o.ProgramMetadata.Parameters[o.CurrentParameterIndex + 1].DataType, "VARCHAR2"));
 			if (toCharFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(toCharFunctionOverload))
 			{

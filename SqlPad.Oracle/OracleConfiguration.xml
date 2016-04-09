@@ -14,6 +14,6 @@
     </Connection>
   </Connections>
   <Formatter>
-    <Casing Identifier="Lower" Alias="Lower" Keyword="Upper" ReservedWord="Upper" />
+    <FormatOptions Identifier="Lower" Alias="Lower" Keyword="Upper" ReservedWord="Upper" />
   </Formatter>
 </OracleConfiguration>

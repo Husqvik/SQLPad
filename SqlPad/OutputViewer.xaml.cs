@@ -21,6 +21,8 @@ namespace SqlPad
 		private const int MaxHistoryEntrySize = 8192;
 		private const string ExecutionLogTimestampFormat = "yyyy-MM-dd HH:mm:ss.fff";
 
+		private static readonly TimeSpan DefaultRefreshInterval = TimeSpan.FromMinutes(1);
+
 		private readonly DispatcherTimer _timerExecutionMonitor;
 		private readonly Stopwatch _stopWatch = new Stopwatch();
 		private readonly StringBuilder _databaseOutputBuilder = new StringBuilder();
@@ -122,6 +124,12 @@ namespace SqlPad
 		private int InitializeResultViewers()
 		{
 			var tabControlIndex = 0;
+			var refreshInterval = DocumentPage.WorkDocument.RefreshInterval;
+			if (refreshInterval == TimeSpan.Zero)
+			{
+				refreshInterval = DefaultRefreshInterval;
+			}
+
 			foreach (var statementResult in _executionResult.StatementResults)
 			{
 				foreach (var resultInfoColumnHeaders in statementResult.ResultInfoColumnHeaders.Where(r => r.Key.Type == ResultIdentifierType.UserDefined))
@@ -129,7 +137,7 @@ namespace SqlPad
 					var resultViewer =
 						new ResultViewer(this, statementResult, resultInfoColumnHeaders.Key, resultInfoColumnHeaders.Value)
 						{
-							AutoRefreshInterval = DocumentPage.WorkDocument.RefreshInterval
+							AutoRefreshInterval = refreshInterval
 						};
 
 					resultViewer.TabItem.AddHandler(Selector.SelectedEvent, (RoutedEventHandler)ResultTabSelectedHandler);

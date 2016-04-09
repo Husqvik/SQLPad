@@ -24,12 +24,31 @@
 			<MenuItem Header="_Collapse all" Command="commands:GenericCommands.CollapseAllFoldings" />
 		</ContextMenu>
 
-		<MenuItem x:Key="ColorPickerMenuItem">
+		<MenuItem x:Key="DocumentHeaderTextColorMenuItem">
 			<MenuItem.Header>
-				<StackPanel Orientation="Horizontal">
-					<TextBlock Text="Tab Color " VerticalAlignment="Center" Margin="0,0,4,0" />
-					<xctk:ColorPicker SelectedColor="{Binding DocumentHeaderBackgroundColorCode, Converter={StaticResource ColorCodeToColorConverter}}" AvailableColorsSortingMode="HueSaturationBrightness" ShowAvailableColors="False" ShowRecentColors="False" Width="100" />
-				</StackPanel>
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition SharedSizeGroup="MenuText" Width="Auto" />
+						<ColumnDefinition SharedSizeGroup="ColorPicker" Width="*" />
+					</Grid.ColumnDefinitions>
+					
+					<TextBlock Text="Text Color " VerticalAlignment="Center" Margin="0,0,4,0" />
+					<xctk:ColorPicker SelectedColor="{Binding DocumentHeaderTextColorCode, Converter={StaticResource ColorCodeToColorConverter}}" Grid.Column="1" AvailableColorsSortingMode="HueSaturationBrightness" ShowAvailableColors="False" ShowRecentColors="False" />
+				</Grid>
+			</MenuItem.Header>
+		</MenuItem>
+
+		<MenuItem x:Key="DocumentHeaderBackgroundColorMenuItem">
+			<MenuItem.Header>
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition SharedSizeGroup="MenuText" Width="Auto" />
+						<ColumnDefinition SharedSizeGroup="ColorPicker" Width="*" />
+					</Grid.ColumnDefinitions>
+					
+					<TextBlock Text="Background Color " VerticalAlignment="Center" Margin="0,0,4,0" />
+					<xctk:ColorPicker SelectedColor="{Binding DocumentHeaderBackgroundColorCode, Converter={StaticResource ColorCodeToColorConverter}}" Grid.Column="1" AvailableColorsSortingMode="HueSaturationBrightness" ShowAvailableColors="False" ShowRecentColors="False" />
+				</Grid>
 			</MenuItem.Header>
 		</MenuItem>
 
@@ -40,7 +59,17 @@
 							 Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Content, Mode=TwoWay}"
 							 Visibility="Collapsed" />
 					<TextBlock x:Name="PART_TextBlock"
-					           Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Content, Mode=TwoWay}" />
+					           Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Content, Mode=TwoWay}">
+						<TextBlock.Style>
+							<Style>
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=TabItem, Mode=FindAncestor, AncestorLevel=1}, Path=IsSelected}" Value="True">
+										<Setter Property="TextBlock.FontWeight" Value="Bold" />
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</TextBlock.Style>
+					</TextBlock>
 				</Grid>
 				<TextBlock x:Name="PART_ModifiedNotification" Text="*" Visibility="Collapsed" />
 				<TextBlock x:Name="PART_RunningNotification" Text=" (running)" Visibility="Collapsed" />

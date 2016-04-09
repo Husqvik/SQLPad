@@ -33,11 +33,12 @@ namespace SqlPad
 		private const string InitialDocumentHeader = "New";
 		private const int MaximumToolTipLines = 32;
 		private const int MaximumOutputViewersPerPage = 16;
+		private const int DefaultFontSize = 12;
 		public const string FileMaskDefault = "SQL files (*.sql)|*.sql|SQL Pad files (*.sqlx)|*.sqlx|Text files(*.txt)|*.txt|All files (*.*)|*";
 
 		private static readonly string[] OpeningParenthesisOrBrackets = { "(", "[", "{" };
 		private static readonly string[] ClosingParenthesisOrBrackets = { ")", "]", "}" };
-		private static readonly ColorCodeToBrushConverter TabHeaderBackgroundBrushConverter = new ColorCodeToBrushConverter();
+		private static readonly ColorCodeToBrushConverter TabHeaderBrushConverter = new ColorCodeToBrushConverter();
 
 		private SqlDocumentRepository _documentRepository;
 		private ICodeCompletionProvider _codeCompletionProvider;
@@ -138,7 +139,8 @@ namespace SqlPad
 				WorkDocument = new WorkDocument
 				{
 					ConnectionName = ConfigurationProvider.ConnectionStrings[0].Name,
-					HeaderBackgroundColorCode = Colors.White.ToString()
+					HeaderTextColorCode = DefaultDocumentHeaderTextColorCode,
+					HeaderBackgroundColorCode = DefaultDocumentHeaderBackgroundColorCode
 				};
 
 				WorkDocumentCollection.AddDocument(WorkDocument);
@@ -157,10 +159,17 @@ namespace SqlPad
 					InitializeFileWatcher();
 				}
 
-				DocumentHeaderBackgroundColorCode = WorkDocument.HeaderBackgroundColorCode;
+				DocumentHeaderTextColorCode = WorkDocument.HeaderTextColorCode ?? DefaultDocumentHeaderTextColorCode;
+				DocumentHeaderBackgroundColorCode = WorkDocument.HeaderBackgroundColorCode ?? DefaultDocumentHeaderBackgroundColorCode;
 			}
 
-			Editor.FontSize = WorkDocument.FontSize;
+			var fontSize = WorkDocument.FontSize;
+			if (fontSize == 0)
+			{
+				fontSize = DefaultFontSize;
+			}
+
+			Editor.FontSize = fontSize;
 
 			UpdateDocumentHeaderToolTip();
 
@@ -288,64 +297,78 @@ namespace SqlPad
 					Template = (ControlTemplate)Application.Current.Resources["TabItemControlTemplate"]
 				};
 
-			var backgroundBinding = new Binding(nameof(DocumentHeaderBackgroundColorCode)) { Source = this, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged, Converter = TabHeaderBackgroundBrushConverter };
-			TabItem.SetBinding(BackgroundProperty, backgroundBinding);
+			var textColorBinding = new Binding(nameof(DocumentHeaderTextColorCode)) { Source = this, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged, Converter = TabHeaderBrushConverter };
+			header.SetBinding(ForegroundProperty, textColorBinding);
+
+			var backgroundColorBinding = new Binding(nameof(DocumentHeaderBackgroundColorCode)) { Source = this, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged, Converter = TabHeaderBrushConverter };
+			TabItem.SetBinding(BackgroundProperty, backgroundColorBinding);
 		}
 
 		private ContextMenu CreateTabItemHeaderContextMenu()
 		{
 			var contextMenu = new ContextMenu();
-			var menuItemSave = new MenuItem
-			{
-				Header = "Save",
-				Command = GenericCommands.Save,
-			};
+			Grid.SetIsSharedSizeScope(contextMenu, true);
+
+			var menuItemSave =
+				new MenuItem
+				{
+					Header = "Save",
+					Command = GenericCommands.Save,
+				};
 
 			contextMenu.Items.Add(menuItemSave);
 			contextMenu.CommandBindings.Add(new CommandBinding(GenericCommands.Save, SaveCommandExecutedHandler));
 
-			var menuItemSaveAs = new MenuItem
-			{
-				Header = "Save as...",
-				Command = GenericCommands.SaveAs,
-			};
+			var menuItemSaveAs =
+				new MenuItem
+				{
+					Header = "Save as...",
+					Command = GenericCommands.SaveAs,
+				};
 
 			contextMenu.Items.Add(menuItemSaveAs);
 			contextMenu.CommandBindings.Add(new CommandBinding(GenericCommands.SaveAs, SaveAsCommandExecutedHandler));
 
-			var menuItemOpenContainingFolder = new MenuItem
-			{
-				Header = "Open Containing Folder",
-				Command = GenericCommands.OpenContainingFolder,
-				CommandParameter = this
-			};
+			var menuItemOpenContainingFolder =
+				new MenuItem
+				{
+					Header = "Open Containing Folder",
+					Command = GenericCommands.OpenContainingFolder,
+					CommandParameter = this
+				};
 
 			contextMenu.Items.Add(menuItemOpenContainingFolder);
 			contextMenu.CommandBindings.Add(new CommandBinding(GenericCommands.OpenContainingFolder, OpenContainingFolderCommandExecutedHandler, (sender, args) => args.CanExecute = WorkDocument.File != null));
 
-			var menuItemClose = new MenuItem
-			{
-				Header = "Close",
-				Command = GenericCommands.CloseDocument,
-				CommandParameter = this
-			};
+			var menuItemClose =
+				new MenuItem
+				{
+					Header = "Close",
+					Command = GenericCommands.CloseDocument,
+					CommandParameter = this
+				};
 
 			contextMenu.Items.Add(menuItemClose);
 
-			var menuItemCloseAllButThis = new MenuItem
-			{
-				Header = "Close All But This",
-				Command = GenericCommands.CloseAllDocumentsButThis,
-				CommandParameter = this
-			};
+			var menuItemCloseAllButThis =
+				new MenuItem
+				{
+					Header = "Close All But This",
+					Command = GenericCommands.CloseAllDocumentsButThis,
+					CommandParameter = this
+				};
 
 			contextMenu.Items.Add(menuItemCloseAllButThis);
 			
 			contextMenu.Items.Add(new Separator());
-			var colorPickerMenuItem = (MenuItem)Resources["ColorPickerMenuItem"];
-			colorPickerMenuItem.DataContext = this;
-			contextMenu.Items.Add(colorPickerMenuItem);
-			
+			var documentHeaderTextColorMenuItem = (MenuItem)Resources["DocumentHeaderTextColorMenuItem"];
+			documentHeaderTextColorMenuItem.DataContext = this;
+			contextMenu.Items.Add(documentHeaderTextColorMenuItem);
+
+			var documentHeaderBackgroundColorMenuItem = (MenuItem)Resources["DocumentHeaderBackgroundColorMenuItem"];
+			documentHeaderBackgroundColorMenuItem.DataContext = this;
+			contextMenu.Items.Add(documentHeaderBackgroundColorMenuItem);
+
 			return contextMenu;
 		}
 
@@ -535,11 +558,10 @@ namespace SqlPad
 			WorkDocument.SelectionLength = Editor.SelectionLength;
 			WorkDocument.SelectionType = Editor.IsMultiSelectionActive ? SelectionType.Rectangle : SelectionType.Simple;
 
-			WorkDocument.EnableDatabaseOutput = ActiveOutputViewer.EnableDatabaseOutput;
-			WorkDocument.KeepDatabaseOutputHistory = ActiveOutputViewer.KeepDatabaseOutputHistory;
-
 			if (ActiveOutputViewer.ActiveResultViewer != null)
 			{
+				WorkDocument.EnableDatabaseOutput = ActiveOutputViewer.EnableDatabaseOutput;
+				WorkDocument.KeepDatabaseOutputHistory = ActiveOutputViewer.KeepDatabaseOutputHistory;
 				WorkDocument.RefreshInterval = ActiveOutputViewer.ActiveResultViewer.AutoRefreshInterval;
 			}
 

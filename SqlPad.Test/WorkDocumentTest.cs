@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Windows.Media;
 using NUnit.Framework;
 using Shouldly;
 
@@ -37,6 +38,8 @@ namespace SqlPad.Test
 					FontSize = 16,
 					DebuggerViewDefaultTabIndex = 1,
 					RefreshInterval = TimeSpan.FromSeconds(900),
+					HeaderTextColorCode = Colors.Crimson.ToString(),
+					HeaderBackgroundColorCode = Colors.CornflowerBlue.ToString(),
 					WatchItems = new[] { watchVariable1, watchVariable2 }
 				};
 
@@ -49,16 +52,28 @@ namespace SqlPad.Test
 			const string bindVariableName = "Variable";
 			const string bindVariableValue = "TestValue";
 			var providerConfiguration = WorkDocumentCollection.GetProviderConfiguration(providerName);
-			providerConfiguration.SetBindVariable(new BindVariableConfiguration { DataType = bindVariableDataType, Name = bindVariableName, Value = bindVariableValue, IsFilePath = true });
+			providerConfiguration.SetBindVariable(
+				new BindVariableConfiguration
+				{
+					DataType = bindVariableDataType,
+					Name = bindVariableName,
+					Value = bindVariableValue,
+					IsFilePath = true
+				});
+
 			var statementExecutedAt = new DateTime(2015, 7, 22, 7, 53, 55);
 			const string historyEntryTag = "Test";
-			providerConfiguration.AddStatementExecution(new StatementExecutionHistoryEntry(statementText, statementExecutedAt) { Tags = historyEntryTag });
+			providerConfiguration.AddStatementExecution(
+				new StatementExecutionHistoryEntry(statementText, statementExecutedAt)
+				{
+					Tags = historyEntryTag
+				});
 
 			WorkDocumentCollection.Save();
 
 			var fileInfo = new FileInfo(Path.Combine(TempDirectoryName, "WorkArea", WorkDocumentCollection.ConfigurationFileName));
 			fileInfo.Exists.ShouldBe(true);
-			fileInfo.Length.ShouldBe(396);
+			fileInfo.Length.ShouldBe(408);
 
 			WorkDocumentCollection.Configure();
 			WorkDocumentCollection.WorkingDocuments.Count.ShouldBe(1);
@@ -82,6 +97,8 @@ namespace SqlPad.Test
 			deserializedWorkingDocument.FontSize.ShouldBe(newWorkingDocument.FontSize);
 			deserializedWorkingDocument.RefreshInterval.ShouldBe(newWorkingDocument.RefreshInterval);
 			deserializedWorkingDocument.DebuggerViewDefaultTabIndex.ShouldBe(newWorkingDocument.DebuggerViewDefaultTabIndex);
+			deserializedWorkingDocument.HeaderTextColorCode.ShouldBe(newWorkingDocument.HeaderTextColorCode);
+			deserializedWorkingDocument.HeaderBackgroundColorCode.ShouldBe(newWorkingDocument.HeaderBackgroundColorCode);
 			deserializedWorkingDocument.WatchItems.Length.ShouldBe(newWorkingDocument.WatchItems.Length);
 			deserializedWorkingDocument.WatchItems[0].ShouldBe(watchVariable1);
 			deserializedWorkingDocument.WatchItems[1].ShouldBe(watchVariable2);

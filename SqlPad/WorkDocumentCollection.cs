@@ -53,8 +53,8 @@ namespace SqlPad
 			workingDocumentType.Add(nameof(WorkDocument.DocumentFileName), nameof(WorkDocument.DocumentId), nameof(WorkDocument.ConnectionName), nameof(WorkDocument.SchemaName), nameof(WorkDocument.CursorPosition),
 				nameof(WorkDocument.SelectionStart), nameof(WorkDocument.SelectionLength), nameof(WorkDocument.IsModified), nameof(WorkDocument.VisualLeft), nameof(WorkDocument.VisualTop), nameof(WorkDocument.EditorGridRowHeight),
 				nameof(WorkDocument.Text), nameof(WorkDocument.EditorGridColumnWidth), nameof(WorkDocument.TabIndex), "_foldingStates", nameof(WorkDocument.EnableDatabaseOutput), nameof(WorkDocument.KeepDatabaseOutputHistory),
-				nameof(WorkDocument.HeaderBackgroundColorCode), nameof(WorkDocument.DocumentTitle), "_fontSize", nameof(WorkDocument.WatchItems), nameof(WorkDocument.DebuggerViewDefaultTabIndex), "_breakpoints",
-				nameof(WorkDocument.BreakOnExceptions), nameof(WorkDocument.SelectionType), "_refreshInterval");
+				nameof(WorkDocument.HeaderBackgroundColorCode), nameof(WorkDocument.DocumentTitle), nameof(WorkDocument.FontSize), nameof(WorkDocument.WatchItems), nameof(WorkDocument.DebuggerViewDefaultTabIndex), "_breakpoints",
+				nameof(WorkDocument.BreakOnExceptions), nameof(WorkDocument.SelectionType), nameof(WorkDocument.RefreshInterval), nameof(WorkDocument.HeaderTextColorCode));
 
 			var windowPropertiesType = serializer.Add(typeof(WindowProperties), false);
 			windowPropertiesType.UseConstructor = false;

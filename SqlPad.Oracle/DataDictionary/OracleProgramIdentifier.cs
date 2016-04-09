@@ -25,6 +25,7 @@ namespace SqlPad.Oracle.DataDictionary
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramSysContext = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "SYS_CONTEXT");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramToChar = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "TO_CHAR");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramToDate = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "TO_DATE");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramToNumber = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "TO_NUMBER");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramToTimestamp = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "TO_TIMESTAMP");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramToTimestampWithTimeZone = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "TO_TIMESTAMP_TZ");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramTrunc = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "TRUNC");

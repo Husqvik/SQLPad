@@ -9,9 +9,6 @@ namespace SqlPad
 	public class WorkDocument
 	{
 		private const string ExtensionSqlx = ".SQLX";
-		public const string DefaultDocumentHeaderBackgroundColorCode = "#FFFFFFFF";
-		private double _fontSize;
-		private TimeSpan _refreshInterval;
 		private List<bool> _foldingStates;
 		private HashSet<BreakpointData> _breakpoints;
 		private string[] _watchItems;
@@ -20,7 +17,6 @@ namespace SqlPad
 		{
 			DocumentId = Guid.NewGuid();
 			TabIndex = -1;
-			HeaderBackgroundColorCode = DefaultDocumentHeaderBackgroundColorCode;
 		}
 
 		private List<bool> FoldingStatesInternal => _foldingStates ?? (_foldingStates = new List<bool>());
@@ -95,35 +91,13 @@ namespace SqlPad
 		
 		public string HeaderBackgroundColorCode { get; set; }
 
+		public string HeaderTextColorCode { get; set; }
+
 		public bool BreakOnExceptions { get; set; }
 
-		public double FontSize
-		{
-			get
-			{
-				if (_fontSize == 0)
-				{
-					_fontSize = 12;
-				}
-				
-				return _fontSize;
-			}
-			set { _fontSize = value; }
-		}
+		public double FontSize { get; set; }
 
-		public TimeSpan RefreshInterval
-		{
-			get
-			{
-				if (_refreshInterval == TimeSpan.Zero)
-				{
-					_refreshInterval = TimeSpan.FromSeconds(60);
-				}
-
-				return _refreshInterval;
-			}
-			set { _refreshInterval = value; }
-		}
+		public TimeSpan RefreshInterval { get; set; }
 
 		public ICollection<BreakpointData> Breakpoints => _breakpoints ?? (_breakpoints = new HashSet<BreakpointData>());
 
@@ -151,7 +125,9 @@ namespace SqlPad
 				SelectionStart = SelectionStart,
 				VisualLeft = VisualLeft,
 				VisualTop = VisualTop,
-				HeaderBackgroundColorCode = HeaderBackgroundColorCode
+				HeaderBackgroundColorCode = HeaderBackgroundColorCode,
+				HeaderTextColorCode = HeaderTextColorCode,
+				RefreshInterval = RefreshInterval
 			};
 		}
 	}

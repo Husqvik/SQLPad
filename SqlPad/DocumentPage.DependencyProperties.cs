@@ -3,11 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
 using System.Windows;
+using System.Windows.Media;
 
 namespace SqlPad
 {
 	public partial class DocumentPage
 	{
+		private static readonly string DefaultDocumentHeaderBackgroundColorCode = Colors.White.ToString();
+		private static readonly string DefaultDocumentHeaderTextColorCode = Colors.Black.ToString();
+
 		#region dependency properties registration
 		public static readonly DependencyProperty ConnectionStatusProperty = DependencyProperty.Register(nameof(ConnectionStatus), typeof(ConnectionStatus), typeof(DocumentPage), new FrameworkPropertyMetadata(ConnectionStatus.Connecting));
 		public static readonly DependencyProperty EnableDebugProperty = DependencyProperty.Register(nameof(EnableDebug), typeof(bool), typeof(DocumentPage), new FrameworkPropertyMetadata(false));
@@ -16,7 +20,8 @@ namespace SqlPad
 		public static readonly DependencyProperty IsRunningProperty = DependencyProperty.Register(nameof(IsRunning), typeof(bool), typeof(DocumentPage), new FrameworkPropertyMetadata(false));
 		public static readonly DependencyProperty ConnectionErrorMessageProperty = DependencyProperty.Register(nameof(ConnectionErrorMessage), typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(String.Empty));
 		public static readonly DependencyProperty TimedNotificationMessageProperty = DependencyProperty.Register(nameof(TimedNotificationMessage), typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(String.Empty));
-		public static readonly DependencyProperty DocumentHeaderBackgroundColorCodeProperty = DependencyProperty.Register(nameof(DocumentHeaderBackgroundColorCode), typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(DocumentHeaderBackgroundColorCodePropertyChangedCallbackHandler) { DefaultValue = WorkDocument.DefaultDocumentHeaderBackgroundColorCode });
+		public static readonly DependencyProperty DocumentHeaderBackgroundColorCodeProperty = DependencyProperty.Register(nameof(DocumentHeaderBackgroundColorCode), typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(DocumentHeaderBackgroundColorCodePropertyChangedCallbackHandler) { DefaultValue = DefaultDocumentHeaderBackgroundColorCode });
+		public static readonly DependencyProperty DocumentHeaderTextColorCodeProperty = DependencyProperty.Register(nameof(DocumentHeaderTextColorCode), typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(DocumentHeaderTextColorCodePropertyChangedCallbackHandler) { DefaultValue = DefaultDocumentHeaderTextColorCode });
 		public static readonly DependencyProperty DocumentHeaderProperty = DependencyProperty.Register(nameof(DocumentHeader), typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(DocumentHeaderPropertyChangedCallbackHandler));
 		public static readonly DependencyProperty DocumentHeaderToolTipProperty = DependencyProperty.Register(nameof(DocumentHeaderToolTip), typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(String.Empty));
 		public static readonly DependencyProperty DateTimeFormatProperty = DependencyProperty.Register(nameof(DateTimeFormat), typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata());
@@ -89,6 +94,21 @@ namespace SqlPad
 			var newColorCode = (string)args.NewValue;
 			var documentPage = (DocumentPage)dependencyObject;
 			documentPage.WorkDocument.HeaderBackgroundColorCode = newColorCode;
+			documentPage.SetDocumentModifiedIfSqlx();
+		}
+
+		[Bindable(true)]
+		public string DocumentHeaderTextColorCode
+		{
+			get { return (string)GetValue(DocumentHeaderTextColorCodeProperty); }
+			private set { SetValue(DocumentHeaderTextColorCodeProperty, value); }
+		}
+
+		private static void DocumentHeaderTextColorCodePropertyChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
+		{
+			var newColorCode = (string)args.NewValue;
+			var documentPage = (DocumentPage)dependencyObject;
+			documentPage.WorkDocument.HeaderTextColorCode = newColorCode;
 			documentPage.SetDocumentModifiedIfSqlx();
 		}
 
