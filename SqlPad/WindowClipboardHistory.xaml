@@ -26,7 +26,7 @@
 				<RowDefinition Height="Auto" />
 			</Grid.RowDefinitions>
 
-			<TextBlock Text="Recent clipboard items: " />
+			<TextBlock Text="Recent clipboard items: " Margin="0,2,0,2" />
 			<ListView Grid.Row="1" Name="ClipboardItems" ItemsSource="{Binding Entries}" IsSynchronizedWithCurrentItem="True" Grid.IsSharedSizeScope="True">
 				<ListView.ItemTemplate>
 					<DataTemplate>
@@ -42,7 +42,7 @@
 					</DataTemplate>
 				</ListView.ItemTemplate>
 			</ListView>
-			<TextBlock Grid.Row="2" Text="Full text: " />
+			<TextBlock Grid.Row="2" Text="Full text: " Margin="0,2,0,2" />
 			<TextBox Grid.Row="3" Text="{Binding ElementName=ClipboardItems, Path=SelectedItem.(sqlPad:ClipboardEntry.Text)}" IsReadOnly="True" IsReadOnlyCaretVisible="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
 			<StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
 				<Button Content="_Paste" IsDefault="True" Click="PasteClickHandler" Width="64" Margin="2,4,0,0">

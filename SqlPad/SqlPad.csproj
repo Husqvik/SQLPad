@@ -365,6 +365,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </Content>
+    <Resource Include="Chart.ico" />
     <Resource Include="SqlPad.ico" />
     <Resource Include="FindReplace\prev.png" />
     <Resource Include="FindReplace\next.png" />

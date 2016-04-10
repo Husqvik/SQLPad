@@ -10,7 +10,7 @@
         Closing="WindowClosingHandler"
         IsVisibleChanged="IsVisibleChangedHandler"
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
-        Title="Monitor" Height="400" Width="640" MinHeight="360">
+        Title="Monitor" Height="400" Width="640" MinHeight="360" Icon="Chart.ico">
 
 	<Window.Resources>
 		<CollectionViewSource x:Key="FilteredDatabaseSessions" Source="{Binding DatabaseSessions}" Filter="DatabaseSessionFilterHandler" />
