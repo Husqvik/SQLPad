@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using SqlPad.Oracle.DatabaseConnection;
 #if ORACLE_MANAGED_DATA_ACCESS_CLIENT
@@ -12,6 +13,7 @@ namespace SqlPad.Oracle
 	[DebuggerDisplay("OracleValueAggregator (Count={Count}; Minimum={Minimum}; Maximum={Maximum}; Sum={Sum}; Average={Average})")]
 	public class OracleValueAggregator : IValueAggregator
 	{
+		private readonly HashSet<object> _distinctValues = new HashSet<object>();
 		private ValueType _valueType;
 		private OracleDecimal _oracleNumberSum;
 		private OracleIntervalYM _oracleYearToMonthSum;
@@ -40,6 +42,8 @@ namespace SqlPad.Oracle
 		public object Sum => GetValue(_oracleNumberSum, OracleDate.Null, OracleTimeStamp.Null, OracleTimeStampTZ.Null, OracleTimeStampLTZ.Null, _oracleYearToMonthSum, _oracleDayToSecondSum);
 
 		public long Count { get; private set; }
+
+		public long DistinctCount => _distinctValues.Count;
 
 		public bool AggregatedValuesAvailable { get; private set; } = true;
 
@@ -79,6 +83,8 @@ namespace SqlPad.Oracle
 			{
 				value = oracleDate = new OracleDateTime(new OracleDate(Convert.ToDateTime(value)));
 			}
+
+			_distinctValues.Add(value);
 
 			var oracleTimestamp = value as OracleTimestamp;
 			var oracleTimestampTimezone = value as OracleTimestampWithTimeZone;
@@ -233,6 +239,7 @@ namespace SqlPad.Oracle
 
 		private void Reset()
 		{
+			_valueType = ValueType.None;
 			_oracleNumberSum = OracleDecimal.Zero;
 			_oracleYearToMonthSum = OracleIntervalYM.Zero;
 			_oracleDayToSecondSum = OracleIntervalDS.Zero;
@@ -250,6 +257,7 @@ namespace SqlPad.Oracle
 			_oracleTimeStampLocalTimezoneMaximum = OracleTimeStampLTZ.MinValue;
 			_oracleYearToMonthMaximum = OracleIntervalYM.MinValue;
 			_oracleDayToSecondMaximum = OracleIntervalDS.MinValue;
+			_distinctValues.Clear();
 		}
 
 		private enum ValueType

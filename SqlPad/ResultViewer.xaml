@@ -123,6 +123,9 @@
 			<TextBlock Text="Count: " />
 			<TextBox Text="{Binding SelectedCellValueCount}" />
 
+			<TextBlock Text="Distinct: " />
+			<TextBox Text="{Binding SelectedCellDistinctValueCount}" />
+
 			<StackPanel Orientation="Horizontal" Visibility="{Binding IsSelectedCellLimitInfoVisible, Converter={StaticResource ObjectToVisibilityConverter}}">
 				<TextBlock Text=" Min: " />
 				<TextBox Text="{Binding SelectedCellMin, Converter={x:Static sqlPad:CellValueConverter.Instance}}" />

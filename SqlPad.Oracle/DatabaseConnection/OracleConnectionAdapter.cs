@@ -499,7 +499,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					case "Long":
 						var oracleString = reader.GetOracleString(i);
 						var stringValue = oracleString.IsNull
-							? String.Empty
+							? (object)DBNull.Value
 							: $"{oracleString.Value}{(oracleString.Value.Length == OracleDatabaseModel.InitialLongFetchSize ? CellValueConverter.Ellipsis : null)}";
 
 						value = new OracleSimpleValue(stringValue);

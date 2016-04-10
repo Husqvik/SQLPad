@@ -30,6 +30,7 @@ namespace SqlPad
 		public static readonly DependencyProperty IsSelectedCellAggregatedInfoVisibleProperty = DependencyProperty.Register(nameof(IsSelectedCellAggregatedInfoVisible), typeof(bool), typeof(ResultViewer), new UIPropertyMetadata());
 		public static readonly DependencyProperty IsSelectedCellInfoVisibleProperty = DependencyProperty.Register(nameof(IsSelectedCellInfoVisible), typeof(bool), typeof(ResultViewer), new UIPropertyMetadata());
 		public static readonly DependencyProperty SelectedCellValueCountProperty = DependencyProperty.Register(nameof(SelectedCellValueCount), typeof(long), typeof(ResultViewer), new UIPropertyMetadata(0L));
+		public static readonly DependencyProperty SelectedCellDistinctValueCountProperty = DependencyProperty.Register(nameof(SelectedCellDistinctValueCount), typeof(long), typeof(ResultViewer), new UIPropertyMetadata(0L));
 		public static readonly DependencyProperty SelectedCellSumProperty = DependencyProperty.Register(nameof(SelectedCellSum), typeof(object), typeof(ResultViewer), new UIPropertyMetadata());
 		public static readonly DependencyProperty SelectedCellAverageProperty = DependencyProperty.Register(nameof(SelectedCellAverage), typeof(object), typeof(ResultViewer), new UIPropertyMetadata());
 		public static readonly DependencyProperty SelectedCellMinProperty = DependencyProperty.Register(nameof(SelectedCellMin), typeof(object), typeof(ResultViewer), new UIPropertyMetadata());
@@ -67,6 +68,13 @@ namespace SqlPad
 		{
 			get { return (long)GetValue(SelectedCellValueCountProperty); }
 			private set { SetValue(SelectedCellValueCountProperty, value); }
+		}
+
+		[Bindable(true)]
+		public long SelectedCellDistinctValueCount
+		{
+			get { return (long)GetValue(SelectedCellDistinctValueCountProperty); }
+			private set { SetValue(SelectedCellDistinctValueCountProperty, value); }
 		}
 
 		[Bindable(true)]
@@ -188,7 +196,16 @@ namespace SqlPad
 
 			InitializeComponent();
 
-			var header = new HeaderedContentControl { Content = new AccessText { Text = Title } };
+			var header =
+				new HeaderedContentControl
+				{
+					Content =
+						new AccessText
+						{
+							Text = Title
+						}
+				};
+
 			TabItem =
 				new TabItem
 				{
@@ -590,6 +607,7 @@ namespace SqlPad
 			}
 
 			SelectedCellValueCount = valueAggregator.Count;
+			SelectedCellDistinctValueCount = valueAggregator.DistinctCount;
 
 			if (valueAggregator.Count > 0)
 			{
