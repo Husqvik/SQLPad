@@ -678,12 +678,14 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private static void SetOracleGlobalization()
 		{
+#if !ORACLE_MANAGED_DATA_ACCESS_CLIENT
 			var info = OracleGlobalization.GetClientInfo();
 			var numberFormat = CultureInfo.CurrentCulture.NumberFormat;
 			var decimalSeparator = numberFormat.NumberDecimalSeparator;
 			var groupSeparator = numberFormat.NumberGroupSeparator;
 			info.NumericCharacters = $"{(decimalSeparator.Length == 1 ? decimalSeparator : ".")}{(groupSeparator.Length == 1 ? groupSeparator : " ")}";
 			OracleGlobalization.SetThreadInfo(info);
+#endif
 		}
 
 		private async Task<StatementExecutionBatchResult> ExecuteUserStatementAsync(StatementBatchExecutionModel batchExecutionModel, bool isReferenceConstraintNavigation, CancellationToken cancellationToken)

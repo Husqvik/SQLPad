@@ -6,9 +6,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Oracle.DataAccess.Client;
 using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.ExecutionPlan;
+#if ORACLE_MANAGED_DATA_ACCESS_CLIENT
+using Oracle.ManagedDataAccess.Client;
+#else
+using Oracle.DataAccess.Client;
+#endif
 
 namespace SqlPad.Oracle.ModelDataProviders
 {

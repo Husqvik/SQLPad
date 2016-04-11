@@ -126,7 +126,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public static int[] GetInternalDataTypes(this OracleDataReader reader)
 		{
+#if ORACLE_MANAGED_DATA_ACCESS_CLIENT
+			return new int[reader.FieldCount];
+#else
 			return ((IEnumerable)FieldReaderInternalTypes.GetValue(reader)).Cast<int>().ToArray();
+#endif
 		}
 
 		public static void ResetParametersToAvoidOdacBug(this OracleCommand command)

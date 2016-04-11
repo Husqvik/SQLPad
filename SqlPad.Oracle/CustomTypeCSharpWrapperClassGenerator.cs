@@ -92,7 +92,7 @@ using Oracle.DataAccess.Types;
 			{
 				var attributeName = attribute.Name.Trim('"');
 				writer.WriteLine($"	[OracleObjectMapping(\"{attributeName}\")]");
-				writer.WriteLine($"	public {OracleCustomTypeGenerator.MapOracleTypeToNetType(attribute.DataType.FullyQualifiedName)} {attributeName};");
+				writer.WriteLine($"	public {OracleToNetTypeMapper.MapOracleTypeToNetType(attribute.DataType.FullyQualifiedName)} {attributeName};");
 			}
 
 			writer.WriteLine();
@@ -113,7 +113,7 @@ using Oracle.DataAccess.Types;
 			foreach (var attribute in type.Attributes)
 			{
 				var attributeName = attribute.Name.Trim('"');
-				writer.WriteLine($"		{attributeName} = ({OracleCustomTypeGenerator.MapOracleTypeToNetType(attribute.DataType.FullyQualifiedName)})OracleUdt.GetValue(connection, pointerUdt, \"{attributeName}\");");
+				writer.WriteLine($"		{attributeName} = ({OracleToNetTypeMapper.MapOracleTypeToNetType(attribute.DataType.FullyQualifiedName)})OracleUdt.GetValue(connection, pointerUdt, \"{attributeName}\");");
 			}
 
 			writer.WriteLine("	}");

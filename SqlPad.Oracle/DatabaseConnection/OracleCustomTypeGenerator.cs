@@ -1,5 +1,4 @@
-﻿#if !ORACLE_MANAGED_DATA_ACCESS_CLIENT
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,12 +9,17 @@ using System.Reflection.Emit;
 using System.Resources;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using SqlPad.Oracle.DataDictionary;
+#if ORACLE_MANAGED_DATA_ACCESS_CLIENT
+using Oracle.ManagedDataAccess.Types;
+#else
 using Oracle.DataAccess.Client;
 using Oracle.DataAccess.Types;
-using SqlPad.Oracle.DataDictionary;
+#endif
 
 namespace SqlPad.Oracle.DatabaseConnection
 {
+#if !ORACLE_MANAGED_DATA_ACCESS_CLIENT
 	internal class OracleCustomTypeGenerator
 	{
 		private const string DynamicAssemblyNameBase = "SqlPad.Oracle.CustomTypes";
@@ -141,7 +145,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var fields = new Dictionary<string, FieldInfo>();
 			foreach (var objectAttribute in objectType.Attributes)
 			{
-				var targetType = MapOracleTypeToNetType(objectAttribute.DataType.FullyQualifiedName);
+				var targetType = OracleToNetTypeMapper.MapOracleTypeToNetType(objectAttribute.DataType.FullyQualifiedName);
 
 				var fieldName = MakeValidMemberName(objectAttribute.Name);
 				var fieldBuilder = customTypeBuilder.DefineField(fieldName, targetType, FieldAttributes.Public);
@@ -211,67 +215,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 			mappingTable.Add(mappingTableKey, mappingTableValue);*/
 		}
 
-		public static Type MapOracleTypeToNetType(OracleObjectIdentifier typeIdentifier)
-		{
-			var targetType = typeof(string);
-			switch (typeIdentifier.ToString().Trim('"'))
-			{
-				case "NUMBER":
-				case "INTEGER":
-				case "DECIMAL":
-					targetType = typeof(OracleDecimal);
-					break;
-				case "DATE":
-					targetType = typeof(DateTime?);
-					break;
-				case "CLOB":
-				case "NCLOB":
-					targetType = typeof(OracleClob);
-					break;
-				case "BLOB":
-					targetType = typeof(OracleBlob);
-					break;
-				case "RAW":
-				case "LONG RAW":
-					targetType = typeof(OracleBinary);
-					break;
-				case "BFILE":
-					targetType = typeof(OracleBFile);
-					break;
-				case "BINARY_DOUBLE":
-				case "DOUBLE PRECISION":
-				case "BINARY_FLOAT":
-				case "SIGNED BINARY INTEGER(8)":
-				case "SIGNED BINARY INTEGER(32)":
-				case "UNSIGNED BINARY INTEGER(16)":
-				case "UNSIGNED BINARY INTEGER(32)":
-					targetType = typeof(decimal?);
-					break;
-				case "TIMESTAMP":
-					targetType = typeof(OracleTimeStamp);
-					break;
-				case "TIMESTAMP WITH TZ":
-					targetType = typeof(OracleTimeStampTZ);
-					break;
-				case "TIMESTAMP WITH LOCAL TZ":
-					targetType = typeof(OracleTimeStampLTZ);
-					break;
-				case "INTERVAL YEAR TO MONTH":
-					targetType = typeof(OracleIntervalYM);
-					break;
-				case "INTERVAL DAY TO SECOND":
-					targetType = typeof(OracleIntervalDS);
-					break;
-				case "CONTIGUOUS ARRAY":
-				case "CANONICAL":
-				case "REF":
-					targetType = typeof(object);
-					break;
-			}
-
-			return targetType;
-		}
-
 		private static ILGenerator BuildOracleCustomTypeInterfaceMethod(TypeBuilder typeBuilder, string methodName)
 		{
 			var methodBuilder = typeBuilder.DefineMethod(methodName, MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.Virtual, null, new[] { typeof(OracleConnection), typeof(IntPtr) });
@@ -296,7 +239,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				}
 				else
 				{
-					targetType = MapOracleTypeToNetType(collectionType.ElementDataType.FullyQualifiedName);
+					targetType = OracleToNetTypeMapper.MapOracleTypeToNetType(collectionType.ElementDataType.FullyQualifiedName);
 
 					if (targetType == typeof(string))
 					{
@@ -685,5 +628,69 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return new OracleUdtStatus[elementCount];
 		}
 	}
-}
 #endif
+
+	internal class OracleToNetTypeMapper
+	{
+		public static Type MapOracleTypeToNetType(OracleObjectIdentifier typeIdentifier)
+		{
+			var targetType = typeof(string);
+			switch (typeIdentifier.ToString().Trim('"'))
+			{
+				case "NUMBER":
+				case "INTEGER":
+				case "DECIMAL":
+					targetType = typeof(OracleDecimal);
+					break;
+				case "DATE":
+					targetType = typeof(DateTime?);
+					break;
+				case "CLOB":
+				case "NCLOB":
+					targetType = typeof(OracleClob);
+					break;
+				case "BLOB":
+					targetType = typeof(OracleBlob);
+					break;
+				case "RAW":
+				case "LONG RAW":
+					targetType = typeof(OracleBinary);
+					break;
+				case "BFILE":
+					targetType = typeof(OracleBFile);
+					break;
+				case "BINARY_DOUBLE":
+				case "DOUBLE PRECISION":
+				case "BINARY_FLOAT":
+				case "SIGNED BINARY INTEGER(8)":
+				case "SIGNED BINARY INTEGER(32)":
+				case "UNSIGNED BINARY INTEGER(16)":
+				case "UNSIGNED BINARY INTEGER(32)":
+					targetType = typeof(decimal?);
+					break;
+				case "TIMESTAMP":
+					targetType = typeof(OracleTimeStamp);
+					break;
+				case "TIMESTAMP WITH TZ":
+					targetType = typeof(OracleTimeStampTZ);
+					break;
+				case "TIMESTAMP WITH LOCAL TZ":
+					targetType = typeof(OracleTimeStampLTZ);
+					break;
+				case "INTERVAL YEAR TO MONTH":
+					targetType = typeof(OracleIntervalYM);
+					break;
+				case "INTERVAL DAY TO SECOND":
+					targetType = typeof(OracleIntervalDS);
+					break;
+				case "CONTIGUOUS ARRAY":
+				case "CANONICAL":
+				case "REF":
+					targetType = typeof(object);
+					break;
+			}
+
+			return targetType;
+		}
+	}
+}

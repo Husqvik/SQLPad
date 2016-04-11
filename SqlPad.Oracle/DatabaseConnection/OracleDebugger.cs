@@ -11,14 +11,15 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 using SqlPad.Oracle.DataDictionary;
-using OracleCollectionType = Oracle.DataAccess.Client.OracleCollectionType;
 using ParameterDirection = System.Data.ParameterDirection;
 #if ORACLE_MANAGED_DATA_ACCESS_CLIENT
 using Oracle.ManagedDataAccess.Client;
 using Oracle.ManagedDataAccess.Types;
+using OracleCollectionType = Oracle.ManagedDataAccess.Client.OracleCollectionType;
 #else
 using Oracle.DataAccess.Client;
 using Oracle.DataAccess.Types;
+using OracleCollectionType = Oracle.DataAccess.Client.OracleCollectionType;
 #endif
 
 using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
