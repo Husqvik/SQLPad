@@ -53,14 +53,14 @@ namespace SqlPad.Oracle
 
 		private static void EnsureDocumentationDictionaries()
 		{
-			if (_sqlFunctionDocumentation != null)
+			if (_packageProgramDocumentations != null)
 			{
 				return;
 			}
 
 			lock (LockObject)
 			{
-				if (_sqlFunctionDocumentation != null)
+				if (_packageProgramDocumentations != null)
 				{
 					return;
 				}
