@@ -83,7 +83,7 @@ namespace SqlPad.Oracle
 								cteQueryBlock = cteQueryBlock.AllPrecedingConcatenatedQueryBlocks.Last();
 								cteAliasNode = cteQueryBlock.AliasNode;
 								var referencesToCte = semanticModel.AllReferenceContainers.SelectMany(c => c.ObjectReferences).Where(o => o.QueryBlocks.Count == 1 && o.QueryBlocks.First() == cteQueryBlock);
-								objectReferences.AddRange(referencesToCte);
+								objectReferences.UnionWith(referencesToCte);
 							}
 							else
 							{

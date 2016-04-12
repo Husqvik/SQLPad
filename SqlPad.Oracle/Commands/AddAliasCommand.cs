@@ -209,7 +209,7 @@ namespace SqlPad.Oracle.Commands
 				if (columnReference.SelectListColumn != null &&
 					columnReference.SelectListColumn.IsDirectReference && columnReference.SelectListColumn.AliasNode == columnReference.ColumnNode)
 				{
-					parentObjectReferences.AddRange(GetParentObjectReferences(objectReference.Owner));
+					parentObjectReferences.UnionWith(GetParentObjectReferences(objectReference.Owner));
 				}
 			}
 

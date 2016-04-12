@@ -188,7 +188,7 @@ namespace SqlPad.Oracle.SemanticModel
 						var groupingColumnsNullable = false;
 						foreach (var columnTransformation in columnTransformations)
 						{
-							unpivotedColumns.AddRange(columnTransformation.GetDescendants(Terminals.Identifier).Select(t => t.Token.Value.ToQuotedIdentifier()));
+							unpivotedColumns.UnionWith(columnTransformation.GetDescendants(Terminals.Identifier).Select(t => t.Token.Value.ToQuotedIdentifier()));
 							var columnSelectorValue = columnTransformation[NonTerminals.UnpivotValueSelector, NonTerminals.NullOrStringOrNumberLiteralOrParenthesisEnclosedStringOrIntegerLiteralList];
 							if (columnSelectorValue != null)
 							{

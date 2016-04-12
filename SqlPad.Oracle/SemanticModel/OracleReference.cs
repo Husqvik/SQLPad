@@ -81,11 +81,11 @@ namespace SqlPad.Oracle.SemanticModel
 				nodes.Add(ObjectNode);
 			}
 
-			nodes.AddRange(GetAdditionalIdentifierTerminals());
+			nodes.UnionWith(GetAdditionalIdentifierTerminals());
 
 			if (DatabaseLinkNode != null)
 			{
-				nodes.AddRange(DatabaseLinkNode.Terminals);
+				nodes.UnionWith(DatabaseLinkNode.Terminals);
 			}
 
 			return nodes;

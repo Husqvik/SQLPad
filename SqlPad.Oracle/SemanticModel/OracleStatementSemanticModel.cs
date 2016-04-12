@@ -1353,7 +1353,7 @@ namespace SqlPad.Oracle.SemanticModel
 					}
 
 					var terminalGroup = new List<StatementGrammarNode>(column.RootNode.Terminals);
-					_redundantTerminals.AddRange(terminalGroup);
+					_redundantTerminals.UnionWith(terminalGroup);
 
 					StatementGrammarNode commaTerminal;
 					if (!TryMakeRedundantIfComma(column.RootNode.PrecedingTerminal, out commaTerminal))

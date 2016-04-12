@@ -141,7 +141,7 @@ namespace SqlPad
 		private void BuildRedundantHashSet()
 		{
 			var redundantTerminals = _validationModels.Values.SelectMany(vm => vm.SemanticModel.RedundantSymbolGroups.SelectMany(g => g));
-			_redundantTerminals.AddRange(redundantTerminals);
+			_redundantTerminals.UnionWith(redundantTerminals);
 		}
 
 		private void BuildLineCommentDictionary(ITextRunConstructionContext context)
@@ -180,7 +180,7 @@ namespace SqlPad
 				.Where(kvp => !kvp.Value.IsRecognized)
 				.Select(kvp => kvp.Key);
 
-			_unrecognizedTerminals.AddRange(notRecognizedTerminals);
+			_unrecognizedTerminals.UnionWith(notRecognizedTerminals);
 		}
 
 		private void BuildProgramTerminalHashset()
@@ -190,7 +190,7 @@ namespace SqlPad
 				.Where(kvp => kvp.Value.IsRecognized && kvp.Key.Type == NodeType.Terminal)
 				.Select(kvp => kvp.Key);
 
-			_recognizedProgramTerminals.AddRange(recognizedProgramTerminalEnumerator);
+			_recognizedProgramTerminals.UnionWith(recognizedProgramTerminalEnumerator);
 		}
 
 		private void BuildLineTerminalDictionary(ITextRunConstructionContext context)
