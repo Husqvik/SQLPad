@@ -54,17 +54,11 @@ namespace SqlPad.Oracle.DataDictionary
 
 	public abstract class OracleDataObject : OracleSchemaObject
 	{
-		protected OracleDataObject()
-		{
-			Columns = new Dictionary<string, OracleColumn>();
-			Constraints = new List<OracleConstraint>();
-		}
-
 		public OrganizationType Organization { get; set; }
 
-		public ICollection<OracleConstraint> Constraints { get; set; }
+		public ICollection<OracleConstraint> Constraints { get; set; } = new List<OracleConstraint>();
 
-		public IDictionary<string, OracleColumn> Columns { get; set; }
+		public IDictionary<string, OracleColumn> Columns { get; set; } = new Dictionary<string, OracleColumn>();
 
 		public IEnumerable<OracleReferenceConstraint> ReferenceConstraints => Constraints.OfType<OracleReferenceConstraint>();
 	}
@@ -136,22 +130,15 @@ namespace SqlPad.Oracle.DataDictionary
 	[DebuggerDisplay("OracleTable (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
 	public class OracleTable : OracleDataObject
 	{
-		public OracleTable()
-		{
-			Partitions = new Dictionary<string, OraclePartition>();
-			PartitionKeyColumns = new List<string>();
-			SubPartitionKeyColumns = new List<string>();
-		}
-
 		public bool IsInternal { get; set; }
 
 		public override string Type => OracleObjectType.Table;
 
-	    public IDictionary<string, OraclePartition> Partitions { get; set; }
+	    public IDictionary<string, OraclePartition> Partitions { get; set; } = new Dictionary<string, OraclePartition>();
 
-		public ICollection<string> PartitionKeyColumns { get; set; }
+		public ICollection<string> PartitionKeyColumns { get; set; } = new List<string>();
 
-		public ICollection<string> SubPartitionKeyColumns { get; set; }
+		public ICollection<string> SubPartitionKeyColumns { get; set; } = new List<string>();
 	}
 
 	public abstract class OraclePartitionBase : OracleObject
@@ -185,36 +172,12 @@ namespace SqlPad.Oracle.DataDictionary
 
 	    public OracleSequence()
 		{
-			var nextValueColumn =
-				new OracleColumn
+		    Columns =
+				new []
 				{
-					Name = NormalizedColumnNameNextValue,
-					DataType =
-						new OracleDataType
-						{
-							FullyQualifiedName = OracleObjectIdentifier.Create(null, "INTEGER"),
-							Scale = 0
-						}
+					BuildSequencePseudoColumn(NormalizedColumnNameNextValue),
+					BuildSequencePseudoColumn(NormalizedColumnNameCurrentValue)
 				};
-
-			var currentValueColumn =
-				new OracleColumn
-				{
-					Name = NormalizedColumnNameCurrentValue,
-					DataType =
-						new OracleDataType
-						{
-							FullyQualifiedName = OracleObjectIdentifier.Create(null, "INTEGER"),
-							Scale = 0
-						}
-				};
-
-			Columns =
-				new List<OracleColumn>
-				{
-					nextValueColumn,
-					currentValueColumn
-				}.AsReadOnly();
 		}
 
 		public IReadOnlyList<OracleColumn> Columns { get; }
@@ -234,6 +197,21 @@ namespace SqlPad.Oracle.DataDictionary
 		public bool CanCycle { get; set; }
 
 		public override string Type => OracleObjectType.Sequence;
+
+		private static OracleColumn BuildSequencePseudoColumn(string normalizedName)
+		{
+			return
+				new OracleColumn
+				{
+					Name = normalizedName,
+					DataType =
+						new OracleDataType
+						{
+							FullyQualifiedName = OracleObjectIdentifier.Create(null, "INTEGER"),
+							Scale = 0
+						}
+				};
+		}
 	}
 
 	public interface IProgramCollection

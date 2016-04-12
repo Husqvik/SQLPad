@@ -1,4 +1,4 @@
-SQLPad 0.4.0.295
+SQLPad 0.4.0.296
 ================
 
 SQLPad is an experimental SQL editor focused to quick and comfortable work.
@@ -188,7 +188,7 @@ Requirements
 ------------
 Microsoft .NET 4.6
 
-[Oracle Data Access Components 12c - 32 bit](http://www.oracle.com/technetwork/topics/dotnet/downloads/net-downloads-160392.html) - unmanaged driver only (due to certain limitations of managed driver, e. g., lack of UDTs and XML types support)
+[Oracle Data Access Components 12c - 32 bit](http://www.oracle.com/technetwork/topics/dotnet/downloads/net-downloads-160392.html) - unmanaged driver preferred (due to certain limitations of managed driver, e. g., lack of UDTs types support)
 
 Configuration
 -------------
