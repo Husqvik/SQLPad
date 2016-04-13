@@ -81,15 +81,15 @@ namespace SqlPad
 				}
 
 				var timer = Stopwatch.StartNew();
-
-				using (var stream = File.Create(GetFullFileName(cacheFile.FileName)))
+				var fileName = GetFullFileName(cacheFile.FileName);
+				using (var stream = File.Create(fileName))
 				{
 					storeAction(stream);
 				}
 
 				timer.Stop();
 
-				Trace.WriteLine($"{DateTime.Now} - Cache for '{cacheKey}' stored in {timer.Elapsed}");
+				Trace.WriteLine($"{DateTime.Now} - Cache for '{cacheKey}' stored to '{fileName}' in {timer.Elapsed}");
 
 				using (var stream = File.Create(CacheConfigrationFileName))
 				{

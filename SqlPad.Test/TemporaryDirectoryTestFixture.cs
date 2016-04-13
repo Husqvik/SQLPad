@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
 using NUnit.Framework;
 
 namespace SqlPad.Test
@@ -19,6 +20,7 @@ namespace SqlPad.Test
 		{
 			WorkDocumentCollection.ReleaseConfigurationLock();
 			Directory.Delete(TempDirectoryName, true);
+			Trace.WriteLine($"Test temp directory '{TempDirectoryName}' has been deleted. ");
 		}
 	}
 }

@@ -469,5 +469,14 @@ namespace SqlPad.Oracle.Test
 			action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 19).SingleOrDefault(a => a.Name == SplitStringCommand.Title);
 			action.ShouldNotBe(null);
 		}
+
+		[Test(Description = @""), STAThread]
+		public void TestExpandViewCommmandAvailable()
+		{
+			const string query1 = @"SELECT * FROM v$session";
+
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 14).SingleOrDefault(a => a.Name == ExpandViewCommand.Title);
+			action.ShouldNotBe(null);
+		}
 	}
 }

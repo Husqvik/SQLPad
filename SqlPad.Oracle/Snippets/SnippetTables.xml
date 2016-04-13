@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Snippet Name="Table" Description="" xmlns="http://husqvik.com/SqlPad/2014/02" Rdbms="Oracle" Version="*">
+  <Text><![CDATA[SELECT * FROM all_tables WHERE table_name LIKE {0} ORDER BY table_name]]></Text>
+  <Description><![CDATA[Display database tables]]></Description>
+  <Parameters>
+    <Parameter Index="0" DefaultValue="table_name" />
+  </Parameters>
+  <AllowedTerminals>
+    <Terminal Id ="Analyze" />
+  </AllowedTerminals>
+</Snippet>

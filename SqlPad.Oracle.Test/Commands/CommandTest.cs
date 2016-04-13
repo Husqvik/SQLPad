@@ -2597,6 +2597,21 @@ MODEL
 		}
 
 		[Test(Description = @""), STAThread]
+		public void TestExpandViewCommand()
+		{
+			const string statementText = @"SELECT * FROM v$session";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 14;
+
+			ExecuteCommand(OracleCommands.ExpandView);
+
+			const string expectedResult = @"SELECT * FROM (SELECT dummy FROM dual) v$session";
+
+			_editor.Text.ShouldBe(expectedResult);
+			_editor.CaretOffset.ShouldBe(39);
+		}
+
+		[Test(Description = @""), STAThread]
 		public void TestGenerateCustomTypeCSharpWrapperClassCommand()
 		{
 			const string statementText = @"SELECT SYS.ODCIARGDESC() FROM DUAL";

@@ -489,6 +489,19 @@ END;",
 		}
 
 		[Test]
+		public async Task TestExtractViewText()
+		{
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
+			{
+				var viewIdentifier = new OracleObjectIdentifier(OracleObjectIdentifier.SchemaSys, "V_$SQL");
+				var viewText = await databaseModel.ObjectScriptExtractor.ExtractViewTextAsync(viewIdentifier, CancellationToken.None);
+				viewText.Length.ShouldBeGreaterThan(0);
+
+				Trace.WriteLine($"Expanded view {viewIdentifier}:{Environment.NewLine}{viewText}");
+			}
+		}
+
+		[Test]
 		public async Task TestSpecialFunctionSemanticValidity()
 		{
 			const string testQuery =

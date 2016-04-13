@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Snippet Name="Object" Description="" xmlns="http://husqvik.com/SqlPad/2014/02" Rdbms="Oracle" Version="*">
+  <Text><![CDATA[SELECT * FROM all_objects WHERE object_id = {0} ORDER BY object_name]]></Text>
+  <Description><![CDATA[Display database objects]]></Description>
+  <Parameters>
+    <Parameter Index="0" DefaultValue="object_id" />
+  </Parameters>
+  <AllowedTerminals>
+    <Terminal Id ="Analyze" />
+  </AllowedTerminals>
+</Snippet>

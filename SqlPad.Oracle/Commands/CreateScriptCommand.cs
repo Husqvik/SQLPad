@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using SqlPad.Commands;
-using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.DataDictionary;
 using SqlPad.Oracle.SemanticModel;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
@@ -71,7 +70,7 @@ namespace SqlPad.Oracle.Commands
 
 			var storeToClipboard = settingsModel.UseDefaultSettings != null && !settingsModel.UseDefaultSettings();
 
-			var databaseModel = (OracleDatabaseModelBase)ExecutionContext.DocumentRepository.ValidationModels[CurrentNode.Statement].SemanticModel.DatabaseModel;
+			var databaseModel = SemanticModel.DatabaseModel;
 
 			var script = await databaseModel.ObjectScriptExtractor.ExtractSchemaObjectScriptAsync(_schemaObject, cancellationToken);
 			if (String.IsNullOrEmpty(script))
@@ -103,11 +102,12 @@ namespace SqlPad.Oracle.Commands
 			}
 			else
 			{
-				var addedSegment = new TextSegment
-				{
-					IndextStart = indextStart,
-					Text = builder.ToString()
-				};
+				var addedSegment =
+					new TextSegment
+					{
+						IndextStart = indextStart,
+						Text = builder.ToString()
+					};
 
 				ExecutionContext.SegmentsToReplace.Add(addedSegment);
 			}

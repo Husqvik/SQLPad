@@ -42,6 +42,7 @@ namespace SqlPad.Commands
 				}
 				catch (Exception exception)
 				{
+					OnAfterFailure();
 					ShowErrorMessage(exception);
 				}
 			}
@@ -50,6 +51,8 @@ namespace SqlPad.Commands
 		protected virtual void OnBeforeExecute() { }
 
 		protected virtual void OnAfterExecute() { }
+
+		protected virtual void OnAfterFailure() { }
 
 		private async void ExecuteLongOperation()
 		{
@@ -110,9 +113,19 @@ namespace SqlPad.Commands
 
 		protected override void OnAfterExecute()
 		{
+			EnableAndFocusEditor();
+			GenericCommandHandler.UpdateDocument(_textEditor, ContextAction.ExecutionContext);
+		}
+
+		protected override void OnAfterFailure()
+		{
+			EnableAndFocusEditor();
+		}
+
+		private void EnableAndFocusEditor()
+		{
 			_textEditor.IsEnabled = true;
 			_textEditor.Focus();
-			GenericCommandHandler.UpdateDocument(_textEditor, ContextAction.ExecutionContext);
 		}
 	}
 }

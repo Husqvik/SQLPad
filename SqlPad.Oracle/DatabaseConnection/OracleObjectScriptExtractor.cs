@@ -10,6 +10,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 		Task<string> ExtractSchemaObjectScriptAsync(OracleObject schemaObject, CancellationToken cancellationToken);
 
 		Task<string> ExtractNonSchemaObjectScriptAsync(string objectName, string objectType, CancellationToken cancellationToken);
+
+		Task<string> ExtractViewTextAsync(OracleObjectIdentifier viewIdentifier, CancellationToken cancellationToken);
 	}
 
 	public class OracleObjectScriptExtractor : IOracleObjectScriptExtractor
@@ -24,20 +26,29 @@ namespace SqlPad.Oracle.DatabaseConnection
 		public async Task<string> ExtractSchemaObjectScriptAsync(OracleObject schemaObject, CancellationToken cancellationToken)
 		{
 			var scriptDataProvider = new ObjectScriptDataProvider(schemaObject);
-			return await ExtractScriptInternal(cancellationToken, scriptDataProvider);
+			await UpdateDataModel(cancellationToken, scriptDataProvider);
+			return scriptDataProvider.ScriptText;
 		}
 
 		public async Task<string> ExtractNonSchemaObjectScriptAsync(string objectName, string objectType, CancellationToken cancellationToken)
 		{
 			var scriptDataProvider = new ObjectScriptDataProvider(objectName, objectType);
-			return await ExtractScriptInternal(cancellationToken, scriptDataProvider);
+			await UpdateDataModel(cancellationToken, scriptDataProvider);
+			return scriptDataProvider.ScriptText;
 		}
 
-		private async Task<string> ExtractScriptInternal(CancellationToken cancellationToken, ObjectScriptDataProvider scriptDataProvider)
+		public async Task<string> ExtractViewTextAsync(OracleObjectIdentifier viewIdentifier, CancellationToken cancellationToken)
+		{
+			var dataModel = new ViewDetailModel();
+			var viewDetailsDataProvider = new ViewDetailDataProvider(dataModel, viewIdentifier, _databaseModel.Version);
+			await UpdateDataModel(cancellationToken, viewDetailsDataProvider);
+			return dataModel.Text;
+		}
+
+		private async Task UpdateDataModel(CancellationToken cancellationToken, IModelDataProvider scriptDataProvider)
 		{
 			var connectionString = OracleConnectionStringRepository.GetBackgroundConnectionString(_databaseModel.ConnectionString.ConnectionString);
 			await OracleDatabaseModel.UpdateModelAsync(connectionString, _databaseModel.CurrentSchema, cancellationToken, false, scriptDataProvider);
-			return scriptDataProvider.ScriptText;
 		}
 	}
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using SqlPad.Oracle.DatabaseConnection;
@@ -207,6 +208,56 @@ namespace SqlPad.Oracle.ModelDataProviders
 		public static bool HasInMemorySupport(Version oracleVersion)
 		{
 			return String.CompareOrdinal(oracleVersion.ToString(), "12.1.0.2") >= 0;
+		}
+	}
+
+	public class ViewDetailModel : ModelBase
+	{
+		private string _text;
+
+		public string Text
+		{
+			get { return _text; }
+			set { UpdateValueAndRaisePropertyChanged(ref _text, value); }
+		}
+	}
+
+	internal class ViewDetailDataProvider : ModelDataProvider<ViewDetailModel>
+	{
+		private static readonly Regex RegexRemoveViewOption = new Regex(@"\s+WITH\s+READ\s+ONLY\s*$", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Multiline);
+
+		private readonly OracleObjectIdentifier _objectIdentifier;
+		private readonly Version _oracleVersion;
+
+		public ViewDetailDataProvider(ViewDetailModel dataModel, OracleObjectIdentifier objectIdentifier, Version oracleVersion)
+			: base(dataModel)
+		{
+			_objectIdentifier = objectIdentifier;
+			_oracleVersion = oracleVersion;
+		}
+
+		public override void InitializeCommand(OracleCommand command)
+		{
+			command.CommandText = OracleDatabaseCommands.SelectViewSelectCommand;
+			command.InitialLONGFetchSize = Int32.MaxValue;
+			command.AddSimpleParameter("OWNER", _objectIdentifier.Owner.Trim('"'));
+			command.AddSimpleParameter("VIEW_NAME", _objectIdentifier.Name.Trim('"'));
+		}
+
+		public override async Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
+		{
+			if (!await reader.ReadAsynchronous(cancellationToken))
+			{
+				return;
+			}
+
+			var target_column =
+				_oracleVersion.Major < OracleDatabaseModelBase.VersionMajorOracle12C || Convert.ToInt32(reader["TEXT_LENGTH"]) > 4000
+					? "TEXT"
+					: "TEXT_VC";
+
+			var viewText = OracleReaderValueConvert.ToString(reader[target_column]);
+			DataModel.Text = RegexRemoveViewOption.Replace(viewText, String.Empty).TrimStart();
 		}
 	}
 

@@ -19,10 +19,7 @@ namespace SqlPad.Oracle.Commands
 
 		private static void ExecutionHandlerImplementation(ActionExecutionContext executionContext)
 		{
-			if (executionContext.DocumentRepository == null)
-				return;
-
-			var currentNode = executionContext.DocumentRepository.Statements.GetTerminalAtPosition(executionContext.CaretOffset, n => n.Id.IsAlias());
+			var currentNode = executionContext.DocumentRepository?.Statements.GetTerminalAtPosition(executionContext.CaretOffset, n => n.Id.IsAlias());
 			if (currentNode == null)
 				return;
 
@@ -77,15 +74,15 @@ namespace SqlPad.Oracle.Commands
 				return;
 
 			foreach (var columnReference in queryBlock.AllColumnReferences
-				.Where(c => c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeObjectReferences.Single() == objectReference &&
-				            c.ObjectNode != null))
+				.Where(c => c.ColumnNodeObjectReferences.Count == 1 && c.ColumnNodeObjectReferences.Single() == objectReference && c.ObjectNode != null))
 			{
-				segmentsToReplace.Add(new TextSegment
-				                      {
-										  IndextStart = columnReference.ObjectNode.SourcePosition.IndexStart,
-										  Length = columnReference.ObjectNode.SourcePosition.Length,
-										  Text = objectReference.ObjectNode.Token.Value
-				                      });
+				segmentsToReplace.Add(
+					new TextSegment
+					{
+						IndextStart = columnReference.ObjectNode.SourcePosition.IndexStart,
+						Length = columnReference.ObjectNode.SourcePosition.Length,
+						Text = objectReference.ObjectNode.Token.Value
+					});
 			}
 
 			segmentsToReplace.Add(new TextSegment

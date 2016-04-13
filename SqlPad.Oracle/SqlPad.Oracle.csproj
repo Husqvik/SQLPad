@@ -84,6 +84,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CodeCompletionSearchHelper.cs" />
+    <Compile Include="Commands\ExpandViewCommand.cs" />
     <Compile Include="Commands\SplitStringCommand.cs" />
     <Compile Include="Commands\PropagateColumnCommand.cs" />
     <Compile Include="Commands\AddCreateTableAsCommand.cs" />
@@ -322,6 +323,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Snippets\SnippetSelectCount.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Snippets\SnippetObjects.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Snippets\SnippetTables.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <EmbeddedResource Include="OracleSqlGrammar.xml">

@@ -30,6 +30,7 @@ namespace SqlPad.Oracle.Commands
 		public static readonly CommandExecutionHandler ConvertOrderByNumberColumnReferences = OracleCommandBase.CreateStandardExecutionHandler<ConvertOrderByNumberColumnReferencesCommand>("ConvertOrderByNumberColumnReferences");
 		public static readonly CommandExecutionHandler CreateScript = OracleCommandBase.CreateStandardExecutionHandler<CreateScriptCommand>("CreateScript");
 		public static readonly CommandExecutionHandler ExpandAsterisk = OracleCommandBase.CreateStandardExecutionHandler<ExpandAsteriskCommand>("ExpandAsterisk");
+		public static readonly CommandExecutionHandler ExpandView = OracleCommandBase.CreateStandardExecutionHandler<ExpandViewCommand>("ExpandView");
 		public static readonly CommandExecutionHandler GenerateCustomTypeCSharpWrapperClass = OracleCommandBase.CreateStandardExecutionHandler<GenerateCustomTypeCSharpWrapperClassCommand>("GenerateCustomTypeCSharpWrapperClass");
 		public static readonly CommandExecutionHandler PropagateColumn = OracleCommandBase.CreateStandardExecutionHandler<PropagateColumnCommand>("PropagateColumn");
 		public static readonly CommandExecutionHandler SplitString = OracleCommandBase.CreateStandardExecutionHandler<SplitStringCommand>("SplitString");

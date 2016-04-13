@@ -43,5 +43,10 @@ TABLESPACE ""TBS_HQ_PDB""";
 		{
 			return Task.FromResult(TablespaceCreateScript);
 		}
+
+		public Task<string> ExtractViewTextAsync(OracleObjectIdentifier viewIdentifier, CancellationToken cancellationToken)
+		{
+			return Task.FromResult("SELECT dummy FROM dual");
+		}
 	}
 }
