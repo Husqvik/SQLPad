@@ -7,21 +7,18 @@ using SqlPad.Commands;
 
 namespace SqlPad
 {
-	/// <summary>
-	/// Interaction logic for EditDialog.xaml
-	/// </summary>
 	public partial class EditDialog : ICommandSettingsProvider
 	{
-		private readonly CommandSettingsModel _model;
-
-		public EditDialog(CommandSettingsModel model)
+		public EditDialog(CommandSettingsModel settings)
 		{
-			if (model == null)
-				throw new ArgumentNullException(nameof(model));
+			if (settings == null)
+			{
+				throw new ArgumentNullException(nameof(settings));
+			}
 
 			InitializeComponent();
 
-			_model = model;
+			Settings = settings;
 		}
 
 		private void CloseClickHandler(object sender, RoutedEventArgs e)
@@ -32,11 +29,11 @@ namespace SqlPad
 
 		private void LoadedHandler(object sender, RoutedEventArgs e)
 		{
-			DataContext = _model;
+			DataContext = Settings;
 
-			if (_model.ValidationRule != null)
+			if (Settings.ValidationRule != null)
 			{
-				BindingOperations.GetBinding(TextValue, TextBox.TextProperty).ValidationRules.Add(_model.ValidationRule);
+				BindingOperations.GetBinding(TextValue, TextBox.TextProperty).ValidationRules.Add(Settings.ValidationRule);
 				BindingOperations.GetBindingExpression(TextValue, TextBox.TextProperty).UpdateSource();
 			}
 
@@ -46,14 +43,14 @@ namespace SqlPad
 
 		public bool GetSettings()
 		{
-			if (_model.UseDefaultSettings != null && _model.UseDefaultSettings())
+			if (Settings.UseDefaultSettings != null && Settings.UseDefaultSettings())
 				return true;
 
 			var result = ShowDialog();
 			return result.HasValue && result.Value;
 		}
 
-		public CommandSettingsModel Settings { get { return _model; } }
+		public CommandSettingsModel Settings { get; }
 
 		private void SelectItemCommandExecutedHandler(object sender, ExecutedRoutedEventArgs e)
 		{

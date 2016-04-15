@@ -112,39 +112,40 @@ Context actions
 ---------------
 #####@SELECT:
 
-Wrap current query block as inline view
+Add CREATE TABLE AS
 
-Wrap current query block as common table expression
-
-Unquote - makes all query block columns case insensitive
-
-Unnest inline view
+Clean redundant symbols
 
 Toggle quoted notation
 
 Toggle fully qualified references
 
-Clean redundant symbols
+Unnest inline view
 
-Add CREATE TABLE AS
+Unquote - makes all query block columns case insensitive
+
+Wrap current query block as common table expression
+
+Wrap current query block as inline view
 
 
 #####@Identifier:
-
-Clean redundant symbols
-
-Resolve ambiguous column
-
-Propagate column
-
-Create script
 
 Add missing column
 
 Add to GROUP BY
 
-Wrap current query block as inline view
+Clean redundant symbols
 
+Create script
+
+Expand view
+
+Propagate column
+
+Resolve ambiguous column
+
+Wrap current query block as inline view
 
 #####@Row source:
 
@@ -155,10 +156,9 @@ Create script
 
 #####@Bind variable:
 
-Convert to literal
-
 Convert ORDER BY number column reference
 
+Convert to literal
 
 #####@Literal
 
