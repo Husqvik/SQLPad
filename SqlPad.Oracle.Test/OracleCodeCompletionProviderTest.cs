@@ -22,7 +22,7 @@ namespace SqlPad.Oracle.Test
 			OracleConfiguration.Configuration.Formatter.FormatOptions.Reset();
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCodeCompletionAfterEachCharacter()
 		{
 			const string query =
@@ -44,7 +44,7 @@ SELECT * FROM CTE JOIN DUAL ON TO_CHAR(VAL) <> DUMMY CROSS APPLY (SELECT * FROM 
 			}
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestObjectSuggestionWithSchema()
 		{
 			const string testQuery = "SELECT I.*, INVOICES.ID FROM HUSQVIK.INVOICELINES I JOIN HUSQVIK.INVOICES";
@@ -57,7 +57,7 @@ SELECT * FROM CTE JOIN DUAL ON TO_CHAR(VAL) <> DUMMY CROSS APPLY (SELECT * FROM 
 			items[9].Text.ShouldBe("VIEW_INSTANTSEARCH");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestJoinTypeSuggestion()
 		{
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, "SELECT I.*, INVOICES.ID FROM HUSQVIK.INVOICELINES I ", 52, true, OracleCodeCompletionCategory.JoinMethod).ToArray();
@@ -73,7 +73,7 @@ SELECT * FROM CTE JOIN DUAL ON TO_CHAR(VAL) <> DUMMY CROSS APPLY (SELECT * FROM 
 			items[4].Category.ShouldBe(OracleCodeCompletionCategory.JoinMethod);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnSuggestionAtTheBeginningOfColumnNameWhenAlreadyEntered()
 		{
 			const string testQuery = "SELECT I.*, INVOICES.ID FROM HUSQVIK.INVOICELINES I JOIN HUSQVIK.INVOICES";
@@ -86,7 +86,7 @@ SELECT * FROM CTE JOIN DUAL ON TO_CHAR(VAL) <> DUMMY CROSS APPLY (SELECT * FROM 
 			items[2].Name.ShouldBe(TerminalValues.RowIdPseudocolumn);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestObjectSuggestionInUnfinishedStatements()
 		{
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, "SELECT * FROM INVOICES JOIN INVOICE;SELECT * FROM INVOICELINES JOIN INVOICE", 35).ToArray();
@@ -103,7 +103,7 @@ SELECT * FROM CTE JOIN DUAL ON TO_CHAR(VAL) <> DUMMY CROSS APPLY (SELECT * FROM 
 			items[0].Text.ShouldBe("INVOICES");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestJoinConditionSuggestions()
 		{
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, "SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P", 50).ToArray();
@@ -116,7 +116,7 @@ SELECT * FROM CTE JOIN DUAL ON TO_CHAR(VAL) <> DUMMY CROSS APPLY (SELECT * FROM 
 			items[0].InsertOffset.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestJoinConditionSuggestionsAfterOnKeyword()
 		{
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, "SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P ON", 53).ToArray();
@@ -129,7 +129,7 @@ SELECT * FROM CTE JOIN DUAL ON TO_CHAR(VAL) <> DUMMY CROSS APPLY (SELECT * FROM 
 			items[0].InsertOffset.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestJoinConditionSuggestionsWhenJoiningNestedSubquery()
 		{
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, "SELECT * FROM (SELECT 1 VAL FROM DUAL) T1 JOIN (SELECT 1 VAL FROM DUAL) T2 ", 75).ToArray();
@@ -139,7 +139,7 @@ SELECT * FROM CTE JOIN DUAL ON TO_CHAR(VAL) <> DUMMY CROSS APPLY (SELECT * FROM 
 			items[0].InsertOffset.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestJoinConditionSuggestionForTablesWithForeignKeys()
 		{
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, "SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P ON S.PROJECT_ID = P.PROJECT_ID JOIN RESPONDENTBUCKET B ", 106).ToArray();
@@ -152,7 +152,7 @@ SELECT * FROM CTE JOIN DUAL ON TO_CHAR(VAL) <> DUMMY CROSS APPLY (SELECT * FROM 
 			items[1].InsertOffset.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestJoinConditionSuggestionAfterTableFunctionClause()
 		{
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, "SELECT * FROM SELECTION JOIN TABLE(PIPELINED_FUNCTION) T ON ", 60).ToArray();
@@ -160,7 +160,7 @@ SELECT * FROM CTE JOIN DUAL ON TO_CHAR(VAL) <> DUMMY CROSS APPLY (SELECT * FROM 
 			// TODO: Add proper implementation
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestJoinConditionSuggestionForTablesWithoutForeignKeys()
 		{
 			const string query1 = @"WITH
@@ -179,7 +179,7 @@ FROM
 			items[0].InsertOffset.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestObjectSuggestionInJoinClauseWithPartialName()
 		{
 			const string query1 = @"SELECT S.* FROM SELECTION S JOIN P";
@@ -197,7 +197,7 @@ FROM
 			items[3].Text.ShouldBe("TARGETGROUP");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCommonTableExpressionSuggestion()
 		{
 			const string query1 = @"WITH
@@ -217,7 +217,7 @@ FROM
 			items[1].Text.ShouldBe("CTE2");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestObjectSuggestionAfterEnteredSchema()
 		{
 			const string query1 = @"SELECT * FROM SYS.";
@@ -232,7 +232,7 @@ FROM
 			items[1].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSuggestionWhenEnteringNewColumn()
 		{
 			const string query1 = @"SELECT 1,  FROM SELECTION S";
@@ -284,7 +284,7 @@ FROM
 			items[15].Category.ShouldBe(OracleCodeCompletionCategory.DatabaseSchema);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSchemaSuggestionInSelectListWhenPartiallyEntered()
 		{
 			const string query1 = @"SELECT HU FROM DUAL";
@@ -296,7 +296,7 @@ FROM
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.DatabaseSchema);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestTableSuggestionWithPartialName()
 		{
 			const string query1 = @"SELECT 1 FROM SYSTEM.C";
@@ -305,7 +305,7 @@ FROM
 			items.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnSuggestionForMultipleTables()
 		{
 			const string query1 = @"SELECT SELECTION. FROM SELECTION, TARGETGROUP";
@@ -336,7 +336,7 @@ FROM
 			items.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestJoinTypeSuggestionInChainedJoinClause()
 		{
 			const string query1 = @"SELECT NULL FROM SELECTION S LEFT JOIN RESPONDENTBUCKET ON S.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID ";
@@ -349,7 +349,7 @@ FROM
 			items[4].Text.ShouldBe("CROSS JOIN");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSchemaSuggestionInJoinConditionWhenAlreadyEnteredAndOnlyOneOptionRemains()
 		{
 			const string query1 = @"SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P ON S.PROJECT_ID = P.PROJECT_ID";
@@ -358,7 +358,7 @@ FROM
 			items.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestTableSuggestionInJoinConditionWhenAlreadyEnteredAndOnlyOneOptionRemains()
 		{
 			const string query1 = @"SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P ON S.PROJECT_ID = P.PROJECT_ID";
@@ -367,7 +367,7 @@ FROM
 			items.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnSuggestionWithAlias()
 		{
 			const string query1 = @"SELECT D FROM DUAL";
@@ -385,7 +385,7 @@ FROM
 			items[0].Text.ShouldBe("X.DUMMY");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestTableSuggestionWhenWithinScalarSubquery()
 		{
 			const string query1 = @"SELECT NULL FROM DUAL WHERE DUMMY = (SELECT * FROM DUAL)";
@@ -394,7 +394,7 @@ FROM
 			items.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestNoColumnSuggestedWhenOnlyOneOptionExistsAndAlreadyInPlace()
 		{
 			const string query1 = @"SELECT SELECTION.NAME FROM SELECTION";
@@ -403,7 +403,7 @@ FROM
 			items.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnSuggestionAfterDotInGroupByClause()
 		{
 			const string query1 = @"SELECT * FROM PROJECT P GROUP BY P.";
@@ -422,7 +422,7 @@ FROM
 			items[3].StatementNode.ShouldBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestObjectsAreSuggestedAfterFromTerminal()
 		{
 			const string query1 = @"SELECT * FROM ";
@@ -431,7 +431,7 @@ FROM
 			items.Length.ShouldBeGreaterThan(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestNothingIsSuggestedWhenOnFromTerminal()
 		{
 			const string query1 = @"SELECT * FROM ";
@@ -440,7 +440,7 @@ FROM
 			items.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUniqueOrDistinctKeywordSuggestion()
 		{
 			const string query1 = @"SELECT ";
@@ -449,7 +449,7 @@ FROM
 			items.Length.ShouldBe(2);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestObjectSuggestionInChainedFromClause()
 		{
 			const string query1 = @"SELECT NULL FROM SELECTION, ";
@@ -466,7 +466,7 @@ FROM
 			return targetObject != null && schemaObject.Owner.In(OracleTestDatabaseModel.Instance.CurrentSchema, OracleObjectIdentifier.SchemaPublic) && targetObject.Type.In(OracleObjectType.Table, OracleObjectType.View);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnSuggestionWhenTableWithSchemaInFromClause()
 		{
 			const string query1 = @"SELECT  1 FROM SYS.DUAL";
@@ -478,7 +478,7 @@ FROM
 			items[6].Name.ShouldBe("XMLTYPE");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAsteriskIsNotSuggestedWithinNestedExpression()
 		{
 			const string query1 = @"SELECT CASE WHEN S. FROM SELECTION S";
@@ -491,7 +491,7 @@ FROM
 			items[5].Name.ShouldBe("SELECTION_ID");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestJoinConditionWhenCommonTableExpressionColumnsAreNotAliased()
 		{
 			const string query1 = @"WITH X AS (SELECT 1 FROM DUAL), Y AS (SELECT 1 FROM DUAL) SELECT * FROM X JOIN Y ";
@@ -501,7 +501,7 @@ FROM
 			items[0].Name.ShouldBe("ON X.\"1\" = Y.\"1\"");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestObjectAndSchemaSuggestionWhenTypingSubquery()
 		{
 			const string query1 = @"SELECT NULL FROM (SELECT NULL FROM )";
@@ -510,7 +510,7 @@ FROM
 			items.Length.ShouldBeGreaterThan(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSchemaObjectSuggestionWhenTypingSubqueryAfterDotAfterSchema()
 		{
 			const string query1 = @"SELECT NULL FROM (SELECT NULL FROM HUSQVIK.)";
@@ -520,7 +520,7 @@ FROM
 			items[0].StatementNode.ShouldBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnSuggestionWhenQueryContainsNonAliasedSubquery()
 		{
 			const string query1 = @"SELECT  FROM (SELECT HUSQVIK.SELECTION.NAME FROM HUSQVIK.SELECTION), HUSQVIK.SELECTION";
@@ -529,7 +529,7 @@ FROM
 			items.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnSuggestionAfterDotInTheMiddleOfSelectList()
 		{
 			const string query1 = @"SELECT S.NAME, S., 'My column2' FROM SELECTION S";
@@ -544,7 +544,7 @@ FROM
 			items[6].StatementNode.ShouldBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestJoinNotSuggestedAfterUnrecognizedToken()
 		{
 			const string query1 = @"SELECT NULL FROM SELECTION + ";
@@ -553,7 +553,7 @@ FROM
 			items.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSuggestionWhenJustBeforeClosingParanthesis()
 		{
 			const string query1 = @"SELECT NULL FROM (SELECT NULL FROM DUAL,)";
@@ -562,7 +562,7 @@ FROM
 			items.Length.ShouldBeGreaterThan(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSuggestionWhenJustAtCommaWhenPrecedingTokenAlreadyEntered()
 		{
 			const string query1 = @"SELECT NULL FROM (SELECT NULL FROM DUAL,)";
@@ -571,7 +571,7 @@ FROM
 			items.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSuggestionWhenAtSelectKeyword()
 		{
 			const string query1 = @"SELECT NAME FROM SELECTION";
@@ -580,7 +580,7 @@ FROM
 			items.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnSuggestionUsingNestedQueryAndCountAsteriskFunction()
 		{
 			const string query1 = @"SELECT  DUMMY FROM (SELECT DUMMY, COUNT(*) OVER () ROW_COUNT FROM (SELECT DUMMY FROM DUAL))";
@@ -593,7 +593,7 @@ FROM
 			items[2].Name.ShouldBe("ROW_COUNT");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestPackageAndFunctionSuggestion()
 		{
 			const string query1 = @"SELECT HUSQVIK. FROM DUAL";
@@ -612,7 +612,7 @@ FROM
 			items[8].StatementNode.ShouldBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestPackageOrFunctionNotSuggestedWhenAtSchemaToken()
 		{
 			const string query1 = @"SELECT HUSQVIK. FROM DUAL";
@@ -621,7 +621,7 @@ FROM
 			items.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestPackageFunctionSuggestionWhenAlreadyEntered()
 		{
 			const string query1 = @"SELECT HUSQVIK.SQLPAD FROM DUAL";
@@ -635,7 +635,7 @@ FROM
 			items[0].StatementNode.ShouldNotBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestPackageFunctionSuggestionDoesNotContainParameterListWhenAlreadyEnteredWithParameterList()
 		{
 			const string query1 = @"SELECT HUSQVIK.SQLFUNCTION('PARAMETER') FROM DUAL";
@@ -649,7 +649,7 @@ FROM
 			items[1].StatementNode.ShouldNotBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestNodeReplacementWhenAtTokenStartAndTokenAlreadyExists()
 		{
 			const string query1 = @"SELECT HUSQVIK.SFUNCTION('PARAMETER') FROM DUAL";
@@ -660,7 +660,7 @@ FROM
 			items[0].StatementNode.ShouldNotBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestPackageFunctionNotSuggestedWhenSameFunctionAlreadyEntered()
 		{
 			const string query1 = @"SELECT HUSQVIK.SQLPAD.SQLPAD_FUNCTION('') FROM DUAL";
@@ -669,7 +669,7 @@ FROM
 			items.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestPackageFunctionSuggestion()
 		{
 			const string query1 = @"SELECT HUSQVIK.SQLPAD. FROM DUAL";
@@ -693,7 +693,7 @@ FROM
 			items[2].StatementNode.ShouldBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestJoinConditionNotSuggestedForNonAliasedSubquery()
 		{
 			const string query1 = @"SELECT * FROM (SELECT PROJECT_ID FROM PROJECT) JOIN PROJECT ";
@@ -702,7 +702,7 @@ FROM
 			items.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestResolveProgramOverloadsFilteredByCurrentArgumentIndex()
 		{
 			const string query1 = @"SELECT ROUND(1.23, 1) FROM DUAL";
@@ -716,7 +716,7 @@ FROM
 			items[0].ReturnedDatatype.ShouldBe("NUMBER");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestResolveProgramOverloadsWithParameterlessOverload()
 		{
 			const string query1 = @"SELECT DBMS_RANDOM.VALUE(1, 2) FROM DUAL";
@@ -734,7 +734,7 @@ FROM
 			items[1].ReturnedDatatype.ShouldBe("NUMBER");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestResolveProgramOverloadsInUserDefinedTypeConstructor()
 		{
 			const string query1 = @"SELECT SYS.ODCIARGDESC() FROM DUAL";
@@ -748,7 +748,7 @@ FROM
 			items[0].ReturnedDatatype.ShouldBe("SYS.ODCIARGDESC");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestResolveProgramOverloadsInUserDefinedCollectionTypeConstructorAtNonFirstParameter()
 		{
 			const string query1 = @"SELECT SYS.ODCIRAWLIST(NULL, NULL) FROM DUAL";
@@ -762,7 +762,7 @@ FROM
 			items[0].ReturnedDatatype.ShouldBe("SYS.ODCIRAWLIST");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestResolveProgramOverloadsWithinPlSqlContext()
 		{
 			const string query1 = @"BEGIN dbms_output.put_line(''); END;";
@@ -772,7 +772,7 @@ FROM
 			items.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestResolveProgramOverloadsOutsideTerminal()
 		{
 			const string query1 = @"SELECT ROUND(1.23, 1) FROM DUAL";
@@ -783,7 +783,7 @@ FROM
 			items[0].CurrentParameterIndex.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestResolveProgramOverloadsWithNonSchemaFunction()
 		{
 			const string query1 = @"SELECT MAX(DUMMY) FROM DUAL";
@@ -798,7 +798,7 @@ FROM
 			items[0].ReturnedDatatype.ShouldBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestResolveProgramOverloadsWithStatementDefinedFunction()
 		{
 			const string query1 =
@@ -815,7 +815,7 @@ SELECT F1(NULL) FROM DUAL";
 			items[0].ReturnedDatatype.ShouldBe("NUMBER");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestResolveProgramOverloadsWithNonSchemaAggregateAndAnalyticFunction()
 		{
 			const string query1 = @"SELECT COUNT(*) FROM DUAL";
@@ -830,7 +830,7 @@ SELECT F1(NULL) FROM DUAL";
 			items[0].ReturnedDatatype.ShouldBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnSuggestionWhenIdentifierWithQuotedNotation()
 		{
 			const string query1 = @"SELECT IL."""" FROM INVOICELINES IL";
@@ -840,7 +840,7 @@ SELECT F1(NULL) FROM DUAL";
 			items[0].Text.ShouldBe("\"CaseSensitiveColumn\"");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestPackageFunctionSuggestionWhenPackageContainsMoreFunctions()
 		{
 			const string query1 = @"SELECT DBMS_R FROM DUAL";
@@ -851,7 +851,7 @@ SELECT F1(NULL) FROM DUAL";
 			items[0].Text.ShouldBe("DBMS_RANDOM.");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestTableSuggestionInTheMiddleOfQuotedNotation()
 		{
 			const string query1 = @"SELECT * FROM ""CaseUnknownTable""";
@@ -862,7 +862,7 @@ SELECT F1(NULL) FROM DUAL";
 			items[0].CaretOffset.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSuggestionWhenTypingDatabaseLinkIdentifier()
 		{
 			const string query1 = @"SELECT * FROM CUSTOMER@H";
@@ -877,7 +877,7 @@ SELECT F1(NULL) FROM DUAL";
 			items[1].Text.ShouldBe("TESTHOST.SQLPAD.HUSQVIK.COM@HQINSTANCE");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSuggestionAtSecondStatementBeginningWithFirstStatementEndingWithQuotedIdentifier()
 		{
 			const string query1 =
@@ -890,7 +890,7 @@ se";
 			items.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestTableSuggestionAfterQuoteCharacter()
 		{
 			const string query1 = @"SELECT * FROM ""CaseUnknownTable""";
@@ -900,7 +900,7 @@ se";
 			items[0].Text.ShouldBe("\"CaseSensitiveTable\"");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCodeCompletionWhenTypingOrderAfterTableNameInFromClause()
 		{
 			const string query1 = @"SELECT * FROM ""CaseUnknownTable"" OR";
@@ -911,7 +911,7 @@ se";
 			items[0].StatementNode.ShouldNotBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCodeCompletionWhenTypingWithinParentheses()
 		{
 			const string statement = @"SELECT SQLPAD.SQLPAD_FUNCTION(D) FROM DUAL";
@@ -922,7 +922,7 @@ se";
 			items[8].Text.ShouldBe("DUMP()");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCodeCompletionWhenUsingNameParts()
 		{
 			const string statement = @"SELECT * FROM SenTab";
@@ -931,7 +931,7 @@ se";
 			items[0].Text.ShouldBe("\"CaseSensitiveTable\"");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestNoParenthesesFunctionCodeCompletionWhenUsingNameParts()
 		{
 			const string statement = @"SELECT SeTiZo FROM DUAL";
@@ -941,7 +941,7 @@ se";
 			items[0].Text.ShouldBe("SESSIONTIMEZONE");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCodeCompletionInComment()
 		{
 			const string statement = @"SELECT /*+ PARALLEL */ DUMMY FROM DUAL";
@@ -949,7 +949,7 @@ se";
 			items.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestTruncFunctionSpecialParameterCompletion()
 		{
 			const string statement = @"SELECT TRUNC(SYSDATE, 'IW') FROM DUAL";
@@ -965,7 +965,7 @@ se";
 			items[10].StatementNode.ShouldNotBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestNumberToYearToMonthIntervalFunctionSpecialParameterCompletion()
 		{
 			const string statement = @"SELECT NUMTOYMINTERVAL(1, '') FROM DUAL";
@@ -979,7 +979,7 @@ se";
 			items[1].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestNumberToDayToSecondIntervalFunctionSpecialParameterCompletion()
 		{
 			const string statement = @"SELECT NUMTODSINTERVAL(1, '') FROM DUAL";
@@ -999,7 +999,7 @@ se";
 			items[3].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestRoundFunctionSpecialParameterCompletion()
 		{
 			const string statement = @"SELECT ROUND(SYSDATE, 'IW') FROM DUAL";
@@ -1015,7 +1015,7 @@ se";
 			items[10].StatementNode.ShouldNotBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestTruncSpecialParameterCompletionWithNoParameterToken()
 		{
 			const string statement = @"SELECT TRUNC(SYSDATE, ) FROM DUAL";
@@ -1031,7 +1031,7 @@ se";
 			items[10].StatementNode.ShouldBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestToCharSpecialParameterCompletion()
 		{
 			const string statement = @"SELECT TO_CHAR(12.34, '9G999D00', '') FROM DUAL";
@@ -1042,7 +1042,7 @@ se";
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestDbmsMetadataObjectTypeSpecialParameterCompletion()
 		{
 			const string statement = @"SELECT dbms_metadata.get_ddl() FROM dual";
@@ -1056,7 +1056,7 @@ se";
 			items[72].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestToCharSpecialParameterCompletionAtIncompatibleParameterIndex()
 		{
 			const string statement = @"SELECT TO_CHAR('12.34', '9G999D00', '') FROM DUAL";
@@ -1064,7 +1064,7 @@ se";
 			items.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestToCharFormatParameterCompletion()
 		{
 			const string statement = @"SELECT TO_CHAR(12.34, '9G999D00', '') FROM DUAL";
@@ -1078,7 +1078,7 @@ se";
 			items[33].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSysContextSpecialParameterCompletion()
 		{
 			const string statement = @"SELECT SYS_CONTEXT('USERENV', '') FROM DUAL";
@@ -1092,7 +1092,7 @@ se";
 			items[58].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSysContextUserContextNamespaceCompletion()
 		{
 			const string statement = @"SELECT SYS_CONTEXT('', '') FROM DUAL";
@@ -1112,7 +1112,7 @@ se";
 			items[3].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSysContextUserContextNamespaceCompletionWithEmptyParameterList()
 		{
 			const string statement = @"SELECT SYS_CONTEXT() FROM DUAL";
@@ -1132,7 +1132,7 @@ se";
 			items[3].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSysContextUserContextAttributeCompletion()
 		{
 			const string statement = @"SELECT SYS_CONTEXT('TEST_context_1', '') FROM DUAL";
@@ -1149,7 +1149,7 @@ se";
 			items[2].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSysContextUserContextAttributeCompletionWithQuotedIdentifierNamespace()
 		{
 			const string statement = @"SELECT SYS_CONTEXT(q'|Special'Context|', ) FROM DUAL";
@@ -1160,7 +1160,7 @@ se";
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSysContextSpecialParameterCompletionWithIncompatibleNamespace()
 		{
 			const string statement = @"SELECT SYS_CONTEXT(X || 'USERENV', '') FROM DUAL";
@@ -1168,7 +1168,7 @@ se";
 			items.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestConvertSpecialParameterCompletion()
 		{
 			const string statement = @"SELECT CONVERT('sample text', '', '') FROM DUAL";
@@ -1182,7 +1182,7 @@ se";
 			items[1].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCryptoHashSpecialParameterCompletion()
 		{
 			const string statement = @"SELECT DBMS_CRYPTO.HASH(HEXTORAW ('FF'), ) FROM DUAL";
@@ -1196,7 +1196,7 @@ se";
 			items[5].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCryptoHashSpecialParameterWithExistingLiteralCompletion()
 		{
 			const string statement = @"SELECT DBMS_CRYPTO.HASH(HEXTORAW ('FF'), 1) FROM DUAL";
@@ -1210,7 +1210,7 @@ se";
 			items[5].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestTableIdentifierAndAllTableColumnCompletion()
 		{
 			const string statement = @"SELECT SEL FROM SELECTION, RESPONDENTBUCKET";
@@ -1228,7 +1228,7 @@ se";
 			items[2].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnCodeCompletionWithStatementWithoutQueryBlock()
 		{
 			const string statement = @"UPDATE SELECTION SET PROJECT_ID = 998 WHERE E";
@@ -1236,7 +1236,7 @@ se";
 			items.Count.ShouldBe(10);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnCodeCompletionOfSubqueryMainObjectReference()
 		{
 			const string statement = @"DELETE (SELECT * FROM SELECTION) WHERE SELECTION_ID = 0";
@@ -1247,7 +1247,7 @@ se";
 			items[0].CaretOffset.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSequenceObjectCodeCompletion()
 		{
 			const string statement = @"SELECT SEQ FROM SELECTION";
@@ -1263,7 +1263,7 @@ se";
 			items[1].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSchemaTypeCodeCompletion()
 		{
 			const string statement = @"SELECT XML FROM SELECTION";
@@ -1275,7 +1275,7 @@ se";
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSchemaTypeCodeCompletionWithSchemaQualifier()
 		{
 			const string statement = @"SELECT SYS.XML FROM SELECTION";
@@ -1287,7 +1287,7 @@ se";
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSequenceObjectCodeCompletionInSubquery()
 		{
 			const string statement = @"SELECT * FROM (SELECT SEQ FROM SELECTION)";
@@ -1295,7 +1295,7 @@ se";
 			items.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestOtherSchemaObjectCodeCompletionThroughSynonymWithInaccessibleTargetObject()
 		{
 			const string statement = @"SELECT INACESSIBLE FROM DUAL";
@@ -1303,7 +1303,7 @@ se";
 			items.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCaretOffsetWhenTypingSourceRowSource()
 		{
 			const string statement = @"SELECT * FROM SELECTIO";
@@ -1320,7 +1320,7 @@ se";
 			items[2].CaretOffset.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSequenceSuggestionInInsertValuesClause()
 		{
 			const string statement = @"INSERT INTO SELECTION (SELECTION_ID) VALUES (SEQ)";
@@ -1334,7 +1334,7 @@ se";
 			items[1].CaretOffset.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSynonymPackageSuggestion()
 		{
 			const string statement = @"SELECT DBMS_RA FROM DUAL";
@@ -1345,7 +1345,7 @@ se";
 			items[0].CaretOffset.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSynonymPackageFunctionSuggestion()
 		{
 			const string statement = @"SELECT DBMS_RANDOM.STR FROM DUAL";
@@ -1356,7 +1356,7 @@ se";
 			items[0].CaretOffset.ShouldBe(-1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSynonymFunctionSuggestion()
 		{
 			const string statement = @"SELECT SYNONYM_TO_SQLPAD_FUNC FROM DUAL";
@@ -1367,7 +1367,7 @@ se";
 			items[0].CaretOffset.ShouldBe(-1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestPackageSuggestionWhenPackageNameTypedFromMiddle()
 		{
 			const string statement = @"SELECT RANDOM FROM DUAL";
@@ -1379,7 +1379,7 @@ se";
 			items[0].CaretOffset.ShouldBe(0);
 		}
 		
-		[Test(Description = @"")]
+		[Test]
 		public void TestIdentifierItemsNotSuggestedWhenInStringLiteral()
 		{
 			const string statement = @"SELECT 'string FROM DUAL";
@@ -1387,7 +1387,7 @@ se";
 			items.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnIdentifierSuggestionInUpdateSetClause()
 		{
 			const string statement = @"UPDATE SELECTION SET NAME = 'Dummy name' WHERE SELECTION_ID = 0";
@@ -1403,7 +1403,7 @@ se";
 			items[2].CaretOffset.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnIdentifierSuggestionWithoutIdentifier()
 		{
 			const string statement = @"UPDATE SELECTION SET ";
@@ -1419,7 +1419,7 @@ se";
 			items[3].CaretOffset.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestTableSuggestionWhenTypingUpdateCommand()
 		{
 			const string statement = @"UPDATE SEL";
@@ -1427,7 +1427,7 @@ se";
 			AssertTableSuggestionWhenTypingUpdateOrDeleteCommand(items);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestTableSuggestionWhenTypingDeleteCommand()
 		{
 			const string statement = @"DELETE SEL";
@@ -1452,7 +1452,7 @@ se";
 			items[2].CaretOffset.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestTableSuggestionWhenTypingDeleteCommandWithSchema()
 		{
 			const string statement = @"DELETE HUSQVIK.SEL";
@@ -1468,7 +1468,7 @@ se";
 			items[1].CaretOffset.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestBuiltInNonSchemaFunctionSuggestion()
 		{
 			const string statement = @"SELECT LAST_V FROM DUAL";
@@ -1480,7 +1480,7 @@ se";
 			items[0].CaretOffset.ShouldBe(-9);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSuggestionInSubsequentEmptySelectListItem()
 		{
 			const string statement = @"SELECT DUMMY, , DUMMY FROM DUAL";
@@ -1492,7 +1492,7 @@ se";
 			items[0].CaretOffset.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnSuggestionFromQuotedFullyQualifiedTable()
 		{
 			const string statement = "SELECT P FROM \"eng\".\"BlacklistPanels\"";
@@ -1500,7 +1500,7 @@ se";
 			items.Count.ShouldBe(3);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSchemaObjectSuggestionInFromClauseBeforeClosingParenthesis()
 		{
 			const string statement = "SELECT * FROM (SELECT * FROM D)";
@@ -1508,7 +1508,7 @@ se";
 			items.Count.ShouldBeGreaterThan(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnAliasSuggestionInOrderByClause()
 		{
 			const string statement = "SELECT LENGTH(DUMMY) COLUMN_NAME FROM DUAL ORDER BY C";
@@ -1521,7 +1521,7 @@ se";
 			items[0].StatementNode.ShouldNotBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestDirectReferenceColumnAliasSuggestionInOrderByClauseUsingForcedInvocation()
 		{
 			const string statement = "SELECT DUMMY COLUMN_NAME FROM DUAL ORDER BY ";
@@ -1539,7 +1539,7 @@ se";
 			items[1].StatementNode.ShouldBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestDistinctFunctionSuggestionWhenMultipleOverloadExist()
 		{
 			const string statement = "SELECT TO_CH FROM DUAL";
@@ -1552,7 +1552,7 @@ se";
 			items[0].StatementNode.ShouldNotBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestFunctionSuggestionWithExistingParameterListWhenCursorIsJustAtOpeningParenthesis()
 		{
 			const string statement = "SELECT ROUN(1) FROM DUAL";
@@ -1565,7 +1565,7 @@ se";
 			items[0].StatementNode.ShouldNotBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestForcedColumnSuggestionJustAfterWhereKeyword()
 		{
 			const string statement = "SELECT * FROM DUAL WHERE ";
@@ -1573,7 +1573,7 @@ se";
 			items.Count.ShouldBeGreaterThan(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestForcedColumnSuggestionJustAfterGroupByKeyword()
 		{
 			const string statement = "SELECT * FROM DUAL GROUP BY ";
@@ -1581,7 +1581,7 @@ se";
 			items.Count.ShouldBeGreaterThan(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestForcedColumnSuggestionJustAfterHavingKeyword()
 		{
 			const string statement = "SELECT * FROM DUAL GROUP BY 1 HAVING ";
@@ -1589,7 +1589,7 @@ se";
 			items.Count.ShouldBeGreaterThan(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestForcedColumnSuggestionJustAfterOrderByKeyword()
 		{
 			const string statement = "SELECT * FROM DUAL ORDER BY ";
@@ -1597,7 +1597,7 @@ se";
 			items.Count.ShouldBeGreaterThan(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestForcedObjectSuggestionAfterSchemaAndDotInFromClause()
 		{
 			const string statement = "SELECT * FROM HUSQVIK.";
@@ -1606,7 +1606,7 @@ se";
 			items[0].StatementNode.ShouldBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestNoSuggestionAvailableJustAfterAsterisk()
 		{
 			const string statement = "SELECT * FROM DUAL";
@@ -1614,7 +1614,7 @@ se";
 			items.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestNoSuggestionAvailableWhenTypingColumnAlias()
 		{
 			const string statement = "SELECT DUMMY D, DUMMY FROM DUAL";
@@ -1622,7 +1622,7 @@ se";
 			items.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSuggestionAvailableAtAsteriskStartIndex()
 		{
 			const string statement = "SELECT * FROM DUAL";
@@ -1631,7 +1631,7 @@ se";
 			items[0].StatementNode.ShouldNotBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestNodeToReplaceWhenTypingWhereCondition()
 		{
 			const string statement = "SELECT DUMMY FROM DUAL WHERE D";
@@ -1640,7 +1640,7 @@ se";
 			items[0].StatementNode.ShouldNotBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestNameBasedJoinConditionSuggestionWhenChainedJoinClauseAlreadyExists()
 		{
 			const string statement = "SELECT * FROM DUAL D1 JOIN DUAL  JOIN DUAL D2 ON D1.DUMMY = D2.DUMMY";
@@ -1653,7 +1653,7 @@ se";
 			items[0].StatementNode.ShouldBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestChildToParentForeignKeyBasedJoinConditionSuggestionWhenChainedJoinClauseAlreadyExists()
 		{
 			const string statement = "SELECT * FROM SELECTION S JOIN RESPONDENTBUCKET  JOIN TARGETGROUP ON RB.TARGETGROUP_ID = TARGETGROUP.TARGETGROUP_ID";
@@ -1666,7 +1666,7 @@ se";
 			items[0].StatementNode.ShouldBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestParentToChildForeignKeyBasedJoinConditionSuggestionWhenChainedJoinClauseAlreadyExists()
 		{
 			const string statement = "SELECT * FROM RESPONDENTBUCKET RB JOIN SELECTION  JOIN TARGETGROUP ON RB.TARGETGROUP_ID = TARGETGROUP.TARGETGROUP_ID";
@@ -1679,7 +1679,7 @@ se";
 			items[0].StatementNode.ShouldBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestFunctionsNotDuplicatedWhenSuggested()
 		{
 			const string statement = "SELECT UNCOMPILABLE_F FROM DUAL";
@@ -1688,7 +1688,7 @@ se";
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.SchemaFunction);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestFunctionSuggestionWhenTypingWithinSameColumnBeforeExistingExpression()
 		{
 			const string statement = "SELECT ROUN DBMS_RANDOM.VALUE FROM DUAL";
@@ -1696,7 +1696,7 @@ se";
 			items.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSchemaFunctionsNotSuggestedWhenSuggestingPackageFunctions()
 		{
 			const string statement = "SELECT DBMS_RANDOM.NORMAL FROM DUAL";
@@ -1704,7 +1704,7 @@ se";
 			items.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestDbmsRandomStringSpecialParameterCompletion()
 		{
 			const string statement = @"SELECT DBMS_RANDOM.STRING() FROM DUAL";
@@ -1718,7 +1718,7 @@ se";
 			items[4].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSysDateFunctionAsReservedWord()
 		{
 			const string statement = @"SELECT ROWNU FROM DUAL";
@@ -1730,7 +1730,7 @@ se";
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.PackageFunction);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestRowIdCodeCompletionWhenOnlyChoice()
 		{
 			const string statement = @"SELECT DUAL.ROWI FROM DUAL";
@@ -1741,7 +1741,7 @@ se";
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.Pseudocolumn);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestKeywordCompletion()
 		{
 			const string statement = @"SELECT * FROM DUAL ";
@@ -1759,7 +1759,7 @@ se";
 			items.ForEach(i => i.StatementNode.ShouldBe(null));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestKeywordCompletionAfterGroupByClause()
 		{
 			const string statement = @"SELECT * FROM DUAL GROUP BY 1 ";
@@ -1774,7 +1774,7 @@ se";
 			items.ForEach(i => i.StatementNode.ShouldBe(null));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestKeywordCompletionAfterWhereClauseWhemTyping()
 		{
 			const string statement = @"SELECT * FROM DUAL WHERE 1 = 1 GR";
@@ -1784,7 +1784,7 @@ se";
 			items[0].StatementNode.ShouldNotBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestKeywordCompletionWhenKeywordAlreadyInPlace()
 		{
 			const string statement = @"SELECT * FROM DUAL ORDER BY 1";
@@ -1792,7 +1792,7 @@ se";
 			items.Count.ShouldBe(0);
 		}
 		
-		[Test(Description = @"")]
+		[Test]
 		public void TestKeywordCompletionInAnalyticClause()
 		{
 			const string statement = @"SELECT COUNT(*) OVER (P) FROM DUAL";
@@ -1802,7 +1802,7 @@ se";
 			items[0].StatementNode.ShouldNotBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestKeywordCompletionInAnalyticClauseAfterUnparsedToken()
 		{
 			const string statement = @"SELECT COUNT(*) OVER (PART ) FROM DUAL";
@@ -1810,7 +1810,7 @@ se";
 			items.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCompletionNodeToReplaceWhenSuggestingAsterisk()
 		{
 			const string statement = @"SELECT SELECTION. FROM SELECTION";
@@ -1819,7 +1819,7 @@ se";
 			items[0].StatementNode.ShouldBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCompletionNodeToReplaceJustAfterDotAfterObjectQualifierWhenColumnStartsNotAtCaret()
 		{
 			const string statement = @"SELECT SELECTION. CREATED FROM SELECTION";
@@ -1828,7 +1828,7 @@ se";
 			items[0].StatementNode.ShouldBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSequencePseudocolumnSuggestion()
 		{
 			const string statement = @"SELECT TEST_SEQ.N FROM DUAL";
@@ -1839,7 +1839,7 @@ se";
 			items[0].StatementNode.ShouldNotBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSequencePseudocolumnSuggestionRightAfterDot()
 		{
 			const string statement = @"SELECT TEST_SEQ. FROM DUAL";
@@ -1853,7 +1853,7 @@ se";
 			items[1].StatementNode.ShouldBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSequencePseudocolumnSuggestionWhenAlreadyInPlace()
 		{
 			const string statement = @"SELECT TEST_SEQ.NEXTVAL FROM DUAL";
@@ -1861,7 +1861,7 @@ se";
 			items.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCodeCompletionWhenInvokedAfterSet()
 		{
 			const string statement = @"UPDATE HUSQVIK.SELECTION SET ";
@@ -1870,7 +1870,7 @@ se";
 			items[0].StatementNode.ShouldBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestTableReferenceColumnCompletionWhenColumnExistsButInaccessible()
 		{
 			const string statement =
@@ -1885,7 +1885,7 @@ FROM
 			items.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestObjectSuggestionWhenUsingUnfinishedQuotedIdentifier()
 		{
 			const string testQuery = "SELECT * FROM \"CaseSensitive";
@@ -1897,7 +1897,7 @@ FROM
 			items[0].StatementNode.ShouldNotBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSchemaQualifiedObjectSuggestionWhenUsingUnfinishedQuotedIdentifier()
 		{
 			const string testQuery = "SELECT * FROM HUSQVIK.\"CaseSensitive";
@@ -1909,7 +1909,7 @@ FROM
 			items[0].StatementNode.ShouldNotBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnSuggestionWhenUsingUnfinishedQuotedIdentifier()
 		{
 			const string testQuery = "SELECT * FROM \"CaseSensitiveTable\" WHERE \"CaseSensitiveCol";
@@ -1921,7 +1921,7 @@ FROM
 			items[0].StatementNode.ShouldNotBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestKeywordSuggestionJustBeforeClosingParenthesis()
 		{
 			const string testQuery = "SELECT COUNT(D) FROM DUAL";
@@ -1932,7 +1932,7 @@ FROM
 			items[0].StatementNode.Token.Value.ShouldBe("D");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestKeywordSuggestionJustBeforeClosingParenthesisInWhereClause()
 		{
 			const string testQuery = "SELECT * FROM (SELECT * FROM DUAL WH)";
@@ -1944,7 +1944,7 @@ FROM
 			items[0].StatementNode.Token.Value.ShouldBe("WH");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnSuggestionAtReservedWordRepresentingFunction()
 		{
 			const string testQuery = "SELECT USER FROM DUAL";
@@ -1953,7 +1953,7 @@ FROM
 			items.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSuggestionAfterOpeningQuoteInOrderByClause()
 		{
 			const string testQuery = "SELECT * FROM DUAL ORDER BY \"";
@@ -1962,7 +1962,7 @@ FROM
 			items.Length.ShouldBeGreaterThan(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestForcedSuggestionWhenChainingCondition()
 		{
 			const string testQuery = "SELECT * FROM V$SESSION WHERE SID = 72 AND ";
@@ -1971,7 +1971,7 @@ FROM
 			items.Length.ShouldBeGreaterThan(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestJoinConditionSuggestionBeforeClosingParenthesis()
 		{
 			const string testQuery = @"SELECT NULL FROM DUAL WHERE EXISTS (SELECT NULL FROM DUAL T1 JOIN DUAL T2 )";
@@ -1980,7 +1980,7 @@ FROM
 			items.Length.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCommonTableExpressionSuggestionWhenContainsConcatenatedSuquery()
 		{
 			const string testQuery =
@@ -1995,7 +1995,7 @@ SELECT * FROM CTE";
 			items.Length.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestDataObjectSuggestionWhenNameContainsReservedWord()
 		{
 			const string testQuery =
@@ -2010,7 +2010,7 @@ SELECT * FROM ALL";
 			items[0].StatementNode.ShouldNotBe(null);
 		}
 
-		[Test(Description = @""), Ignore]
+		[Test, Ignore]
 		public void TestFunctionSuggestionBeforeStringParameter()
 		{
 			const string testQuery = @"SELECT DBMS_CRYPTO.HASH(HEXTO '', 1) FROM DUAL";
@@ -2021,7 +2021,7 @@ SELECT * FROM ALL";
 			items[0].StatementNode.ShouldNotBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestJoinConditionSuggestionWithNonAliasedInlineView()
 		{
 			const string testQuery = @"SELECT * FROM SELECTION LEFT JOIN (SELECT 1 SELECTION_ID FROM DUAL) ON ";
@@ -2030,7 +2030,7 @@ SELECT * FROM ALL";
 			items.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCodeCompletionForExplicitPartition()
 		{
 			const string statement = @"SELECT * FROM INVOICES PARTITION (P)";
@@ -2044,7 +2044,7 @@ SELECT * FROM ALL";
 			items[1].StatementNode.Token.Value.ShouldBe("P");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCodeCompletionForExplicitSubPartition()
 		{
 			const string statement = @"SELECT * FROM INVOICES SUBPARTITION ()";
@@ -2060,7 +2060,7 @@ SELECT * FROM ALL";
 			items[3].StatementNode.ShouldBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCodeCompletionWithSchemaQualification()
 		{
 			const string statement = @"SELECT * FROM HUSQVIK.";
@@ -2070,7 +2070,7 @@ SELECT * FROM ALL";
 			items[0].InsertOffset.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestDataTypeCodeCompletion()
 		{
 			const string statement = @"SELECT CAST(NULL AS V) FROM DUAL";
@@ -2090,7 +2090,7 @@ SELECT * FROM ALL";
 			items[5].Category.ShouldBe(OracleCodeCompletionCategory.DatabaseSchema);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestExtractElementCompletion()
 		{
 			const string statement = @"SELECT EXTRACT( FROM SYSDATE) FROM DUAL";
@@ -2104,7 +2104,7 @@ SELECT * FROM ALL";
 			items[9].Category.ShouldBe(OracleCodeCompletionCategory.Keyword);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestExtractElementCompletionWithExistingToken()
 		{
 			const string statement = @"SELECT EXTRACT(DAY FROM SYSDATE) FROM DUAL";
@@ -2118,7 +2118,7 @@ SELECT * FROM ALL";
 			items[8].Category.ShouldBe(OracleCodeCompletionCategory.Keyword);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestExtractFunctionCodeCompletion()
 		{
 			const string statement = @"SELECT EXTRAC FROM DUAL";
@@ -2131,7 +2131,7 @@ SELECT * FROM ALL";
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.BuiltInFunction);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestQuotedBindVariableCodeCompletionWhileTyping()
 		{
 			const string statement = @"SELECT NULL FROM DUAL WHERE DUMMY = (SELECT NULL FROM :""""";
@@ -2139,7 +2139,7 @@ SELECT * FROM ALL";
 			items.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestIntervalCodeCompletion()
 		{
 			const string statement = @"SELECT CAST(NULL AS INTERVAL DAY TO ) FROM DUAL";
@@ -2150,7 +2150,7 @@ SELECT * FROM ALL";
 			items[0].StatementNode.ShouldBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAggregateMaxFunctionSuggestion()
 		{
 			const string statement = @"SELECT MA FROM DUAL";
@@ -2162,7 +2162,7 @@ SELECT * FROM ALL";
 			items[0].StatementNode.ShouldNotBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCorrelatedSubqueryColumnSuggestion()
 		{
 			const string statement = @"SELECT * FROM SELECTION WHERE NOT EXISTS (SELECT NULL FROM RESPONDENTBUCKET WHERE RESPONDENTBUCKET_ID = SELECTION.R)";
@@ -2170,24 +2170,24 @@ SELECT * FROM ALL";
 			items.Length.ShouldBeGreaterThan(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSuggestionInUpdateSubquery()
 		{
 			const string statement = @"UPDATE (SELECT DUAL.DUMMY FROM DUAL JOIN DUAL TARGET ON D)";
-			Assert.DoesNotThrow(() => CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 57));
+			Should.NotThrow(() => CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 57));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSuggestionInMergeSubquery()
 		{
 			const string statement =
 @"MERGE INTO EVENTS
 USING (SELECT :EVENT_ID, COUNTER FROM DUAL LEFT JOIN EVENTS ON E) SRC
 ON (EVENTS.ID = SRC.ID)";
-			Assert.DoesNotThrow(() => CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 83));
+			Should.NotThrow(() => CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 83));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCorrelatedSubqueryColumnSuggestionWhenSameTableInBothSubqueries()
 		{
 			const string statement = @"SELECT * FROM SELECTION WHERE EXISTS (SELECT NULL FROM SELECTION WHERE SELECTION.)";
@@ -2201,7 +2201,7 @@ ON (EVENTS.ID = SRC.ID)";
 			items[5].Name.ShouldBe("SELECTION_ID");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSuggestionAfterColonStartingBindVariable()
 		{
 			const string statement = @"SELECT COUNT(*) FROM SELECTION WHERE SELECTION_ID = :";
@@ -2210,7 +2210,7 @@ ON (EVENTS.ID = SRC.ID)";
 			items.ForEach(i => i.Category.ShouldBe(OracleCodeCompletionCategory.BindVariable));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSuggestionAfterColonStartingBindVariableBeforeClosingParenthesis()
 		{
 			const string statement = @"SELECT TO_DATE(:) FROM DUAL";
@@ -2219,7 +2219,7 @@ ON (EVENTS.ID = SRC.ID)";
 			items.ForEach(i => i.Category.ShouldBe(OracleCodeCompletionCategory.BindVariable));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestNextDaySpecialParameterCompletion()
 		{
 			const string statement = @"SELECT NEXT_DAY(SYSDATE, ) FROM DUAL";
@@ -2235,14 +2235,14 @@ ON (EVENTS.ID = SRC.ID)";
 			items[6].Name.ShouldBe("Wednesday");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestDatabaseLinkSuggestionWhenUnfinishedQuotedIdentifier()
 		{
 			const string statement = @"SELECT * FROM ""Respondent""@""HQ_PDB_LOOPBACK";
-			Assert.DoesNotThrow(() => CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 43));
+			Should.NotThrow(() => CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 43));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestJoinCodeCompletionAtClosingParenthesis()
 		{
 			const string statement = @"SELECT NULL FROM (SELECT NULL FROM RESPONDENTBUCKET J)";
@@ -2250,7 +2250,7 @@ ON (EVENTS.ID = SRC.ID)";
 			items.Count.ShouldBeGreaterThan(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnCodeCompletionWhenStartingChainedSetClause()
 		{
 			const string statement = @"UPDATE DUAL SET DUMMY = NULL, ";
@@ -2258,7 +2258,7 @@ ON (EVENTS.ID = SRC.ID)";
 			items.Count.ShouldBeGreaterThan(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnCodeCompletionInIntoColumnList()
 		{
 			const string statement = @"INSERT INTO DUAL (D";
@@ -2266,7 +2266,7 @@ ON (EVENTS.ID = SRC.ID)";
 			items.Count.ShouldBeGreaterThan(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnAliasSuggestionInPartitionByClauseInOrderByClause()
 		{
 			const string statement = @"SELECT COUNT(DUMMY) DUMMY FROM DUAL ORDER BY COUNT(DUAL.DUMMY) OVER (ORDER BY D)";
@@ -2274,7 +2274,7 @@ ON (EVENTS.ID = SRC.ID)";
 			items.Count.ShouldBeGreaterThan(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestJoinTypeSuggestingWithCursorAtClosingParenthesis()
 		{
 			const string statement = @"(SELECT count(*) FROM dual JO)";
@@ -2283,7 +2283,7 @@ ON (EVENTS.ID = SRC.ID)";
 			items[0].StatementNode.FirstTerminalNode.Token.Value.ShouldBe("JO");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAsteriskSuggestionWithInvisibleColumns()
 		{
 			const string statement = @"SELECT T. FROM ""CaseSensitiveTable"" T";
@@ -2292,7 +2292,7 @@ ON (EVENTS.ID = SRC.ID)";
 			items[0].Text.ShouldBe("\"CaseSensitiveColumn\", T.VIRTUAL_COLUMN");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestFunctionSuggestionRepresentedByKeyword()
 		{
 			OracleConfiguration.Configuration.Formatter.FormatOptions.Identifier = FormatOption.Lower;
@@ -2304,7 +2304,7 @@ ON (EVENTS.ID = SRC.ID)";
 			items[0].Text.ShouldBe("EXISTS");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestRegexModifierParameterSuggestion()
 		{
 			const string statement = @"SELECT regexp_replace (null, null, null, 1, 0, '') FROM dual";
@@ -2326,7 +2326,7 @@ ON (EVENTS.ID = SRC.ID)";
 				return new OracleCodeCompletionType(documentRepository, statementText, cursorPosition);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestCodeCompletionTypeAfterOnTerminalWithinJoinCondition()
 			{
 				const string statement = @"SELECT CUSTOMER. FROM CUSTOMER JOIN COMPANY ON ";
@@ -2338,7 +2338,7 @@ ON (EVENTS.ID = SRC.ID)";
 				completionType.DataType.ShouldBe(false);
 			}
 
-			[Test(Description = @""), Ignore]
+			[Test, Ignore]
 			public void TestCodeCompletionTypeAfterExistingConditionInJoinClause()
 			{
 				const string statement = @"SELECT * FROM SELECTION JOIN RESPONDENTBUCKET ON SELECTION.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET AND ";
@@ -2349,7 +2349,7 @@ ON (EVENTS.ID = SRC.ID)";
 				completionType.SpecialFunctionParameter.ShouldBe(false);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestCodeCompletionTypeAtTheEndOnTerminalWithinJoinCondition()
 			{
 				const string statement = @"SELECT CUSTOMER. FROM CUSTOMER JOIN COMPANY ON ";
@@ -2360,7 +2360,7 @@ ON (EVENTS.ID = SRC.ID)";
 				completionType.DataType.ShouldBe(false);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestCodeCompletionTypeWithinFunctionParameterList()
 			{
 				const string statement = @"SELECT SQLPAD.SQLPAD_FUNCTION(D) FROM DUAL";
@@ -2376,7 +2376,7 @@ ON (EVENTS.ID = SRC.ID)";
 				completionType.DataType.ShouldBe(false);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestCodeCompletionTypeWithinChainedFunctionParameterList()
 			{
 				const string statement = @"SELECT LENGTH(SELECTION.NAME) + LENGTH(N) FROM SELECTION";
@@ -2392,7 +2392,7 @@ ON (EVENTS.ID = SRC.ID)";
 				completionType.DataType.ShouldBe(false);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestCodeCompletionTypeAfterSchemaOrObjectIdentifierCandidate()
 			{
 				const string statement = @"SELECT CUSTOMER. FROM CUSTOMER JOIN COMPANY ON ";
@@ -2409,7 +2409,7 @@ ON (EVENTS.ID = SRC.ID)";
 				completionType.DataType.ShouldBe(false);
 			}
 			
-			[Test(Description = @"")]
+			[Test]
 			public void TestCodeCompletionTypeAfterSemicolonAfterExpectedJoinCondition()
 			{
 				const string statement = @"SELECT I.*, INVOICES.ID FROM HUSQVIK.INVOICELINES I JOIN HUSQVIK.INVOICES;";
@@ -2427,7 +2427,7 @@ ON (EVENTS.ID = SRC.ID)";
 				completionType.DataType.ShouldBe(false);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestCodeCompletionTypeWhenTypingDatabaseLinkIdentifier()
 			{
 				const string statement = @"SELECT * FROM CUSTOMER@H";
@@ -2445,7 +2445,7 @@ ON (EVENTS.ID = SRC.ID)";
 				completionType.DataType.ShouldBe(false);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestCodeCompletionTypeWhenTypingColumnAliasInOrderByClause()
 			{
 				const string statement = @"SELECT LENGTH(DUMMY) COLUMN_NAME FROM DUAL ORDER BY C";
@@ -2455,7 +2455,7 @@ ON (EVENTS.ID = SRC.ID)";
 				completionType.DataType.ShouldBe(false);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestCodeCompletionTypeInFromClauseInCorrelatedSubquery()
 			{
 				const string statement = @"SELECT * FROM SELECTION WHERE SELECTIONNAME IN (SELECT * FROM SELE)";
@@ -2465,7 +2465,7 @@ ON (EVENTS.ID = SRC.ID)";
 				completionType.DataType.ShouldBe(false);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestCodeCompletionTypeWhenWritingChainedJoinClause()
 			{
 				const string statement = @"SELECT * FROM SELECTION JOIN RESPONDENTBUCKET ON SELECTION.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID J";
@@ -2475,14 +2475,14 @@ ON (EVENTS.ID = SRC.ID)";
 				completionType.DataType.ShouldBe(false);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestCodeCompletionTypeWithMissingSelectList()
 			{
 				const string statement = @"SELECT FROM V$TRANSACTION";
 				InitializeCodeCompletionType(statement, 7);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestCodeCompletionTypeWhenWritingInsertIntoTarget()
 			{
 				const string statement = @"INSERT INTO S";
@@ -2491,7 +2491,7 @@ ON (EVENTS.ID = SRC.ID)";
 				completionType.DataType.ShouldBe(false);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestCodeCompletionTypeWhenInvokedAfterInsertInto()
 			{
 				const string statement = @"INSERT INTO ";
@@ -2500,7 +2500,7 @@ ON (EVENTS.ID = SRC.ID)";
 				completionType.DataType.ShouldBe(false);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestKeywordClauseCodeCompletionTypeWhenInvokedWithinNonAggregateFunction()
 			{
 				const string statement = @"SELECT NVL() FROM DUAL";
@@ -2509,7 +2509,7 @@ ON (EVENTS.ID = SRC.ID)";
 				completionType.DataType.ShouldBe(false);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestKeywordClauseCodeCompletionTypeWhenTypingSelectDistinct()
 			{
 				const string statement = @"SELECT DIS";
@@ -2518,7 +2518,7 @@ ON (EVENTS.ID = SRC.ID)";
 				completionType.DataType.ShouldBe(false);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestCodeCompletionTypeForExplicitPartition()
 			{
 				const string statement = @"SELECT * FROM INVOICES PARTITION (P)";
@@ -2528,7 +2528,7 @@ ON (EVENTS.ID = SRC.ID)";
 				completionType.DataType.ShouldBe(false);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestCodeCompletionTypeForExplicitSubPartition()
 			{
 				const string statement = @"SELECT * FROM INVOICES SUBPARTITION ()";
@@ -2540,7 +2540,7 @@ ON (EVENTS.ID = SRC.ID)";
 				completionType.DataType.ShouldBe(false);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestCodeCompletionTypeForDataType()
 			{
 				const string statement = @"SELECT CAST(NULL AS ) FROM DUAL";
@@ -2548,7 +2548,7 @@ ON (EVENTS.ID = SRC.ID)";
 				completionType.DataType.ShouldBe(true);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestCodeCompletionTypeForDataTypeWithExistingToken()
 			{
 				const string statement = @"SELECT CAST(NULL AS NUMBER) FROM DUAL";
@@ -2556,7 +2556,7 @@ ON (EVENTS.ID = SRC.ID)";
 				completionType.DataType.ShouldBe(true);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestCodeCompletionTypeInFromClauseInSubqueryWithinJoinClause()
 			{
 				const string statement = @"SELECT NULL FROM SELECTION S1 JOIN SELECTION S2 ON S1.SELECTION_ID = S2.SELECTION_ID AND S2.PROJECT_ID >= (SELECT MIN(PROJECT_ID) FROM )";
@@ -2568,7 +2568,7 @@ ON (EVENTS.ID = SRC.ID)";
 			{
 				public class SelectList
 				{
-					[Test(Description = @"")]
+					[Test]
 					public void TestReferenceIdentifiersWhenCursorAtIdentifierOfAlreadyEnteredFullyQualifiedColumnIdentifier()
 					{
 						const string statement = @"SELECT HUSQVIK.SELECTION.SELECTION_ID FROM HUSQVIK.SELECTION";
@@ -2582,7 +2582,7 @@ ON (EVENTS.ID = SRC.ID)";
 						referenceIdentifier.IdentifierEffectiveValue.ShouldBe("SELE");
 					}
 
-					[Test(Description = @"")]
+					[Test]
 					public void TestReferenceIdentifiersWhenCursorAtIdentifierOfAlreadyEnteredFullyQualifiedPackageFunctionIdentifier()
 					{
 						const string statement = @"SELECT HUSQVIK.SQLPAD.SQLPAD_FUNCTION() FROM DUAL";
@@ -2596,7 +2596,7 @@ ON (EVENTS.ID = SRC.ID)";
 						referenceIdentifier.IdentifierEffectiveValue.ShouldBe("SQL");
 					}
 
-					[Test(Description = @"")]
+					[Test]
 					public void TestReferenceIdentifiersWhenCursorAtIdentifierOfAlreadyEnteredFullyQualifiedFunctionIdentifier()
 					{
 						const string statement = @"SELECT HUSQVIK.SQLPAD_FUNCTION() FROM DUAL";
@@ -2610,7 +2610,7 @@ ON (EVENTS.ID = SRC.ID)";
 						referenceIdentifier.IdentifierEffectiveValue.ShouldBe("SQL");
 					}
 
-					[Test(Description = @"")]
+					[Test]
 					public void TestReferenceIdentifiersWhenCursorAtObjectIdentifierOfAlreadyEnteredFullyQualifiedColumnIdentifier()
 					{
 						const string statement = @"SELECT HUSQVIK.SELECTION.SELECTION_ID FROM HUSQVIK.SELECTION";
@@ -2624,7 +2624,7 @@ ON (EVENTS.ID = SRC.ID)";
 						referenceIdentifier.IdentifierEffectiveValue.ShouldBe(null);
 					}
 
-					[Test(Description = @"")]
+					[Test]
 					public void TestReferenceIdentifiersWhenCursorAtSchemaIdentifierOfAlreadyEnteredFullyQualifiedColumnIdentifier()
 					{
 						const string statement = @"SELECT HUSQVIK.SELECTION.SELECTION_ID FROM HUSQVIK.SELECTION";
@@ -2638,7 +2638,7 @@ ON (EVENTS.ID = SRC.ID)";
 						referenceIdentifier.IdentifierEffectiveValue.ShouldBe(null);
 					}
 
-					[Test(Description = @"")]
+					[Test]
 					public void TestReferenceIdentifiersWhenTypingColumnIdentifier()
 					{
 						const string statement = @"SELECT NAM FROM SELECTION";
@@ -2652,7 +2652,7 @@ ON (EVENTS.ID = SRC.ID)";
 						referenceIdentifier.IdentifierEffectiveValue.ShouldBe("NAM");
 					}
 
-					[Test(Description = @"")]
+					[Test]
 					public void TestReferenceIdentifiersWhenTypingObjectIdentifier()
 					{
 						const string statement = @"SELECT SELECTION.NAM FROM SELECTION";
@@ -2669,7 +2669,7 @@ ON (EVENTS.ID = SRC.ID)";
 
 				public class FromClause
 				{
-					[Test(Description = @"")]
+					[Test]
 					public void TestReferenceIdentifiersWhenTypingFullyQualifiedObjectIdentifier()
 					{
 						const string statement = @"SELECT * FROM HUSQVIK.SELE";
@@ -2683,7 +2683,7 @@ ON (EVENTS.ID = SRC.ID)";
 						referenceIdentifier.IdentifierEffectiveValue.ShouldBe(null);
 					}
 
-					[Test(Description = @"")]
+					[Test]
 					public void TestReferenceIdentifiersWhenTypingObjectIdentifier()
 					{
 						const string statement = @"SELECT * FROM SELE";
@@ -2697,7 +2697,7 @@ ON (EVENTS.ID = SRC.ID)";
 						referenceIdentifier.IdentifierEffectiveValue.ShouldBe(null);
 					}
 
-					[Test(Description = @"")]
+					[Test]
 					public void TestReferenceIdentifiersWhenCursorAtObjectIdentifierOfAlreadyEnteredFullyQualifiedObjectName()
 					{
 						const string statement = @"SELECT * FROM HUSQVIK.SELECTION";
@@ -2711,7 +2711,7 @@ ON (EVENTS.ID = SRC.ID)";
 						referenceIdentifier.IdentifierEffectiveValue.ShouldBe(null);
 					}
 
-					[Test(Description = @"")]
+					[Test]
 					public void TestTableCollectionExpressionReferenceIdentifiers()
 					{
 						const string statement = @"SELECT column_value FROM TABLE (SYS.ODCI)";
@@ -2730,7 +2730,7 @@ ON (EVENTS.ID = SRC.ID)";
 
 		public class PlSql
 		{
-			[Test(Description = @"")]
+			[Test]
 			public void TestBodyStatementWhileTyping()
 			{
 				const string statement = @"DECLARE PROCEDURE P1(P1 NUMBER) IS BEGIN NULL; END; BEGIN N; END;";

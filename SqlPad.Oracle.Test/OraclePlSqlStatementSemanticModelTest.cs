@@ -15,7 +15,7 @@ namespace SqlPad.Oracle.Test
 		[Test]
 		public void TestInitializationNullStatement()
 		{
-			Assert.Throws<ArgumentNullException>(() => new OraclePlSqlStatementSemanticModel(null, null, TestFixture.DatabaseModel));
+			Should.Throw<ArgumentNullException>(() => new OraclePlSqlStatementSemanticModel(null, null, TestFixture.DatabaseModel));
 		}
 
 		[Test]
@@ -24,7 +24,7 @@ namespace SqlPad.Oracle.Test
 			const string sqlText = @"SELECT * FROM DUAL";
 			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(sqlText).Single();
 
-			Assert.Throws<ArgumentException>(() => new OraclePlSqlStatementSemanticModel(sqlText, statement, TestFixture.DatabaseModel));
+			Should.Throw<ArgumentException>(() => new OraclePlSqlStatementSemanticModel(sqlText, statement, TestFixture.DatabaseModel));
 		}
 
 		private const string TestPlSqlProgramBase =
@@ -722,7 +722,7 @@ END;";
 
 			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel);
-			Assert.DoesNotThrow(() => semanticModel.Build(CancellationToken.None));
+			Should.NotThrow(() => semanticModel.Build(CancellationToken.None));
 		}
 
 		[Test]
@@ -798,7 +798,7 @@ END;";
 			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).First();
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel);
 
-			Assert.DoesNotThrow(() => semanticModel.Build(CancellationToken.None));
+			Should.NotThrow(() => semanticModel.Build(CancellationToken.None));
 		}
 
 		[Test]
@@ -812,7 +812,7 @@ END;";
 			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).First();
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel);
 
-			Assert.DoesNotThrow(() => semanticModel.Build(CancellationToken.None));
+			Should.NotThrow(() => semanticModel.Build(CancellationToken.None));
 		}
 
 		[Test]
@@ -963,7 +963,7 @@ END;";
 			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).First();
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel);
 
-			Assert.DoesNotThrow(() => semanticModel.Build(CancellationToken.None));
+			Should.NotThrow(() => semanticModel.Build(CancellationToken.None));
 		}
 
 		[Test]
@@ -974,7 +974,7 @@ END;";
 			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).First();
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel);
 
-			Assert.DoesNotThrow(() => semanticModel.Build(CancellationToken.None));
+			Should.NotThrow(() => semanticModel.Build(CancellationToken.None));
 		}
 
 		[Test]

@@ -220,7 +220,7 @@ WHERE
 			{
 				var connectionAdapter = databaseModel.CreateConnectionAdapter();
 				var task = connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel } }, CancellationToken.None);
-				var taskException = Assert.Throws<AggregateException>(() => task.Wait());
+				var taskException = Should.Throw<AggregateException>(() => task.Wait());
 				taskException.InnerExceptions.Count.ShouldBe(1);
 				var innerException = taskException.InnerExceptions[0];
 				innerException.ShouldBeTypeOf<StatementExecutionException>();

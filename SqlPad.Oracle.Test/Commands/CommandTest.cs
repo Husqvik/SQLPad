@@ -144,7 +144,7 @@ WHERE
 			GenericCommandHandler.UpdateDocument(_editor, executionContext);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestAddObjectAliasCommand()
 		{
 			_editor.Text = @"SELECT SELECTION.RESPONDENTBUCKET_ID, SELECTION.SELECTION_ID, PROJECT_ID, NAME FROM SELECTION";
@@ -156,7 +156,7 @@ WHERE
 			_editor.Text.ShouldBe(@"SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME FROM SELECTION S");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestAddObjectAliasWithExistingModelClause()
 		{
 			_editor.Text =
@@ -178,7 +178,7 @@ FROM
 		}
 
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestAddMissingColumnOverModelDimensionColumn()
 		{
 			_editor.Text =
@@ -198,7 +198,7 @@ FROM
 			CanExecuteCommand(OracleCommands.AddMissingColumn).ShouldBe(false);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestAddColumnAliasCommand()
 		{
 			_editor.Text = @"SELECT 'Prefix' || TBL.RESPONDENTBUCKET_ID || 'Postfix', NAME FROM (SELECT RESPONDENTBUCKET_ID, NAME FROM (SELECT RESPONDENTBUCKET_ID, NAME FROM SELECTION) WHERE RESPONDENTBUCKET_ID > 0) TBL";
@@ -210,7 +210,7 @@ FROM
 			_editor.Text.ShouldBe(@"SELECT 'Prefix' || TBL.RBID || 'Postfix', NAME FROM (SELECT RBID, NAME FROM (SELECT RESPONDENTBUCKET_ID RBID, NAME FROM SELECTION) WHERE RBID > 0) TBL");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestAddAliasCommandAtTableWithAlias()
 		{
 			_editor.Text = @"SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME FROM SELECTION S";
@@ -219,7 +219,7 @@ FROM
 			CanExecuteCommand(OracleCommands.AddAlias).ShouldBe(false);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestAddAliasCommandAtTableWithFlashbackClause()
 		{
 			_editor.Text = @"SELECT dual.dummy FROM dual AS OF TIMESTAMP sysdate - 1";
@@ -231,7 +231,7 @@ FROM
 			_editor.Text.ShouldBe(@"SELECT d.dummy FROM dual AS OF TIMESTAMP sysdate - 1 d");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestAddAliasCommandWithWhereGroupByAndHavingClauses()
 		{
 			_editor.Text = "SELECT SELECTION.RESPONDENTBUCKET_ID, PROJECT_ID FROM SELECTION WHERE SELECTION.NAME = NAME GROUP BY SELECTION.RESPONDENTBUCKET_ID, PROJECT_ID HAVING COUNT(SELECTION.SELECTION_ID) = COUNT(SELECTION_ID)";
@@ -243,7 +243,7 @@ FROM
 			_editor.Text.ShouldBe("SELECT S.RESPONDENTBUCKET_ID, PROJECT_ID FROM SELECTION S WHERE S.NAME = NAME GROUP BY S.RESPONDENTBUCKET_ID, PROJECT_ID HAVING COUNT(S.SELECTION_ID) = COUNT(SELECTION_ID)");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestAddObjectAliasWithPivotTable()
 		{
 			_editor.Text =
@@ -274,7 +274,7 @@ FROM
 			_editor.Text.ShouldBe(expectedText);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestAddColumnAliasWithPivotTable()
 		{
 			_editor.Text =
@@ -305,7 +305,7 @@ FROM
 			_editor.Text.ShouldBe(expectedText);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestAddColumnAliasWithNestedPivotTable()
 		{
 			_editor.Text =
@@ -358,7 +358,7 @@ ORDER BY
 			_editor.Text.ShouldBe(expectedText);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestBasicWrapAsInlineViewCommand()
 		{
 			_editor.Text = @"SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM SELECTION S";
@@ -370,7 +370,7 @@ ORDER BY
 			_editor.Text.ShouldBe(@"SELECT IV.RESPONDENTBUCKET_ID, IV.SELECTION_ID, IV.PROJECT_ID, IV.NAME, IV.""1"" FROM (SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM SELECTION S) IV");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestWrapAsInlineViewCommandWithExistingModelClause()
 		{
 			_editor.Text =
@@ -407,7 +407,7 @@ FROM
 			_editor.Text.ShouldBe(expectedResult);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestWrapAsInlineViewCommandWithExistingPivotClause()
 		{
 			_editor.Text =
@@ -438,7 +438,7 @@ FROM
 			_editor.Text.ShouldBe(expectResult);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestWrapAsInlineViewCommandWithoutAlias()
 		{
 			_editor.Text = @"SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM SELECTION S";
@@ -450,7 +450,7 @@ FROM
 			_editor.Text.ShouldBe(@"SELECT RESPONDENTBUCKET_ID, SELECTION_ID, PROJECT_ID, NAME, ""1"" FROM (SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM SELECTION S)");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestWrapAsInlineViewCommandWithOrderByClause()
 		{
 			_editor.Text = @"SELECT DUMMY FROM DUAL ORDER BY DUAL.DUMMY";
@@ -462,7 +462,7 @@ FROM
 			_editor.Text.ShouldBe(@"SELECT DUMMY FROM (SELECT DUMMY FROM DUAL ORDER BY DUAL.DUMMY)");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestTableReferenceWrapAsInlineView()
 		{
 			_editor.Text = @"SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM SELECTION S";
@@ -474,7 +474,7 @@ FROM
 			_editor.Text.ShouldBe(@"SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM (SELECT RESPONDENTBUCKET_ID, SELECTION_ID, PROJECT_ID, NAME FROM SELECTION) S");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestTableReferenceWrapAsInlineViewWithXmlTable()
 		{
 			_editor.Text = @"SELECT * FROM XMLTABLE('for $i in $RSS_DATA/rss/channel/item return $i' PASSING HTTPURITYPE('http://servis.idnes.cz/rss.asp?c=zpravodaj').GETXML() AS RSS_DATA COLUMNS SEQ# FOR ORDINALITY, TITLE VARCHAR2(4000) PATH 'title', DESCRIPTION CLOB PATH 'description')";
@@ -486,7 +486,7 @@ FROM
 			_editor.Text.ShouldBe(@"SELECT * FROM (SELECT SEQ#, TITLE, DESCRIPTION FROM XMLTABLE('for $i in $RSS_DATA/rss/channel/item return $i' PASSING HTTPURITYPE('http://servis.idnes.cz/rss.asp?c=zpravodaj').GETXML() AS RSS_DATA COLUMNS SEQ# FOR ORDINALITY, TITLE VARCHAR2(4000) PATH 'title', DESCRIPTION CLOB PATH 'description'))");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestBasicWrapAsInlineViewCommandWithFunctionInvokationWithSingleIdentifierParameter()
 		{
 			_editor.Text = @"SELECT COUNT(DISTINCT SELECTION_ID) OVER (), RESPONDENTBUCKET_ID FROM SELECTION";
@@ -497,7 +497,7 @@ FROM
 			_editor.Text.ShouldBe(@"SELECT IV.""COUNT(DISTINCTSELECTION_ID)OVER()"", IV.RESPONDENTBUCKET_ID FROM (SELECT COUNT(DISTINCT SELECTION_ID) OVER (), RESPONDENTBUCKET_ID FROM SELECTION) IV");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestBasicWrapAsCommonTableExpressionCommand()
 		{
 			_editor.Text = "SELECT 1, 1 + 1 MYCOLUMN, DUMMY || '3' COLUMN3 FROM DUAL";
@@ -508,7 +508,7 @@ FROM
 			_editor.Text.ShouldBe(@"WITH MYQUERY AS (SELECT 1, 1 + 1 MYCOLUMN, DUMMY || '3' COLUMN3 FROM DUAL) SELECT MYQUERY.""1"", MYQUERY.MYCOLUMN, MYQUERY.COLUMN3 FROM MYQUERY");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestBasicWrapAsCommonTableExpressionWithOrderByClause()
 		{
 			_editor.Text = "SELECT DUMMY FROM DUAL ORDER BY DUAL.DUMMY";
@@ -519,7 +519,7 @@ FROM
 			_editor.Text.ShouldBe(@"WITH MYQUERY AS (SELECT DUMMY FROM DUAL ORDER BY DUAL.DUMMY) SELECT MYQUERY.DUMMY FROM MYQUERY");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestBasicWrapAsCommonTableExpressionCommandWithExistingCommonTableExpressionAndWhiteSpace()
 		{
 			_editor.Text = "\t\t            WITH OLDQUERY AS (SELECT OLD FROM OLD) SELECT 1, 1 + 1 MYCOLUMN, DUMMY || '3' COLUMN3 FROM DUAL";
@@ -530,7 +530,7 @@ FROM
 			_editor.Text.ShouldBe("\t\t            WITH OLDQUERY AS (SELECT OLD FROM OLD), NEWQUERY AS (SELECT 1, 1 + 1 MYCOLUMN, DUMMY || '3' COLUMN3 FROM DUAL) SELECT NEWQUERY.\"1\", NEWQUERY.MYCOLUMN, NEWQUERY.COLUMN3 FROM NEWQUERY");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestBasicToggleQuotedNotationCommandOn()
 		{
 			_editor.Text = "SELECT \"PUBLIC\".DUAL.DUMMY, S.PROJECT_ID FROM SELECTION S, \"PUBLIC\".DUAL";
@@ -541,7 +541,7 @@ FROM
 			_editor.Text.ShouldBe("SELECT \"PUBLIC\".\"DUAL\".\"DUMMY\", \"S\".\"PROJECT_ID\" FROM \"SELECTION\" \"S\", \"PUBLIC\".\"DUAL\"");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestBasicToggleQuotedNotationCommandOff()
 		{
 			_editor.Text = "SELECT \"PUBLIC\".\"DUAL\".\"DUMMY\", \"S\".\"PROJECT_ID\" FROM \"SELECTION\" \"S\", \"PUBLIC\".\"DUAL\"";
@@ -552,7 +552,7 @@ FROM
 			_editor.Text.ShouldBe("SELECT \"PUBLIC\".DUAL.DUMMY, S.PROJECT_ID FROM SELECTION S, \"PUBLIC\".DUAL");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestBasicToggleQuotedNotationCommandWithSubqueryWithQuotedNotation()
 		{
 			_editor.Text = "SELECT DUMMY FROM (SELECT \"DUMMY\" FROM \"DUAL\")";
@@ -571,7 +571,7 @@ FROM
 			return executionContext.SegmentsToReplace.OrderBy(s => s.IndextStart).ToList();
 		}
 			
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindObjectUsages()
 		{
 			const string statementText = "SELECT \"SELECTION\".RESPONDENTBUCKET_ID, PROJECT_ID FROM SELECTION WHERE SELECTION.NAME = NAME GROUP BY SELECTION.RESPONDENTBUCKET_ID, PROJECT_ID HAVING COUNT(SELECTION.SELECTION_ID) = COUNT(SELECTION_ID)";
@@ -582,7 +582,7 @@ FROM
 			foundSegments[1].Length.ShouldBe("SELECTION".Length);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindObjectWithAliasUsages()
 		{
 			const string statementText = "SELECT S.RESPONDENTBUCKET_ID, PROJECT_ID FROM SELECTION \"S\" WHERE S.NAME = NAME GROUP BY S.RESPONDENTBUCKET_ID, PROJECT_ID HAVING COUNT(S.SELECTION_ID) = COUNT(SELECTION_ID)";
@@ -595,7 +595,7 @@ FROM
 			foundSegments[3].Length.ShouldBe("S".Length);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindSchemaUsages()
 		{
 			const string statementText = "SELECT HUSQVIK.SELECTION.PROJECT_ID FROM (SELECT HUSQVIK.SELECTION.NAME FROM HUSQVIK.SELECTION), HUSQVIK.SELECTION";
@@ -605,7 +605,7 @@ FROM
 			foundSegments.ForEach(s => s.Length.ShouldBe("HUSQVIK".Length));
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestBasicFindColumnUsages()
 		{
 			var foundSegments = FindUsagesOrdered(FindUsagesStatementText, 11);
@@ -617,7 +617,7 @@ FROM
 			foundSegments.ForEach(s => s.Length.ShouldBe(4));
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindColumnUsagesOfColumnAliases()
 		{
 			var foundSegments = FindUsagesOrdered(FindUsagesStatementText, 40);
@@ -636,7 +636,7 @@ FROM
 			foundSegments[5].Length.ShouldBe(4);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindColumnUsagesOfIndirectColumnReferenceAtAliasNode()
 		{
 			var foundSegments = FindUsagesOrdered(FindUsagesStatementText, 25);
@@ -647,7 +647,7 @@ FROM
 			foundSegments[1].Length.ShouldBe(16);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindColumnUsagesInParentQueryBlockWhenCursorInWhereClauseInChildQueryBlock()
 		{
 			var foundSegments = FindUsagesOrdered("SELECT DUMMY FROM (SELECT DUMMY FROM DUAL WHERE DUMMY = 'X')", 49);
@@ -660,7 +660,7 @@ FROM
 			foundSegments[2].Length.ShouldBe(5);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindColumnUsagesAtPivotColumnUsage()
 		{
 			const string sqlText =
@@ -681,7 +681,7 @@ PIVOT (
 			foundSegments[1].Length.ShouldBe(3);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindColumnUsagesOfIndirectColumnReferenceAtColumnNode()
 		{
 			var foundSegments = FindUsagesOrdered(FindUsagesStatementText, 121);
@@ -700,7 +700,7 @@ PIVOT (
 			foundSegments[5].Length.ShouldBe(4);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindColumnUsagesInRecursiveCommonTableExpression()
 		{
 			var foundSegments = FindUsagesOrdered("WITH GENERATOR(VAL) AS (SELECT 1 FROM DUAL UNION ALL SELECT VAL + 1 FROM GENERATOR WHERE VAL <= 10) SELECT VAL FROM GENERATOR", 90);
@@ -711,7 +711,7 @@ PIVOT (
 			foundSegments[1].Length.ShouldBe(3);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindColumnUsagesAtMeasureDeclarationAlias()
 		{
 			const string sql =
@@ -736,7 +736,7 @@ MODEL
 			foundSegments[2].Length.ShouldBe(8);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindColumnUsagesAtDimensionDeclarationAlias()
 		{
 			const string sql =
@@ -759,7 +759,7 @@ MODEL
 			foundSegments[1].Length.ShouldBe(9);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindColumnUsagesAtDimensionAtSelectColumn()
 		{
 			const string sql =
@@ -782,7 +782,7 @@ MODEL
 			foundSegments[1].Length.ShouldBe(9);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindColumnUsagesAtColumnAliasWithinSubqueryWithOuterModelClause()
 		{
 			const string sql =
@@ -809,7 +809,7 @@ MODEL
 			foundSegments[3].Length.ShouldBe(3);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindColumnUsagesAtMeasureDirectReferencedColumnWithinModelClause()
 		{
 			const string sql =
@@ -862,7 +862,7 @@ PIVOT
 ORDER BY
     OBJECT_TYPE";
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindPivotTableColumnUsages()
 		{
 			var foundSegments = FindUsagesOrdered(PivotTableSql, 12);
@@ -875,7 +875,7 @@ ORDER BY
 			foundSegments[2].Length.ShouldBe(11);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindPivotTableColumnUsagesAtColumnWithinInnerSubquery()
 		{
 			var foundSegments = FindUsagesOrdered(PivotTableSql, 84);
@@ -888,14 +888,14 @@ ORDER BY
 			foundSegments[2].Length.ShouldBe(11);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindColumnUsagesOfComputedColumnAtUsage()
 		{
 			var foundSegments = FindUsagesOrdered(FindUsagesStatementText, 80);
 			ValidateCommonResults3(foundSegments);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindColumnUsagesOfComputedColumnAtDefinition()
 		{
 			var foundSegments = FindUsagesOrdered(FindUsagesStatementText, 382);
@@ -911,7 +911,7 @@ ORDER BY
 			foundSegments.ForEach(s => s.Length.ShouldBe(15));
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindObjectUsagesAtCommonTableExpressionDefinition()
 		{
 			const string statement = "WITH CTE AS (SELECT SELECTION.NAME FROM SELECTION) SELECT CTE.NAME FROM CTE";
@@ -920,7 +920,7 @@ ORDER BY
 			ValidateCommonResults2(foundSegments);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindObjectUsagesAtCommonTableExpressionUsage()
 		{
 			const string statement = "WITH CTE AS (SELECT SELECTION.NAME FROM SELECTION) SELECT CTE.NAME FROM CTE";
@@ -929,7 +929,7 @@ ORDER BY
 			ValidateCommonResults2(foundSegments);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindColumnUsagesPassedThroughModelClause()
 		{
 			const string statement =
@@ -952,7 +952,7 @@ FROM
 			foundSegments[3].IndextStart.ShouldBe(75);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindObjectUsagesAtRecursiveCommonTableExpressionDefinition()
 		{
 			var foundSegments = FindUsagesOrdered("WITH GENERATOR(VAL) AS (SELECT 1 FROM DUAL UNION ALL SELECT VAL + 1 FROM GENERATOR WHERE VAL <= 10) SELECT VAL FROM GENERATOR", 6);
@@ -974,28 +974,28 @@ FROM
 			foundSegments.ForEach(s => s.Length.ShouldBe(3));
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindColumnUsagesAtJoinCondition()
 		{
 			var foundSegments = FindUsagesOrdered(FindUsagesStatementText, 602);
 			ValidateCommonResults1(foundSegments);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindColumnUsagesInOrderByClause()
 		{
 			var foundSegments = FindUsagesOrdered(FindUsagesStatementText, 771);
 			ValidateCommonResults1(foundSegments);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindColumnUsagesAtAliasDefinition()
 		{
 			var foundSegments = FindUsagesOrdered(FindUsagesStatementText, 350);
 			ValidateCommonResults1(foundSegments);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindObjectUsageInOrderByClause()
 		{
 			var foundSegments = FindUsagesOrdered(FindUsagesStatementText, 767);
@@ -1008,7 +1008,7 @@ FROM
 			foundSegments[1].DisplayOptions.ShouldBe(DisplayOptions.Usage);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindObjectUsagesInCorrelatedSubquery()
 		{
 			const string sql =
@@ -1042,7 +1042,7 @@ WHERE
 			foundSegments[2].DisplayOptions.ShouldBe(DisplayOptions.Usage);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindColumnUsagesInCommonTableExpression()
 		{
 			const string sql =
@@ -1087,7 +1087,7 @@ FROM
 			foundSegments[5].DisplayOptions.ShouldBe(DisplayOptions.Usage);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestAsteriskNotHighlightedWhenFindUsages()
 		{
 			const string statement = "SELECT NAME FROM (SELECT * FROM (SELECT NAME FROM SELECTION))";
@@ -1098,7 +1098,7 @@ FROM
 			foundSegments[1].IndextStart.ShouldBe(40);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestOrderByUsageWhenAtColumnAlias()
 		{
 			const string statement = "SELECT NULL counter FROM DUAL ORDER BY counter";
@@ -1109,7 +1109,7 @@ FROM
 			foundSegments[1].IndextStart.ShouldBe(39);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestWrapCommonTableExpressionIntoAnotherCommonTableExpression()
 		{
 			_editor.Text = "WITH CTE1 AS (SELECT NAME FROM SELECTION) SELECT NAME FROM CTE1";
@@ -1120,7 +1120,7 @@ FROM
 			_editor.Text.ShouldBe(@"WITH CTE2 AS (SELECT NAME FROM SELECTION), CTE1 AS (SELECT CTE2.NAME FROM CTE2) SELECT NAME FROM CTE1");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestExpandAsteriskCommandWithObjectReference()
 		{
 			_editor.Text = "SELECT SELECTION.*, PROJECT.* FROM SELECTION, PROJECT";
@@ -1131,7 +1131,7 @@ FROM
 			_editor.Text.ShouldBe("SELECT SELECTION.*, PROJECT.NAME, PROJECT.PROJECT_ID FROM SELECTION, PROJECT");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestExpandAsteriskCommandWithObjectReferenceWithHiddenColumns()
 		{
 			_editor.Text = "SELECT T.* FROM \"CaseSensitiveTable\" T";
@@ -1142,7 +1142,7 @@ FROM
 			_editor.Text.ShouldBe("SELECT T.\"CaseSensitiveColumn\", T.VIRTUAL_COLUMN FROM \"CaseSensitiveTable\" T");
 		}
 		
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestExpandAsteriskCommandWithoutSpaces()
 		{
 			_editor.Text = "SELECT*FROM dual";
@@ -1153,7 +1153,7 @@ FROM
 			_editor.Text.ShouldBe("SELECT dual.DUMMY FROM dual");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestExpandAsteriskCommandWithQuotedIdentifierAndLowerFormatOption()
 		{
 			OracleConfiguration.Configuration.Formatter.FormatOptions.Identifier = FormatOption.Lower;
@@ -1167,7 +1167,7 @@ FROM
 		}
 
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestExpandAsteriskCommandWithConnectByPseudocolumn()
 		{
 			_editor.Text = "SELECT * FROM dual CONNECT BY LEVEL <= 2";
@@ -1181,7 +1181,7 @@ FROM
 			firstColumnName.ShouldBe("CONNECT_BY_ISLEAF");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestExpandAsteriskCommandWithAmbiguousColumnName()
 		{
 			_editor.Text = "SELECT * FROM (SELECT * FROM DUAL T1, DUAL T2)";
@@ -1192,7 +1192,7 @@ FROM
 			_editor.Text.ShouldBe("SELECT DUMMY FROM (SELECT * FROM DUAL T1, DUAL T2)");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestExpandAsteriskCommandWithObjectReferenceOverDatabaseLink()
 		{
 			_editor.Text = "SELECT SELECTION.*, PROJECT.* FROM SELECTION, PROJECT@HQ_PDB_LOOPBACK";
@@ -1203,7 +1203,7 @@ FROM
 			_editor.Text.ShouldBe("SELECT SELECTION.*, PROJECT.REMOTE_COLUMN1, PROJECT.\"RemoteColumn2\" FROM SELECTION, PROJECT@HQ_PDB_LOOPBACK");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestExpandAsteriskCommandWithAllColumns()
 		{
 			_editor.Text = "SELECT * FROM PROJECT, PROJECT P";
@@ -1214,7 +1214,7 @@ FROM
 			_editor.Text.ShouldBe("SELECT PROJECT.NAME, PROJECT.PROJECT_ID, P.NAME, P.PROJECT_ID FROM PROJECT, PROJECT P");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestExpandAsteriskCommandWithAllColumnsOverDatabaseLink()
 		{
 			_editor.Text = "SELECT * FROM PROJECT@HQ_PDB_LOOPBACK, PROJECT@HQ_PDB_LOOPBACK P";
@@ -1225,7 +1225,7 @@ FROM
 			_editor.Text.ShouldBe("SELECT PROJECT.REMOTE_COLUMN1, PROJECT.\"RemoteColumn2\", P.REMOTE_COLUMN1, P.\"RemoteColumn2\" FROM PROJECT@HQ_PDB_LOOPBACK, PROJECT@HQ_PDB_LOOPBACK P");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindGrammarSpecificFunctionUsages()
 		{
 			var foundSegments = FindUsagesOrdered(FindFunctionUsagesStatementText, 9);
@@ -1235,7 +1235,7 @@ FROM
 			foundSegments.ForEach(s => s.Length.ShouldBe(5));
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindGenericSqlFunctionUsages()
 		{
 			var foundSegments = FindUsagesOrdered(FindFunctionUsagesStatementText, 154);
@@ -1245,7 +1245,7 @@ FROM
 			foundSegments.ForEach(s => s.Length.ShouldBe(8));
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindLiteralUsages()
 		{
 			var foundSegments = FindUsagesOrdered(FindLiteralUsagesStatementText, 17);
@@ -1256,7 +1256,7 @@ FROM
 			foundSegments.ForEach(s => s.Length.ShouldBe(5));
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindBindVariableUsages()
 		{
 			var foundSegments = FindUsagesOrdered(FindLiteralUsagesStatementText, 10);
@@ -1267,7 +1267,7 @@ FROM
 			foundSegments.ForEach(s => s.Length.ShouldBe(2));
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindColumnUsagesWithAliasedColumnWithInvalidReference()
 		{
 			const string statement = "SELECT CPU_SECONDS X FROM (SELECT CPU_TIME / 1000000 CPU_SECONDS FROM V$SESSION)";
@@ -1284,7 +1284,7 @@ FROM
 			foundSegments[2].DisplayOptions.ShouldBe(DisplayOptions.Definition);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindColumnUsagesAtRecursiveCommonTableExpressionExplicitColumnDefinition()
 		{
 			const string statement =
@@ -1307,7 +1307,7 @@ SELECT VAL FROM CTE";
 			foundSegments[3].DisplayOptions.ShouldBe(DisplayOptions.Usage);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestFindObjectUsagesWithinRecursiveCommonTableExpression()
 		{
 			const string statement =
@@ -1322,7 +1322,7 @@ SELECT VAL FROM CTE";
 			foundSegments.Count.ShouldBe(2);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestUnnestCommand()
 		{
 			_editor.Text = @"SELECT IV.TEST_COLUMN || ' ADDED' FROM PROJECT, (SELECT SELECTION.NAME || ' FROM INLINE_VIEW ' TEST_COLUMN FROM SELECTION) IV, RESPONDENTBUCKET";
@@ -1334,7 +1334,7 @@ SELECT VAL FROM CTE";
 			_editor.Text.ShouldBe("SELECT SELECTION.NAME || ' FROM INLINE_VIEW ' || ' ADDED' FROM PROJECT, SELECTION, RESPONDENTBUCKET");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestUnnestCommandWithDirectColumnReference()
 		{
 			_editor.Text = @"SELECT EXPRESSION FROM (SELECT NVL(NULL, 0) - NVL(NULL, 0) EXPRESSION FROM dual)";
@@ -1346,7 +1346,7 @@ SELECT VAL FROM CTE";
 			_editor.Text.ShouldBe("SELECT NVL(NULL, 0) - NVL(NULL, 0) EXPRESSION FROM dual");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestUnnestCommandWithWhereClause()
 		{
 			_editor.Text = @"SELECT IV.TEST_COLUMN || ' ADDED' FROM PROJECT, (SELECT SELECTION.NAME || ' FROM INLINE_VIEW ' TEST_COLUMN FROM SELECTION WHERE SELECTION_ID = 123) IV, RESPONDENTBUCKET";
@@ -1358,7 +1358,7 @@ SELECT VAL FROM CTE";
 			_editor.Text.ShouldBe("SELECT SELECTION.NAME || ' FROM INLINE_VIEW ' || ' ADDED' FROM PROJECT, SELECTION, RESPONDENTBUCKET WHERE SELECTION_ID = 123");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestUnnestCommandWithCombinedWhereClause()
 		{
 			_editor.Text = @"SELECT * FROM (SELECT * FROM SELECTION WHERE SELECTION_ID = 123) IV, RESPONDENTBUCKET RB WHERE RB.RESPONDENTBUCKET_ID = 456";
@@ -1370,7 +1370,7 @@ SELECT VAL FROM CTE";
 			_editor.Text.ShouldBe("SELECT * FROM SELECTION, RESPONDENTBUCKET RB WHERE RB.RESPONDENTBUCKET_ID = 456 AND SELECTION_ID = 123");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestUnnestCommandWithAsterisk()
 		{
 			_editor.Text = @"SELECT IV.* FROM (SELECT * FROM SELECTION, RESPONDENTBUCKET) IV";
@@ -1382,7 +1382,7 @@ SELECT VAL FROM CTE";
 			_editor.Text.ShouldBe("SELECT * FROM SELECTION, RESPONDENTBUCKET");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestUnnestCommandWithObjectAsteriskCombinedWithOtherColumn()
 		{
 			_editor.Text = @"SELECT IV.*, TARGETGROUP_ID FROM (SELECT 1 C1, SELECTION.*, 3 C3 FROM SELECTION) IV, RESPONDENTBUCKET";
@@ -1394,7 +1394,7 @@ SELECT VAL FROM CTE";
 			_editor.Text.ShouldBe("SELECT 1 C1, SELECTION.*, 3 C3, TARGETGROUP_ID FROM SELECTION, RESPONDENTBUCKET");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestUnnestCommandWithQueryBlocksContainingConflictingAnalyticsFunctions()
 		{
 			_editor.Text = @"SELECT COUNT(VALUE) OVER () FROM (SELECT COUNT(DUMMY) OVER () VALUE FROM DUAL)";
@@ -1403,7 +1403,7 @@ SELECT VAL FROM CTE";
 			CanExecuteCommand(OracleCommands.UnnestInlineView).ShouldBe(false);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestUnnestCommandWithQueryBlocksContainingNonConflictingAnalyticsFunctions()
 		{
 			_editor.Text =
@@ -1418,7 +1418,7 @@ FROM
 			CanExecuteCommand(OracleCommands.UnnestInlineView).ShouldBe(true);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestUnnestCommandWithWithInlineViewWithoutSpace()
 		{
 			_editor.Text = @"SELECT * FROM SELECTION JOIN(SELECT NAME FROM PROJECT) S ON SELECTION.NAME = S.NAME";
@@ -1430,7 +1430,7 @@ FROM
 			_editor.Text.ShouldBe("SELECT * FROM SELECTION JOIN PROJECT ON SELECTION.NAME = PROJECT.NAME");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestUnnestCommandWithWithInlineViewWithObjectNamePrefix()
 		{
 			_editor.Text = @"SELECT * FROM SELECTION JOIN(SELECT PROJECT.NAME FROM PROJECT) S ON SELECTION.NAME = S.NAME";
@@ -1442,7 +1442,7 @@ FROM
 			_editor.Text.ShouldBe("SELECT * FROM SELECTION JOIN PROJECT ON SELECTION.NAME = PROJECT.NAME");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestUnnestCommandWithColumnExpressions()
 		{
 			_editor.Text = @"SELECT 'OuterPrefix' || IV.VAL || 'OuterPostfix' FROM (SELECT 'InnerPrefix' || (DUMMY || 'InnerPostfix') VAL FROM DUAL) IV";
@@ -1454,7 +1454,7 @@ FROM
 			_editor.Text.ShouldBe("SELECT 'OuterPrefix' || 'InnerPrefix' || (DUAL.DUMMY || 'InnerPostfix') || 'OuterPostfix' FROM DUAL");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestSafeDeleteCommandAtObjectAlias()
 		{
 			_editor.Text = @"SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, S.PROJECT_ID, S.NAME FROM SELECTION S";
@@ -1465,7 +1465,7 @@ FROM
 			_editor.Text.ShouldBe("SELECT SELECTION.RESPONDENTBUCKET_ID, SELECTION.SELECTION_ID, SELECTION.PROJECT_ID, SELECTION.NAME FROM SELECTION ");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestSafeDeleteCommandAtColumnAlias()
 		{
 			_editor.Text = @"SELECT XXX FROM (SELECT XXX FROM (SELECT XXX FROM (SELECT DUMMY XXX FROM DUAL) T1) T2) T3";
@@ -1476,7 +1476,7 @@ FROM
 			_editor.Text.ShouldBe("SELECT DUMMY FROM (SELECT DUMMY FROM (SELECT DUMMY FROM (SELECT DUMMY  FROM DUAL) T1) T2) T3");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestModifyCaseCommandWithMultipleTerminalsSelected()
 		{
 			_editor.Text = @"select null, 'null' from selection";
@@ -1492,7 +1492,7 @@ FROM
 			_editor.Text.ShouldBe("select null, 'null' from selection");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestModifyCaseCommandWithMultipleSelectionSegments()
 		{
 			_editor.Text =
@@ -1510,7 +1510,7 @@ selECT NULL, 'null' FRom selection";
 			_editor.Text.ShouldBe(expectedResult);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestModifyCaseCommandWithUnrecognizedGrammar()
 		{
 			_editor.Text = @"lot of invalid tokens preceding; select 'null' as ""null"" from dual and lot of invalid tokens following";
@@ -1522,7 +1522,7 @@ selECT NULL, 'null' FRom selection";
 			_editor.Text.ShouldBe("LOT OF INVALID TOKENS PRECEDING; SELECT 'null' AS \"null\" FROM DUAL AND LOT OF INVALID TOKENS FOLLOWING");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestModifyCaseCommandWithSingleCaseUnsafeToken()
 		{
 			_editor.Text = @"SELECT 'null' FROM DUAL";
@@ -1534,7 +1534,7 @@ selECT NULL, 'null' FRom selection";
 			_editor.Text.ShouldBe("SELECT 'NULL' FROM DUAL");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestModifyCaseCommandWithCaseUnsafeTokenAsLastToken()
 		{
 			_editor.Text = @"select * from ""Accounts""";
@@ -1545,7 +1545,7 @@ selECT NULL, 'null' FRom selection";
 			_editor.Text.ShouldBe("SELECT * FROM \"Accounts\"");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestMoveContentCommandUp()
 		{
 			_editor.Text = @"SELECT 'NamePrefix' || NAME || 'NamePostfix', 'IdPrefix' || PROJECT_ID || 'IdPostfix' FROM PROJECT";
@@ -1557,7 +1557,7 @@ selECT NULL, 'null' FRom selection";
 			_editor.CaretOffset.ShouldBe(27);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestMoveOrderByExpressionCommandUp()
 		{
 			_editor.Text = @"SELECT * FROM SELECTION ORDER BY 'NamePrefix' || NAME || 'NamePostfix', 'IdPrefix' || SELECTION_ID || 'IdPostfix', 'IdPrefix' || PROJECT_ID || 'IdPostfix'";
@@ -1569,7 +1569,7 @@ selECT NULL, 'null' FRom selection";
 			_editor.CaretOffset.ShouldBe(47);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestMoveOrderByExpressionCommandDown()
 		{
 			_editor.Text = @"SELECT * FROM SELECTION ORDER BY 'NamePrefix' || NAME || 'NamePostfix', 'IdPrefix' || SELECTION_ID || 'IdPostfix', 'IdPrefix' || PROJECT_ID || 'IdPostfix'";
@@ -1581,7 +1581,7 @@ selECT NULL, 'null' FRom selection";
 			_editor.CaretOffset.ShouldBe(76);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestMoveContentCommandDown()
 		{
 			_editor.Text = @"SELECT 'NamePrefix' || NAME || 'NamePostfix', 'IdPrefix' || PROJECT_ID || 'IdPostfix' FROM PROJECT";
@@ -1593,7 +1593,7 @@ selECT NULL, 'null' FRom selection";
 			_editor.CaretOffset.ShouldBe(65);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestMoveContentCommandDownAtLastColumn()
 		{
 			_editor.Text = @"SELECT 'NamePrefix' || NAME || 'NamePostfix', 'IdPrefix' || PROJECT_ID || 'IdPostfix' FROM PROJECT";
@@ -1605,7 +1605,7 @@ selECT NULL, 'null' FRom selection";
 			_editor.CaretOffset.ShouldBe(66);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestMoveFromClauseDown()
 		{
 			_editor.Text =
@@ -1631,7 +1631,7 @@ FROM
 			_editor.CaretOffset.ShouldBe(75);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestMoveFromClauseUp()
 		{
 			_editor.Text =
@@ -1658,7 +1658,7 @@ FROM
 			_editor.CaretOffset.ShouldBe(34);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestAddToGroupByCommandWithoutExistingGroupByClause()
 		{
 			_editor.Text = @"SELECT SELECTION.PROJECT_ID, COUNT(*) PROJECT_SELECTIONS FROM SELECTION";
@@ -1670,7 +1670,7 @@ FROM
 			_editor.Text.ShouldBe("SELECT SELECTION.PROJECT_ID, COUNT(*) PROJECT_SELECTIONS FROM SELECTION GROUP BY SELECTION.PROJECT_ID");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestAddToGroupByCommandWithMultipleSelectColumns()
 		{
 			_editor.Text = @"SELECT PROJECT_ID, RESPONDENTBUCKET_ID, COUNT(*) PROJECT_SELECTIONS FROM SELECTION";
@@ -1683,7 +1683,7 @@ FROM
 			_editor.Text.ShouldBe("SELECT PROJECT_ID, RESPONDENTBUCKET_ID, COUNT(*) PROJECT_SELECTIONS FROM SELECTION GROUP BY PROJECT_ID, RESPONDENTBUCKET_ID");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestAddToGroupByCommandWithSameExpressionWithinExistingGroupByClause()
 		{
 			_editor.Text = @"SELECT PROJECT_ID, COUNT(*) SELECTION_COUNT FROM SELECTION GROUP BY PROJECT_ID";
@@ -1692,7 +1692,7 @@ FROM
 			CanExecuteCommand(OracleCommands.AddToGroupByClause).ShouldBe(false);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestAddToGroupByCommandNotAvailableAtAsteriskTerminal()
 		{
 			_editor.Text = @"SELECT * FROM SELECTION";
@@ -1701,7 +1701,7 @@ FROM
 			CanExecuteCommand(OracleCommands.AddToGroupByClause).ShouldBe(false);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestAddToGroupByCommandWithWhereClause()
 		{
 			_editor.Text = @"SELECT PROJECT_ID, COUNT(*) PROJECT_SELECTIONS FROM SELECTION WHERE NAME LIKE '%1%'";
@@ -1713,7 +1713,7 @@ FROM
 			_editor.Text.ShouldBe("SELECT PROJECT_ID, COUNT(*) PROJECT_SELECTIONS FROM SELECTION WHERE NAME LIKE '%1%' GROUP BY PROJECT_ID");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestAddToGroupByCommandAtColumnTableQualifier()
 		{
 			_editor.Text = @"SELECT SELECTION.NAME, COUNT(*) FROM SELECTION JOIN RESPONDENTBUCKET ON SELECTION.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID";
@@ -1722,7 +1722,7 @@ FROM
 			CanExecuteCommand(OracleCommands.AddToGroupByClause).ShouldBe(false);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestAddToGroupByCommandWithOrderByClause()
 		{
 			_editor.Text = @"SELECT PROJECT_ID, RESPONDENTBUCKET_ID, COUNT(*) PROJECT_SELECTIONS FROM SELECTION GROUP BY PROJECT_ID ORDER BY PROJECT_SELECTIONS";
@@ -1734,7 +1734,7 @@ FROM
 			_editor.Text.ShouldBe("SELECT PROJECT_ID, RESPONDENTBUCKET_ID, COUNT(*) PROJECT_SELECTIONS FROM SELECTION GROUP BY PROJECT_ID, RESPONDENTBUCKET_ID ORDER BY PROJECT_SELECTIONS");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestAddToGroupByCommandWithExpressionFollowedByOtherColumn()
 		{
 			_editor.Text = @"SELECT SELECTIONNAME || 'X', PROJECT_ID + 3 FROM SELECTION";
@@ -1747,7 +1747,7 @@ FROM
 			_editor.Text.ShouldBe("SELECT SELECTIONNAME || 'X', PROJECT_ID + 3 FROM SELECTION GROUP BY SELECTIONNAME || 'X'");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestAddToGroupByCommandWithExistingGroupByClause()
 		{
 			_editor.Text = @"SELECT SELECTION.PROJECT_ID, SELECTION.RESPONDENTBUCKET_ID, COUNT(*) SELECTION_COUNT FROM SELECTION GROUP BY SELECTION.PROJECT_ID";
@@ -1759,7 +1759,7 @@ FROM
 			_editor.Text.ShouldBe("SELECT SELECTION.PROJECT_ID, SELECTION.RESPONDENTBUCKET_ID, COUNT(*) SELECTION_COUNT FROM SELECTION GROUP BY SELECTION.PROJECT_ID, SELECTION.RESPONDENTBUCKET_ID");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestAddToGroupByCommandNotAvailableAtInvalidExpression()
 		{
 			_editor.Text = @"SELECT 1 + SELECTION_ID FROM SELECTION";
@@ -1769,7 +1769,7 @@ FROM
 			CanExecuteCommand(OracleCommands.AddToGroupByClause).ShouldBe(false);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestAddToGroupByCommandNotAvailableAtBindVariable()
 		{
 			_editor.Text = @"SELECT :X FROM SELECTION";
@@ -1778,7 +1778,7 @@ FROM
 			CanExecuteCommand(OracleCommands.AddToGroupByClause).ShouldBe(false);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestAddToGroupByCommandNotAvailableWhenSequencePseudocolumnWithinSelection()
 		{
 			_editor.Text = @"SELECT TEST_SEQ.NEXTVAL FROM SELECTION";
@@ -1787,7 +1787,7 @@ FROM
 			CanExecuteCommand(OracleCommands.AddToGroupByClause).ShouldBe(false);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestAddToGroupByCommandNotAvailableWhenSequenceWithinSelection()
 		{
 			_editor.Text = @"SELECT TEST_SEQ.NEXTVAL FROM SELECTION";
@@ -1796,7 +1796,7 @@ FROM
 			CanExecuteCommand(OracleCommands.AddToGroupByClause).ShouldBe(false);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestToggleFullyQualifiedReferences()
 		{
 			_editor.Text = @"SELECT SQLPAD_FUNCTION, RESPONDENTBUCKET_ID, SELECTION_ID, PROJECT_ID, NAME, SQLPAD.SQLPAD_FUNCTION(0), TO_CHAR('') FROM SELECTION";
@@ -1806,7 +1806,7 @@ FROM
 			_editor.Text.ShouldBe("SELECT HUSQVIK.SQLPAD_FUNCTION, HUSQVIK.SELECTION.RESPONDENTBUCKET_ID, HUSQVIK.SELECTION.SELECTION_ID, HUSQVIK.SELECTION.PROJECT_ID, HUSQVIK.SELECTION.NAME, HUSQVIK.SQLPAD.SQLPAD_FUNCTION(0), TO_CHAR('') FROM HUSQVIK.SELECTION");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestToggleFullyQualifiedReferencesWithAsteriskClause()
 		{
 			_editor.Text = @"SELECT * FROM SELECTION";
@@ -1816,7 +1816,7 @@ FROM
 			_editor.Text.ShouldBe("SELECT * FROM HUSQVIK.SELECTION");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestToggleFullyQualifiedReferencesWithPartiallyQualifiedAsteriskClause()
 		{
 			_editor.Text = @"SELECT SELECTION.*, PROJECT.* FROM SELECTION, PROJECT";
@@ -1826,7 +1826,7 @@ FROM
 			_editor.Text.ShouldBe("SELECT HUSQVIK.SELECTION.*, HUSQVIK.PROJECT.* FROM HUSQVIK.SELECTION, HUSQVIK.PROJECT");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestToggleFullyQualifiedReferencesWithNotExistingTable()
 		{
 			_editor.Text = @"SELECT NOT_EXISTING_TABLE.* FROM NOT_EXISTING_TABLE";
@@ -1834,7 +1834,7 @@ FROM
 			CanExecuteCommand(OracleCommands.ToggleFullyQualifiedReferences).ShouldBe(false);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestToggleFullyQualifiedReferencesWithAliasedTable()
 		{
 			_editor.Text = @"SELECT DUMMY, NAME FROM DUAL D, SELECTION S";
@@ -1845,7 +1845,7 @@ FROM
 			_editor.Text.ShouldBe("SELECT D.DUMMY, S.NAME FROM DUAL D, HUSQVIK.SELECTION S");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestToggleFullyQualifiedReferencesWithRowIdPseudocolumn()
 		{
 			_editor.Text = @"SELECT ROWID FROM DUAL";
@@ -1856,7 +1856,7 @@ FROM
 			_editor.Text.ShouldBe("SELECT DUAL.ROWID FROM DUAL");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestToggleFullyQualifiedReferencesOnFullyQualifiedSchemaFunction()
 		{
 			_editor.Text = @"SELECT HUSQVIK.SQLPAD_FUNCTION FROM SYS.DUAL";
@@ -1866,7 +1866,7 @@ FROM
 			CanExecuteCommand(OracleCommands.ToggleFullyQualifiedReferences).ShouldBe(false);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestToggleFullyQualifiedReferencesOnNonAliasedTableReference()
 		{
 			_editor.Text = @"SELECT DUMMY FROM (SELECT DUMMY FROM DUAL)";
@@ -1876,7 +1876,7 @@ FROM
 			CanExecuteCommand(OracleCommands.ToggleFullyQualifiedReferences).ShouldBe(false);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestResolveAmbiguousColumnCommand()
 		{
 			_editor.Text = @"SELECT DUAL.DUMMY FROM SYS.DUAL, ""PUBLIC"".DUAL";
@@ -1892,7 +1892,7 @@ FROM
 			_editor.Text.ShouldBe(@"SELECT SYS.DUAL.DUMMY FROM SYS.DUAL, ""PUBLIC"".DUAL");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestResolveAmbiguousColumnCommandWhenAtClosingParenthesisOutsidePrefixedColumnReference()
 		{
 			_editor.Text = @"SELECT COUNT(DISTINCT DUMMY) FROM DUAL D1, DUAL D2";
@@ -1907,7 +1907,7 @@ FROM
 			_editor.Text.ShouldBe(@"SELECT COUNT(DISTINCT D1.DUMMY) FROM DUAL D1, DUAL D2");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestResolveAmbiguousColumnCommandWhenAtComma()
 		{
 			_editor.Text = @"SELECT DUMMY, 1 FROM DUAL T1, DUAL T2";
@@ -1922,7 +1922,7 @@ FROM
 			_editor.Text.ShouldBe(@"SELECT T1.DUMMY, 1 FROM DUAL T1, DUAL T2");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestGenerateMissingColumnsCommand()
 		{
 			_editor.Text = @"SELECT NOT_EXISTING_COLUMN FROM SELECTION";
@@ -1936,7 +1936,7 @@ FROM
 			_editor.SelectionLength.ShouldBe(18);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestCreateScriptCommand()
 		{
 			const string statementText = @"SELECT * FROM SELECTION";
@@ -1951,7 +1951,7 @@ FROM
 			_editor.CaretOffset.ShouldBe(17);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestCreateScriptCommandAtPackageSynonym()
 		{
 			const string statementText = @"SELECT DBMS_RANDOM.VALUE FROM DUAL";
@@ -1961,7 +1961,7 @@ FROM
 			CanExecuteCommand(OracleCommands.CreateScript).ShouldBe(true);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestCreateScriptCommandAtPipelinedSchemaFunction()
 		{
 			const string statementText = @"SELECT * FROM TABLE(SQLPAD_FUNCTION())";
@@ -1971,7 +1971,7 @@ FROM
 			CanExecuteCommand(OracleCommands.CreateScript).ShouldBe(true);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void AddInsertIntoColumnListCommand()
 		{
 			const string statementText = @"INSERT INTO SELECTION SELECT * FROM SELECTION";
@@ -1986,7 +1986,7 @@ FROM
 			_editor.CaretOffset.ShouldBe(8);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void ReconfigureInsertIntoColumnList()
 		{
 			const string statementText = @"INSERT INTO SELECTION (RESPONDENTBUCKET_ID) SELECT * FROM SELECTION";
@@ -2001,7 +2001,7 @@ FROM
 			_editor.CaretOffset.ShouldBe(8);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestCleanRedundantSymbolCommand()
 		{
 			const string statementText = @"SELECT SELECTION.SELECTION_ID, HUSQVIK.RESPONDENTBUCKET.TARGETGROUP_ID, HUSQVIK.SELECTION.RESPONDENTBUCKET_ID FROM HUSQVIK.SELECTION, HUSQVIK.RESPONDENTBUCKET";
@@ -2014,7 +2014,7 @@ FROM
 			_editor.CaretOffset.ShouldBe(0);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestCleanRedundantProgramQualifier()
 		{
 			const string statementText = @"SELECT HUSQVIK.INVALID_OBJECT_TYPE(), SYS.XMLTYPE('<root/>'), HUSQVIK.SQLPAD.SQLPAD_FUNCTION(), SYS.DBMS_RANDOM.VALUE, HUSQVIK.TEST_SEQ.NEXTVAL FROM SYS.DUAL";
@@ -2027,7 +2027,7 @@ FROM
 			_editor.CaretOffset.ShouldBe(0);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestCleanRedundantTerminalsAtQueryBlockLevelInOrderByClause()
 		{
 			const string statementText = @"SELECT * FROM SELECTION ORDER BY SELECTION.PROJECT_ID, SELECTION.NAME";
@@ -2040,7 +2040,7 @@ FROM
 			_editor.CaretOffset.ShouldBe(0);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestCleanSingleRedundantQualifier()
 		{
 			const string statementText = @"SELECT SYS.XMLTYPE('<root/>'), SYS.DBMS_RANDOM.VALUE FROM HUSQVIK.SELECTION";
@@ -2053,7 +2053,7 @@ FROM
 			_editor.Text.ShouldBe("SELECT XMLTYPE('<root/>'), SYS.DBMS_RANDOM.VALUE FROM HUSQVIK.SELECTION");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestGenerateCreateTableScriptFromQueryCommand()
 		{
 			const string statementText = @"SELECT * FROM DUAL";
@@ -2076,7 +2076,7 @@ CREATE TABLE NEW_TABLE (
 			_editor.CaretOffset.ShouldBe(0);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestGenerateCreateTableScriptFromInlineView()
 		{
 			const string statementText = @"SELECT * FROM (SELECT * FROM DUAL)";
@@ -2090,7 +2090,7 @@ CREATE TABLE NEW_TABLE (
 			ExecuteCommand(OracleCommands.AddCreateTableAs, commandSettings);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestGenerateCreateTableAsSelectFromQueryCommand()
 		{
 			const string statementText = @"SELECT * FROM DUAL";
@@ -2109,7 +2109,7 @@ SELECT * FROM DUAL";
 			_editor.CaretOffset.ShouldBe(41);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestUnquoteCommand()
 		{
 			const string statementText = @"SELECT ""CaseSensitiveColumn"", ""CaseSensitiveColumn"" FROM INVOICELINES";
@@ -2124,7 +2124,7 @@ SELECT * FROM DUAL";
 			_editor.CaretOffset.ShouldBe(0);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestUnquoteCommandWithFullyQualifiedColumn()
 		{
 			const string statementText = @"SELECT ""CaseSensitiveTable"".""CaseSensitiveColumn"" FROM ""CaseSensitiveTable""";
@@ -2139,7 +2139,7 @@ SELECT * FROM DUAL";
 			_editor.CaretOffset.ShouldBe(0);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestUnquoteCommandWithAliasedExpression()
 		{
 			const string statementText = @"SELECT 1 + 1 ""CaseSensitiveColumn"" FROM DUAL";
@@ -2154,7 +2154,7 @@ SELECT * FROM DUAL";
 			_editor.CaretOffset.ShouldBe(0);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestUnquoteCommandWithExistingQuotedAlias()
 		{
 			const string statementText = @"SELECT ""CaseSensitiveColumn"" ""Alias"", ""CaseSensitiveColumn"" FROM INVOICELINES";
@@ -2168,7 +2168,7 @@ SELECT * FROM DUAL";
 			_editor.Text.ShouldBe(expectedResult);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestUnquoteCommandWithExistingObjectQuotedAlias()
 		{
 			const string statementText = @"SELECT ""ObjectAlias"".* FROM ""CaseSensitiveTable"" ""ObjectAlias""";
@@ -2182,7 +2182,7 @@ SELECT * FROM DUAL";
 			_editor.Text.ShouldBe(expectedResult);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestUnquoteCommandWithObjectOverDatabaseLink()
 		{
 			const string statementText = @"SELECT ""CaseSensitiveTable"".* FROM ""CaseSensitiveTable""@HQ_PDB_LOOPBACK";
@@ -2196,7 +2196,7 @@ SELECT * FROM DUAL";
 			_editor.Text.ShouldBe(expectedResult);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestUnquoteCommandWithRedundantQuotes()
 		{
 			const string statementText = @"SELECT ""DUAL"".* FROM ""DUAL""";
@@ -2210,7 +2210,7 @@ SELECT * FROM DUAL";
 			_editor.Text.ShouldBe(expectedResult);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestUnquoteCommandWithRedundantColumnQuotes()
 		{
 			const string statementText =
@@ -2235,7 +2235,7 @@ FROM
 			_editor.Text.ShouldBe(expectedResult);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestUnquoteCommandWithReservedWordCollision()
 		{
 			const string statementText = @"SELECT ""Level"" FROM DUAL";
@@ -2244,7 +2244,7 @@ FROM
 			CanExecuteCommand(OracleCommands.Unquote).ShouldBe(false);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestUnquoteCommandWithAsteriskAndexistingObjectAlias()
 		{
 			const string statementText = @"SELECT * FROM ""RemoteTable""@HQ_PDB_LOOPBACK REMOTE_TABLE";
@@ -2253,7 +2253,7 @@ FROM
 			CanExecuteCommand(OracleCommands.Unquote).ShouldBe(false);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestConvertSingleBindVariableToLiteralCommand()
 		{
 			const string statementText = @"SELECT :1, :1 FROM DUAL";
@@ -2267,7 +2267,7 @@ FROM
 			_editor.Text.ShouldBe(expectedResult);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestConvertAllBindVariableOccurencesToLiteralCommand()
 		{
 			const string statementText = @"SELECT :1, :1 FROM DUAL";
@@ -2281,7 +2281,7 @@ FROM
 			_editor.Text.ShouldBe(expectedResult);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestConvertAllBindVariableOccurencesToTimestampLiteralCommand()
 		{
 			const string statementText = @"SELECT :1, :1 FROM DUAL";
@@ -2313,7 +2313,7 @@ FROM
 			ExecuteCommand(action.ExecutionHandler, action.ExecutionContext);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestConvertSingleLiteralToBindVariableCommand()
 		{
 			const string statementText = @"SELECT 'VALUE', 'VALUE' FROM DUAL";
@@ -2327,7 +2327,7 @@ FROM
 			_editor.Text.ShouldBe(expectedResult);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestConvertAllLiteralOccurencesToBindVariableCommand()
 		{
 			const string statementText = @"SELECT DATE'2014-10-04', DATE'2014-10-04', TIMESTAMP'2014-10-04', '2014-10-04' FROM DUAL";
@@ -2341,7 +2341,7 @@ FROM
 			_editor.Text.ShouldBe(expectedResult);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestConvertNumberLiteralToBindVariable()
 		{
 			const string statementText = @"SELECT 123, 123 FROM DUAL";
@@ -2360,7 +2360,7 @@ FROM
 			bindVariable.DataType.ShouldBe("NUMBER");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestConvertTimestampLiteralToBindVariable()
 		{
 			const string statementText = @"SELECT TIMESTAMP'2014-11-24 14:14:14', TIMESTAMP'2014-11-24 14:14:14' FROM DUAL";
@@ -2393,7 +2393,7 @@ FROM
 			ExecuteCommand(action.ExecutionHandler, action.ExecutionContext);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestPropagateCommand()
 		{
 			const string statementText = @"SELECT 1 C1 FROM (SELECT 2 C2 FROM DUAL)";
@@ -2408,7 +2408,7 @@ FROM
 			_editor.Text.ShouldBe(expectedResult);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestPropagateCommandWithGrandParentWithAsterisk()
 		{
 			const string statementText = @"SELECT * FROM (SELECT 1 FROM (SELECT 1 C FROM DUAL))";
@@ -2423,7 +2423,7 @@ FROM
 			_editor.Text.ShouldBe(expectedResult);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestPropagateCommandNotAvailable()
 		{
 			const string statementText = @"SELECT SELECTION_ID FROM SELECTION";
@@ -2433,7 +2433,7 @@ FROM
 			CanExecuteCommand(OracleCommands.PropagateColumn).ShouldBe(false);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestPropagateCommandWithWithoutAlias()
 		{
 			const string statementText = @"SELECT 1 FROM (SELECT 1 FROM DUAL)";
@@ -2448,7 +2448,7 @@ FROM
 			_editor.Text.ShouldBe(expectedResult);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestPropagateCommandCanBeExecutedAtCommaTerminal()
 		{
 			const string statementText = @"SELECT 1 FROM (SELECT DUMMY, DUMMY FROM DUAL)";
@@ -2458,7 +2458,7 @@ FROM
 			CanExecuteCommand(OracleCommands.PropagateColumn).ShouldBe(true);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestPropagateCommandWithQueryBlockWithModelClause()
 		{
 			const string statementText =
@@ -2491,7 +2491,7 @@ MODEL
 			_editor.Text.ShouldBe(expectedResult);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestConvertOrderByColumnReferences()
 		{
 			const string statementText = @"SELECT T.*, '[' || NAME || ']' FROM (SELECT NAME FROM SELECTION) T ORDER BY 1, 2";
@@ -2506,7 +2506,7 @@ MODEL
 			_editor.Text.ShouldBe(expectedResult);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestConvertOrderByColumnReferencesWithInvalidColumnNumber()
 		{
 			const string statementText = @"SELECT T.*, '[' || NAME || ']' FROM (SELECT NAME FROM SELECTION) T ORDER BY 1, 3";
@@ -2521,7 +2521,7 @@ MODEL
 			_editor.Text.ShouldBe(expectedResult);
 		}
 		
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestConvertOrderByColumnReferencesWithAliasedDirectColumnReference()
 		{
 			const string statementText = @"SELECT DUMMY NOT_DUMMY FROM DUAL ORDER BY 1";
@@ -2536,7 +2536,7 @@ MODEL
 			_editor.Text.ShouldBe(expectedResult);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestConvertOrderByColumnReferencesAtSpecificColumn()
 		{
 			const string statementText = @"SELECT T.*, '[' || NAME || ']' FROM (SELECT NAME FROM SELECTION) T ORDER BY 1, 2";
@@ -2551,7 +2551,7 @@ MODEL
 			_editor.Text.ShouldBe(expectedResult);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestConvertOrderByColumnReferencesWithColumnAliasAndDescendingOrder()
 		{
 			const string statementText = @"SELECT COUNT(*) TOTALS FROM DUAL GROUP BY DUMMY ORDER BY 1 DESC";
@@ -2566,7 +2566,7 @@ MODEL
 			_editor.Text.ShouldBe(expectedResult);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestSplitStringCommand()
 		{
 			const string statementText = @"SELECT q'|sometext|' FROM dual";
@@ -2581,7 +2581,7 @@ MODEL
 			_editor.CaretOffset.ShouldBe(20);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestSplitStringCommandAfterOffApostrophe()
 		{
 			const string statementText = @"SELECT 'some''text' FROM dual";
@@ -2596,7 +2596,7 @@ MODEL
 			_editor.CaretOffset.ShouldBe(19);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestExpandViewCommand()
 		{
 			const string statementText = @"SELECT * FROM v$session";
@@ -2611,7 +2611,7 @@ MODEL
 			_editor.CaretOffset.ShouldBe(39);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestGenerateCustomTypeCSharpWrapperClassCommand()
 		{
 			const string statementText = @"SELECT SYS.ODCIARGDESC() FROM DUAL";
@@ -2695,7 +2695,7 @@ public abstract class CustomTypeBase<T> : IOracleCustomType, IOracleCustomTypeFa
 			result.ShouldBe(expectedResult);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestGenerateCustomCollectionTypeCSharpWrapperClassCommand()
 		{
 			const string statementText = @"SELECT SYS.ODCIARGDESCLIST() FROM DUAL";

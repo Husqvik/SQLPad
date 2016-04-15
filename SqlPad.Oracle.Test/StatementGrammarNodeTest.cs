@@ -25,7 +25,7 @@ namespace SqlPad.Oracle.Test
 			_rootNode = oracleStatement.RootNode;
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestGetPathFilterDescendants()
 		{
 			var rootNestedQuery = _rootNode[0, 0, 0];
@@ -36,7 +36,7 @@ namespace SqlPad.Oracle.Test
 			commonTableExpressions.Length.ShouldBe(4);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestStatementCollectionGetNodeAtPositionAtSemicolonBetweenStatements()
 		{
 			var statements = OracleSqlParser.Instance.Parse("SELECT * FROM DUAL;SELECT * FROM DUAL");

@@ -9,7 +9,7 @@ namespace SqlPad.Oracle.Test
     {
 		private readonly OracleFoldingSectionProvider _provider = new OracleFoldingSectionProvider();
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSelectFoldingSections()
 		{
 			const string statement =
@@ -42,7 +42,7 @@ FROM
 			foldingSections[2].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderSubquery);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestPlSqlBodyFoldingSections()
 		{
 			const string statement =
@@ -100,7 +100,7 @@ END;";
 			foldingSections[4].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderPlSqlBlock);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestPlSqlExceptionFoldingSections()
 		{
 			const string statement =
@@ -129,7 +129,7 @@ END;";
 			foldingSections[1].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderException);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestPlSqlBodyFoldingSectionWithLabeledEnding()
 		{
 			const string statement =
@@ -161,7 +161,7 @@ END L3;";
 			foldingSections[2].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderPlSqlBlock);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestPlSqlBodyFoldingSectionWithStatementsWithSameEndingAsProgramUnit()
 		{
 			const string statement =
@@ -197,7 +197,7 @@ END;";
 			foldingSections[1].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderPlSqlBlock);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestInvalidPlSqlBodyFoldingSection()
 		{
 			const string statement =
@@ -215,7 +215,7 @@ END:";
 			foldingSections[0].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderPlSqlBlock);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCompoundTriggerFoldingSection()
 		{
 			const string statement =

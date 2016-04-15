@@ -9,7 +9,7 @@ namespace SqlPad.Oracle.Test
 		[TestFixture]
 		public class OracleExtensionsTest
 		{
-			[Test(Description = @"")]
+			[Test]
 			public void TestQuotedToSimpleIdentifierStartingWithNonLetter()
 			{
 				const string quotedIdentifier = "\"_IDENTIFIER\"";
@@ -17,7 +17,7 @@ namespace SqlPad.Oracle.Test
 				simpleIdentifier.ShouldBe(quotedIdentifier);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestQuotedToSimpleIdentifierContainingDash()
 			{
 				const string quotedIdentifier = "\"DASH-COLUMN\"";
@@ -25,7 +25,7 @@ namespace SqlPad.Oracle.Test
 				simpleIdentifier.ShouldBe(quotedIdentifier);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestQuotedToSimpleIdentifierOfSingleLetterIdentifier()
 			{
 				const string quotedIdentifier = "\"x\"";
@@ -33,7 +33,7 @@ namespace SqlPad.Oracle.Test
 				simpleIdentifier.ShouldBe(quotedIdentifier);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestNormalStringPlainText()
 			{
 				const string literal = "'some''text'";
@@ -41,7 +41,7 @@ namespace SqlPad.Oracle.Test
 				text.ShouldBe("some'text");
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestQuotedStringPlainText()
 			{
 				const string literal = "q'|some''text|'";
@@ -49,7 +49,7 @@ namespace SqlPad.Oracle.Test
 				text.ShouldBe("some''text");
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestInvalidQuotedStringPlainText()
 			{
 				const string literal = "q'|some''text'";
@@ -63,7 +63,7 @@ namespace SqlPad.Oracle.Test
 		{
 			private static readonly OracleSqlParser Parser = OracleSqlParser.Instance;
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestTryGetPlSqlUnitNameFromCreateProcedure()
 			{
 				var statement = Parser.Parse("CREATE PROCEDURE TEST_SCHEMA.TEST_PROCEDURE")[0];
@@ -74,7 +74,7 @@ namespace SqlPad.Oracle.Test
 				identifier.Name.ShouldBe("TEST_PROCEDURE");
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestTryGetPlSqlUnitNameFromCreateFunction()
 			{
 				var statement = Parser.Parse("CREATE FUNCTION TEST_SCHEMA.TEST_FUNCTION")[0];
@@ -85,7 +85,7 @@ namespace SqlPad.Oracle.Test
 				identifier.Name.ShouldBe("TEST_FUNCTION");
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestTryGetPlSqlUnitNameFromCreateTable()
 			{
 				var statement = Parser.Parse("CREATE TABLE TEST_SCHEMA.TEST_TABLE")[0];

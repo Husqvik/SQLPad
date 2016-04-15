@@ -16,7 +16,7 @@ namespace SqlPad.Test
 			_editor = new SqlTextEditor();
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void SetLineDuplicationAtLineBeginning()
 		{
 			_editor.Text = "SELECT * FROM SELECTION;";
@@ -26,7 +26,7 @@ namespace SqlPad.Test
 			_editor.CaretOffset.ShouldBe(25);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void SetLineDuplicationAtLineEnd()
 		{
 			_editor.Text = "SELECT * FROM SELECTION;";
@@ -37,7 +37,7 @@ namespace SqlPad.Test
 			_editor.CaretOffset.ShouldBe(49);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void SetSelectionDuplicate()
 		{
 			_editor.Text = "SELECT * FROM SELECTION;";
@@ -50,7 +50,7 @@ namespace SqlPad.Test
 			_editor.CaretOffset.ShouldBe(33);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestBlockComments()
 		{
 			_editor.Text = "SELECT * FROM SELECTION;\nSELECT * FROM RESPONDENTBUCKET";
@@ -64,7 +64,7 @@ namespace SqlPad.Test
 			_editor.SelectionLength.ShouldBe(0);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestLineComments()
 		{
 			_editor.Text = "SELECT * FROM SELECTION;\nSELECT * FROM RESPONDENTBUCKET";

@@ -16,7 +16,7 @@ namespace SqlPad.Oracle.Test
 	{
 		private static readonly OracleSqlParser Parser = OracleSqlParser.Instance;
 
-		[Test(Description = @"")]
+		[Test(Description = @"Test complex statement parsing")]
 		public void TestComplexStatementParsing()
 		{
 			using (var reader = File.OpenText(@"TestFiles\SqlStatements1.sql"))
@@ -31,7 +31,7 @@ namespace SqlPad.Oracle.Test
 		[Test(Description = @"Tests exception raise when null token reader is passed")]
 		public void TestNullTokenReader()
 		{
-			Assert.Throws<ArgumentNullException>(() => Parser.Parse((OracleTokenReader)null));
+			Should.Throw<ArgumentNullException>(() => Parser.Parse((OracleTokenReader)null));
 		}
 
 		[Test(Description = @"Tests empty string. ")]
@@ -981,7 +981,7 @@ namespace SqlPad.Oracle.Test
 			// TODO: Precise assertions
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestDoubleTableAlias()
 		{
 			const string statement1 = @"SELECT NULL FROM (DUAL D) D";
@@ -1688,7 +1688,7 @@ FROM DUAL";
 			// TODO: Precise assertions
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSelectListWhenEnteringNewColumnsBeforeFromTerminal()
 		{
 			const string query1 = @"SELECT NAME, /* missing expression 1 */, /* missing expression 2 */ FROM SELECTION";
@@ -1712,7 +1712,7 @@ FROM DUAL";
 			commentNodes[1].ParentNode.ShouldNotBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSelectListWhenEnteringMathExpressionsBeforeFromTerminal()
 		{
 			const string query1 = @"SELECT NAME, 1 + /* missing expression */ FROM SELECTION";
@@ -1729,7 +1729,7 @@ FROM DUAL";
 			terminals.Length.ShouldBe(7);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestWithLevelAsColumnAlias()
 		{
 			const string query1 = @"SELECT 1 LEVEL FROM DUAL";
@@ -1740,7 +1740,7 @@ FROM DUAL";
 			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestWithLevelAsTableAlias()
 		{
 			const string query1 = @"SELECT 1 FROM DUAL LEVEL";
@@ -1751,7 +1751,7 @@ FROM DUAL";
 			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestEnteringSecondStatement()
 		{
 			const string query1 = @"SELECT 1 FROM DUAL; S";
@@ -1770,7 +1770,7 @@ FROM DUAL";
 			statements[1].SourcePosition.Length.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCaseWhenIssue()
 		{
 			const string query1 = @"SELECT CASE WHEN FROM DUAL";
@@ -1788,7 +1788,7 @@ FROM DUAL";
 			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCountAsterisk()
 		{
 			const string query1 = @"SELECT COUNT(*), COUNT(ALL *) OVER (PARTITION BY 1 ORDER BY 1) FROM DUAL";
@@ -1818,7 +1818,7 @@ FROM DUAL";
 			terminals[4].Id.ShouldBe(terminalId);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUnfinishedNestedJoinClause()
 		{
 			const string query1 = @"SELECT NULL FROM SELECTION LEFT JOIN RESPONDENTBUCKET ON SELECTION.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID JOIN";
@@ -1834,7 +1834,7 @@ FROM DUAL";
 			terminals[4].Id.ShouldBe(Terminals.Left);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUnfinishedNestedQuery()
 		{
 			const string statement1 = @"SELECT NULL FROM (SELECT NULL FROM )";
@@ -1844,7 +1844,7 @@ FROM DUAL";
 			statement.AllTerminals.Count.ShouldBe(8);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestJoinKeywordAsAlias()
 		{
 			const string statement1 = @"SELECT JOIN.* FROM ""CaseSensitiveTable"" JOIN";
@@ -1861,7 +1861,7 @@ FROM DUAL";
 			terminals[6].Id.ShouldBe(Terminals.ObjectAlias);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestParsingCancellation()
 		{
 			var cancellationTokenSource = new CancellationTokenSource();
@@ -1874,7 +1874,7 @@ FROM DUAL";
 				var cancellationStopwatch = Stopwatch.StartNew();
 				cancellationTokenSource.Cancel();
 
-				var exception = Assert.Throws<AggregateException>(() => task.Wait(CancellationToken.None));
+				var exception = Should.Throw<AggregateException>(() => task.Wait(CancellationToken.None));
 				exception.InnerException.ShouldBeTypeOf<TaskCanceledException>();
 
 				parsingStopwatch.Stop();
@@ -1884,7 +1884,7 @@ FROM DUAL";
 			}
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestInvalidCastFunction()
 		{
 			const string statement1 = @"SELECT CAST(Respondent_ID AS NUMBER(16) FROM RESPONDENT";
@@ -1894,7 +1894,7 @@ FROM DUAL";
 			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestInvalidCastFunctionFollowedByChainingClause()
 		{
 			const string statement1 = @"SELECT CAST(Respondent_ID AS NUMBER(16), Respondent_ID FROM RESPONDENT";
@@ -1904,7 +1904,7 @@ FROM DUAL";
 			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestNegativeScaleInDataType()
 		{
 			const string statement1 = @"SELECT CAST(99 AS NUMBER(5,-2)) FROM DUAL";
@@ -1914,7 +1914,7 @@ FROM DUAL";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestTimestampWithLocalTimeZoneDataType()
 		{
 			const string statement1 = @"SELECT CAST(SYSDATE AS TIMESTAMP (9) WITH LOCAL TIME ZONE) FROM DUAL";
@@ -1924,7 +1924,7 @@ FROM DUAL";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestIntervalDataTypes()
 		{
 			const string statement1 = @"SELECT CAST('4-8' AS INTERVAL YEAR(9) TO MONTH), CAST('2 12:34:45.6789' AS INTERVAL DAY (9) TO SECOND (9)) FROM DUAL";
@@ -1934,7 +1934,7 @@ FROM DUAL";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestOtherDataTypes()
 		{
 			const string statement1 =
@@ -1948,7 +1948,7 @@ FROM DUAL";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestDatabaseLinkWithDomainName()
 		{
 			const string statement1 = @"CREATE SYNONYM emp_table FOR oe.employees@remote.us.oracle.com@instance";
@@ -1958,7 +1958,7 @@ FROM DUAL";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestQuotedStringWithApostrophe()
 		{
 			const string statement1 = @"SELECT q'|quoted'string|' FROM DUAL";
@@ -1968,7 +1968,7 @@ FROM DUAL";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestDatetimeAtTimeZoneClause()
 		{
 			const string statement1 = @"SELECT SYSTIMESTAMP AT TIME ZONE SESSIONTIMEZONE, TIMESTAMP'2014-10-04 12:32:34.123456' AT TIME ZONE DBTIMEZONE, SYSTIMESTAMP AT TIME ZONE 'America/Los_Angeles', DUMMY AT LOCAL FROM DUAL";
@@ -1978,7 +1978,7 @@ FROM DUAL";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestComplexModelClause()
 		{
 			const string statement1 =
@@ -2040,7 +2040,7 @@ MODEL
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestModelClauseWithIterateClause()
 		{
 			const string statement1 =
@@ -2066,7 +2066,7 @@ MODEL
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestModelClauseWithDimensionFromToWithDecrement()
 		{
 			const string statement1 =
@@ -2083,7 +2083,7 @@ MODEL
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestModelClauseWithDimensionInLiteralList()
 		{
 			const string statement1 =
@@ -2100,7 +2100,7 @@ MODEL
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestModelClauseWithOtherClauses()
 		{
 			const string statement1 =
@@ -2127,7 +2127,7 @@ ORDER BY
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestModelClauseWithDimensionAndMeasuresWithAsAlias()
 		{
 			const string statement1 =
@@ -2148,7 +2148,7 @@ MODEL
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestModelClauseWithRuleWithCountAsterisk()
 		{
 			const string statement1 =
@@ -2165,7 +2165,7 @@ MODEL
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestComplexHierarchicalQuery()
 		{
 			const string statement1 =
@@ -2193,7 +2193,7 @@ ORDER BY
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCharacterFunctionWithNationalCharacterSet()
 		{
 			const string statement1 = @"SELECT CHR(219 USING NCHAR_CS) FROM DUAL";
@@ -2203,7 +2203,7 @@ ORDER BY
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestXmlSerializeFunction()
 		{
 			const string statement1 = @"SELECT XMLSERIALIZE(CONTENT XMLTYPE('<Root>value</Root>').GETCLOBVAL() AS CLOB ENCODING 'UTF-8' VERSION '1.0' INDENT SIZE = 2 SHOW DEFAULTS) || '' FROM DUAL";
@@ -2213,7 +2213,7 @@ ORDER BY
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCommentWithInvalidGrammarWithOverlappingChildNodes()
 		{
 			const string statement1 = "SELECT NULL FROM (SELECT NULL FROM DUAL WHERE DUMMY = 'X'--77918\nAN";
@@ -2223,7 +2223,7 @@ ORDER BY
 			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSqlPlusSeparator()
 		{
 			const string statement1 = "SELECT NULL FROM DUAL\n/\nSELECT NULL FROM DUAL";
@@ -2236,7 +2236,7 @@ ORDER BY
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCursorFunction()
 		{
 			const string statement1 = "SELECT CURSOR(SELECT * FROM DUAL) CURSOR_OUTPUT FROM DUAL";
@@ -2246,7 +2246,7 @@ ORDER BY
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestXmlCastFunction()
 		{
 			const string statement1 = "SELECT XMLCAST(XMLQUERY('/r/v' PASSING XMLTYPE('<r><c>id</c><v>value 1</v></r>') RETURNING CONTENT) AS VARCHAR2(100)) || ' Value' FROM DUAL";
@@ -2256,7 +2256,7 @@ ORDER BY
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestXmlExistsFunction()
 		{
 			const string statement1 = "SELECT * FROM DUAL WHERE XMLEXISTS('/r[c=\"id\"]' PASSING XMLTYPE('<r><c>id</c><v>value 1</v></r>')) AND 1 = 1";
@@ -2266,7 +2266,7 @@ ORDER BY
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestIsJsonCondition()
 		{
 			const string statement1 = "SELECT * FROM DUAL WHERE DUMMY IS NOT JSON LAX WITHOUT UNIQUE KEYS AND 1 = 1";
@@ -2276,7 +2276,7 @@ ORDER BY
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestJsonExistsFunction()
 		{
 			const string statement1 = "SELECT * FROM DUAL WHERE JSON_EXISTS('[{first: \"Jeff\"}, {last: \"Williams\"}]', '$[1].first' FALSE ON ERROR) AND 1 = 1";
@@ -2286,7 +2286,7 @@ ORDER BY
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestJsonQueryFunction()
 		{
 			const string statement1 = "SELECT JSON_QUERY('[{\"a\": 100}, {\"b\": 200}, {\"c\": 300}]', '$[0]' RETURNING VARCHAR2(100) PRETTY ASCII WITH CONDITIONAL WRAPPER EMPTY ON ERROR) || '' AS VALUE FROM DUAL";
@@ -2296,7 +2296,7 @@ ORDER BY
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestJsonTableFunction()
 		{
 			const string statement1 =
@@ -2344,7 +2344,7 @@ FROM
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestJsonValueFunction()
 		{
 			const string statement1 = "SELECT JSON_VALUE('{firstname: \"John\"}', '$.lastname' DEFAULT 'No last name found' ON ERROR) || '' LAST_NAME FROM DUAL";
@@ -2354,7 +2354,7 @@ FROM
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestIncompleteInlineView()
 		{
 			const string statement1 = "SELECT * FROM DUAL D1 JOIN (SELECT DUMMY FROM DUAL) X";
@@ -2370,7 +2370,7 @@ FROM
 			terminals[8].Id.ShouldBe(Terminals.Identifier);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCollectionFunction()
 		{
 			const string statement1 = "SELECT COLLECT(UNIQUE ROWNUM || 'X' ORDER BY ROWNUM + 1 DESC NULLS LAST, 1) || NULL FROM SELECTION WHERE ROWNUM <= 10";
@@ -2380,7 +2380,7 @@ FROM
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestFunctionSupportingWithinGroupClause()
 		{
 			const string statement1 = "SELECT CUME_DIST(1, 1) WITHIN GROUP (ORDER BY 0, 1), RANK(1) WITHIN GROUP (ORDER BY NULL), DENSE_RANK(1) WITHIN GROUP (ORDER BY NULL), PERCENTILE_CONT(0) WITHIN GROUP (ORDER BY 1), PERCENTILE_DISC(0) WITHIN GROUP (ORDER BY 1) FROM DUAL";
@@ -2390,7 +2390,7 @@ FROM
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestObsoleteTheClause()
 		{
 			const string statement1 = "SELECT * FROM THE(SELECT SQLPAD.PIPELINED_FUNCTION() FROM DUAL)";
@@ -2400,7 +2400,7 @@ FROM
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestTableCollectionExpressionWithSubquery()
 		{
 			const string statement1 = "SELECT * FROM TABLE(SELECT SQLPAD.PIPELINED_FUNCTION() FROM DUAL)(+) AS OF TIMESTAMP SYSDATE - 0.01 ALIAS";
@@ -2410,7 +2410,7 @@ FROM
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSelectIntoScalarVariable()
 		{
 			const string statement1 = "SELECT DUMMY, DUMMY INTO :X, :Y FROM DUAL";
@@ -2420,7 +2420,7 @@ FROM
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSelectIntoCollectionVariable()
 		{
 			const string statement1 = "SELECT SELECTION_ID, NAME BULK COLLECT INTO :X, :Y FROM SELECTION";
@@ -2430,7 +2430,7 @@ FROM
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUserFunction()
 		{
 			const string statement1 = "SELECT USER FROM DUAL";
@@ -2440,7 +2440,7 @@ FROM
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestBasicRowPatternMatchingClause()
 		{
 			const string statement1 =
@@ -2471,7 +2471,7 @@ ORDER BY
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestRowPatternMatchingClauseWithNavigationFunction()
 		{
 			const string statement1 =
@@ -2499,7 +2499,7 @@ ORDER BY symbol, tstamp";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestNotBetweenCondition()
 		{
 			const string statement1 = @"SELECT * FROM SELECTION WHERE SELECTION_ID NOT BETWEEN 0 AND 3000000";
@@ -2509,7 +2509,7 @@ ORDER BY symbol, tstamp";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestParenthesisWrappedSubqueryConcatenatedWithAnotherSubquery()
 		{
 			const string statement1 = @"(SELECT * FROM DUAL) UNION ALL SELECT * FROM DUAL";
@@ -2519,7 +2519,7 @@ ORDER BY symbol, tstamp";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestTrimSpecificGrammar()
 		{
 			const string statement1 = @"SELECT TRIM(BOTH 'X' || NULL FROM 'XVODKAX') FROM DUAL";
@@ -2529,7 +2529,7 @@ ORDER BY symbol, tstamp";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestChrSpecificGrammar()
 		{
 			const string statement1 = @"SELECT CHR(50 + 0 USING NCHAR_CS) FROM DUAL";
@@ -2539,7 +2539,7 @@ ORDER BY symbol, tstamp";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestNewKeywordForObjectTypeConstructor()
 		{
 			const string statement1 = @"SELECT NEW HUSQVIK.TEST_TYPE(10) X FROM DUAL";
@@ -2549,7 +2549,7 @@ ORDER BY symbol, tstamp";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestGroupValueComparisonWithoutSetOperator()
 		{
 			const string statement1 = @"SELECT * FROM DUAL WHERE (DUMMY, DUMMY) = (SELECT DUMMY, DUMMY FROM DUAL)";
@@ -2559,7 +2559,7 @@ ORDER BY symbol, tstamp";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestHavingWithoutGroupBy()
 		{
 			const string statement1 = @"SELECT COUNT(*) FROM DUAL HAVING COUNT(*) = 1";
@@ -2569,7 +2569,7 @@ ORDER BY symbol, tstamp";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestMultiSetInClause()
 		{
 			const string statement1 = @"SELECT * FROM DUAL WHERE (DUMMY, DUAL.DUMMY) IN (SELECT DUAL.DUMMY, DUMMY FROM DUAL)";
@@ -2579,7 +2579,7 @@ ORDER BY symbol, tstamp";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCastMultiSet()
 		{
 			const string statement1 = @"SELECT * FROM TABLE(CAST(MULTISET(SELECT * FROM DUAL) AS SYS.ODCIVARCHAR2LIST))";
@@ -2589,7 +2589,7 @@ ORDER BY symbol, tstamp";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestPartitionJoinWithNonParenthesisEnclosedKey()
 		{
 			const string statement1 = @"SELECT * FROM DUAL T1 LEFT JOIN DUAL T2 PARTITION BY DUMMY ON T1.DUMMY = T2.DUMMY";
@@ -2599,7 +2599,7 @@ ORDER BY symbol, tstamp";
 			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUnsupportedTimeLiteralExpression()
 		{
 			const string statement1 = @"SELECT TIME'12:34:56' AT LOCAL FROM DUAL";
@@ -2609,7 +2609,7 @@ ORDER BY symbol, tstamp";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestOracle12ContainerFunction()
 		{
 			const string statement1 = @"SELECT * FROM CONTAINERS(DBA_DATA_FILES) ALIAS";
@@ -2619,7 +2619,7 @@ ORDER BY symbol, tstamp";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestWhereCurrentOfCursorCondition()
 		{
 			const string statement1 = @"UPDATE test_table SET column1 = 0 WHERE CURRENT OF test_cursor";
@@ -2629,7 +2629,7 @@ ORDER BY symbol, tstamp";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUndocumentedOverlapsOperator()
 		{
 			const string statement1 = @"SELECT * FROM DUAL WHERE (DATE'2007-01-01' + 1, DATE'2008-01-01') OVERLAPS (DATE'2005-01-01', DATE'2006-01-01' + 1) AND 1 = 1";
@@ -2639,7 +2639,7 @@ ORDER BY symbol, tstamp";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSingleGroupingSetClause()
 		{
 			const string statement1 = @"SELECT count(*) FROM dual GROUP BY (), (dummy, dummy)";
@@ -2649,7 +2649,7 @@ ORDER BY symbol, tstamp";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestXmlQueryWithExpressionAndNullOnEmptyClause()
 		{
 			const string statement1 = @"SELECT xmlquery(to_char(1) RETURNING CONTENT NULL ON EMPTY) FROM dual";
@@ -2659,7 +2659,7 @@ ORDER BY symbol, tstamp";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAggregateFunctionWithinModelClause()
 		{
 			const string statement1 = @"SELECT NULL FROM dual MODEL DIMENSION BY (dummy d1, dummy d2) MEASURES (0 x) RULES (x[ANY, ANY] = max(x)[ANY, cv()])";
@@ -2669,7 +2669,7 @@ ORDER BY symbol, tstamp";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test(Description = @""), Ignore]
+		[Test, Ignore]
 		public void TestParenthesisEnclosedObjectMember()
 		{
 			const string statement1 = @"(((httpuritype('http://www.yr.no/place/Sweden/Stockholm/Stockholm/forecast.xml')).getxml())).getclobval() FROM dual";
@@ -2681,7 +2681,7 @@ ORDER BY symbol, tstamp";
 
 		public class PlSql
 		{
-			[Test(Description = @"")]
+			[Test]
 			public void TestAnonymousPlSqlBlock()
 			{
 				const string statement1 =
@@ -2764,7 +2764,7 @@ END;";
 				statement.IsPlSql.ShouldBe(true);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestDummyPlSql2()
 			{
 				const string statement1 =
@@ -2783,7 +2783,7 @@ BEGIN NULL; END;
 				});
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestPlSqlAndSqlCombined()
 			{
 				const string statement1 =
@@ -2801,7 +2801,7 @@ SELECT * FROM DUAL";
 				});
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestCreatePipelinedFunction()
 			{
 				const string statement1 =
@@ -2844,7 +2844,7 @@ END;";
 				statement.IsPlSql.ShouldBe(true);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestCreateFunction()
 			{
 				const string statement1 = @"CREATE OR REPLACE EDITIONABLE FUNCTION TEST_FUNCTION RETURN VARCHAR2 RESULT_CACHE RELIES_ON (HUSQVIK.SELECTION, PROJECT) IS BEGIN RETURN NULL; END;";
@@ -2853,7 +2853,7 @@ END;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestCreateAggregateFunctionWithSemicolonTerminator()
 			{
 				const string statement1 = @"CREATE OR REPLACE FUNCTION string_agg(value VARCHAR2) RETURN VARCHAR2 PARALLEL_ENABLE AGGREGATE USING t_string_agg;";
@@ -2862,7 +2862,7 @@ END;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestCreateProcedure()
 			{
 				const string statement1 = @"CREATE OR REPLACE NONEDITIONABLE PROCEDURE TEST_PROCEDURE AUTHID DEFINER ACCESSIBLE BY (TYPE HUSQVIK.TEST_TYPE, TEST_FUNCTION) IS EXTERNAL;";
@@ -2872,7 +2872,7 @@ END;";
 				statement.IsPlSql.ShouldBe(true);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestCreatePackage()
 			{
 				const string statement1 =
@@ -2896,7 +2896,7 @@ END emp_mgmt;";
 				statement.IsPlSql.ShouldBe(true);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestCreatePackageBody()
 			{
 				const string statement1 =
@@ -2938,7 +2938,7 @@ END test_package_body;";
 				statement.IsPlSql.ShouldBe(true);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestForAllStatement()
 			{
 				const string statement1 =
@@ -2956,7 +2956,7 @@ END;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestProcedureCall()
 			{
 				const string statement1 = @"BEGIN P1(1); END;";
@@ -2970,7 +2970,7 @@ END;";
 				terminals[6].IsReservedWord.ShouldBe(true);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestNestedProcedureCall()
 			{
 				const string statement1 = @"DECLARE PROCEDURE P1(P1 NUMBER) IS BEGIN NULL; END; BEGIN P1(1); END;";
@@ -2979,7 +2979,7 @@ END;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestCaseAndEndLabelCombination()
 			{
 				const string statement1 = @"BEGIN CASE 0 WHEN 0 THEN NULL; END CASE; END LABEL;";
@@ -2988,7 +2988,7 @@ END;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestRowCountCursorFunction()
 			{
 				const string statement1 = @"DECLARE x NUMBER; BEGIN x := SQL%ROWCOUNT; END;";
@@ -2997,7 +2997,7 @@ END;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestBulkRowCountCursorFunction()
 			{
 				const string statement1 = @"DECLARE x NUMBER; BEGIN x := SQL%BULK_ROWCOUNT(1); END;";
@@ -3006,7 +3006,7 @@ END;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestVariableDeclarationAfterCursorDefinition()
 			{
 				const string statement1 = @"DECLARE CURSOR c1 IS SELECT * FROM DUAL; x NUMBER; BEGIN NULL; END;";
@@ -3015,7 +3015,7 @@ END;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestCursorDefinitionAfterProcedureDefiniton()
 			{
 				const string statement1 = @"DECLARE PROCEDURE P1 IS BEGIN NULL; END; CURSOR c1 IS SELECT * FROM DUAL; BEGIN NULL; END;";
@@ -3025,7 +3025,7 @@ END;";
 				statement.SourcePosition.IndexStart.ShouldBe(0);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestRowIdParameterAndVariable()
 			{
 				const string statement1 = @"CREATE OR REPLACE PROCEDURE P1 (P ROWID) IS V ROWID; BEGIN NULL; END;";
@@ -3034,7 +3034,7 @@ END;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestExecuteImmediateWithExpressionParameter()
 			{
 				const string statement1 = @"BEGIN EXECUTE IMMEDIATE 'SELECT ' || (1 + 1) || ' FROM DUAL'; END;";
@@ -3043,7 +3043,7 @@ END;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestCollectionTargetWithinIntoClause()
 			{
 				const string statement1 =
@@ -3058,7 +3058,7 @@ END;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestMultipleStatementsWithinCaseBranches()
 			{
 				const string statement1 =
@@ -3080,7 +3080,7 @@ END;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestRecordWithCollectionAttributeAssignment()
 			{
 				const string statement1 =
@@ -3110,7 +3110,7 @@ END;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestWithPlSqlDeclaration()
 			{
 				const string statement1 =
@@ -3126,7 +3126,7 @@ SELECT F1(VAL), F2(VAL + 1) FROM CTE";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestBindVariableAsAssignmentTarget()
 			{
 				const string statement1 =
@@ -3136,7 +3136,7 @@ SELECT F1(VAL), F2(VAL + 1) FROM CTE";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestDynamicTypesInRecordTypeDefinition()
 			{
 				const string statement1 =
@@ -3148,7 +3148,7 @@ END DEPARTMENT_INFO;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestRefCursorUsingParameters()
 			{
 				const string statement1 =
@@ -3167,7 +3167,7 @@ END;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestForLoopWithInnerIfStatement()
 			{
 				const string statement1 =
@@ -3185,7 +3185,7 @@ END;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestNewKeywordForObjectTypeConstructor()
 			{
 				const string statement1 =
@@ -3199,7 +3199,7 @@ END;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestTypeDefinitionBasedOnRowType()
 			{
 				const string statement1 =
@@ -3213,7 +3213,7 @@ END;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestTypeDefinitionBasedOnColumnType()
 			{
 				const string statement1 =
@@ -3227,7 +3227,7 @@ END;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestParameterDeclarationBasedOnFullyQualifiedColumnType()
 			{
 				const string statement1 =
@@ -3241,7 +3241,7 @@ END;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestArrayOfArraysIndexer()
 			{
 				const string statement1 =
@@ -3257,7 +3257,7 @@ END;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestSubType()
 			{
 				const string statement1 =
@@ -3269,7 +3269,7 @@ END buggy_report;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestCursorNotFoundInConditionAndParentheses()
 			{
 				const string statement1 =
@@ -3289,7 +3289,7 @@ END;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestBooleanExpressions()
 			{
 				const string statement1 =
@@ -3307,7 +3307,7 @@ END;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestVariableDeclarationWithFullyQualifiedPackageType()
 			{
 				const string statement1 =
@@ -3324,7 +3324,7 @@ END;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestRaisePackageException()
 			{
 				const string statement1 = @"BEGIN RAISE test_schema.test_package.test_exception; END;";
@@ -3333,7 +3333,7 @@ END;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestEmptyDeclareSection()
 			{
 				const string statement1 = @"DECLARE BEGIN NULL; END;";
@@ -3342,7 +3342,7 @@ END;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestExplicitNullableVariableDeclaration()
 			{
 				const string statement1 = @"DECLARE test_variable VARCHAR2(255) NULL; BEGIN NULL; END;";
@@ -3353,7 +3353,7 @@ END;";
 
 			public class Triggers
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateSimpleTrigger()
 				{
 					const string statement1 =
@@ -3380,7 +3380,7 @@ END GenerateStudentID;";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateInsteadOfTrigger()
 				{
 					const string statement1 =
@@ -3409,7 +3409,7 @@ END ioft_insert_role_perm;";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateCompoundTrigger()
 				{
 					const string statement1 =
@@ -3450,7 +3450,7 @@ END Check_Raise_On_Avg;";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateDdlTrigger()
 				{
 					const string statement1 =
@@ -3472,7 +3472,7 @@ END;";
 
 			public class ConditionalCompilation
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestConditionalCompilationSymbol()
 				{
 					const string statement1 = @"BEGIN DBMS_OUTPUT.PUT_LINE('$$PLSQL_UNIT = ' || $$PLSQL_UNIT); END;";
@@ -3481,7 +3481,7 @@ END;";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestConditionalCompilationSymbolInSqlCommand()
 				{
 					const string statement1 =
@@ -3495,7 +3495,7 @@ END;";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestConditionalCompilationSelectionDirective()
 				{
 					const string statement1 =
@@ -3515,7 +3515,7 @@ END;";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestConditionalCompilationSelectionDirectiveWithErrorDirectiveAndMultipleStatements()
 				{
 					const string statement1 =
@@ -3532,7 +3532,7 @@ END;";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestPlSqlBodyReservedWordAsNonStartingTerminal()
 				{
 					const string statement1 =
@@ -3552,14 +3552,14 @@ END;";
 
 		public class IsRuleValid
 		{
-			[Test(Description = @"")]
+			[Test]
 			public void TestIsRuleValidSuccess()
 			{
 				var isRuleValid = Parser.IsRuleValid(NonTerminals.SelectList, "SELECTION.NAME, SELECTION.RESPONDENTBUCKET_ID, SELECTION.SELECTION_ID");
 				isRuleValid.ShouldBe(true);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestIsRuleValidFailure()
 			{
 				var isRuleValid = Parser.IsRuleValid(NonTerminals.SelectList, "SELECTION.NAME, SELECTION./* missing column */, SELECTION.SELECTION_ID");
@@ -3572,7 +3572,7 @@ END;";
 				isRuleValid.ShouldBe(false);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestInvalidExpressionEndingWithComma()
 			{
 				var isRuleValid = Parser.IsRuleValid(NonTerminals.Expression, "PROJECT_ID,");
@@ -3582,7 +3582,7 @@ END;";
 
 		public class TerminalCandidates
 		{
-			[Test(Description = @"")]
+			[Test]
 			public void TestTerminalCandidatesAfterSelectColumnWithAlias()
 			{
 				const string statement1 = @"SELECT 1 A";
@@ -3598,7 +3598,7 @@ END;";
 				terminalCandidates[3].Id.ShouldBe(Terminals.Into);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestTerminalCandidatesAfterSelectColumnWithLiteral()
 			{
 				const string statement2 = @"SELECT 1";
@@ -3609,7 +3609,7 @@ END;";
 				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestTerminalCandidatesAfterSelectColumnWithObjectPrefix()
 			{
 				const string statement2 = @"SELECT OBJECT_PREFIX.";
@@ -3621,7 +3621,7 @@ END;";
 				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestTerminalCandidatesWithNullNode()
 			{
 				var terminalCandidates = Parser.GetTerminalCandidates(null).Select(c => c.Id).OrderBy(t => t).ToArray();
@@ -3630,7 +3630,7 @@ END;";
 				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestTerminalCandidatesAfterValidStatementWhenStartingAdditionalJoinClause()
 			{
 				const string statement1 = @"SELECT * FROM SELECTION S FULL";
@@ -3640,7 +3640,7 @@ END;";
 				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestTerminalCandidatesAfterObjectIdentifierInFromClause()
 			{
 				const string statement1 = @"SELECT * FROM SELECTION";
@@ -3687,7 +3687,7 @@ END;";
 				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestTerminalCandidatesAfterDotWithinNestedExpression()
 			{
 				const string statement1 = @"SELECT CASE WHEN S.";
@@ -3697,7 +3697,7 @@ END;";
 				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 
-			[Test(Description = @""), Ignore]
+			[Test, Ignore]
 			public void TestTerminalCandidatesAfterLeftParenthesisWithMultiplePotentialExpressionSequnces()
 			{
 				const string statement1 = @"SELECT EXTRACT()";
@@ -3709,7 +3709,7 @@ END;";
 				terminalCandidates.ShouldContain(Terminals.Day);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestTerminalCandidatesAtNotLastNodeInTheParsedTree()
 			{
 				const string statement1 = @"SELECT D FROM DUAL";
@@ -3792,7 +3792,7 @@ END;";
 		{
 			public class Commit
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestCommitStatement()
 				{
 					const string statement1 = @"COMMIT COMMENT 'In-doubt transaction Code 36, Call (415) 555-2637' WRITE NOWAIT;";
@@ -3812,7 +3812,7 @@ END;";
 					terminals[4].Id.ShouldBe(Terminals.Nowait);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestCommitWriteBatchWithoutWait()
 				{
 					const string statement1 = @"COMMIT WRITE BATCH";
@@ -3830,7 +3830,7 @@ END;";
 					terminals[2].Id.ShouldBe(Terminals.Batch);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestCommitForceDistributedTransaction()
 				{
 					const string statement1 = @"COMMIT FORCE '22.57.53', 1234 /* specific SCN */";
@@ -3853,7 +3853,7 @@ END;";
 
 			public class Rollback
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestRollbackStatement()
 				{
 					const string statementText = @"ROLLBACK TO SAVEPOINT savepoint_name";
@@ -3873,7 +3873,7 @@ END;";
 					terminals[3].Id.ShouldBe(Terminals.Identifier);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestRollbackStatementForceDistributedTransaction()
 				{
 					const string statementText = @"ROLLBACK WORK FORCE '25.32.87';";
@@ -3896,7 +3896,7 @@ END;";
 
 			public class Savepoint
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestSavepointStatement()
 				{
 					const string statementText = @"SAVEPOINT savepoint_name";
@@ -3917,7 +3917,7 @@ END;";
 
 			public class SetTransaction
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestSetReadOnlyTransactionWithName()
 				{
 					const string statement1 = @"SET TRANSACTION READ ONLY NAME 'Toronto'";
@@ -3934,7 +3934,7 @@ END;";
 					terminalCandidates[5].Id.ShouldBe(Terminals.StringLiteral);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestSetTransactionWithReadCommittedIsolationLevel()
 				{
 					const string statement1 = @"SET TRANSACTION ISOLATION LEVEL READ COMMITTED";
@@ -3951,7 +3951,7 @@ END;";
 					terminalCandidates[5].Id.ShouldBe(Terminals.Committed);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestSetTransactionWithRollbackSegment()
 				{
 					const string statement1 = @"SET TRANSACTION USE ROLLBACK SEGMENT ROLLBACK_SEGMENT NAME 'HQ Transaction'";
@@ -3973,7 +3973,7 @@ END;";
 
 			public class SetConstraint
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestSetAllConstraintsImmediate()
 				{
 					const string statement1 = @"SET CONSTRAINTS ALL IMMEDIATE";
@@ -3981,7 +3981,7 @@ END;";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestSetNamedConstraintsDeferred()
 				{
 					const string statement1 = @"SET CONSTRAINTS emp_job_nn, emp_salary_min, hr.jhist_dept_fk@remote DEFERRED";
@@ -3995,7 +3995,7 @@ END;";
 		{
 			public class Delete
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestDeleteWithReturningAndErrorLogging()
 				{
 					const string statement1 = @"DELETE FROM TEST_TABLE RETURNING COLUMN1, COLUMN2 INTO :C1, :C2 LOG ERRORS INTO SCHEMA.LOG_TABLE ('Delete statement') REJECT LIMIT 10";
@@ -4011,7 +4011,7 @@ END;";
 
 			public class Update
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestUpdateWithExpressionAndScalarSubqueryAndReturningAndErrorLogging()
 				{
 					const string statement1 = @"UPDATE TEST_TABLE SET COLUMN1 = 2 / (COLUMN2 + 2), COLUMN2 = (SELECT 1 FROM DUAL), (COLUMN3, COLUMN4) = (SELECT X1, X2 FROM X3), COLUMN5 = DEFAULT RETURNING COLUMN1, COLUMN2 INTO :C1, :C2 LOG ERRORS INTO SCHEMA.LOG_TABLE ('Delete statement') REJECT LIMIT UNLIMITED";
@@ -4024,7 +4024,7 @@ END;";
 					terminals.Length.ShouldBe(62);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestUpdateWithSetObjectValueFromSubquery()
 				{
 					const string statement1 = @"UPDATE PEOPLE_DEMO1 P SET VALUE(P) = (SELECT VALUE(Q) FROM PEOPLE_DEMO2 Q WHERE P.DEPARTMENT_ID = Q.DEPARTMENT_ID) WHERE P.DEPARTMENT_ID = 10;";
@@ -4040,7 +4040,7 @@ END;";
 
 			public class Merge
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestMergeWithTableReferenceAndErrorLogging()
 				{
 					const string statement1 = @"MERGE INTO IDX_TEST TARGET USING IDX_TEST PARTITION (P_C3_10) AS OF TIMESTAMP SYSDATE - 0.01 SOURCE ON (1 = 1) WHEN NOT MATCHED THEN INSERT (C1) VALUES (1) LOG ERRORS INTO SCHEMA.LOG_TABLE ('Merge statement') REJECT LIMIT UNLIMITED;";
@@ -4053,7 +4053,7 @@ END;";
 					terminals.Length.ShouldBe(47);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestMergeWithSubqueryAndAllUpdateDeleteInsertClauses()
 				{
 					const string statement1 = @"MERGE INTO IDX_TEST USING LATERAL (SELECT * FROM DUAL WITH CHECK OPTION) ON (1 = 1) WHEN MATCHED THEN UPDATE SET C10 = C10 DELETE WHERE C1 IS NULL WHEN NOT MATCHED THEN INSERT (C1) VALUES (1) WHERE 1 = 1";
@@ -4066,7 +4066,7 @@ END;";
 					terminals.Length.ShouldBe(49);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestMergeWithTableCollectionExpression()
 				{
 					const string statement1 = @"MERGE INTO IDX_TEST USING TABLE((DATABASE_ALERTS)) ON (1 = 1) WHEN NOT MATCHED THEN INSERT (C1) VALUES (1)";
@@ -4079,7 +4079,7 @@ END;";
 					terminals.Length.ShouldBe(28);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestMergeWithObjectPrefixes()
 				{
 					const string statement1 = @"MERGE INTO HUSQVIK.T USING SYS.DUAL ON (1 = 1) WHEN MATCHED THEN UPDATE SET HUSQVIK.T.PARENT_ID = SYS.DUAL.DUMMY WHERE 1 = 0 WHEN NOT MATCHED THEN INSERT (ID, PARENT_ID) VALUES (NULL, NULL) WHERE 1 = 0";
@@ -4095,7 +4095,7 @@ END;";
 
 			public class Insert
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestSingleTableInsertWithErrorLogging()
 				{
 					const string statement1 =
@@ -4114,7 +4114,7 @@ LOG ERRORS INTO ERR$_ERRORLOGTEST ('COMMAND TAG 1') REJECT LIMIT UNLIMITED;";
 					terminals.Length.ShouldBe(66);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestMultiTableInsertAll()
 				{
 					const string statement1 =
@@ -4134,7 +4134,7 @@ FROM DUAL CONNECT BY LEVEL <= 3";
 					terminals.Length.ShouldBe(72);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestMultiTableInsertConditional()
 				{
 					const string statement1 =
@@ -4162,7 +4162,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 		{
 			public class DropTable
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestDropTablePurge()
 				{
 					const string statementText = @"DROP TABLE HUSQVIK.SELECTION PURGE";
@@ -4184,7 +4184,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 					terminals[5].Id.ShouldBe(Terminals.Purge);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestDropTableCascadeConstraints()
 				{
 					const string statementText = @"DROP TABLE SELECTION CASCADE CONSTRAINTS;";
@@ -4208,7 +4208,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 			public class DropIndex
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestDropIndexForce()
 				{
 					const string statementText = @"DROP INDEX HUSQVIK.PK_SELECTION FORCE";
@@ -4230,7 +4230,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 					terminals[5].Id.ShouldBe(Terminals.Force);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestDropIndexOnline()
 				{
 					const string statementText = @"DROP INDEX PK_SELECTION ONLINE;";
@@ -4253,7 +4253,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 			public class DropView
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestDropViewCascadeConstraints()
 				{
 					const string statementText = @"DROP VIEW HUSQVIK.SELECTION CASCADE CONSTRAINTS;";
@@ -4276,7 +4276,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 					terminals[6].Id.ShouldBe(Terminals.Constraints);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestDropMaterializedViewPreserveTable()
 				{
 					const string statementText = @"DROP MATERIALIZED VIEW HUSQVIK.MV_SELECTION PRESERVE TABLE";
@@ -4300,7 +4300,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 					terminals[7].Id.ShouldBe(Terminals.Table);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestDropMaterializedViewWithObsoleteSnapshotKeyword()
 				{
 					const string statementText = @"DROP SNAPSHOT MV_SELECTION";
@@ -4322,7 +4322,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 			public class DropPackage
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestDropPackage()
 				{
 					const string statementText = @"DROP PACKAGE BODY HUSQVIK.SQLPAD";
@@ -4347,7 +4347,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 			public class DropCluster
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestDropPackage()
 				{
 					const string statementText = @"DROP CLUSTER HUSQVIK.TEST_CLUSTER INCLUDING TABLES CASCADE CONSTRAINTS";
@@ -4375,7 +4375,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 			public class DropMaterializedViewLog
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestDropMaterializedViewLog()
 				{
 					const string statementText = @"DROP MATERIALIZED VIEW LOG ON HUSQVIK.TEST_CLUSTER";
@@ -4399,7 +4399,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 					terminals[7].Id.ShouldBe(Terminals.ObjectIdentifier);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestObsoleteDropSnapshotLog()
 				{
 					const string statementText = @"DROP SNAPSHOT LOG ON HUSQVIK.TEST_CLUSTER";
@@ -4414,7 +4414,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 			public class DropDatabaseLink
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestDropDatabaseLink()
 				{
 					const string statementText = @"DROP PUBLIC DATABASE LINK HQPDB@LOOPBACK";
@@ -4429,7 +4429,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 			public class DropTablespace
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestDropTablespace()
 				{
 					const string statementText = @"DROP TABLESPACE test_tablespace INCLUDING CONTENTS AND DATAFILES CASCADE CONSTRAINTS;";
@@ -4444,7 +4444,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 			public class DropType
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestDropType()
 				{
 					const string statementText = @"DROP TYPE TEST_SCHEMA.TEST_TYPE VALIDATE";
@@ -4469,7 +4469,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 			public class DropSynonym
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestDropSynonym()
 				{
 					const string statementText = @"DROP PUBLIC SYNONYM TEST_SCHEMA.TEST_SYNONYM FORCE";
@@ -4495,7 +4495,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 			public class DropOther
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestDropFunction()
 				{
 					const string statementText = @"DROP FUNCTION HUSQVIK.SQLPAD_FUNCTION";
@@ -4516,7 +4516,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 					terminals[4].Id.ShouldBe(Terminals.ObjectIdentifier);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestDropProcedure()
 				{
 					const string statementText = @"DROP PROCEDURE HUSQVIK.TEST_PROCEDURE";
@@ -4537,7 +4537,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 					terminals[4].Id.ShouldBe(Terminals.ObjectIdentifier);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestDropSequence()
 				{
 					const string statementText = @"DROP SEQUENCE HUSQVIK.TEST_SEQ";
@@ -4558,7 +4558,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 					terminals[4].Id.ShouldBe(Terminals.ObjectIdentifier);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestDropContext()
 				{
 					const string statementText = @"DROP CONTEXT TEST_CONTEXT";
@@ -4577,7 +4577,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 					terminals[2].Id.ShouldBe(Terminals.ObjectIdentifier);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestDropDirectory()
 				{
 					const string statementText = @"DROP DIRECTORY TEST_DIRECTORY";
@@ -4596,7 +4596,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 					terminals[2].Id.ShouldBe(Terminals.ObjectIdentifier);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestDropTrigger()
 				{
 					const string statementText = @"DROP TRIGGER TEST_TRIGGER";
@@ -4615,7 +4615,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 					terminals[2].Id.ShouldBe(Terminals.ObjectIdentifier);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestDropRestorePoint()
 				{
 					const string statementText = @"DROP RESTORE POINT test_restore_point";
@@ -4639,7 +4639,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 		public class LockTable
 		{
-			[Test(Description = @"")]
+			[Test]
 			public void TestLockTable()
 			{
 				const string statementText = @"LOCK TABLE HUSQVIK.TEST_TABLE1@REMOTE, TEST_TABLE2 PARTITION (P1) IN EXCLUSIVE MODE WAIT 6";
@@ -4676,7 +4676,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 		public class RenameSchemaObject
 		{
-			[Test(Description = @"")]
+			[Test]
 			public void TestLockTable()
 			{
 				const string statementText = @"RENAME TEST_TABLE1 TO TEST_TABLE2";
@@ -4701,7 +4701,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 		{
 			public class FlashbackTable
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestFlashbackTableToTimestamp()
 				{
 					const string statementText = @"FLASHBACK TABLE test_table1, husqvik.test_table2 TO TIMESTAMP TIMESTAMP'2015-12-05 20:33:53' DISABLE TRIGGERS";
@@ -4713,7 +4713,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestFlashbackTableToRestorePoint()
 				{
 					const string statementText = @"FLASHBACK TABLE test_table1 TO RESTORE POINT test_restore_point";
@@ -4725,7 +4725,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestFlashbackTableToBeforeDrop()
 				{
 					const string statementText = @"FLASHBACK TABLE test_table1 TO BEFORE DROP RENAME TO restored_table";
@@ -4740,7 +4740,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 			public class FlashbackDatabase
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestFlashbackDatabaseToRestorePoint()
 				{
 					const string statementText = @"FLASHBACK DATABASE test_database TO RESTORE POINT test_restore_point";
@@ -4752,7 +4752,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestFlashbackDatabaseToBeforeResetLogs()
 				{
 					const string statementText = @"FLASHBACK DATABASE test_database TO BEFORE RESETLOGS";
@@ -4768,7 +4768,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 
 		public class Comment
 		{
-			[Test(Description = @"")]
+			[Test]
 			public void TestCommentOnTable()
 			{
 				const string statementText = @"COMMENT ON TABLE HUSQVIK.TEST_TABLE IS 'Test comment'";
@@ -4792,7 +4792,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 				terminals[7].Id.ShouldBe(Terminals.StringLiteral);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestCommentOnColumn()
 			{
 				const string statementText = @"COMMENT ON COLUMN HUSQVIK.TEST_TABLE.COLUMN1 IS 'Test column comment'";
@@ -4823,7 +4823,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 		{
 			public class CreateTable
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestBasicCreateTable()
 				{
 					const string statementText =
@@ -4851,7 +4851,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 					terminals[85].Id.ShouldBe(Terminals.Constraint);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestPhysicalPropertiesClause()
 				{
 					const string statementText =
@@ -4875,7 +4875,7 @@ TABLESPACE TBS_HQ_PDB";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestTablePropertiesClause()
 				{
 					const string statementText =
@@ -4894,7 +4894,7 @@ SELECT * FROM DUAL";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestConstraintStateClause()
 				{
 					const string statementText = @"CREATE TABLE TEST_TABLE (ID NUMBER CHECK (VAL2 IN ('A', 'B', 'C')) DEFERRABLE INITIALLY DEFERRED NORELY ENABLE)";
@@ -4906,7 +4906,7 @@ SELECT * FROM DUAL";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestSimpleCreateTableAsSelect()
 				{
 					const string statementText = @"CREATE TABLE XXX COLUMN STORE COMPRESS FOR ARCHIVE HIGH NO ROW LEVEL LOCKING AS SELECT * FROM DUAL";
@@ -4918,7 +4918,7 @@ SELECT * FROM DUAL";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateGlobalTemporaryTable()
 				{
 					const string statementText = @"CREATE GLOBAL TEMPORARY TABLE XXX (VAL NUMBER) ON COMMIT PRESERVE ROWS";
@@ -4930,7 +4930,7 @@ SELECT * FROM DUAL";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestGeneratedIdentityClause()
 				{
 					const string statementText =
@@ -4950,7 +4950,7 @@ SELECT * FROM DUAL";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestEncryptColumnClause()
 				{
 					const string statementText =
@@ -4968,7 +4968,7 @@ SELECT * FROM DUAL";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestExplicitHeapOrganizationClause()
 				{
 					const string statementText =
@@ -4989,7 +4989,7 @@ TABLESPACE TBS_HQ_PDB";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestExplicitIndexpOrganizationClause()
 				{
 					const string statementText =
@@ -5016,7 +5016,7 @@ TABLESPACE TBS_MSSM";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestSupplementalLoggingClause()
 				{
 					const string statementText =
@@ -5041,7 +5041,7 @@ TABLESPACE TBS_MSSM";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestLargeObjectStorageClause()
 				{
 					const string statementText =
@@ -5077,7 +5077,7 @@ STORE AS BASICFILE TEST_LOB_SEGMENT (
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestVariableElementArrayColumnProperties()
 				{
 					const string statementText =
@@ -5101,7 +5101,7 @@ VARRAY VARRAY_COLUMN2
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestNestedTableColumnProperties()
 				{
 					const string statementText =
@@ -5136,7 +5136,7 @@ NESTED TABLE NESTED_TABLE_COLUMN
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestUsingCreateIndexClause()
 				{
 					const string statementText =
@@ -5154,7 +5154,7 @@ NESTED TABLE NESTED_TABLE_COLUMN
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestObjectPropertiesClause()
 				{
 					const string statementText = @"CREATE TABLE EMPLOYEES_OBJ_T OF EMPLOYEES_TYP (E_NO PRIMARY KEY) OBJECT IDENTIFIER IS PRIMARY KEY";
@@ -5166,7 +5166,7 @@ NESTED TABLE NESTED_TABLE_COLUMN
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestVirtualColumnClause()
 				{
 					const string statementText = @"CREATE TABLE TEST_TABLE (C1 NUMBER, C2 NUMBER, C3 VISIBLE GENERATED ALWAYS AS ((C1 + C2) * (C1 * C2)) VIRTUAL EVALUATE USING NULL EDITION UNUSABLE BEGINNING WITH EDITION TEST_EDITION CONSTRAINT NN_VIRTUAL_C3 NOT NULL)";
@@ -5178,7 +5178,7 @@ NESTED TABLE NESTED_TABLE_COLUMN
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestRangePartitioningClause()
 				{
 					const string statementText =
@@ -5205,7 +5205,7 @@ PARTITION BY RANGE (TIME_ID) (
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestListPartitioningClause()
 				{
 					const string statementText =
@@ -5231,7 +5231,7 @@ PARTITION BY LIST (NLS_TERRITORY) (
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestHashPartitioningClauseWithPartitionsByQuantity()
 				{
 					const string statementText =
@@ -5260,7 +5260,7 @@ PARTITIONS 4 STORE IN (TABLESPACE_1, TABLESPACE_2, TABLESPACE_3, TABLESPACE_4)";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestObsoleteComputeStatisticsInConstraintUsingIndexClause()
 				{
 					const string statementText = @"CREATE TABLE TEST_TABLE (ID NUMBER PRIMARY KEY USING INDEX COMPUTE STATISTICS)";
@@ -5272,7 +5272,7 @@ PARTITIONS 4 STORE IN (TABLESPACE_1, TABLESPACE_2, TABLESPACE_3, TABLESPACE_4)";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestReferencePartitioningClause()
 				{
 					const string statementText =
@@ -5294,7 +5294,7 @@ PARTITION BY REFERENCE (FK_PRODUCT_ID)";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestSystemPartitioningClause()
 				{
 					const string statementText =
@@ -5312,7 +5312,7 @@ PARTITION BY SYSTEM (
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestCompositeRangeHashPartitioningClause()
 				{
 					const string statementText =
@@ -5345,7 +5345,7 @@ SUBPARTITION BY HASH (CHANNEL_ID) (
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestCompositeRangeListPartitioningClause()
 				{
 					const string statementText =
@@ -5376,7 +5376,7 @@ PARTITION BY RANGE (CREDIT_LIMIT)
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestObsololeteCompressForClause()
 				{
 					const string statementText = @"CREATE TABLE TEST_PARTITION_TABLE (C1 NUMBER) COMPRESS FOR DIRECT_LOAD OPERATIONS";
@@ -5388,7 +5388,7 @@ PARTITION BY RANGE (CREDIT_LIMIT)
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestEnableDisableConstraintClause()
 				{
 					const string statementText = @"CREATE TABLE TEST_TABLE (ID NUMBER CONSTRAINT PK_TEST_PARTITION_TABLE PRIMARY KEY, VAL NUMBER CONSTRAINT UQ_TEST_PARTITION_TABLE_VAL UNIQUE) ENABLE NOVALIDATE PRIMARY KEY DISABLE NOVALIDATE UNIQUE (VAL) CASCADE DROP INDEX";
@@ -5400,7 +5400,7 @@ PARTITION BY RANGE (CREDIT_LIMIT)
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestPartitionLargeObjectStorageClause()
 				{
 					const string statementText =
@@ -5445,7 +5445,7 @@ PARTITION BY RANGE (C3)
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestInMemoryClause()
 				{
 					const string statementText =
@@ -5472,7 +5472,7 @@ TABLESPACE TBS_HQ_PDB";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAttributeClusteringClause()
 				{
 					const string statementText = @"CREATE TABLE TEST_TABLE (C1 NUMBER, C2 NUMBER, C3 NUMBER) CLUSTERING BY INTERLEAVED ORDER ((C1, C2), (C3)) YES ON LOAD NO ON DATA MOVEMENT WITHOUT MATERIALIZED ZONEMAP";
@@ -5484,7 +5484,7 @@ TABLESPACE TBS_HQ_PDB";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestObsoleteRecoverableClause()
 				{
 					const string statementText = @"CREATE TABLE TEST_TABLE (C) UNRECOVERABLE TABLESPACE TBS_HQ_PDB AS SELECT * FROM DUAL";
@@ -5496,7 +5496,7 @@ TABLESPACE TBS_HQ_PDB";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestInformationLifecycleManagementClause()
 				{
 					const string statementText = @"CREATE TABLE TEST_TABLE (C NUMBER) ILM ADD POLICY TIER TO TBS_HQ_PDB READ ONLY SEGMENT AFTER 2 YEARS OF CREATION";
@@ -5508,7 +5508,7 @@ TABLESPACE TBS_HQ_PDB";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateTableWithUndocumentedReferencingKeywordWithinConstraintDefinition()
 				{
 					const string statementText = @"CREATE TABLE test_table (pk NUMBER PRIMARY KEY, fk NUMBER CONSTRAINT fk_test_table_self REFERENCING test_table(pk))";
@@ -5520,7 +5520,7 @@ TABLESPACE TBS_HQ_PDB";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateTableWithPrimaryKeyConstraintPrecedingNotNullConstraint()
 				{
 					const string statementText = @"CREATE TABLE test_table (ID NUMBER PRIMARY KEY NOT NULL)";
@@ -5532,7 +5532,7 @@ TABLESPACE TBS_HQ_PDB";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateExternalTableUsingDataPump()
 				{
 					const string statementText =
@@ -5557,7 +5557,7 @@ SELECT * FROM ALL_OBJECTS";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateExternalTableUsingDataLoader()
 				{
 					const string statementText =
@@ -5611,7 +5611,7 @@ REJECT LIMIT UNLIMITED";
 
 			public class CreateIndex
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateSequence()
 				{
 					const string statementText =
@@ -5632,7 +5632,7 @@ NOLOGGING";
 
 			public class CreateView
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateSimpleView()
 				{
 					const string statementText =
@@ -5654,7 +5654,7 @@ SELECT SELECTION_ID, NAME, PROJECT_ID, RESPONDENTBUCKET_ID, SYS_GUID() GUID FROM
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateViewWithoutColumnList()
 				{
 					const string statementText = @"CREATE VIEW TEST_VIEW AS SELECT * FROM DUAL WITH READ ONLY";
@@ -5669,7 +5669,7 @@ SELECT SELECTION_ID, NAME, PROJECT_ID, RESPONDENTBUCKET_ID, SYS_GUID() GUID FROM
 
 			public class CreateCluster
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateCluster()
 				{
 					const string statementText =
@@ -5698,7 +5698,7 @@ PARTITION BY RANGE (AMOUNT_SOLD) (
 
 			public class CreateMaterializedViewLog
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void CreateSimpleMaterializedViewLog()
 				{
 					const string statementText =
@@ -5713,7 +5713,7 @@ INCLUDING NEW VALUES";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void CreateMaterializedViewLogWithPurgeClause()
 				{
 					const string statementText =
@@ -5730,7 +5730,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void CreateMaterializedViewLogWithImmediateAsynchronousPurge()
 				{
 					const string statementText =
@@ -5743,7 +5743,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void CreateMaterializedViewLogForSynchronousRefreshClause()
 				{
 					const string statementText = @"CREATE MATERIALIZED VIEW LOG ON TEST_TABLE FOR SYNCHRONOUS REFRESH USING TEST_STAGING_LOG";
@@ -5755,7 +5755,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void ObsoleteCreateSnapshotLog()
 				{
 					const string statementText = @"CREATE SNAPSHOT LOG ON test_table";
@@ -5770,7 +5770,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 			public class CreateSequence
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateSequence()
 				{
 					const string statementText = @"CREATE SEQUENCE HUSQVIK.TEST_SEQUNCE GLOBAL NOKEEP NOORDER NOCACHE NOCYCLE MINVALUE - 1000000 MAXVALUE -1 START WITH -1 INCREMENT BY -1;";
@@ -5813,7 +5813,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 			public class CreateSynonym
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateSynonym()
 				{
 					const string statementText = @"CREATE OR REPLACE NONEDITIONABLE PUBLIC SYNONYM CUSTOMER FOR HUSQVIK.CUSTOMER@DBLINK;";
@@ -5845,7 +5845,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 			public class CreateDirectory
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateDirectory()
 				{
 					const string statementText = @"CREATE OR REPLACE DIRECTORY TEST_DIRECTORY AS '\\host\directory\subdirectory'";
@@ -5871,7 +5871,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 			public class CreateProfile
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateProfile()
 				{
 					const string statementText = @"CREATE PROFILE TEST_PROFILE LIMIT COMPOSITE_LIMIT DEFAULT PRIVATE_SGA DEFAULT PASSWORD_GRACE_TIME DEFAULT PASSWORD_VERIFY_FUNCTION VERIFY_FUNCTION CONTAINER = ALL";
@@ -5886,7 +5886,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 			public class CreateTablespace
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateUndoTablespace()
 				{
 					const string statementText = @"CREATE UNDO TABLESPACE undots1 DATAFILE 'undotbs_1a.dbf' SIZE 10M AUTOEXTEND ON RETENTION GUARANTEE";
@@ -5898,7 +5898,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateComplexTablespace()
 				{
 					const string statementText =
@@ -5920,7 +5920,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateSimpleBigFileTemporaryTablespace()
 				{
 					const string statementText = @"CREATE BIGFILE TEMPORARY TABLESPACE omf_ts1";
@@ -5932,7 +5932,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateTablespaceWithUnnamedDataFileOptions()
 				{
 					const string statementText = @"CREATE TABLESPACE omf_ts2 DATAFILE AUTOEXTEND OFF";
@@ -5947,7 +5947,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 			public class CreateUser
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestSimpleCreateUser()
 				{
 					const string statementText = @"CREATE USER test_user IDENTIFIED BY oracle";
@@ -5959,7 +5959,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateUser()
 				{
 					const string statementText =
@@ -5985,7 +5985,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 			public class CreateRole
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateRole()
 				{
 					const string statementText = @"CREATE ROLE warehouse_user IDENTIFIED GLOBALLY CONTAINER = ALL";
@@ -6000,7 +6000,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 			public class CreateRollbackSegment
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateRollbackSegment()
 				{
 					const string statementText = @"CREATE ROLLBACK SEGMENT rollback_segment TABLESPACE tablespace1 STORAGE (INITIAL 16M)";
@@ -6015,7 +6015,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 			public class CreateRestorePoint
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateRestorePoint()
 				{
 					const string statementText = @"CREATE RESTORE POINT restore_point AS OF SCN 12345 GUARANTEE FLASHBACK DATABASE";
@@ -6030,7 +6030,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 			public class CreateParameterFile
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateParameterFileFromServerParameterFile()
 				{
 					const string statementText = @"CREATE PFILE = 'my_init.ora' FROM SPFILE = 's_params.ora'";
@@ -6042,7 +6042,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateParameterFileFromMemory()
 				{
 					const string statementText = @"CREATE PFILE FROM MEMORY";
@@ -6057,7 +6057,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 			public class CreateServerParameterFile
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateServerParameterFileFromParameterFile()
 				{
 					const string statementText = @"CREATE SPFILE = 'my_init.ora' FROM PFILE = 's_params.ora'";
@@ -6069,7 +6069,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateServerParameterFileFromMemory()
 				{
 					const string statementText = @"CREATE SPFILE FROM MEMORY";
@@ -6084,7 +6084,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 			public class CreateType
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateType()
 				{
 					const string statementText =
@@ -6105,7 +6105,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateVaryingArrayType()
 				{
 					const string statementText = @"CREATE TYPE test_varray IS VARRAY(2147483648) OF NUMBER";
@@ -6117,7 +6117,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateNestedTableType()
 				{
 					const string statementText = @"CREATE TYPE test_nested_table IS TABLE OF NUMBER(10) NOT NULL";
@@ -6132,7 +6132,7 @@ PURGE REPEAT INTERVAL '5' DAY";
 
 			public class CreateTypeBody
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateTypeBody()
 				{
 					const string statementText =
@@ -6180,7 +6180,7 @@ END;";
 
 			public class CreateDatabaseLink
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestCreateDatabaseLink()
 				{
 					const string statementText =
@@ -6199,7 +6199,7 @@ USING 'localhost:1521/hqpdb'";
 
 			public class CreateAuthorizationSchema
 			{
-				[Test(Description = @""), Ignore]
+				[Test, Ignore]
 				public void TestCreateAuthorizationSchema()
 				{
 					const string statementText =
@@ -6224,7 +6224,7 @@ USING 'localhost:1521/hqpdb'";
 		{
 			public class AlterProgram
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterProcedureNonEditionable()
 				{
 					const string statementText = @"ALTER PROCEDURE procedure1 NONEDITIONABLE";
@@ -6236,7 +6236,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterProcedureCompile()
 				{
 					const string statementText = @"ALTER PROCEDURE procedure1 COMPILE DEBUG PLSCOPE_SETTINGS = 'IDENTIFIERS:ALL' PLSQL_CODE_TYPE=INTERPRETED PLSQL_OPTIMIZE_LEVEL=1 PLSQL_WARNINGS ='ENABLE:(5000,5001,5002)', 'DISABLE:(6000,6001)' PLSQL_CCFLAGS = 'debug:TRUE' REUSE SETTINGS";
@@ -6248,7 +6248,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterPackageCompile()
 				{
 					const string statementText = @"ALTER PACKAGE package1 COMPILE DEBUG BODY;";
@@ -6263,7 +6263,7 @@ USING 'localhost:1521/hqpdb'";
 
 			public class AlterSystem
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSystemArchiveLogLogFile()
 				{
 					const string statementText = @"ALTER SYSTEM ARCHIVE LOG INSTANCE 'TEST_INSTANCE' LOGFILE 'TEST_LOGFILE' USING BACKUP CONTROLFILE TO 'TEST_LOCATION'";
@@ -6275,7 +6275,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSystemDisableRestrictedSession()
 				{
 					const string statementText = @"ALTER SYSTEM DISABLE RESTRICTED SESSION";
@@ -6287,7 +6287,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSystemSetEncryptionWalletOpen()
 				{
 					const string statementText = @"ALTER SYSTEM SET ENCRYPTION WALLET OPEN IDENTIFIED BY ""password""";
@@ -6299,7 +6299,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSystemSetEncryptionKey()
 				{
 					const string statementText = @"ALTER SYSTEM SET ENCRYPTION KEY IDENTIFIED BY ""password""";
@@ -6311,7 +6311,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSystemSetEncryptionWalletClose()
 				{
 					const string statementText = @"ALTER SYSTEM SET ENCRYPTION WALLET CLOSE";
@@ -6323,7 +6323,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSystemFlushRedo()
 				{
 					const string statementText = @"ALTER SYSTEM FLUSH REDO TO DB_NAME NO CONFIRM APPLY";
@@ -6335,7 +6335,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSystemSwitchLogFile()
 				{
 					const string statementText = @"ALTER SYSTEM SWITCH LOGFILE";
@@ -6347,7 +6347,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSystemDisableDistributedRecovery()
 				{
 					const string statementText = @"ALTER SYSTEM DISABLE DISTRIBUTED RECOVERY";
@@ -6359,7 +6359,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSystemRelocateClient()
 				{
 					const string statementText = @"ALTER SYSTEM RELOCATE CLIENT 'ClientName'";
@@ -6371,7 +6371,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSystemReset()
 				{
 					const string statementText = @"ALTER SYSTEM RESET p1 SID = '*' SCOPE = SPFILE p2 SID = '*' SCOPE = SPFILE";
@@ -6383,7 +6383,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSystemShutdownDispatcher()
 				{
 					const string statementText = @"ALTER SYSTEM SHUTDOWN IMMEDIATE 'D 001'";
@@ -6395,7 +6395,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSystemQuiesceRestricted()
 				{
 					const string statementText = @"ALTER SYSTEM QUIESCE RESTRICTED";
@@ -6407,7 +6407,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSystemStartRollingMigration()
 				{
 					const string statementText = @"ALTER SYSTEM START ROLLING MIGRATION TO 'ASM_version'";
@@ -6419,7 +6419,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSystemStopRollingPatch()
 				{
 					const string statementText = @"ALTER SYSTEM STOP ROLLING PATCH";
@@ -6431,7 +6431,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSystemCheckpointLocal()
 				{
 					const string statementText = @"ALTER SYSTEM CHECKPOINT LOCAL";
@@ -6443,7 +6443,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSystemCheckDatafilesGlobal()
 				{
 					const string statementText = @"ALTER SYSTEM CHECK DATAFILES GLOBAL";
@@ -6455,7 +6455,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSystemRegister()
 				{
 					const string statementText = @"ALTER SYSTEM REGISTER";
@@ -6467,7 +6467,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSystemDisconnectSession()
 				{
 					const string statementText = @"ALTER SYSTEM DISCONNECT SESSION 'SID, SERIAL#' POST_TRANSACTION IMMEDIATE";
@@ -6479,7 +6479,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSystemKillSession()
 				{
 					const string statementText = @"ALTER SYSTEM KILL SESSION 'SID, SERIAL#, @1' NOREPLAY";
@@ -6491,7 +6491,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSystemSetEvents()
 				{
 					const string statementText = @"ALTER SYSTEM SET EVENTS '12500 trace name context off'";
@@ -6503,7 +6503,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSystemDumpDatafile()
 				{
 					const string statementText = @"ALTER SYSTEM DUMP DATAFILE 1 BLOCK 1";
@@ -6516,7 +6516,7 @@ USING 'localhost:1521/hqpdb'";
 				}
 
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSystemDumpTempfile()
 				{
 					const string statementText = @"ALTER SYSTEM DUMP TEMPFILE 'c:\oracle\temp.dbf' MIN BLOCK 1 MAX BLOCK 2";
@@ -6528,7 +6528,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSystemDumpLogFilefile()
 				{
 					const string statementText = @"ALTER SYSTEM DUMP LOGFILE 'c:\oracle\redo.dbf' LAYER 11 OPCODE 3";
@@ -6545,7 +6545,7 @@ USING 'localhost:1521/hqpdb'";
 
 			public class AlterSession
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSessionParameters()
 				{
 					const string statementText = @"ALTER SESSION SET statistics_level = ALL SQL_TRACE = TRUE";
@@ -6570,7 +6570,7 @@ USING 'localhost:1521/hqpdb'";
 					terminals[8].Id.ShouldBe(Terminals.Identifier);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSessionResumableDistributedTransaction()
 				{
 					const string statementText = @"ALTER SESSION ENABLE RESUMABLE TIMEOUT 60 NAME 'Distributed transaction'";
@@ -6582,7 +6582,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSessionSyncWithPrimary()
 				{
 					const string statementText = @"ALTER SESSION SYNC WITH PRIMARY";
@@ -6594,7 +6594,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSessionGuard()
 				{
 					const string statementText = @"ALTER SESSION DISABLE GUARD";
@@ -6606,7 +6606,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSessionProcedureCommit()
 				{
 					const string statementText = @"ALTER SESSION DISABLE COMMIT IN PROCEDURE";
@@ -6618,7 +6618,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSessionForceParallel()
 				{
 					const string statementText = @"ALTER SESSION FORCE PARALLEL QUERY PARALLEL 8";
@@ -6630,7 +6630,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSessionCloseDatabaseLink()
 				{
 					const string statementText = @"ALTER SESSION CLOSE DATABASE LINK TEST_DB_LINK";
@@ -6642,7 +6642,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSessionNumericParameter()
 				{
 					const string statementText = @"ALTER SESSION SET SORT_AREA_SIZE=1073741824;";
@@ -6654,7 +6654,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSessionSetEvents()
 				{
 					const string statementText = @"ALTER SESSION SET EVENTS '10053 trace name context forever, level 2'";
@@ -6666,7 +6666,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSessionAdviseNothing()
 				{
 					const string statementText = @"ALTER SESSION ADVISE NOTHING";
@@ -6681,7 +6681,7 @@ USING 'localhost:1521/hqpdb'";
 
 			public class AlterProfile
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterProfile()
 				{
 					const string statementText = @"ALTER PROFILE TEST_PROFILE LIMIT COMPOSITE_LIMIT DEFAULT PRIVATE_SGA DEFAULT PASSWORD_GRACE_TIME DEFAULT PASSWORD_VERIFY_FUNCTION VERIFY_FUNCTION CONTAINER = ALL";
@@ -6712,7 +6712,7 @@ USING 'localhost:1521/hqpdb'";
 					terminals[14].Id.ShouldBe(Terminals.All);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterDefaultProfile()
 				{
 					const string statementText = @"ALTER PROFILE DEFAULT LIMIT SESSIONS_PER_USER 3";
@@ -6727,7 +6727,7 @@ USING 'localhost:1521/hqpdb'";
 
 			public class AlterRole
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterRole()
 				{
 					const string statementText = @"ALTER ROLE dw_manager IDENTIFIED USING hr.admin CONTAINER = CURRENT";
@@ -6742,7 +6742,7 @@ USING 'localhost:1521/hqpdb'";
 
 			public class AlterTrigger
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTriggerCompile()
 				{
 					const string statementText = @"ALTER TRIGGER trigger1 COMPILE DEBUG PLSCOPE_SETTINGS = 'IDENTIFIERS:ALL' PLSQL_CODE_TYPE=INTERPRETED PLSQL_OPTIMIZE_LEVEL=1 PLSQL_WARNINGS ='ENABLE:(5000,5001,5002)', 'DISABLE:(6000,6001)' PLSQL_CCFLAGS = 'debug:TRUE' REUSE SETTINGS";
@@ -6754,7 +6754,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTriggerDisable()
 				{
 					const string statementText = @"ALTER TRIGGER trigger1 DISABLE";
@@ -6769,7 +6769,7 @@ USING 'localhost:1521/hqpdb'";
 
 			public class AlterRollbackSegment
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterRollbackSegment()
 				{
 					const string statementText = @"ALTER ROLLBACK SEGMENT rollback_segment SHRINK TO 128M";
@@ -6784,7 +6784,7 @@ USING 'localhost:1521/hqpdb'";
 
 			public class AlterResourceCost
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterResourceCost()
 				{
 					const string statementText = @"ALTER RESOURCE COST PRIVATE_SGA 0 LOGICAL_READS_PER_SESSION 0 CONNECT_TIME 0 CPU_PER_SESSION 0";
@@ -6799,7 +6799,7 @@ USING 'localhost:1521/hqpdb'";
 
 			public class AlterSynonym
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterSynonym()
 				{
 					const string statementText = @"ALTER PUBLIC SYNONYM test_synonym COMPILE";
@@ -6814,7 +6814,7 @@ USING 'localhost:1521/hqpdb'";
 
 			public class AlterView
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterViewAddConstraint()
 				{
 					const string statementText = @"ALTER VIEW tmp ADD CONSTRAINT constraint_name PRIMARY KEY (dummy) RELY DISABLE NOVALIDATE";
@@ -6826,7 +6826,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterViewDropConstraint()
 				{
 					const string statementText = @"ALTER VIEW tmp DROP UNIQUE (dummy)";
@@ -6838,7 +6838,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterViewCompile()
 				{
 					const string statementText = @"ALTER VIEW tmp COMPILE";
@@ -6850,7 +6850,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterViewReadWrite()
 				{
 					const string statementText = @"ALTER VIEW tmp READ WRITE";
@@ -6862,7 +6862,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterViewNonEditionable()
 				{
 					const string statementText = @"ALTER VIEW tmp NONEDITIONABLE";
@@ -6877,7 +6877,7 @@ USING 'localhost:1521/hqpdb'";
 
 			public class AlterTablespace
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTablespaceEndBackup()
 				{
 					const string statementText = @"ALTER TABLESPACE tbs_01 END BACKUP";
@@ -6889,7 +6889,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTablespaceOffline()
 				{
 					const string statementText = @"ALTER TABLESPACE tbs_02 OFFLINE IMMEDIATE";
@@ -6901,7 +6901,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTablespaceRenameDatafile()
 				{
 					const string statementText = @"ALTER TABLESPACE tbs_02 RENAME DATAFILE 'diskb:tbs_f5.dbf' TO 'diska:tbs_f5.dbf'";
@@ -6913,7 +6913,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTablespaceAddDatafile()
 				{
 					const string statementText = @"ALTER TABLESPACE tbs_03 ADD DATAFILE 'tbs_f04.dbf' SIZE 100K AUTOEXTEND ON NEXT 10K MAXSIZE 100K";
@@ -6925,7 +6925,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTablespaceAddTempfile()
 				{
 					const string statementText = @"ALTER TABLESPACE temp_demo ADD TEMPFILE 'temp05.dbf' SIZE 5 AUTOEXTEND ON";
@@ -6937,7 +6937,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTablespaceDropTempfile()
 				{
 					const string statementText = @"ALTER TABLESPACE temp_demo DROP TEMPFILE 'temp05.dbf'";
@@ -6949,7 +6949,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTablespaceShrinkTempfile()
 				{
 					const string statementText = @"ALTER TABLESPACE temp_demo SHRINK SPACE KEEP 10M";
@@ -6961,7 +6961,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTablespaceAddUnnamedDatafile()
 				{
 					const string statementText = @"ALTER TABLESPACE omf_ts1 ADD DATAFILE";
@@ -6973,7 +6973,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTablespaceNologging()
 				{
 					const string statementText = @"ALTER TABLESPACE tbs_03 NOLOGGING";
@@ -6985,7 +6985,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTablespaceRetentionNoGuarantee()
 				{
 					const string statementText = @"ALTER TABLESPACE undots1 RETENTION NOGUARANTEE";
@@ -7000,7 +7000,7 @@ USING 'localhost:1521/hqpdb'";
 
 			public class AlterTable
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTableDisableAllTriggers()
 				{
 					const string statementText = @"ALTER TABLE test_table DISABLE ALL TRIGGERS";
@@ -7012,7 +7012,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTableRenameColumn()
 				{
 					const string statementText = @"ALTER TABLE test_table RENAME COLUMN old_name TO new_name";
@@ -7024,7 +7024,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTableDeallocateUnused()
 				{
 					const string statementText = @"ALTER TABLE test_table DEALLOCATE UNUSED KEEP 1G";
@@ -7036,7 +7036,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTableAddColumns()
 				{
 					const string statementText = @"ALTER TABLE countries ADD (duty_pct NUMBER(2, 2) CHECK (duty_pct < 10.5), visa_needed VARCHAR2(3))";
@@ -7048,7 +7048,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTableAddVirtualColumnWithoutExplicitTypeDefinition()
 				{
 					const string statementText = @"ALTER TABLE emp2 ADD (income AS (salary + (salary * commission_pct)))";
@@ -7060,7 +7060,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTableAddSingleVirtualColumnWithoutExplicitTypeDefinition()
 				{
 					const string statementText = @"ALTER TABLE TEST_TABLE ADD C3 AS (C1 + (C1 * C2))";
@@ -7072,7 +7072,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTableModifySingleColumnInvisible()
 				{
 					const string statementText = @"ALTER TABLE TEST_TABLE MODIFY C3 INVISIBLE";
@@ -7089,7 +7089,7 @@ USING 'localhost:1521/hqpdb'";
 					terminals[5].Id.ShouldBe(Terminals.Invisible);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTableDropSingleColumn()
 				{
 					const string statementText = @"ALTER TABLE TEST_TABLE DROP COLUMN C3 INVALIDATE CASCADE CONSTRAINTS CHECKPOINT 123";
@@ -7101,7 +7101,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTableDropMultipleColumns()
 				{
 					const string statementText = @"ALTER TABLE TEST_TABLE DROP (C2, C3)";
@@ -7113,7 +7113,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTableSetSingleColumnUnused()
 				{
 					const string statementText = @"ALTER TABLE TEST_TABLE SET UNUSED COLUMN C3 CASCADE CONSTRAINTS ONLINE";
@@ -7125,7 +7125,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTableDropColumnsContinue()
 				{
 					const string statementText = @"ALTER TABLE TEST_TABLE DROP COLUMNS CONTINUE CHECKPOINT 123";
@@ -7137,7 +7137,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTableDropUnusedColumns()
 				{
 					const string statementText = @"ALTER TABLE TEST_TABLE DROP UNUSED COLUMNS";
@@ -7149,7 +7149,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTableAddPeriod()
 				{
 					const string statementText = @"ALTER TABLE TEST_TABLE ADD (PERIOD FOR C5 (C3, C4))";
@@ -7161,7 +7161,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTableDropPeriod()
 				{
 					const string statementText = @"ALTER TABLE TEST_TABLE DROP (PERIOD FOR C4)";
@@ -7173,7 +7173,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTableModifyColumnType()
 				{
 					const string statementText = @"ALTER TABLE countries MODIFY (duty_pct NUMBER(3, 2))";
@@ -7185,7 +7185,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTableModifySegmentAttributes()
 				{
 					const string statementText = @"ALTER TABLE employees PCTFREE 30 PCTUSED 60";
@@ -7197,7 +7197,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTableModifyColumnEncryption()
 				{
 					const string statementText = @"ALTER TABLE employees MODIFY (salary ENCRYPT USING 'AES256' 'NOMAC')";
@@ -7209,7 +7209,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTableRenameConstraint()
 				{
 					const string statementText = @"ALTER TABLE customers RENAME CONSTRAINT cust_fname_nn TO cust_firstname_nn;";
@@ -7221,7 +7221,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTableDropPrimaryKey()
 				{
 					const string statementText = @"ALTER TABLE departments DROP PRIMARY KEY CASCADE;";
@@ -7233,7 +7233,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTableDropConstraint()
 				{
 					const string statementText = @"ALTER TABLE departments DROP CONSTRAINT pk_dept CASCADE";
@@ -7245,7 +7245,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTableDropUniqueConstraint()
 				{
 					const string statementText = @"ALTER TABLE departments DROP UNIQUE (c1, c2, c3)";
@@ -7257,7 +7257,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTableNoMinimizeRecordsPerBlockAndUpgrade()
 				{
 					const string statementText = @"ALTER TABLE TEST_TABLE NOMINIMIZE RECORDS_PER_BLOCK UPGRADE NOT INCLUDING DATA";
@@ -7269,7 +7269,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTableAllocateExtent()
 				{
 					const string statementText = @"ALTER TABLE TEST_TABLE ALLOCATE EXTENT (SIZE 1E DATAFILE 'datafile01.dat' INSTANCE 1)";
@@ -7281,7 +7281,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTableAddDropSupplementalLogging()
 				{
 					const string statementText =
@@ -7298,7 +7298,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTableAddConstraint()
 				{
 					const string statementText = @"ALTER TABLE COUNTRY ADD CONSTRAINT PK_COUNTRY PRIMARY KEY (COUNTRY_ID)";
@@ -7310,7 +7310,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 				
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTableCombineTableAttributeColumnAttributeAndConstraintClause()
 				{
 					const string statementText = @"ALTER TABLE tmp CACHE ROW ARCHIVAL ADD (c2 NUMBER) ADD CONSTRAINT pk_tmp PRIMARY KEY (dummy) NOLOGGING ADD (c3 NUMBER) READ ONLY ADD CONSTRAINT uq_tmp UNIQUE (dummy, c2)";
@@ -7322,7 +7322,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTableAddConstraintWhileTyping()
 				{
 					const string statement1 = @"ALTER TABLE pracovnici ADD CONSTRAINT fk_pracovnici_zarizenia REF";
@@ -7331,7 +7331,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 				}
 
-				/*[Test(Description = @"")]
+				/*[Test]
 				public void TestAlterTableAlterXmlSchemaAllowAnySchema()
 				{
 					const string statementText = @"ALTER TABLE TEST_TABLE NOCACHE ALLOW ANYSCHEMA";
@@ -7343,7 +7343,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 				
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTableAlterXmlSchemaDisallowNonSchema()
 				{
 					const string statementText = @"ALTER TABLE TEST_TABLE NOCACHE DISALLOW NONSCHEMA";
@@ -7358,7 +7358,7 @@ USING 'localhost:1521/hqpdb'";
 
 			public class AlterUser
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestBasicAlterUser()
 				{
 					const string statementText = @"ALTER USER sidney IDENTIFIED BY second_2nd_pwd DEFAULT TABLESPACE example PROFILE new_profile DEFAULT ROLE ALL EXCEPT dw_manager TEMPORARY TABLESPACE tbs_grp_01 REMOVE CONTAINER_DATA = (C1, C2) FOR TEST_SCHEMA.TEST_OBJECT";
@@ -7370,7 +7370,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterMultipleUsersGrantConnectThroughEnterpriseUsers()
 				{
 					const string statementText = @"ALTER USER u1, u2 GRANT CONNECT THROUGH ENTERPRISE USERS";
@@ -7382,7 +7382,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterMultipleUsersGrantConnectThroughUserWithRoles()
 				{
 					const string statementText = @"ALTER USER u1, u2 GRANT CONNECT THROUGH proxy_user WITH ROLE ALL EXCEPT r1, r2 AUTHENTICATION REQUIRED";
@@ -7397,7 +7397,7 @@ USING 'localhost:1521/hqpdb'";
 
 			public class AlterType
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestBasicAlterType()
 				{
 					const string statementText =
@@ -7414,7 +7414,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTypeCompileSpecification()
 				{
 					const string statementText = @"ALTER TYPE link2 COMPILE SPECIFICATION";
@@ -7426,7 +7426,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterTypeAddAttributeInvalidate()
 				{
 					const string statementText = @"ALTER type a ADD attribute (c NUMBER) INVALIDATE";
@@ -7441,7 +7441,7 @@ USING 'localhost:1521/hqpdb'";
 
 			public class AlterMaterializedView
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterMaterializedViewCompile()
 				{
 					const string statementText = @"ALTER MATERIALIZED VIEW order_data COMPILE";
@@ -7477,7 +7477,7 @@ USING 'localhost:1521/hqpdb'";
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
 
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterMaterializedRefreshCompleteStartWithNext()
 				{
 					const string statementText =
@@ -7496,7 +7496,7 @@ USING 'localhost:1521/hqpdb'";
 
 			public class AlterSequence
 			{
-				[Test(Description = @"")]
+				[Test]
 				public void TestAlterMaterializedViewCompile()
 				{
 					const string statementText = @"ALTER SEQUENCE test_sequence INCREMENT BY 2 NOMAXVALUE NOMINVALUE CYCLE CACHE 5 NOORDER NOKEEP GLOBAL";
@@ -7512,7 +7512,7 @@ USING 'localhost:1521/hqpdb'";
 
 		public class Truncate
 		{
-			[Test(Description = @"")]
+			[Test]
 			public void TestTruncateTableMinimal()
 			{
 				const string statementText = @"TRUNCATE TABLE TEST_TABLE";
@@ -7531,7 +7531,7 @@ USING 'localhost:1521/hqpdb'";
 				terminals[2].Id.ShouldBe(Terminals.ObjectIdentifier);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestTruncateTableMaximal()
 			{
 				const string statementText = @"TRUNCATE TABLE TEST_SCHEMA.TEST_TABLE PURGE MATERIALIZED VIEW LOG REUSE STORAGE CASCADE;";
@@ -7543,7 +7543,7 @@ USING 'localhost:1521/hqpdb'";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestTruncateTableWithObsoletePurgeSnapshotLog()
 			{
 				const string statementText = @"TRUNCATE TABLE test_table PURGE SNAPSHOT LOG";
@@ -7558,7 +7558,7 @@ USING 'localhost:1521/hqpdb'";
 
 		public class Analyze
 		{
-			[Test(Description = @"")]
+			[Test]
 			public void TestAnalyzeTableDeleteStatistics()
 			{
 				const string statementText = @"ANALYZE TABLE orders DELETE STATISTICS";
@@ -7570,7 +7570,7 @@ USING 'localhost:1521/hqpdb'";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 			
-			[Test(Description = @"")]
+			[Test]
 			public void TestAnalyzeIndexValidateStructure()
 			{
 				const string statementText = @"ANALYZE INDEX inv_product_ix VALIDATE STRUCTURE";
@@ -7582,7 +7582,7 @@ USING 'localhost:1521/hqpdb'";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestAnalyzeTableListChainedRows()
 			{
 				const string statementText = @"ANALYZE TABLE orders LIST CHAINED ROWS INTO chained_rows";
@@ -7594,7 +7594,7 @@ USING 'localhost:1521/hqpdb'";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestAnalyzeClusterValidateStructureCascade()
 			{
 				const string statementText = @"ANALYZE CLUSTER personnel VALIDATE STRUCTURE CASCADE COMPLETE ONLINE";
@@ -7606,7 +7606,7 @@ USING 'localhost:1521/hqpdb'";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestAnalyzeTableComputeStatisticsForTable()
 			{
 				const string statementText = @"ANALYZE TABLE test_table COMPUTE STATISTICS FOR TABLE";
@@ -7618,7 +7618,7 @@ USING 'localhost:1521/hqpdb'";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestAnalyzeTableComputeStatisticsForAllIndexes()
 			{
 				const string statementText = @"ANALYZE TABLE test_table COMPUTE STATISTICS FOR ALL LOCAL INDEXES FOR ALL INDEXED COLUMNS SIZE 16";
@@ -7630,7 +7630,7 @@ USING 'localhost:1521/hqpdb'";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestAnalyzeTableComputeStatisticsForColumns()
 			{
 				const string statementText = @"ANALYZE TABLE test_table COMPUTE STATISTICS FOR COLUMNS COLUMN1 SIZE 254 COLUMN2 COLUMN3 SIZE 16";
@@ -7642,7 +7642,7 @@ USING 'localhost:1521/hqpdb'";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
-			[Test(Description = @"")]
+			[Test]
 			public void TestAnalyzeTableEstimateStatisticsWithSample()
 			{
 				const string statementText = @"ANALYZE TABLE test_table ESTIMATE STATISTICS SAMPLE 10 PERCENT";
@@ -7657,7 +7657,7 @@ USING 'localhost:1521/hqpdb'";
 
 		public class Purge
 		{
-			[Test(Description = @"")]
+			[Test]
 			public void TestPurge()
 			{
 				const string statementText = @"PURGE TABLESPACE TEST_TABLESPACE USER TEST_USER;";
@@ -7681,7 +7681,7 @@ USING 'localhost:1521/hqpdb'";
 
 		public class ExplainPlan
 		{
-			[Test(Description = @"")]
+			[Test]
 			public void TestExplainPlan()
 			{
 				const string statementText = @"EXPLAIN PLAN SET STATEMENT_ID = 'dummyStatementId' INTO PLAN_TABLE FOR SELECT * FROM DUAL";
@@ -7713,7 +7713,7 @@ USING 'localhost:1521/hqpdb'";
 
 		public class Call
 		{
-			[Test(Description = @"")]
+			[Test]
 			public void TestCallStatement()
 			{
 				const string statementText = @"CALL HUSQVIK.RET_WAREHOUSE_TYP(WAREHOUSE_TYP(234, 'Warehouse 234')).ret_name() INTO :x INDICATOR :y;";
@@ -7754,7 +7754,7 @@ USING 'localhost:1521/hqpdb'";
 
 		public class CanAddPairCharacter
 		{
-			[Test(Description = @"")]
+			[Test]
 			public void TestCanAddPairCharacter()
 			{
 				Parser.CanAddPairCharacter("n'VODKA", '\'').ShouldBe(false);

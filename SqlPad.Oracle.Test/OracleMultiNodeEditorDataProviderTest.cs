@@ -11,7 +11,7 @@ namespace SqlPad.Oracle.Test
 		private static readonly OracleMultiNodeEditorDataProvider MultiNodeEditorDataProvider = new OracleMultiNodeEditorDataProvider();
 		private static readonly SqlDocumentRepository DocumentRepository = new SqlDocumentRepository(OracleSqlParser.Instance, new OracleStatementValidator(), OracleTestDatabaseModel.Instance);
 
-		const string CteSqlText =
+		private const string CteSqlText =
 @"WITH cte(val) AS (
 	SELECT 1 FROM DUAL UNION ALL
 	SELECT cte.val + 1 FROM cte WHERE val < 5
@@ -28,7 +28,7 @@ FROM
 			return MultiNodeEditorDataProvider.GetMultiNodeEditorData(executionContext);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestRecursiveCteNodesAtCteAlias()
 		{
 			var multiNodeEditorData = GetMultiNodeEditorData(CteSqlText, 5);
@@ -43,7 +43,7 @@ FROM
 			segments[3].IndexStart.ShouldBe(123);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestRecursiveCteNodesAtOuterCteReference()
 		{
 			var multiNodeEditorData = GetMultiNodeEditorData(CteSqlText, 126);
@@ -58,7 +58,7 @@ FROM
 			segments[3].IndexStart.ShouldBe(107);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestRecursiveCteNodesAtInnerObjectReference()
 		{
 			var multiNodeEditorData = GetMultiNodeEditorData(CteSqlText, 76);
@@ -73,7 +73,7 @@ FROM
 			segments[3].IndexStart.ShouldBe(123);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestRecursiveCteNodesAtOuterColumnReference()
 		{
 			var multiNodeEditorData = GetMultiNodeEditorData(CteSqlText, 107);
@@ -88,7 +88,7 @@ FROM
 			segments[3].IndexStart.ShouldBe(123);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAtPivotColumnAlias()
 		{
 			const string sqlText =
@@ -110,7 +110,7 @@ PIVOT (
 			segments[0].IndexStart.ShouldBe(19);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestObjectAliasNodesWithoutCte()
 		{
 			const string sqlText = @"SELECT ALIAS.DUMMY FROM DUAL ALIAS";
@@ -119,7 +119,7 @@ PIVOT (
 			multiNodeEditorData.SynchronizedSegments.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestMultipleAliasedCteUsages()
 		{
 			const string sqlText =
@@ -147,7 +147,7 @@ WHERE
 			segments[1].IndexStart.ShouldBe(163);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestMultipleAliasedCteUsagesAtUsage()
 		{
 			const string sqlText =

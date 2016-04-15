@@ -17,7 +17,7 @@ namespace SqlPad.Oracle.Test
 			OracleConfiguration.Configuration.Formatter.FormatOptions.Reset();
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestBasicFormat()
 		{
 			const string sourceFormat = "SELECT SELECTION.NAME, COUNT(*) OVER (PARTITION BY NAME ORDER BY RESPONDENTBUCKET_ID, SELECTION_ID) DUMMY_COUNT, MAX(RESPONDENTBUCKET_ID) KEEP (DENSE_RANK FIRST ORDER BY PROJECT_ID, SELECTION_ID) FROM SELECTION LEFT JOIN RESPONDENTBUCKET ON SELECTION.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID LEFT JOIN TARGETGROUP ON RESPONDENTBUCKET.TARGETGROUP_ID = TARGETGROUP.TARGETGROUP_ID ORDER BY NAME, SELECTION_ID";
@@ -41,7 +41,7 @@ ORDER BY
 			AssertFormattedResult(executionContext, expectedFormat);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSingleLineFormat()
 		{
 			const string sourceFormat =
@@ -68,7 +68,7 @@ ORDER BY
 			AssertFormattedResult(executionContext, expectedFormat);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestMultipleStatementSingleLineFormat()
 		{
 			const string sourceFormat =
@@ -97,7 +97,7 @@ FROM
 			executionContext.SegmentsToReplace[1].Length.ShouldBe(36);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAtSymbolFormatting()
 		{
 			const string sourceFormat = @"SELECT DUMMY FROM DUAL@DBLINK";
@@ -129,7 +129,7 @@ FROM
 			return executionContext;
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestFormatDeleteStatement()
 		{
 			const string sourceFormat = "DELETE FROM DUAL WHERE DUMMY IN (SELECT NULL FROM DUAL)";
@@ -147,7 +147,7 @@ WHERE
 			AssertFormattedResult(executionContext, expectedFormat);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestFormatInlineView()
 		{
 			const string sourceFormat = "SELECT DUMMY FROM (SELECT DUMMY FROM (SELECT DUMMY FROM DUAL) X) X";
@@ -170,7 +170,7 @@ FROM (
 			AssertFormattedResult(executionContext, expectedFormat);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestFormatInClauseWithSubquery()
 		{
 			const string sourceFormat = "SELECT DUMMY FROM (SELECT DUMMY FROM DUAL WHERE DUMMY IN (SELECT DUMMY FROM DUAL) OR DUMMY IN (SELECT DUMMY FROM DUAL)) X";
@@ -200,7 +200,7 @@ FROM (
 			AssertFormattedResult(executionContext, expectedFormat);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestFormatScalarSubquery()
 		{
 			const string sourceFormat = "SELECT (SELECT DUMMY FROM DUAL) SQ1, (SELECT DUMMY FROM DUAL) SQ2 FROM DUAL";
@@ -224,7 +224,7 @@ FROM
 			AssertFormattedResult(executionContext, expectedFormat);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestFormatSelectedText()
 		{
 			const string sourceFormat = "SELECT C1, C2, C3 FROM (SELECT 1 C1, 2 C2, 3 C3 FROM DUAL)";
@@ -241,7 +241,7 @@ FROM (
 			AssertFormattedResult(executionContext, expectedFormat);
 		}
 		
-		[Test(Description = @"")]
+		[Test]
 		public void TestConditionFormattingAfterInClause()
 		{
 			const string sourceFormat = "SELECT * FROM DUAL WHERE DUMMY IN ('X', 'Y', NULL) AND 1 = 1";
@@ -259,7 +259,7 @@ WHERE
 			AssertFormattedResult(executionContext, expectedFormat);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestBasicPlSqlFormatting()
 		{
 			const string sourceFormat = "DECLARE x NUMBER; TYPE tx IS RECORD (p1 NUMBER); TYPE ty IS RECORD (p1 tx); TYPE tz IS RECORD (p1 ty); TYPE tw IS RECORD (p1 tz); z tw; t x%TYPE; t z.p1.p1.p1%TYPE; results dbms_debug.vc2_table; PROCEDURE procedure1 (p1 NUMBER) IS x NUMBER; BEGIN NULL; END; FUNCTION function1 (p1 NUMBER) RETURN NUMBER IS x NUMBER; BEGIN RETURN x; END; BEGIN NULL; NULL; NULL; END;";
@@ -295,7 +295,7 @@ END;";
 			AssertFormattedResult(executionContext, expectedFormat);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestPlSqlWithoutDeclareSectionFormatting()
 		{
 			const string sourceFormat = "BEGIN NULL; END;";
@@ -309,7 +309,7 @@ END;";
 			AssertFormattedResult(executionContext, expectedFormat);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestHierarchicalClauseFormatting()
 		{
 			const string sourceFormat = "SELECT NULL FROM dual START WITH 1 = 1 CONNECT BY LEVEL <= 3";
@@ -328,7 +328,7 @@ CONNECT BY
 			AssertFormattedResult(executionContext, expectedFormat);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCasing()
 		{
 			var formatOptions = OracleConfiguration.Configuration.Formatter.FormatOptions;
@@ -349,7 +349,7 @@ FROM
 			AssertFormattedResult(executionContext, expectedFormat);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUpdateFormatting()
 		{
 			const string sourceFormat = "UPDATE TEST_DATA SET OWNER = NULL, OBJECT_NAME = NULL, SUBOBJECT_NAME = NULL, OBJECT_ID = NULL, DATA_OBJECT_ID = NULL, OBJECT_TYPE = NULL, CREATED = NULL, LAST_DDL_TIME = NULL, TIMESTAMP = NULL, STATUS = NULL, TEMPORARY = NULL, GENERATED = NULL, SECONDARY = NULL, NAMESPACE = NULL, EDITION_NAME = NULL, SHARING = NULL, EDITIONABLE = NULL, ORACLE_MAINTAINED = NULL WHERE 1 = 1 AND 0 = 0";

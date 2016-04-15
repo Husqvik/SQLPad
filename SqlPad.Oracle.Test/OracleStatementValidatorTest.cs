@@ -24,7 +24,7 @@ namespace SqlPad.Oracle.Test
 			return (OracleValidationModel)statementValidator.BuildValidationModel(task.Result);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestTableNodeValidityWithFullyQualifiedAndNormalTableNames()
 		{
 			const string query = "SELECT * FROM SYS.DUAL, HUSQVIK.COUNTRY, HUSQVIK.INVALID, INVALID.ORDERS, V$SESSION";
@@ -46,7 +46,7 @@ namespace SqlPad.Oracle.Test
 			objectNodeValidity[8].ShouldBe(true);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestTableNodeValidityWithQuotedNotations()
 		{
 			const string query = "WITH XXX1 AS (SELECT 1 FROM XXX1) SELECT * FROM XXX1, SYS.XXX1, \"XXX1\", \"xXX1\", \"PUBLIC\".DUAL";
@@ -67,7 +67,7 @@ namespace SqlPad.Oracle.Test
 			objectNodeValidity[7].ShouldBe(true);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestNodeValidityForComplexQueryWithMultipleCommonTableExpressionsAtDifferentLevelAndScalarSubqueries()
 		{
 			const string sqlText = "WITH XXX AS (SELECT 3 COL FROM DUAL CTE_OUTER_ALIAS_1) SELECT VP1 COL1, (SELECT 1 FROM XXX SC_ALIAS_1) SCALARSUBQUERY FROM (WITH YYY AS (SELECT 1 FROM SYS.DUAL CTE_INNER_ALIAS_1), ZZZ AS (SELECT 2 FROM DUAL CTE_INNER_ALIAS_2), FFF AS (SELECT 4 FROM XXX CTE_INNER_ALIAS_3) SELECT COL + 1 VP1 FROM (SELECT TABLE_ALIAS_1.COL, TABLE_ALIAS_2.DUMMY || TABLE_ALIAS_2.DUMMY NOT_DUMMY FROM XXX TABLE_ALIAS_1, DUAL TABLE_ALIAS_2) TABLE_ALIAS_3) SUBQUERY";
@@ -82,7 +82,7 @@ namespace SqlPad.Oracle.Test
 			objectNodeValidity.ForEach(n => n.ShouldBe(true));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestTableNodeValidityWhenUsingFullyQualifiedOrNormalNameOrCommonTableExpressionAlias()
 		{
 			const string sqlText = "WITH CTE AS (SELECT 1 FROM DUAL) SELECT CTE.*, SYS.DUAL.*, DUAL.*, HUSQVIK.CTE.* FROM DUAL CROSS JOIN CTE";
@@ -105,7 +105,7 @@ namespace SqlPad.Oracle.Test
 			objectNodeValidity[8].ShouldBe(true);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestTableNodeValidityInQueryWithCommonTableExpression()
 		{
 			const string sqlText = "WITH CTE AS (SELECT 1 COLUMN1, VAL COLUMN2, DUMMY COLUMN3 FROM DUAL) SELECT COLUMN1, 'X' || CTE.COLUMN1, CTE.VAL, CTE.COLUMN2, SYS.DUAL.COLUMN1, DUAL.VAL, DUAL.DUMMY FROM CTE, INVALID_TABLE";
@@ -129,7 +129,7 @@ namespace SqlPad.Oracle.Test
 			nodeValidity[8].ShouldBe(false);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnNodeValidityInQueryWithCommonTableExpression()
 		{
 			const string sqlText = "WITH CTE AS (SELECT DUMMY VAL FROM DUAL) SELECT DUAL.VAL FROM CTE, DUAL";
@@ -146,7 +146,7 @@ namespace SqlPad.Oracle.Test
 			nodeValidity[1].ShouldBe(false);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSameColumnNamesInSameObjectsInDifferentSchemas()
 		{
 			const string sqlText = @"SELECT SYS.DUAL.DUMMY FROM SYS.DUAL, ""PUBLIC"".DUAL";
@@ -162,7 +162,7 @@ namespace SqlPad.Oracle.Test
 			nodeValidity[0].ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAmbiguousColumnAndObjectNames()
 		{
 			const string sqlText = @"SELECT DUAL.DUMMY FROM SYS.DUAL, ""PUBLIC"".DUAL";
@@ -178,7 +178,7 @@ namespace SqlPad.Oracle.Test
 			nodeValidity[0].ShouldBe(OracleSemanticErrorType.AmbiguousReference);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAmbiguousColumnReferences()
 		{
 			const string query1 = "SELECT T2.DUMMY FROM (SELECT DUMMY FROM DUAL) T2, DUAL";
@@ -213,7 +213,7 @@ namespace SqlPad.Oracle.Test
 			tableNames[1].ShouldBe("t2");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnNodeValidityWhenExposedFromSubqueryUsingAsterisk()
 		{
 			const string sqlText = "SELECT ID, NAME, DUMMY FROM (SELECT * FROM COUNTRY)";
@@ -232,7 +232,7 @@ namespace SqlPad.Oracle.Test
 			nodeValidity[3].ShouldBe(true);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnNodeValidityWhenExposedFromSubqueryUsingAsteriskOnSpecificObject()
 		{
 			const string sqlText = "SELECT ID, NAME, DUMMY FROM (SELECT COUNTRY.* FROM COUNTRY)";
@@ -251,7 +251,7 @@ namespace SqlPad.Oracle.Test
 			nodeValidity[3].ShouldBe(true);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnNodeValidityWhenTableAsInnerTableReference()
 		{
 			const string sqlText = "SELECT ID, NAME, DUMMY FROM (COUNTRY)";
@@ -269,7 +269,7 @@ namespace SqlPad.Oracle.Test
 			nodeValidity[2].ShouldBe(false);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestTableNodeValidityInSimpleQuery()
 		{
 			const string sqlText = "SELECT SELECTION.DUMMY FROM SELECTION";
@@ -286,7 +286,7 @@ namespace SqlPad.Oracle.Test
 			objectNodeValidity[1].ShouldBe(true);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnNodeValidityWhenColumnsFromNestedSubqueries()
 		{
 			const string sqlText = "SELECT PROJECT_ID, SELECTION_ID, RESPONDENTBUCKET_ID, DUMMY FROM (SELECT * FROM (SELECT * FROM SELECTION))";
@@ -307,7 +307,7 @@ namespace SqlPad.Oracle.Test
 			columnNodeValidity[5].ShouldBe(true);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestTableNodeValidityInConditions()
 		{
 			const string sqlText = "SELECT NULL FROM DUAL WHERE HUSQVIK.COUNTRY.ID = SELECTION.ID AND SYS.DUAL.DUMMY = DUMMY";
@@ -331,7 +331,7 @@ namespace SqlPad.Oracle.Test
 			objectNodeValidity[5].ShouldBe(false);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestTableNodeValidityInMultiFromMultiJoinQuery()
 		{
 			const string sqlText = @"SELECT * FROM
@@ -383,7 +383,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			nodeValidity[3].ShouldBe(true); // RB
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAmbiguousColumnFromSubquery()
 		{
 			const string sqlText = "SELECT NAME FROM (SELECT S.NAME, RB.NAME FROM SELECTION S JOIN RESPONDENTBUCKET RB ON S.RESPONDENTBUCKET_ID = RB.RESPONDENTBUCKET_ID)";
@@ -402,7 +402,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			nodeValidity[4].ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestBasicFunctionCall()
 		{
 			const string sqlText = "SELECT COUNT(COUNT) OVER (), COUNT, HUSQVIK.COUNT, HUSQVIK.COUNT() FROM FTEST";
@@ -433,7 +433,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			nodeValidity[4].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestToCharFunctionCallWithMissingOptionalParameters()
 		{
 			const string sqlText = "SELECT TO_CHAR(1) FROM DUAL";
@@ -453,7 +453,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			nodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestFunctionCallWithWrongParameterCount()
 		{
 			const string sqlText = "SELECT COUNT(1, 2) FROM DUAL";
@@ -471,7 +471,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			nodeValidity[0].ShouldBe(OracleSemanticErrorType.InvalidParameterCount);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAnalyticFuctionAsParameter()
 		{
 			const string sqlText = "SELECT NULLIF(COUNT(DUMMY) OVER (), 1) FROM DUAL";
@@ -489,7 +489,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			nodeValidity.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAnalyticFuctionAsAnalyticFuctionParameter()
 		{
 			const string sqlText = "SELECT COUNT(COUNT(DUMMY) OVER ()) OVER () FROM DUAL";
@@ -506,7 +506,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			validationData.Node.SourcePosition.IndexEnd.ShouldBe(32);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAnalyticFuctionAsAggregateFuctionParameter()
 		{
 			const string sqlText = "SELECT COUNT(COUNT(DUMMY) OVER ()) FROM DUAL";
@@ -523,7 +523,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			validationData.Node.SourcePosition.IndexEnd.ShouldBe(32);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAggregateFuctionAsAnalyticFuctionParameter()
 		{
 			const string sqlText = "SELECT COUNT(COUNT(DUMMY)) OVER () FROM DUAL";
@@ -536,7 +536,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestTooDeeplyNestedAggregateFunction()
 		{
 			const string sqlText = "SELECT COUNT(COUNT(COUNT(DUMMY))) FROM DUAL";
@@ -553,7 +553,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			validationData.Node.SourcePosition.IndexEnd.ShouldBe(30);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestTooDeeplyNestedAggregateFunctionInOrderByClause()
 		{
 			const string sqlText = "SELECT COUNT(DUMMY) DUMMY FROM DUAL ORDER BY COUNT(DUMMY)";
@@ -570,7 +570,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			validationData.Node.SourcePosition.IndexEnd.ShouldBe(56);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestNotSingleGroupGroupbyFunctionInOrderByClause()
 		{
 			const string sqlText = "SELECT COUNT(DUMMY) OVER () DUMMY FROM DUAL ORDER BY COUNT(DUMMY)";
@@ -587,7 +587,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			validationData.Node.SourcePosition.IndexEnd.ShouldBe(64);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnNodeValidityUsingNestedQueryAndCountAsteriskFunction()
 		{
 			const string sqlText = "SELECT DUMMY FROM (SELECT DUMMY, COUNT(*) OVER () ROW_COUNT FROM (SELECT DUMMY FROM DUAL))";
@@ -601,7 +601,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			firstNodeValidity.ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestParameterlessFuctionWithParenthesisRequirement()
 		{
 			const string sqlText = "SELECT SYS_GUID(), SYS_GUID(123), SYS_GUID, SYSGUID() FROM DUAL";
@@ -629,7 +629,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			nodeValidity[4].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestFuctionRequiringNoParenthesis()
 		{
 			const string sqlText = "SELECT SESSIONTIMEZONE() FROM DUAL";
@@ -651,7 +651,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			nodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.NonParenthesisFunction);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestParameterFuctionWithUnlimitedMaximumParameterCount()
 		{
 			const string sqlText = "SELECT COALESCE(SELECTION.RESPONDENTBUCKET_ID, SELECTION.SELECTION_ID) FROM SELECTION";
@@ -667,7 +667,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			nodeValidationData.SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestMultiParameterFunctionWithAnalyticFunctionAsOneParameter()
 		{
 			const string sqlText = "SELECT NVL(LAST_VALUE(DUMMY) OVER (), 'Replacement') FROM DUAL";
@@ -689,7 +689,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			nodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestTableNodeValidityWhenOneCommonTableExpressionReferencesAnother()
 		{
 			const string sqlText = "WITH T1 AS (SELECT 1 A FROM DUAL), T2 AS (SELECT 1 B FROM T1) SELECT B FROM T2";
@@ -707,7 +707,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			objectNodeValidity[2].ShouldBe(true);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestTableNodeValidityWhenOneCommonTableExpressionReferencesAnotherDefinedLater()
 		{
 			const string sqlText = "WITH T1 AS (SELECT 1 A FROM T2), T2 AS (SELECT 1 B FROM T1) SELECT B FROM T2";
@@ -725,7 +725,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			objectNodeValidity[2].ShouldBe(true);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestNodeValidityInOrderByClause()
 		{
 			const string sqlText = "SELECT * FROM HUSQVIK.SELECTION ORDER BY HUSQVIK.SELECTION.NAME, SELECTION.NAME, DUAL.DUMMY, SELECTION_ID, UNDEFINED_COLUMN, UPPER(''), UNDEFINED_FUNCTION()";
@@ -769,7 +769,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			functionNodeValidity[1].Node.Token.Value.ShouldBe("UNDEFINED_FUNCTION");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAliasReferenceNodeValidityInOrderByClause()
 		{
 			const string sqlText = "SELECT DUMMY NOT_DUMMY FROM DUAL ORDER BY NOT_DUMMY";
@@ -789,7 +789,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnReferenceNodeValidityInOrderByClause()
 		{
 			const string sqlText = "SELECT DUMMY NOT_DUMMY, DUMMY FROM DUAL ORDER BY DUMMY";
@@ -812,7 +812,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity[2].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAmbiguousAliasReferenceNodeValidityInOrderByClause()
 		{
 			const string sqlText = "SELECT NAME, SELECTION_ID NAME FROM SELECTION ORDER BY NAME";
@@ -835,7 +835,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity[2].SemanticErrorType.ShouldBe(OracleSemanticErrorType.AmbiguousReference);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestInvalidAliasReferenceNodeValidityInOrderByClause()
 		{
 			const string sqlText = "SELECT NAME X FROM SELECTION UNION ALL SELECT NAME FROM SELECTION ORDER BY NAME";
@@ -858,7 +858,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity[2].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestValidAliasReferenceNodeValidityInOrderByClauseUsingConcatenatedSubqueriesWithMissingAliasInLastQuery()
 		{
 			const string sqlText = "SELECT RESPONDENTBUCKET_ID ID FROM RESPONDENTBUCKET UNION ALL SELECT TARGETGROUP_ID ID FROM TARGETGROUP UNION ALL SELECT PROJECT_ID FROM PROJECT ORDER BY ID";
@@ -884,7 +884,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity[3].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestInvalidAliasReferenceNodeValidityInOrderByClauseUsingConcatenatedSubqueriesWithMissingAliasInLastQuery()
 		{
 			const string sqlText = "SELECT RESPONDENTBUCKET_ID ID FROM RESPONDENTBUCKET UNION ALL SELECT TARGETGROUP_ID FROM TARGETGROUP UNION ALL SELECT PROJECT_ID FROM PROJECT ORDER BY ID";
@@ -910,7 +910,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity[3].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnNodeValidityWhenObjectReferenceIsAliasedCommonTableExpression()
 		{
 			const string sqlText = "WITH CTE AS (SELECT DUMMY FROM DUAL) SELECT	DUMMY FROM CTE T1";
@@ -926,7 +926,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity[1].IsRecognized.ShouldBe(true);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestGreatestFuctionWithUnlimitedMaximumParameterCount()
 		{
 			const string sqlText = "SELECT GREATEST(1, 2, 3) FROM DUAL";
@@ -942,7 +942,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			programNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAmbiguousColumnReferenceUsingAsterisk()
 		{
 			const string sqlText = "SELECT * FROM (SELECT 1 NAME, 2 NAME FROM DUAL)";
@@ -958,7 +958,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.AmbiguousReference);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestFunctionIdentifierNodeValidWithoutOwnerNodeInSameSchema()
 		{
 			const string sqlText = "SELECT SQLPAD_FUNCTION() WITH_PARENTHESES, SQLPAD_FUNCTION WITHOUT_PARENTHESES FROM DUAL";
@@ -976,7 +976,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			programNodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestNotAmbiguousRowIdReference()
 		{
 			const string sqlText = "SELECT SELECTION.ROWID FROM SELECTION, PROJECT";
@@ -992,7 +992,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSemanticErrorWhenUserNonAggregateFunctionHasAnalyticClause()
 		{
 			const string sqlText = "SELECT HUSQVIK.COUNT() OVER () FROM DUAL";
@@ -1011,7 +1011,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			nodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.AnalyticClauseNotSupported);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnNodeValidityInCorrelatedSubquery()
 		{
 			const string sqlText = "SELECT * FROM DUAL D WHERE EXISTS (SELECT NULL FROM DUAL WHERE DUMMY = D.DUMMY)";
@@ -1033,7 +1033,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity[2].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnNodeValidityInCorrelatedSubqueryWithoutObjectQualifierAndInSelectList()
 		{
 			const string sqlText = "SELECT (SELECT ID FROM INVOICES WHERE ID = S.SELECTION_ID) FROM SELECTION S WHERE EXISTS (SELECT NULL FROM INVOICES WHERE ID = SELECTION_ID)";
@@ -1055,7 +1055,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity.ForEach(v => v.SemanticErrorType.ShouldBe(OracleSemanticErrorType.None));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestFunctionIdentifierNodeValidDefinedBySynonym()
 		{
 			const string sqlText = "SELECT DBMS_RANDOM.STRING('X', 16) FROM DUAL";
@@ -1073,14 +1073,14 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			programNodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestMissingFunctionInExistingPackage()
 		{
 			const string sqlText = "SELECT DBMS_RANDOM.UNDEFINED_FUNCTION() FROM DUAL";
 			TestMissingFunctionInExistingPackageInternal(sqlText);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestMissingFunctionInExistingPackageWithoutInvokationParentheses()
 		{
 			const string sqlText = "SELECT DBMS_RANDOM.UNDEFINED_FUNCTION FROM DUAL";
@@ -1103,7 +1103,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			programNodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSchemaFunctionWithCompilationErrors()
 		{
 			const string sqlText = "SELECT UNCOMPILABLE_FUNCTION() FROM DUAL";
@@ -1119,7 +1119,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			functionNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ObjectStatusInvalid);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestPackageFunctionWithCompilationErrors()
 		{
 			const string sqlText = "SELECT UNCOMPILABLE_PACKAGE.FUNCTION() FROM DUAL";
@@ -1137,7 +1137,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			programNodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestBuildInFunctionValidityWithoutLoadedSchemaObjects()
 		{
 			const string sqlText = "SELECT NVL2(DUMMY, 'X', 'NOT DUMMY') FROM DUAL";
@@ -1156,7 +1156,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			programNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestProgramValidityNodesWithObjectTypes()
 		{
 			const string sqlText = "SELECT XMLTYPE('<Root/>'), SYS.XMLTYPE('<Root/>') FROM DUAL WHERE XMLTYPE('<Root/>') IS NOT NULL";
@@ -1176,7 +1176,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			programNodeValidity[2].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestObjectTypeConstructorWithInvalidParameterCount()
 		{
 			const string sqlText = "SELECT SYS.ODCIARGDESC(1) FROM DUAL";
@@ -1198,7 +1198,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			invalidTerminals[2].Token.Value.ShouldBe(")");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCollectionTypeConstructorHasAlwaysValidParameterCount()
 		{
 			const string sqlText = "SELECT SYS.ODCIRAWLIST(NULL, NULL) FROM DUAL";
@@ -1214,7 +1214,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			programNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCollectionTypeConstructorWithNoParameters()
 		{
 			const string sqlText = "SELECT SYS.ODCIARGDESCLIST() FROM DUAL";
@@ -1230,7 +1230,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			programNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSequenceCombinedWithOrderByClause()
 		{
 			const string sqlText = "SELECT TEST_SEQ.NEXTVAL FROM DUAL ORDER BY 1";
@@ -1254,7 +1254,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			nonTerminalValidity[1].Node.TerminalCount.ShouldBe(3);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSequenceCombinedWithGroupByClause()
 		{
 			const string sqlText = "SELECT test_seq.nextval FROM dual GROUP BY dummy";
@@ -1272,7 +1272,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			nonTerminalValidity[0].Node.TerminalCount.ShouldBe(3);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSequenceCombinedWithHavingClause()
 		{
 			const string sqlText = "SELECT test_seq.nextval FROM dual HAVING dummy IS NOT NULL";
@@ -1290,7 +1290,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			nonTerminalValidity[0].Node.TerminalCount.ShouldBe(3);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSequenceWithinSubquery()
 		{
 			const string sqlText = "SELECT NEXTVAL FROM (SELECT TEST_SEQ.NEXTVAL FROM DUAL)";
@@ -1309,7 +1309,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			nonTerminalValidity[0].Node.TerminalCount.ShouldBe(3);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSequenceWithDistinct()
 		{
 			const string sqlText = "SELECT DISTINCT TEST_SEQ.NEXTVAL FROM DUAL";
@@ -1328,7 +1328,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			nonTerminalValidity[0].Node.TerminalCount.ShouldBe(3);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnValidityNodesWithSequence()
 		{
 			const string sqlText = "SELECT TEST_SEQ.NEXTVAL, HUSQVIK.TEST_SEQ.\"NEXTVAL\", SYNONYM_TO_TEST_SEQ.CURRVAL FROM DUAL WHERE TEST_SEQ.\"CURRVAL\" < TEST_SEQ.NEXTVAL";
@@ -1361,7 +1361,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity.ForEach(n => n.SemanticErrorType.ShouldBe(OracleSemanticErrorType.None));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSequenceInvalidColumnValidity()
 		{
 			const string sqlText = "SELECT TEST_SEQ.UNDEFINED_COLUMN FROM DUAL";
@@ -1377,7 +1377,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAsteriskValidOrderByExpressionIndexValidityWithUnrecognizedObject()
 		{
 			const string sqlText = "SELECT * FROM DUAL, NOT_EXISTING_TABLE ORDER BY 1";
@@ -1391,7 +1391,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAsteriskInvalidOrderByExpressionIndexValidityWithUnrecognizedObject()
 		{
 			const string sqlText = "SELECT * FROM DUAL, NOT_EXISTING_TABLE ORDER BY 2";
@@ -1405,7 +1405,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestFunctionNodeValidityOverUndefinedDatabaseLink()
 		{
 			const string sqlText = "SELECT SQLPAD_FUNCTION@UNDEFINED_DB_LINK FROM DUAL";
@@ -1424,7 +1424,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			programNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestObjectReferenceNodeValidityOverUndefinedDatabaseLink()
 		{
 			const string sqlText = "SELECT * FROM SELECTION@UNDEFINED_DB_LINK";
@@ -1443,7 +1443,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			objectNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSequenceAndPseudocolumnValidityOverUndefinedDatabaseLink()
 		{
 			const string sqlText = "SELECT TEST_SEQ.NEXTVAL@UNDEFINED_DB_LINK FROM DUAL";
@@ -1473,7 +1473,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestInvalidIdentifier()
 		{
 			const string sqlText = "SELECT \"\" FROM DUAL";
@@ -1490,7 +1490,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			identifierNodeValidity[0].ToolTipText.ShouldBe("Identifier length must be between one and 30 characters excluding quotes. ");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestInvalidBindVariableIdentifier()
 		{
 			const string sqlText = "SELECT :999999, :9 FROM DUAL";
@@ -1507,7 +1507,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			identifierNodeValidity[0].ToolTipText.ShouldBe("Numeric bind variable identifier must be between 0 and 65535. ");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAmbiguousColumnReferenceUsingAsteriskReferingAnotherAsterisk()
 		{
 			const string sqlText = "SELECT * FROM (SELECT * FROM DUAL, DUAL X)";
@@ -1525,7 +1525,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestExposedGeneratedColumnWithoutAliasValidity()
 		{
 			const string sqlText = "SELECT TO_CHAR FROM (SELECT TO_CHAR('') FROM DUAL)";
@@ -1547,7 +1547,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			programNodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUpdateSubqueryColumnValidity()
 		{
 			const string sqlText = "UPDATE (SELECT * FROM SELECTION) SET NAME = 'Dummy selection' WHERE SELECTION_ID = 0";
@@ -1563,7 +1563,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity.ForEach(c => c.SemanticErrorType.ShouldBe(null));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestValidInsertColumnCount()
 		{
 			const string sqlText = "INSERT INTO SELECTION (RESPONDENTBUCKET_ID, NAME) SELECT RESPONDENTBUCKET_ID, NAME FROM SELECTION";
@@ -1576,7 +1576,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			nodeValidityDictionary.Values.ToList().ForEach(v => v.SemanticErrorType.ShouldBe(null));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestValidInsertColumnCountIntoTableWithInvisibleColumns()
 		{
 			const string sqlText = "INSERT INTO \"CaseSensitiveTable\" VALUES (NULL, NULL)";
@@ -1588,7 +1588,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestInvalidInsertColumnCountWithBothListsDefined()
 		{
 			const string sqlText = "INSERT INTO SELECTION (RESPONDENTBUCKET_ID, NAME) SELECT RESPONDENTBUCKET_ID, NAME, PROJECT_ID FROM SELECTION";
@@ -1606,7 +1606,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			semanticErrorNodes[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnCount);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestInvalidInsertColumnCountWithInsertListOnly()
 		{
 			const string sqlText = "INSERT INTO SELECTION (RESPONDENTBUCKET_ID, NAME) SELECT * FROM SELECTION";
@@ -1624,7 +1624,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			semanticErrorNodes[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnCount);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestInvalidInsertColumnCountWithSelectListOnly()
 		{
 			const string sqlText = "INSERT INTO SELECTION SELECT RESPONDENTBUCKET_ID, NAME, PROJECT_ID FROM SELECTION";
@@ -1640,7 +1640,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			semanticErrorNodes[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnCount);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestInsertColumnNodeValidityUsingValuesCaluseWithFunctionTypeAndSequence()
 		{
 			const string sqlText = "INSERT INTO SELECTION (SELECTION_ID, SELECTIONNAME, RESPONDENTBUCKET_ID) VALUES (SQLPAD_FUNCTION, XMLTYPE(), TEST_SEQ.NEXTVAL)";
@@ -1666,7 +1666,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity[1].SemanticErrorType.ShouldBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUnfinishedInsertValidationModelBuild()
 		{
 			const string sqlText = "INSERT INTO SELECTION";
@@ -1681,7 +1681,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodeValidity[0].IsRecognized.ShouldBe(true);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestConcatenatedQueryBlocksWithDifferentColumnCount()
 		{
 			const string sqlText = "SELECT 1, 2 FROM DUAL UNION ALL SELECT 1 FROM DUAL";
@@ -1696,7 +1696,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			invalidNonTerminalValidityDictionary.ForEach(nv => nv.SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnCount));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestMultipleConcatenatedQueryBlocksWithDifferentColumnCountWithTerminatorSymbol()
 		{
 			const string sqlText = "SELECT 1 FROM DUAL UNION ALL SELECT 2 FROM DUAL UNION ALL SELECT 3, 4 FROM DUAL;";
@@ -1711,7 +1711,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			invalidNonTerminalValidityDictionary.ForEach(nv => nv.SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidColumnCount));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAggregateFunctionWithinAnalyticFunctionWithScalarFunction()
 		{
 			const string sqlText = "SELECT ROUND(RATIO_TO_REPORT(COUNT(*)) OVER (PARTITION BY TRUNC(NULL, 'HH')) * 100, 2) PERCENT FROM DUAL";
@@ -1726,7 +1726,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			nodeValidity.ForEach(nv => nv.SemanticErrorType.ShouldBe(null));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestOrderByReferencesToAliasWhenSelectListContainsColumnWithSameName()
 		{
 			const string sqlText = "SELECT VAL + 1 VAL, VAL ALIAS FROM (SELECT 1 VAL FROM DUAL) ORDER BY VAL";
@@ -1741,7 +1741,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			nodeValidity.ForEach(nv => nv.SemanticErrorType.ShouldBe(null));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestOrderByAmbiguousColumnReference()
 		{
 			const string sqlText = "SELECT VAL + 1 VAL, VAL FROM (SELECT 1 VAL FROM DUAL) ORDER BY VAL";
@@ -1758,7 +1758,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			nodeValidity[2].SemanticErrorType.ShouldBe(OracleSemanticErrorType.AmbiguousReference);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestModelInitializatinWhileTypingConcatenatedSubquery()
 		{
 			const string sqlText = "SELECT NULL FROM DUAL UNION SELECT";
@@ -1767,7 +1767,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			BuildValidationModel(sqlText, statement);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestLongXmlAliases()
 		{
 			const string sqlText = "SELECT XMLELEMENT(NAME \"VeryLongXmlAliasVeryLongXmlAlias\", NULL) VAL1, XMLELEMENT(NAME VeryLongXmlAliasVeryLongXmlAlias, NULL) VAL2 FROM DUAL";
@@ -1780,7 +1780,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			nodeValidityDictionary.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestEmptyXmlAlias()
 		{
 			const string sqlText = "SELECT XMLELEMENT(NAME \"\", NULL) VAL FROM DUAL";
@@ -1794,7 +1794,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			nodeValiditities[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidIdentifier);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUndefinedPackageFunctionCall()
 		{
 			const string sqlText = @"SELECT UNDEFINEDPACKAGE.FUNCTION() FROM DUAL";
@@ -1807,7 +1807,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			nodesWithSemanticError.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestFullyQualifiedTableOverDatabaseLink()
 		{
 			const string sqlText = @"SELECT * FROM HUSQVIK.SELECTION@HQ_PDB_LOOPBACK";
@@ -1824,7 +1824,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			objectNodes[0].Node.Token.Value.ShouldBe("HQ_PDB_LOOPBACK");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnSuggestionOverDatabaseLink()
 		{
 			const string sqlText = @"SELECT NAME FROM SELECTION@HQ_PDB_LOOPBACK, DUAL@HQ_PDB_LOOPBACK";
@@ -1840,7 +1840,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodes[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnSuggestionOverDatabaseLinkWhenSameColumnAvailableFromLocalReference()
 		{
 			const string sqlText = @"SELECT DUMMY FROM DUAL, DUAL@HQ_PDB_LOOPBACK";
@@ -1856,7 +1856,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodes[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestNoColumnSuggestionOverDatabaseLinkWhenOnlySingleObjectReferenced()
 		{
 			const string sqlText = @"SELECT DUMMY FROM DUAL@HQ_PDB_LOOPBACK";
@@ -1869,7 +1869,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodes.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAsteriskColumnSuggestionOverDatabaseLink()
 		{
 			const string sqlText = @"SELECT * FROM SELECTION@HQ_PDB_LOOPBACK";
@@ -1884,7 +1884,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnValidationData[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestObjectQualifiedColumnSuggestionOverDatabaseLink()
 		{
 			const string sqlText = @"SELECT SELECTION.NAME FROM SELECTION@HQ_PDB_LOOPBACK";
@@ -1897,7 +1897,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			columnNodes.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestDateAndTimeStampLiteralInvalidFormat()
 		{
 			const string sqlText = @"SELECT DATE'2014-12-06 17:50:42', TIMESTAMP'2014-12-06', DATE'-2014-12-06', TIMESTAMP'+2014-12-06 17:50:42 CET' FROM DUAL";
@@ -1916,7 +1916,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			invalidNodes[1].Node.Token.Value.ShouldBe("'2014-12-06'");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestInvalidDateAndTimeStampLiteralStartingWithSpace()
 		{
 			const string sqlText = @"SELECT DATE' 2014-12-06', TIMESTAMP' 2014-12-06 17:50:42' FROM DUAL";
@@ -1935,7 +1935,7 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			invalidNodes[1].Node.Token.Value.ShouldBe("' 2014-12-06 17:50:42'");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestIntervalYearToMonthLiteral()
 		{
 			const string sqlText =
@@ -1973,7 +1973,7 @@ FROM DUAL";
 			invalidNodes[4].Node.Token.Value.ShouldBe("10");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestIntervalDayToSecondLiteral()
 		{
 			const string sqlText =
@@ -2023,7 +2023,7 @@ FROM DUAL";
 			invalidNodes[7].Node.Id.ShouldBe(NonTerminals.NegativeInteger);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestInvalidDateAndTimeStampLiteralUsingMultiByteStrings()
 		{
 			const string sqlText = @"SELECT DATE N'2014-12-06', TIMESTAMP n'2014-12-06 17:50:42' FROM DUAL";
@@ -2042,7 +2042,7 @@ FROM DUAL";
 			invalidNodes[1].Node.Token.Value.ShouldBe("n'2014-12-06 17:50:42'");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestLevelFunctionWithoutConnectByClause()
 		{
 			const string sqlText = @"SELECT LEVEL FROM DUAL";
@@ -2058,7 +2058,7 @@ FROM DUAL";
 			programNodeValidity[0].Node.Token.Value.ShouldBe("LEVEL");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestLevelFunctionWithoutConnectByClauseAsFunctionParameter()
 		{
 			const string sqlText = @"SELECT DBMS_RANDOM.VALUE(1, LEVEL) FROM DUAL";
@@ -2073,7 +2073,7 @@ FROM DUAL";
 			programNodeValidity[2].Node.FirstTerminalNode.Token.Value.ShouldBe("LEVEL");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestLevelFunctionOutsideQueryBlock()
 		{
 			const string sqlText = @"UPDATE DUAL SET DUMMY = LEVEL";
@@ -2089,7 +2089,7 @@ FROM DUAL";
 			programNodeValidity[0].Node.Token.Value.ShouldBe("LEVEL");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestPriorOperator()
 		{
 			const string sqlText = @"UPDATE DUAL SET DUMMY = (SELECT PRIOR DUMMY FROM DUAL) WHERE CONNECT_BY_ROOT DUMMY IS NULL OR PRIOR DUMMY IS NULL OR SYS_CONNECT_BY_PATH(DUMMY, '-') IS NOT NULL OR EXISTS (SELECT PRIOR DUMMY, CONNECT_BY_ROOT DUMMY, SYS_CONNECT_BY_PATH(DUMMY, '-') FROM DUAL CONNECT BY LEVEL <= 3)";
@@ -2125,7 +2125,7 @@ FROM DUAL";
 			nodeValidities[3].Node.Token.Value.ShouldBe("LEVEL");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnResolutionFromTableCollectionExpressionUsingCollectionType()
 		{
 			const string sqlText = @"SELECT PLAN_TABLE_OUTPUT, COLUMN_VALUE FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR(NULL, NULL, 'ALLSTATS LAST ADVANCED')) T1, TABLE(SYS.ODCIRAWLIST(HEXTORAW('ABCDEF'), HEXTORAW('A12345'), HEXTORAW('F98765'))) T2";
@@ -2149,7 +2149,7 @@ FROM DUAL";
 			});
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestPipelinedFunctionReturningCollection()
 		{
 			const string sqlText = @"SELECT COLUMN_VALUE FROM TABLE(SQLPAD.PIPELINED_FUNCTION(SYSDATE, SYSDATE))";
@@ -2166,7 +2166,7 @@ FROM DUAL";
 			programNodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnResolutionFromXmlTable()
 		{
 			const string sqlText = @"SELECT SEQ#, TITLE, DESCRIPTION FROM XMLTABLE('for $i in $RSS_DATA/rss/channel/item return $i' PASSING HTTPURITYPE('http://servis.idnes.cz/rss.asp?c=zpravodaj').GETXML() AS RSS_DATA COLUMNS SEQ# FOR ORDINALITY, TITLE VARCHAR2(4000) PATH 'title', DESCRIPTION CLOB PATH 'description') T";
@@ -2184,7 +2184,7 @@ FROM DUAL";
 			});
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestOrderByClauseWithinScalarSubquery()
 		{
 			const string sqlText = @"SELECT (SELECT 1 FROM (SELECT 1 FROM DUAL ORDER BY DUMMY) ORDER BY DUMMY) FROM DUAL";
@@ -2200,7 +2200,7 @@ FROM DUAL";
 			invalidNonTerminals[0].Node.ShouldNotBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestOrderByClauseWithinInClause()
 		{
 			const string sqlText = @"SELECT * FROM DUAL WHERE DUMMY IN (SELECT DUMMY FROM DUAL ORDER BY DUMMY)";
@@ -2216,7 +2216,7 @@ FROM DUAL";
 			invalidNonTerminals[0].Node.ShouldNotBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestDatabaseLinkPropagatedColumnUsingAsterisk()
 		{
 			const string sqlText = @"SELECT DUMMY FROM (SELECT * FROM DUAL@HQ_PDB_LOOPBACK)";
@@ -2235,7 +2235,7 @@ FROM DUAL";
 			columnValidities[1].ToolTipText.ShouldBe(OracleSuggestionType.UseExplicitColumnList);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestDatabaseLinkPropagatedColumnUsingObjectQualifiedAsterisk()
 		{
 			const string sqlText = @"SELECT DUMMY FROM (SELECT DUAL.* FROM DUAL@HQ_PDB_LOOPBACK)";
@@ -2254,7 +2254,7 @@ FROM DUAL";
 			columnValidities[1].ToolTipText.ShouldBe(OracleSuggestionType.UseExplicitColumnList);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestDicrepancyBetweenColumnsAndCommonTableExpressionExplicitColumnList()
 		{
 			const string sqlText = @"WITH CTE(C1) AS (SELECT 1, 2 FROM DUAL) SELECT C1 FROM CTE";
@@ -2275,7 +2275,7 @@ FROM DUAL";
 			invalidNonTerminals[1].Node.ShouldBe(cteQueryBlock.SelectList);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestDicrepancyBetweenColumnsAndCommonTableExpressionExplicitColumnListWithRecursiveQuery()
 		{
 			const string sqlText =
@@ -2307,7 +2307,7 @@ SELECT NULL FROM sampleData";
 			invalidNonTerminals[2].Node.ShouldBe(cteQueryBlocks[1].SelectList);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestDicrepancyBetweenColumnsAndCommonTableExpressionExplicitColumnListWhenWithinConcatenatedQueryBlock()
 		{
 			const string sqlText =
@@ -2343,7 +2343,7 @@ SELECT * FROM CTE";
 			invalidNonTerminals[1].Node.FirstTerminalNode.Token.Value.ShouldBe("5");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestScalarSubqueryWithMultipleColumns()
 		{
 			const string sqlText = @"SELECT (SELECT 1, 2 FROM DUAL) FROM DUAL";
@@ -2361,7 +2361,7 @@ SELECT * FROM CTE";
 			invalidNonTerminals[0].Node.ShouldBe(cteQueryBlock.SelectList);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestTableCollectionExpressionWithIncompatibleFunction()
 		{
 			const string sqlText = @"SELECT * FROM TABLE(NVL(1, 1))";
@@ -2379,7 +2379,7 @@ SELECT * FROM CTE";
 			programValidityItems[0].Node.Token.Value.ShouldBe("NVL");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestFunctionParameterErrors()
 		{
 			const string sqlText = @"SELECT TO_CHAR(left => 2), DBMS_XPLAN.DISPLAY_CURSOR(sql_idx => NULL, dummy + 1) FROM DUAL";
@@ -2411,7 +2411,7 @@ SELECT * FROM CTE";
 			invalidNonTerminalItems[0].Node.LastTerminalNode.Token.Value.ShouldBe("1");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestInvalidOrderByColumnIndex()
 		{
 			const string sqlText = @"SELECT T.*, '[' || NAME || ']' FROM (SELECT NAME FROM SELECTION) T ORDER BY 3, 2, 1, 4";
@@ -2431,7 +2431,7 @@ SELECT * FROM CTE";
 			validationData[4].Node.Token.Value.ShouldBe("4");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAggregateFunctionsInDifferentQueryBlockClauses()
 		{
 			const string sqlText = @"SELECT COUNT(T1.DUMMY) FROM DUAL T1 JOIN DUAL T2 ON COUNT(T1.DUMMY) = COUNT(T2.DUMMY) WHERE COUNT(T1.DUMMY) = 1 GROUP BY COUNT(T1.DUMMY) HAVING COUNT(T1.DUMMY) = 1 ORDER BY COUNT(T1.DUMMY)";
@@ -2462,7 +2462,7 @@ SELECT * FROM CTE";
 			programValidityNodes[6].SemanticErrorType.ShouldBe(OracleSemanticErrorType.None);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAggregateFunctionsInUpdateSetClause()
 		{
 			const string sqlText = @"UPDATE DUAL SET DUMMY = COUNT(*) OVER (ORDER BY ROWNUM)";
@@ -2478,7 +2478,7 @@ SELECT * FROM CTE";
 			programValidityNodes[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.GroupFunctionNotAllowed);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAggregateFunctionsInMultiInsert()
 		{
 			const string sqlText =
@@ -2498,7 +2498,7 @@ SELECT NULL FROM DUAL;";
 			programValidityNodes[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.GroupFunctionNotAllowed);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAggregateFunctionsInInsertValues()
 		{
 			const string sqlText = @"INSERT INTO DUAL (DUMMY) VALUES (COUNT(*))";
@@ -2514,7 +2514,7 @@ SELECT NULL FROM DUAL;";
 			programValidityNodes[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.GroupFunctionNotAllowed);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestRecursiveQueryWithRecursiveClauses()
 		{
 			const string sqlText =
@@ -2536,7 +2536,7 @@ SELECT * FROM CTE";
 			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestQueryWithInvalidRecursiveClausesAndReferences()
 		{
 			const string sqlText =
@@ -2593,7 +2593,7 @@ SELECT DUMMY1, DUMMY2, DUMMY3, DUMMY4 FROM CTE";
 				});
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestValidationModelBuildWithOrderByPostfixedNumber()
 		{
 			const string sqlText = @"SELECT * FROM DUAL ORDER BY 1d";
@@ -2607,7 +2607,7 @@ SELECT DUMMY1, DUMMY2, DUMMY3, DUMMY4 FROM CTE";
 			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestPartitionAndSubpartitionReferences()
 		{
 			const string sqlText = @"SELECT * FROM INVOICES PARTITION (P2015), INVOICES PARTITION (P2016), INVOICES SUBPARTITION (P2015_PRIVATE), INVOICES SUBPARTITION (P2016_ENTERPRISE), INVOICES PARTITION (P2015_PRIVATE), INVOICES SUBPARTITION (P2015)";
@@ -2641,7 +2641,7 @@ SELECT DUMMY1, DUMMY2, DUMMY3, DUMMY4 FROM CTE";
 			objectValidityItems[9].Node.Token.Value.ShouldBe("P2015");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestInvalidLnNvlCondition()
 		{
 			const string sqlText = @"SELECT NULL FROM DUAL WHERE LNNVL(1 <> 1) AND LNNVL((1 <> 1)) AND LNNVL(1 <> 1 AND 0 <> 0) AND LNNVL(0 BETWEEN 1 AND 2) AND LNNVL(DUMMY IN ('X')) AND LNNVL(DUMMY IN ('X', 'Y')) AND LNNVL(DUMMY IN (SELECT * FROM DUAL))";
@@ -2655,7 +2655,7 @@ SELECT DUMMY1, DUMMY2, DUMMY3, DUMMY4 FROM CTE";
 			validationModel.InvalidNonTerminals.Count.ShouldBe(4);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestInvalidPivotAggregateExpression()
 		{
 			const string sqlText =
@@ -2682,7 +2682,7 @@ FROM (
 			validationModel.InvalidNonTerminals.Count.ShouldBe(2);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUnpivotInValueDataTypeMismatch()
 		{
 			const string sqlText =
@@ -2711,7 +2711,7 @@ FROM (
 			nodeValidities[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ExpressionMustHaveSameDatatypeAsCorrespondingExpression);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUnpivotInValueDataTypeMismatchWithNullValue()
 		{
 			const string sqlText =
@@ -2735,7 +2735,7 @@ FROM (
 			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestModelBuildWithNonexistingUnpivotColumnReference()
 		{
 			const string sqlText =
@@ -2754,20 +2754,20 @@ FROM (
 
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			Assert.DoesNotThrow(() => BuildValidationModel(sqlText, statement));
+			Should.NotThrow(() => BuildValidationModel(sqlText, statement));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestModelBuildWithVectorConditionWithUnfinishedQueryBlock()
 		{
 			const string sqlText = @"SELECT NULL FROM DUAL WHERE (DUMMY, DUMMY) IN (SELECT )";
 
 			var statement = Parser.Parse(sqlText).Single();
 
-			Assert.DoesNotThrow(() => BuildValidationModel(sqlText, statement));
+			Should.NotThrow(() => BuildValidationModel(sqlText, statement));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUnpivotInColumnDataTypeMismatch()
 		{
 			const string sqlText =
@@ -2796,7 +2796,7 @@ FROM (
 			nodeValidities[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.ExpressionMustHaveSameDatatypeAsCorrespondingExpression);
         }
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCursorParameter()
 		{
 			const string sqlText = @"SELECT * FROM TABLE(SQLPAD.CURSOR_FUNCTION(CURSOR(SELECT * FROM SELECTION WHERE ROWNUM <= 5)))";
@@ -2810,7 +2810,7 @@ FROM (
 			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
 		}
 		
-		[Test(Description = @"")]
+		[Test]
 		public void TestNonNestedTableColumnInTableCollectionExpression()
 		{
 			const string sqlText = @"SELECT (SELECT * FROM TABLE(DUMMY)) FROM DUAL";
@@ -2828,7 +2828,7 @@ FROM (
 			columnValidityItems[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.CannotAccessRowsFromNonNestedTableItem);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestDynamicTypeInTableCollectionExpression()
 		{
 			const string sqlText = @"SELECT (SELECT COUNT(*) FROM TABLE(DYNAMIC_TABLE)) FROM (SELECT COLLECT(DUMMY) DYNAMIC_TABLE FROM DUAL)";
@@ -2849,7 +2849,7 @@ FROM (
 			columnValidityItems[1].SemanticErrorType.ShouldBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestDataTypeValidation()
 		{
 			const string sqlText = @"SELECT CAST(NULL AS SYS.ODCIRAWLIST), CAST(NULL AS ODCIRAWLIST), CAST(NULL AS HUSQVIK.ODCIRAWLIST), CAST(NULL AS NONEXISTING_SCHEMA.ODCIRAWLIST), CAST(NULL AS INVALID_OBJECT_TYPE) FROM DUAL";
@@ -2876,7 +2876,7 @@ FROM (
 			identifierValidityItems[3].SemanticErrorType.ShouldBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestExtractFunctionInvalidParameter()
 		{
 			const string sqlText = @"SELECT EXTRACT(SYSDATE) FROM DUAL";
@@ -2895,7 +2895,7 @@ FROM (
 			invalidNonTerminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.NotEnoughArgumentsForFunction);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestInvalidDataTypesWithinCastFunction()
 		{
 			const string sqlText =
@@ -2954,7 +2954,7 @@ FROM
 			invalidNonTerminals[9].SemanticErrorType.ShouldBe(OracleSemanticErrorType.DatetimeOrIntervalPrecisionIsOutOfRange);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestJsonTableInUnsupportedOracleVersion()
 		{
 			const string sqlText =
@@ -2985,7 +2985,7 @@ FROM
 			invalidNonTerminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.UnsupportedInConnectedDatabaseVersion);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestOrderByNotAllowed()
 		{
 			const string sqlText = @"SELECT RATIO_TO_REPORT(NULL) OVER (ORDER BY NULL) FROM DUAL";
@@ -3003,7 +3003,7 @@ FROM
 			programNodeValidities[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.OrderByNotAllowedHere);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnCountValidationInInsertWithCommonTableExpression()
 		{
 			const string sqlText =
@@ -3021,7 +3021,7 @@ SELECT C1 FROM CTE";
 			invalidNonTerminalValidities.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnCountValidationInMultisetInClause()
 		{
 			const string sqlText = @"SELECT * FROM DUAL WHERE (DUMMY, DUMMY) IN (SELECT DUMMY, DUMMY, DUMMY FROM DUAL)";
@@ -3040,7 +3040,7 @@ SELECT C1 FROM CTE";
 			invalidNonTerminalValidities[1].Node.Id.ShouldBe(NonTerminals.SelectList);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestInvalidColumnCountValidationInMultisetInClauseWithParenthesisWrappedSubquery()
 		{
 			const string sqlText = @"SELECT NULL FROM DUAL WHERE (DUMMY, DUMMY) IN ((SELECT DUMMY FROM DUAL))";
@@ -3059,7 +3059,7 @@ SELECT C1 FROM CTE";
 			invalidNonTerminalValidities[1].Node.Id.ShouldBe(NonTerminals.SelectList);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestValidColumnCountValidationInMultisetInClauseWithParenthesisWrappedSubquery()
 		{
 			const string sqlText = @"SELECT NULL FROM DUAL WHERE (DUMMY, DUMMY) IN ((SELECT DUMMY, DUMMY FROM DUAL))";
@@ -3073,27 +3073,27 @@ SELECT C1 FROM CTE";
 			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestValidationModelBuildWhileTypingCastWithinTableExpression()
 		{
 			const string sqlText = @"SELECT * FROM TABLE(CAST())";
 
 			var statement = Parser.Parse(sqlText).Single();
 
-			Assert.DoesNotThrow(() => BuildValidationModel(sqlText, statement));
+			Should.NotThrow(() => BuildValidationModel(sqlText, statement));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestValidationModelBuildWhileTypingAggregateFunctionInFrontOfOtherAggregateFunction()
 		{
 			const string sqlText = @"SELECT MAX MAX(flag) FROM dual";
 
 			var statement = Parser.Parse(sqlText).Single();
 
-			Assert.DoesNotThrow(() => BuildValidationModel(sqlText, statement));
+			Should.NotThrow(() => BuildValidationModel(sqlText, statement));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnCountValidationInSimpleInClause()
 		{
 			const string sqlText = @"SELECT * FROM DUAL WHERE DUMMY IN (SELECT DUMMY, DUMMY FROM DUAL)";
@@ -3110,7 +3110,7 @@ SELECT C1 FROM CTE";
 			invalidNonTerminalValidities[0].Node.Id.ShouldBe(NonTerminals.SelectList);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestConditionNotAlwaysTrueFalseWhenAnotherTableInnerJoined()
 		{
 			const string sqlText =
@@ -3134,7 +3134,7 @@ FROM
 			invalidNonTerminalValidities.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestRedundantIsNotNullCondition()
 		{
 			const string sqlText = @"SELECT * FROM SELECTION WHERE SELECTION_ID + 1 IS NOT NULL AND SELECTION_ID IS NOT NULL AND PROJECT_ID IS NOT NULL OR PROJECT_ID IS NULL";
@@ -3161,7 +3161,7 @@ FROM
 			invalidNonTerminalValidities[2].Node.LastTerminalNode.Id.ShouldBe(Terminals.Null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestNotNullConditionInOuterJoin()
 		{
 			const string sqlText =
@@ -3185,7 +3185,7 @@ WHERE
 			invalidNonTerminalValidities.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestPartitionClauseOnBothOuterJoinEnds()
 		{
 			const string sqlText = @"SELECT NULL FROM DUAL T1 PARTITION BY (T1.DUMMY, DBMS_RANDOM.VALUE) LEFT JOIN DUAL T2 PARTITION BY (T2.DUMMY, DBMS_RANDOM.VALUE) ON NULL IS NULL";
@@ -3204,7 +3204,7 @@ WHERE
 			invalidNonTerminalValidities[1].Node.Id.ShouldBe(NonTerminals.OuterJoinPartitionClause);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestInvalidPseudocolumnUsage()
 		{
 			const string sqlText = "SELECT SYS.STANDARD.\"LEVEL\"(), SYS.STANDARD.\"ROWNUM\" FROM DUAL CONNECT BY LEVEL <= 2";
@@ -3223,7 +3223,7 @@ WHERE
 			invalidNonTerminalValidities[1].Node.Id.ShouldBe(NonTerminals.PrefixedColumnReference);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestQuotedPseudocolumnUsage()
 		{
 			const string sqlText = "SELECT \"ROWNUM\", \"LEVEL\" FROM DUAL CONNECT BY LEVEL <= 2";
@@ -3244,7 +3244,7 @@ WHERE
 			programValidities[0].IsRecognized.ShouldBe(true);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnReferenceInMultiSetTableCollectionExpression()
 		{
 			const string sqlText = "SELECT NULL FROM DUAL T, TABLE(CAST(MULTISET(SELECT SYSDATE - LEVEL FROM DUAL WHERE T.DUMMY = 'X' CONNECT BY LEVEL <= 5) AS SYS.ODCIDATELIST))";
@@ -3266,7 +3266,7 @@ WHERE
 			programValidities[0].SemanticErrorType.ShouldBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSelectIntoClauseOutsidePlSql()
 		{
 			const string sqlText = "SELECT DUMMY INTO x FROM DUAL";
@@ -3281,7 +3281,7 @@ WHERE
 			invalidNonTerminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.SelectIntoClauseAllowedOnlyInMainQueryBlockWithinPlSqlScope);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestConditionalCompilationSymbolOutsidePlSql()
 		{
 			const string sqlText = "SELECT $$compilation_symbol FROM DUAL";
@@ -3296,7 +3296,7 @@ WHERE
 			invalidNonTerminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.PlSqlCompilationParameterAllowedOnlyWithinPlSqlScope);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestWhereCurrentOfCursorConditionOutsidePlSql()
 		{
 			const string sqlText = "UPDATE dual SET dummy = NULL WHERE CURRENT OF test_cursor";
@@ -3313,7 +3313,7 @@ WHERE
 			invalidNonTerminals[0].Node.TerminalCount.ShouldBe(3);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestConditionalCompilationSymbolInsidePlSql()
 		{
 			const string sqlText = "DECLARE x VARCHAR2(255); BEGIN SELECT $$compilation_symbol INTO x FROM DUAL; END;";
@@ -3326,7 +3326,7 @@ WHERE
 			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSelectIntoClauseWithinPlSql()
 		{
 			const string sqlText =
@@ -3345,7 +3345,7 @@ END;";
 			invalidNonTerminals[0].Node.LastTerminalNode.Token.Value.ShouldBe("y");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestFunctionWithCaseAsParameter()
 		{
 			const string sqlText = @"SELECT NVL(CASE WHEN 1 IN (1) THEN NULL END, ', ') FROM DUAL";
@@ -3358,7 +3358,7 @@ END;";
 			validationModel.ProgramNodeValidity.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestInsertionIntoVirtualColumn()
 		{
 			const string sqlText = @"INSERT INTO ""CaseSensitiveTable"" (HIDDEN_COLUMN, VIRTUAL_COLUMN) VALUES (NULL, NULL)";
@@ -3375,7 +3375,7 @@ END;";
 			invalidNonTerminals[0].Node.FirstTerminalNode.Token.Value.ShouldBe("VIRTUAL_COLUMN");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSameExplicitColumnNamesInCommonTableExpressionDefinition()
 		{
 			const string sqlText = @"WITH sample (value1, value2, value1) AS (SELECT 1, 1, 1 FROM dual) SELECT 1 FROM sample";
@@ -3394,7 +3394,7 @@ END;";
 			invalidNonTerminals[1].Node.Token.Value.ShouldBe("value1");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestOuterCorrelatedSubqueryNonQualifiedColumn()
 		{
 			const string sqlText = @"SELECT NULL FROM SELECTION WHERE EXISTS (SELECT NULL FROM DUAL WHERE SELECTION_ID = 1)";
@@ -3411,7 +3411,7 @@ END;";
 			validationData[0].Node.Token.Value.ShouldBe("SELECTION_ID");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestConnectByPseudocolumnConflictingWithRowSourceColumns()
 		{
 			const string sqlText = @"SELECT connect_by_isleaf, connect_by_iscycle, ""CONNECT_BY_ISLEAF"", ""CONNECT_BY_ISCYCLE"" FROM (SELECT 'x' connect_by_isleaf, 'y' connect_by_iscycle FROM dual)";
@@ -3430,7 +3430,7 @@ END;";
 			validationData[1].Node.FirstTerminalNode.Token.Value.ShouldBe("connect_by_iscycle");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestConnectByIsCyclePseudocolumnWithoutNoCycleKeyword()
 		{
 			const string sqlText = @"SELECT connect_by_isleaf, connect_by_iscycle FROM dual CONNECT BY LEVEL < 3";
@@ -3447,7 +3447,7 @@ END;";
 			validationData[0].Node.FirstTerminalNode.Token.Value.ShouldBe("connect_by_iscycle");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestOldStyleOuterJoinCannotBeUsedWithAnsiJoins()
 		{
 			const string sqlText = @"SELECT NULL FROM dual t1 JOIN dual t2 ON t1.dummy = t2.dummy WHERE t2.dummy(+) = 'X'";
@@ -3466,7 +3466,7 @@ END;";
 			text.ShouldBe("(+)");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestInsertIntoColumnClauseWithPrefixedColumnReferringNonExistingTable()
 		{
 			const string sqlText = @"INSERT INTO tmp (tmp.val) VALUES (1)";
@@ -3480,7 +3480,7 @@ END;";
 			validationModel.ColumnNodeValidity.Values.Count(c => !c.IsRecognized).ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestNullabilityOfLeftJoinedNotNullColumn()
 		{
 			const string sqlText = @"SELECT c1, c2 FROM (SELECT t1.selection_id c1, t2.selection_id c2 FROM selection t1 LEFT JOIN selection t2 ON 1 = 0) WHERE c2 IS NULL";
@@ -3494,7 +3494,7 @@ END;";
 			validationModel.Suggestions.Count().ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestNullabilityOfLeftJoinedNotNullPhysicalColumnExposedUsingAsterisk()
 		{
 			const string sqlText = @"SELECT NULL FROM (SELECT t2.* FROM selection t1 LEFT JOIN selection t2 ON 1 = 0) WHERE selection_id IS NULL";
@@ -3508,7 +3508,7 @@ END;";
 			validationModel.Suggestions.Count().ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestNullabilityOfLeftJoinedNotNullInlineViewColumnExposedUsingAsterisk()
 		{
 			const string sqlText = @"SELECT NULL FROM (SELECT t2.* FROM dual t1 LEFT JOIN (SELECT 1 val FROM DUAL) t2 ON 1 = 0) WHERE val IS NOT NULL";

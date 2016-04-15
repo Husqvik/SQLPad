@@ -161,7 +161,7 @@ namespace SqlPad.Oracle.Test
 		[Test(Description = "Tests OracleTokenReader constructor with null reader. ")]
 		public void TestNullReader()
 		{
-			Assert.Throws<ArgumentNullException>(() => OracleTokenReader.Create((TextReader)null));
+			Should.Throw<ArgumentNullException>(() => OracleTokenReader.Create((TextReader)null));
 		}
 
 		[Test(Description = "Tests OracleTokenReader disposing and string input. ")]

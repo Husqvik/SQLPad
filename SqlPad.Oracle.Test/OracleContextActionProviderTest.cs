@@ -11,7 +11,7 @@ namespace SqlPad.Oracle.Test
 	{
 		private readonly OracleContextActionProvider _actionProvider = new OracleContextActionProvider();
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestSuggestingAmbiguousColumnReferenceResolutionAtTheNameBeginning()
 		{
 			const string query1 = @"SELECT DUMMY FROM (SELECT DUMMY FROM DUAL) t2, Dual";
@@ -22,7 +22,7 @@ namespace SqlPad.Oracle.Test
 			actions[1].Name.ShouldBe("Resolve as Dual.DUMMY");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestSuggestingAmbiguousColumnReferenceResolutionAtTheNameEnd()
 		{
 			const string query1 = @"SELECT DUMMY FROM (SELECT DUMMY FROM DUAL) t2, Dual";
@@ -33,7 +33,7 @@ namespace SqlPad.Oracle.Test
 			actions[1].Name.ShouldBe("Resolve as Dual.DUMMY");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestSuggestingAmbiguousColumnReferenceResolutionInWhereClause()
 		{
 			const string query1 = @"SELECT * FROM SELECTION, PROJECT WHERE NAME = 'Name'";
@@ -44,7 +44,7 @@ namespace SqlPad.Oracle.Test
 			actions[1].Name.ShouldBe("Resolve as PROJECT.NAME");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestSuggestingAmbiguousColumnReferenceResolutionInOrderClause()
 		{
 			const string query1 = @"SELECT * FROM DUAL D1 JOIN DUAL D2 ON D1.DUMMY = D2.DUMMY ORDER BY DUMMY";
@@ -55,7 +55,7 @@ namespace SqlPad.Oracle.Test
 			actions[1].Name.ShouldBe("Resolve as D2.DUMMY");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestSuggestingAmbiguousColumnReferenceResolutionWithFullyQualifiedName()
 		{
 			const string query1 = @"SELECT DUAL.DUMMY FROM SYS.DUAL, ""PUBLIC"".DUAL";
@@ -66,7 +66,7 @@ namespace SqlPad.Oracle.Test
 			actions[1].Name.ShouldBe("Resolve as \"PUBLIC\".DUAL.DUMMY");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestSuggestingAddTableAlias()
 		{
 			const string query1 = @"SELECT DUMMY FROM (SELECT DUMMY FROM DUAL) t2, Dual";
@@ -76,7 +76,7 @@ namespace SqlPad.Oracle.Test
 			actions[0].Name.ShouldBe("Add Alias");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestAliasNotSuggestedAtNestedTableAlias()
 		{
 			const string query1 = @"SELECT DUMMY FROM (SELECT DUMMY FROM DUAL) t2, Dual";
@@ -85,7 +85,7 @@ namespace SqlPad.Oracle.Test
 			actions.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestResolveColumnIsNotsuggestedWhenTableIsNotAliased()
 		{
 			const string query1 = @"SELECT DUMMY FROM (SELECT 1 DUMMY FROM DUAL), SYS.DUAL";
@@ -95,7 +95,7 @@ namespace SqlPad.Oracle.Test
 			actions[0].Name.ShouldBe("Resolve as SYS.DUAL.DUMMY");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestResolveColumnIsNotsuggestedWhenTableAliasIsSameAsPhysicalTableName()
 		{
 			const string query1 = @"SELECT DUAL.DUMMY FROM (SELECT 1 DUMMY FROM DUAL) DUAL, SYS.DUAL";
@@ -105,7 +105,7 @@ namespace SqlPad.Oracle.Test
 			actions[0].Name.ShouldBe("Resolve as SYS.DUAL.DUMMY");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestWrapCommandsAvailableWhenQueryBlockHasNoNamedColumn()
 		{
 			const string query1 = @"SELECT NULL FROM DUAL";
@@ -116,7 +116,7 @@ namespace SqlPad.Oracle.Test
 			actions.ShouldBe(2);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestUnnestCommandSuggestion()
 		{
 			const string query1 = @"SELECT IV.TEST_COLUMN || ' ADDED' FROM (SELECT SELECTION.NAME || ' FROM CTE ' TEST_COLUMN FROM SELECTION) IV";
@@ -126,7 +126,7 @@ namespace SqlPad.Oracle.Test
 			action.Name.ShouldBe("Unnest");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestUnnestCommandIsNotSuggestedWhenInlineViewContainsGroupByClause()
 		{
 			const string query1 = @"SELECT * FROM (SELECT NAME FROM SELECTION GROUP BY NAME)";
@@ -135,7 +135,7 @@ namespace SqlPad.Oracle.Test
 			actions.ShouldBe(0);
 		}
 		
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestUnnestCommandIsNotSuggestedWhenInlineViewContainsDistinctClause()
 		{
 			const string query1 = @"SELECT * FROM (SELECT DISTINCT NAME FROM SELECTION)";
@@ -144,7 +144,7 @@ namespace SqlPad.Oracle.Test
 			actions.ShouldBe(0);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestUnnestCommandNotAvailableAtObjectAliasWhichIsNotCommonTableExpressionAlias()
 		{
 			const string query1 = @"SELECT 1 FROM DUAL ALIAS";
@@ -153,7 +153,7 @@ namespace SqlPad.Oracle.Test
 			actions.ShouldBe(0);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestExpandAsteriskCommandAvailableWithSourceWithoutNamedColumn()
 		{
 			const string query1 = "SELECT * FROM (SELECT 1 FROM SELECTION)";
@@ -165,7 +165,7 @@ namespace SqlPad.Oracle.Test
 			actions.Length.ShouldBe(1);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestExpandAsteriskCommandNotAvailableWithSourceNamedColumnContainingQuotes()
 		{
 			const string query1 = @"SELECT * FROM (SELECT ""1"" || ""2"" FROM(SELECT 1, 2 FROM DUAL))";
@@ -173,7 +173,7 @@ namespace SqlPad.Oracle.Test
 			actions.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestExpandAsteriskCommandAvailableBeforeComma()
 		{
 			const string query1 = "SELECT SELECTION.*, 1 FROM SELECTION";
@@ -182,7 +182,7 @@ namespace SqlPad.Oracle.Test
 			action.Name.ShouldBe("Expand");
 		}
 		
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestExpandAsteriskCommandAvailableBeforeFromKeyword()
 		{
 			const string query1 = "SELECT*FROM DUAL";
@@ -191,7 +191,7 @@ namespace SqlPad.Oracle.Test
 			action.Name.ShouldBe("Expand");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestToggleFullyQualifiedReferencesSuggested()
 		{
 			const string query1 = @"SELECT DUMMY FROM DUAL";
@@ -201,7 +201,7 @@ namespace SqlPad.Oracle.Test
 			action.Name.ShouldBe("Toggle fully qualified references");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestAddMissingColumnCommandSuggestion()
 		{
 			const string query1 = @"SELECT NOT_EXISTING_COLUMN FROM SELECTION";
@@ -211,7 +211,7 @@ namespace SqlPad.Oracle.Test
 			action.Name.ShouldBe("Add missing column");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestAddMissingColumnCommandNotSuggestedWhenAlreadyExists()
 		{
 			const string query1 = @"SELECT DUMMY FROM DUAL";
@@ -220,7 +220,7 @@ namespace SqlPad.Oracle.Test
 			action.ShouldBe(null);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestToggleQuotedNotationNotSuggestedWhenNotConvertibleIdentifierOrAliasAvailable()
 		{
 			const string query1 = @"SELECT ""Balance"" FROM ""Accounts""";
@@ -229,7 +229,7 @@ namespace SqlPad.Oracle.Test
 			action.ShouldBe(null);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestAddColumnAliasSuggestion()
 		{
 			const string query1 = @"SELECT DUMMY FROM DUAL";
@@ -238,7 +238,7 @@ namespace SqlPad.Oracle.Test
 			action.ShouldNotBe(null);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestAddColumnAliasNotSuggestedWhenAliasExists()
 		{
 			const string query1 = @"SELECT DUMMY NOT_DUMMY FROM DUAL";
@@ -247,7 +247,7 @@ namespace SqlPad.Oracle.Test
 			action.ShouldBe(null);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestAddColumnAliasNotSuggestedWhenNotDirectReference()
 		{
 			const string query1 = @"SELECT DUMMY + 1 FROM DUAL";
@@ -256,7 +256,7 @@ namespace SqlPad.Oracle.Test
 			action.ShouldBe(null);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestCreateScriptSuggestion()
 		{
 			const string query1 = @"SELECT S.* FROM SELECTION S";
@@ -265,7 +265,7 @@ namespace SqlPad.Oracle.Test
 			action.ShouldNotBe(null);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestObjectAliasSuggestedAtInsertMainObjectReference()
 		{
 			const string query1 = @"INSERT INTO SELECTION SELECT * FROM SELECTION";
@@ -274,7 +274,7 @@ namespace SqlPad.Oracle.Test
 			actions.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestAddInsertIntoColumns()
 		{
 			const string query1 = @"INSERT INTO SELECTION SELECT * FROM SELECTION";
@@ -284,7 +284,7 @@ namespace SqlPad.Oracle.Test
 			actions[0].Name.ShouldBe("Add Column List");
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestCleanRedundantQualifierCommand()
 		{
 			const string query1 = @"SELECT SELECTION.NAME FROM HUSQVIK.SELECTION";
@@ -293,7 +293,7 @@ namespace SqlPad.Oracle.Test
 			action.ShouldNotBe(null);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestCleanRedundantQualifierNotSuggestedWhenNoRedundantQualifiersAvailable()
 		{
 			const string query1 = @"SELECT SELECTION.NAME, RESPONDENTBUCKET.NAME FROM SELECTION, RESPONDENTBUCKET";
@@ -302,7 +302,7 @@ namespace SqlPad.Oracle.Test
 			action.ShouldBe(null);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestGenerateCreateTableScriptAvailable()
 		{
 			const string query1 = @"SELECT SELECTION.NAME, RESPONDENTBUCKET.NAME FROM SELECTION, RESPONDENTBUCKET";
@@ -311,7 +311,7 @@ namespace SqlPad.Oracle.Test
 			action.ShouldNotBe(null);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestGenerateCreateTableScriptNoAvailableWhenObjectReferencesNotResolved()
 		{
 			const string query1 = @"SELECT * FROM";
@@ -320,7 +320,7 @@ namespace SqlPad.Oracle.Test
 			action.ShouldBe(null);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestUnquoteCommandAvailable()
 		{
 			const string query1 = @"SELECT ""CaseSensitiveColumn"" FROM INVOICELINES";
@@ -329,7 +329,7 @@ namespace SqlPad.Oracle.Test
 			action.ShouldNotBe(null);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestConvertBindVariableToLiteralAvailable()
 		{
 			const string query1 = @"SELECT :1 FROM DUAL";
@@ -338,7 +338,7 @@ namespace SqlPad.Oracle.Test
 			actionCount.ShouldBe(1);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestConvertAllBindVariableOccurencesToLiteralAvailable()
 		{
 			const string query1 = @"SELECT :1, :1 FROM DUAL";
@@ -347,7 +347,7 @@ namespace SqlPad.Oracle.Test
 			actionCount.ShouldBe(2);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestConvertLiteralToBindVariableAvailable()
 		{
 			const string query1 = @"SELECT 1 FROM DUAL";
@@ -356,7 +356,7 @@ namespace SqlPad.Oracle.Test
 			actionCount.ShouldBe(1);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestConvertAllLiteralOccurencesToBindVariablesAvailable()
 		{
 			const string query1 = @"SELECT 'VALUE', 'VALUE' FROM DUAL";
@@ -365,7 +365,7 @@ namespace SqlPad.Oracle.Test
 			actionCount.ShouldBe(2);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestConvertSingleLiteralToBindVariablesAvailableWhenSameLiteralRepresentsMultipleTypes()
 		{
 			const string query1 = @"SELECT DATE'2014-10-04', DATE'2014-10-04', '2014-10-04' FROM DUAL";
@@ -374,7 +374,7 @@ namespace SqlPad.Oracle.Test
 			actionCount.ShouldBe(1);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestPropagateColumnAvailable()
 		{
 			const string query1 = @"SELECT 1 C1 FROM (SELECT 2 C2 FROM DUAL)";
@@ -383,7 +383,7 @@ namespace SqlPad.Oracle.Test
 			action.ShouldNotBe(null);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestPropagateColumnNotAvailableAtReferencedColumn()
 		{
 			const string query1 = @"SELECT C2 C1 FROM (SELECT 2 C2 FROM DUAL)";
@@ -392,7 +392,7 @@ namespace SqlPad.Oracle.Test
 			action.ShouldBe(null);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestAddToGroupByAvailableAtTheEndOfIdentifier()
 		{
 			const string query1 = @"SELECT DUMMY FROM DUAL";
@@ -401,7 +401,7 @@ namespace SqlPad.Oracle.Test
 			action.ShouldNotBe(null);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestConvertOrderByNumberColumnReferences()
 		{
 			const string query1 = @"SELECT T.*, '[' || NAME || ']' FROM (SELECT NAME FROM SELECTION) T ORDER BY 1, 2";
@@ -410,7 +410,7 @@ namespace SqlPad.Oracle.Test
 			action.ShouldNotBe(null);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestConvertOrderByNumberColumnReferencesAtIncompatibleTerminal()
 		{
 			const string query1 = @"SELECT T.*, '[' || NAME || ']' FROM (SELECT NAME FROM SELECTION) T ORDER BY 1, 2.0";
@@ -419,7 +419,7 @@ namespace SqlPad.Oracle.Test
 			action.ShouldBe(null);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestGenerateCustomTypeCSharpWrapperClassCommandAtXmlTypes()
 		{
 			const string query1 = @"SELECT XMLTYPE() FROM DUAL";
@@ -428,7 +428,7 @@ namespace SqlPad.Oracle.Test
 			action.ShouldBe(null);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestGenerateCustomTypeCSharpWrapperClassCommandAtColumnIdentifier()
 		{
 			const string query1 = @"SELECT DUMMY FROM DUAL";
@@ -437,7 +437,7 @@ namespace SqlPad.Oracle.Test
 			action.ShouldBe(null);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestSplitStringCommmand()
 		{
 			const string query1 = @"SELECT 'sometext' FROM DUAL";
@@ -446,7 +446,7 @@ namespace SqlPad.Oracle.Test
 			action.ShouldNotBe(null);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestSplitStringCommmandNotAvailableAtQuotedPrefix()
 		{
 			const string query1 = @"SELECT nq'|sometext|' FROM DUAL";
@@ -458,7 +458,7 @@ namespace SqlPad.Oracle.Test
 			action.ShouldNotBe(null);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestSplitStringCommmandNotAvailableAtQuotedPostfix()
 		{
 			const string query1 = @"SELECT nq'|sometext|' FROM DUAL";
@@ -470,7 +470,7 @@ namespace SqlPad.Oracle.Test
 			action.ShouldNotBe(null);
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestExpandViewCommmandAvailable()
 		{
 			const string query1 = @"SELECT * FROM v$session";

@@ -13,15 +13,15 @@ namespace SqlPad.Test
 			EditorNavigationService.Initialize();
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestInitializedEditorNavigationService()
 		{
 			EditorNavigationService.IsEnabled.ShouldBe(true);
 			EditorNavigationService.GetNextEdit().ShouldBe(null);
-			Assert.Throws<ArgumentOutOfRangeException>(() => EditorNavigationService.GetPreviousEdit());
+			Should.Throw<ArgumentOutOfRangeException>(() => EditorNavigationService.GetPreviousEdit());
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void TestRegisterDocumentCursorPosition()
 		{
 			var workingDocument = new WorkDocument();

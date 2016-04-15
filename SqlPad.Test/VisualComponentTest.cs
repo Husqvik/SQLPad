@@ -27,7 +27,7 @@ namespace SqlPad.Test
 			_app.InitializeComponent();
 		}
 
-		[Test(Description = @""), STAThread]
+		[Test, STAThread]
 		public void RealApplicationTest()
 		{
 			VisualTestRunner.RunTest("SqlPad.Test.VisualComponentTest, SqlPad.Test", "TestBasicSqlPadBehavior");

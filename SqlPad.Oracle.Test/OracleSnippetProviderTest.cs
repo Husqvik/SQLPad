@@ -20,7 +20,7 @@ namespace SqlPad.Oracle.Test
 			File.Copy(@"TestFiles\SnippetSelect.xml", Path.Combine(TempDirectoryName, "SnippetSelect.xml"), true);
         }
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSnippetSuggestionWithinStatementWhileTyping()
 		{
 			const string statementText = "SELECT DUMMY FROM\r\nD\r\nDUAL";
@@ -28,7 +28,7 @@ namespace SqlPad.Oracle.Test
 			snippets.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSnippetSuggestionAfterCommonTableExpression()
 		{
 			const string statementText = "WITH cte AS (SELECT * FROM DUAL) se";
@@ -36,7 +36,7 @@ namespace SqlPad.Oracle.Test
 			snippets.Length.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSnippetWithoutParameterAndAllowedTerminals()
 		{
 			var snippets = SnippetProvider.GetSnippets("TES", 3, TestFixture.DatabaseModel).ToArray();

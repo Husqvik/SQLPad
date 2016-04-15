@@ -9,7 +9,7 @@ namespace SqlPad.Oracle.Test
 	{
 		private static readonly OracleSqlParser Parser = OracleSqlParser.Instance;
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestProgramNodeValidityWithinNestedStatement()
 		{
 			const string plsqlText =
@@ -26,7 +26,7 @@ END;";
 			validationModel.ProgramNodeValidity.Values.Count(v => !v.IsRecognized).ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestExceptionIdentifierValidities()
 		{
 			const string plsqlText =
@@ -51,7 +51,7 @@ END;";
 			nodeValidities[1].Node.Token.Value.ShouldBe("undefined_exception");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestOthersExceptionCombinedWithNamedException()
 		{
 			const string plsqlText =
@@ -73,7 +73,7 @@ END;";
 			nodeValidities[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.PlSql.NoChoicesMayAppearWithChoiceOthersInExceptionHandler);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestPlSqlBuiltInDataTypes()
 		{
 			const string plsqlText =
@@ -91,7 +91,7 @@ END;";
 			validationModel.IdentifierNodeValidity.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUndefinedAndInvalidAssociativeArrayIndexTypes()
 		{
 			const string plsqlText =
@@ -112,7 +112,7 @@ END;";
 			validationData.SemanticErrorType.ShouldBe(OracleSemanticErrorType.PlSql.UnsupportedTableIndexType);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestParametrizedPackageProcedureInvokation()
 		{
 			const string plsqlText =
@@ -131,7 +131,7 @@ END;";
 			validationData.SemanticErrorType.ShouldBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestStatementValidationWithFunctionHavingSameParameterNameAtDifferentDataLevels()
 		{
 			const string plsqlText =
@@ -143,10 +143,10 @@ END;";
 			var statement = Parser.Parse(plsqlText).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			Assert.DoesNotThrow(() => OracleStatementValidatorTest.BuildValidationModel(plsqlText, statement));
+			Should.NotThrow(() => OracleStatementValidatorTest.BuildValidationModel(plsqlText, statement));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestPlSqlVarcharMaximumPrecision()
 		{
 			const string plsqlText =

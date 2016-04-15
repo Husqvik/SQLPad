@@ -13,22 +13,22 @@ namespace SqlPad.Oracle.Test
 	{
 		private static readonly OracleSqlParser Parser = OracleSqlParser.Instance;
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestInitializationWithNullStatement()
 		{
-			var exception = Assert.Throws<ArgumentNullException>(() => OracleStatementSemanticModelFactory.Build(null, null, null));
+			var exception = Should.Throw<ArgumentNullException>(() => OracleStatementSemanticModelFactory.Build(null, null, null));
 			exception.ParamName.ShouldBe("statement");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestInitializationWithNullDatabaseModel()
 		{
 			var statement = (OracleStatement)Parser.Parse("SELECT NULL FROM DUAL").Single();
-			var exception = Assert.Throws<ArgumentNullException>(() => OracleStatementSemanticModelFactory.Build(null, statement, null));
+			var exception = Should.Throw<ArgumentNullException>(() => OracleStatementSemanticModelFactory.Build(null, statement, null));
 			exception.ParamName.ShouldBe("databaseModel");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUnitializedDatabaseModel()
 		{
 			var statement = (OracleStatement)Parser.Parse("SELECT NULL FROM DUAL").Single();
@@ -36,7 +36,7 @@ namespace SqlPad.Oracle.Test
 			semanticModel.HasDatabaseModel.ShouldBe(false);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestQueryBlockCommonTableExpressionReferences()
 		{
 			const string query1 =
@@ -73,7 +73,7 @@ FROM
 			mainQueryBlockColumns[0].IsAsterisk.ShouldBe(true);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestMultiTableReferences()
 		{
 			const string query1 = @"SELECT SELECTION.* FROM SELECTION JOIN HUSQVIK.PROJECT P ON SELECTION.PROJECT_ID = P.PROJECT_ID";
@@ -92,7 +92,7 @@ FROM
 			queryBlock.Columns.Count.ShouldBe(5);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestImplicitColumnReferences()
 		{
 			const string query1 = @"SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P ON S.PROJECT_ID = P.PROJECT_ID";
@@ -111,7 +111,7 @@ FROM
 			queryBlock.Columns.Count.ShouldBe(5);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAllImplicitColumnReferences()
 		{
 			const string query1 = @"SELECT * FROM PROJECT";
@@ -139,7 +139,7 @@ FROM
 			columns[1].ColumnReferences[0].ColumnNodeObjectReferences.Single().ShouldBe(objectReference);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestGrammarSpecificAggregateFunctionRecognize()
 		{
 			const string query1 = @"SELECT COUNT(*) OVER (), AVG(1) OVER (), LAST_VALUE(DUMMY IGNORE NULLS) OVER () FROM DUAL";
@@ -170,7 +170,7 @@ FROM
 			lastValueFunction.SelectListColumn.ShouldNotBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestGrammarSpecifiAnalyticFunctionRecognize()
 		{
 			const string query1 = @"SELECT LAG(DUMMY, 1, 'Replace') IGNORE NULLS OVER (ORDER BY NULL) FROM DUAL";
@@ -193,7 +193,7 @@ FROM
 			lagFunction.ParameterReferences.Count.ShouldBe(3);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestBasicColumnTypes()
 		{
 			const string query1 = @"SELECT RESPONDENTBUCKET_ID, SELECTION_NAME, MY_NUMBER_COLUMN FROM (SELECT RESPONDENTBUCKET_ID, NAME SELECTION_NAME, 1 MY_NUMBER_COLUMN FROM SELECTION)";
@@ -246,7 +246,7 @@ FROM
 			columns[2].ColumnDescription.FullTypeName.ShouldBe("NUMBER");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAsteriskExposedColumnTypes()
 		{
 			const string query1 = @"SELECT * FROM (SELECT * FROM SELECTION)";
@@ -283,7 +283,7 @@ FROM
 			columns[1].ColumnDescription.DataType.FullyQualifiedName.Name.ShouldBe("NUMBER");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestFunctionParameterListForComplexExpressionParameter()
 		{
 			const string query1 = @"SELECT MAX(CASE WHEN 'Option' IN ('Value1', 'Value2') THEN 1 END) FROM DUAL";
@@ -307,7 +307,7 @@ FROM
 			maxFunction.ParameterReferences.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnNotAmbiguousInOrderByClauseWhenSelectContainsAsterisk()
 		{
 			const string query1 = @"SELECT * FROM SELECTION ORDER BY NAME";
@@ -327,7 +327,7 @@ FROM
 			orderByName.ColumnNodeColumnReferences.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnResolvedAmbiguousInOrderByClauseWhenSelectContainsAsteriskForRowSourcesWithSameColumnName()
 		{
 			const string query1 = @"SELECT SELECTION.*, SELECTION.* FROM SELECTION ORDER BY NAME";
@@ -347,7 +347,7 @@ FROM
 			orderByName.ColumnNodeColumnReferences.Count.ShouldBe(2);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnResolvedAmbiguousInOrderByClauseWhenNotReferencedInSelectClause()
 		{
 			const string query1 = @"SELECT NULL FROM DUAL D1 JOIN DUAL D2 ON D1.DUMMY = D2.DUMMY ORDER BY DUMMY";
@@ -367,7 +367,7 @@ FROM
 			orderByDummy.ColumnNodeColumnReferences.Count.ShouldBe(2);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestFromClauseWithObjectOverDatabaseLink()
 		{
 			const string query1 = @"SELECT * FROM SELECTION@HQ_PDB_LOOPBACK";
@@ -388,7 +388,7 @@ FROM
 			selectionTable.DatabaseLink.FullyQualifiedName.Name.ShouldBe("HQ_PDB_LOOPBACK");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestDatabaseLinkWithoutDomain()
 		{
 			const string query1 = @"SELECT * FROM SELECTION@TESTHOST";
@@ -409,7 +409,7 @@ FROM
 			selectionTable.DatabaseLink.FullyQualifiedName.Name.ShouldBe("TESTHOST.SQLPAD.HUSQVIK.COM@HQINSTANCE");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestDatabaseLinkWithNullDatabaseDomainSystemParameter()
 		{
 			const string query1 = @"SELECT * FROM SELECTION@TESTHOST";
@@ -423,7 +423,7 @@ FROM
 			semanticModel.StatementText.ShouldBe(query1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestModelBuildWithMissingAliasedColumnExpression()
 		{
 			const string query1 = @"SELECT SQL_CHILD_NUMBER, , PREV_CHILD_NUMBER FROM V$SESSION";
@@ -434,7 +434,7 @@ FROM
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestModelBuildWhileTypingXmlTableColumnDataType()
 		{
 			const string query1 = @"SELECT * FROM XMLTABLE ('/root' PASSING XMLTYPE ('<root>value</root>') COLUMNS VALUE V";
@@ -445,7 +445,7 @@ FROM
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestModelBuildWhileTypingRecursiveCommonTableExpression()
 		{
 			const string query1 =
@@ -457,19 +457,19 @@ FROM
 SELECT * FROM sampleData";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			Assert.DoesNotThrow(() => OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel));
+			Should.NotThrow(() => OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestModelBuildWhileTypingInlineSubquerySelectList()
 		{
 			const string query1 = @"SELECT * FROM (SELECT HUSQVIK. FROM DUAL)";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			Assert.DoesNotThrow(() => OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel));
+			Should.NotThrow(() => OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSimpleInsertValuesStatementModelBuild()
 		{
 			const string query1 = @"INSERT INTO HUSQVIK.SELECTION(NAME) VALUES ('Dummy selection')";
@@ -485,7 +485,7 @@ SELECT * FROM sampleData";
 			insertTarget.ColumnReferences.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSimpleUpdateStatementModelBuild()
 		{
 			const string query1 = @"UPDATE SELECTION SET NAME = 'Dummy selection' WHERE SELECTION_ID = 0";
@@ -498,7 +498,7 @@ SELECT * FROM sampleData";
 			semanticModel.MainObjectReferenceContainer.ColumnReferences.Count.ShouldBe(2);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSimpleDeleteStatementModelBuild()
 		{
 			const string query1 = @"DELETE SELECTION WHERE SELECTION_ID = 0";
@@ -511,7 +511,7 @@ SELECT * FROM sampleData";
 			semanticModel.MainObjectReferenceContainer.ColumnReferences.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUpdateOfSubqueryModelBuild()
 		{
 			const string query1 = @"UPDATE (SELECT * FROM SELECTION) SET NAME = 'Dummy selection' WHERE SELECTION_ID = 0";
@@ -525,7 +525,7 @@ SELECT * FROM sampleData";
 			semanticModel.MainObjectReferenceContainer.ColumnReferences.Count.ShouldBe(2);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUnfinishedInsertModelBuild()
 		{
 			const string query1 = @"INSERT INTO";
@@ -536,7 +536,7 @@ SELECT * FROM sampleData";
 			semanticModel.MainObjectReferenceContainer.MainObjectReference.ShouldBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestInsertColumnListIdentiferMatchingFunctionName()
 		{
 			const string query1 = @"INSERT INTO SELECTION(SESSIONTIMEZONE) SELECT * FROM SELECTION";
@@ -552,7 +552,7 @@ SELECT * FROM sampleData";
 			insertTarget.ProgramReferences.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestFunctionTypeAndSequenceInInsertValuesClause()
 		{
 			const string query1 = @"INSERT INTO SELECTION (SELECTION_ID, NAME, RESPONDENTBUCKET_ID) VALUES (SQLPAD_FUNCTION, XMLTYPE(), TEST_SEQ.NEXTVAL)";
@@ -570,7 +570,7 @@ SELECT * FROM sampleData";
 			insertTarget.SequenceReferences.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestPackageFunctionReferenceProperties()
 		{
 			const string query1 = @"SELECT 1 + SYS.DBMS_RANDOM.VALUE + 1 FROM DUAL";
@@ -595,7 +595,7 @@ SELECT * FROM sampleData";
 			functionReference.RootNode.LastTerminalNode.Token.Value.ShouldBe("VALUE");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestRedundantTerminals()
 		{
 			const string query1 = @"SELECT HUSQVIK.SELECTION.SELECTION_ID, SELECTION.NAME, RESPONDENTBUCKET.TARGETGROUP_ID, RESPONDENTBUCKET.NAME FROM HUSQVIK.SELECTION LEFT JOIN RESPONDENTBUCKET ON SELECTION.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID, SYS.DUAL";
@@ -623,7 +623,7 @@ SELECT * FROM sampleData";
 			redundantTerminals[7].Id.ShouldBe(Terminals.Dot);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestFunctionReferenceValidityInSetColumnValueClause()
 		{
 			const string query1 = @"UPDATE SELECTION SET NAME = SQLPAD_FUNCTION() WHERE SELECTION_ID = 0";
@@ -637,7 +637,7 @@ SELECT * FROM sampleData";
 			functionReference.Metadata.ShouldNotBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestLiteralColumnDataTypeResolution()
 		{
 			const string query1 = @"SELECT UNIQUE 123.456, '123.456', N'123.456', 123., 1.2E+1, DATE'2014-10-03', TIMESTAMP'2014-10-03 23:15:43.777' FROM DUAL";
@@ -661,7 +661,7 @@ SELECT * FROM sampleData";
 			columns[6].ColumnDescription.FullTypeName.ShouldBe("TIMESTAMP(9)");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestLiteralColumnDataTypeResolutionInConcatenatedQueryBlocks()
 		{
 			const string query1 =
@@ -693,7 +693,7 @@ SELECT C1, C2, C3, C4 FROM tmp";
 			semanticModel.MainQueryBlock.Columns[3].ColumnDescription.Nullable.ShouldBe(true);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAliasedRecursiveQueryReference()
 		{
 			const string query1 =
@@ -726,7 +726,7 @@ select * from recursion";
 			columnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestLiteralColumnDataTypeResolutionAccessedFromInlineView()
 		{
 			const string query1 = @"SELECT CONSTANT1, CONSTANT2 FROM (SELECT DISTINCT 123.456 CONSTANT1, 654.321 AS CONSTANT2 FROM DUAL)";
@@ -746,7 +746,7 @@ select * from recursion";
 			queryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe("NUMBER");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestLiteralColumnDataTypeResolutionWithExpressions()
 		{
 			const string query1 = @"SELECT 1 + 1, 1.1 + 1.1, 'x' || 'y', DATE'2014-10-04' + 1, TIMESTAMP'2014-10-04 20:21:13' + INTERVAL '1' HOUR FROM DUAL";
@@ -765,7 +765,7 @@ select * from recursion";
 			columns.ForEach(c => c.ColumnDescription.FullTypeName.ShouldBe(String.Empty));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSequenceDatabaseLinkReference()
 		{
 			const string query1 = @"SELECT TEST_SEQ.NEXTVAL@SQLPAD.HUSQVIK.COM@HQINSTANCE, SQLPAD_FUNCTION@SQLPAD.HUSQVIK.COM@HQINSTANCE FROM DUAL@SQLPAD.HUSQVIK.COM@HQINSTANCE";
@@ -783,7 +783,7 @@ select * from recursion";
 			databaseLinkReferences[3].ShouldBeTypeOf<OracleDataObjectReference>();
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUnusedColumnRedundantTerminals()
 		{
 			const string query1 = @"SELECT C1 FROM (SELECT 1 C1, 1 + 2 C2, DUMMY C3 FROM DUAL)";
@@ -803,7 +803,7 @@ select * from recursion";
 			redundantTerminals[7].Id.ShouldBe(Terminals.ColumnAlias);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUnusedXmlTableColumnRedundantTerminals()
 		{
 			const string query1 =
@@ -834,7 +834,7 @@ FROM
 			group1[7].Id.ShouldBe(Terminals.StringLiteral);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUnusedJsonTableColumnRedundantTerminals()
 		{
 			const string query1 =
@@ -880,7 +880,7 @@ FROM
 			group2.RedundancyType.ShouldBe(RedundancyType.UnusedColumn);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUnusedCommonTableExpression()
 		{
 			const string query1 =
@@ -908,7 +908,7 @@ SELECT * FROM DUAL";
 			terminalGroup[31].Token.Index.ShouldBe(142);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUnusedCommonTableExpressionWhenReferenced()
 		{
 			const string query1 = @"WITH CTE AS (SELECT DUMMY DUMMY1, 2 DUMMY2 FROM DUAL) SELECT * FROM CTE";
@@ -919,7 +919,7 @@ SELECT * FROM DUAL";
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestMultipleUnusedCommonTableExpression()
 		{
 			const string query1 =
@@ -957,7 +957,7 @@ SELECT * FROM DUAL";
 			terminalGroups[1][8].Token.Index.ShouldBe(224);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUnusedColumnRedundantTerminalsWithAllQueryBlockColumns()
 		{
 			const string query1 = @"SELECT 1 FROM (SELECT 1 C1, 1 C2, DUMMY C3 FROM DUAL)";
@@ -975,7 +975,7 @@ SELECT * FROM DUAL";
 			redundantTerminals[5].Id.ShouldBe(Terminals.Comma);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUnusedColumnRedundantTerminalsWithFirstRedundantColumn()
 		{
 			const string query1 = @"SELECT C2 FROM (SELECT 1 C1, 2 C2 FROM DUAL)";
@@ -990,7 +990,7 @@ SELECT * FROM DUAL";
 			redundantTerminals[2].Id.ShouldBe(Terminals.Comma);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUnusedColumnRedundantTerminalsWhenCombinedWithCommonTableExpressionUsingInlineView()
 		{
 			const string query1 = @"WITH CTE AS (SELECT VAL FROM (SELECT 1 VAL FROM DUAL)) SELECT 1 OUTPUT_COLUMN, VAL FROM (SELECT VAL FROM CTE)";
@@ -1001,7 +1001,7 @@ SELECT * FROM DUAL";
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUnusedColumnRedundantTerminalsWhenInMultisetInClause()
 		{
 			const string query1 = @"SELECT * FROM DUAL WHERE (DUMMY, DUMMY) IN (SELECT DUMMY, DUMMY FROM DUAL)";
@@ -1012,7 +1012,7 @@ SELECT * FROM DUAL";
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUnusedColumnRedundantTerminalsInParenthesisWrappedSubqueryWhenInMultisetInClause()
 		{
 			const string query1 = @"SELECT NULL FROM DUAL WHERE (DUMMY, DUMMY) IN ((SELECT DUMMY, DUMMY FROM DUAL))";
@@ -1023,7 +1023,7 @@ SELECT * FROM DUAL";
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUnusedColumnRedundantTerminalsWithAsteriskReference()
 		{
 			const string query1 = @"SELECT * FROM (SELECT 1 C1, 2 C2 FROM DUAL)";
@@ -1035,7 +1035,7 @@ SELECT * FROM DUAL";
 			redundantTerminals.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUnusedColumnRedundantTerminalsWithCommonTableExpression()
 		{
 			const string query1 =
@@ -1052,7 +1052,7 @@ SELECT NULL FROM sampleData";
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCommonTableExpressionNameColumnReferenceFromAnotherCommonTableExpression()
 		{
 			const string query1 =
@@ -1071,7 +1071,7 @@ SELECT c FROM t2";
 			queryBlock.Columns[0].ColumnReferences[0].ValidObjectReference.ShouldNotBe(null);
         }
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestRedundantTerminalsWithSchemaQualifiedFunction()
 		{
 			const string query1 = @"SELECT DUMMY, HUSQVIK.SQLPAD_FUNCTION FROM DUAL";
@@ -1086,7 +1086,7 @@ SELECT c FROM t2";
 			redundantTerminals[1].Id.ShouldBe(Terminals.Dot);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestRedundantTerminalsWithObjectQualifiedPseudocolumn()
 		{
 			const string query1 = @"SELECT T.ORA_ROWSCN, T.ROWID FROM ""CaseSensitiveTable"" T";
@@ -1104,7 +1104,7 @@ SELECT c FROM t2";
 			redundantTerminals[3].Id.ShouldBe(Terminals.Dot);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestRedundantTerminalsWithConcatenatedSubquery()
 		{
 			const string query1 = @"SELECT DUMMY, DUMMY FROM DUAL UNION SELECT DUMMY, DUMMY FROM DUAL";
@@ -1116,7 +1116,7 @@ SELECT c FROM t2";
 			redundantTerminals.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestRedundantTerminalsWithCorrelatedSubquery()
 		{
 			const string query1 = @"SELECT (SELECT 1 FROM DUAL D WHERE DUMMY = SYS.DUAL.DUMMY) VAL FROM SYS.DUAL";
@@ -1128,7 +1128,7 @@ SELECT c FROM t2";
 			redundantTerminals.Length.ShouldBe(2);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestRedundantTerminalsWithDistinctSubquery()
 		{
 			const string query1 = @"SELECT COUNT(*) FROM (SELECT DISTINCT X, Y FROM COORDINATES)";
@@ -1140,7 +1140,7 @@ SELECT c FROM t2";
 			redundantTerminals.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestRedundantTerminalsOfUnreferencedAsteriskClause()
 		{
 			const string query1 = @"SELECT DUMMY FROM (SELECT DUAL.*, SELECTION.* FROM DUAL, SELECTION)";
@@ -1152,7 +1152,7 @@ SELECT c FROM t2";
 			redundantTerminals.Length.ShouldBe(4);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUnusedColumnAndRedundantQualifierCombined()
 		{
 			const string query1 = @"SELECT DUMMY FROM (SELECT DUAL.*, HUSQVIK.SELECTION.NAME FROM DUAL, HUSQVIK.SELECTION)";
@@ -1164,7 +1164,7 @@ SELECT c FROM t2";
 			semanticModel.RedundantSymbolGroups.SelectMany(g => g).Count().ShouldBe(8);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestRedundantQualifierWithinPivotTableReferences()
 		{
 			const string query1 =
@@ -1193,7 +1193,7 @@ PIVOT (
 			terminalGroups[2][1].Id.ShouldBe(Terminals.Dot);
 		}
 		
-		[Test(Description = @"")]
+		[Test]
 		public void TestRedundantQualifierInOrderByReferenceToIndirectColumnReference()
 		{
 			const string query1 = @"SELECT REVERSE(DUMMY) DUMMY FROM DUAL ORDER BY DUAL.DUMMY";
@@ -1204,7 +1204,7 @@ PIVOT (
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestRedundantQualifierInOrderByReferenceToDirectColumnReference()
 		{
 			const string query1 = @"SELECT DUMMY FROM DUAL ORDER BY DUAL.DUMMY";
@@ -1215,7 +1215,7 @@ PIVOT (
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestRedundantColumnAlias()
 		{
 			const string query1 = @"SELECT DUAL.DUMMY DUMMY, DUMMY DUMMY FROM DUAL";
@@ -1234,7 +1234,7 @@ PIVOT (
 			terminalGroups[1][0].Token.Value.ShouldBe("DUMMY");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestRedundantColumnAliasWithinInlineView()
 		{
 			const string query1 = @"SELECT C1 FROM (SELECT NULL C1, DUMMY DUMMY FROM DUAL)";
@@ -1253,7 +1253,7 @@ PIVOT (
 			terminalGroups[0][2].Token.Value.ShouldBe("DUMMY");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestRedundantObjectAlias()
 		{
 			const string query1 = @"SELECT DUMMY FROM DUAL DUAL, SYS.DUAL DUAL";
@@ -1272,7 +1272,7 @@ PIVOT (
 			terminalGroups[1][0].Token.Value.ShouldBe("DUAL");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCommonTableExpressionColumnNameList()
 		{
 			const string query1 = @"WITH GENERATOR(C1, C2, C3, C4) AS (SELECT 1, DUAL.*, 3, DUMMY FROM DUAL) SELECT C1, C2, C3, C4 FROM GENERATOR";
@@ -1297,7 +1297,7 @@ PIVOT (
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestModelBuildWithMultipleAnalyticFunctionsWithinSameExpression()
 		{
 			const string query1 = @"SELECT SUM(COUNT(*) OVER (ORDER BY NULL) / COUNT(*) OVER (ORDER BY NULL) FROM DUAL";
@@ -1312,7 +1312,7 @@ PIVOT (
 			functionReferences.Length.ShouldBe(3);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestModelBuildWithQuotedDatabaseLinkName()
 		{
 			const string query1 = @"SELECT * FROM DUAL@""SQLSERVERDB.STOCKHOLM.CINT.COM""";
@@ -1323,7 +1323,7 @@ PIVOT (
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAsteriskNotRedundantInCorrelatedSubquery()
 		{
 			const string query1 = @"SELECT * FROM SELECTION WHERE SELECTIONNAME IN (SELECT * FROM DUAL)";
@@ -1335,7 +1335,7 @@ PIVOT (
 			redundantTerminals.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestRedundantCommonTableExpressionWithConcatenatedQueryBlock()
 		{
 			const string query1 =
@@ -1352,7 +1352,7 @@ SELECT * FROM CTE";
 			redundantTerminals.Length.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestRedundantDoubleDefinedCommonTableExpression()
 		{
 			const string query1 = @"WITH CTE AS (SELECT 1 C1 FROM DUAL), CTE AS (SELECT 1 C2 FROM DUAL) SELECT * FROM CTE";
@@ -1364,7 +1364,7 @@ SELECT * FROM CTE";
 			redundantTerminals.Length.ShouldBe(10);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestFullyQualifiedTableOverDatabaseLink()
 		{
 			const string query1 = @"SELECT * FROM HUSQVIK.SELECTION@HQ_PDB_LOOPBACK";
@@ -1378,7 +1378,7 @@ SELECT * FROM CTE";
 			objectReferences[0].DatabaseLink.ShouldNotBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestModelBuildWithSimpleDatabaseLinkIncludingInstanceName()
 		{
 			const string query1 = @"SELECT * FROM DUAL, DUAL@""HQ_PDB@LOOPBACK""";
@@ -1390,7 +1390,7 @@ SELECT * FROM CTE";
 			objectReferences.Length.ShouldBe(2);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestModelBuildWithDateLiteralWithInvalidQuotedString()
 		{
 			const string query1 = @"SELECT DATE q'2014-10-04' FROM DUAL";
@@ -1401,7 +1401,7 @@ SELECT * FROM CTE";
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestModelBuildWithTimestampLiteralWithInvalidQuotedString()
 		{
 			const string query1 = @"SELECT TIMESTAMP q'2014-10-04' FROM DUAL";
@@ -1412,16 +1412,16 @@ SELECT * FROM CTE";
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestModelBuildWhenTypingUpdateSubqueryStatement()
 		{
 			const string query1 = @"UPDATE (S)";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			Assert.DoesNotThrow(() => OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel));
+			Should.NotThrow(() => OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestModelBuildWhenTypingInlineViewInOuterJoinClause()
 		{
 			const string query1 =
@@ -1435,10 +1435,10 @@ FROM
     ON DUAL.DUMMY = TMP.DUMMY";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			Assert.DoesNotThrow(() => OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel));
+			Should.NotThrow(() => OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestModelBuildWithUnfinishedSqlModelRule()
 		{
 			const string query1 =
@@ -1459,7 +1459,7 @@ MODEL
 			semanticModel.QueryBlocks.Count.ShouldBe(2);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestModelBuildWithScalarSubQueryAsPlSqlParameter()
 		{
 			const string query1 =
@@ -1468,10 +1468,10 @@ MODEL
 END;";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
-			Assert.DoesNotThrow(() => OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel));
+			Should.NotThrow(() => OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestModelBuildWithUnfinishedSqlModelMeasure()
 		{
 			const string query1 = @"SELECT * FROM (SELECT * FROM DUAL) MODEL DIMENSION BY (0 C1) MEASURES (0 C2, , 0 C3) RULES (C2[ANY] = 0)";
@@ -1482,7 +1482,7 @@ END;";
 			semanticModel.QueryBlocks.Count.ShouldBe(2);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestModelBuildWhileTypingSchemaQualifiedObjectWithinUpdateStatement()
 		{
 			const string query1 = @"UPDATE HUSQVIK.";
@@ -1492,7 +1492,7 @@ END;";
 			semanticModel.MainQueryBlock.ShouldBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestModelBuildWhenSubqueryWrappedInParenthesis()
 		{
 			const string query1 = @"WITH SOURCE_DATA AS (SELECT DUMMY FROM DUAL) (SELECT DUMMY FROM SOURCE_DATA)";
@@ -1502,7 +1502,7 @@ END;";
 			semanticModel.QueryBlocks.Count.ShouldBe(2);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestStoredProcedureIsIgnoredInSql()
 		{
 			const string query1 = @"SELECT SQLPAD.SQLPAD_PROCEDURE() FROM DUAL";
@@ -1516,7 +1516,7 @@ END;";
 			programReferences[0].SchemaObject.ShouldBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSpecificGrammarFunctionInOrderByClause()
 		{
 			const string query1 = @"SELECT NULL FROM DUAL ORDER BY COUNT(*)";
@@ -1537,7 +1537,7 @@ END;";
 			programReference.ParameterReferences.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestListAggregationFunction()
 		{
 			const string query1 = @"SELECT LISTAGG('Value', ', ') WITHIN GROUP (ORDER BY NULL) FROM DUAL";
@@ -1558,7 +1558,7 @@ END;";
 			programReference.ParameterReferences.Count.ShouldBe(2);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestTableCollectionExpressionProgramReferences()
 		{
 			const string query1 = @"SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR(NULL, NULL, 'ALLSTATS LAST ADVANCED')) T1, TABLE(SYS.ODCIRAWLIST(HEXTORAW('ABCDEF'), HEXTORAW('A12345'), HEXTORAW('F98765'))) T2";
@@ -1619,7 +1619,7 @@ END;";
 			queryBlock.Columns.Count.ShouldBe(3);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestTableCollectionExpressionColumnUsingPackageFunction()
 		{
 			const string query1 = @"SELECT COLUMN_VALUE FROM TABLE(SQLPAD.PIPELINED_FUNCTION(SYSDATE, SYSDATE))";
@@ -1643,7 +1643,7 @@ END;";
 			queryBlock.Columns[0].ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestXmlTableReference()
 		{
 			const string query1 = @"SELECT * FROM XMLTABLE('for $i in $RSS_DATA/rss/channel/item return $i' PASSING HTTPURITYPE('http://servis.idnes.cz/rss.asp?c=zpravodaj').GETXML() AS RSS_DATA COLUMNS SEQ# FOR ORDINALITY, TITLE VARCHAR2(4000) PATH 'title', DESCRIPTION CLOB PATH 'description') T";
@@ -1674,7 +1674,7 @@ END;";
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCommonTableExpressionDataTypePropagationToInnerSubquery()
 		{
 			const string query1 = @"WITH SOURCE_DATA AS (SELECT DUMMY FROM DUAL) SELECT NULL FROM (SELECT DUMMY FROM SOURCE_DATA)";
@@ -1692,7 +1692,7 @@ END;";
 			columns[0].ColumnDescription.FullTypeName.ShouldBe("VARCHAR2(1 BYTE)");
 		}
 		
-		[Test(Description = @"")]
+		[Test]
 		public void TestXmlTableReferenceWithoutColumnListSpecification()
 		{
 			const string query1 = @"SELECT * FROM XMLTABLE('for $i in $RSS_DATA/rss/channel/item return $i' PASSING HTTPURITYPE('http://servis.idnes.cz/rss.asp?c=zpravodaj').GETXML() AS RSS_DATA)";
@@ -1709,7 +1709,7 @@ END;";
 			columns[1].ColumnDescription.FullTypeName.ShouldBe("SYS.XMLTYPE");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestJsonTableReference()
 		{
 			const string query1 =
@@ -1776,7 +1776,7 @@ AS T";
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSqlModelReference()
 		{
 			const string query1 =
@@ -1826,7 +1826,7 @@ MODEL
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSqlModelDimensionReferenceDataTypeFromInlineView()
 		{
 			const string query1 =
@@ -1857,7 +1857,7 @@ FROM
 			queryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe("VARCHAR2(1 BYTE)");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSqlModelRuleOrderByReference()
 		{
 			const string query1 =
@@ -1884,7 +1884,7 @@ MODEL
 			dimensionReferenceContainer.ColumnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSqlModelReferenceInnerReferences()
 		{
 			const string query1 =
@@ -1943,7 +1943,7 @@ MODEL
 			measuresReferenceContainer.TypeReferences.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSqlModelOutputColumns()
 		{
 			const string query1 =
@@ -1977,7 +1977,7 @@ MODEL
 			outerQueryBlock.Columns[5].NormalizedName.ShouldBe("\"M1\"");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSqlModelOutputColumnTypeDefinedByCast()
 		{
 			const string query1 =
@@ -2005,7 +2005,7 @@ FROM
 			queryBlock.Columns[0].ColumnDescription.FullTypeName.ShouldBe("VARCHAR2(4000)");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestRecursiveCommonTableExpression()
 		{
 			const string query1 = @"WITH GENERATOR(VAL) AS (SELECT 1 FROM DUAL UNION ALL SELECT VAL + 1 FROM GENERATOR WHERE VAL <= 10) SELECT VAL FROM	GENERATOR";
@@ -2033,7 +2033,7 @@ FROM
 			queryBlocks[1].ObjectReferences.First().Type.ShouldBe(ReferenceType.CommonTableExpression);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestFullyQualifiedColumnNameResolutionInUpdateStatement()
 		{
 			const string query1 = @"UPDATE HUSQVIK.SELECTION SET SELECTION.PROJECT_ID = HUSQVIK.SELECTION.PROJECT_ID WHERE 1 = 0";
@@ -2050,7 +2050,7 @@ FROM
 			sourceColumn.ObjectNodeObjectReferences.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestWithDefinedFunctionReferences()
 		{
 			const string query1 =
@@ -2096,7 +2096,7 @@ SELECT F1(NULL) RESULT1, COUNT(NULL), F2(NULL), T.* FROM (
 			programReferences[0].Metadata.Identifier.Name.ShouldBe("\"f 3\"");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestXmlTablePassingExpressionWithInaccessibleReference()
 		{
 			const string query1 =
@@ -2122,7 +2122,7 @@ FROM
 			columnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestJsonTablePassingExpressionWithInaccessibleReference()
 		{
 			const string query1 =
@@ -2156,7 +2156,7 @@ FROM
 			columnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnReferencesInConnectByClause()
 		{
 			const string query1 = @"SELECT NULL FROM SELECTION CONNECT BY SELECTION_ID > PROJECT_ID";
@@ -2181,7 +2181,7 @@ FROM
 			queryBlock.ColumnReferences[1].ColumnNodeColumnReferences.Single().Name.ShouldBe("\"PROJECT_ID\"");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnReferencesInRecursiveSearchClauseAndInSubquery()
 		{
 			const string query1 =
@@ -2215,7 +2215,7 @@ SELECT * FROM CTE";
 			cteQueryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe("NUMBER");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestOuterApplyColumnReference()
 		{
 			const string query1 = @"SELECT DUMMY C1, C2 FROM DUAL T1 OUTER APPLY (SELECT DUMMY C2 FROM DUAL T2 WHERE DUMMY <> T1.DUMMY) T2";
@@ -2242,7 +2242,7 @@ SELECT * FROM CTE";
 			crossApliedQueryBlock.ColumnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestInsertIntoSelfReferenceWithinValuesClause()
 		{
 			const string query1 = @"INSERT INTO PROJECT (PROJECT_ID) VALUES (PROJECT_ID)";
@@ -2259,7 +2259,7 @@ SELECT * FROM CTE";
 			columnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestPartitionAndSubpartitionReferences()
 		{
 			const string sqlText = @"SELECT * FROM INVOICES PARTITION (P2015), INVOICES PARTITION (P2016), INVOICES SUBPARTITION (P2015_PRIVATE), INVOICES SUBPARTITION (P2016_ENTERPRISE), INVOICES PARTITION (P2015_PRIVATE), INVOICES SUBPARTITION (P2015)";
@@ -2288,7 +2288,7 @@ SELECT * FROM CTE";
 			objectReferences[5].PartitionReference.Partition.ShouldBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestMergeSemantics()
 		{
 			const string sqlText =
@@ -2358,7 +2358,7 @@ LOG ERRORS INTO ERRORLOG ('Statement identifier') REJECT LIMIT UNLIMITED";
 			sequenceReferences[0].SchemaObject.ShouldNotBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestErrorLogTableReferencesInMultiTableInsert()
 		{
 			const string sqlText =
@@ -2393,7 +2393,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 			insertTargets[3].ColumnReferences.Count.ShouldBe(3);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestFlashbackAsOfPseudocolumnReferences()
 		{
 			const string query1 = @"SELECT SELECTION_ID, ORA_ROWSCN, VERSIONS_STARTTIME, VERSIONS_ENDTIME, VERSIONS_STARTSCN, VERSIONS_ENDSCN, VERSIONS_OPERATION, VERSIONS_XID FROM SELECTION AS OF TIMESTAMP TIMESTAMP'2015-05-08 00:00:00'";
@@ -2418,7 +2418,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 			columnReferences[7].ColumnNodeColumnReferences.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestFlashbackVersionsPseudocolumnReferences()
 		{
 			const string query1 = @"SELECT SELECTION_ID, ORA_ROWSCN, VERSIONS_STARTTIME, VERSIONS_ENDTIME, VERSIONS_STARTSCN, VERSIONS_ENDSCN, VERSIONS_OPERATION, VERSIONS_XID FROM SELECTION VERSIONS BETWEEN SCN MINVALUE AND MAXVALUE AS OF TIMESTAMP TIMESTAMP'2015-05-08 00:00:00'";
@@ -2443,7 +2443,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 			columnReferences[7].ColumnNodeColumnReferences.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnReferenceInTableClause()
 		{
 			const string query1 = @"SELECT (SELECT LISTAGG(COLUMN_VALUE, ', ') WITHIN GROUP (ORDER BY ROWNUM) FROM TABLE(SELECTION_NAMES)) FROM (SELECT CAST(COLLECT(SELECTIONNAME) AS SYS.ODCIRAWLIST) SELECTION_NAMES FROM SELECTION WHERE ROWNUM <= 5)";
@@ -2465,7 +2465,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 			columnReferences[1].ColumnDescription.FullTypeName.ShouldBe("SYS.ODCIRAWLIST");
 		}
 		
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnReferenceInTableClauseUsingDynamicCollectionType()
 		{
 			const string query1 = @"SELECT (SELECT LISTAGG(COLUMN_VALUE, ', ') WITHIN GROUP (ORDER BY ROWNUM) FROM TABLE(SELECTION_NAMES)) FROM (SELECT COLLECT(SELECTIONNAME) SELECTION_NAMES FROM SELECTION WHERE ROWNUM <= 5)";
@@ -2487,7 +2487,7 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 			columnReferences[1].ColumnDescription.DataType.ShouldBe(OracleDataType.DynamicCollectionType);
 		}
 		
-		[Test(Description = @"")]
+		[Test]
 		public void TestModelBuildWhenXmlTableCombinedWithFlashbackAndPivotClauses()
 		{
 			const string query1 =
@@ -2522,7 +2522,7 @@ FROM ((
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestPivotTableColumnReference()
 		{
 			const string query1 =
@@ -2585,7 +2585,7 @@ FROM (
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUnpivotTableColumnReference()
 		{
 			const string query1 =
@@ -2647,7 +2647,7 @@ FROM (
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUnpivotTableColumnNullability()
 		{
 			const string query1 =
@@ -2675,7 +2675,7 @@ WHERE c IS NULL";
 			unpivotTableReference.Columns[0].Nullable.ShouldBe(true);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestModelBuildWhileTypingIncludeNullsInUnpivotClause()
 		{
 			const string query1 =
@@ -2691,10 +2691,10 @@ FROM
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 
-			Assert.DoesNotThrow(() => OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel));
+			Should.NotThrow(() => OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestUnpivotTableWithAllowedNulls()
 		{
 			const string query1 =
@@ -2721,7 +2721,7 @@ WHERE c IS NULL";
 			unpivotTableReference.Columns[1].Nullable.ShouldBe(true);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestModelBuildWhenTypingUnpivotClause()
 		{
 			const string query1 =
@@ -2739,10 +2739,10 @@ FROM (
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 
-			Assert.DoesNotThrow(() => OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel));
+			Should.NotThrow(() => OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAsteriskColumnReferencesWithJoinUsingMultipleColumns()
 		{
 			const string query1 = @"SELECT * FROM SELECTION T1 JOIN SELECTION T2 USING (PROJECT_ID, NAME)";
@@ -2776,7 +2776,7 @@ FROM (
 			columnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAsteriskColumnReferencesUsingNaturalJoin()
 		{
 			const string query1 = @"SELECT * FROM SELECTION S1 NATURAL JOIN SELECTION S2";
@@ -2805,7 +2805,7 @@ FROM (
 			columns[4].ColumnReferences[0].ValidObjectReference.FullyQualifiedObjectName.Name.ShouldBe("S1");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestDirectColumnReferenceWithJoinUsingMultipleColumns()
 		{
 			const string query1 = @"SELECT RESPONDENTBUCKET_ID, SELECTION_ID, PROJECT_ID, NAME FROM SELECTION JOIN RESPONDENTBUCKET USING (PROJECT_ID, RESPONDENTBUCKET_ID)";
@@ -2833,7 +2833,7 @@ FROM (
 			columns[3].ColumnReferences[0].ValidObjectReference.ShouldBe(null);
         }
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestModelBuildWithPivotedInlineViewWithAsterisk()
 		{
 			const string query1 =
@@ -2867,7 +2867,7 @@ FROM (
 			semanticModel.MainQueryBlock.Columns[4].ColumnDescription.FullTypeName.ShouldBe(String.Empty);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestPivotXmlTableReference()
 		{
 			const string query1 =
@@ -2895,7 +2895,7 @@ FROM (
 			semanticModel.MainQueryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe("SYS.XMLTYPE");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestOrderBySelectListReferenceWithMultipleSourceTableReferences()
 		{
 			const string query1 = @"SELECT T1.DUMMY FROM DUAL T1, DUAL T2 ORDER BY DUMMY";
@@ -2909,7 +2909,7 @@ FROM (
 			semanticModel.MainQueryBlock.ColumnReferences[0].ColumnNodeObjectReferences.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnReferencesFromTableTypeUsingSynonym()
 		{
 			const string query1 = @"SELECT COLUMN_VALUE FROM TABLE(RAWLIST('AA', 'FF'))";
@@ -2930,7 +2930,7 @@ FROM (
 			tableCollectionExpressionReference.RowSourceReference.ShouldBeTypeOf<OracleTypeReference>();
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestPivotTableReferenceWithinInlineView()
 		{
 			const string query1 =
@@ -2969,7 +2969,7 @@ FROM (
 			objectReference.ShouldBeTypeOf<OraclePivotTableReference>();
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestSubqueryAsCursorParameter()
 		{
 			const string query1 = @"SELECT * FROM TABLE(SQLPAD.CURSOR_FUNCTION(0, CURSOR(SELECT SELECTION_ID, NAME, PROJECT_ID, RESPONDENTBUCKET_ID FROM SELECTION), NULL))";
@@ -2982,7 +2982,7 @@ FROM (
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestParenthesisWrappedConcatenatedSubquery()
 		{
 			const string query1 = @"((SELECT DUMMY, DUMMY FROM DUAL) UNION ALL (SELECT DUMMY, DUMMY FROM DUAL)) ORDER BY 1";
@@ -2999,7 +2999,7 @@ FROM (
             semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnReferenceInScalarSubqueryWithinJoinCondition()
 		{
 			const string query1 =
@@ -3020,7 +3020,7 @@ FROM
 			columnReference.ShouldNotBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestHiddenColumnReferences()
 		{
 			const string query1 = @"SELECT HIDDEN_COLUMN, INVISIBLE_COLUMN FROM (SELECT ""CaseSensitiveTable"".*, HIDDEN_COLUMN INVISIBLE_COLUMN FROM ""CaseSensitiveTable"")";
@@ -3040,7 +3040,7 @@ FROM
 			columns[1].ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCastedColumnDataType()
 		{
 			const string query1 = @"SELECT ((CAST(NULL AS RAW(32)))) COL1, CAST(NULL AS RAW(32)) + 1 COL2, CAST(COLLECT(HEXTORAW('FF')) AS SYS.ODCIRAWLIST) COL3 FROM DUAL";
@@ -3068,7 +3068,7 @@ FROM
 			columns[2].DataTypeReferences.Single().SchemaObject.ShouldNotBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestApplyReferenceConstraints()
 		{
 			const string query1 = @"SELECT * FROM TARGETGROUP";
@@ -3113,7 +3113,7 @@ FROM
 			executionModel.StatementText.ShouldBe("SELECT * FROM HUSQVIK.RESPONDENTBUCKET WHERE \"TARGETGROUP_ID\" = :KEY0");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestApplyReferenceConstraintsUsingOnlyNonPhysicalColumns()
 		{
 			const string query1 = @"SELECT * FROM (SELECT ROWNUM VAL FROM DUAL) T1";
@@ -3129,7 +3129,7 @@ FROM
 			childReferenceDataSources.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestMergeUsingAliasedSubquery()
 		{
 			const string query1 =
@@ -3148,7 +3148,7 @@ WHEN NOT MATCHED THEN INSERT VALUES (T2.DUMMY)";
 			columnReferences.ForEach(c => c.ColumnNodeColumnReferences.Count.ShouldBe(1));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestRownumColumnReference()
 		{
 			const string query1 = @"SELECT NULL FROM (SELECT ROWNUM FROM DUAL) T WHERE T.""ROWNUM"" = 1";
@@ -3163,7 +3163,7 @@ WHEN NOT MATCHED THEN INSERT VALUES (T2.DUMMY)";
 			columnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestRownumPseudocolumnPriority()
 		{
 			const string query1 = @"SELECT NULL FROM (SELECT ROWNUM FROM SELECTION WHERE ROWNUM <= 100) T WHERE ROWNUM > 98";
@@ -3176,7 +3176,7 @@ WHEN NOT MATCHED THEN INSERT VALUES (T2.DUMMY)";
 			semanticModel.MainQueryBlock.ProgramReferences.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestPartitionJoinReferences()
 		{
 			const string query1 = @"SELECT NULL FROM DUAL T1 PARTITION BY (T1.DUMMY, DBMS_RANDOM.VALUE) LEFT JOIN DUAL T2 PARTITION BY (T1.DUMMY, DBMS_RANDOM.VALUE) ON NULL IS NULL LEFT JOIN DUAL T3 PARTITION BY (T3.DUMMY) ON NULL IS NULL";
@@ -3201,7 +3201,7 @@ WHEN NOT MATCHED THEN INSERT VALUES (T2.DUMMY)";
 			programReferences.ForEach(p => p.Metadata.ShouldNotBe(null));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestDataTypeReferenceInCastMultisetClause()
 		{
 			const string query1 = @"SELECT DUMMY, COLUMN_VALUE FROM DUAL T, TABLE(CAST(MULTISET(SELECT SYSDATE - LEVEL FROM DUAL WHERE T.DUMMY = 'X' CONNECT BY LEVEL <= 5) AS SYS.ODCIDATELIST))";
@@ -3221,7 +3221,7 @@ WHEN NOT MATCHED THEN INSERT VALUES (T2.DUMMY)";
 			semanticModel.MainQueryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe("DATE");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestMoreConcatenatedQueryBlocksWithSemicolon()
 		{
 			const string query1 =
@@ -3237,7 +3237,7 @@ SELECT 4 FROM DUAL";
 			semanticModel.MainQueryBlock.AllFollowingConcatenatedQueryBlocks.Count().ShouldBe(3);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestConnectByPseudocolumns()
 		{
 			const string query1 =
@@ -3273,7 +3273,7 @@ CONNECT BY NOCYCLE
 			mainQueryBlock.Columns[3].NormalizedName.ShouldBe("\"1F+1D\"");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestNonRedundantQualifiersWhenConnectByPseudocolumnNamesAsColumnNames()
 		{
 			const string query1 = @"SELECT t.connect_by_isleaf, t.connect_by_iscycle FROM (SELECT 'x' connect_by_isleaf, 'y' connect_by_iscycle FROM dual) t";
@@ -3285,7 +3285,7 @@ CONNECT BY NOCYCLE
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestNonAliasedColumnNameConsistOfDoubleQuotedReferences()
 		{
 			const string query1 = @"SELECT * FROM (SELECT ""1"" || ""2"" FROM(SELECT 1, 2 FROM DUAL))";
@@ -3300,7 +3300,7 @@ CONNECT BY NOCYCLE
 			mainQueryBlock.Columns[1].NormalizedName.ShouldBe(null);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestConcatenatdQueryBlockDataTypeHarmonizationWhileTyping()
 		{
 			const string query1 =
@@ -3314,11 +3314,11 @@ SELECT * FROM generator";
 			var statement = (OracleStatement)Parser.Parse(query1).Single().Validate();
 			statement.ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
 
-			Assert.DoesNotThrow(() => OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel));
+			Should.NotThrow(() => OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel));
 		}
 
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestInlineFunctionInTableCollectionExpression()
 		{
 			const string query1 =
@@ -3336,7 +3336,7 @@ SELECT * FROM TABLE(f)";
 			mainQueryBlock.ProgramReferences.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestColumnTypeDefinedByEmptyString()
 		{
 			const string query1 =
@@ -3353,7 +3353,7 @@ SELECT value FROM data";
 			mainQueryBlock.Columns[0].ColumnDescription.Nullable.ShouldBe(true);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAsteriskColumnTypePropagation()
 		{
 			const string query1 = @"SELECT dual.* FROM (SELECT dummy FROM dual) dual";
@@ -3368,7 +3368,7 @@ SELECT value FROM data";
 			mainQueryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe("VARCHAR2(1 BYTE)");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestAsteriskInvisibleColumnPropagation()
 		{
 			const string query1 = @"SELECT * FROM (SELECT * FROM ""CaseSensitiveTable"")";
@@ -3384,7 +3384,7 @@ SELECT value FROM data";
 			mainQueryBlock.Columns[2].NormalizedName.ShouldBe("\"VIRTUAL_COLUMN\"");
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestXmlRootParameterResolution()
 		{
 			const string query1 = @"SELECT xmlroot(xmlelement(""x"", NULL), version '1.0') FROM dual";
@@ -3398,7 +3398,7 @@ SELECT value FROM data";
 			xmlRootReference.ParameterReferences.Count.ShouldBe(1);
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestModelBuildWithPropagatedCastedDataType()
 		{
 			const string query1 = @"SELECT dummy FROM (SELECT CAST(dummy AS BINARY_FLOAT) dummy FROM DUAL)";
@@ -3406,10 +3406,10 @@ SELECT value FROM data";
 			var statement = (OracleStatement)Parser.Parse(query1).Single().Validate();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			Assert.DoesNotThrow(() => OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel));
+			Should.NotThrow(() => OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestModelBuildWithQuotedDatabaseLinkNameWithoutDomain()
 		{
 			const string query1 = @"SELECT * FROM dual@""dblink""";
@@ -3417,10 +3417,10 @@ SELECT value FROM data";
 			var statement = (OracleStatement)Parser.Parse(query1).Single().Validate();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
-			Assert.DoesNotThrow(() => OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel));
+			Should.NotThrow(() => OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel));
 		}
 
-		[Test(Description = @"")]
+		[Test]
 		public void TestCastFunctionResolution()
 		{
 			const string query1 = @"SELECT cast(1 AS NUMBER) FROM dual";
