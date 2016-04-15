@@ -1132,7 +1132,7 @@ namespace SqlPad.Oracle.Test
 
 		private static readonly IDictionary<OracleObjectIdentifier, OracleSchemaObject> ObjectsInternal;
 
-		public override ConnectionStringSettings ConnectionString => ConnectionStringInternal;
+		public override ConnectionStringSettings ConnectionString { get; } = ConnectionStringInternal;
 
 		public override IOracleObjectScriptExtractor ObjectScriptExtractor { get; } = new OracleTestObjectScriptExtractor();
 
@@ -1142,19 +1142,19 @@ namespace SqlPad.Oracle.Test
 
 		public override bool IsMetadataAvailable { get; } = true;
 
-		public override ICollection<string> Schemas => SchemasInternal;
+		public override ICollection<string> Schemas { get; } = SchemasInternal;
 
-		public override IReadOnlyDictionary<string, OracleSchema> AllSchemas => AllSchemasInternal;
+		public override IReadOnlyDictionary<string, OracleSchema> AllSchemas { get; } = AllSchemasInternal;
 
-		public IDictionary<OracleObjectIdentifier, OracleSchemaObject> Objects => ObjectsInternal;
+		public IDictionary<OracleObjectIdentifier, OracleSchemaObject> Objects { get; } = ObjectsInternal;
 
 		public override IDictionary<OracleObjectIdentifier, OracleSchemaObject> AllObjects { get; }
 
 		public override IDictionary<OracleObjectIdentifier, OracleDatabaseLink> DatabaseLinks { get; } = DatabaseLinksInternal.ToDictionary(l => l.FullyQualifiedName, l => l);
 
-		public override IReadOnlyCollection<string> CharacterSets => CharacterSetsInternal;
+		public override IReadOnlyCollection<string> CharacterSets { get; } = CharacterSetsInternal;
 
-		public override IDictionary<int, string> StatisticsKeys => StatisticsKeysInternal;
+		public override IDictionary<int, string> StatisticsKeys { get; } = StatisticsKeysInternal;
 
 		public override IDictionary<string, string> SystemParameters { get; } = new Dictionary<string, string>(SystemParametersInternal);
 
@@ -1193,7 +1193,7 @@ namespace SqlPad.Oracle.Test
 			RefreshCompleted = null;
 		}
 
-		public override bool IsFresh => true;
+		public override bool IsFresh { get; } = true;
 
 		public override event EventHandler Initialized = delegate { };
 
