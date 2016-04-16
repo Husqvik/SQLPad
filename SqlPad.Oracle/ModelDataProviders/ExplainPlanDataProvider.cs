@@ -46,7 +46,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 			public override Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 			{
-				return Task.FromResult(0);
+				return Task.CompletedTask;
 			}
 		}
 

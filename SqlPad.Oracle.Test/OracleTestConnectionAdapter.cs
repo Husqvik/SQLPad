@@ -95,12 +95,12 @@ namespace SqlPad.Oracle.Test
 
 		public override Task ActivateTraceEvents(IEnumerable<OracleTraceEvent> traceEvents, string traceIdentifier, CancellationToken cancellationToken)
 		{
-			return Task.FromResult(0);
+			return Task.CompletedTask;
 		}
 
 		public override Task StopTraceEvents(CancellationToken cancellationToken)
 		{
-			return Task.FromResult(0);
+			return Task.CompletedTask;
 		}
 
 		public override Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken)
@@ -129,9 +129,9 @@ namespace SqlPad.Oracle.Test
 
 		public override string TransanctionIdentifier { get; } = "1.2.3456 (read committed)";
 
-		public override Task CommitTransaction() => Task.FromResult(0);
+		public override Task CommitTransaction() => Task.CompletedTask;
 
-		public override Task RollbackTransaction() => Task.FromResult(0);
+		public override Task RollbackTransaction() => Task.CompletedTask;
 
 		public override Task<ExecutionStatisticsPlanItemCollection> GetCursorExecutionStatisticsAsync(CancellationToken cancellationToken)
 		{

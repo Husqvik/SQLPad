@@ -82,6 +82,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\FindUsagesCommandTest.cs" />
     <Compile Include="Commands\TestCommandSettings.cs" />
     <Compile Include="Commands\CommandTest.cs" />
     <Compile Include="Commands\OracleTestCommandSettingsProviderFactory.cs" />

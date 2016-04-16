@@ -871,7 +871,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 				.Select(h => $"\"{h.Name}\"");
 
 			_columns.AddRange(columnNames);
-			return Task.FromResult(0);
+			return Task.CompletedTask;
 		}
 	}
 }
