@@ -16,6 +16,8 @@ namespace SqlPad.Oracle.Test.Commands
 	[TestFixture]
 	public class CommandTest
 	{
+		private readonly OracleTestCommandSettingsProviderFactory _commandSettingsProviderFactory = new OracleTestCommandSettingsProviderFactory();
+
 		private SqlDocumentRepository _documentRepository;
 		private SqlTextEditor _editor;
 
@@ -95,28 +97,6 @@ WHERE
 		public void TearDown()
 		{
 			OracleConfiguration.Configuration.Formatter.FormatOptions.Reset();
-		}
-
-		private class TestCommandSettings : ICommandSettingsProvider
-		{
-			private readonly bool _isValueValid;
-
-			public TestCommandSettings(CommandSettingsModel settingsModel, bool isValueValid = true)
-			{
-				Settings = settingsModel;
-				_isValueValid = isValueValid;
-			}
-
-			public EventHandler GetSettingsCalled;
-
-			public bool GetSettings()
-			{
-				GetSettingsCalled?.Invoke(this, EventArgs.Empty);
-
-				return _isValueValid;
-			}
-
-			public CommandSettingsModel Settings { get; }
 		}
 
 		private ActionExecutionContext CreateExecutionContext()
@@ -1882,7 +1862,11 @@ FROM
 			_editor.Text = @"SELECT DUAL.DUMMY FROM SYS.DUAL, ""PUBLIC"".DUAL";
 			_editor.CaretOffset = 12;
 
-			var actions = new OracleContextActionProvider().GetContextActions(TestFixture.DatabaseModel, _editor.Text, _editor.CaretOffset).Where(a => a.Name.StartsWith("Resolve as")).ToArray();
+			var actions =
+				new OracleContextActionProvider(_commandSettingsProviderFactory)
+					.GetContextActions(TestFixture.DatabaseModel, _editor.Text, _editor.CaretOffset)
+					.Where(a => a.Name.StartsWith("Resolve as"))
+					.ToArray();
 
 			actions.Length.ShouldBe(2);
 			CanExecuteCommand(actions[0].ExecutionHandler).ShouldBe(true);
@@ -1898,7 +1882,11 @@ FROM
 			_editor.Text = @"SELECT COUNT(DISTINCT DUMMY) FROM DUAL D1, DUAL D2";
 			_editor.CaretOffset = 27;
 
-			var actions = new OracleContextActionProvider().GetContextActions(TestFixture.DatabaseModel, _editor.Text, _editor.CaretOffset).Where(a => a.Name.StartsWith("Resolve as")).ToArray();
+			var actions =
+				new OracleContextActionProvider(_commandSettingsProviderFactory)
+					.GetContextActions(TestFixture.DatabaseModel, _editor.Text, _editor.CaretOffset)
+					.Where(a => a.Name.StartsWith("Resolve as"))
+					.ToArray();
 
 			actions.Length.ShouldBe(2);
 			CanExecuteCommand(actions[0].ExecutionHandler).ShouldBe(true);
@@ -1913,7 +1901,11 @@ FROM
 			_editor.Text = @"SELECT DUMMY, 1 FROM DUAL T1, DUAL T2";
 			_editor.CaretOffset = 12;
 
-			var actions = new OracleContextActionProvider().GetContextActions(TestFixture.DatabaseModel, _editor.Text, _editor.CaretOffset).Where(a => a.Name.StartsWith("Resolve as")).ToArray();
+			var actions =
+				new OracleContextActionProvider(_commandSettingsProviderFactory)
+					.GetContextActions(TestFixture.DatabaseModel, _editor.Text, _editor.CaretOffset)
+					.Where(a => a.Name.StartsWith("Resolve as"))
+					.ToArray();
 
 			actions.Length.ShouldBe(2);
 			CanExecuteCommand(actions[0].ExecutionHandler).ShouldBe(true);
@@ -2297,7 +2289,7 @@ FROM
 
 		private void SetBindVariableAndExecute(int actionIndex, string value, string dataType = TerminalValues.Varchar2)
 		{
-			var actions = new OracleContextActionProvider()
+			var actions = new OracleContextActionProvider(_commandSettingsProviderFactory)
 					.GetContextActions(TestFixture.DatabaseModel, _editor.Text, _editor.CaretOffset)
 					.Where(a => a.Name.StartsWith("Convert"))
 					.ToArray();
@@ -2381,7 +2373,7 @@ FROM
 
 		private void ExecuteConvertLiteralToBindVariableCommand(int actionIndex)
 		{
-			var actions = new OracleContextActionProvider()
+			var actions = new OracleContextActionProvider(_commandSettingsProviderFactory)
 				.GetContextActions(TestFixture.DatabaseModel, _editor.Text, _editor.CaretOffset)
 				.Where(a => a.Name.StartsWith("Convert"))
 				.ToArray();

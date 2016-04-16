@@ -6,4 +6,9 @@
 
 		CommandSettingsModel Settings { get; }
 	}
+
+	public interface ICommandSettingsProviderFactory
+	{
+		ICommandSettingsProvider CreateCommandSettingsProvider(CommandSettingsModel settings);
+	}
 }

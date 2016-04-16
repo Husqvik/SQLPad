@@ -60,7 +60,7 @@ namespace SqlPad.Oracle
 
 		public IContextActionProvider CreateContextActionProvider()
 		{
-			return new OracleContextActionProvider();
+			return new OracleContextActionProvider(new OracleCommandSettingsProviderFactory());
 		}
 
 		public IMultiNodeEditorDataProvider CreateMultiNodeEditorDataProvider()

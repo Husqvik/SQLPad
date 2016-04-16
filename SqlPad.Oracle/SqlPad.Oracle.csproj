@@ -138,6 +138,7 @@
     <Compile Include="ModelDataProviders\SqlMonitorDataProvider.cs" />
     <Compile Include="ModelDataProviders\UserDataProvider.cs" />
     <Compile Include="OracleBindVariable.cs" />
+    <Compile Include="OracleCommandSettingsProviderFactory.cs" />
     <Compile Include="OracleConfiguration.cs">
       <DependentUpon>OracleConfiguration.xsd</DependentUpon>
     </Compile>

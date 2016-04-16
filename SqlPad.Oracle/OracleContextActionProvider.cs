@@ -14,6 +14,13 @@ namespace SqlPad.Oracle
 	{
 		private static readonly ContextAction[] EmptyCollection = new ContextAction[0];
 
+		private readonly ICommandSettingsProviderFactory _commandSettingsProviderFactory;
+
+		public OracleContextActionProvider(ICommandSettingsProviderFactory commandSettingsProviderFactory)
+		{
+			_commandSettingsProviderFactory = commandSettingsProviderFactory;
+		}
+
 		internal ICollection<ContextAction> GetContextActions(OracleDatabaseModelBase databaseModel, string statementText, int cursorPosition)
 		{
 			var documentStore = new SqlDocumentRepository(OracleSqlParser.Instance, new OracleStatementValidator(), databaseModel, statementText);
@@ -48,8 +55,8 @@ namespace SqlPad.Oracle
 
 			var semanticModel = (OracleStatementSemanticModel)sqlDocumentRepository.ValidationModels[currentTerminal.Statement].SemanticModel;
 
-			var enterIdentifierModel = new CommandSettingsModel { Value = "Enter value" };
-			executionContext.SettingsProvider = new EditDialog(enterIdentifierModel);
+			var settings = new CommandSettingsModel { Value = "Enter value" };
+			executionContext.SettingsProvider = _commandSettingsProviderFactory.CreateCommandSettingsProvider(settings);
 			
 			var actionList = new List<ContextAction>();
 
@@ -169,10 +176,16 @@ namespace SqlPad.Oracle
 			return actionList.AsReadOnly();
 		}
 
-		private static ActionExecutionContext CloneContextWithUseDefaultSettingsOption(ActionExecutionContext executionContext)
+		private ActionExecutionContext CloneContextWithUseDefaultSettingsOption(ActionExecutionContext executionContext)
 		{
 			var contextWithUseDefaultSettingsOption = executionContext.Clone();
-			contextWithUseDefaultSettingsOption.SettingsProvider = new EditDialog(new CommandSettingsModel { UseDefaultSettings = () => !Keyboard.IsKeyDown(Key.LeftShift) });
+			var settings =
+				new CommandSettingsModel
+				{
+					UseDefaultSettings = () => !Keyboard.IsKeyDown(Key.LeftShift)
+				};
+
+			contextWithUseDefaultSettingsOption.SettingsProvider = _commandSettingsProviderFactory.CreateCommandSettingsProvider(settings);
 
 			return contextWithUseDefaultSettingsOption;
 		}
