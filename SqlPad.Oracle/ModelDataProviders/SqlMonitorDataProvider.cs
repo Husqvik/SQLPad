@@ -81,6 +81,10 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public ObservableCollection<SqlMonitorSessionItem> SessionItems { get; } = new ObservableCollection<SqlMonitorSessionItem>();
 
+		public SessionLongOperationCollection QueryCoordinatorLongOperations { get; } = new SessionLongOperationCollection();
+
+		public SqlMonitorSessionItem QueryCoordinatorSessionItem => GetSessionItem(SessionIdentifier);
+
 		public SqlMonitorSessionItem GetSessionItem(SessionIdentifier sessionId)
 		{
 			SqlMonitorSessionItem sessionItem;
@@ -345,13 +349,18 @@ namespace SqlPad.Oracle.ModelDataProviders
 	[DebuggerDisplay("SessionLongOperationCollection (SessionId={SessionIdentifier})")]
 	public class SessionLongOperationCollection : ModelBase
 	{
+		private readonly ObservableCollection<SqlMonitorSessionLongOperationItem> _allLongOperationItems = new ObservableCollection<SqlMonitorSessionLongOperationItem>();
+		private readonly ObservableCollection<SqlMonitorSessionLongOperationItem> _completedLongOperationItems = new ObservableCollection<SqlMonitorSessionLongOperationItem>();
+
 		private SqlMonitorSessionLongOperationItem _activeLongOperationItem;
 
 		public SessionIdentifier SessionIdentifier { get; set; }
 
 		public SqlMonitorPlanItem PlanItem { get; set; }
 
-		public ObservableCollection<SqlMonitorSessionLongOperationItem> CompletedSessionLongOperationItems { get; } = new ObservableCollection<SqlMonitorSessionLongOperationItem>();
+		public IReadOnlyList<SqlMonitorSessionLongOperationItem> AllLongOperationItems => _allLongOperationItems;
+
+		public IReadOnlyList<SqlMonitorSessionLongOperationItem> CompletedLongOperationItems => _completedLongOperationItems;
 
 		public SqlMonitorSessionLongOperationItem ActiveLongOperationItem
 		{
@@ -361,18 +370,29 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public void MergeItems(IList<SqlMonitorSessionLongOperationItem> items)
 		{
+			if (items.Count == 0)
+			{
+				return;
+			}
+
 			ActiveLongOperationItem = items.Last();
 
-			for (var i = 0; i < items.Count - 1; i++)
+			MergeItems(items, _allLongOperationItems, 0);
+			MergeItems(items, _completedLongOperationItems, 1);
+		}
+
+		private static void MergeItems(IList<SqlMonitorSessionLongOperationItem> items, ObservableCollection<SqlMonitorSessionLongOperationItem> targetCollection, int endOffset)
+		{
+			for (var i = 0; i < items.Count - endOffset; i++)
 			{
 				var item = items[i];
-				if (CompletedSessionLongOperationItems.Count == i)
+				if (targetCollection.Count == i)
 				{
-					CompletedSessionLongOperationItems.Add(item);
+					targetCollection.Add(item);
 				}
 				else
 				{
-					CompletedSessionLongOperationItems[i] = item;
+					targetCollection[i] = item;
 				}
 			}
 		}
@@ -829,7 +849,8 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public async override Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 		{
-			var sessionItems = new Dictionary<SessionPlanItem, List<SqlMonitorSessionLongOperationItem>>();
+			var sessionPlanItems = new Dictionary<SessionPlanItem, List<SqlMonitorSessionLongOperationItem>>();
+			var queryCoordinatorItems = new List<SqlMonitorSessionLongOperationItem>();
 
 			while (await reader.ReadAsynchronous(cancellationToken))
 			{
@@ -839,21 +860,25 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 				var key = new SessionPlanItem { PlanItem = planItem, SessionIdentifier = sessionIdentifier };
 				List<SqlMonitorSessionLongOperationItem> items;
-				if (!sessionItems.TryGetValue(key, out items))
+				if (!sessionPlanItems.TryGetValue(key, out items))
 				{
-					sessionItems.Add(key, items = new List<SqlMonitorSessionLongOperationItem>());
+					sessionPlanItems.Add(key, items = new List<SqlMonitorSessionLongOperationItem>());
 				}
 
-				var longOperationItem = new SqlMonitorSessionLongOperationItem();
-				longOperationItem.OperationName = (string)reader["OPNAME"];
-				longOperationItem.Target = OracleReaderValueConvert.ToString(reader["TARGET"]);
-				longOperationItem.TargetDescription = OracleReaderValueConvert.ToString(reader["TARGET_DESC"]);
-				longOperationItem.SoFar = Convert.ToInt64(reader["SOFAR"]);
-				longOperationItem.TotalWork = Convert.ToInt64(reader["TOTALWORK"]);
-				longOperationItem.Units = OracleReaderValueConvert.ToString(reader["UNITS"]);
-				longOperationItem.StartTime = (DateTime)reader["START_TIME"];
-				longOperationItem.LastUpdateTime = (DateTime)reader["LAST_UPDATE_TIME"];
-				var timestamp = reader["TIMESTAMP"];
+				var longOperationItem =
+					new SqlMonitorSessionLongOperationItem
+					{
+						OperationName = (string)reader["OPNAME"],
+						Target = OracleReaderValueConvert.ToString(reader["TARGET"]),
+						TargetDescription = OracleReaderValueConvert.ToString(reader["TARGET_DESC"]),
+						SoFar = Convert.ToInt64(reader["SOFAR"]),
+						TotalWork = Convert.ToInt64(reader["TOTALWORK"]),
+						Units = OracleReaderValueConvert.ToString(reader["UNITS"]),
+						StartTime = (DateTime)reader["START_TIME"],
+						LastUpdateTime = (DateTime)reader["LAST_UPDATE_TIME"]
+					};
+
+				//var timestamp = reader["TIMESTAMP"];
 				var secondsRemaining = OracleReaderValueConvert.ToInt64(reader["TIME_REMAINING"]);
 				if (secondsRemaining.HasValue)
 				{
@@ -865,9 +890,16 @@ namespace SqlPad.Oracle.ModelDataProviders
 				longOperationItem.Message = OracleReaderValueConvert.ToString(reader["MESSAGE"]);
 
 				items.Add(longOperationItem);
+
+				if (sessionIdentifier == DataModel.SessionIdentifier)
+				{
+					queryCoordinatorItems.Add(longOperationItem);
+				}
 			}
 
-			foreach (var sessionPlanItem in sessionItems)
+			//DataModel.QueryCoordinatorLongOperations.MergeItems(queryCoordinatorItems);
+
+			foreach (var sessionPlanItem in sessionPlanItems)
 			{
 				var sessionIdentifier = sessionPlanItem.Key.SessionIdentifier;
 				var planItem = sessionPlanItem.Key.PlanItem;
@@ -954,8 +986,6 @@ namespace SqlPad.Oracle.ModelDataProviders
 						QueingTime = TimeSpan.FromTicks(Convert.ToInt64(reader["QUEUING_TIME"]) * 10),
 						UserIoWaitTime = TimeSpan.FromTicks(Convert.ToInt64(reader["USER_IO_WAIT_TIME"]) * 10)
 					};
-
-				//var queryCoordinatorSessionId = Convert.ToInt32(reader["QC_SID"]);
 
 				if (sessionItem.SessionIdentifier == DataModel.SessionIdentifier)
 				{

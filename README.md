@@ -1,4 +1,4 @@
-SQLPad 0.4.0.298
+SQLPad 0.4.0.299
 ================
 
 SQLPad is an experimental SQL editor focused to quick and comfortable work.
@@ -20,7 +20,7 @@ SQLPad provides:
 SQLPad consists of a generic core application providing the user experience and a vendor specific module implementing
 the parser, analyzer, validator and other vendor specific components. As of now the only supported vendor is Oracle (11g, 12c).
 
-Since the implementation is still very experimental there are tons of missing features. Primary focus of implementation are queries, then DML. But there is some DDL supported at least by grammar.
+Since the implementation is still very experimental there are tons of missing features. Primary focus of implementation are queries, then DML. There is also limited support of PL/SQL. But there is some DDL supported at least by grammar.
 
 Commands
 --------
@@ -210,8 +210,8 @@ Each connection string requires an infrastructure factory configuration record:
 		<infrastructureConfigurations>
 			<infrastructure ConnectionStringName="Connection name 1" InfrastructureFactory="SqlPad.Oracle.OracleInfrastructureFactory, SqlPad.Oracle" />
 			<infrastructure ConnectionStringName="Connection name 2" InfrastructureFactory="SqlPad.Oracle.OracleInfrastructureFactory, SqlPad.Oracle" IsProduction="true" />
+			<!-- other connection configurations -->
 		</infrastructureConfigurations>
-		<!-- other connection configurations -->
 	</databaseConnectionConfiguration>
 
 `IsProduction` - indicates connection to a production system using red label

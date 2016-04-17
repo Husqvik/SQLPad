@@ -12,26 +12,47 @@
              d:DesignHeight="160" d:DesignWidth="240"
              DataContext="{Binding RelativeSource={RelativeSource Self}}">
 	<UserControl.Resources>
-		<sqlPad:DataSpaceConverter x:Key="DataSpaceConverter" />
-		<sqlPad:ListAggregationConverter x:Key="ListAggregationConverter" />
-		<oracle:SessionIdSummaryConverter x:Key="SessionIdSummaryConverter" />
-		<sqlPad:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
-		<sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintIntegerConverter" />
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="Themes/Common.xaml"/>
+			</ResourceDictionary.MergedDictionaries>
 
-		<Style x:Key="CellRealOnly">
-			<Setter Property="TextBoxBase.IsReadOnly" Value="True" />
-			<Setter Property="TextBoxBase.IsReadOnlyCaretVisible" Value="True" />
-		</Style>
+			<sqlPad:DataSpaceConverter x:Key="DataSpaceConverter" />
+			<sqlPad:ListAggregationConverter x:Key="ListAggregationConverter" />
+			<oracle:SessionIdSummaryConverter x:Key="SessionIdSummaryConverter" />
+			<sqlPad:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
+			<sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintIntegerConverter" />
 
-		<Style x:Key="CellRealOnlyRightJustification" BasedOn="{StaticResource CellRealOnly}">
-			<Setter Property="Block.TextAlignment" Value="Right" />
-			<Setter Property="Control.HorizontalContentAlignment" Value="Right" />
-		</Style>
+			<Style x:Key="CellRealOnly">
+				<Setter Property="TextBoxBase.IsReadOnly" Value="True" />
+				<Setter Property="TextBoxBase.IsReadOnlyCaretVisible" Value="True" />
+			</Style>
+
+			<Style x:Key="CellRealOnlyRightJustification" BasedOn="{StaticResource CellRealOnly}">
+				<Setter Property="Block.TextAlignment" Value="Right" />
+				<Setter Property="Control.HorizontalContentAlignment" Value="Right" />
+			</Style>
+			
+			<Style x:Key="BasicDataGridSettings" TargetType="DataGrid">
+				<Setter Property="CanUserDeleteRows" Value="False" />
+				<Setter Property="CanUserAddRows" Value="False" />
+				<Setter Property="CanUserResizeRows" Value="False" />
+				<Setter Property="AutoGenerateColumns" Value="False" />
+				<Setter Property="SelectionUnit" Value="FullRow" />
+				<Setter Property="SelectionMode" Value="Single" />
+				<Setter Property="HorizontalGridLinesBrush" Value="LightGray" />
+				<Setter Property="VerticalGridLinesBrush" Value="LightGray" />
+				<Setter Property="RowHeaderWidth" Value="0" />
+				<Setter Property="AlternationCount" Value="2" />
+				<Setter Property="AlternatingRowBackground" Value="#FAFAFA" />
+			</Style>
+
+		</ResourceDictionary>
 	</UserControl.Resources>
 
 	<Grid>
 		<Grid.Resources>
-			<Style x:Key="HideIfSessionDetailsNotAvailable">
+			<Style x:Key="HideIfNoSessionDetails">
 				<Style.Triggers>
 					<DataTrigger Binding="{Binding SessionItems}" Value="{x:Null}">
 						<Setter Property="UIElement.Visibility" Value="Collapsed" />
@@ -44,10 +65,26 @@
 					</DataTrigger>
 				</Style.Triggers>
 			</Style>
+
+			<Style x:Key="HideIfNoLongOperation">
+				<Style.Triggers>
+					<DataTrigger Binding="{Binding QueryCoordinatorLongOperations.AllLongOperationItems}" Value="{x:Null}">
+						<Setter Property="UIElement.Visibility" Value="Collapsed" />
+					</DataTrigger>
+					<DataTrigger Binding="{Binding QueryCoordinatorLongOperations.AllLongOperationItems.Count}" Value="0">
+						<Setter Property="UIElement.Visibility" Value="Collapsed" />
+					</DataTrigger>
+					<DataTrigger Binding="{Binding ElementName=ExpanderLongOperations, Path=IsExpanded}" Value="False">
+						<Setter Property="GridSplitter.Visibility" Value="Collapsed" />
+					</DataTrigger>
+				</Style.Triggers>
+			</Style>
 		</Grid.Resources>
 		
 		<Grid.RowDefinitions>
 			<RowDefinition Height="*" MinHeight="24" x:Name="RowDefinitionExecutionPlan" />
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" x:Name="RowDefinitionSessionList" />
 			<RowDefinition Height="Auto" />
 			<RowDefinition Height="*" />
 		</Grid.RowDefinitions>
@@ -71,28 +108,30 @@
 			</ScrollViewer>
 		</Expander>
 
-		<GridSplitter x:Name="Splitter" Grid.Column="0" Grid.Row="1" Height="4" HorizontalAlignment="Stretch" ShowsPreview="True" VerticalAlignment="Center" Background="DimGray" Style="{StaticResource HideIfSessionDetailsNotAvailable}" />
+		<GridSplitter x:Name="SplitterSessionDetails" Grid.Row="1" Height="4" HorizontalAlignment="Stretch" ShowsPreview="True" VerticalAlignment="Center" Background="DimGray" Style="{StaticResource HideIfNoSessionDetails}" />
 
-		<Expander x:Name="ExpanderSessionDetails" Grid.Row="2" Header="_Session details" IsExpanded="True" Style="{StaticResource HideIfSessionDetailsNotAvailable}">
+		<Expander x:Name="ExpanderSessionDetails" Grid.Row="2" Header="_Session details" IsExpanded="True">
+			<Expander.Style>
+				<Style BasedOn="{StaticResource HideIfNoSessionDetails}">
+					<Setter Property="Grid.RowSpan" Value="1" />
+					
+					<Style.Triggers>
+						<DataTrigger Binding="{Binding QueryCoordinatorLongOperations.AllLongOperationItems.Count}" Value="0">
+							<Setter Property="Grid.RowSpan" Value="3" />
+						</DataTrigger>
+					</Style.Triggers>
+				</Style>
+			</Expander.Style>
+			
 			<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsDeferredScrollingEnabled="True">
 				<StackPanel>
 					<DataGrid x:Name="SessionDataGrid"
-										CanUserDeleteRows="False"
-										CanUserAddRows="False"
-										CanUserResizeRows="False"
-										SelectionUnit="FullRow"
-										SelectionMode="Single"
-										HorizontalGridLinesBrush="LightGray"
-										VerticalGridLinesBrush="LightGray"
-										AutoGenerateColumns="False"
-										RowHeaderWidth="0"
-										ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-										ItemsSource="{Binding SessionItems}"
-										MaxColumnWidth="{Binding ElementName=SessionDataGrid, Path=ActualWidth}"
-										Sorting="SessionDataGridSortingHandler"
-										AlternationCount="2"
-										AlternatingRowBackground="#FAFAFA"
-										BeginningEdit="SessionDataGridBeginningEditCancelTextInputHandler">
+					          Style="{StaticResource BasicDataGridSettings}"
+					          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+					          ItemsSource="{Binding SessionItems}"
+					          MaxColumnWidth="{Binding ElementName=SessionDataGrid, Path=ActualWidth}"
+					          Sorting="SessionDataGridSortingHandler"
+					          BeginningEdit="SessionDataGridBeginningEditCancelTextInputHandler">
 						<DataGrid.Columns>
 							<DataGridTextColumn Header="Instance" Binding="{Binding SessionIdentifier.Instance, Converter={StaticResource SessionIdSummaryConverter}}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
 							<DataGridTextColumn Header="SID" Binding="{Binding SessionIdentifier.SessionId, Converter={StaticResource SessionIdSummaryConverter}}" ElementStyle="{StaticResource CellRealOnlyRightJustification}" EditingElementStyle="{StaticResource CellRealOnlyRightJustification}" HeaderStyle="{StaticResource CellRealOnlyRightJustification}" />
@@ -151,23 +190,14 @@
 					</DataGrid>
 
 					<DataGrid x:Name="SummaryDataGrid"
-										CanUserDeleteRows="False"
-										CanUserSortColumns="False"
-										CanUserAddRows="False"
-										CanUserResizeRows="False"
-										SelectionUnit="FullRow"
-										SelectionMode="Single"
-										HorizontalGridLinesBrush="LightGray"
-										VerticalGridLinesBrush="LightGray"
-										AutoGenerateColumns="False"
-										HeadersVisibility="None"
-										ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-										ItemsSource="{Binding SummarySession}"
-										Width="{Binding ElementName=SessionDataGrid, Path=ActualWidth}"
-										BeginningEdit="SessionDataGridBeginningEditCancelTextInputHandler">
+					          HeadersVisibility="None"
+					          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+					          ItemsSource="{Binding SummarySession}"
+					          Width="{Binding ElementName=SessionDataGrid, Path=ActualWidth}"
+					          BeginningEdit="SessionDataGridBeginningEditCancelTextInputHandler">
 
 						<DataGrid.Style>
-							<Style>
+							<Style BasedOn="{StaticResource BasicDataGridSettings}" TargetType="DataGrid">
 								<Style.Triggers>
 									<DataTrigger Binding="{Binding IsParallel}" Value="False">
 										<Setter Property="DataGrid.Visibility" Value="Collapsed" />
@@ -210,6 +240,36 @@
 					</DataGrid>
 				</StackPanel>
 			</ScrollViewer>
+		</Expander>
+
+		<GridSplitter x:Name="SplitterLongOperations" Grid.Row="3" Height="4" HorizontalAlignment="Stretch" ShowsPreview="True" VerticalAlignment="Center" Background="DimGray" Style="{StaticResource HideIfNoLongOperation}" />
+
+		<Expander x:Name="ExpanderLongOperations" Grid.Row="4" Header="_Long operations" IsExpanded="True" Style="{StaticResource HideIfNoLongOperation}">
+			<DataGrid x:Name="LongOperationDataGrid"
+			          Style="{StaticResource BasicDataGridSettings}"
+			          ItemsSource="{Binding QueryCoordinatorLongOperations.AllLongOperationItems}"
+			          MaxColumnWidth="{Binding ElementName=LongOperationDataGrid, Path=ActualWidth}"
+			          BeginningEdit="SessionDataGridBeginningEditCancelTextInputHandler">
+				<DataGrid.Columns>
+					<DataGridTemplateColumn Header="Progress">
+						<DataGridTemplateColumn.CellTemplate>
+							<DataTemplate DataType="modelDataProviders:SqlMonitorSessionLongOperationItem">
+								<Grid>
+									<Border BorderBrush="Black" BorderThickness="1">
+										<ProgressBar Maximum="{Binding TotalWork}" Value="{Binding SoFar}" Width="120" />
+									</Border>
+									<TextBlock Text="{Binding ProgressRatio, Mode=OneWay, Converter={StaticResource RatioConverter}}" TextAlignment="Center" FontSize="9" VerticalAlignment="Center" />
+								</Grid>
+							</DataTemplate>
+						</DataGridTemplateColumn.CellTemplate>
+					</DataGridTemplateColumn>
+					<DataGridTextColumn Header="Message" Binding="{Binding Message}" ElementStyle="{StaticResource CellRealOnly}" EditingElementStyle="{StaticResource CellRealOnly}" HeaderStyle="{StaticResource CellRealOnly}" />
+					<DataGridTextColumn Header="Start time" Binding="{Binding StartTime, Converter={StaticResource DateTimeConverter}}" ElementStyle="{StaticResource CellRealOnly}" EditingElementStyle="{StaticResource CellRealOnly}" HeaderStyle="{StaticResource CellRealOnly}" />
+					<DataGridTextColumn Header="Elapsed" Binding="{Binding Elapsed}" ElementStyle="{StaticResource CellRealOnly}" EditingElementStyle="{StaticResource CellRealOnly}" HeaderStyle="{StaticResource CellRealOnly}" />
+					<DataGridTextColumn Header="Last update" Binding="{Binding LastUpdateTime, Converter={StaticResource DateTimeConverter}}" ElementStyle="{StaticResource CellRealOnly}" EditingElementStyle="{StaticResource CellRealOnly}" HeaderStyle="{StaticResource CellRealOnly}" />
+					<DataGridTextColumn Header="Remaining" Binding="{Binding TimeRemaining}" ElementStyle="{StaticResource CellRealOnly}" EditingElementStyle="{StaticResource CellRealOnly}" HeaderStyle="{StaticResource CellRealOnly}" />
+				</DataGrid.Columns>
+			</DataGrid>
 		</Expander>
 	</Grid>
 </UserControl>

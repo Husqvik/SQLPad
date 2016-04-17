@@ -4,1012 +4,1014 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:executionPlan="clr-namespace:SqlPad.Oracle.ExecutionPlan"
-             xmlns:sqlPad="clr-namespace:SqlPad;assembly=SqlPad"
              xmlns:modelDataProviders="clr-namespace:SqlPad.Oracle.ModelDataProviders"
              xmlns:componentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
              xmlns:system="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d"
              d:DesignHeight="160" d:DesignWidth="240">
 	<UserControl.Resources>
-		<sqlPad:DataSpaceConverter x:Key="DataSpaceConverter" />
-		<sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintNumericConverter" />
-		<sqlPad:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
-		<sqlPad:RatioConverter x:Key="RatioConverter" />
-		<executionPlan:LastExecutionWorkAreaInfoConverter x:Key="LastExecutionWorkAreaInfoConverter" />
-		<executionPlan:CumulativeExecutionWorkAreaInfoConverter x:Key="CumulativeExecutionWorkAreaInfoConverter" />
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="../Themes/Common.xaml"/>
+			</ResourceDictionary.MergedDictionaries>
 
-		<LinearGradientBrush x:Key="ToggleButtonFillBrush" EndPoint="0.5,2" StartPoint="0.5,0">
-			<GradientStop Color="White" Offset="0" />
-			<GradientStop Color="Silver" Offset="0.5" />
-			<GradientStop Color="LightGray" Offset="1" />
-		</LinearGradientBrush>
+			<executionPlan:LastExecutionWorkAreaInfoConverter x:Key="LastExecutionWorkAreaInfoConverter" />
+			<executionPlan:CumulativeExecutionWorkAreaInfoConverter x:Key="CumulativeExecutionWorkAreaInfoConverter" />
 
-		<!-- Toggle Button -->
-		<ControlTemplate x:Key="TreeNodeExpandButtonTemplate" TargetType="ToggleButton">
-			<Grid Width="15" Height="17" SnapsToDevicePixels="True">
-				<Rectangle x:Name="Border" Width="13" Height="13" Stroke="#919191" SnapsToDevicePixels="true" Fill="{StaticResource ToggleButtonFillBrush}" />
-				<Rectangle x:Name="ExpandPath" Width="1" Height="9" Stroke="Black" SnapsToDevicePixels="true" />
-				<Rectangle x:Name="HorizontalStreak" Width="9" Height="1" Stroke="Black" SnapsToDevicePixels="true" />
-			</Grid>
-			<ControlTemplate.Triggers>
-				<Trigger Property="IsChecked" Value="True">
-					<Setter Property="Visibility" TargetName="ExpandPath" Value="Collapsed" />
-				</Trigger>
-				<Trigger Property="IsMouseOver" Value="true">
-					<Setter Property="Stroke" Value="Black" TargetName="Border" />
-				</Trigger>
-				<Trigger Property="IsPressed" Value="true">
-					<Setter Property="Stroke" Value="Red" TargetName="Border" />
-					<Setter Property="Stroke" Value="Red" TargetName="HorizontalStreak" />
-					<Setter Property="Stroke" Value="Red" TargetName="ExpandPath" />
-				</Trigger>
-			</ControlTemplate.Triggers>
-		</ControlTemplate>
+			<LinearGradientBrush x:Key="ToggleButtonFillBrush" EndPoint="0.5,2" StartPoint="0.5,0">
+				<GradientStop Color="White" Offset="0" />
+				<GradientStop Color="Silver" Offset="0.5" />
+				<GradientStop Color="LightGray" Offset="1" />
+			</LinearGradientBrush>
 
-		<Style x:Key="ExpandCollapseToggleStyle" TargetType="ToggleButton">
-			<Setter Property="Focusable" Value="False" />
-			<Setter Property="Template" Value="{StaticResource TreeNodeExpandButtonTemplate}" />
-		</Style>
+			<!-- Toggle Button -->
+			<ControlTemplate x:Key="TreeNodeExpandButtonTemplate" TargetType="ToggleButton">
+				<Grid Width="15" Height="17" SnapsToDevicePixels="True">
+					<Rectangle x:Name="Border" Width="13" Height="13" Stroke="#919191" SnapsToDevicePixels="true" Fill="{StaticResource ToggleButtonFillBrush}" />
+					<Rectangle x:Name="ExpandPath" Width="1" Height="9" Stroke="Black" SnapsToDevicePixels="true" />
+					<Rectangle x:Name="HorizontalStreak" Width="9" Height="1" Stroke="Black" SnapsToDevicePixels="true" />
+				</Grid>
+				<ControlTemplate.Triggers>
+					<Trigger Property="IsChecked" Value="True">
+						<Setter Property="Visibility" TargetName="ExpandPath" Value="Collapsed" />
+					</Trigger>
+					<Trigger Property="IsMouseOver" Value="true">
+						<Setter Property="Stroke" Value="Black" TargetName="Border" />
+					</Trigger>
+					<Trigger Property="IsPressed" Value="true">
+						<Setter Property="Stroke" Value="Red" TargetName="Border" />
+						<Setter Property="Stroke" Value="Red" TargetName="HorizontalStreak" />
+						<Setter Property="Stroke" Value="Red" TargetName="ExpandPath" />
+					</Trigger>
+				</ControlTemplate.Triggers>
+			</ControlTemplate>
 
-		<ControlTemplate x:Key="ExpanderButtonControlTemplate" TargetType="{x:Type ToggleButton}">
-			<Border x:Name="ExpanderButtonBorder"
-			        Background="{TemplateBinding Background}"
-			        BorderBrush="{TemplateBinding BorderBrush}"
-			        BorderThickness="{TemplateBinding BorderThickness}"
-			        Padding="{TemplateBinding Padding}">
+			<Style x:Key="ExpandCollapseToggleStyle" TargetType="ToggleButton">
+				<Setter Property="Focusable" Value="False" />
+				<Setter Property="Template" Value="{StaticResource TreeNodeExpandButtonTemplate}" />
+			</Style>
+
+			<ControlTemplate x:Key="ExpanderButtonControlTemplate" TargetType="{x:Type ToggleButton}">
+				<Border x:Name="ExpanderButtonBorder"
+						Background="{TemplateBinding Background}"
+						BorderBrush="{TemplateBinding BorderBrush}"
+						BorderThickness="{TemplateBinding BorderThickness}"
+						Padding="{TemplateBinding Padding}">
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+						</Grid.ColumnDefinitions>
+						<Rectangle Fill="Transparent" Grid.ColumnSpan="2" />
+						<Rectangle x:Name="Border" Grid.Column="0" Width="13" Height="13" Stroke="#919191" SnapsToDevicePixels="true" Fill="{StaticResource ToggleButtonFillBrush}" />
+						<Rectangle Grid.Column="0" x:Name="ExpandPath" Width="1" Height="9" Stroke="Black" SnapsToDevicePixels="true" />
+						<Rectangle x:Name="HorizontalStreak" Grid.Column="0" Width="9" Height="1" Stroke="Black" SnapsToDevicePixels="true" />
+						<ContentPresenter x:Name="HeaderContent" Grid.Column="1" Margin="4,0,0,0" ContentSource="Content" VerticalAlignment="Center" />
+					</Grid>
+				</Border>
+				<ControlTemplate.Triggers>
+					<Trigger Property="IsChecked" Value="True">
+						<Setter Property="Visibility" TargetName="ExpandPath" Value="Collapsed" />
+					</Trigger>
+					<Trigger Property="IsMouseOver" Value="true">
+						<Setter Property="Stroke" Value="Black" TargetName="Border" />
+					</Trigger>
+					<Trigger Property="IsPressed" Value="true">
+						<Setter Property="Stroke" Value="Red" TargetName="Border" />
+						<Setter Property="Stroke" Value="Red" TargetName="HorizontalStreak" />
+						<Setter Property="Stroke" Value="Red" TargetName="ExpandPath" />
+					</Trigger>
+				</ControlTemplate.Triggers>
+			</ControlTemplate>
+
+			<!-- Simple Expander Template-->
+			<ControlTemplate x:Key="ExpanderTemplate" TargetType="{x:Type Expander}">
+				<DockPanel>
+					<ToggleButton x:Name="ExpanderButton"
+								  DockPanel.Dock="Top"
+								  Template="{StaticResource ExpanderButtonControlTemplate}"
+								  Content="{TemplateBinding Header}"
+								  IsChecked="{Binding Path=IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
+								  OverridesDefaultStyle="True"
+								  Padding="1.5,0" />
+					<ContentPresenter x:Name="ExpanderContent" Visibility="Collapsed" HorizontalAlignment="Left" />
+				</DockPanel>
+				<ControlTemplate.Triggers>
+					<Trigger Property="IsExpanded" Value="True">
+						<Setter TargetName="ExpanderContent" Property="Visibility" Value="Visible" />
+					</Trigger>
+				</ControlTemplate.Triggers>
+			</ControlTemplate>
+
+			<Style x:Key="InactivePlanItem" TargetType="StackPanel">
+				<Style.Triggers>
+					<DataTrigger Binding="{Binding IsInactive}" Value="True">
+						<Setter Property="TextBlock.Opacity" Value="0.45" />
+					</DataTrigger>
+				</Style.Triggers>
+			</Style>
+
+			<Style x:Key="PlanItemBaseStyle">
+				<Style.Setters>
+					<Setter Property="TextBlock.FontFamily" Value="Arial" />
+				</Style.Setters>
+			</Style>
+
+			<Style x:Key="ItemHeaderOther" BasedOn="{StaticResource PlanItemBaseStyle}">
+				<Style.Setters>
+					<Setter Property="TextBlock.FontSize" Value="12" />
+				</Style.Setters>
+			</Style>
+
+			<Style x:Key="ItemHeaderBold" BasedOn="{StaticResource ItemHeaderOther}">
+				<Style.Setters>
+					<Setter Property="TextBlock.Foreground" Value="DarkBlue" />
+					<Setter Property="TextBlock.FontWeight" Value="Bold" />
+				</Style.Setters>
+			</Style>
+
+			<Style x:Key="ColoredItemHeaderBold" TargetType="TextBlock" BasedOn="{StaticResource ItemHeaderBold}">
+				<Style.Triggers>
+					<MultiDataTrigger>
+						<MultiDataTrigger.Conditions>
+							<Condition Binding="{Binding Operation}" Value="TABLE ACCESS" />
+							<Condition Binding="{Binding Options}" Value="FULL" />
+						</MultiDataTrigger.Conditions>
+						<MultiDataTrigger.Setters>
+							<Setter Property="Foreground" Value="Red" />
+						</MultiDataTrigger.Setters>
+					</MultiDataTrigger>
+					<MultiDataTrigger>
+						<MultiDataTrigger.Conditions>
+							<Condition Binding="{Binding Operation}" Value="MAT_VIEW ACCESS" />
+							<Condition Binding="{Binding Options}" Value="FULL" />
+						</MultiDataTrigger.Conditions>
+						<MultiDataTrigger.Setters>
+							<Setter Property="Foreground" Value="Red" />
+						</MultiDataTrigger.Setters>
+					</MultiDataTrigger>
+					<DataTrigger Binding="{Binding Options}" Value="INMEMORY FULL">
+						<Setter Property="Foreground" Value="ForestGreen" />
+					</DataTrigger>
+				</Style.Triggers>
+			</Style>
+			<Style x:Key="ItemHeader" BasedOn="{StaticResource ItemHeaderOther}">
+				<Style.Setters>
+					<Setter Property="TextBlock.Foreground" Value="DarkBlue" />
+				</Style.Setters>
+			</Style>
+			<Style x:Key="OtherLabelStyle" BasedOn="{StaticResource PlanItemBaseStyle}">
+				<Style.Setters>
+					<Setter Property="TextBlock.FontSize" Value="11" />
+				</Style.Setters>
+			</Style>
+			<Style x:Key="PlanStatisticValueStyle" BasedOn="{StaticResource OtherLabelStyle}">
+				<Style.Setters>
+					<Setter Property="TextBlock.Foreground" Value="DarkRed" />
+				</Style.Setters>
+			</Style>
+
+			<Style x:Key="InactiveMarker" TargetType="Border">
+				<Style.Triggers>
+					<DataTrigger Binding="{Binding IsInactive}" Value="False">
+						<Setter Property="Border.Visibility" Value="Collapsed" />
+					</DataTrigger>
+				</Style.Triggers>
+				<Setter Property="CornerRadius" Value="2" />
+				<Setter Property="Padding" Value="4,0,4,0" />
+				<Setter Property="Margin" Value="0,0,2,0" />
+				<Setter Property="Background" Value="DimGray" />
+			</Style>
+
+			<Style x:Key="InactiveHeader" TargetType="TextBlock" BasedOn="{StaticResource OtherLabelStyle}">
+				<Style.Setters>
+					<Setter Property="Foreground" Value="White" />
+					<Setter Property="FontWeight" Value="Bold" />
+					<Setter Property="VerticalAlignment" Value="Center" />
+				</Style.Setters>
+			</Style>
+
+			<DataTemplate x:Key="LastExecutionValuesTemplate" DataType="executionPlan:ExecutionStatisticsPlanItem">
+				<StackPanel Orientation="Horizontal">
+					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding LastStarts, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text="Starts: " />
+						<Run Text="{Binding LastStarts, Converter={StaticResource PrettyPrintNumericConverter}}" />
+						<Run Text=" " />
+					</TextBlock>
+					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding LastOutputRows, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text="Output rows: " />
+						<Run Text="{Binding LastOutputRows, Converter={StaticResource PrettyPrintNumericConverter}}" />
+						<Run Text=" " />
+					</TextBlock>
+					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding LastConsistentReadBufferGets, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text="Consistent reads: " />
+						<Run Text="{Binding LastConsistentReadBufferGets, Converter={StaticResource PrettyPrintNumericConverter}}" />
+						<Run Text=" " />
+					</TextBlock>
+					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding LastCurrentReadBufferGets, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text="Current reads: " />
+						<Run Text="{Binding LastCurrentReadBufferGets, Converter={StaticResource PrettyPrintNumericConverter}}" />
+						<Run Text=" " />
+					</TextBlock>
+					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding LastDiskReads, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text="Disk reads: " />
+						<Run Text="{Binding LastDiskReads, Converter={StaticResource PrettyPrintNumericConverter}}" />
+						<Run Text=" " />
+					</TextBlock>
+					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding LastDiskWrites, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text="Disk writes: " />
+						<Run Text="{Binding LastDiskWrites, Converter={StaticResource PrettyPrintNumericConverter}}" />
+						<Run Text=" " />
+					</TextBlock>
+					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding LastElapsedTime, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text="Elapsed: " />
+						<Run Text="{Binding LastElapsedTime}" />
+						<Run Text=" " />
+					</TextBlock>
+					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding LastMemoryUsedBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text="Memory: " />
+						<Run Text="{Binding LastMemoryUsedBytes, Converter={StaticResource DataSpaceConverter}}" />
+						<Run Text=" " />
+					</TextBlock>
+					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding LastTemporarySizeBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text="Temp: " />
+						<Run Text="{Binding LastTemporarySizeBytes, Converter={StaticResource DataSpaceConverter}}" />
+						<Run Text=" " />
+					</TextBlock>
+					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding LastMemoryUsedBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text="Work areas: " />
+						<Run Text="{Binding Converter={StaticResource LastExecutionWorkAreaInfoConverter}, Mode=OneWay}" />
+						<Run Text=" " />
+					</TextBlock>
+					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding LastParallelDegree, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text="DOP: " />
+						<Run Text="{Binding LastParallelDegree}" />
+						<Run Text=" " />
+					</TextBlock>
+				</StackPanel>
+			</DataTemplate>
+
+			<DataTemplate x:Key="CumulativeValuesTemplate" DataType="executionPlan:ExecutionStatisticsPlanItem">
+				<StackPanel Orientation="Horizontal">
+					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding TotalStarts, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text="Starts: " />
+						<Run Text="{Binding TotalStarts, Converter={StaticResource PrettyPrintNumericConverter}}" />
+						<Run Text=" " />
+					</TextBlock>
+					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding TotalOutputRows, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text="Output rows: " />
+						<Run Text="{Binding TotalOutputRows, Converter={StaticResource PrettyPrintNumericConverter}}" />
+						<Run Text=" " />
+					</TextBlock>
+					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding TotalConsistentReadBufferGets, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text="Consistent reads: " />
+						<Run Text="{Binding TotalConsistentReadBufferGets, Converter={StaticResource PrettyPrintNumericConverter}}" />
+						<Run Text=" " />
+					</TextBlock>
+					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding TotalCurrentReadBufferGets, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text="Current reads: " />
+						<Run Text="{Binding TotalCurrentReadBufferGets, Converter={StaticResource PrettyPrintNumericConverter}}" />
+						<Run Text=" " />
+					</TextBlock>
+					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding TotalDiskReads, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text="Disk reads: " />
+						<Run Text="{Binding TotalDiskReads, Converter={StaticResource PrettyPrintNumericConverter}}" />
+						<Run Text=" " />
+					</TextBlock>
+					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding TotalDiskWrites, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text="Disk writes: " />
+						<Run Text="{Binding TotalDiskWrites, Converter={StaticResource PrettyPrintNumericConverter}}" />
+						<Run Text=" " />
+					</TextBlock>
+					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding MaxTemporarySizeBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text="Temp: " />
+						<Run Text="{Binding MaxTemporarySizeBytes, Converter={StaticResource DataSpaceConverter}}" />
+						<Run Text=" " />
+					</TextBlock>
+					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding TotalElapsedTime, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text="Elapsed: " />
+						<Run Text="{Binding TotalElapsedTime}" />
+						<Run Text=" " />
+					</TextBlock>
+					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding TotalWorkAreaExecutions, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text="Work area executions: " />
+						<Run Text="{Binding Converter={StaticResource CumulativeExecutionWorkAreaInfoConverter}, Mode=OneWay}" />
+						<Run Text=" " />
+					</TextBlock>
+				</StackPanel>
+			</DataTemplate>
+
+			<HierarchicalDataTemplate x:Key="ExplainPlanItemDataTemplate" ItemsSource="{Binding ChildItems}" DataType="executionPlan:ExecutionPlanItem">
+				<StackPanel>
+					<StackPanel Orientation="Horizontal">
+						<Border Style="{StaticResource InactiveMarker}">
+							<TextBlock Text ="ADAPTIVE" Style="{StaticResource InactiveHeader}" />
+						</Border>
+						<TextBlock Style="{StaticResource ColoredItemHeaderBold}">
+							<Run Text="{Binding Operation}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource ColoredItemHeaderBold}" Visibility="{Binding Options, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="{Binding Options}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource ItemHeaderBold}" Visibility="{Binding ObjectType, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="{Binding ObjectType}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource ItemHeader}" Visibility="{Binding Optimizer, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="{Binding Optimizer}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource ItemHeader}" Visibility="{Binding ObjectOwner, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="{Binding ObjectOwner}" /><Run Text="." />
+						</TextBlock>
+						<TextBlock Style="{StaticResource ItemHeader}" Visibility="{Binding ObjectName, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="{Binding ObjectName}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource ItemHeader}" Visibility="{Binding ObjectAlias, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="{Binding ObjectAlias}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource ItemHeaderOther}" Visibility="{Binding QueryBlockName, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="Query Block: " />
+							<Run Text="{Binding QueryBlockName}" />
+						</TextBlock>
+					</StackPanel>
+					<StackPanel Orientation="Horizontal">
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Cost, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="Cost: " />
+							<Run Text="{Binding Cost, Converter={StaticResource PrettyPrintNumericConverter}}" /><Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding CostRatio, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="(" /><Run Text="{Binding CostRatio, Converter={StaticResource RatioConverter}}" /><Run Text=") " />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Cardinality, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="Cardinality: " />
+							<Run Text="{Binding Cardinality, Converter={StaticResource PrettyPrintNumericConverter}}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Bytes, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="Data Volume: " />
+							<Run Text="{Binding Bytes, Converter={StaticResource DataSpaceConverter}}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding TempSpace, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="Temp: " />
+							<Run Text="{Binding TempSpace, Converter={StaticResource DataSpaceConverter}}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Time, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="Time: " />
+							<Run Text="{Binding Time}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding CpuCost, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="CPU Cost: " />
+							<Run Text="{Binding CpuCost, Converter={StaticResource PrettyPrintNumericConverter}}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding IoCost, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="IO Cost: " />
+							<Run Text="{Binding IoCost, Converter={StaticResource PrettyPrintNumericConverter}}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding PartitionStart, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="Partitions: " />
+							<Run Text="{Binding PartitionStart}" />
+							<Run Text="-" />
+							<Run Text="{Binding PartitionStop}" />
+							<Run Text=" " />
+						</TextBlock>
+					</StackPanel>
+					<TextBlock Style="{StaticResource OtherLabelStyle}" Visibility="{Binding AccessPredicates, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text="Access Predicates:" />
+						<Run Text="{Binding AccessPredicates}" />
+					</TextBlock>
+					<TextBlock Style="{StaticResource OtherLabelStyle}" Visibility="{Binding FilterPredicates, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text="Filter Predicates:" />
+						<Run Text="{Binding FilterPredicates}" />
+					</TextBlock>
+				</StackPanel>
+			</HierarchicalDataTemplate>
+
+			<HierarchicalDataTemplate x:Key="ExecutionStatisticsPlanItemDataTemplate" ItemsSource="{Binding ChildItems}" DataType="executionPlan:ExecutionStatisticsPlanItem">
+				<StackPanel>
+					<StackPanel Orientation="Horizontal">
+						<Border Style="{StaticResource InactiveMarker}">
+							<TextBlock Text ="INACTIVE" Style="{StaticResource InactiveHeader}" />
+						</Border>
+						<TextBlock Style="{StaticResource ColoredItemHeaderBold}">
+							<Run Text="{Binding Operation}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource ColoredItemHeaderBold}" Visibility="{Binding Options, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="{Binding Options}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource ItemHeaderBold}" Visibility="{Binding ObjectType, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="{Binding ObjectType}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource ItemHeader}" Visibility="{Binding Optimizer, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="{Binding Optimizer}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource ItemHeader}" Visibility="{Binding ObjectOwner, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="{Binding ObjectOwner}" /><Run Text="." />
+						</TextBlock>
+						<TextBlock Style="{StaticResource ItemHeader}" Visibility="{Binding ObjectName, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="{Binding ObjectName}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource ItemHeader}" Visibility="{Binding ObjectAlias, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="{Binding ObjectAlias}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource ItemHeaderOther}" Visibility="{Binding QueryBlockName, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="Query Block: " />
+							<Run Text="{Binding QueryBlockName}" />
+						</TextBlock>
+					</StackPanel>
+					<StackPanel Orientation="Horizontal">
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Cost, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="Cost: " />
+							<Run Text="{Binding Cost, Converter={StaticResource PrettyPrintNumericConverter}}" /><Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding CostRatio, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="(" /><Run Text="{Binding CostRatio, Converter={StaticResource RatioConverter}}" /><Run Text=") " />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Cardinality, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="Cardinality: " />
+							<Run Text="{Binding Cardinality, Converter={StaticResource PrettyPrintNumericConverter}}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Bytes, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="Data Volume: " />
+							<Run Text="{Binding Bytes, Converter={StaticResource DataSpaceConverter}}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding TempSpace, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="Temp: " />
+							<Run Text="{Binding TempSpace, Converter={StaticResource DataSpaceConverter}}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Time, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="Time: " />
+							<Run Text="{Binding Time}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding CpuCost, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="CPU Cost: " />
+							<Run Text="{Binding CpuCost, Converter={StaticResource PrettyPrintNumericConverter}}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding IoCost, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="IO Cost: " />
+							<Run Text="{Binding IoCost, Converter={StaticResource PrettyPrintNumericConverter}}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding PartitionStart, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="Partitions: " />
+							<Run Text="{Binding PartitionStart}" />
+							<Run Text="-" />
+							<Run Text="{Binding PartitionStop}" />
+							<Run Text=" " />
+						</TextBlock>
+					</StackPanel>
+
+					<StackPanel Orientation="Horizontal">
+						<ContentControl Content="{Binding}">
+							<ContentControl.Style>
+								<Style TargetType="ContentControl">
+									<Style.Triggers>
+										<DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=executionPlan:ExecutionPlanTreeView, AncestorLevel=1}, Path=ShowCumulativeExecutions}" Value="False">
+											<Setter Property="ContentTemplate" Value="{StaticResource LastExecutionValuesTemplate}" />
+										</DataTrigger>
+										<DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=executionPlan:ExecutionPlanTreeView, AncestorLevel=1}, Path=ShowCumulativeExecutions}" Value="True">
+											<Setter Property="ContentTemplate" Value="{StaticResource CumulativeValuesTemplate}" />
+										</DataTrigger>
+									</Style.Triggers>
+								</Style>
+							</ContentControl.Style>
+						</ContentControl>
+					</StackPanel>
+
+					<TextBlock Style="{StaticResource OtherLabelStyle}"
+							   Visibility="{Binding AccessPredicates, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text="Access Predicates:" />
+						<Run Text="{Binding AccessPredicates}" />
+					</TextBlock>
+					<TextBlock Style="{StaticResource OtherLabelStyle}"
+							   Visibility="{Binding FilterPredicates, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text="Filter Predicates:" />
+						<Run Text="{Binding FilterPredicates}" />
+					</TextBlock>
+				</StackPanel>
+			</HierarchicalDataTemplate>
+
+			<DataTemplate x:Key="SqlMonitorSingleSessionDataTemplate" DataType="modelDataProviders:SqlMonitorSessionPlanItem">
 				<Grid>
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="Auto" />
-						<ColumnDefinition Width="*" />
-					</Grid.ColumnDefinitions>
-					<Rectangle Fill="Transparent" Grid.ColumnSpan="2" />
-					<Rectangle x:Name="Border" Grid.Column="0" Width="13" Height="13" Stroke="#919191" SnapsToDevicePixels="true" Fill="{StaticResource ToggleButtonFillBrush}" />
-					<Rectangle Grid.Column="0" x:Name="ExpandPath" Width="1" Height="9" Stroke="Black" SnapsToDevicePixels="true" />
-					<Rectangle x:Name="HorizontalStreak" Grid.Column="0" Width="9" Height="1" Stroke="Black" SnapsToDevicePixels="true" />
-					<ContentPresenter x:Name="HeaderContent" Grid.Column="1" Margin="4,0,0,0" ContentSource="Content" VerticalAlignment="Center" />
-				</Grid>
-			</Border>
-			<ControlTemplate.Triggers>
-				<Trigger Property="IsChecked" Value="True">
-					<Setter Property="Visibility" TargetName="ExpandPath" Value="Collapsed" />
-				</Trigger>
-				<Trigger Property="IsMouseOver" Value="true">
-					<Setter Property="Stroke" Value="Black" TargetName="Border" />
-				</Trigger>
-				<Trigger Property="IsPressed" Value="true">
-					<Setter Property="Stroke" Value="Red" TargetName="Border" />
-					<Setter Property="Stroke" Value="Red" TargetName="HorizontalStreak" />
-					<Setter Property="Stroke" Value="Red" TargetName="ExpandPath" />
-				</Trigger>
-			</ControlTemplate.Triggers>
-		</ControlTemplate>
-
-		<!-- Simple Expander Template-->
-		<ControlTemplate x:Key="ExpanderTemplate" TargetType="{x:Type Expander}">
-			<DockPanel>
-				<ToggleButton x:Name="ExpanderButton"
-				              DockPanel.Dock="Top"
-				              Template="{StaticResource ExpanderButtonControlTemplate}"
-				              Content="{TemplateBinding Header}"
-				              IsChecked="{Binding Path=IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
-				              OverridesDefaultStyle="True"
-				              Padding="1.5,0" />
-				<ContentPresenter x:Name="ExpanderContent" Visibility="Collapsed" HorizontalAlignment="Left" />
-			</DockPanel>
-			<ControlTemplate.Triggers>
-				<Trigger Property="IsExpanded" Value="True">
-					<Setter TargetName="ExpanderContent" Property="Visibility" Value="Visible" />
-				</Trigger>
-			</ControlTemplate.Triggers>
-		</ControlTemplate>
-
-		<Style x:Key="InactivePlanItem" TargetType="StackPanel">
-			<Style.Triggers>
-				<DataTrigger Binding="{Binding IsInactive}" Value="True">
-					<Setter Property="TextBlock.Opacity" Value="0.45" />
-				</DataTrigger>
-			</Style.Triggers>
-		</Style>
-
-		<Style x:Key="PlanItemBaseStyle">
-			<Style.Setters>
-				<Setter Property="TextBlock.FontFamily" Value="Arial" />
-			</Style.Setters>
-		</Style>
-
-		<Style x:Key="ItemHeaderOther" BasedOn="{StaticResource PlanItemBaseStyle}">
-			<Style.Setters>
-				<Setter Property="TextBlock.FontSize" Value="12" />
-			</Style.Setters>
-		</Style>
-
-		<Style x:Key="ItemHeaderBold" BasedOn="{StaticResource ItemHeaderOther}">
-			<Style.Setters>
-				<Setter Property="TextBlock.Foreground" Value="DarkBlue" />
-				<Setter Property="TextBlock.FontWeight" Value="Bold" />
-			</Style.Setters>
-		</Style>
-
-		<Style x:Key="ColoredItemHeaderBold" TargetType="TextBlock" BasedOn="{StaticResource ItemHeaderBold}">
-			<Style.Triggers>
-				<MultiDataTrigger>
-					<MultiDataTrigger.Conditions>
-						<Condition Binding="{Binding Operation}" Value="TABLE ACCESS" />
-						<Condition Binding="{Binding Options}" Value="FULL" />
-					</MultiDataTrigger.Conditions>
-					<MultiDataTrigger.Setters>
-						<Setter Property="Foreground" Value="Red" />
-					</MultiDataTrigger.Setters>
-				</MultiDataTrigger>
-				<MultiDataTrigger>
-					<MultiDataTrigger.Conditions>
-						<Condition Binding="{Binding Operation}" Value="MAT_VIEW ACCESS" />
-						<Condition Binding="{Binding Options}" Value="FULL" />
-					</MultiDataTrigger.Conditions>
-					<MultiDataTrigger.Setters>
-						<Setter Property="Foreground" Value="Red" />
-					</MultiDataTrigger.Setters>
-				</MultiDataTrigger>
-				<DataTrigger Binding="{Binding Options}" Value="INMEMORY FULL">
-					<Setter Property="Foreground" Value="ForestGreen" />
-				</DataTrigger>
-			</Style.Triggers>
-		</Style>
-		<Style x:Key="ItemHeader" BasedOn="{StaticResource ItemHeaderOther}">
-			<Style.Setters>
-				<Setter Property="TextBlock.Foreground" Value="DarkBlue" />
-			</Style.Setters>
-		</Style>
-		<Style x:Key="OtherLabelStyle" BasedOn="{StaticResource PlanItemBaseStyle}">
-			<Style.Setters>
-				<Setter Property="TextBlock.FontSize" Value="11" />
-			</Style.Setters>
-		</Style>
-		<Style x:Key="PlanStatisticValueStyle" BasedOn="{StaticResource OtherLabelStyle}">
-			<Style.Setters>
-				<Setter Property="TextBlock.Foreground" Value="DarkRed" />
-			</Style.Setters>
-		</Style>
-
-		<Style x:Key="InactiveMarker" TargetType="Border">
-			<Style.Triggers>
-				<DataTrigger Binding="{Binding IsInactive}" Value="False">
-					<Setter Property="Border.Visibility" Value="Collapsed" />
-				</DataTrigger>
-			</Style.Triggers>
-			<Setter Property="CornerRadius" Value="2" />
-			<Setter Property="Padding" Value="4,0,4,0" />
-			<Setter Property="Margin" Value="0,0,2,0" />
-			<Setter Property="Background" Value="DimGray" />
-		</Style>
-
-		<Style x:Key="InactiveHeader" TargetType="TextBlock" BasedOn="{StaticResource OtherLabelStyle}">
-			<Style.Setters>
-				<Setter Property="Foreground" Value="White" />
-				<Setter Property="FontWeight" Value="Bold" />
-				<Setter Property="VerticalAlignment" Value="Center" />
-			</Style.Setters>
-		</Style>
-
-		<DataTemplate x:Key="LastExecutionValuesTemplate" DataType="executionPlan:ExecutionStatisticsPlanItem">
-			<StackPanel Orientation="Horizontal">
-				<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding LastStarts, Converter={StaticResource ObjectToVisibilityConverter}}">
-					<Run Text="Starts: " />
-					<Run Text="{Binding LastStarts, Converter={StaticResource PrettyPrintNumericConverter}}" />
-					<Run Text=" " />
-				</TextBlock>
-				<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding LastOutputRows, Converter={StaticResource ObjectToVisibilityConverter}}">
-					<Run Text="Output rows: " />
-					<Run Text="{Binding LastOutputRows, Converter={StaticResource PrettyPrintNumericConverter}}" />
-					<Run Text=" " />
-				</TextBlock>
-				<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding LastConsistentReadBufferGets, Converter={StaticResource ObjectToVisibilityConverter}}">
-					<Run Text="Consistent reads: " />
-					<Run Text="{Binding LastConsistentReadBufferGets, Converter={StaticResource PrettyPrintNumericConverter}}" />
-					<Run Text=" " />
-				</TextBlock>
-				<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding LastCurrentReadBufferGets, Converter={StaticResource ObjectToVisibilityConverter}}">
-					<Run Text="Current reads: " />
-					<Run Text="{Binding LastCurrentReadBufferGets, Converter={StaticResource PrettyPrintNumericConverter}}" />
-					<Run Text=" " />
-				</TextBlock>
-				<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding LastDiskReads, Converter={StaticResource ObjectToVisibilityConverter}}">
-					<Run Text="Disk reads: " />
-					<Run Text="{Binding LastDiskReads, Converter={StaticResource PrettyPrintNumericConverter}}" />
-					<Run Text=" " />
-				</TextBlock>
-				<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding LastDiskWrites, Converter={StaticResource ObjectToVisibilityConverter}}">
-					<Run Text="Disk writes: " />
-					<Run Text="{Binding LastDiskWrites, Converter={StaticResource PrettyPrintNumericConverter}}" />
-					<Run Text=" " />
-				</TextBlock>
-				<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding LastElapsedTime, Converter={StaticResource ObjectToVisibilityConverter}}">
-					<Run Text="Elapsed: " />
-					<Run Text="{Binding LastElapsedTime}" />
-					<Run Text=" " />
-				</TextBlock>
-				<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding LastMemoryUsedBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
-					<Run Text="Memory: " />
-					<Run Text="{Binding LastMemoryUsedBytes, Converter={StaticResource DataSpaceConverter}}" />
-					<Run Text=" " />
-				</TextBlock>
-				<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding LastTemporarySizeBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
-					<Run Text="Temp: " />
-					<Run Text="{Binding LastTemporarySizeBytes, Converter={StaticResource DataSpaceConverter}}" />
-					<Run Text=" " />
-				</TextBlock>
-				<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding LastMemoryUsedBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
-					<Run Text="Work areas: " />
-					<Run Text="{Binding Converter={StaticResource LastExecutionWorkAreaInfoConverter}, Mode=OneWay}" />
-					<Run Text=" " />
-				</TextBlock>
-				<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding LastParallelDegree, Converter={StaticResource ObjectToVisibilityConverter}}">
-					<Run Text="DOP: " />
-					<Run Text="{Binding LastParallelDegree}" />
-					<Run Text=" " />
-				</TextBlock>
-			</StackPanel>
-		</DataTemplate>
-
-		<DataTemplate x:Key="CumulativeValuesTemplate" DataType="executionPlan:ExecutionStatisticsPlanItem">
-			<StackPanel Orientation="Horizontal">
-				<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding TotalStarts, Converter={StaticResource ObjectToVisibilityConverter}}">
-					<Run Text="Starts: " />
-					<Run Text="{Binding TotalStarts, Converter={StaticResource PrettyPrintNumericConverter}}" />
-					<Run Text=" " />
-				</TextBlock>
-				<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding TotalOutputRows, Converter={StaticResource ObjectToVisibilityConverter}}">
-					<Run Text="Output rows: " />
-					<Run Text="{Binding TotalOutputRows, Converter={StaticResource PrettyPrintNumericConverter}}" />
-					<Run Text=" " />
-				</TextBlock>
-				<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding TotalConsistentReadBufferGets, Converter={StaticResource ObjectToVisibilityConverter}}">
-					<Run Text="Consistent reads: " />
-					<Run Text="{Binding TotalConsistentReadBufferGets, Converter={StaticResource PrettyPrintNumericConverter}}" />
-					<Run Text=" " />
-				</TextBlock>
-				<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding TotalCurrentReadBufferGets, Converter={StaticResource ObjectToVisibilityConverter}}">
-					<Run Text="Current reads: " />
-					<Run Text="{Binding TotalCurrentReadBufferGets, Converter={StaticResource PrettyPrintNumericConverter}}" />
-					<Run Text=" " />
-				</TextBlock>
-				<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding TotalDiskReads, Converter={StaticResource ObjectToVisibilityConverter}}">
-					<Run Text="Disk reads: " />
-					<Run Text="{Binding TotalDiskReads, Converter={StaticResource PrettyPrintNumericConverter}}" />
-					<Run Text=" " />
-				</TextBlock>
-				<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding TotalDiskWrites, Converter={StaticResource ObjectToVisibilityConverter}}">
-					<Run Text="Disk writes: " />
-					<Run Text="{Binding TotalDiskWrites, Converter={StaticResource PrettyPrintNumericConverter}}" />
-					<Run Text=" " />
-				</TextBlock>
-				<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding MaxTemporarySizeBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
-					<Run Text="Temp: " />
-					<Run Text="{Binding MaxTemporarySizeBytes, Converter={StaticResource DataSpaceConverter}}" />
-					<Run Text=" " />
-				</TextBlock>
-				<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding TotalElapsedTime, Converter={StaticResource ObjectToVisibilityConverter}}">
-					<Run Text="Elapsed: " />
-					<Run Text="{Binding TotalElapsedTime}" />
-					<Run Text=" " />
-				</TextBlock>
-				<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding TotalWorkAreaExecutions, Converter={StaticResource ObjectToVisibilityConverter}}">
-					<Run Text="Work area executions: " />
-					<Run Text="{Binding Converter={StaticResource CumulativeExecutionWorkAreaInfoConverter}, Mode=OneWay}" />
-					<Run Text=" " />
-				</TextBlock>
-			</StackPanel>
-		</DataTemplate>
-
-		<HierarchicalDataTemplate x:Key="ExplainPlanItemDataTemplate" ItemsSource="{Binding ChildItems}" DataType="executionPlan:ExecutionPlanItem">
-			<StackPanel>
-				<StackPanel Orientation="Horizontal">
-					<Border Style="{StaticResource InactiveMarker}">
-						<TextBlock Text ="ADAPTIVE" Style="{StaticResource InactiveHeader}" />
-					</Border>
-					<TextBlock Style="{StaticResource ColoredItemHeaderBold}">
-						<Run Text="{Binding Operation}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource ColoredItemHeaderBold}" Visibility="{Binding Options, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="{Binding Options}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource ItemHeaderBold}" Visibility="{Binding ObjectType, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="{Binding ObjectType}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource ItemHeader}" Visibility="{Binding Optimizer, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="{Binding Optimizer}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource ItemHeader}" Visibility="{Binding ObjectOwner, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="{Binding ObjectOwner}" /><Run Text="." />
-					</TextBlock>
-					<TextBlock Style="{StaticResource ItemHeader}" Visibility="{Binding ObjectName, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="{Binding ObjectName}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource ItemHeader}" Visibility="{Binding ObjectAlias, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="{Binding ObjectAlias}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource ItemHeaderOther}" Visibility="{Binding QueryBlockName, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="Query Block: " />
-						<Run Text="{Binding QueryBlockName}" />
-					</TextBlock>
-				</StackPanel>
-				<StackPanel Orientation="Horizontal">
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Cost, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="Cost: " />
-						<Run Text="{Binding Cost, Converter={StaticResource PrettyPrintNumericConverter}}" /><Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding CostRatio, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="(" /><Run Text="{Binding CostRatio, Converter={StaticResource RatioConverter}}" /><Run Text=") " />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Cardinality, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="Cardinality: " />
-						<Run Text="{Binding Cardinality, Converter={StaticResource PrettyPrintNumericConverter}}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Bytes, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="Data Volume: " />
-						<Run Text="{Binding Bytes, Converter={StaticResource DataSpaceConverter}}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding TempSpace, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="Temp: " />
-						<Run Text="{Binding TempSpace, Converter={StaticResource DataSpaceConverter}}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Time, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="Time: " />
-						<Run Text="{Binding Time}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding CpuCost, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="CPU Cost: " />
-						<Run Text="{Binding CpuCost, Converter={StaticResource PrettyPrintNumericConverter}}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding IoCost, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="IO Cost: " />
-						<Run Text="{Binding IoCost, Converter={StaticResource PrettyPrintNumericConverter}}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding PartitionStart, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="Partitions: " />
-						<Run Text="{Binding PartitionStart}" />
-						<Run Text="-" />
-						<Run Text="{Binding PartitionStop}" />
-						<Run Text=" " />
-					</TextBlock>
-				</StackPanel>
-				<TextBlock Style="{StaticResource OtherLabelStyle}" Visibility="{Binding AccessPredicates, Converter={StaticResource ObjectToVisibilityConverter}}">
-					<Run Text="Access Predicates:" />
-					<Run Text="{Binding AccessPredicates}" />
-				</TextBlock>
-				<TextBlock Style="{StaticResource OtherLabelStyle}" Visibility="{Binding FilterPredicates, Converter={StaticResource ObjectToVisibilityConverter}}">
-					<Run Text="Filter Predicates:" />
-					<Run Text="{Binding FilterPredicates}" />
-				</TextBlock>
-			</StackPanel>
-		</HierarchicalDataTemplate>
-
-		<HierarchicalDataTemplate x:Key="ExecutionStatisticsPlanItemDataTemplate" ItemsSource="{Binding ChildItems}" DataType="executionPlan:ExecutionStatisticsPlanItem">
-			<StackPanel>
-				<StackPanel Orientation="Horizontal">
-					<Border Style="{StaticResource InactiveMarker}">
-						<TextBlock Text ="INACTIVE" Style="{StaticResource InactiveHeader}" />
-					</Border>
-					<TextBlock Style="{StaticResource ColoredItemHeaderBold}">
-						<Run Text="{Binding Operation}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource ColoredItemHeaderBold}" Visibility="{Binding Options, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="{Binding Options}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource ItemHeaderBold}" Visibility="{Binding ObjectType, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="{Binding ObjectType}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource ItemHeader}" Visibility="{Binding Optimizer, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="{Binding Optimizer}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource ItemHeader}" Visibility="{Binding ObjectOwner, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="{Binding ObjectOwner}" /><Run Text="." />
-					</TextBlock>
-					<TextBlock Style="{StaticResource ItemHeader}" Visibility="{Binding ObjectName, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="{Binding ObjectName}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource ItemHeader}" Visibility="{Binding ObjectAlias, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="{Binding ObjectAlias}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource ItemHeaderOther}" Visibility="{Binding QueryBlockName, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="Query Block: " />
-						<Run Text="{Binding QueryBlockName}" />
-					</TextBlock>
-				</StackPanel>
-				<StackPanel Orientation="Horizontal">
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Cost, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="Cost: " />
-						<Run Text="{Binding Cost, Converter={StaticResource PrettyPrintNumericConverter}}" /><Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding CostRatio, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="(" /><Run Text="{Binding CostRatio, Converter={StaticResource RatioConverter}}" /><Run Text=") " />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Cardinality, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="Cardinality: " />
-						<Run Text="{Binding Cardinality, Converter={StaticResource PrettyPrintNumericConverter}}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Bytes, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="Data Volume: " />
-						<Run Text="{Binding Bytes, Converter={StaticResource DataSpaceConverter}}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding TempSpace, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="Temp: " />
-						<Run Text="{Binding TempSpace, Converter={StaticResource DataSpaceConverter}}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Time, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="Time: " />
-						<Run Text="{Binding Time}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding CpuCost, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="CPU Cost: " />
-						<Run Text="{Binding CpuCost, Converter={StaticResource PrettyPrintNumericConverter}}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding IoCost, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="IO Cost: " />
-						<Run Text="{Binding IoCost, Converter={StaticResource PrettyPrintNumericConverter}}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding PartitionStart, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="Partitions: " />
-						<Run Text="{Binding PartitionStart}" />
-						<Run Text="-" />
-						<Run Text="{Binding PartitionStop}" />
-						<Run Text=" " />
-					</TextBlock>
-				</StackPanel>
-
-				<StackPanel Orientation="Horizontal">
-					<ContentControl Content="{Binding}">
-						<ContentControl.Style>
-							<Style TargetType="ContentControl">
-								<Style.Triggers>
-									<DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=executionPlan:ExecutionPlanTreeView, AncestorLevel=1}, Path=ShowCumulativeExecutions}" Value="False">
-										<Setter Property="ContentTemplate" Value="{StaticResource LastExecutionValuesTemplate}" />
-									</DataTrigger>
-									<DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=executionPlan:ExecutionPlanTreeView, AncestorLevel=1}, Path=ShowCumulativeExecutions}" Value="True">
-										<Setter Property="ContentTemplate" Value="{StaticResource CumulativeValuesTemplate}" />
-									</DataTrigger>
-								</Style.Triggers>
-							</Style>
-						</ContentControl.Style>
-					</ContentControl>
-				</StackPanel>
-
-				<TextBlock Style="{StaticResource OtherLabelStyle}"
-				           Visibility="{Binding AccessPredicates, Converter={StaticResource ObjectToVisibilityConverter}}">
-					<Run Text="Access Predicates:" />
-					<Run Text="{Binding AccessPredicates}" />
-				</TextBlock>
-				<TextBlock Style="{StaticResource OtherLabelStyle}"
-				           Visibility="{Binding FilterPredicates, Converter={StaticResource ObjectToVisibilityConverter}}">
-					<Run Text="Filter Predicates:" />
-					<Run Text="{Binding FilterPredicates}" />
-				</TextBlock>
-			</StackPanel>
-		</HierarchicalDataTemplate>
-
-		<DataTemplate x:Key="SqlMonitorSingleSessionDataTemplate" DataType="modelDataProviders:SqlMonitorSessionPlanItem">
-			<Grid>
-				<Grid.Style>
-					<Style>
-						<Style.Triggers>
-							<DataTrigger Binding="{Binding}" Value="{x:Null}">
-								<Setter Property="Grid.Visibility" Value="Collapsed" />
-							</DataTrigger>
-						</Style.Triggers>
-					</Style>
-				</Grid.Style>
-				
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleActivityRatio" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="ActivityRatio" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleActivitySamples" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="ActivitySamples" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleStarts" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="Starts" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleOutputRows" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="OutputRows" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleReadRequests" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="ReadRequests" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleReadBytes" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="ReadBytes" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleWriteRequests" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="WriteRequests" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleWriteBytes" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="WriteBytes" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleIoInterconnectBytes" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="IoInterconnectBytes" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleWorkAreaMemory" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="WorkAreaMemory" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleWorkAreaTemp" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="WorkAreaTemp" />
-				</Grid.ColumnDefinitions>
-
-				<TextBlock Grid.Column="0" Text="Activity: " Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding ActivityRatio, Converter={StaticResource ObjectToVisibilityConverter}}" />
-				<TextBlock Grid.Column="1" Text="{Binding ActivityRatio, Converter={StaticResource RatioConverter}, ConverterParameter=1}" Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding ActivityRatio, Converter={StaticResource ObjectToVisibilityConverter}}" TextAlignment="Right" Margin="0,0,4,0" />
-				<TextBlock Grid.Column="2" Text="ASH samples: " Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding ActivityRatio, Converter={StaticResource ObjectToVisibilityConverter}}" />
-				<TextBlock Grid.Column="3" Text="{Binding ActiveSessionHistorySampleCount}" Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding ActivityRatio, Converter={StaticResource ObjectToVisibilityConverter}}" TextAlignment="Right" Margin="0,0,4,0" />
-				<TextBlock Grid.Column="4" Text="Starts: " Style="{StaticResource PlanStatisticValueStyle}" />
-				<TextBlock Grid.Column="5" Text="{Binding Starts, Converter={StaticResource PrettyPrintNumericConverter}}" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
-				<TextBlock Grid.Column="6" Text="Output rows: " Style="{StaticResource PlanStatisticValueStyle}" />
-				<TextBlock Grid.Column="7" Text="{Binding OutputRows, Converter={StaticResource PrettyPrintNumericConverter}}" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
-				<TextBlock Grid.Column="8" Text="Physical read requests: " Margin="4,0,0,0" Style="{StaticResource PlanStatisticValueStyle}" />
-				<TextBlock Grid.Column="9" Text="{Binding PhysicalReadRequests, Converter={StaticResource PrettyPrintNumericConverter}}" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
-				<TextBlock Grid.Column="10" Text="Physical read: " Style="{StaticResource PlanStatisticValueStyle}" />
-				<TextBlock Grid.Column="11" Text="{Binding PhysicalReadBytes, Converter={StaticResource DataSpaceConverter}}" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
-				<TextBlock Grid.Column="12" Text="Physical write requests: " Margin="4,0,0,0" Style="{StaticResource PlanStatisticValueStyle}" />
-				<TextBlock Grid.Column="13" Text="{Binding PhysicalWriteRequests, Converter={StaticResource PrettyPrintNumericConverter}}" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
-				<TextBlock Grid.Column="14" Text="Physical write: " Style="{StaticResource PlanStatisticValueStyle}" />
-				<TextBlock Grid.Column="15" Text="{Binding PhysicalWriteBytes, Converter={StaticResource DataSpaceConverter}}" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
-				<TextBlock Grid.Column="16" Text="I/O interconnection: " Margin="4,0,0,0" Style="{StaticResource PlanStatisticValueStyle}" />
-				<TextBlock Grid.Column="17" Text="{Binding IoInterconnectBytes, Converter={StaticResource DataSpaceConverter}}" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
-				<TextBlock Grid.Column="18" Text="Work area: " Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaMemoryMaxBytes, Converter={StaticResource ObjectToVisibilityConverter}}" />
-				<TextBlock Grid.Column="19" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaMemoryMaxBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
-					<Run Text="{Binding WorkAreaMemoryBytes, Converter={StaticResource DataSpaceConverter}}" />
-					<Run Text="(max: " /><Run Text="{Binding WorkAreaMemoryMaxBytes, Converter={StaticResource DataSpaceConverter}}" /><Run Text=")" />
-				</TextBlock>
-				<TextBlock Grid.Column="20" Text="Temp: " Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaTempMaxBytes, Converter={StaticResource ObjectToVisibilityConverter}}" />
-				<TextBlock Grid.Column="21" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaTempMaxBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
-					<Run Text="{Binding WorkAreaTempBytes, Converter={StaticResource DataSpaceConverter}}" />
-					<Run Text="(max: " /><Run Text="{Binding WorkAreaTempMaxBytes, Converter={StaticResource DataSpaceConverter}}" /><Run Text=")" />
-				</TextBlock>
-			</Grid>
-		</DataTemplate>
-
-		<DataTemplate x:Key="SqlMonitorSessionListDataTemplate">
-			<Viewbox>
-				<Viewbox.Resources>
-					<CollectionViewSource x:Key="ParallelSlaveSessionItems" Source="{Binding}">
-						<CollectionViewSource.SortDescriptions>
-							<componentModel:SortDescription PropertyName="SessionItem.ParallelServerGroup" />
-							<componentModel:SortDescription PropertyName="SessionItem.ParallelServerSet" />
-							<componentModel:SortDescription PropertyName="SessionItem.ParallelServerNumber" />
-						</CollectionViewSource.SortDescriptions>
-					</CollectionViewSource>
-				</Viewbox.Resources>
-
-				<ListView ItemsSource="{Binding Source={StaticResource ParallelSlaveSessionItems}}" Background="Transparent" BorderThickness="0" Margin="-10,0,0,0">
-					<ListView.Resources>
-						<Style TargetType="GridViewColumnHeader">
-							<Setter Property="Margin" Value="2,0" />
-							<Setter Property="Background" Value="Transparent" />
-							<Setter Property="Template">
-								<Setter.Value>
-									<ControlTemplate TargetType="GridViewColumnHeader">
-										<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Text="{TemplateBinding Content}" Margin="6,0" Width="{TemplateBinding Width}" TextAlignment="Right" />
-									</ControlTemplate>
-								</Setter.Value>
-							</Setter>
-						</Style>
-					</ListView.Resources>
-					
-					<ListView.ItemContainerStyle>
-						<Style BasedOn="{StaticResource PlanStatisticValueStyle}">
-							<Setter Property="ListViewItem.HorizontalContentAlignment" Value="Right" />
-							<Setter Property="ListViewItem.Template">
-								<Setter.Value>
-									<ControlTemplate TargetType="ListViewItem">
-										<GridViewRowPresenter />
-									</ControlTemplate>
-								</Setter.Value>
-							</Setter>
-						</Style>
-					</ListView.ItemContainerStyle>
-
-					<ListView.View>
-						<GridView AllowsColumnReorder="False">
-							<GridViewColumn Header="Instance" DisplayMemberBinding="{Binding SessionIdentifier.Instance}" />
-							<GridViewColumn Header="SID" DisplayMemberBinding="{Binding SessionIdentifier.SessionId}" />
-							<GridViewColumn Header="PX group/set/server#">
-								<GridViewColumn.CellTemplate>
-									<DataTemplate DataType="modelDataProviders:SqlMonitorSessionPlanItem">
-										<StackPanel Orientation="Horizontal">
-											<TextBlock>
-												<Run Text="{Binding SessionItem.ParallelServerGroup}" /><Run Text="/" /><Run Text="{Binding SessionItem.ParallelServerSet}" /><Run Text="/" /><Run Text="{Binding SessionItem.ParallelServerNumber}" />
-											</TextBlock>
-										</StackPanel>
-									</DataTemplate>
-								</GridViewColumn.CellTemplate>
-							</GridViewColumn>
-							<GridViewColumn Header="Activity" DisplayMemberBinding="{Binding ActivityRatio, Converter={StaticResource RatioConverter}, ConverterParameter=1}" />
-							<GridViewColumn Header="ASH samples" DisplayMemberBinding="{Binding ActiveSessionHistorySampleCount, Converter={StaticResource PrettyPrintNumericConverter}}" />
-							<GridViewColumn Header="Starts" DisplayMemberBinding="{Binding Starts, Converter={StaticResource PrettyPrintNumericConverter}}" />
-							<GridViewColumn Header="Output rows" DisplayMemberBinding="{Binding OutputRows, Converter={StaticResource PrettyPrintNumericConverter}}" />
-							<GridViewColumn Header="Physical read requests" DisplayMemberBinding="{Binding PhysicalReadRequests, Converter={StaticResource PrettyPrintNumericConverter}}" />
-							<GridViewColumn Header="Physical read" DisplayMemberBinding="{Binding PhysicalReadBytes, Converter={StaticResource DataSpaceConverter}, ConverterParameter={x:Static system:String.Empty}}" />
-							<GridViewColumn Header="Physical write requests" DisplayMemberBinding="{Binding PhysicalWriteRequests, Converter={StaticResource PrettyPrintNumericConverter}}" />
-							<GridViewColumn Header="Physical write" DisplayMemberBinding="{Binding PhysicalWriteBytes, Converter={StaticResource DataSpaceConverter}, ConverterParameter={x:Static system:String.Empty}}" />
-							<GridViewColumn Header="I/O interconnection" DisplayMemberBinding="{Binding IoInterconnectBytes, Converter={StaticResource DataSpaceConverter}, ConverterParameter={x:Static system:String.Empty}}" />
-							<GridViewColumn Header="Work area" DisplayMemberBinding="{Binding WorkAreaMemoryBytes, Converter={StaticResource DataSpaceConverter}, ConverterParameter={x:Static system:String.Empty}}" />
-							<GridViewColumn Header="Work area max." DisplayMemberBinding="{Binding WorkAreaMemoryMaxBytes, Converter={StaticResource DataSpaceConverter}, ConverterParameter={x:Static system:String.Empty}}" />
-							<GridViewColumn Header="Temp" DisplayMemberBinding="{Binding WorkAreaTempBytes, Converter={StaticResource DataSpaceConverter}, ConverterParameter={x:Static system:String.Empty}}" Width="54" />
-							<GridViewColumn Header="Temp max." DisplayMemberBinding="{Binding WorkAreaTempMaxBytes, Converter={StaticResource DataSpaceConverter}, ConverterParameter={x:Static system:String.Empty}}" />
-						</GridView>
-					</ListView.View>
-				</ListView>
-			</Viewbox>
-		</DataTemplate>
-		
-		<DataTemplate x:Key="SessionLongOperationDataTemplate" DataType="modelDataProviders:SessionLongOperationCollection">
-			<Grid>
-				<Grid.Style>
-					<Style>
-						<Style.Triggers>
-							<DataTrigger Binding="{Binding ActiveLongOperationItem}" Value="{x:Null}">
-								<Setter Property="StackPanel.Visibility" Value="Collapsed" />
-							</DataTrigger>
-						</Style.Triggers>
-					</Style>
-				</Grid.Style>
-				
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="Auto" SharedSizeGroup="Progress" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleInstanceID" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="InstanceID" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="TitleSID" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="SID" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="Message" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="Completed" />
-				</Grid.ColumnDefinitions>
-				
-				<Grid Grid.Column="0">
-					<Border BorderBrush="Black" BorderThickness="1">
-						<ProgressBar Maximum="{Binding ActiveLongOperationItem.TotalWork}" Value="{Binding ActiveLongOperationItem.SoFar}" Width="120" />
-					</Border>
-					<TextBlock Text="{Binding ActiveLongOperationItem.ProgressRatio, Mode=OneWay, Converter={StaticResource RatioConverter}}" TextAlignment="Center" FontSize="9" />
-				</Grid>
-
-				<TextBlock Grid.Column="1" Text="Instance: " Margin="4,0,4,0" Style="{StaticResource OtherLabelStyle}" />
-				<TextBlock Grid.Column="2" Text="{Binding SessionIdentifier.Instance, Mode=OneWay}" Style="{StaticResource OtherLabelStyle}" TextAlignment="Right" />
-				<TextBlock Grid.Column="3" Text="SID: " Margin="4,0,4,0" Style="{StaticResource OtherLabelStyle}" />
-				<TextBlock Grid.Column="4" Text="{Binding SessionIdentifier.SessionId, Mode=OneWay}" Style="{StaticResource OtherLabelStyle}" TextAlignment="Right" />
-				<TextBlock Grid.Column="5" Text="{Binding ActiveLongOperationItem.Message}" Margin="4,0,4,0" Style="{StaticResource OtherLabelStyle}" />
-				<TextBlock Grid.Column="6" ToolTipService.ShowDuration="{x:Static Member=system:Int32.MaxValue}">
-					<TextBlock.Style>
-						<Style TargetType="TextBlock" BasedOn="{StaticResource OtherLabelStyle}">
+					<Grid.Style>
+						<Style>
 							<Style.Triggers>
-								<DataTrigger Binding="{Binding CompletedSessionLongOperationItems.Count}" Value="0">
-									<Setter Property="Visibility" Value="Collapsed" />
+								<DataTrigger Binding="{Binding}" Value="{x:Null}">
+									<Setter Property="Grid.Visibility" Value="Collapsed" />
 								</DataTrigger>
 							</Style.Triggers>
 						</Style>
-					</TextBlock.Style>
-					
-					<TextBlock.ToolTip>
-						<ItemsControl ItemsSource="{Binding CompletedSessionLongOperationItems}">
-							<ItemsControl.ItemTemplate>
-								<DataTemplate>
-									<TextBlock>
-										<Run Text="{Binding Message}" />
-										<Run Text="(" /><Run Text="{Binding Elapsed}" /><Run Text=")" />
-									</TextBlock>
-								</DataTemplate>
-							</ItemsControl.ItemTemplate>
-						</ItemsControl>
-					</TextBlock.ToolTip>
-					
-					<Run Text="(+" />
-					<Run Text="{Binding CompletedSessionLongOperationItems.Count, Mode=OneWay}" />
-					<Run Text="completed operation(s))" />
-				</TextBlock>
-			</Grid>
-		</DataTemplate>
-
-		<HierarchicalDataTemplate x:Key="ExecutionMonitorPlanItemDataTemplate" ItemsSource="{Binding ChildItems}" DataType="modelDataProviders:SqlMonitorPlanItem">
-			<StackPanel>
-				<StackPanel.Style>
-					<Style>
-						<Style.Triggers>
-							<DataTrigger Binding="{Binding IsBeingExecuted}" Value="True">
-								<Setter Property="StackPanel.Background" Value="#2200FF00" />
-							</DataTrigger>
-						</Style.Triggers>
-					</Style>
-				</StackPanel.Style>
+					</Grid.Style>
 				
-				<StackPanel Orientation="Horizontal">
-					<Border Style="{StaticResource InactiveMarker}">
-						<TextBlock Text ="INACTIVE" Style="{StaticResource InactiveHeader}" />
-					</Border>
-					<TextBlock Style="{StaticResource ColoredItemHeaderBold}">
-						<Run Text="{Binding Operation}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource ColoredItemHeaderBold}" Visibility="{Binding Options, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="{Binding Options}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource ItemHeaderBold}" Visibility="{Binding ObjectType, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="{Binding ObjectType}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource ItemHeader}" Visibility="{Binding Optimizer, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="{Binding Optimizer}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource ItemHeader}" Visibility="{Binding ObjectOwner, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="{Binding ObjectOwner}" /><Run Text="." />
-					</TextBlock>
-					<TextBlock Style="{StaticResource ItemHeader}" Visibility="{Binding ObjectName, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="{Binding ObjectName}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource ItemHeader}" Visibility="{Binding ObjectAlias, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="{Binding ObjectAlias}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource ItemHeaderOther}" Visibility="{Binding QueryBlockName, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="Query Block: " />
-						<Run Text="{Binding QueryBlockName}" />
-					</TextBlock>
-				</StackPanel>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto" SharedSizeGroup="TitleActivityRatio" />
+						<ColumnDefinition Width="Auto" SharedSizeGroup="ActivityRatio" />
+						<ColumnDefinition Width="Auto" SharedSizeGroup="TitleActivitySamples" />
+						<ColumnDefinition Width="Auto" SharedSizeGroup="ActivitySamples" />
+						<ColumnDefinition Width="Auto" SharedSizeGroup="TitleStarts" />
+						<ColumnDefinition Width="Auto" SharedSizeGroup="Starts" />
+						<ColumnDefinition Width="Auto" SharedSizeGroup="TitleOutputRows" />
+						<ColumnDefinition Width="Auto" SharedSizeGroup="OutputRows" />
+						<ColumnDefinition Width="Auto" SharedSizeGroup="TitleReadRequests" />
+						<ColumnDefinition Width="Auto" SharedSizeGroup="ReadRequests" />
+						<ColumnDefinition Width="Auto" SharedSizeGroup="TitleReadBytes" />
+						<ColumnDefinition Width="Auto" SharedSizeGroup="ReadBytes" />
+						<ColumnDefinition Width="Auto" SharedSizeGroup="TitleWriteRequests" />
+						<ColumnDefinition Width="Auto" SharedSizeGroup="WriteRequests" />
+						<ColumnDefinition Width="Auto" SharedSizeGroup="TitleWriteBytes" />
+						<ColumnDefinition Width="Auto" SharedSizeGroup="WriteBytes" />
+						<ColumnDefinition Width="Auto" SharedSizeGroup="TitleIoInterconnectBytes" />
+						<ColumnDefinition Width="Auto" SharedSizeGroup="IoInterconnectBytes" />
+						<ColumnDefinition Width="Auto" SharedSizeGroup="TitleWorkAreaMemory" />
+						<ColumnDefinition Width="Auto" SharedSizeGroup="WorkAreaMemory" />
+						<ColumnDefinition Width="Auto" SharedSizeGroup="TitleWorkAreaTemp" />
+						<ColumnDefinition Width="Auto" SharedSizeGroup="WorkAreaTemp" />
+					</Grid.ColumnDefinitions>
 
-				<StackPanel Orientation="Horizontal">
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Cost, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="Cost: " />
-						<Run Text="{Binding Cost, Converter={StaticResource PrettyPrintNumericConverter}}" /><Run Text=" " />
+					<TextBlock Grid.Column="0" Text="Activity: " Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding ActivityRatio, Converter={StaticResource ObjectToVisibilityConverter}}" />
+					<TextBlock Grid.Column="1" Text="{Binding ActivityRatio, Converter={StaticResource RatioConverter}, ConverterParameter=1}" Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding ActivityRatio, Converter={StaticResource ObjectToVisibilityConverter}}" TextAlignment="Right" Margin="0,0,4,0" />
+					<TextBlock Grid.Column="2" Text="ASH samples: " Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding ActivityRatio, Converter={StaticResource ObjectToVisibilityConverter}}" />
+					<TextBlock Grid.Column="3" Text="{Binding ActiveSessionHistorySampleCount}" Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding ActivityRatio, Converter={StaticResource ObjectToVisibilityConverter}}" TextAlignment="Right" Margin="0,0,4,0" />
+					<TextBlock Grid.Column="4" Text="Starts: " Style="{StaticResource PlanStatisticValueStyle}" />
+					<TextBlock Grid.Column="5" Text="{Binding Starts, Converter={StaticResource PrettyPrintNumericConverter}}" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
+					<TextBlock Grid.Column="6" Text="Output rows: " Style="{StaticResource PlanStatisticValueStyle}" />
+					<TextBlock Grid.Column="7" Text="{Binding OutputRows, Converter={StaticResource PrettyPrintNumericConverter}}" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
+					<TextBlock Grid.Column="8" Text="Physical read requests: " Margin="4,0,0,0" Style="{StaticResource PlanStatisticValueStyle}" />
+					<TextBlock Grid.Column="9" Text="{Binding PhysicalReadRequests, Converter={StaticResource PrettyPrintNumericConverter}}" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
+					<TextBlock Grid.Column="10" Text="Physical read: " Style="{StaticResource PlanStatisticValueStyle}" />
+					<TextBlock Grid.Column="11" Text="{Binding PhysicalReadBytes, Converter={StaticResource DataSpaceConverter}}" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
+					<TextBlock Grid.Column="12" Text="Physical write requests: " Margin="4,0,0,0" Style="{StaticResource PlanStatisticValueStyle}" />
+					<TextBlock Grid.Column="13" Text="{Binding PhysicalWriteRequests, Converter={StaticResource PrettyPrintNumericConverter}}" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
+					<TextBlock Grid.Column="14" Text="Physical write: " Style="{StaticResource PlanStatisticValueStyle}" />
+					<TextBlock Grid.Column="15" Text="{Binding PhysicalWriteBytes, Converter={StaticResource DataSpaceConverter}}" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
+					<TextBlock Grid.Column="16" Text="I/O interconnection: " Margin="4,0,0,0" Style="{StaticResource PlanStatisticValueStyle}" />
+					<TextBlock Grid.Column="17" Text="{Binding IoInterconnectBytes, Converter={StaticResource DataSpaceConverter}}" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" TextAlignment="Right" />
+					<TextBlock Grid.Column="18" Text="Work area: " Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaMemoryMaxBytes, Converter={StaticResource ObjectToVisibilityConverter}}" />
+					<TextBlock Grid.Column="19" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaMemoryMaxBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text="{Binding WorkAreaMemoryBytes, Converter={StaticResource DataSpaceConverter}}" />
+						<Run Text="(max: " /><Run Text="{Binding WorkAreaMemoryMaxBytes, Converter={StaticResource DataSpaceConverter}}" /><Run Text=")" />
 					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding CostRatio, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="(" /><Run Text="{Binding CostRatio, Converter={StaticResource RatioConverter}}" /><Run Text=") " />
-						<Run Text=" " />
+					<TextBlock Grid.Column="20" Text="Temp: " Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaTempMaxBytes, Converter={StaticResource ObjectToVisibilityConverter}}" />
+					<TextBlock Grid.Column="21" Margin="0,0,4,0" Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding WorkAreaTempMaxBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text="{Binding WorkAreaTempBytes, Converter={StaticResource DataSpaceConverter}}" />
+						<Run Text="(max: " /><Run Text="{Binding WorkAreaTempMaxBytes, Converter={StaticResource DataSpaceConverter}}" /><Run Text=")" />
 					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Cardinality, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="Cardinality: " />
-						<Run Text="{Binding Cardinality, Converter={StaticResource PrettyPrintNumericConverter}}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Bytes, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="Data Volume: " />
-						<Run Text="{Binding Bytes, Converter={StaticResource DataSpaceConverter}}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding TempSpace, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="Temp: " />
-						<Run Text="{Binding TempSpace, Converter={StaticResource DataSpaceConverter}}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Time, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="Time: " />
-						<Run Text="{Binding Time}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding CpuCost, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="CPU Cost: " />
-						<Run Text="{Binding CpuCost, Converter={StaticResource PrettyPrintNumericConverter}}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding IoCost, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="IO Cost: " />
-						<Run Text="{Binding IoCost, Converter={StaticResource PrettyPrintNumericConverter}}" />
-						<Run Text=" " />
-					</TextBlock>
-					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding PartitionStart, Converter={StaticResource ObjectToVisibilityConverter}}">
-						<Run Text="Partitions: " />
-						<Run Text="{Binding PartitionStart}" />
-						<Run Text="-" />
-						<Run Text="{Binding PartitionStop}" />
-						<Run Text=" " />
-					</TextBlock>
-				</StackPanel>
+				</Grid>
+			</DataTemplate>
 
-				<TextBlock Style="{StaticResource OtherLabelStyle}" Visibility="{Binding AccessPredicates, Converter={StaticResource ObjectToVisibilityConverter}}">
-					<Run Text="Access Predicates:" />
-					<Run Text="{Binding AccessPredicates}" />
-				</TextBlock>
-				<TextBlock Style="{StaticResource OtherLabelStyle}" Visibility="{Binding FilterPredicates, Converter={StaticResource ObjectToVisibilityConverter}}">
-					<Run Text="Filter Predicates:" />
-					<Run Text="{Binding FilterPredicates}" />
-				</TextBlock>
-
-				<StackPanel>
-					<StackPanel Orientation="Horizontal">
-						<ContentControl Content="{Binding AllSessionSummaryPlanItem}" ContentTemplate="{StaticResource SqlMonitorSingleSessionDataTemplate}" />
-					</StackPanel>
-
-					<Expander IsExpanded="False"
-							  Content="{Binding ParallelSlaveSessionItems}"
-							  ContentTemplate="{StaticResource SqlMonitorSessionListDataTemplate}"
-							  Template="{StaticResource ExpanderTemplate}"
-							  Expanded="TerminateBubbleEventHandler"
-							  Collapsed="TerminateBubbleEventHandler">
-						<Expander.Style>
-							<Style>
-								<Style.Triggers>
-									<DataTrigger Binding="{Binding ParallelSlaveSessionItems.Count}" Value="0">
-										<Setter Property="Expander.Visibility" Value="Collapsed" />
-									</DataTrigger>
-								</Style.Triggers>
-							</Style>
-						</Expander.Style>
-						<Expander.Header>
-							<StackPanel Orientation="Horizontal">
-								<TextBlock Text="Parallel slaves (" />
-								<TextBlock Text="{Binding AllSessionSummaryPlanItem.SessionItem.ParallelServersAllocated}">
-									<TextBlock.Style>
-										<Style>
-											<Style.Triggers>
-												<DataTrigger Binding="{Binding AllSessionSummaryPlanItem.SessionItem.ParallelServersDegraded}" Value="True">
-													<Setter Property="TextBlock.Visibility" Value="Collapsed" />
-												</DataTrigger>
-											</Style.Triggers>
-										</Style>
-									</TextBlock.Style>
-								</TextBlock>
-								<TextBlock>
-									<TextBlock.Style>
-										<Style>
-											<Style.Triggers>
-												<DataTrigger Binding="{Binding AllSessionSummaryPlanItem.SessionItem.ParallelServersDegraded}" Value="False">
-													<Setter Property="TextBlock.Visibility" Value="Collapsed" />
-												</DataTrigger>
-											</Style.Triggers>
-										</Style>
-									</TextBlock.Style>
-									<Run Text="{Binding AllSessionSummaryPlanItem.SessionItem.ParallelServersAllocated}" /><Run Text=" allocated/" /><Run Text="{Binding AllSessionSummaryPlanItem.SessionItem.ParallelServersRequested}" /><Run Text=" requested" />
-								</TextBlock>
-								<TextBlock Text=")" />
-							</StackPanel>
-						</Expander.Header>
-					</Expander>
-				</StackPanel>
-
-				<StackPanel>
-					<StackPanel.Resources>
-						<CollectionViewSource x:Key="SessionLongOperations" Source="{Binding SessionLongOperations}">
+			<DataTemplate x:Key="SqlMonitorSessionListDataTemplate">
+				<Viewbox>
+					<Viewbox.Resources>
+						<CollectionViewSource x:Key="ParallelSlaveSessionItems" Source="{Binding}">
 							<CollectionViewSource.SortDescriptions>
-								<componentModel:SortDescription PropertyName="SessionIdentifier.Instance" />
-								<componentModel:SortDescription PropertyName="SessionIdentifier.SessionId" />
+								<componentModel:SortDescription PropertyName="SessionItem.ParallelServerGroup" />
+								<componentModel:SortDescription PropertyName="SessionItem.ParallelServerSet" />
+								<componentModel:SortDescription PropertyName="SessionItem.ParallelServerNumber" />
 							</CollectionViewSource.SortDescriptions>
 						</CollectionViewSource>
-					</StackPanel.Resources>
+					</Viewbox.Resources>
+
+					<ListView ItemsSource="{Binding Source={StaticResource ParallelSlaveSessionItems}}" Background="Transparent" BorderThickness="0" Margin="-10,0,0,0">
+						<ListView.Resources>
+							<Style TargetType="GridViewColumnHeader">
+								<Setter Property="Margin" Value="2,0" />
+								<Setter Property="Background" Value="Transparent" />
+								<Setter Property="Template">
+									<Setter.Value>
+										<ControlTemplate TargetType="GridViewColumnHeader">
+											<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Text="{TemplateBinding Content}" Margin="6,0" Width="{TemplateBinding Width}" TextAlignment="Right" />
+										</ControlTemplate>
+									</Setter.Value>
+								</Setter>
+							</Style>
+						</ListView.Resources>
 					
-					<StackPanel.Style>
+						<ListView.ItemContainerStyle>
+							<Style BasedOn="{StaticResource PlanStatisticValueStyle}">
+								<Setter Property="ListViewItem.HorizontalContentAlignment" Value="Right" />
+								<Setter Property="ListViewItem.Template">
+									<Setter.Value>
+										<ControlTemplate TargetType="ListViewItem">
+											<GridViewRowPresenter />
+										</ControlTemplate>
+									</Setter.Value>
+								</Setter>
+							</Style>
+						</ListView.ItemContainerStyle>
+
+						<ListView.View>
+							<GridView AllowsColumnReorder="False">
+								<GridViewColumn Header="Instance" DisplayMemberBinding="{Binding SessionIdentifier.Instance}" />
+								<GridViewColumn Header="SID" DisplayMemberBinding="{Binding SessionIdentifier.SessionId}" />
+								<GridViewColumn Header="PX group/set/server#">
+									<GridViewColumn.CellTemplate>
+										<DataTemplate DataType="modelDataProviders:SqlMonitorSessionPlanItem">
+											<StackPanel Orientation="Horizontal">
+												<TextBlock>
+													<Run Text="{Binding SessionItem.ParallelServerGroup}" /><Run Text="/" /><Run Text="{Binding SessionItem.ParallelServerSet}" /><Run Text="/" /><Run Text="{Binding SessionItem.ParallelServerNumber}" />
+												</TextBlock>
+											</StackPanel>
+										</DataTemplate>
+									</GridViewColumn.CellTemplate>
+								</GridViewColumn>
+								<GridViewColumn Header="Activity" DisplayMemberBinding="{Binding ActivityRatio, Converter={StaticResource RatioConverter}, ConverterParameter=1}" />
+								<GridViewColumn Header="ASH samples" DisplayMemberBinding="{Binding ActiveSessionHistorySampleCount, Converter={StaticResource PrettyPrintNumericConverter}}" />
+								<GridViewColumn Header="Starts" DisplayMemberBinding="{Binding Starts, Converter={StaticResource PrettyPrintNumericConverter}}" />
+								<GridViewColumn Header="Output rows" DisplayMemberBinding="{Binding OutputRows, Converter={StaticResource PrettyPrintNumericConverter}}" />
+								<GridViewColumn Header="Physical read requests" DisplayMemberBinding="{Binding PhysicalReadRequests, Converter={StaticResource PrettyPrintNumericConverter}}" />
+								<GridViewColumn Header="Physical read" DisplayMemberBinding="{Binding PhysicalReadBytes, Converter={StaticResource DataSpaceConverter}, ConverterParameter={x:Static system:String.Empty}}" />
+								<GridViewColumn Header="Physical write requests" DisplayMemberBinding="{Binding PhysicalWriteRequests, Converter={StaticResource PrettyPrintNumericConverter}}" />
+								<GridViewColumn Header="Physical write" DisplayMemberBinding="{Binding PhysicalWriteBytes, Converter={StaticResource DataSpaceConverter}, ConverterParameter={x:Static system:String.Empty}}" />
+								<GridViewColumn Header="I/O interconnection" DisplayMemberBinding="{Binding IoInterconnectBytes, Converter={StaticResource DataSpaceConverter}, ConverterParameter={x:Static system:String.Empty}}" />
+								<GridViewColumn Header="Work area" DisplayMemberBinding="{Binding WorkAreaMemoryBytes, Converter={StaticResource DataSpaceConverter}, ConverterParameter={x:Static system:String.Empty}}" />
+								<GridViewColumn Header="Work area max." DisplayMemberBinding="{Binding WorkAreaMemoryMaxBytes, Converter={StaticResource DataSpaceConverter}, ConverterParameter={x:Static system:String.Empty}}" />
+								<GridViewColumn Header="Temp" DisplayMemberBinding="{Binding WorkAreaTempBytes, Converter={StaticResource DataSpaceConverter}, ConverterParameter={x:Static system:String.Empty}}" Width="54" />
+								<GridViewColumn Header="Temp max." DisplayMemberBinding="{Binding WorkAreaTempMaxBytes, Converter={StaticResource DataSpaceConverter}, ConverterParameter={x:Static system:String.Empty}}" />
+							</GridView>
+						</ListView.View>
+					</ListView>
+				</Viewbox>
+			</DataTemplate>
+		
+			<DataTemplate x:Key="SessionLongOperationDataTemplate" DataType="modelDataProviders:SessionLongOperationCollection">
+				<Grid>
+					<Grid.Style>
 						<Style>
 							<Style.Triggers>
-								<DataTrigger Binding="{Binding SessionLongOperations.Count}" Value="0">
+								<DataTrigger Binding="{Binding ActiveLongOperationItem}" Value="{x:Null}">
 									<Setter Property="StackPanel.Visibility" Value="Collapsed" />
 								</DataTrigger>
 							</Style.Triggers>
 						</Style>
-					</StackPanel.Style>
+					</Grid.Style>
+				
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto" SharedSizeGroup="Progress" />
+						<ColumnDefinition Width="Auto" SharedSizeGroup="TitleInstanceID" />
+						<ColumnDefinition Width="Auto" SharedSizeGroup="InstanceID" />
+						<ColumnDefinition Width="Auto" SharedSizeGroup="TitleSID" />
+						<ColumnDefinition Width="Auto" SharedSizeGroup="SID" />
+						<ColumnDefinition Width="Auto" SharedSizeGroup="Message" />
+						<ColumnDefinition Width="Auto" SharedSizeGroup="Completed" />
+					</Grid.ColumnDefinitions>
+				
+					<Grid Grid.Column="0">
+						<Border BorderBrush="Black" BorderThickness="1">
+							<ProgressBar Maximum="{Binding ActiveLongOperationItem.TotalWork}" Value="{Binding ActiveLongOperationItem.SoFar}" Width="120" />
+						</Border>
+						<TextBlock Text="{Binding ActiveLongOperationItem.ProgressRatio, Mode=OneWay, Converter={StaticResource RatioConverter}}" TextAlignment="Center" FontSize="9" />
+					</Grid>
+
+					<TextBlock Grid.Column="1" Text="Instance: " Margin="4,0,4,0" Style="{StaticResource OtherLabelStyle}" />
+					<TextBlock Grid.Column="2" Text="{Binding SessionIdentifier.Instance, Mode=OneWay}" Style="{StaticResource OtherLabelStyle}" TextAlignment="Right" />
+					<TextBlock Grid.Column="3" Text="SID: " Margin="4,0,4,0" Style="{StaticResource OtherLabelStyle}" />
+					<TextBlock Grid.Column="4" Text="{Binding SessionIdentifier.SessionId, Mode=OneWay}" Style="{StaticResource OtherLabelStyle}" TextAlignment="Right" />
+					<TextBlock Grid.Column="5" Text="{Binding ActiveLongOperationItem.Message}" Margin="4,0,4,0" Style="{StaticResource OtherLabelStyle}" />
+					<TextBlock Grid.Column="6" ToolTipService.ShowDuration="{x:Static Member=system:Int32.MaxValue}">
+						<TextBlock.Style>
+							<Style TargetType="TextBlock" BasedOn="{StaticResource OtherLabelStyle}">
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding CompletedLongOperationItems.Count}" Value="0">
+										<Setter Property="Visibility" Value="Collapsed" />
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</TextBlock.Style>
 					
-					<TextBlock Text="Long operations" />
-					<ItemsControl ItemsSource="{Binding Source={StaticResource SessionLongOperations}}" Grid.IsSharedSizeScope="True">
-						<ItemsControl.ItemTemplate>
-							<DataTemplate>
-								<ContentControl ContentTemplate="{StaticResource SessionLongOperationDataTemplate}" Content="{Binding}" />
-							</DataTemplate>
-						</ItemsControl.ItemTemplate>
-					</ItemsControl>
-				</StackPanel>
-			</StackPanel>
-		</HierarchicalDataTemplate>
+						<TextBlock.ToolTip>
+							<ItemsControl ItemsSource="{Binding CompletedLongOperationItems}">
+								<ItemsControl.ItemTemplate>
+									<DataTemplate>
+										<TextBlock>
+											<Run Text="{Binding Message}" />
+											<Run Text="(" /><Run Text="{Binding Elapsed}" /><Run Text=")" />
+										</TextBlock>
+									</DataTemplate>
+								</ItemsControl.ItemTemplate>
+							</ItemsControl>
+						</TextBlock.ToolTip>
+					
+						<Run Text="(+" />
+						<Run Text="{Binding CompletedLongOperationItems.Count, Mode=OneWay}" />
+						<Run Text="completed operation(s))" />
+					</TextBlock>
+				</Grid>
+			</DataTemplate>
 
-		<executionPlan:TreeViewLineConverter x:Key="LineConverter" />
-		<executionPlan:PlanItemTemplateSelector x:Key="PlanItemTemplateSelector"
-		                                        ExplainPlanTemplateTemplate="{StaticResource ExplainPlanItemDataTemplate}"
-		                                        ExecutionStatisticsPlanItemTemplate="{StaticResource ExecutionStatisticsPlanItemDataTemplate}"
-		                                        ExecutionMonitorPlanItemTemplate="{StaticResource ExecutionMonitorPlanItemDataTemplate}" />
+			<HierarchicalDataTemplate x:Key="ExecutionMonitorPlanItemDataTemplate" ItemsSource="{Binding ChildItems}" DataType="modelDataProviders:SqlMonitorPlanItem">
+				<StackPanel>
+					<StackPanel.Style>
+						<Style>
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding IsBeingExecuted}" Value="True">
+									<Setter Property="StackPanel.Background" Value="#2200FF00" />
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</StackPanel.Style>
+				
+					<StackPanel Orientation="Horizontal">
+						<Border Style="{StaticResource InactiveMarker}">
+							<TextBlock Text ="INACTIVE" Style="{StaticResource InactiveHeader}" />
+						</Border>
+						<TextBlock Style="{StaticResource ColoredItemHeaderBold}">
+							<Run Text="{Binding Operation}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource ColoredItemHeaderBold}" Visibility="{Binding Options, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="{Binding Options}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource ItemHeaderBold}" Visibility="{Binding ObjectType, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="{Binding ObjectType}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource ItemHeader}" Visibility="{Binding Optimizer, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="{Binding Optimizer}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource ItemHeader}" Visibility="{Binding ObjectOwner, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="{Binding ObjectOwner}" /><Run Text="." />
+						</TextBlock>
+						<TextBlock Style="{StaticResource ItemHeader}" Visibility="{Binding ObjectName, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="{Binding ObjectName}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource ItemHeader}" Visibility="{Binding ObjectAlias, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="{Binding ObjectAlias}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource ItemHeaderOther}" Visibility="{Binding QueryBlockName, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="Query Block: " />
+							<Run Text="{Binding QueryBlockName}" />
+						</TextBlock>
+					</StackPanel>
 
-		<!-- TreeViewItem -->
-		<Style TargetType="{x:Type TreeViewItem}">
-			<EventSetter Event="MouseLeftButtonUp" Handler="TreeViewItemMouseLeftButtonDownHandler" />
-			<Setter Property="Background" Value="Transparent" />
-			<Setter Property="IsExpanded" Value="True" />
-			<Setter Property="Template">
-				<Setter.Value>
-					<ControlTemplate TargetType="{x:Type TreeViewItem}">
-						<Grid>
-							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="Auto" MinWidth="19" />
-								<ColumnDefinition Width="Auto" />
-								<ColumnDefinition Width="*" />
-							</Grid.ColumnDefinitions>
-							<Grid.RowDefinitions>
-								<RowDefinition Height="Auto" />
-								<RowDefinition Height="Auto" />
-								<RowDefinition />
-							</Grid.RowDefinitions>
+					<StackPanel Orientation="Horizontal">
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Cost, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="Cost: " />
+							<Run Text="{Binding Cost, Converter={StaticResource PrettyPrintNumericConverter}}" /><Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding CostRatio, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="(" /><Run Text="{Binding CostRatio, Converter={StaticResource RatioConverter}}" /><Run Text=") " />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Cardinality, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="Cardinality: " />
+							<Run Text="{Binding Cardinality, Converter={StaticResource PrettyPrintNumericConverter}}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Bytes, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="Data Volume: " />
+							<Run Text="{Binding Bytes, Converter={StaticResource DataSpaceConverter}}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding TempSpace, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="Temp: " />
+							<Run Text="{Binding TempSpace, Converter={StaticResource DataSpaceConverter}}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Time, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="Time: " />
+							<Run Text="{Binding Time}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding CpuCost, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="CPU Cost: " />
+							<Run Text="{Binding CpuCost, Converter={StaticResource PrettyPrintNumericConverter}}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding IoCost, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="IO Cost: " />
+							<Run Text="{Binding IoCost, Converter={StaticResource PrettyPrintNumericConverter}}" />
+							<Run Text=" " />
+						</TextBlock>
+						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding PartitionStart, Converter={StaticResource ObjectToVisibilityConverter}}">
+							<Run Text="Partitions: " />
+							<Run Text="{Binding PartitionStart}" />
+							<Run Text="-" />
+							<Run Text="{Binding PartitionStop}" />
+							<Run Text=" " />
+						</TextBlock>
+					</StackPanel>
 
-							<Rectangle Name="SelectionEdge" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Grid.ColumnSpan="2" SnapsToDevicePixels="True" />
+					<TextBlock Style="{StaticResource OtherLabelStyle}" Visibility="{Binding AccessPredicates, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text="Access Predicates:" />
+						<Run Text="{Binding AccessPredicates}" />
+					</TextBlock>
+					<TextBlock Style="{StaticResource OtherLabelStyle}" Visibility="{Binding FilterPredicates, Converter={StaticResource ObjectToVisibilityConverter}}">
+						<Run Text="Filter Predicates:" />
+						<Run Text="{Binding FilterPredicates}" />
+					</TextBlock>
 
-							<!-- Connecting Lines -->
-							<Rectangle Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Margin="9,0,-2,0" Height="1" Stroke="#8C8C8C" SnapsToDevicePixels="True" />
-							<Rectangle x:Name="VerticalLineTop" Grid.Row="0" Grid.Column="0" Width="1" Stroke="#8C8C8C"
-							           Grid.RowSpan="3" SnapsToDevicePixels="true" Fill="Transparent" />
-							<Rectangle x:Name="VerticalLineBottom" Grid.Row="1" Grid.Column="1" Width="1" Stroke="#8C8C8C" Margin="9,16,0,0" HorizontalAlignment="Left"
-							           SnapsToDevicePixels="true" Fill="Transparent" />
-							
-							<ToggleButton x:Name="Expander" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0"
-							              Style="{StaticResource ExpandCollapseToggleStyle}"
-							              IsChecked="{Binding Path=IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
-							              ClickMode="Press" />
+					<StackPanel>
+						<StackPanel Orientation="Horizontal">
+							<ContentControl Content="{Binding AllSessionSummaryPlanItem}" ContentTemplate="{StaticResource SqlMonitorSingleSessionDataTemplate}" />
+						</StackPanel>
 
-							<Border Name="ContentBorder" Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Background="{TemplateBinding Background}"
-							        BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
-							        Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
-								<StackPanel Orientation="Horizontal" Style="{StaticResource InactivePlanItem}">
-									<TextBlock VerticalAlignment="Center" HorizontalAlignment="Right" Padding="3,0,3,0" Style="{StaticResource ItemHeaderBold}">
-										<Run Text="{Binding ExecutionOrder}" /><Run Text=". " />
+						<Expander IsExpanded="False"
+								  Content="{Binding ParallelSlaveSessionItems}"
+								  ContentTemplate="{StaticResource SqlMonitorSessionListDataTemplate}"
+								  Template="{StaticResource ExpanderTemplate}"
+								  Expanded="TerminateBubbleEventHandler"
+								  Collapsed="TerminateBubbleEventHandler">
+							<Expander.Style>
+								<Style>
+									<Style.Triggers>
+										<DataTrigger Binding="{Binding ParallelSlaveSessionItems.Count}" Value="0">
+											<Setter Property="Expander.Visibility" Value="Collapsed" />
+										</DataTrigger>
+									</Style.Triggers>
+								</Style>
+							</Expander.Style>
+							<Expander.Header>
+								<StackPanel Orientation="Horizontal">
+									<TextBlock Text="Parallel slaves (" />
+									<TextBlock Text="{Binding AllSessionSummaryPlanItem.SessionItem.ParallelServersAllocated}">
+										<TextBlock.Style>
+											<Style>
+												<Style.Triggers>
+													<DataTrigger Binding="{Binding AllSessionSummaryPlanItem.SessionItem.ParallelServersDegraded}" Value="True">
+														<Setter Property="TextBlock.Visibility" Value="Collapsed" />
+													</DataTrigger>
+												</Style.Triggers>
+											</Style>
+										</TextBlock.Style>
 									</TextBlock>
-									<ContentPresenter x:Name="PART_Header" ContentSource="Header" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" MinWidth="20" />
+									<TextBlock>
+										<TextBlock.Style>
+											<Style>
+												<Style.Triggers>
+													<DataTrigger Binding="{Binding AllSessionSummaryPlanItem.SessionItem.ParallelServersDegraded}" Value="False">
+														<Setter Property="TextBlock.Visibility" Value="Collapsed" />
+													</DataTrigger>
+												</Style.Triggers>
+											</Style>
+										</TextBlock.Style>
+										<Run Text="{Binding AllSessionSummaryPlanItem.SessionItem.ParallelServersAllocated}" /><Run Text=" allocated/" /><Run Text="{Binding AllSessionSummaryPlanItem.SessionItem.ParallelServersRequested}" /><Run Text=" requested" />
+									</TextBlock>
+									<TextBlock Text=")" />
 								</StackPanel>
-							</Border>
-							<ItemsPresenter x:Name="ItemsHost" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" />
-						</Grid>
-						<ControlTemplate.Triggers>
-							<!-- This trigger changes the connecting lines if the item is the last in the list -->
-							<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Converter={StaticResource LineConverter}}" Value="True">
-								<Setter TargetName="VerticalLineTop" Property="VerticalAlignment" Value="Stretch" />
-								<Setter TargetName="VerticalLineTop" Property="Grid.RowSpan" Value="1" />
-							</DataTrigger>
-							<Trigger Property="IsExpanded" Value="false">
-								<Setter TargetName="ItemsHost" Property="Visibility" Value="Collapsed" />
-								<Setter TargetName="VerticalLineBottom" Property="Rectangle.Visibility" Value="Collapsed" />
-							</Trigger>
-							<Trigger Property="HasItems" Value="false">
-								<Setter TargetName="Expander" Property="Visibility" Value="Hidden" />
-								<Setter TargetName="VerticalLineBottom" Property="Rectangle.Visibility" Value="Collapsed" />
-							</Trigger>
-							<MultiTrigger>
-								<MultiTrigger.Conditions>
-									<Condition Property="HasHeader" Value="false" />
-									<Condition Property="Width" Value="Auto" />
-								</MultiTrigger.Conditions>
-								<Setter TargetName="PART_Header" Property="MinWidth" Value="75" />
-							</MultiTrigger>
-							<MultiTrigger>
-								<MultiTrigger.Conditions>
-									<Condition Property="HasHeader" Value="false" />
-									<Condition Property="Height" Value="Auto" />
-								</MultiTrigger.Conditions>
-								<Setter TargetName="PART_Header" Property="MinHeight" Value="19" />
-							</MultiTrigger>
-							<Trigger Property="IsSelected" Value="true">
-								<Setter TargetName="SelectionEdge" Property="Fill" Value="Yellow" />
-								<Setter TargetName="SelectionEdge" Property="Stroke" Value="Black" />
-							</Trigger>
-							<MultiTrigger>
-								<MultiTrigger.Conditions>
-									<Condition Property="IsSelected" Value="true" />
-									<Condition Property="IsSelectionActive" Value="false" />
-								</MultiTrigger.Conditions>
-								<Setter TargetName="SelectionEdge" Property="Fill" Value="LightGray" />
-								<Setter TargetName="SelectionEdge" Property="Stroke" Value="Gray" />
-							</MultiTrigger>
-							<Trigger Property="IsEnabled" Value="false">
-								<Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
-							</Trigger>
-						</ControlTemplate.Triggers>
-					</ControlTemplate>
-				</Setter.Value>
-			</Setter>
-		</Style>
+							</Expander.Header>
+						</Expander>
+					</StackPanel>
+
+					<StackPanel>
+						<StackPanel.Resources>
+							<CollectionViewSource x:Key="SessionLongOperations" Source="{Binding SessionLongOperations}">
+								<CollectionViewSource.SortDescriptions>
+									<componentModel:SortDescription PropertyName="SessionIdentifier.Instance" />
+									<componentModel:SortDescription PropertyName="SessionIdentifier.SessionId" />
+								</CollectionViewSource.SortDescriptions>
+							</CollectionViewSource>
+						</StackPanel.Resources>
+					
+						<StackPanel.Style>
+							<Style>
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding SessionLongOperations.Count}" Value="0">
+										<Setter Property="StackPanel.Visibility" Value="Collapsed" />
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</StackPanel.Style>
+					
+						<TextBlock Text="Long operations" />
+						<ItemsControl ItemsSource="{Binding Source={StaticResource SessionLongOperations}}" Grid.IsSharedSizeScope="True">
+							<ItemsControl.ItemTemplate>
+								<DataTemplate>
+									<ContentControl ContentTemplate="{StaticResource SessionLongOperationDataTemplate}" Content="{Binding}" />
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+					</StackPanel>
+				</StackPanel>
+			</HierarchicalDataTemplate>
+
+			<executionPlan:TreeViewLineConverter x:Key="LineConverter" />
+			<executionPlan:PlanItemTemplateSelector x:Key="PlanItemTemplateSelector"
+													ExplainPlanTemplateTemplate="{StaticResource ExplainPlanItemDataTemplate}"
+													ExecutionStatisticsPlanItemTemplate="{StaticResource ExecutionStatisticsPlanItemDataTemplate}"
+													ExecutionMonitorPlanItemTemplate="{StaticResource ExecutionMonitorPlanItemDataTemplate}" />
+
+			<!-- TreeViewItem -->
+			<Style TargetType="{x:Type TreeViewItem}">
+				<EventSetter Event="MouseLeftButtonUp" Handler="TreeViewItemMouseLeftButtonDownHandler" />
+				<Setter Property="Background" Value="Transparent" />
+				<Setter Property="IsExpanded" Value="True" />
+				<Setter Property="Template">
+					<Setter.Value>
+						<ControlTemplate TargetType="{x:Type TreeViewItem}">
+							<Grid>
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="Auto" MinWidth="19" />
+									<ColumnDefinition Width="Auto" />
+									<ColumnDefinition Width="*" />
+								</Grid.ColumnDefinitions>
+								<Grid.RowDefinitions>
+									<RowDefinition Height="Auto" />
+									<RowDefinition Height="Auto" />
+									<RowDefinition />
+								</Grid.RowDefinitions>
+
+								<Rectangle Name="SelectionEdge" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Grid.ColumnSpan="2" SnapsToDevicePixels="True" />
+
+								<!-- Connecting Lines -->
+								<Rectangle Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Margin="9,0,-2,0" Height="1" Stroke="#8C8C8C" SnapsToDevicePixels="True" />
+								<Rectangle x:Name="VerticalLineTop" Grid.Row="0" Grid.Column="0" Width="1" Stroke="#8C8C8C"
+										   Grid.RowSpan="3" SnapsToDevicePixels="true" Fill="Transparent" />
+								<Rectangle x:Name="VerticalLineBottom" Grid.Row="1" Grid.Column="1" Width="1" Stroke="#8C8C8C" Margin="9,16,0,0" HorizontalAlignment="Left"
+										   SnapsToDevicePixels="true" Fill="Transparent" />
+
+								<ToggleButton x:Name="Expander" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0"
+											  Style="{StaticResource ExpandCollapseToggleStyle}"
+											  IsChecked="{Binding Path=IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
+											  ClickMode="Press" />
+
+								<Border Name="ContentBorder" Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Background="{TemplateBinding Background}"
+										BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+										Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+									<StackPanel Orientation="Horizontal" Style="{StaticResource InactivePlanItem}">
+										<TextBlock VerticalAlignment="Center" HorizontalAlignment="Right" Padding="3,0,3,0" Style="{StaticResource ItemHeaderBold}">
+											<Run Text="{Binding ExecutionOrder}" /><Run Text=". " />
+										</TextBlock>
+										<ContentPresenter x:Name="PART_Header" ContentSource="Header" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" MinWidth="20" />
+									</StackPanel>
+								</Border>
+								<ItemsPresenter x:Name="ItemsHost" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" />
+							</Grid>
+
+							<ControlTemplate.Triggers>
+								<!-- This trigger changes the connecting lines if the item is the last in the list -->
+								<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Converter={StaticResource LineConverter}}" Value="True">
+									<Setter TargetName="VerticalLineTop" Property="VerticalAlignment" Value="Stretch" />
+									<Setter TargetName="VerticalLineTop" Property="Grid.RowSpan" Value="1" />
+								</DataTrigger>
+								<Trigger Property="IsExpanded" Value="false">
+									<Setter TargetName="ItemsHost" Property="Visibility" Value="Collapsed" />
+									<Setter TargetName="VerticalLineBottom" Property="Rectangle.Visibility" Value="Collapsed" />
+								</Trigger>
+								<Trigger Property="HasItems" Value="false">
+									<Setter TargetName="Expander" Property="Visibility" Value="Hidden" />
+									<Setter TargetName="VerticalLineBottom" Property="Rectangle.Visibility" Value="Collapsed" />
+								</Trigger>
+								<MultiTrigger>
+									<MultiTrigger.Conditions>
+										<Condition Property="HasHeader" Value="false" />
+										<Condition Property="Width" Value="Auto" />
+									</MultiTrigger.Conditions>
+									<Setter TargetName="PART_Header" Property="MinWidth" Value="75" />
+								</MultiTrigger>
+								<MultiTrigger>
+									<MultiTrigger.Conditions>
+										<Condition Property="HasHeader" Value="false" />
+										<Condition Property="Height" Value="Auto" />
+									</MultiTrigger.Conditions>
+									<Setter TargetName="PART_Header" Property="MinHeight" Value="19" />
+								</MultiTrigger>
+								<Trigger Property="IsSelected" Value="true">
+									<Setter TargetName="SelectionEdge" Property="Fill" Value="Yellow" />
+									<Setter TargetName="SelectionEdge" Property="Stroke" Value="Black" />
+								</Trigger>
+								<MultiTrigger>
+									<MultiTrigger.Conditions>
+										<Condition Property="IsSelected" Value="true" />
+										<Condition Property="IsSelectionActive" Value="false" />
+									</MultiTrigger.Conditions>
+									<Setter TargetName="SelectionEdge" Property="Fill" Value="LightGray" />
+									<Setter TargetName="SelectionEdge" Property="Stroke" Value="Gray" />
+								</MultiTrigger>
+								<Trigger Property="IsEnabled" Value="false">
+									<Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
+								</Trigger>
+							</ControlTemplate.Triggers>
+						</ControlTemplate>
+					</Setter.Value>
+				</Setter>
+			</Style>
+		</ResourceDictionary>
 	</UserControl.Resources>
 
 	<TreeView x:Name="TreeView" ItemTemplateSelector="{StaticResource PlanItemTemplateSelector}" ScrollViewer.IsDeferredScrollingEnabled="True">

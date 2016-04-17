@@ -22,6 +22,7 @@ namespace SqlPad.Oracle
 		public static readonly DependencyProperty IsParallelProperty = DependencyProperty.Register(nameof(IsParallel), typeof(bool), typeof(OracleSessionDetailViewer), new FrameworkPropertyMetadata());
 		public static readonly DependencyProperty SessionItemsProperty = DependencyProperty.Register(nameof(SessionItems), typeof(ObservableCollection<SqlMonitorSessionItem>), typeof(OracleSessionDetailViewer), new FrameworkPropertyMetadata());
 		public static readonly DependencyProperty SummarySessionProperty = DependencyProperty.Register(nameof(SummarySession), typeof(SessionSummaryCollection), typeof(OracleSessionDetailViewer), new FrameworkPropertyMetadata(new SessionSummaryCollection()));
+		public static readonly DependencyProperty QueryCoordinatorLongOperationsProperty = DependencyProperty.Register(nameof(QueryCoordinatorLongOperations), typeof(SessionLongOperationCollection), typeof(OracleSessionDetailViewer), new FrameworkPropertyMetadata());
 
 		public bool IsParallel
 		{
@@ -41,9 +42,17 @@ namespace SqlPad.Oracle
 			private set { SetValue(SummarySessionProperty, value); }
 		}
 
+		public SessionLongOperationCollection QueryCoordinatorLongOperations
+		{
+			get { return (SessionLongOperationCollection)GetValue(QueryCoordinatorLongOperationsProperty); }
+			private set { SetValue(QueryCoordinatorLongOperationsProperty, value); }
+		}
+
 		private const string KeyExecutionPlanHeight = "ExecutionPlanHeight";
+		private const string KeySessionListHeight = "SessionListHeight";
 		private const string KeyExpanderExecutionPlanIsExpanded = "ExpanderExecutionPlanIsExpanded";
 		private const string KeyExpanderSessionDetailsIsExpanded = "ExpanderSessionDetailsIsExpanded";
+		private const string KeyExpanderLongOperationsIsExpanded = "ExpanderLongOperationsIsExpanded";
 
 		private static readonly object LockObject = new object();
 		private static readonly TimeSpan DefaultRefreshPeriod = TimeSpan.FromSeconds(10);
@@ -55,6 +64,7 @@ namespace SqlPad.Oracle
 		private bool _isSynchronizing;
 		private bool _autoRefreshEnabled;
 		private double? _expandedExecutionPlanHeight;
+		private double? _expandedSessionListHeight;
 		private SqlMonitorPlanItemCollection _planItemCollection;
 		private OracleSessionValues _oracleSessionValues;
 
@@ -189,7 +199,7 @@ namespace SqlPad.Oracle
 		{
 			databaseSession = databaseSession.Owner ?? databaseSession;
 			var oracleSessionValues = (OracleSessionValues)databaseSession.ProviderValues;
-			if (_oracleSessionValues != null && _oracleSessionValues.Id == oracleSessionValues.Id && String.Equals(_oracleSessionValues.SqlId, oracleSessionValues.SqlId) && _oracleSessionValues.ExecutionId == oracleSessionValues.ExecutionId)
+			if (_oracleSessionValues != null && _oracleSessionValues.Instance == oracleSessionValues.Instance && _oracleSessionValues.Id == oracleSessionValues.Id && String.Equals(_oracleSessionValues.SqlId, oracleSessionValues.SqlId) && _oracleSessionValues.ExecutionId == oracleSessionValues.ExecutionId)
 			{
 				await Refresh(cancellationToken);
 				return;
@@ -210,6 +220,7 @@ namespace SqlPad.Oracle
 
 					_planItemCollection = monitorDataProvider.ItemCollection;
 					_planItemCollection.RefreshPeriod = DefaultRefreshPeriod;
+					QueryCoordinatorLongOperations = _planItemCollection.QueryCoordinatorLongOperations;
 
 					if (_planItemCollection.RootItem != null)
 					{
@@ -244,6 +255,7 @@ namespace SqlPad.Oracle
 			AutoRefreshEnabled = false;
 			_planItemCollection = null;
 			SessionItems = null;
+			QueryCoordinatorLongOperations = null;
 			SummarySession.Clear();
 			IsParallel = false;
 			ExecutionPlanTreeView.RootItem = null;
@@ -260,8 +272,18 @@ namespace SqlPad.Oracle
 				configurationProperties[KeyExecutionPlanHeight] = _expandedExecutionPlanHeight.Value;
 			}
 
+			if (ExpanderSessionDetails.IsExpanded)
+			{
+				configurationProperties[KeySessionListHeight] = RowDefinitionSessionList.ActualHeight;
+			}
+			else if (_expandedSessionListHeight.HasValue)
+			{
+				configurationProperties[KeySessionListHeight] = _expandedSessionListHeight.Value;
+			}
+
 			configurationProperties[KeyExpanderExecutionPlanIsExpanded] = Convert.ToDouble(ExpanderExecutionPlan.IsExpanded);
 			configurationProperties[KeyExpanderSessionDetailsIsExpanded] = Convert.ToDouble(ExpanderSessionDetails.IsExpanded);
+			configurationProperties[KeyExpanderLongOperationsIsExpanded] = Convert.ToDouble(ExpanderLongOperations.IsExpanded);
 		}
 
 		public void RestoreConfiguration(IDictionary<string, double> configurationProperties)
@@ -278,6 +300,12 @@ namespace SqlPad.Oracle
 				RowDefinitionExecutionPlan.Height = new GridLength(value);
 			}
 
+			if (configurationProperties.TryGetValue(KeySessionListHeight, out value))
+			{
+				_expandedSessionListHeight = value;
+				RowDefinitionSessionList.Height = new GridLength(value);
+			}
+
 			if (configurationProperties.TryGetValue(KeyExpanderExecutionPlanIsExpanded, out value))
 			{
 				ExpanderExecutionPlan.IsExpanded = Convert.ToBoolean(value);
@@ -286,6 +314,11 @@ namespace SqlPad.Oracle
 			if (configurationProperties.TryGetValue(KeyExpanderSessionDetailsIsExpanded, out value))
 			{
 				ExpanderSessionDetails.IsExpanded = Convert.ToBoolean(value);
+			}
+
+			if (configurationProperties.TryGetValue(KeyExpanderLongOperationsIsExpanded, out value))
+			{
+				ExpanderLongOperations.IsExpanded = Convert.ToBoolean(value);
 			}
 		}
 
