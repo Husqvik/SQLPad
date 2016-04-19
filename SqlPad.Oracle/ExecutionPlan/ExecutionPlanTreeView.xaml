@@ -957,7 +957,7 @@
 										<TextBlock VerticalAlignment="Center" HorizontalAlignment="Right" Padding="3,0,3,0" Style="{StaticResource ItemHeaderBold}">
 											<Run Text="{Binding ExecutionOrder}" /><Run Text=". " />
 										</TextBlock>
-										<ContentPresenter x:Name="PART_Header" ContentSource="Header" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" MinWidth="20" />
+										<ContentPresenter x:Name="PART_Header" ContentSource="Header" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" MinWidth="20" VerticalAlignment="Center" />
 									</StackPanel>
 								</Border>
 								<ItemsPresenter x:Name="ItemsHost" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" />

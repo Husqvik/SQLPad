@@ -20,6 +20,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 	{
 		private readonly SqlMonitorBuilder _sqlMonitorBuilder;
 
+		private readonly int _instanceId;
 		private readonly string _sqlId;
 		private readonly int _childNumber;
 
@@ -28,6 +29,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 		public SqlMonitorDataProvider(int instanceId, int sessionId, DateTime executionStart, int executionId, string sqlId, int childNumber)
 			: base(null)
 		{
+			_instanceId = instanceId;
 			_sqlId = sqlId;
 			_childNumber = childNumber;
 			_sqlMonitorBuilder = new SqlMonitorBuilder(instanceId, sessionId, _sqlId, executionStart, executionId);
@@ -36,6 +38,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 		public override void InitializeCommand(OracleCommand command)
 		{
 			command.CommandText = OracleDatabaseCommands.SelectExecutionPlanCommandText;
+			command.AddSimpleParameter("INST_ID", _instanceId);
 			command.AddSimpleParameter("SQL_ID", _sqlId);
 			command.AddSimpleParameter("CHILD_NUMBER", _childNumber);
 		}
@@ -855,15 +858,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			while (await reader.ReadAsynchronous(cancellationToken))
 			{
 				var sessionIdentifier = new SessionIdentifier(Convert.ToInt32(reader["INSTANCE_ID"]), Convert.ToInt32(reader["SID"]));
-				var planLineId = Convert.ToInt32(reader["SQL_PLAN_LINE_ID"]);
-				var planItem = DataModel.AllItems[planLineId];
-
-				var key = new SessionPlanItem { PlanItem = planItem, SessionIdentifier = sessionIdentifier };
-				List<SqlMonitorSessionLongOperationItem> items;
-				if (!sessionPlanItems.TryGetValue(key, out items))
-				{
-					sessionPlanItems.Add(key, items = new List<SqlMonitorSessionLongOperationItem>());
-				}
+				var planLineId = OracleReaderValueConvert.ToInt32(reader["SQL_PLAN_LINE_ID"]);
 
 				var longOperationItem =
 					new SqlMonitorSessionLongOperationItem
@@ -875,7 +870,10 @@ namespace SqlPad.Oracle.ModelDataProviders
 						TotalWork = Convert.ToInt64(reader["TOTALWORK"]),
 						Units = OracleReaderValueConvert.ToString(reader["UNITS"]),
 						StartTime = (DateTime)reader["START_TIME"],
-						LastUpdateTime = (DateTime)reader["LAST_UPDATE_TIME"]
+						LastUpdateTime = (DateTime)reader["LAST_UPDATE_TIME"],
+						Elapsed = TimeSpan.FromSeconds(Convert.ToInt64(reader["ELAPSED_SECONDS"])),
+						Context = Convert.ToInt64(reader["CONTEXT"]),
+						Message = OracleReaderValueConvert.ToString(reader["MESSAGE"])
 					};
 
 				//var timestamp = reader["TIMESTAMP"];
@@ -885,19 +883,28 @@ namespace SqlPad.Oracle.ModelDataProviders
 					longOperationItem.TimeRemaining = TimeSpan.FromSeconds(secondsRemaining.Value);
 				}
 
-				longOperationItem.Elapsed = TimeSpan.FromSeconds(Convert.ToInt64(reader["ELAPSED_SECONDS"]));
-				longOperationItem.Context = Convert.ToInt64(reader["CONTEXT"]);
-				longOperationItem.Message = OracleReaderValueConvert.ToString(reader["MESSAGE"]);
+				if (planLineId == null || DataModel.AllItems.Count == 0)
+				{
+					if (sessionIdentifier == DataModel.SessionIdentifier)
+					{
+						queryCoordinatorItems.Add(longOperationItem);
+					}
+
+					continue;
+				}
+
+				var planItem = DataModel.AllItems[planLineId.Value];
+				var key = new SessionPlanItem { PlanItem = planItem, SessionIdentifier = sessionIdentifier };
+				List<SqlMonitorSessionLongOperationItem> items;
+				if (!sessionPlanItems.TryGetValue(key, out items))
+				{
+					sessionPlanItems.Add(key, items = new List<SqlMonitorSessionLongOperationItem>());
+				}
 
 				items.Add(longOperationItem);
-
-				if (sessionIdentifier == DataModel.SessionIdentifier)
-				{
-					queryCoordinatorItems.Add(longOperationItem);
-				}
 			}
 
-			//DataModel.QueryCoordinatorLongOperations.MergeItems(queryCoordinatorItems);
+			DataModel.QueryCoordinatorLongOperations.MergeItems(queryCoordinatorItems);
 
 			foreach (var sessionPlanItem in sessionPlanItems)
 			{
@@ -914,7 +921,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			}
 		}
 
-		public override bool IsValid => DataModel.AllItems.Count > 0;
+		public override bool IsValid { get; } = true;
 
 		private struct SessionPlanItem
 		{
@@ -1014,7 +1021,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 		public override bool IsValid => DataModel.AllItems.Count > 0;
 	}
 
-	[DebuggerDisplay("SqlMonitorSessionItem (Instance={SessionIdentifier.Instance}l SessionId={SessionIdentifier.SessionId})")]
+	[DebuggerDisplay("SqlMonitorSessionItem (Instance={SessionIdentifier.Instance}; SessionId={SessionIdentifier.SessionId})")]
 	public class SqlMonitorSessionItem : ModelBase
 	{
 		private readonly ObservableCollection<ActiveSessionHistoryItem> _activeSessionHistoryItems = new ObservableCollection<ActiveSessionHistoryItem>();

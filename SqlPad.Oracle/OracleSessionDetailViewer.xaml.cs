@@ -220,7 +220,7 @@ namespace SqlPad.Oracle
 
 					_planItemCollection = monitorDataProvider.ItemCollection;
 					_planItemCollection.RefreshPeriod = DefaultRefreshPeriod;
-					QueryCoordinatorLongOperations = _planItemCollection.QueryCoordinatorLongOperations;
+					//QueryCoordinatorLongOperations = _planItemCollection.QueryCoordinatorLongOperations;
 
 					if (_planItemCollection.RootItem != null)
 					{
