@@ -206,7 +206,7 @@ namespace SqlPad.Bookmarks
 			InvalidateVisual();
 		}
 
-		protected async override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+		protected override async void OnMouseLeftButtonDown(MouseButtonEventArgs e)
 		{
 			e.Handled = true;
 

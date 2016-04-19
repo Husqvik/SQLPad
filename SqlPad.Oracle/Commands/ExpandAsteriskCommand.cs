@@ -149,7 +149,7 @@ namespace SqlPad.Oracle.Commands
 			_settingsModel.Heading = _settingsModel.Title;
 		}
 
-		protected async override Task ExecuteAsync(CancellationToken cancellationToken)
+		protected override async Task ExecuteAsync(CancellationToken cancellationToken)
 		{
 			await ConfigureSettings(cancellationToken);
 

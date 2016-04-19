@@ -43,7 +43,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			command.AddSimpleParameter("CHILD_NUMBER", _childNumber);
 		}
 
-		public async override Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
+		public override async Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 		{
 			ItemCollection = await _sqlMonitorBuilder.Build(reader, cancellationToken);
 		}
@@ -709,7 +709,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			command.AddSimpleParameter("SQL_EXEC_START", DataModel.ExecutionStart);
 		}
 
-		public async override Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
+		public override async Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 		{
 			var historyItems = new List<ActiveSessionHistoryItem>();
 
@@ -774,7 +774,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			command.AddSimpleParameter("SQL_EXEC_START", DataModel.ExecutionStart);
 		}
 
-		public async override Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
+		public override async Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 		{
 			var queryCoordinatorSessionItems = new Dictionary<int, SqlMonitorSessionPlanItem>();
 			while (await reader.ReadAsynchronous(cancellationToken))
@@ -850,7 +850,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			command.AddSimpleParameter("SQL_EXEC_START", DataModel.ExecutionStart);
 		}
 
-		public async override Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
+		public override async Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 		{
 			var sessionPlanItems = new Dictionary<SessionPlanItem, List<SqlMonitorSessionLongOperationItem>>();
 			var queryCoordinatorItems = new List<SqlMonitorSessionLongOperationItem>();
@@ -947,7 +947,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 			command.AddSimpleParameter("SQL_EXEC_START", DataModel.ExecutionStart);
 		}
 
-		public async override Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
+		public override async Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 		{
 			var parallelSlaves = new List<SqlMonitorSessionItem>();
 			SqlMonitorSessionItem queryCoordinatorSessionItem = null;

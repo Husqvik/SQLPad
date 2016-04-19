@@ -273,7 +273,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return ExecuteUserTransactionAction(async t => await t.RollbackAsynchronous());
 		}
 
-		public async override Task<ExecutionStatisticsPlanItemCollection> GetCursorExecutionStatisticsAsync(CancellationToken cancellationToken)
+		public override async Task<ExecutionStatisticsPlanItemCollection> GetCursorExecutionStatisticsAsync(CancellationToken cancellationToken)
 		{
 			var cursorExecutionStatisticsDataProvider = new CursorExecutionStatisticsDataProvider(_userCommandSqlId, _userCommandChildNumber);
 			var displayCursorDataProvider = new DisplayCursorDataProvider(_userCommandSqlId, _userCommandChildNumber, _databaseModel.Version);
@@ -289,7 +289,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return ExecuteUserStatementAsync(executionModel, false, cancellationToken);
 		}
 
-		public async override Task RefreshResult(StatementExecutionResult result, CancellationToken cancellationToken)
+		public override async Task RefreshResult(StatementExecutionResult result, CancellationToken cancellationToken)
 		{
 			_isExecuting = true;
 			DateTime? executedAt = null;
