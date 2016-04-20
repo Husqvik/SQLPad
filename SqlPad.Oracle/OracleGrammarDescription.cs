@@ -721,6 +721,7 @@ namespace SqlPad.Oracle
 			public const string JsonColumnDefinition = "JsonColumnDefinition";
 			public const string JsonColumnDefinitionList = "JsonColumnDefinitionList";
 			public const string JsonColumnsClause = "JsonColumnsClause";
+			public const string JsonDataType = "JsonDataType";
 			public const string JsonExistsClause = "JsonExistsClause";
 			public const string JsonExistsOnErrorClause = "JsonExistsOnErrorClause";
 			public const string JsonExistsParameterClause = "JsonExistsParameterClause";
@@ -728,14 +729,12 @@ namespace SqlPad.Oracle
 			public const string JsonQueryOnErrorClause = "JsonQueryOnErrorClause";
 			public const string JsonQueryParameterClause = "JsonQueryParameterClause";
 			public const string JsonQueryReturningClause = "JsonQueryReturningClause";
-			public const string JsonQueryReturnType = "JsonQueryReturnType";
 			public const string JsonQueryWrapperClause = "JsonQueryWrapperClause";
 			public const string JsonTableClause = "JsonTableClause";
 			public const string JsonValueClause = "JsonValueClause";
 			public const string JsonValueOnErrorClause = "JsonValueOnErrorClause";
 			public const string JsonValueParameterClause = "JsonValueParameterClause";
 			public const string JsonValueReturningClause = "JsonValueReturningClause";
-			public const string JsonValueReturnType = "JsonValueReturnType";
 			public const string KeepClause = "KeepClause";
 			public const string KeepOrDrop = "KeepOrDrop";
 			public const string KeepOrDropIndex = "KeepOrDropIndex";

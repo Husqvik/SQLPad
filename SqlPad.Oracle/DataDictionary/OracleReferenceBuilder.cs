@@ -135,48 +135,29 @@ namespace SqlPad.Oracle.DataDictionary
 			return dataTypeReference.ResolvedDataType;
 		}
 
-		public static OracleDataType ResolveDataTypeFromJsonReturnTypeNode(StatementGrammarNode jsonReturnTypeNode)
+		public static OracleDataType ResolveDataTypeFromJsonDataTypeNode(StatementGrammarNode jsonDataTypeNode)
 		{
-			if (jsonReturnTypeNode == null)
+			if (jsonDataTypeNode == null)
 			{
 				return OracleDataType.Empty;
 			}
 
-			var isVarchar = false;
-			if (String.Equals(jsonReturnTypeNode.Id, NonTerminals.JsonValueReturnType))
+			if (!String.Equals(jsonDataTypeNode.Id, NonTerminals.JsonDataType))
 			{
-				switch (jsonReturnTypeNode.FirstTerminalNode.Id)
-				{
-					case Terminals.Varchar2:
-						isVarchar = true;
-						break;
-					case Terminals.Number:
-						var dataType = new OracleDataType
-						{
-							FullyQualifiedName = OracleObjectIdentifier.Create(null, TerminalValues.Number)
-						};
-
-						TryResolveNumericPrecisionAndScale(new OracleDataTypeReference { ResolvedDataType = dataType }, jsonReturnTypeNode);
-						return dataType;
-					default:
-						return OracleDataType.Empty;
-				}
+				throw new ArgumentException($"Node ID must be '{NonTerminals.JsonDataType}'. ", nameof(jsonDataTypeNode));
 			}
 
-			if (isVarchar || String.Equals(jsonReturnTypeNode.Id, NonTerminals.JsonQueryReturnType))
+			var dataTypeNode = jsonDataTypeNode[NonTerminals.DataType];
+			if (dataTypeNode != null)
 			{
-				var dataType =
-					new OracleDataType
-					{
-						FullyQualifiedName = OracleObjectIdentifier.Create(null, TerminalValues.Varchar2)
-					};
-
-				TryResolveVarcharDetails(new OracleDataTypeReference { ResolvedDataType = dataType }, jsonReturnTypeNode);
-
-				return dataType;
+				return ResolveDataTypeFromNode(dataTypeNode);
 			}
 
-			throw new ArgumentException("Node ID must be 'JsonValueReturnType' or 'JsonQueryReturnType'. ", nameof(jsonReturnTypeNode));
+			var typeTerminal = jsonDataTypeNode[0];
+			return
+				typeTerminal == null
+					? OracleDataType.Empty
+					: new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(null, ((OracleToken)typeTerminal.Token).UpperInvariantValue) };
 		}
 
 		private static void ResolveTypeMetadata(OracleDataTypeReference dataTypeReference)
@@ -190,7 +171,7 @@ namespace SqlPad.Oracle.DataDictionary
 				!String.Equals(dataTypeNode.Id, NonTerminals.PlSqlDataTypeWithoutConstraint) &&
 				!isAssociativeArrayType)
 			{
-				throw new ArgumentException("RootNode ID must be 'DataType' or 'PlSqlDataType'. ", nameof(dataTypeReference));
+				throw new ArgumentException($"RootNode ID must be '{NonTerminals.DataType}' or '{NonTerminals.PlSqlDataType}'. ", nameof(dataTypeReference));
 			}
 
 			var owner = String.Equals(dataTypeNode.FirstTerminalNode.Id, Terminals.SchemaIdentifier)

@@ -864,11 +864,22 @@ namespace SqlPad.Oracle.SemanticModel
 				var columnDescription = column.ColumnDescription;
 				if (!TryAssingnColumnForOrdinality(columnDescription, jsonTableColumn.ChildNodes.Skip(1)))
 				{
-					var jsonReturnTypeNode = jsonTableColumn[1];
-					columnDescription.DataType = OracleReferenceBuilder.ResolveDataTypeFromJsonReturnTypeNode(jsonReturnTypeNode);
-					if (columnDescription.DataType.Length == null && String.Equals(columnDescription.DataType.FullyQualifiedName.Name, TerminalValues.Varchar2))
+					var jsonReturnTypeNode = jsonTableColumn[NonTerminals.JsonDataType];
+					columnDescription.DataType = OracleReferenceBuilder.ResolveDataTypeFromJsonDataTypeNode(jsonReturnTypeNode);
+					if (columnDescription.DataType.Length == null && String.IsNullOrEmpty(columnDescription.DataType.FullyQualifiedName.Owner))
 					{
-						columnDescription.DataType.Length = DatabaseModel.MaximumVarcharLength;
+						switch (columnDescription.DataType.FullyQualifiedName.Name)
+						{
+							case TerminalValues.Varchar2:
+								columnDescription.DataType.Length = DatabaseModel.MaximumVarcharLength;
+								break;
+							case TerminalValues.NVarchar2:
+								columnDescription.DataType.Length = DatabaseModel.MaximumNVarcharLength;
+								break;
+							case TerminalValues.Raw:
+								columnDescription.DataType.Length = DatabaseModel.MaximumRawLength;
+								break;
+						}
 					}
 				}
 			}

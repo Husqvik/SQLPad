@@ -9921,7 +9921,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Returning" />
-          <NonTerminal Id="JsonValueReturnType" />
+          <NonTerminal Id="JsonDataType" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -9976,7 +9976,7 @@
         </Sequence>
         <Sequence Comment="JSON exists column">
           <Terminal Id="ColumnAlias" />
-          <NonTerminal Id="JsonValueReturnType" />
+          <NonTerminal Id="JsonDataType" />
           <Terminal Id="Exists" />
           <Terminal Id="Path"/>
           <Terminal Id="StringLiteral" Comment="JSON path expression" />
@@ -9984,7 +9984,7 @@
         </Sequence>
         <Sequence Comment="JSON query column">
           <Terminal Id="ColumnAlias" />
-          <NonTerminal Id="JsonQueryReturnType" />
+          <NonTerminal Id="JsonDataType" />
           <Terminal Id="Format" />
           <Terminal Id="Json" />
           <NonTerminal Id="JsonQueryWrapperClause" IsOptional="true" />
@@ -9994,31 +9994,33 @@
         </Sequence>
         <Sequence Comment="JSON value column">
           <Terminal Id="ColumnAlias" />
-          <NonTerminal Id="JsonValueReturnType" />
+          <NonTerminal Id="JsonDataType" />
           <Terminal Id="Path"/>
           <Terminal Id="StringLiteral" Comment="JSON path expression" />
           <NonTerminal Id="JsonValueOnErrorClause" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
-    
-    <Rule StartingNonTerminal="JsonValueReturnType">
+
+    <Rule StartingNonTerminal="JsonDataType">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="JsonQueryReturnType" />
+          <NonTerminal Id="DataType" />
         </Sequence>
-        <Sequence>
-          <Terminal Id="Number" />
-          <NonTerminal Id="DataTypeNumericPrecisionAndScale" IsOptional="true" />
-        </Sequence>
-      </Sequences>
-    </Rule>
-    
-    <Rule StartingNonTerminal="JsonQueryReturnType">
-      <Sequences>
         <Sequence>
           <Terminal Id="Varchar2" />
-          <NonTerminal Id="DataTypeVarcharSimplePrecision" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Varchar" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NVarchar2" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="NVarchar" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Raw" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -10138,7 +10140,7 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Returning" />
-          <NonTerminal Id="JsonQueryReturnType" />
+          <NonTerminal Id="JsonDataType" />
         </Sequence>
       </Sequences>
     </Rule>
