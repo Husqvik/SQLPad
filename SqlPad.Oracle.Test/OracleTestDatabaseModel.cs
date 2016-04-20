@@ -1197,6 +1197,8 @@ namespace SqlPad.Oracle.Test
 
 		public override event EventHandler Initialized = delegate { };
 
+		public override event EventHandler CurrentSchemaChanged;
+
 		public override event EventHandler<DatabaseModelPasswordArgs> PasswordRequired;
 
 		public override event EventHandler<DatabaseModelConnectionErrorArgs> InitializationFailed;

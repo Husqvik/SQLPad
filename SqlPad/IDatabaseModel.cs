@@ -28,6 +28,8 @@ namespace SqlPad
 
 		event EventHandler Initialized;
 
+		event EventHandler CurrentSchemaChanged;
+
 		event EventHandler<DatabaseModelPasswordArgs> PasswordRequired;
 
 		event EventHandler<DatabaseModelConnectionErrorArgs> InitializationFailed;

@@ -25,38 +25,41 @@ namespace SqlPad.Oracle.DatabaseConnection
 {
 	public class OracleDatabaseModel : OracleDatabaseModelBase
 	{
-		internal const int InitialLongFetchSize = 131072;
 		private const string ModuleNameSqlPadDatabaseModelBase = "DbModel";
 		private const string OracleDataAccessRegistryPath = @"Software\Oracle\ODP.NET";
 		private const string OracleDataAccessComponents = "Oracle Data Access Components";
 
-		private readonly Timer _refreshTimer = new Timer();
-		private readonly HashSet<OracleConnectionAdapter> _connectionAdapters = new HashSet<OracleConnectionAdapter>();
-		private readonly string _connectionStringName;
-		private bool _isInitialized;
-		private bool _isDisposed;
-		private bool _isRefreshing;
-		private bool _cacheLoaded;
-		private Task _backgroundTask;
-		private readonly CancellationTokenSource _backgroundTaskCancellationTokenSource = new CancellationTokenSource();
-		private ILookup<OracleProgramIdentifier, OracleProgramMetadata> _allProgramMetadata = Enumerable.Empty<OracleProgramMetadata>().ToLookup(m => m.Identifier);
-		private ILookup<OracleObjectIdentifier, OracleReferenceConstraint> _uniqueConstraintReferringReferenceConstraints = Enumerable.Empty<OracleReferenceConstraint>().ToLookup(m => m.FullyQualifiedName);
-		private readonly ConnectionStringSettings _connectionString;
-
-		private readonly string _moduleName;
-		private HashSet<string> _schemas = new HashSet<string>();
-		private IReadOnlyDictionary<string, OracleSchema> _allSchemas = new Dictionary<string, OracleSchema>();
-		private string _currentSchema;
-		private readonly OracleDataDictionaryMapper _dataDictionaryMapper;
-		private OracleDataDictionary _dataDictionary = OracleDataDictionary.EmptyDictionary;
-
-		//private readonly OracleCustomTypeGenerator _customTypeGenerator;
+		internal const int InitialLongFetchSize = 131072;
 
 		private static readonly Dictionary<string, OracleDataDictionary> CachedDataDictionaries = new Dictionary<string, OracleDataDictionary>();
 		private static readonly Dictionary<string, OracleDatabaseModel> DatabaseModels = new Dictionary<string, OracleDatabaseModel>();
 		private static readonly Dictionary<string, DatabaseProperty> DatabaseProperties = new Dictionary<string, DatabaseProperty>();
 		private static readonly HashSet<string> ActiveDataModelRefresh = new HashSet<string>();
 		private static readonly Dictionary<string, List<RefreshModel>> WaitingDataModelRefresh = new Dictionary<string, List<RefreshModel>>();
+
+		private readonly string _connectionStringName;
+		private readonly string _moduleName;
+		private readonly ConnectionStringSettings _connectionString;
+		private readonly OracleDataDictionaryMapper _dataDictionaryMapper;
+
+		private readonly Timer _refreshTimer = new Timer();
+		private readonly HashSet<OracleConnectionAdapter> _connectionAdapters = new HashSet<OracleConnectionAdapter>();
+		private readonly CancellationTokenSource _backgroundTaskCancellationTokenSource = new CancellationTokenSource();
+
+		private bool _isInitialized;
+		private bool _isDisposed;
+		private bool _isRefreshing;
+		private bool _cacheLoaded;
+		private string _currentSchema;
+		private Task _backgroundTask;
+
+		private OracleDataDictionary _dataDictionary = OracleDataDictionary.EmptyDictionary;
+		private HashSet<string> _schemas = new HashSet<string>();
+		private IReadOnlyDictionary<string, OracleSchema> _allSchemas = new Dictionary<string, OracleSchema>();
+		private ILookup<OracleProgramIdentifier, OracleProgramMetadata> _allProgramMetadata = Enumerable.Empty<OracleProgramMetadata>().ToLookup(m => m.Identifier);
+		private ILookup<OracleObjectIdentifier, OracleReferenceConstraint> _uniqueConstraintReferringReferenceConstraints = Enumerable.Empty<OracleReferenceConstraint>().ToLookup(m => m.FullyQualifiedName);
+
+		//private readonly OracleCustomTypeGenerator _customTypeGenerator;
 
 		public string ConnectionIdentifier { get; }
 
@@ -308,6 +311,18 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return _backgroundTask;
 		}
 
+		internal void SetCurrentSchema(string schemaName)
+		{
+			if (CurrentSchema == schemaName)
+			{
+				return;
+			}
+
+			_schemas.Add(schemaName);
+			CurrentSchema = schemaName;
+			RaiseEvent(CurrentSchemaChanged);
+		}
+
 		private void RaiseRefreshStatusWaitingForModelBeingRefreshed()
 		{
 			RaiseRefreshStatusChanged("Waiting for data dictionary metadata... ");
@@ -500,6 +515,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override event EventHandler Initialized;
 
+		public override event EventHandler CurrentSchemaChanged;
+
 		public override event EventHandler<DatabaseModelPasswordArgs> PasswordRequired;
 
 		public override event EventHandler<DatabaseModelConnectionErrorArgs> InitializationFailed;
@@ -547,6 +564,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			RefreshStarted = null;
 			RefreshStatusChanged = null;
 			RefreshCompleted = null;
+			CurrentSchemaChanged = null;
 
 			foreach (var adapter in _connectionAdapters.ToArray())
 			{

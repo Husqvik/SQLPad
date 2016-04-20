@@ -775,6 +775,31 @@ SELECT /*+ parallel(g1 2) parallel(g2 2) monitor */ avg(g1.val * 10000 + g2.val)
 		}
 
 		[Test]
+		public async Task TestAlterCurrentSchema()
+		{
+			var executionModel =
+				new StatementExecutionModel
+				{
+					StatementText = "ALTER SESSION SET CURRENT_SCHEMA = SYS",
+					BindVariables = new BindVariableModel[0],
+				};
+
+			var changedEventCalled = false;
+
+			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
+			{
+				databaseModel.CurrentSchemaChanged += delegate { changedEventCalled = true; };
+				databaseModel.CurrentSchema.ShouldBe("HUSQVIK");
+
+				var connectionAdapter = (OracleConnectionAdapter)databaseModel.CreateConnectionAdapter();
+				await connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel } }, CancellationToken.None);
+
+				databaseModel.CurrentSchema.ShouldBe("SYS");
+				changedEventCalled.ShouldBe(true);
+			}
+		}
+
+		[Test]
 		public async Task TestExplainPlanDataProvider()
 		{
 			ExecutionPlanItemCollection planItemCollection;

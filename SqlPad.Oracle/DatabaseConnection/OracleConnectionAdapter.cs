@@ -1145,6 +1145,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 							_userCommandSqlId = OracleReaderValueConvert.ToString(reader["SQL_ID"]);
 							_userCommandChildNumber = OracleReaderValueConvert.ToInt32(reader["SQL_CHILD_NUMBER"]) ?? 0;
+
 							var undoSegmentNumber = OracleReaderValueConvert.ToInt32(reader["XIDUSN"]);
 							if (undoSegmentNumber.HasValue)
 							{
@@ -1157,6 +1158,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 										IsolationLevel = (IsolationLevel)Convert.ToInt32(reader["TRANSACTION_ISOLATION_LEVEL"])
 									};
 							}
+
+							var currentSchema = Convert.ToString(reader["SCHEMANAME"]);
+							_databaseModel.SetCurrentSchema(currentSchema);
 						}
 
 						return null;
@@ -1191,19 +1195,31 @@ namespace SqlPad.Oracle.DatabaseConnection
 			using (var command = _userConnection.CreateCommand())
 			{
 				command.CommandText = OracleDatabaseCommands.SelectLocalTransactionIdCommandText;
-				var transactionId  = OracleReaderValueConvert.ToString(await command.ExecuteScalarAsynchronous(cancellationToken));
 
-				if (!String.IsNullOrEmpty(transactionId))
+				using (var reader = await command.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken))
 				{
-					var transactionElements = transactionId.Split('.');
-					_userTransactionInfo =
-						new TransactionInfo
-						{
-							UndoSegmentNumber = Convert.ToInt32(transactionElements[0]),
-							SlotNumber = Convert.ToInt32(transactionElements[1]),
-							SequnceNumber = Convert.ToInt32(transactionElements[2]),
-							IsolationLevel = IsolationLevel.Unspecified
-						};
+					if (!await reader.ReadAsynchronous(cancellationToken))
+					{
+						return;
+					}
+
+					var transactionId = OracleReaderValueConvert.ToString(reader["TRANSACTION_ID"]);
+
+					if (!String.IsNullOrEmpty(transactionId))
+					{
+						var transactionElements = transactionId.Split('.');
+						_userTransactionInfo =
+							new TransactionInfo
+							{
+								UndoSegmentNumber = Convert.ToInt32(transactionElements[0]),
+								SlotNumber = Convert.ToInt32(transactionElements[1]),
+								SequnceNumber = Convert.ToInt32(transactionElements[2]),
+								IsolationLevel = IsolationLevel.Unspecified
+							};
+					}
+
+					var currentSchema = Convert.ToString(reader["SCHEMANAME"]);
+					_databaseModel.SetCurrentSchema(currentSchema);
 				}
 			}
 		}
