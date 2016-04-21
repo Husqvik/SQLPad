@@ -2768,6 +2768,16 @@ FROM (
 		}
 
 		[Test]
+		public void TestModelBuildWithUnfinishedCastDataType()
+		{
+			const string sqlText = @"SELECT CAST(NULL AS VARCHAR2) FROM DUAL";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			Should.NotThrow(() => BuildValidationModel(sqlText, statement));
+		}
+
+		[Test]
 		public void TestUnpivotInColumnDataTypeMismatch()
 		{
 			const string sqlText =

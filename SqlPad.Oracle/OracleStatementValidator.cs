@@ -552,7 +552,7 @@ namespace SqlPad.Oracle
 
 		private static void ValidateDataTypeMaximumLength(OracleValidationModel validationModel, OracleDataTypeReference dataTypeReference, int maximumLength)
 		{
-			if (dataTypeReference.ResolvedDataType.Length <= maximumLength)
+			if (dataTypeReference.LengthNode == null || dataTypeReference.ResolvedDataType.Length <= maximumLength)
 			{
 				return;
 			}
