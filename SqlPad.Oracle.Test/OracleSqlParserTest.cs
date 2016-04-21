@@ -4493,6 +4493,29 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 				}
 			}
 
+			public class DropUser
+			{
+				[Test]
+				public void TestDropUser()
+				{
+					const string statementText = @"DROP USER TEST_USER CASCADE";
+
+					var result = Parser.Parse(statementText);
+
+					result.Count.ShouldBe(1);
+					var statement = result.Single();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+					var terminals = statement.AllTerminals.ToArray();
+					terminals.Length.ShouldBe(4);
+
+					terminals[0].Id.ShouldBe(Terminals.Drop);
+					terminals[1].Id.ShouldBe(Terminals.User);
+					terminals[2].Id.ShouldBe(Terminals.ObjectIdentifier);
+					terminals[3].Id.ShouldBe(Terminals.Cascade);
+				}
+			}
+
 			public class DropOther
 			{
 				[Test]

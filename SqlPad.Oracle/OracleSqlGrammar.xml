@@ -4000,7 +4000,20 @@
         <Sequence>
           <NonTerminal Id="DropTablespace" />
         </Sequence>
+        <Sequence>
+          <NonTerminal Id="DropUser" />
+        </Sequence>
         <!-- TODO: Drop other objects -->
+      </Sequences>
+    </Rule>
+    
+      <Rule StartingNonTerminal="DropUser">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="User" />
+          <Terminal Id="ObjectIdentifier" />
+          <Terminal Id="Cascade" IsOptional="true" />
+        </Sequence>
       </Sequences>
     </Rule>
 

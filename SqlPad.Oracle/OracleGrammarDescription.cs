@@ -430,6 +430,7 @@ namespace SqlPad.Oracle
 			public const string DropTablespace = "DropTablespace";
 			public const string DropTablespaceIncludingContentsClause = "DropTablespaceIncludingContentsClause";
 			public const string DropType = "DropType";
+			public const string DropUser = "DropUser";
 			public const string DropView = "DropView";
 			public const string DumpBlockSpecification = "DumpBlockSpecification";
 			public const string DumpLogfileOption = "DumpLogfileOption";

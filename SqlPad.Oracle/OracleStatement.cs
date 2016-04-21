@@ -190,6 +190,8 @@ namespace SqlPad.Oracle
 							return "Database link dropped. ";
 						case NonTerminals.DropTablespace:
 							return "Tablespace dropped. ";
+						case NonTerminals.DropUser:
+							return "User dropped. ";
 						case NonTerminals.DropOther:
 							switch (rootDropClause?[0, 0]?.Id)
 							{
