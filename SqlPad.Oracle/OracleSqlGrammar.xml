@@ -20295,7 +20295,7 @@
     <Terminal Id="Cascade" Value="CASCADE" />
     <Terminal Id="Constraints" Value="CONSTRAINTS" />
     <Terminal Id="Purge" Value="PURGE" />
-    <Terminal Id="Online" Value="ONLINE" />
+    <Terminal Id="Online" Value="ONLINE" ReservedWord="Sql" />
     <Terminal Id="Materialized" Value="MATERIALIZED" />
     <Terminal Id="Snapshot" Value="SNAPSHOT" />
     <Terminal Id="Preserve" Value="PRESERVE" />
@@ -20312,12 +20312,12 @@
     <Terminal Id="StatementId" Value="STATEMENT_ID" />
 
     <!-- Sequence -->
-    <Terminal Id="Increment" Value="INCREMENT" />
+    <Terminal Id="Increment" Value="INCREMENT" ReservedWord="Sql" />
     <Terminal Id="NoMaximumValue" Value="NOMAXVALUE" />
     <Terminal Id="NoMinimumValue" Value="NOMINVALUE" />
     <Terminal Id="NoOrder" Value="NOORDER" />
     <Terminal Id="NoKeep" Value="NOKEEP" />
-    <Terminal Id="Session" Value="SESSION" />
+    <Terminal Id="Session" Value="SESSION" ReservedWord="Sql" />
     <Terminal Id="NoPartition" Value="NOPARTITION" />
 
     <!-- Purge -->
@@ -20345,7 +20345,7 @@
     <Terminal Id="InitialTransactions" Value="INITRANS" />
     <Terminal Id="MaximumTransactions" Value="MAXTRANS" />
     <Terminal Id="MinimumExtents" Value="MINEXTENTS" />
-    <Terminal Id="MaximumExtents" Value="MAXEXTENTS" />
+    <Terminal Id="MaximumExtents" Value="MAXEXTENTS" ReservedWord="Sql" />
     <Terminal Id="PercentIncrease" Value="PCTINCREASE" />
     <Terminal Id="FreeLists" Value="FREELISTS" />
     <Terminal Id="FreeList" Value="FREELIST" />
@@ -20418,7 +20418,7 @@
     <Terminal Id="Beginning" Value="BEGINNING" />
     <Terminal Id="Editioning" Value="EDITIONING" />
     <Terminal Id="Bequeath" Value="BEQUEATH" />
-    <Terminal Id="Validate" Value="VALIDATE" />
+    <Terminal Id="Validate" Value="VALIDATE" ReservedWord="Sql" />
     <Terminal Id="NoValidate" Value="NOVALIDATE" />
     <Terminal Id="Less" Value="LESS" />
     <Terminal Id="Than" Value="THAN" />
@@ -20995,5 +20995,10 @@
     <Terminal Id="Next" Value="NEXT" />
     <Terminal Id="Fetch" Value="FETCH" ReservedWord="PlSql" />
     <Terminal Id="Percent" Value="PERCENT" />
+
+    <!-- Unused reserved words -->
+    <Terminal Id="Successful" Value="SUCCESSFUL" ReservedWord="Sql" />
+    <Terminal Id="UserId" Value="UID" ReservedWord="Sql" />
+    <Terminal Id="Whenever" Value="WHENEVER" ReservedWord="Sql" />
   </Terminals>
 </SqlGrammar>
