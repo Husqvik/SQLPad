@@ -318,7 +318,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 				return;
 			}
 
-			_schemas.Add(schemaName);
+			if (_schemas.Add(schemaName))
+			{
+				RefreshSchemas();
+			}
+
 			CurrentSchema = schemaName;
 			RaiseEvent(CurrentSchemaChanged);
 		}
@@ -739,9 +743,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			try
 			{
-				var stopwatch = Stopwatch.StartNew();
-				UpdateSchemas(_dataDictionaryMapper.GetSchemaNames());
-				Trace.WriteLine($"Fetch schema metadata finished in {stopwatch.Elapsed}. ");
+				RefreshSchemas();
 
 				var allObjects = _dataDictionaryMapper.BuildDataDictionary();
 
@@ -751,7 +753,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					.Concat(userPrograms)
 					.ToLookup(m => m.Identifier);
 
-				stopwatch.Reset();
+				var stopwatch = Stopwatch.StartNew();
 
 				var nonSchemaBuiltInFunctionMetadata = new List<OracleProgramMetadata>();
 
@@ -817,6 +819,13 @@ namespace SqlPad.Oracle.DatabaseConnection
 				Trace.WriteLine($"Oracle data dictionary refresh failed: {e}");
 				return false;
 			}
+		}
+
+		private void RefreshSchemas()
+		{
+			var stopwatch = Stopwatch.StartNew();
+			RefreshSchemas(_dataDictionaryMapper.GetSchemaNames());
+			Trace.WriteLine($"Fetch schema metadata finished in {stopwatch.Elapsed}. ");
 		}
 
 		private Dictionary<TKey, TValue> SafeFetchDictionary<TKey, TValue>(Func<IEnumerable<KeyValuePair<TKey, TValue>>> fetchKeyValuePairFunction, string traceMessage)
@@ -937,7 +946,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			try
 			{
-				UpdateSchemas(OracleSchemaResolver.ResolveSchemas(this));
+				RefreshSchemas(OracleSchemaResolver.ResolveSchemas(this));
 			}
 			catch (Exception e)
 			{
@@ -968,7 +977,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_refreshTimer.Start();
 		}
 
-		private void UpdateSchemas(IEnumerable<OracleSchema> schemas)
+		private void RefreshSchemas(IEnumerable<OracleSchema> schemas)
 		{
 			var allSchemas = schemas.ToDictionary(s => s.Name);
 			_schemas = allSchemas.Values.Select(s => s.Name.Trim('"')).ToHashSet();

@@ -458,7 +458,7 @@ namespace SqlPad
 			DatabaseModel.RefreshStarted += DatabaseModelRefreshStartedHandler;
 			DatabaseModel.RefreshStatusChanged += DatabaseModelRefreshStatusChangedHandler;
 			DatabaseModel.RefreshCompleted += DatabaseModelRefreshCompletedHandler;
-			DatabaseModel.CurrentSchemaChanged += delegate { CurrentSchema = DatabaseModel.CurrentSchema; };
+			DatabaseModel.CurrentSchemaChanged += delegate { Dispatcher.Invoke(DatabaseModelInitializedHandler); };
 
 			ProgressBar.IsIndeterminate = false;
 			DatabaseModel.Initialize();
