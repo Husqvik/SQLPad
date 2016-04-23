@@ -184,13 +184,8 @@ namespace SqlPad.Oracle.DataDictionary
 				? dataTypeNode
 				: dataTypeNode[NonTerminals.BuiltInDataType];
 
-			var name = String.Empty;
-			if (!String.IsNullOrEmpty(owner))
-			{
-				var identifier = dataTypeNode[NonTerminals.SchemaDatatype, Terminals.DataTypeIdentifier];
-				name = identifier == null ? String.Empty : identifier.Token.Value;
-			}
-			else if (builtInDataTypeNode != null)
+			string name;
+			if (builtInDataTypeNode != null)
 			{
 				var isVarying = builtInDataTypeNode[Terminals.Varying] != null;
 
@@ -271,6 +266,11 @@ namespace SqlPad.Oracle.DataDictionary
 			else if (!isSqlDataType)
 			{
 				name = ((OracleToken)dataTypeNode.LastTerminalNode.Token).UpperInvariantValue;
+			}
+			else
+			{
+				var identifier = dataTypeNode[NonTerminals.SchemaDatatype, Terminals.DataTypeIdentifier];
+				name = identifier == null ? String.Empty : identifier.Token.Value;
 			}
 
 			dataType.FullyQualifiedName = OracleObjectIdentifier.Create(owner, name);

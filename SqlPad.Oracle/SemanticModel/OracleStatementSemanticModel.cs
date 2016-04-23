@@ -862,25 +862,36 @@ namespace SqlPad.Oracle.SemanticModel
 				columns.Add(column);
 
 				var columnDescription = column.ColumnDescription;
-				if (!TryAssingnColumnForOrdinality(columnDescription, jsonTableColumn.ChildNodes.Skip(1)))
+				if (TryAssingnColumnForOrdinality(columnDescription, jsonTableColumn.ChildNodes.Skip(1)))
 				{
-					var jsonReturnTypeNode = jsonTableColumn[NonTerminals.JsonDataType];
-					columnDescription.DataType = OracleReferenceBuilder.ResolveDataTypeFromJsonDataTypeNode(jsonReturnTypeNode);
-					if (columnDescription.DataType.Length == null && String.IsNullOrEmpty(columnDescription.DataType.FullyQualifiedName.Owner))
-					{
-						switch (columnDescription.DataType.FullyQualifiedName.Name)
-						{
-							case TerminalValues.Varchar2:
-								columnDescription.DataType.Length = DatabaseModel.MaximumVarcharLength;
-								break;
-							case TerminalValues.NVarchar2:
-								columnDescription.DataType.Length = DatabaseModel.MaximumNVarcharLength;
-								break;
-							case TerminalValues.Raw:
-								columnDescription.DataType.Length = DatabaseModel.MaximumRawLength;
-								break;
-						}
-					}
+					continue;
+				}
+
+				var jsonReturnTypeNode = jsonTableColumn[NonTerminals.JsonDataType];
+				columnDescription.DataType = OracleReferenceBuilder.ResolveDataTypeFromJsonDataTypeNode(jsonReturnTypeNode);
+
+				var dataTypeIdentifier = jsonReturnTypeNode?[NonTerminals.DataType, NonTerminals.SchemaDatatype, Terminals.DataTypeIdentifier];
+				if (dataTypeIdentifier != null)
+				{
+					ResolveDataTypeReference(queryBlock, queryBlock, dataTypeIdentifier, StatementPlacement.TableReference, null);
+				}
+
+				if (columnDescription.DataType.Length != null || !String.IsNullOrEmpty(columnDescription.DataType.FullyQualifiedName.Owner))
+				{
+					continue;
+				}
+
+				switch (columnDescription.DataType.FullyQualifiedName.Name)
+				{
+					case TerminalValues.Varchar2:
+						columnDescription.DataType.Length = DatabaseModel.MaximumVarcharLength;
+						break;
+					case TerminalValues.NVarchar2:
+						columnDescription.DataType.Length = DatabaseModel.MaximumNVarcharLength;
+						break;
+					case TerminalValues.Raw:
+						columnDescription.DataType.Length = DatabaseModel.MaximumRawLength;
+						break;
 				}
 			}
 
@@ -2915,10 +2926,9 @@ namespace SqlPad.Oracle.SemanticModel
 		private OracleReference ResolveColumnFunctionOrDataTypeReferenceFromIdentifier(OracleQueryBlock queryBlock, OracleReferenceContainer referenceContainer, StatementGrammarNode identifier, StatementPlacement placement, OracleSelectListColumn selectListColumn, Func<StatementGrammarNode, StatementGrammarNode> getPrefixNonTerminalFromIdentiferFunction, Func<StatementGrammarNode, IEnumerable<StatementGrammarNode>> getExtraFunctionCallNodesFromIdentifierFunction)
 		{
 			var hasNotDatabaseLink = OracleReferenceBuilder.GetDatabaseLinkFromIdentifier(identifier) == null;
-			if (String.Equals(identifier.ParentNode.ParentNode.Id, NonTerminals.DataType))
+			var dataTypeReference = ResolveDataTypeReference(queryBlock, referenceContainer, identifier, placement, selectListColumn);
+			if (dataTypeReference != null)
 			{
-				var dataTypeReference = OracleReferenceBuilder.CreateDataTypeReference(queryBlock, selectListColumn, placement, identifier);
-				referenceContainer.DataTypeReferences.Add(dataTypeReference);
 				return dataTypeReference;
 			}
 
@@ -2945,7 +2955,19 @@ namespace SqlPad.Oracle.SemanticModel
 			return programReference;
 		}
 
-		private StatementGrammarNode GetPrefixNodeFromPrefixedColumnReference(StatementGrammarNode identifier)
+		private static OracleDataTypeReference ResolveDataTypeReference(OracleQueryBlock queryBlock, OracleReferenceContainer referenceContainer, StatementGrammarNode identifier, StatementPlacement placement, OracleSelectListColumn selectListColumn)
+		{
+			if (!String.Equals(identifier.ParentNode.ParentNode.Id, NonTerminals.DataType))
+			{
+				return null;
+			}
+
+			var dataTypeReference = OracleReferenceBuilder.CreateDataTypeReference(queryBlock, selectListColumn, placement, identifier);
+			referenceContainer.DataTypeReferences.Add(dataTypeReference);
+			return dataTypeReference;
+		}
+
+		private static StatementGrammarNode GetPrefixNodeFromPrefixedColumnReference(StatementGrammarNode identifier)
 		{
 			var prefixedColumnReferenceNode = identifier.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.Expression), NonTerminals.PrefixedColumnReference) ?? identifier.ParentNode;
 			return prefixedColumnReferenceNode?[NonTerminals.Prefix];

@@ -3434,7 +3434,7 @@ SELECT value FROM data";
 			castFunctionReference.Metadata.ShouldNotBe(null);
 		}
 
-		[Test, Ignore]
+		[Test]
 		public void TestDataTypeReferenceWithinJsonTable()
 		{
 			const string query1 = "SELECT NULL FROM JSON_TABLE ('{ property: \"value 1\" }', '$' COLUMNS (property xmltype PATH '$.property'));";
