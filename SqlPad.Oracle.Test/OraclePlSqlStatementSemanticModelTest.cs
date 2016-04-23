@@ -661,7 +661,7 @@ END;";
 			var mainProgram = semanticModel.Programs[0];
 			mainProgram.Variables.Count.ShouldBe(3);
 			mainProgram.Variables[0].Name.ShouldBe("\"TEST_CURSOR\"");
-			mainProgram.Variables[0].ShouldBeTypeOf<OraclePlSqlCursorVariable>();
+			mainProgram.Variables[0].ShouldBeAssignableTo<OraclePlSqlCursorVariable>();
 			var cursorVariable = (OraclePlSqlCursorVariable)mainProgram.Variables[0];
 			cursorVariable.SemanticModel.ShouldNotBe(null);
 

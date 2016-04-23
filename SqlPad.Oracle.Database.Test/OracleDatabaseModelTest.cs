@@ -196,7 +196,7 @@ WHERE
 				var resultSet = await connectionAdapter.FetchRecordsAsync(resultInfo, Int32.MaxValue, CancellationToken.None);
 				resultSet.Count.ShouldBe(1);
 				var firstRow = resultSet[0];
-				firstRow[0].ShouldBeTypeOf<OracleRowId>();
+				firstRow[0].ShouldBeAssignableTo<OracleRowId>();
 				var smallFileRowIdValue = (OracleRowId)firstRow[0];
 				smallFileRowIdValue.RawValue.ToString().ShouldBe("AAAACOAABAAAAR5AAC");
 				smallFileRowIdValue.ToString().ShouldBe("AAAACOAABAAAAR5AAC (obj=142; fil=1; blk=1145; off=2)");
@@ -223,7 +223,7 @@ WHERE
 				var taskException = Should.Throw<AggregateException>(() => task.Wait());
 				taskException.InnerExceptions.Count.ShouldBe(1);
 				var innerException = taskException.InnerExceptions[0];
-				innerException.ShouldBeTypeOf<StatementExecutionException>();
+				innerException.ShouldBeAssignableTo<StatementExecutionException>();
 
 				var executionException = (StatementExecutionException)innerException;
 				executionException.BatchResult.StatementResults.Count.ShouldBe(1);
@@ -282,7 +282,7 @@ WHERE
 
 				resultSet.Count.ShouldBe(1);
 				var firstRow = resultSet[0];
-				firstRow[0].ShouldBeTypeOf<OracleBlobValue>();
+				firstRow[0].ShouldBeAssignableTo<OracleBlobValue>();
 				var blobValue = (OracleBlobValue)firstRow[0];
 				blobValue.Length.ShouldBe(4);
 				blobValue.GetChunk(2).ShouldBe(new byte[] { 66, 76 });
@@ -291,7 +291,7 @@ WHERE
 				blobValue.ToSqlLiteral().ShouldBe("TO_BLOB('424C4F42')");
 				blobValue.ToXml().ShouldBe("<![CDATA[QkxPQg==]]>");
 				blobValue.ToJson().ShouldBe("\"QkxPQg==\"");
-				firstRow[1].ShouldBeTypeOf<OracleClobValue>();
+				firstRow[1].ShouldBeAssignableTo<OracleClobValue>();
 				var expectedPreview = clobParameter.Substring(0, 1023) + CellValueConverter.Ellipsis;
 				var clobValue = (OracleClobValue)firstRow[1];
 				clobValue.ToString().ShouldBe(expectedPreview);
@@ -300,43 +300,43 @@ WHERE
 				clobValue.ToSqlLiteral().ShouldBe(expectedLiteral);
 				clobValue.ToXml().ShouldBe($"<![CDATA[{clobParameter}]]>");
 				clobValue.ToJson().ShouldBe($"\"{clobParameter}\"");
-				firstRow[2].ShouldBeTypeOf<OracleClobValue>();
+				firstRow[2].ShouldBeAssignableTo<OracleClobValue>();
 				var nClobValue = (OracleClobValue)firstRow[2];
 				nClobValue.DataTypeName.ShouldBe("NCLOB");
 				nClobValue.Length.ShouldBe(20);
 				nClobValue.Value.ShouldBe("NCLOB DATA");
 				nClobValue.ToSqlLiteral().ShouldBe("TO_NCLOB('NCLOB DATA')");
-				firstRow[3].ShouldBeTypeOf<OracleSimpleValue>();
+				firstRow[3].ShouldBeAssignableTo<OracleSimpleValue>();
 				((OracleSimpleValue)firstRow[3]).Value.ShouldBe(String.Empty);
-				firstRow[4].ShouldBeTypeOf<OracleTimestampWithTimeZone>();
+				firstRow[4].ShouldBeAssignableTo<OracleTimestampWithTimeZone>();
 				var timestampWithTimezoneValue = (OracleTimestampWithTimeZone)firstRow[4];
 				timestampWithTimezoneValue.ToString().ShouldBe("11/01/2014 15:16:32.123456789 +02:00");
 				timestampWithTimezoneValue.ToSqlLiteral().ShouldBe("TIMESTAMP'2014-11-1 15:16:32.123456789 +02:00'");
 				timestampWithTimezoneValue.ToXml().ShouldBe("2014-11-01T15:16:32.123");
 				timestampWithTimezoneValue.ToJson().ShouldBe("\"2014-11-01T15:16:32.123+02:00\"");
-				firstRow[5].ShouldBeTypeOf<OracleTimestamp>();
+				firstRow[5].ShouldBeAssignableTo<OracleTimestamp>();
 				var timestampValue = (OracleTimestamp)firstRow[5];
 				timestampValue.ToString().ShouldBe("11/01/2014 14:16:32.123456789");
 				timestampValue.ToSqlLiteral().ShouldBe("TIMESTAMP'2014-11-1 14:16:32.123456789'");
 				timestampValue.ToXml().ShouldBe("2014-11-01T14:16:32.123");
 				timestampValue.ToJson().ShouldBe("\"2014-11-01T14:16:32.123\"");
-				firstRow[6].ShouldBeTypeOf<OracleNumber>();
+				firstRow[6].ShouldBeAssignableTo<OracleNumber>();
 				var numberValue = (OracleNumber)firstRow[6];
 				var expectedValue = "0.1234567890123456789012345678901234567891";
 				numberValue.ToString().ShouldBe(expectedValue);
 				numberValue.ToSqlLiteral().ShouldBe("0.1234567890123456789012345678901234567891");
-				firstRow[7].ShouldBeTypeOf<OracleXmlValue>();
+				firstRow[7].ShouldBeAssignableTo<OracleXmlValue>();
 				var xmlValue = (OracleXmlValue)firstRow[7];
 				xmlValue.DataTypeName.ShouldBe("XMLTYPE");
 				xmlValue.Length.ShouldBe(8);
 				xmlValue.Preview.ShouldBe("<root/>\u2026");
 				xmlValue.ToSqlLiteral().ShouldBe("XMLTYPE('<root/>\n')");
-				firstRow[8].ShouldBeTypeOf<OracleNumber>();
+				firstRow[8].ShouldBeAssignableTo<OracleNumber>();
 				numberValue = (OracleNumber)firstRow[8];
 				expectedValue = "1.23456789012345678901234567890123456789E-125";
 				numberValue.ToString().ShouldBe(expectedValue);
 				numberValue.ToSqlLiteral().ShouldBe("1.23456789012345678901234567890123456789E-125");
-				firstRow[9].ShouldBeTypeOf<OracleDateTime>();
+				firstRow[9].ShouldBeAssignableTo<OracleDateTime>();
 				var dateValue = (OracleDateTime)firstRow[9];
 				dateValue.ToString().ShouldBe("BC 01/01/4712 00:00:00");
 				dateValue.ToSqlLiteral().ShouldBe("TO_DATE('-4712-01-01 00:00:00', 'SYYYY-MM-DD HH24:MI:SS')");
@@ -378,28 +378,28 @@ WHERE
 				var resultSet = await connectionAdapter.FetchRecordsAsync(resultInfo, Int32.MaxValue, CancellationToken.None);
 				resultSet.Count.ShouldBe(1);
 				var firstRow = resultSet[0];
-				firstRow[0].ShouldBeTypeOf<OracleBlobValue>();
+				firstRow[0].ShouldBeAssignableTo<OracleBlobValue>();
 				var blobValue = (OracleBlobValue)firstRow[0];
 				blobValue.Length.ShouldBe(0);
 				blobValue.ToString().ShouldBe(String.Empty);
 				blobValue.ToSqlLiteral().ShouldBe("NULL");
-				firstRow[1].ShouldBeTypeOf<OracleClobValue>();
+				firstRow[1].ShouldBeAssignableTo<OracleClobValue>();
 				firstRow[1].ToString().ShouldBe(String.Empty);
 				((IValue)firstRow[1]).ToSqlLiteral().ShouldBe("NULL");
 				((OracleClobValue)firstRow[1]).DataTypeName.ShouldBe("CLOB");
-				firstRow[2].ShouldBeTypeOf<OracleTimestampWithTimeZone>();
+				firstRow[2].ShouldBeAssignableTo<OracleTimestampWithTimeZone>();
 				firstRow[2].ToString().ShouldBe(String.Empty);
 				((IValue)firstRow[2]).ToSqlLiteral().ShouldBe("NULL");
-				firstRow[3].ShouldBeTypeOf<OracleTimestamp>();
+				firstRow[3].ShouldBeAssignableTo<OracleTimestamp>();
 				firstRow[3].ToString().ShouldBe(String.Empty);
 				((IValue)firstRow[3]).ToSqlLiteral().ShouldBe("NULL");
-				firstRow[4].ShouldBeTypeOf<OracleDateTime>();
+				firstRow[4].ShouldBeAssignableTo<OracleDateTime>();
 				firstRow[4].ToString().ShouldBe(String.Empty);
 				((IValue)firstRow[4]).ToSqlLiteral().ShouldBe("NULL");
-				firstRow[5].ShouldBeTypeOf<OracleNumber>();
+				firstRow[5].ShouldBeAssignableTo<OracleNumber>();
 				firstRow[5].ToString().ShouldBe(String.Empty);
 				((IValue)firstRow[5]).ToSqlLiteral().ShouldBe("NULL");
-				firstRow[6].ShouldBeTypeOf<OracleXmlValue>();
+				firstRow[6].ShouldBeAssignableTo<OracleXmlValue>();
 				firstRow[6].ToString().ShouldBe(String.Empty);
 				((IValue)firstRow[6]).ToSqlLiteral().ShouldBe("NULL");
 
@@ -570,7 +570,8 @@ WHERE
 			model.ClusterName.ShouldBe(String.Empty);
 			model.Compression.ShouldBe("Disabled");
 			model.IsTemporary.ShouldBe(false);
-			model.LastAnalyzed.ShouldBeGreaterThan(DateTime.MinValue);
+			model.LastAnalyzed.ShouldNotBe(null);
+			model.LastAnalyzed.ShouldNotBe(DateTime.MinValue);
 			model.Organization.ShouldBe("Heap");
 			model.ParallelDegree.ShouldBe("1");
 			model.RowCount.ShouldBe(1);
@@ -588,20 +589,27 @@ WHERE
 
 			model.IndexDetails.Count.ShouldBe(3);
 			var indexDetails = model.IndexDetails.ToList();
-			indexDetails.ForEach(i =>
-			{
-				i.Blocks.ShouldBeGreaterThan(0);
-				i.Bytes.ShouldBeGreaterThan(0);
-				i.ClusteringFactor.ShouldBeGreaterThan(0);
-				i.LastAnalyzed.ShouldBeGreaterThan(DateTime.MinValue);
-				i.Owner.ShouldNotBe(null);
-				i.Name.ShouldNotBe(null);
-				i.Rows.ShouldBeGreaterThan(0);
-				i.SampleRows.ShouldBeGreaterThan(0);
-				i.Status.ShouldBe("Valid");
-				i.Compression.ShouldBe("Disabled");
-				i.Type.ShouldBe("Normal");
-			});
+			indexDetails.ForEach(
+				i =>
+				{
+					i.Blocks.ShouldNotBe(null);
+					i.Blocks.ShouldNotBe(0);
+					i.Bytes.ShouldNotBe(null);
+					i.Bytes.ShouldNotBe(0);
+					i.ClusteringFactor.ShouldNotBe(null);
+					i.ClusteringFactor.ShouldNotBe(0);
+					i.LastAnalyzed.ShouldNotBe(null);
+					i.LastAnalyzed.ShouldNotBe(DateTime.MinValue);
+					i.Owner.ShouldNotBe(null);
+					i.Name.ShouldNotBe(null);
+					i.Rows.ShouldNotBe(null);
+					i.Rows.ShouldNotBe(0);
+					i.SampleRows.ShouldNotBe(null);
+					i.SampleRows.ShouldNotBe(0);
+					i.Status.ShouldBe("Valid");
+					i.Compression.ShouldBe("Disabled");
+					i.Type.ShouldBe("Normal");
+				});
 
 			indexDetails[0].IndexColumns.ShouldBe("OBJ#, NAME");
 			indexDetails[1].IndexColumns.ShouldBe("OBJ#, COL#");

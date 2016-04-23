@@ -25,8 +25,8 @@ namespace SqlPad.Oracle.Test
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 8);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipColumn>();
-			toolTip.Control.DataContext.ShouldBeTypeOf<ColumnDetailsModel>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipColumn>();
+			toolTip.Control.DataContext.ShouldBeAssignableTo<ColumnDetailsModel>();
 			var dataModel = (ColumnDetailsModel)toolTip.Control.DataContext;
 			dataModel.Owner.ShouldBe("HUSQVIK.SELECTION");
 			dataModel.Name.ShouldBe("NAME");
@@ -51,8 +51,8 @@ namespace SqlPad.Oracle.Test
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 8);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipColumn>();
-			toolTip.Control.DataContext.ShouldBeTypeOf<ColumnDetailsModel>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipColumn>();
+			toolTip.Control.DataContext.ShouldBeAssignableTo<ColumnDetailsModel>();
 		}
 
 		[Test, STAThread]
@@ -63,8 +63,8 @@ namespace SqlPad.Oracle.Test
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 8);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipViewColumn>();
-			toolTip.Control.DataContext.ShouldBeTypeOf<ColumnDetailsModel>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipViewColumn>();
+			toolTip.Control.DataContext.ShouldBeAssignableTo<ColumnDetailsModel>();
 			var dataModel = (ColumnDetailsModel)toolTip.Control.DataContext;
 			dataModel.Owner.ShouldBe("HUSQVIK.SELECTION");
 			dataModel.Name.ShouldBe("ROWID");
@@ -81,8 +81,8 @@ namespace SqlPad.Oracle.Test
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 8);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipColumn>();
-			toolTip.Control.DataContext.ShouldBeTypeOf<ColumnDetailsModel>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipColumn>();
+			toolTip.Control.DataContext.ShouldBeAssignableTo<ColumnDetailsModel>();
 			var dataModel = (ColumnDetailsModel)toolTip.Control.DataContext;
 			dataModel.Owner.ShouldBe("HUSQVIK.SELECTION");
 			dataModel.Name.ShouldBe("RESPONDENTBUCKET_ID");
@@ -99,7 +99,7 @@ namespace SqlPad.Oracle.Test
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 8);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("NAME VARCHAR2(50 BYTE) NOT NULL");
 		}
 
@@ -111,7 +111,7 @@ namespace SqlPad.Oracle.Test
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 8);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipViewColumn>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipViewColumn>();
 			var dataModel = (ColumnDetailsModel)toolTip.Control.DataContext;
 			dataModel.Owner.ShouldBe("HUSQVIK.VIEW_INSTANTSEARCH");
 			dataModel.Name.ShouldBe("CUSTOMER_ID");
@@ -127,8 +127,8 @@ namespace SqlPad.Oracle.Test
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 8);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipColumn>();
-			toolTip.Control.DataContext.ShouldBeTypeOf<ColumnDetailsModel>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipColumn>();
+			toolTip.Control.DataContext.ShouldBeAssignableTo<ColumnDetailsModel>();
 			var dataModel = (ColumnDetailsModel)toolTip.Control.DataContext;
 			dataModel.Owner.ShouldBe("HUSQVIK.INVOICELINES");
 			dataModel.Name.ShouldBe("AMOUNT");
@@ -144,8 +144,8 @@ namespace SqlPad.Oracle.Test
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 8);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipColumn>();
-			toolTip.Control.DataContext.ShouldBeTypeOf<ColumnDetailsModel>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipColumn>();
+			toolTip.Control.DataContext.ShouldBeAssignableTo<ColumnDetailsModel>();
 			var dataModel = (ColumnDetailsModel)toolTip.Control.DataContext;
 			dataModel.Owner.ShouldBe("HUSQVIK.INVOICELINES");
 			dataModel.Name.ShouldBe("CORRELATION_VALUE");
@@ -170,7 +170,7 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 119);
 
-			toolTip.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.ShouldBeAssignableTo<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("CTE.VAL NULL");
 		}
 
@@ -189,7 +189,7 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 35);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipTable>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipTable>();
 		}
 
 		[Test, STAThread]
@@ -200,8 +200,8 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 20);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipTable>();
-			toolTip.Control.DataContext.ShouldBeTypeOf<TableDetailsModel>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipTable>();
+			toolTip.Control.DataContext.ShouldBeAssignableTo<TableDetailsModel>();
 			var dataModel = (TableDetailsModel)toolTip.Control.DataContext;
 			dataModel.Title.ShouldBe("HUSQVIK.SELECTION (Table)");
 			dataModel.AverageRowSize.ShouldBe(237);
@@ -232,8 +232,8 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 20);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipTable>();
-			toolTip.Control.DataContext.ShouldBeTypeOf<TableDetailsModel>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipTable>();
+			toolTip.Control.DataContext.ShouldBeAssignableTo<TableDetailsModel>();
 			var dataModel = (TableDetailsModel)toolTip.Control.DataContext;
 			dataModel.Title.ShouldBe("HUSQVIK.SYNONYM_TO_SELECTION (Synonym) => HUSQVIK.SELECTION (Table)");
 			dataModel.AverageRowSize.ShouldBe(237);
@@ -257,8 +257,8 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 8);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipTable>();
-			toolTip.Control.DataContext.ShouldBeTypeOf<TableDetailsModel>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipTable>();
+			toolTip.Control.DataContext.ShouldBeAssignableTo<TableDetailsModel>();
 			var dataModel = (TableDetailsModel)toolTip.Control.DataContext;
 			dataModel.Title.ShouldBe("HUSQVIK.SELECTION (Table)");
 		}
@@ -271,8 +271,8 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 8);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipTable>();
-			toolTip.Control.DataContext.ShouldBeTypeOf<TableDetailsModel>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipTable>();
+			toolTip.Control.DataContext.ShouldBeAssignableTo<TableDetailsModel>();
 			var dataModel = (TableDetailsModel)toolTip.Control.DataContext;
 			dataModel.Title.ShouldBe("HUSQVIK.SELECTION (Table)");
 		}
@@ -285,8 +285,8 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 23);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipTable>();
-			toolTip.Control.DataContext.ShouldBeTypeOf<TableDetailsModel>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipTable>();
+			toolTip.Control.DataContext.ShouldBeAssignableTo<TableDetailsModel>();
 			var dataModel = (TableDetailsModel)toolTip.Control.DataContext;
 			dataModel.Title.ShouldBe("HUSQVIK.SYNONYM_TO_SELECTION (Synonym) => HUSQVIK.SELECTION (Table)");
 		}
@@ -299,8 +299,8 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 10);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipTable>();
-			toolTip.Control.DataContext.ShouldBeTypeOf<TableDetailsModel>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipTable>();
+			toolTip.Control.DataContext.ShouldBeAssignableTo<TableDetailsModel>();
 			var dataModel = (TableDetailsModel)toolTip.Control.DataContext;
 			dataModel.Title.ShouldBe("HUSQVIK.SELECTION (Table)");
 		}
@@ -313,8 +313,8 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 32);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipTable>();
-			toolTip.Control.DataContext.ShouldBeTypeOf<TableDetailsModel>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipTable>();
+			toolTip.Control.DataContext.ShouldBeAssignableTo<TableDetailsModel>();
 			var dataModel = (TableDetailsModel)toolTip.Control.DataContext;
 			dataModel.Title.ShouldBe("HUSQVIK.SELECTION (Table)");
 			dataModel.Comment.ShouldBe("This is a table comment. ");
@@ -329,8 +329,8 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 20);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipView>();
-			toolTip.Control.DataContext.ShouldBeTypeOf<ObjectDetailsModel>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipView>();
+			toolTip.Control.DataContext.ShouldBeAssignableTo<ObjectDetailsModel>();
 			var dataModel = (ObjectDetailsModel)toolTip.Control.DataContext;
 			dataModel.Title.ShouldBe("\"PUBLIC\".V$SESSION (Synonym) => SYS.V_$SESSION (View)");
 			dataModel.Comment.ShouldBe("V$SESSION displays session information for each current session.");
@@ -344,7 +344,7 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 8);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("Ambiguous reference (SELECTION, RESPONDENTBUCKET)");
 		}
 
@@ -356,7 +356,7 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 8);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("Invalid parameter count");
 		}
 
@@ -368,7 +368,7 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 7);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("Ambiguous reference (NAME, VAL)");
 		}
 
@@ -380,12 +380,12 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 10);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("Ambiguous reference (C1)");
 
 			toolTip = _toolTipProvider.GetToolTip(_documentRepository, 17);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("Ambiguous reference (D1)");
 		}
 
@@ -397,7 +397,7 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 7);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("Ambiguous reference");
 		}
 
@@ -409,7 +409,7 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 8);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipProgram>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipProgram>();
 			var metadata = (OracleProgramMetadata)toolTip.Control.DataContext;
 			metadata.Identifier.FullyQualifiedIdentifier.ShouldBe("SYS.STANDARD.COALESCE");
 		}
@@ -422,7 +422,7 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 10);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipView>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipView>();
 			var dataModel = (ObjectDetailsModel)((ToolTipView)toolTip.Control).DataContext;
 			dataModel.Title.ShouldBe("\"PUBLIC\".DBMS_RANDOM (Synonym) => SYS.DBMS_RANDOM (Package)");
 			dataModel.Comment.ShouldBe("The DBMS_RANDOM package provides a built-in random number generator. DBMS_RANDOM is not intended for cryptography.");
@@ -436,7 +436,7 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 10);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("\"PUBLIC\".XMLTYPE (Synonym) => SYS.XMLTYPE (Object Type)");
 		}
 
@@ -448,7 +448,7 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 10);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipSequence>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipSequence>();
 			var toolTipSequence = (ToolTipSequence)toolTip.Control;
 			toolTipSequence.LabelTitle.Text.ShouldBe("HUSQVIK.SYNONYM_TO_TEST_SEQ (Synonym) => HUSQVIK.TEST_SEQ (Sequence)");
 
@@ -462,7 +462,7 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 17);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("INTEGER NOT NULL");
 		}
 
@@ -474,7 +474,7 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 10);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("Object is invalid or unusable");
 		}
 
@@ -486,7 +486,7 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 30);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipDatabaseLink>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipDatabaseLink>();
 			var databaseLink = (OracleDatabaseLink)((ToolTipDatabaseLink)toolTip.Control).DataContext;
 			databaseLink.FullyQualifiedName.ShouldBe(OracleObjectIdentifier.Create("\"PUBLIC\"", "HQ_PDB_LOOPBACK"));
 			databaseLink.Host.ShouldBe("localhost:1521/hq_pdb");
@@ -500,7 +500,7 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 8);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("TEST_TABLE.COLUMN_VALUE RAW(2000) NULL");
 		}
 
@@ -512,7 +512,7 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 40);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipView>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipView>();
 			var dataModel = (ObjectDetailsModel)((ToolTipView)toolTip.Control).DataContext;
 			dataModel.Title.ShouldBe("\"PUBLIC\".DBMS_XPLAN (Synonym) => SYS.DBMS_XPLAN (Package)");
 			dataModel.Comment.ShouldBe("The DBMS_XPLAN package provides an easy way to display the output of the EXPLAIN PLAN command in several, predefined formats. You can also use the DBMS_XPLAN package to display the plan of a statement stored in the Automatic Workload Repository (AWR) or stored in a SQL tuning set. It further provides a way to display the SQL execution plan and SQL execution runtime statistics for cached SQL cursors based on the information stored in the V$SQL_PLAN and V$SQL_PLAN_STATISTICS_ALL fixed views. Finally, it displays plans from a SQL plan baseline.");
@@ -526,7 +526,7 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 16);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("INLINEVIEW (Inline View)");
 		}
 
@@ -538,7 +538,7 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 8);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("XML_DATA.VALUE VARCHAR2(10) NULL");
 		}
 
@@ -576,7 +576,7 @@ SELECT * FROM CTE";
 			var functionOverloads = _codeCompletionProvider.ResolveProgramOverloads(_documentRepository, 30);
 			var functionOverloadList = new ProgramOverloadList { FunctionOverloads = functionOverloads };
 			functionOverloadList.ViewOverloads.Items.Count.ShouldBe(1);
-			functionOverloadList.ViewOverloads.Items[0].ShouldBeTypeOf(typeof(TextBlock));
+			functionOverloadList.ViewOverloads.Items[0].ShouldBeAssignableTo(typeof(TextBlock));
 
 			var itemText = GetTextFromTextBlock((TextBlock)functionOverloadList.ViewOverloads.Items[0]);
 			itemText.ShouldBe("HUSQVIK.SQLPAD.SQLPAD_FUNCTION(P: NUMBER) RETURN: NUMBER");
@@ -591,7 +591,7 @@ SELECT * FROM CTE";
 			var functionOverloads = _codeCompletionProvider.ResolveProgramOverloads(_documentRepository, 23);
 			var functionOverloadList = new ProgramOverloadList { FunctionOverloads = functionOverloads };
 			functionOverloadList.ViewOverloads.Items.Count.ShouldBe(1);
-			functionOverloadList.ViewOverloads.Items[0].ShouldBeTypeOf(typeof(TextBlock));
+			functionOverloadList.ViewOverloads.Items[0].ShouldBeAssignableTo(typeof(TextBlock));
 
 			var itemText = GetTextFromTextBlock((TextBlock)functionOverloadList.ViewOverloads.Items[0]);
 			itemText.ShouldBe("SYS.ODCIARGDESC(ARGTYPE: NUMBER, TABLENAME: VARCHAR2, TABLESCHEMA: VARCHAR2, COLNAME: VARCHAR2, TABLEPARTITIONLOWER: VARCHAR2, TABLEPARTITIONUPPER: VARCHAR2, CARDINALITY: NUMBER) RETURN: SYS.ODCIARGDESC");
@@ -606,7 +606,7 @@ SELECT * FROM CTE";
 			var functionOverloads = _codeCompletionProvider.ResolveProgramOverloads(_documentRepository, 27);
 			var functionOverloadList = new ProgramOverloadList { FunctionOverloads = functionOverloads };
 			functionOverloadList.ViewOverloads.Items.Count.ShouldBe(1);
-			functionOverloadList.ViewOverloads.Items[0].ShouldBeTypeOf(typeof(TextBlock));
+			functionOverloadList.ViewOverloads.Items[0].ShouldBeAssignableTo(typeof(TextBlock));
 
 			var itemText = GetTextFromTextBlock((TextBlock)functionOverloadList.ViewOverloads.Items[0]);
 			itemText.ShouldBe("SYS.ODCIARGDESCLIST([array of SYS.ODCIARGDESC]) RETURN: SYS.ODCIARGDESCLIST");
@@ -621,7 +621,7 @@ SELECT * FROM CTE";
 			var functionOverloads = _codeCompletionProvider.ResolveProgramOverloads(_documentRepository, 23);
 			var functionOverloadList = new ProgramOverloadList { FunctionOverloads = functionOverloads };
 			functionOverloadList.ViewOverloads.Items.Count.ShouldBe(1);
-			functionOverloadList.ViewOverloads.Items[0].ShouldBeTypeOf(typeof(TextBlock));
+			functionOverloadList.ViewOverloads.Items[0].ShouldBeAssignableTo(typeof(TextBlock));
 
 			var itemText = GetTextFromTextBlock((TextBlock)functionOverloadList.ViewOverloads.Items[0]);
 			itemText.ShouldBe("SYS.ODCIRAWLIST([array of RAW]) RETURN: SYS.ODCIRAWLIST");
@@ -636,7 +636,7 @@ SELECT * FROM CTE";
 			var functionOverloads = _codeCompletionProvider.ResolveProgramOverloads(_documentRepository, 33);
 			var functionOverloadList = new ProgramOverloadList { FunctionOverloads = functionOverloads };
 			functionOverloadList.ViewOverloads.Items.Count.ShouldBe(1);
-			functionOverloadList.ViewOverloads.Items[0].ShouldBeTypeOf(typeof(TextBlock));
+			functionOverloadList.ViewOverloads.Items[0].ShouldBeAssignableTo(typeof(TextBlock));
 
 			var itemText = GetTextFromTextBlock((TextBlock)functionOverloadList.ViewOverloads.Items[0]);
 			itemText.ShouldBe("SYS.DBMS_XPLAN.DISPLAY_CURSOR([SQL_ID: VARCHAR2], [CURSOR_CHILD_NUMBER: NUMBER], [FORMAT: VARCHAR2]) RETURN: SYS.DBMS_XPLAN_TYPE_TABLE");
@@ -650,7 +650,7 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 23);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("Non-parenthesis function");
 		}
 
@@ -662,7 +662,7 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 12);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe(OracleSemanticErrorTooltipText.InvalidDateLiteral);
 		}
 
@@ -674,7 +674,7 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 17);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe(OracleSemanticErrorTooltipText.InvalidTimestampLiteral);
 		}
 
@@ -686,7 +686,7 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 8);
 
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe(OracleSuggestionType.PotentialDatabaseLink);
 		}
 
@@ -722,16 +722,16 @@ SELECT * FROM CTE";
 
 			var toolTipFunction = _toolTipProvider.GetToolTip(_documentRepository, 84);
 
-			toolTipFunction.Control.ShouldBeTypeOf<ToolTipProgram>();
+			toolTipFunction.Control.ShouldBeAssignableTo<ToolTipProgram>();
 			var metadata = (OracleProgramMetadata)toolTipFunction.Control.DataContext;
 			metadata.Identifier.FullyQualifiedIdentifier.ShouldBe("HUSQVIK.SQLPAD_FUNCTION");
 
 			var toolTipType = _toolTipProvider.GetToolTip(_documentRepository, 101);
-			toolTipType.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTipType.Control.ShouldBeAssignableTo<ToolTipObject>();
 			toolTipType.Control.DataContext.ShouldBe("\"PUBLIC\".XMLTYPE (Synonym) => SYS.XMLTYPE (Object Type)");
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 112);
-			toolTip.Control.ShouldBeTypeOf<ToolTipSequence>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipSequence>();
 			var toolTipSequence = (ToolTipSequence)toolTip.Control;
 			toolTipSequence.LabelTitle.Text.ShouldBe("HUSQVIK.SYNONYM_TO_TEST_SEQ (Synonym) => HUSQVIK.TEST_SEQ (Sequence)");
 		}
@@ -743,7 +743,7 @@ SELECT * FROM CTE";
 			_documentRepository.UpdateStatements(query);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 30);
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("SYS.ODCIRAWLIST (Object Varrying Array)");
 		}
 
@@ -754,7 +754,7 @@ SELECT * FROM CTE";
 			_documentRepository.UpdateStatements(query);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 30);
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("SYS.DBMS_XPLAN_TYPE_TABLE (Object Table)");
 		}
 
@@ -765,7 +765,7 @@ SELECT * FROM CTE";
 			_documentRepository.UpdateStatements(query);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 14);
-			toolTip.Control.ShouldBeTypeOf<ToolTipSchema>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipSchema>();
 			var schema = (OracleSchemaModel)toolTip.Control.DataContext;
 			schema.Schema.Name.ShouldBe("\"HUSQVIK\"");
 			schema.Schema.Created.ShouldBe(new DateTime(2014, 9, 28, 0, 25, 43));
@@ -844,7 +844,7 @@ SELECT * FROM CTE";
 			_documentRepository.UpdateStatements(query);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 7);
-			toolTip.Control.ShouldBeTypeOf<ToolTipAsterisk>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipAsterisk>();
 			var toolTipSequence = (ToolTipAsterisk)toolTip.Control;
 			var columns = toolTipSequence.Columns.ToArray();
 			columns.Length.ShouldBe(4);
@@ -867,7 +867,7 @@ SELECT * FROM CTE";
 			_documentRepository.UpdateStatements(query);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 75);
-			toolTip.Control.ShouldBeTypeOf<ToolTipAsterisk>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipAsterisk>();
 			var toolTipSequence = (ToolTipAsterisk)toolTip.Control;
 			var columns = toolTipSequence.Columns.ToArray();
 			columns.Length.ShouldBe(1);
@@ -885,7 +885,7 @@ SELECT * FROM CTE";
 			_documentRepository.UpdateStatements(query);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 43);
-			toolTip.Control.ShouldBeTypeOf<ToolTipAsterisk>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipAsterisk>();
 			var toolTipSequence = (ToolTipAsterisk)toolTip.Control;
 			var columns = toolTipSequence.Columns.ToArray();
 			columns.Length.ShouldBe(1);
@@ -903,7 +903,7 @@ SELECT * FROM CTE";
 			_documentRepository.UpdateStatements(query);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 7);
-			toolTip.Control.ShouldBeTypeOf<ToolTipAsterisk>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipAsterisk>();
 			var toolTipSequence = (ToolTipAsterisk)toolTip.Control;
 			var columns = toolTipSequence.Columns.ToArray();
 			columns.Length.ShouldBe(1);
@@ -921,7 +921,7 @@ SELECT * FROM CTE";
 			_documentRepository.UpdateStatements(query);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 7);
-			toolTip.Control.ShouldBeTypeOf<ToolTipAsterisk>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipAsterisk>();
 			var toolTipSequence = (ToolTipAsterisk)toolTip.Control;
 			var columns = toolTipSequence.Columns.ToArray();
 			columns.Length.ShouldBe(1);
@@ -948,7 +948,7 @@ FROM (
 			_documentRepository.UpdateStatements(query);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 21);
-			toolTip.Control.ShouldBeTypeOf<ToolTipAsterisk>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipAsterisk>();
 			var toolTipSequence = (ToolTipAsterisk)toolTip.Control;
 			var columns = toolTipSequence.Columns.ToArray();
 			columns.Length.ShouldBe(4);
@@ -977,9 +977,9 @@ FROM (
 			_documentRepository.UpdateStatements(query);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 34);
-			toolTip.Control.ShouldBeTypeOf<ToolTipPartition>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipPartition>();
 			var toolTipPartition = (ToolTipPartition)toolTip.Control;
-			toolTipPartition.DataContext.ShouldBeTypeOf<PartitionDetailsModel>();
+			toolTipPartition.DataContext.ShouldBeAssignableTo<PartitionDetailsModel>();
 			var dataModel = (PartitionDetailsModel)toolTipPartition.DataContext;
 			dataModel.Name.ShouldBe("P2015");
 			dataModel.Owner.ShouldBe(OracleObjectIdentifier.Create("HUSQVIK", "INVOICES"));
@@ -992,9 +992,9 @@ FROM (
 			_documentRepository.UpdateStatements(query);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 37);
-			toolTip.Control.ShouldBeTypeOf<ToolTipPartition>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipPartition>();
 			var toolTipPartition = (ToolTipPartition)toolTip.Control;
-			toolTipPartition.DataContext.ShouldBeTypeOf<SubPartitionDetailsModel>();
+			toolTipPartition.DataContext.ShouldBeAssignableTo<SubPartitionDetailsModel>();
 			var dataModel = (SubPartitionDetailsModel)toolTipPartition.DataContext;
 			dataModel.Name.ShouldBe("P2015_ENTERPRISE");
 			dataModel.Owner.ShouldBe(OracleObjectIdentifier.Create("HUSQVIK", "INVOICES"));
@@ -1007,7 +1007,7 @@ FROM (
 			_documentRepository.UpdateStatements(query);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 30);
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("SYS.ODCIRAWLIST (Object Varrying Array)");
 		}
 
@@ -1018,7 +1018,7 @@ FROM (
 			_documentRepository.UpdateStatements(query);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 30);
-			toolTip.Control.ShouldBeTypeOf<ToolTipView>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipView>();
 			var dataModel = (ObjectDetailsModel)toolTip.Control.DataContext;
 			dataModel.Title.ShouldBe("P: NUMBER");
 		}
@@ -1036,7 +1036,7 @@ SELECT * FROM sampleData";
 			_documentRepository.UpdateStatements(query);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 33);
-			toolTip.Control.ShouldBeTypeOf<ToolTipProgram>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipProgram>();
 			var metadata = (OracleProgramMetadata)toolTip.Control.DataContext;
 			metadata.Identifier.FullyQualifiedIdentifier.ShouldBe("SYS.STANDARD.ROUND");
 		}
@@ -1049,7 +1049,7 @@ SELECT * FROM sampleData";
 			_documentRepository.UpdateStatements(query);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 7);
-			toolTip.Control.ShouldBeTypeOf<ToolTipView>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipView>();
 			var dataModel = (ObjectDetailsModel)((ToolTipView)toolTip.Control).DataContext;
 			dataModel.Title.ShouldBe("\"PUBLIC\".DBMS_OUTPUT (Synonym) => SYS.DBMS_OUTPUT (Package)");
 			dataModel.Comment.ShouldBe("The DBMS_OUTPUT package enables you to send messages from stored procedures, packages, and triggers. The package is especially useful for displaying PL/SQL debugging information.");
@@ -1068,7 +1068,7 @@ SELECT * FROM sampleData";
 			_documentRepository.UpdateStatements(query);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 33);
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("\"PUBLIC\".XMLTYPE (Synonym) => SYS.XMLTYPE (Object Type)");
 		}
 
@@ -1085,7 +1085,7 @@ END;";
 			_documentRepository.UpdateStatements(plSqlCode);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 85);
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("Variable TEST_VARIABLE: VARCHAR2(255) NULL");
 		}
 
@@ -1103,7 +1103,7 @@ END;";
 			_documentRepository.UpdateStatements(plSqlCode);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 103);
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("Constant TEST_CONSTANT: VARCHAR2(255) NOT NULL = 'This' || ' is ' || 'value'");
 		}
 
@@ -1122,7 +1122,7 @@ END;";
 			_documentRepository.UpdateStatements(plSqlCode);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 79);
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("Cursor TEST_CURSOR: SELECT dummy FROM dual");
 		}
 
@@ -1139,7 +1139,7 @@ END;";
 			_documentRepository.UpdateStatements(plSqlCode);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 57);
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("Exception TEST_EXCEPTION");
 		}
 
@@ -1157,7 +1157,7 @@ END;";
 			_documentRepository.UpdateStatements(plSqlCode);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 63);
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("Exception DEADLOCK_DETECTED (Error code -60)");
 		}
 
@@ -1193,7 +1193,7 @@ END;";
 			_documentRepository.UpdateStatements(plSqlCode);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 52);
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("Variable I: BINARY_INTEGER NOT NULL");
 		}
 
@@ -1210,7 +1210,7 @@ END;";
 			_documentRepository.UpdateStatements(plSqlCode);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 101);
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("Cursor column IMPLICIT_CURSOR.DUMMY: VARCHAR2(1 BYTE)");
 		}
 
@@ -1252,7 +1252,7 @@ CONNECT BY NOCYCLE
 			_documentRepository.UpdateStatements(query);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 239);
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("CONNECT_BY_ISLEAF NUMBER NOT NULL");
 		}
 
@@ -1270,7 +1270,7 @@ SELECT * FROM generator";
 			_documentRepository.UpdateStatements(query);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 68);
-			toolTip.Control.ShouldBeTypeOf<ToolTipObject>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("data.c1 NUMBER NOT NULL");
 		}
 
@@ -1297,7 +1297,7 @@ END;";
 			_documentRepository.UpdateStatements(query);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 20);
-			toolTip.Control.ShouldBeTypeOf<ToolTipSchema>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipSchema>();
 		}
 
 		[Test, STAThread]
@@ -1313,7 +1313,7 @@ END;";
 			_documentRepository.UpdateStatements(query);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 39);
-			toolTip.Control.ShouldBeTypeOf<ToolTipSchema>();
+			toolTip.Control.ShouldBeAssignableTo<ToolTipSchema>();
 		}
 
 		[Test, STAThread]

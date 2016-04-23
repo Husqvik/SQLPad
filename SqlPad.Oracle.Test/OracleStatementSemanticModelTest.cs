@@ -777,10 +777,10 @@ select * from recursion";
 			var queryBlock = semanticModel.QueryBlocks.First();
 			var databaseLinkReferences = queryBlock.DatabaseLinkReferences.OrderBy(r => r.RootNode.SourcePosition.IndexStart).ToArray();
 			databaseLinkReferences.Length.ShouldBe(4);
-			databaseLinkReferences[0].ShouldBeTypeOf<OracleSequenceReference>();
-			databaseLinkReferences[1].ShouldBeTypeOf<OracleColumnReference>();
-			databaseLinkReferences[2].ShouldBeTypeOf<OracleProgramReference>();
-			databaseLinkReferences[3].ShouldBeTypeOf<OracleDataObjectReference>();
+			databaseLinkReferences[0].ShouldBeAssignableTo<OracleSequenceReference>();
+			databaseLinkReferences[1].ShouldBeAssignableTo<OracleColumnReference>();
+			databaseLinkReferences[2].ShouldBeAssignableTo<OracleProgramReference>();
+			databaseLinkReferences[3].ShouldBeAssignableTo<OracleDataObjectReference>();
 		}
 
 		[Test]
@@ -1573,16 +1573,16 @@ END;";
 			objectReferences[0].RootNode.FirstTerminalNode.Id.ShouldBe(Terminals.Table);
 			objectReferences[0].RootNode.LastTerminalNode.Id.ShouldBe(Terminals.ObjectAlias);
 			objectReferences[0].RootNode.LastTerminalNode.Token.Value.ShouldBe("T1");
-			objectReferences[0].ShouldBeTypeOf<OracleTableCollectionReference>();
+			objectReferences[0].ShouldBeAssignableTo<OracleTableCollectionReference>();
 			var tableCollectionReference = (OracleTableCollectionReference)objectReferences[0];
-			tableCollectionReference.RowSourceReference.ShouldBeTypeOf<OracleProgramReference>();
+			tableCollectionReference.RowSourceReference.ShouldBeAssignableTo<OracleProgramReference>();
 			objectReferences[1].RootNode.ShouldNotBe(null);
 			objectReferences[1].RootNode.FirstTerminalNode.Id.ShouldBe(Terminals.Table);
 			objectReferences[1].RootNode.LastTerminalNode.Id.ShouldBe(Terminals.ObjectAlias);
 			objectReferences[1].RootNode.LastTerminalNode.Token.Value.ShouldBe("T2");
-			objectReferences[1].ShouldBeTypeOf<OracleTableCollectionReference>();
+			objectReferences[1].ShouldBeAssignableTo<OracleTableCollectionReference>();
 			tableCollectionReference = (OracleTableCollectionReference)objectReferences[1];
-			tableCollectionReference.RowSourceReference.ShouldBeTypeOf<OracleTypeReference>();
+			tableCollectionReference.RowSourceReference.ShouldBeAssignableTo<OracleTypeReference>();
 
 			var typeReferences = queryBlock.AllTypeReferences.ToArray();
 			typeReferences.Length.ShouldBe(1);
@@ -1630,9 +1630,9 @@ END;";
 			var queryBlock = semanticModel.QueryBlocks.Single();
 			queryBlock.ObjectReferences.Count.ShouldBe(1);
 			var objectReference = queryBlock.ObjectReferences.First();
-			objectReference.ShouldBeTypeOf<OracleTableCollectionReference>();
+			objectReference.ShouldBeAssignableTo<OracleTableCollectionReference>();
 			var tableCollectionReference = (OracleTableCollectionReference)objectReference;
-			tableCollectionReference.RowSourceReference.ShouldBeTypeOf<OracleProgramReference>();
+			tableCollectionReference.RowSourceReference.ShouldBeAssignableTo<OracleProgramReference>();
 			((OracleProgramReference)tableCollectionReference.RowSourceReference).Metadata.ShouldNotBe(null);
 
 			queryBlock.ProgramReferences.Count.ShouldBe(1);
@@ -1805,7 +1805,7 @@ MODEL
 			var queryBlock = semanticModel.QueryBlocks.Single();
 			var objectReferences = queryBlock.ObjectReferences.ToArray();
 			objectReferences.Length.ShouldBe(1);
-			objectReferences[0].ShouldBeTypeOf<OracleSqlModelReference>();
+			objectReferences[0].ShouldBeAssignableTo<OracleSqlModelReference>();
 			objectReferences[0].Columns.Count.ShouldBe(4);
 			
 			queryBlock.Columns.Count.ShouldBe(5);
@@ -1911,7 +1911,7 @@ MODEL
 
 			var objectReferences = outerQueryBlock.ObjectReferences.ToArray();
 			objectReferences.Length.ShouldBe(1);
-			objectReferences[0].ShouldBeTypeOf<OracleSqlModelReference>();
+			objectReferences[0].ShouldBeAssignableTo<OracleSqlModelReference>();
 			objectReferences[0].Columns.Count.ShouldBe(8);
 
 			outerQueryBlock.ModelReference.ShouldNotBe(null);
@@ -2925,9 +2925,9 @@ FROM (
 
 			semanticModel.MainQueryBlock.ObjectReferences.Count.ShouldBe(1);
 			var objectReference = semanticModel.MainQueryBlock.ObjectReferences.Single();
-			objectReference.ShouldBeTypeOf<OracleTableCollectionReference>();
+			objectReference.ShouldBeAssignableTo<OracleTableCollectionReference>();
 			var tableCollectionExpressionReference = (OracleTableCollectionReference)objectReference;
-			tableCollectionExpressionReference.RowSourceReference.ShouldBeTypeOf<OracleTypeReference>();
+			tableCollectionExpressionReference.RowSourceReference.ShouldBeAssignableTo<OracleTypeReference>();
 		}
 
 		[Test]
@@ -2966,7 +2966,7 @@ FROM (
 			inlineView.Columns[0].ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
 			inlineView.ObjectReferences.Count.ShouldBe(1);
 			var objectReference = inlineView.ObjectReferences.Single();
-			objectReference.ShouldBeTypeOf<OraclePivotTableReference>();
+			objectReference.ShouldBeAssignableTo<OraclePivotTableReference>();
 		}
 
 		[Test]
@@ -3432,6 +3432,21 @@ SELECT value FROM data";
 			var mainQueryBlock = semanticModel.QueryBlocks.Single();
 			var castFunctionReference = mainQueryBlock.AllProgramReferences.Single();
 			castFunctionReference.Metadata.ShouldNotBe(null);
+		}
+
+		[Test, Ignore]
+		public void TestDataTypeReferenceWithinJsonTable()
+		{
+			const string query1 = "SELECT NULL FROM JSON_TABLE ('{ property: \"value 1\" }', '$' COLUMNS (property xmltype PATH '$.property'));";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single().Validate();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
+			var mainQueryBlock = semanticModel.QueryBlocks.Single();
+			mainQueryBlock.DataTypeReferences.Count.ShouldBe(1);
+			var xmlTypeReference = mainQueryBlock.DataTypeReferences.First();
+			xmlTypeReference.ResolvedDataType.FullyQualifiedName.Name.ShouldBe("xmltype");
 		}
 	}
 }

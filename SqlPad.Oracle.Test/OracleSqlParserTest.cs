@@ -1875,7 +1875,7 @@ FROM DUAL";
 				cancellationTokenSource.Cancel();
 
 				var exception = Should.Throw<AggregateException>(() => task.Wait(CancellationToken.None));
-				exception.InnerException.ShouldBeTypeOf<TaskCanceledException>();
+				exception.InnerException.ShouldBeAssignableTo<TaskCanceledException>();
 
 				parsingStopwatch.Stop();
 				cancellationStopwatch.Stop();
