@@ -3446,7 +3446,7 @@ SELECT value FROM data";
 			var mainQueryBlock = semanticModel.QueryBlocks.Single();
 			mainQueryBlock.DataTypeReferences.Count.ShouldBe(1);
 			var xmlTypeReference = mainQueryBlock.DataTypeReferences.First();
-			xmlTypeReference.ResolvedDataType.FullyQualifiedName.Name.ShouldBe("xmltype");
+			xmlTypeReference.ResolvedDataType.FullyQualifiedName.Name.ShouldBe("XMLTYPE");
 		}
 	}
 }

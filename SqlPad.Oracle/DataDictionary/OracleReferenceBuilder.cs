@@ -270,7 +270,7 @@ namespace SqlPad.Oracle.DataDictionary
 			else
 			{
 				var identifier = dataTypeNode[NonTerminals.SchemaDatatype, Terminals.DataTypeIdentifier];
-				name = identifier == null ? String.Empty : identifier.Token.Value;
+				name = identifier == null ? String.Empty : ((OracleToken)identifier.Token).UpperInvariantValue;
 			}
 
 			dataType.FullyQualifiedName = OracleObjectIdentifier.Create(owner, name);

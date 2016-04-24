@@ -548,6 +548,15 @@ namespace SqlPad.Oracle
 
 					break;
 			}
+
+			if (String.Equals(dataTypeReference.RootNode.ParentNode.Id, NonTerminals.JsonDataType))
+			{
+				if (dataTypeReference.FullyQualifiedObjectName.HasOwner || !dataType.FullyQualifiedName.NormalizedName.In(TerminalValues.Varchar, TerminalValues.Varchar2, TerminalValues.Raw))
+				{
+					var error = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidDataTypeForJsonTableColumn) { Node = dataTypeReference.RootNode };
+					validationModel.InvalidNonTerminals.Add(error.Node, error);
+				}
+			}
 		}
 
 		private static void ValidateDataTypeMaximumLength(OracleValidationModel validationModel, OracleDataTypeReference dataTypeReference, int maximumLength)
