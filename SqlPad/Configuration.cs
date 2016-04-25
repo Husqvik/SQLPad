@@ -28,6 +28,8 @@ namespace SqlPad {
         
         private ConfigurationResultGrid resultGridField;
         
+        private ConfigurationEditor editorField;
+        
         /// <remarks/>
         public ConfigurationDataModel DataModel {
             get {
@@ -45,6 +47,16 @@ namespace SqlPad {
             }
             set {
                 this.resultGridField = value;
+            }
+        }
+        
+        /// <remarks/>
+        public ConfigurationEditor Editor {
+            get {
+                return this.editorField;
+            }
+            set {
+                this.editorField = value;
             }
         }
     }
@@ -128,6 +140,41 @@ namespace SqlPad {
             }
             set {
                 this.fetchRowsBatchSizeFieldSpecified = value;
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.0.30319.33440")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/02")]
+    public partial class ConfigurationEditor {
+        
+        private int indentationSizeField;
+        
+        private bool indentationSizeFieldSpecified;
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public int IndentationSize {
+            get {
+                return this.indentationSizeField;
+            }
+            set {
+                this.indentationSizeField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        public bool IndentationSizeSpecified {
+            get {
+                return this.indentationSizeFieldSpecified;
+            }
+            set {
+                this.indentationSizeFieldSpecified = value;
             }
         }
     }

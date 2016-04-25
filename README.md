@@ -1,4 +1,4 @@
-SQLPad 0.4.0.308
+SQLPad 0.4.0.309
 ================
 
 SQLPad is an experimental SQL editor focused to quick and comfortable work.
@@ -221,15 +221,18 @@ Each connection string requires an infrastructure factory configuration record:
 	<Configuration xmlns="http://husqvik.com/SqlPad/2014/02">
 		<DataModel DataModelRefreshPeriod="60" />
 		<ResultGrid DateFormat="yyyy-MM-dd HH:mm:ss" NullPlaceholder="(null)" FetchRowsBatchSize="500" />
+		<Editor IndentationSize="2" />
 	</Configuration>
 
 `DataModelRefreshPeriod` - data dictionary refresh period in minutes; refresh can forced any time using `F5`
 
 `DateFormat` - data grid date time format (.NET format)
 
-`NullPlaceholder` - data grid NULL value representation
+`NullPlaceholder` - data grid NULL value representation (default '(null)')
 
-`FetchRowsBatchSize` - number of rows fetched in one batch
+`FetchRowsBatchSize` - number of rows fetched in one batch (default 100)
+
+`IndentationSize` - number of spaces for tab indentation (default 4)
 
 #####OracleConfiguration.xml
 

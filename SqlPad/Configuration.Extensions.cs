@@ -9,12 +9,14 @@ namespace SqlPad
 		private const string DefaultNullValuePlaceholder = "(null)";
 		private const byte DefaultDataModelRefreshPeriod = 10;
 		private const int DefaultRowBatchSize = 100;
+		private const int DefaultIndentationSize = 4;
 
 		public static readonly Configuration Default =
 			new Configuration
 			{
 				dataModelField = new ConfigurationDataModel { DataModelRefreshPeriod = DefaultDataModelRefreshPeriod },
-				resultGridField = new ConfigurationResultGrid { FetchRowsBatchSize = DefaultRowBatchSize }
+				resultGridField = new ConfigurationResultGrid { FetchRowsBatchSize = DefaultRowBatchSize },
+				editorField = new ConfigurationEditor {  IndentationSize = DefaultIndentationSize }
 			};
 
 		public void Validate()
@@ -27,6 +29,16 @@ namespace SqlPad
 			if (String.IsNullOrEmpty(ResultGrid.NullPlaceholder))
 			{
 				ResultGrid.NullPlaceholder = DefaultNullValuePlaceholder;
+			}
+
+			if (editorField == null)
+			{
+				editorField = new ConfigurationEditor();
+			}
+
+			if (!editorField.IndentationSizeSpecified || editorField.IndentationSize == 0)
+			{
+				editorField.IndentationSize = DefaultIndentationSize;
 			}
 
 			if (String.IsNullOrEmpty(resultGridField.DateFormat))

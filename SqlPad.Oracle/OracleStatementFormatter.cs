@@ -120,7 +120,9 @@ namespace SqlPad.Oracle
 		{
 			var expression = node.GetPathFilterAncestor(n => n.Id != NonTerminals.NestedQuery, NonTerminals.Expression);
 			if (expression != null)
+			{
 				return LineBreakPosition.None;
+			}
 
 			switch (node.Id)
 			{
@@ -410,7 +412,7 @@ namespace SqlPad.Oracle
 
 		private class StandardStatementFormatter : StatementFormatterBase
 		{
-			public StandardStatementFormatter(ActionExecutionContext executionContext) :base(executionContext)
+			public StandardStatementFormatter(ActionExecutionContext executionContext) : base(executionContext)
 			{
 			}
 

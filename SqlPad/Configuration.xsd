@@ -15,6 +15,11 @@
             <xs:attribute name="FetchRowsBatchSize" type="xs:int" use="optional" />
           </xs:complexType>
         </xs:element>
+        <xs:element name="Editor" minOccurs="0">
+          <xs:complexType>
+            <xs:attribute name="IndentationSize" type="xs:int" use="optional" />
+          </xs:complexType>
+        </xs:element>
       </xs:sequence>
     </xs:complexType>
   </xs:element>

@@ -32,6 +32,7 @@ namespace SqlPad
 		{
 			Options.AllowScrollBelowDocument = true;
 			Options.AllowToggleOverstrikeMode = true;
+			Options.IndentationSize = ConfigurationProvider.Configuration.Editor.IndentationSize;
 
 			base.OnInitialized(e);
 
