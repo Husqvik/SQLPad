@@ -412,8 +412,11 @@ namespace SqlPad.Oracle
 
 		private class StandardStatementFormatter : StatementFormatterBase
 		{
+			private readonly bool _formatSelectionOnly;
+
 			public StandardStatementFormatter(ActionExecutionContext executionContext) : base(executionContext)
 			{
+				_formatSelectionOnly = ExecutionContext.SelectionLength > 0;
 			}
 
 			public override void FormatStatements()
@@ -423,7 +426,7 @@ namespace SqlPad.Oracle
 				foreach (var statement in Statements)
 				{
 					var builder = new StringBuilder();
-					var indentation = String.Empty;
+					var indentation = GetIndentation(statement);
 					var textSegment = new TextSegment { IndextStart = -1 };
 					FormatNode(statement.RootNode, builder, ref skipSpaceBeforeToken, ref indentation, ref textSegment);
 
@@ -433,6 +436,22 @@ namespace SqlPad.Oracle
 				}
 			}
 
+			private string GetIndentation(StatementBase statement)
+			{
+				if (ExecutionContext.SelectionStart < statement.RootNode.SourcePosition.IndexStart)
+				{
+					return String.Empty;
+				}
+
+				var formattedTextStart = _formatSelectionOnly
+					? statement.GetNearestTerminalToPosition(ExecutionContext.SelectionStart).SourcePosition.IndexStart
+					: statement.RootNode.SourcePosition.IndexStart;
+
+				var lineStart = ExecutionContext.StatementText.LastIndexOfAny(new [] { '\n', '\r' }, formattedTextStart) + 1;
+				var indentation = ExecutionContext.StatementText.Substring(lineStart, formattedTextStart - lineStart);
+				return TextHelper.ReplaceAllNonBlankCharactersWithSpace(indentation);
+			}
+
 			private void FormatNode(StatementGrammarNode startNode, StringBuilder stringBuilder, ref bool skipSpaceBeforeToken, ref string indentation, ref TextSegment textSegment)
 			{
 				var childIndex = 0;
@@ -440,11 +459,9 @@ namespace SqlPad.Oracle
 					.Concat(startNode.Comments)
 					.OrderBy(n => n.SourcePosition.IndexStart);
 
-				var formatSelectionOnly = ExecutionContext.SelectionLength > 0;
-
 				foreach (var childNode in childNodes)
 				{
-					if (formatSelectionOnly)
+					if (_formatSelectionOnly)
 					{
 						if (childNode.SourcePosition.IndexEnd <= ExecutionContext.SelectionStart)
 						{
@@ -524,7 +541,7 @@ namespace SqlPad.Oracle
 
 						skipSpaceBeforeToken = SkipSpaceTerminalIds.Contains(grammarNode.Id) || grammarNode.Id.In(Terminals.Dot, Terminals.Colon, Terminals.AtCharacter);
 
-						if (formatSelectionOnly && grammarNode.SourcePosition.IndexEnd >= ExecutionContext.SelectionEnd)
+						if (_formatSelectionOnly && grammarNode.SourcePosition.IndexEnd >= ExecutionContext.SelectionEnd)
 						{
 							break;
 						}

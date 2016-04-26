@@ -28,11 +28,21 @@ namespace SqlPad.Commands
 		public static void ExecuteEditCommand(SqlDocumentRepository documentRepository, SqlTextEditor editor, Action<ActionExecutionContext> executionHandler)
 		{
 			if (editor.IsReadOnly || !String.Equals(documentRepository.StatementText, editor.Text))
+			{
 				return;
+			}
 
 			var executionContext = ActionExecutionContext.Create(editor, documentRepository);
-			executionHandler(executionContext);
-			UpdateDocument(editor, executionContext);
+
+			try
+			{
+				executionHandler(executionContext);
+				UpdateDocument(editor, executionContext);
+			}
+			catch (Exception exception)
+			{
+				App.LogErrorAndShowMessage(exception);
+			}
 		}
 
 		public static void UpdateDocument(SqlTextEditor editor, ActionExecutionContext executionContext)

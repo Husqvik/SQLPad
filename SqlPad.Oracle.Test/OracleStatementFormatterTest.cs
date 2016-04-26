@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using Shouldly;
 using SqlPad.Commands;
 
@@ -11,8 +10,8 @@ namespace SqlPad.Oracle.Test
 		private readonly SqlDocumentRepository _documentRepository = TestFixture.CreateDocumentRepository();
 		private static readonly OracleStatementFormatter Formatter = new OracleStatementFormatter();
 
-		[TearDown]
-		public void TearDown()
+		[SetUp]
+		public void SetUp()
 		{
 			OracleConfiguration.Configuration.Formatter.FormatOptions.Reset();
 		}
@@ -113,12 +112,12 @@ FROM
 			AssertFormattedResult(executionContext, expectedFormat);
 		}
 
-		private static void AssertFormattedResult(ActionExecutionContext executionContext, string expectedFormat)
+		private static void AssertFormattedResult(ActionExecutionContext executionContext, string expectedFormat, int formattedSegmentIndexStart = 0)
 		{
 			executionContext.SegmentsToReplace.Count.ShouldBe(1);
-			var formattedSegment = executionContext.SegmentsToReplace.First();
+			var formattedSegment = executionContext.SegmentsToReplace[0];
 			formattedSegment.Text.ShouldBe(expectedFormat);
-			formattedSegment.IndextStart.ShouldBe(0);
+			formattedSegment.IndextStart.ShouldBe(formattedSegmentIndexStart);
 		}
 
 		private ActionExecutionContext ExecuteFormatCommand(string sourceFormat, int selectionStart = 0, int selectionLength = 0)
@@ -239,6 +238,61 @@ FROM (
 	SELECT";
 
 			AssertFormattedResult(executionContext, expectedFormat);
+		}
+
+		[Test]
+		public void TestFormatSelectedTextWithIndentation()
+		{
+			const string sourceFormat =
+@"SELECT
+	C1, C2, C3 FROM";
+
+			var executionContext = ExecuteFormatCommand(sourceFormat, 9, 24);
+
+			const string expectedFormat =
+@"C1,
+	C2,
+	C3
+FROM
+	";
+
+			AssertFormattedResult(executionContext, expectedFormat, 9);
+		}
+
+		[Test]
+		public void TestFormatSelectedMultipleCommandsWithIndentation()
+		{
+			const string sourceFormat =
+@"SELECT
+	C1, C2, C3 FROM;
+
+SELECT
+	C1, C2, C3 FROM";
+
+			var executionContext = ExecuteFormatCommand(sourceFormat, 9, 53);
+
+			executionContext.SegmentsToReplace.Count.ShouldBe(2);
+
+			const string expectedFormat1 =
+@"C1,
+	C2,
+	C3
+FROM
+	";
+
+			var formattedSegment = executionContext.SegmentsToReplace[0];
+			formattedSegment.Text.ShouldBe(expectedFormat1);
+
+			const string expectedFormat2 =
+@"SELECT
+	C1,
+	C2,
+	C3
+FROM
+	";
+
+			formattedSegment = executionContext.SegmentsToReplace[1];
+			formattedSegment.Text.ShouldBe(expectedFormat2);
 		}
 		
 		[Test]

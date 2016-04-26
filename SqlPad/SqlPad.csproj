@@ -111,6 +111,7 @@
     <Compile Include="CSharpQueryClassGenerator.cs" />
     <Compile Include="FoldingSection.cs" />
     <Compile Include="IConnectionAdapter.cs" />
+    <Compile Include="TextHelper.cs" />
     <Compile Include="SqlPadTextBox.cs" />
     <Compile Include="WindowClipboardHistory.xaml.cs">
       <DependentUpon>WindowClipboardHistory.xaml</DependentUpon>
