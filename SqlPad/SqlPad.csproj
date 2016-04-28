@@ -108,9 +108,11 @@
     <Compile Include="Bookmarks\IconMargin.cs" />
     <Compile Include="CellValueConverter.cs" />
     <Compile Include="ClipboardManager.cs" />
+    <Compile Include="ColumnHeader.cs" />
     <Compile Include="CSharpQueryClassGenerator.cs" />
     <Compile Include="FoldingSection.cs" />
     <Compile Include="IConnectionAdapter.cs" />
+    <Compile Include="ResultInfo.cs" />
     <Compile Include="TextHelper.cs" />
     <Compile Include="SqlPadTextBox.cs" />
     <Compile Include="WindowClipboardHistory.xaml.cs">
