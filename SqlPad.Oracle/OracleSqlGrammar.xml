@@ -6914,8 +6914,7 @@
           <Terminal Id="Is" />
           <Terminal Id="Not" IsOptional="true" />
           <Terminal Id="Json" />
-          <NonTerminal Id="StrictOrLax" IsOptional="true" />
-          <NonTerminal Id="WithOrWithoutUniqueKeys" IsOptional="true" />
+          <NonTerminal Id="OptionallyParenthesisEnclosedJsonOptions" IsOptional="true" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -7035,6 +7034,39 @@
           <Terminal Id="Is" />
           <Terminal Id="Not" IsOptional="true" />
           <NonTerminal Id="NullNaNOrInfinite" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="OptionallyParenthesisEnclosedJsonOptions">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="JsonOptions" />
+        </Sequence>
+        <Sequence Comment="Undocumented">
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="JsonOptions" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="JsonOptions">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="JsonOption" />
+          <NonTerminal Id="JsonOptions" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="JsonOption">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="StrictOrLax" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="WithOrWithoutUniqueKeys" />
         </Sequence>
       </Sequences>
     </Rule>

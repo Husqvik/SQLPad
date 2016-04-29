@@ -2355,6 +2355,16 @@ FROM
 		}
 
 		[Test]
+		public void TestIsJsonConditionWithParenthesisEnclosedJsonOption()
+		{
+			const string statement1 = "SELECT * FROM JSON WHERE document IS JSON (STRICT WITH UNIQUE KEYS) OR document IS NOT JSON (WITHOUT UNIQUE KEYS LAX)";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single().Validate();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+		}
+
+		[Test]
 		public void TestIncompleteInlineView()
 		{
 			const string statement1 = "SELECT * FROM DUAL D1 JOIN (SELECT DUMMY FROM DUAL) X";

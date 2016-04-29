@@ -726,6 +726,8 @@ namespace SqlPad.Oracle
 			public const string JsonExistsClause = "JsonExistsClause";
 			public const string JsonExistsOnErrorClause = "JsonExistsOnErrorClause";
 			public const string JsonExistsParameterClause = "JsonExistsParameterClause";
+			public const string JsonOption = "JsonOption";
+			public const string JsonOptions = "JsonOptions";
 			public const string JsonQueryClause = "JsonQueryClause";
 			public const string JsonQueryOnErrorClause = "JsonQueryOnErrorClause";
 			public const string JsonQueryParameterClause = "JsonQueryParameterClause";
@@ -905,6 +907,7 @@ namespace SqlPad.Oracle
 			public const string OnOrOff = "OnOrOff";
 			public const string OpaqueFormatSpecification = "OpaqueFormatSpecification";
 			public const string OpaqueFormatSpecificationOrUsingClobSubquery = "OpaqueFormatSpecificationOrUsingClobSubquery";
+			public const string OptionallyParenthesisEnclosedJsonOptions = "OptionallyParenthesisEnclosedJsonOptions";
 			public const string OptionalParameter = "OptionalParameter";
 			public const string OptionalParameterExpression = "OptionalParameterExpression";
 			public const string OptionalParameterExpressionCommaChainedList = "OptionalParameterExpressionCommaChainedList";
