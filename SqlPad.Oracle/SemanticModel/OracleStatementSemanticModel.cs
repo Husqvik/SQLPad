@@ -3405,12 +3405,17 @@ namespace SqlPad.Oracle.SemanticModel
 					return dataObject;
 				}
 
-				if (columnReference.ReferencesAllColumns || objectReference.QueryBlocks.Count != 1)
+				if (objectReference.QueryBlocks.Count != 1)
 				{
 					return null;
 				}
 
-				column = objectReference.QueryBlocks.First().NamedColumns[columnReference.NormalizedName].First();
+				var columnNormalizedName =
+					columnReference.ReferencesAllColumns
+						? column.NormalizedName
+						: columnReference.NormalizedName;
+
+				column = objectReference.QueryBlocks.First().NamedColumns[columnNormalizedName].First();
 			} while (true);
 		}
 

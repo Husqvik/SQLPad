@@ -3130,6 +3130,35 @@ FROM
 		}
 
 		[Test]
+		public void TestApplyReferenceConstraintsThroughAsterisk()
+		{
+			const string query1 = @"SELECT * FROM (SELECT PROJECT_ID, TARGETGROUP_ID FROM TARGETGROUP)";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
+
+			var columnHeaders =
+				new[]
+				{
+					new ColumnHeader { Name = "PROJECT_ID" },
+					new ColumnHeader { Name = "TARGETGROUP_ID" }
+				};
+
+			var childReferenceDataSources = semanticModel.ApplyReferenceConstraints(columnHeaders);
+
+			var referenceDataSources = columnHeaders[0].ParentReferenceDataSources;
+			referenceDataSources.ShouldNotBe(null);
+			referenceDataSources.Count.ShouldBe(1);
+			var referenceDataSource = referenceDataSources.First();
+			referenceDataSource.ObjectName.ShouldBe("HUSQVIK.PROJECT");
+			referenceDataSource.ConstraintName.ShouldBe("HUSQVIK.FK_TARGETGROUP_PROJECT");
+
+			childReferenceDataSources.Count.ShouldBe(1);
+		}
+
+		[Test]
 		public void TestMergeUsingAliasedSubquery()
 		{
 			const string query1 =
