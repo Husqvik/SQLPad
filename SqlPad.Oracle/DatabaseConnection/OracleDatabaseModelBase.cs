@@ -14,6 +14,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 	public abstract class OracleDatabaseModelBase : IDatabaseModel
 	{
 		public const string SystemParameterNameMaxStringSize = "max_string_size";
+		public const string BuiltInDataTypeInt = "INT";
 		public const string BuiltInDataTypeIntervalYearToMonth = "INTERVAL YEAR TO MONTH";
 		public const string BuiltInDataTypeIntervalDayToSecond = "INTERVAL DAY TO SECOND";
 		public const string BuiltInDataTypeTimestampWithTimeZone = "TIMESTAMP WITH TIME ZONE";
@@ -40,6 +41,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				TerminalValues.Decimal,
 				"DOUBLE PRECISION",
 				TerminalValues.Float,
+				BuiltInDataTypeInt,
 				TerminalValues.Integer,
 				BuiltInDataTypeIntervalDayToSecond,
 				BuiltInDataTypeIntervalYearToMonth,

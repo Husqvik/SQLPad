@@ -551,7 +551,7 @@ namespace SqlPad.Oracle
 
 			if (String.Equals(dataTypeReference.RootNode.ParentNode.Id, NonTerminals.JsonDataType))
 			{
-				if (dataTypeReference.FullyQualifiedObjectName.HasOwner || !dataType.FullyQualifiedName.NormalizedName.In(TerminalValues.Varchar, TerminalValues.Varchar2, TerminalValues.Raw))
+				if (dataTypeReference.FullyQualifiedObjectName.HasOwner || !dataType.FullyQualifiedName.NormalizedName.Trim('"').In(TerminalValues.Varchar, TerminalValues.Varchar2, TerminalValues.Raw, OracleDatabaseModelBase.BuiltInDataTypeInt))
 				{
 					var error = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidDataTypeForJsonTableColumn) { Node = dataTypeReference.RootNode };
 					validationModel.InvalidNonTerminals.Add(error.Node, error);

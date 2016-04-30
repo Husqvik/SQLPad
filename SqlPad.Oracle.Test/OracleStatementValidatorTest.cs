@@ -3535,7 +3535,7 @@ END;";
 		[Test]
 		public void TestInvalidDataTypeForJsonTableColumn()
 		{
-			const string sqlText = "SELECT NULL FROM JSON_TABLE ('{ property: \"value 1\" }', '$' COLUMNS (property sys.odcirawlist PATH '$.property'))";
+			const string sqlText = "SELECT NULL FROM JSON_TABLE('{ property: \"value 1\" }', '$' COLUMNS (property sys.odcirawlist PATH '$.property'))";
 
 			var statement = Parser.Parse(sqlText).Single();
 
@@ -3547,6 +3547,21 @@ END;";
 			var node = validationModel.InvalidNonTerminals.Values.First();
 			node.SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidDataTypeForJsonTableColumn);
 			node.Node.Id.ShouldBe(NonTerminals.DataType);
+		}
+
+		[Test]
+		public void TestIntDataTypeForJsonTableColumn()
+		{
+			const string sqlText = "SELECT NULL FROM JSON_TABLE('{ property: \"value 1\" }', '$' COLUMNS (property INT PATH '$.property'))";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
+			validationModel.IdentifierNodeValidity.Count.ShouldBe(0);
 		}
 	}
 }

@@ -267,7 +267,9 @@ namespace SqlPad.Oracle
 		{
 			var parent = node.ParentNode;
 			if (parent == null)
+			{
 				return;
+			}
 
 			var matchParent = false;
 			var compatibleSequences = NonTerminalRules[parent.Id].Sequences.SelectMany(s => GetCompatibleSequences(s, parent));
