@@ -3,4 +3,5 @@
   <DataModel DataModelRefreshPeriod="60" />
   <ResultGrid DateFormat="yyyy-MM-dd HH:mm:ss" NullPlaceholder="(null)" FetchRowsBatchSize="500" />
   <Editor IndentationSize="4" />
+  <Miscellaneous MaximumHistoryEntries="1000" MaximumHistoryEntrySize="8192" />
 </Configuration>

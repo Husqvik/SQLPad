@@ -69,7 +69,7 @@
 			<TabItem x:Name="TabDatabaseOutput">
 				<TabItem.Style>
 					<Style>
-						<Setter Property="TabItem.Header" Value="_Output (disabled)" />
+						<Setter Property="TabItem.Header" Value="Database _output (disabled)" />
 						<Style.Triggers>
 							<DataTrigger Binding="{Binding EnableDatabaseOutput}" Value="True">
 								<Setter Property="TabItem.Header" Value="_Output (enabled)" />
@@ -177,8 +177,11 @@
 					</DataGrid.Columns>
 				</DataGrid>
 			</TabItem>
+			
 			<TabItem Header="E_xecution plan" x:Name="TabExecutionPlan" />
+			
 			<TabItem Header="_Trace" x:Name="TabTrace" />
+			
 			<TabItem Header="_Debugger" x:Name="TabDebugger">
 				<TabItem.Style>
 					<Style>

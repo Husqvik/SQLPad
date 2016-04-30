@@ -30,6 +30,8 @@ namespace SqlPad {
         
         private ConfigurationEditor editorField;
         
+        private ConfigurationMiscellaneous miscellaneousField;
+        
         /// <remarks/>
         public ConfigurationDataModel DataModel {
             get {
@@ -57,6 +59,16 @@ namespace SqlPad {
             }
             set {
                 this.editorField = value;
+            }
+        }
+        
+        /// <remarks/>
+        public ConfigurationMiscellaneous Miscellaneous {
+            get {
+                return this.miscellaneousField;
+            }
+            set {
+                this.miscellaneousField = value;
             }
         }
     }
@@ -175,6 +187,67 @@ namespace SqlPad {
             }
             set {
                 this.indentationSizeFieldSpecified = value;
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.0.30319.33440")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://husqvik.com/SqlPad/2014/02")]
+    public partial class ConfigurationMiscellaneous {
+        
+        private int maximumHistoryEntriesField;
+        
+        private bool maximumHistoryEntriesFieldSpecified;
+        
+        private int maximumHistoryEntrySizeField;
+        
+        private bool maximumHistoryEntrySizeFieldSpecified;
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public int MaximumHistoryEntries {
+            get {
+                return this.maximumHistoryEntriesField;
+            }
+            set {
+                this.maximumHistoryEntriesField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        public bool MaximumHistoryEntriesSpecified {
+            get {
+                return this.maximumHistoryEntriesFieldSpecified;
+            }
+            set {
+                this.maximumHistoryEntriesFieldSpecified = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public int MaximumHistoryEntrySize {
+            get {
+                return this.maximumHistoryEntrySizeField;
+            }
+            set {
+                this.maximumHistoryEntrySizeField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        public bool MaximumHistoryEntrySizeSpecified {
+            get {
+                return this.maximumHistoryEntrySizeFieldSpecified;
+            }
+            set {
+                this.maximumHistoryEntrySizeFieldSpecified = value;
             }
         }
     }

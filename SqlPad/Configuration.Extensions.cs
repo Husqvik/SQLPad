@@ -10,13 +10,21 @@ namespace SqlPad
 		private const byte DefaultDataModelRefreshPeriod = 10;
 		private const int DefaultRowBatchSize = 100;
 		private const int DefaultIndentationSize = 4;
+		private const int DefaultMaximumHistoryEntries = 1000;
+		private const int DefaultMaximumHistoryEntrySize = 8192;
 
 		public static readonly Configuration Default =
 			new Configuration
 			{
 				dataModelField = new ConfigurationDataModel { DataModelRefreshPeriod = DefaultDataModelRefreshPeriod },
 				resultGridField = new ConfigurationResultGrid { FetchRowsBatchSize = DefaultRowBatchSize },
-				editorField = new ConfigurationEditor {  IndentationSize = DefaultIndentationSize }
+				editorField = new ConfigurationEditor { IndentationSize = DefaultIndentationSize },
+				miscellaneousField =
+					new ConfigurationMiscellaneous
+					{
+						MaximumHistoryEntries = DefaultMaximumHistoryEntries,
+						MaximumHistoryEntrySize = DefaultMaximumHistoryEntrySize
+					}
 			};
 
 		public void Validate()
@@ -31,14 +39,23 @@ namespace SqlPad
 				ResultGrid.NullPlaceholder = DefaultNullValuePlaceholder;
 			}
 
-			if (editorField == null)
-			{
-				editorField = new ConfigurationEditor();
-			}
+			editorField = editorField ?? new ConfigurationEditor();
 
 			if (!editorField.IndentationSizeSpecified || editorField.IndentationSize == 0)
 			{
 				editorField.IndentationSize = DefaultIndentationSize;
+			}
+
+			miscellaneousField = miscellaneousField ?? new ConfigurationMiscellaneous();
+
+			if (!miscellaneousField.MaximumHistoryEntriesSpecified || miscellaneousField.MaximumHistoryEntries == 0)
+			{
+				miscellaneousField.MaximumHistoryEntries = DefaultMaximumHistoryEntries;
+			}
+
+			if (!miscellaneousField.MaximumHistoryEntrySizeSpecified || miscellaneousField.MaximumHistoryEntrySize == 0)
+			{
+				miscellaneousField.MaximumHistoryEntrySize = DefaultMaximumHistoryEntrySize;
 			}
 
 			if (String.IsNullOrEmpty(resultGridField.DateFormat))

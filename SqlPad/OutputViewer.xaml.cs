@@ -18,7 +18,6 @@ namespace SqlPad
 	[DebuggerDisplay("OutputViewer (Title={Title})")]
 	public partial class OutputViewer : IDisposable
 	{
-		private const int MaxHistoryEntrySize = 8192;
 		private const string ExecutionLogTimestampFormat = "yyyy-MM-dd HH:mm:ss.fff";
 
 		private static readonly TimeSpan DefaultRefreshInterval = TimeSpan.FromMinutes(1);
@@ -43,7 +42,7 @@ namespace SqlPad
 		public IStatementValidator StatementValidator { get; }
 
 		public IExecutionPlanViewer ExecutionPlanViewer { get; }
-		
+
 		public ITraceViewer TraceViewer { get; }
 
 		private bool IsCancellationRequested
@@ -226,7 +225,7 @@ namespace SqlPad
 
 		private bool IsPreviousTabAlwaysVisible => _previousSelectedTab != null && IsTabAlwaysVisible(_previousSelectedTab);
 
-	    private void SelectPreviousTab()
+		private void SelectPreviousTab()
 		{
 			if (_previousSelectedTab != null)
 			{
@@ -407,17 +406,19 @@ namespace SqlPad
 
 		private void UpdateHistoryEntries()
 		{
+			var maximumHistoryEntrySize = ConfigurationProvider.Configuration.Miscellaneous.MaximumHistoryEntrySize;
+
 			foreach (var statementResult in _executionResult.StatementResults.Where(r => r.ExecutedAt.HasValue))
 			{
 				var executionHistoryRecord = new StatementExecutionHistoryEntry(statementResult.StatementModel.StatementText, statementResult.ExecutedAt.Value);
 
-				if (executionHistoryRecord.StatementText.Length <= MaxHistoryEntrySize)
+				if (executionHistoryRecord.StatementText.Length <= maximumHistoryEntrySize)
 				{
 					_providerConfiguration.AddStatementExecution(executionHistoryRecord);
 				}
 				else
 				{
-					Trace.WriteLine($"Executed statement not stored in the execution history. The maximum allowed size is {MaxHistoryEntrySize} characters while the statement has {executionHistoryRecord.StatementText.Length} characters.");
+					Trace.WriteLine($"Executed statement not stored in the execution history. The maximum allowed size is {maximumHistoryEntrySize} characters while the statement has {executionHistoryRecord.StatementText.Length} characters. ");
 				}
 			}
 		}
@@ -611,7 +612,7 @@ namespace SqlPad
 		{
 			public bool IsSuccessful => Exception == null;
 
-		    public Exception Exception { get; set; }
+			public Exception Exception { get; set; }
 
 			public TimeSpan Elapsed { get; set; }
 

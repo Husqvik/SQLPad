@@ -20,6 +20,12 @@
             <xs:attribute name="IndentationSize" type="xs:int" use="optional" />
           </xs:complexType>
         </xs:element>
+        <xs:element name="Miscellaneous" minOccurs="0">
+          <xs:complexType>
+            <xs:attribute name="MaximumHistoryEntries" type="xs:int" use="optional" />
+            <xs:attribute name="MaximumHistoryEntrySize" type="xs:int" use="optional" />
+          </xs:complexType>
+        </xs:element>
       </xs:sequence>
     </xs:complexType>
   </xs:element>

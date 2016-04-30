@@ -11,8 +11,6 @@ namespace SqlPad
 {
 	public class DatabaseProviderConfiguration
 	{
-		private const int MaxExecutedStatementHistoryLength = 1000;
-
 		private Dictionary<string, BindVariableConfiguration> _bindVariables;
 		private HashSet<StatementExecutionHistoryEntry> _statementExecutionHistory;
 		private DatabaseMonitorConfiguration _databaseMonitorConfiguration;
@@ -52,15 +50,17 @@ namespace SqlPad
 
 		public void AddStatementExecution(StatementExecutionHistoryEntry entry)
 		{
-			if (!StatementExecutionHistory.Remove(entry) && StatementExecutionHistory.Count >= MaxExecutedStatementHistoryLength)
+			var maximumHistoryEntries = ConfigurationProvider.Configuration.Miscellaneous.MaximumHistoryEntries;
+
+			if (!StatementExecutionHistory.Remove(entry) && StatementExecutionHistory.Count >= maximumHistoryEntries)
 			{
-				var recordsToRemove = StatementExecutionHistory.OrderByDescending(r => r.ExecutedAt).Skip(MaxExecutedStatementHistoryLength - 1).ToArray();
+				var recordsToRemove = StatementExecutionHistory.OrderByDescending(r => r.ExecutedAt).Skip(maximumHistoryEntries - 1).ToArray();
 				foreach (var oldRecord in recordsToRemove)
 				{
 					StatementExecutionHistory.Remove(oldRecord);
 				}
 
-				Trace.WriteLine($"Statement execution history limit of {MaxExecutedStatementHistoryLength} entries has been reached. Oldest entries have been removed. ");
+				Trace.WriteLine($"Statement execution history limit of {maximumHistoryEntries} entries has been reached. Oldest entries have been removed. ");
 			}
 
 			StatementExecutionHistory.Add(entry);
