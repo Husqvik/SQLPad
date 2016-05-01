@@ -726,7 +726,6 @@ namespace SqlPad.Oracle
 			public const string JsonExistsClause = "JsonExistsClause";
 			public const string JsonExistsOnErrorClause = "JsonExistsOnErrorClause";
 			public const string JsonExistsParameterClause = "JsonExistsParameterClause";
-			public const string JsonOption = "JsonOption";
 			public const string JsonOptions = "JsonOptions";
 			public const string JsonQueryClause = "JsonQueryClause";
 			public const string JsonQueryOnErrorClause = "JsonQueryOnErrorClause";

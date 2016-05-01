@@ -7054,19 +7054,12 @@
     <Rule StartingNonTerminal="JsonOptions">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="JsonOption" />
-          <NonTerminal Id="JsonOptions" IsOptional="true" />
-        </Sequence>
-      </Sequences>
-    </Rule>
-
-    <Rule StartingNonTerminal="JsonOption">
-      <Sequences>
-        <Sequence>
           <NonTerminal Id="StrictOrLax" />
+          <NonTerminal Id="WithOrWithoutUniqueKeys" IsOptional="true" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="WithOrWithoutUniqueKeys" />
+          <NonTerminal Id="StrictOrLax" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
