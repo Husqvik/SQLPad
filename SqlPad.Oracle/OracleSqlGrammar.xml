@@ -6363,7 +6363,13 @@
           <Terminal Id="Float" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="NumericOrDecimalOrDec" />
+          <Terminal Id="Numeric" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Decimal" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Dec" />
         </Sequence>
         <Sequence>
           <Terminal Id="Smallint" />
@@ -6510,7 +6516,15 @@
           <NonTerminal Id="DataTypeSimplePrecision" IsOptional="true" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="NumericOrDecimalOrDec" />
+          <Terminal Id="Numeric" />
+          <NonTerminal Id="DataTypeNumericPrecisionAndScale" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Decimal" />
+          <NonTerminal Id="DataTypeNumericPrecisionAndScale" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="Dec" />
           <NonTerminal Id="DataTypeNumericPrecisionAndScale" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -6616,20 +6630,6 @@
         </Sequence>
         <Sequence>
           <Terminal Id="Char" />
-        </Sequence>
-      </Sequences>
-    </Rule>
-    
-    <Rule StartingNonTerminal="NumericOrDecimalOrDec">
-      <Sequences>
-        <Sequence>
-          <Terminal Id="Numeric" />
-        </Sequence>
-        <Sequence>
-          <Terminal Id="Decimal" />
-        </Sequence>
-        <Sequence>
-          <Terminal Id="Dec" />
         </Sequence>
       </Sequences>
     </Rule>

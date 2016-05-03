@@ -171,7 +171,7 @@ namespace SqlPad.Oracle.DataDictionary
 				!String.Equals(dataTypeNode.Id, NonTerminals.PlSqlDataTypeWithoutConstraint) &&
 				!isAssociativeArrayType)
 			{
-				throw new ArgumentException($"RootNode ID must be '{NonTerminals.DataType}' or '{NonTerminals.PlSqlDataType}'. ", nameof(dataTypeReference));
+				throw new ArgumentException($"RootNode ID must be '{NonTerminals.DataType}' or '{NonTerminals.PlSqlDataType}' but is {dataTypeNode.Id}. ", nameof(dataTypeReference));
 			}
 
 			var owner = String.Equals(dataTypeNode.FirstTerminalNode.Id, Terminals.SchemaIdentifier)

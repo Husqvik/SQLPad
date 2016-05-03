@@ -876,7 +876,6 @@ namespace SqlPad.Oracle
 			public const string NullOnEmpty = "NullOnEmpty";
 			public const string NullOrStringOrNumberLiteralOrParenthesisEnclosedStringOrIntegerLiteralList = "NullOrStringOrNumberLiteralOrParenthesisEnclosedStringOrIntegerLiteralList";
 			public const string NullsClause = "NullsClause";
-			public const string NumericOrDecimalOrDec = "NumericOrDecimalOrDec";
 			public const string ObjectAccessExpression = "ObjectAccessExpression";
 			public const string ObjectAsAlias = "ObjectAsAlias";
 			public const string ObjectAttributeProperty = "ObjectAttributeProperty";

@@ -870,10 +870,17 @@ namespace SqlPad.Oracle.SemanticModel
 				var jsonReturnTypeNode = jsonTableColumn[NonTerminals.JsonDataType];
 				columnDescription.DataType = OracleReferenceBuilder.ResolveDataTypeFromJsonDataTypeNode(jsonReturnTypeNode);
 
-				var dataTypeIdentifier = jsonReturnTypeNode?[NonTerminals.DataType, NonTerminals.SchemaDatatype, Terminals.DataTypeIdentifier];
-				if (dataTypeIdentifier != null)
+				var dataTypeNode = jsonReturnTypeNode?[NonTerminals.DataType];
+				if (dataTypeNode != null)
 				{
-					ResolveDataTypeReference(queryBlock, queryBlock, dataTypeIdentifier, StatementPlacement.TableReference, null);
+					var dataTypeIdentifier =
+						dataTypeNode[NonTerminals.SchemaDatatype, Terminals.DataTypeIdentifier]
+						?? dataTypeNode[NonTerminals.BuiltInDataType]?[0];
+
+					if (dataTypeIdentifier != null)
+					{
+						ResolveDataTypeReference(queryBlock, queryBlock, dataTypeIdentifier, StatementPlacement.TableReference, null);
+					}
 				}
 
 				if (columnDescription.DataType.Length != null || !String.IsNullOrEmpty(columnDescription.DataType.FullyQualifiedName.Owner))

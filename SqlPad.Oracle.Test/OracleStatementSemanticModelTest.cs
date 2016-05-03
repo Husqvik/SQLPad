@@ -3466,7 +3466,7 @@ SELECT value FROM data";
 		[Test]
 		public void TestDataTypeReferenceWithinJsonTable()
 		{
-			const string query1 = "SELECT NULL FROM JSON_TABLE ('{ property: \"value 1\" }', '$' COLUMNS (property xmltype PATH '$.property'));";
+			const string query1 = "SELECT NULL FROM JSON_TABLE ('{ property: \"value 1\" }', '$' COLUMNS (property xmltype PATH '$.property'))";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single().Validate();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
