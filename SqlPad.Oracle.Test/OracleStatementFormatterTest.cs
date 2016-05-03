@@ -260,6 +260,23 @@ FROM
 		}
 
 		[Test]
+		public void TestFormatWithDistinct()
+		{
+			const string sourceFormat =
+@"SELECT DISTINCT DUMMY FROM DUAL";
+
+			var executionContext = ExecuteFormatCommand(sourceFormat);
+
+			const string expectedFormat =
+@"SELECT DISTINCT
+	DUMMY
+FROM
+	DUAL";
+
+			AssertFormattedResult(executionContext, expectedFormat);
+		}
+
+		[Test]
 		public void TestFormatSelectedMultipleCommandsWithIndentation()
 		{
 			const string sourceFormat =

@@ -37,8 +37,9 @@ namespace SqlPad.Oracle
 		private static readonly HashSet<LineBreakSettings> LineBreaks =
 			new HashSet<LineBreakSettings>
 			{
-				new LineBreakSettings { NonTerminalId = NonTerminals.QueryBlock, ChildNodeId = Terminals.Select, BreakPosition = GetSelectBreakPosition, GetIndentationAfter = n => 1 },
+				new LineBreakSettings { NonTerminalId = NonTerminals.QueryBlock, ChildNodeId = Terminals.Select, BreakPosition = GetSelectBreakPosition, GetIndentationAfter = GetSelectIndentationAfter },
 				new LineBreakSettings { NonTerminalId = NonTerminals.QueryBlock, ChildNodeId = Terminals.From, BreakPosition = GetQueryBlockFromBreakPosition, GetIndentationBefore = n => -1, GetIndentationAfter = n => 1 },
+				new LineBreakSettings { NonTerminalId = NonTerminals.QueryBlock, ChildNodeId = NonTerminals.DistinctModifier, BreakPosition = GetDistinctModifierBreakPosition, GetIndentationAfter = GetDistinctModifierIndentationAfter },
 				new LineBreakSettings { NonTerminalId = NonTerminals.WhereClause, ChildNodeId = Terminals.Where, BreakPosition = n => LineBreakPosition.BeforeNode | LineBreakPosition.AfterNode, GetIndentationBefore = n => -1, GetIndentationAfter = n => 1 },
 				new LineBreakSettings { NonTerminalId = NonTerminals.Condition, ChildNodeId = Terminals.Exists, BreakPosition = n => LineBreakPosition.AfterNode, GetIndentationAfter = n => 1 },
 				new LineBreakSettings { NonTerminalId = NonTerminals.SelectExpressionExpressionChainedList, ChildNodeId = Terminals.Comma, BreakPosition = n => LineBreakPosition.AfterNode },
@@ -90,6 +91,16 @@ namespace SqlPad.Oracle
 				new LineBreakSettings { NonTerminalId = NonTerminals.IsOrAs, ChildNodeId = null, GetIndentationAfter = n => 1 },
 			};
 
+		private static int GetDistinctModifierIndentationAfter(StatementGrammarNode n)
+		{
+			return String.Equals(n.ParentNode.Id, NonTerminals.QueryBlock) ? 1 : 0;
+		}
+
+		private static LineBreakPosition GetDistinctModifierBreakPosition(StatementGrammarNode n)
+		{
+			return String.Equals(n.ParentNode.Id, NonTerminals.QueryBlock) ? LineBreakPosition.AfterNode : LineBreakPosition.None;
+		}
+
 		private static int GetAfterConditionClosingParenthesisIndentation(StatementGrammarNode node)
 		{
 			var conditionNode = node.ParentNode;
@@ -109,11 +120,30 @@ namespace SqlPad.Oracle
 				: LineBreakPosition.BeforeNode | LineBreakPosition.AfterNode;
 		}
 
+		private static int GetSelectIndentationAfter(StatementGrammarNode node)
+		{
+			return HasQueryBlockDistinctModifier(node)
+				? 0
+				: 1;
+		}
+
+		private static bool HasQueryBlockDistinctModifier(StatementGrammarNode selectTerminal)
+		{
+			return selectTerminal.FollowingTerminal != null && selectTerminal.FollowingTerminal.Id.In(Terminals.All, Terminals.Distinct, Terminals.Unique);
+		}
+
 		private static LineBreakPosition GetSelectBreakPosition(StatementGrammarNode node)
 		{
-			return node.PrecedingTerminal != null && node.PrecedingTerminal.Id == Terminals.LeftParenthesis
+			var breakPosition = String.Equals(node.PrecedingTerminal?.Id, Terminals.LeftParenthesis)
 				? LineBreakPosition.BeforeNode | LineBreakPosition.AfterNode
 				: LineBreakPosition.AfterNode;
+
+			if (HasQueryBlockDistinctModifier(node))
+			{
+				breakPosition ^= LineBreakPosition.AfterNode;
+			}
+
+			return breakPosition;
 		}
 
 		private static LineBreakPosition GetOrderByBreakPosition(StatementGrammarNode node)
