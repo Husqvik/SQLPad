@@ -442,7 +442,7 @@ namespace SqlPad
 				}
 				else
 				{
-					_executionLogBuilder.Append("Statement execution failed");
+					_executionLogBuilder.Append("Command execution failed");
 
 					if (executionResult.Duration.HasValue)
 					{

@@ -10023,8 +10023,7 @@
         <Sequence Comment="JSON query column">
           <Terminal Id="ColumnAlias" />
           <NonTerminal Id="JsonDataType" />
-          <Terminal Id="Format" />
-          <Terminal Id="Json" />
+          <NonTerminal Id="FormatJson" />
           <NonTerminal Id="JsonQueryWrapperClause" IsOptional="true" />
           <Terminal Id="Path" />
           <Terminal Id="StringLiteral" Comment="JSON path expression" />
@@ -10111,6 +10110,7 @@
         <Sequence>
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="Expression" />
+          <NonTerminal Id="FormatJson" IsOptional="true" />
           <Terminal Id="Comma" />
           <Terminal Id="StringLiteral" Comment="JSON path expression" />
           <NonTerminal Id="JsonQueryReturningClause" IsOptional="true" />
@@ -10119,6 +10119,15 @@
           <NonTerminal Id="JsonQueryWrapperClause" IsOptional="true" />
           <NonTerminal Id="JsonQueryOnErrorClause" IsOptional="true" />
           <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="FormatJson">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Format" />
+          <Terminal Id="Json" />
         </Sequence>
       </Sequences>
     </Rule>

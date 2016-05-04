@@ -551,6 +551,7 @@ namespace SqlPad.Oracle
 			public const string ForceTransactionIdentifier = "ForceTransactionIdentifier";
 			public const string ForContainerDataObject = "ForContainerDataObject";
 			public const string ForEachRow = "ForEachRow";
+			public const string FormatJson = "FormatJson";
 			public const string ForObjectTypes = "ForObjectTypes";
 			public const string ForUpdateClause = "ForUpdateClause";
 			public const string ForUpdateColumn = "ForUpdateColumn";

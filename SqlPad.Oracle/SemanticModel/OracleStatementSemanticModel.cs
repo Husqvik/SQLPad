@@ -34,6 +34,8 @@ namespace SqlPad.Oracle.SemanticModel
 			Terminals.XmlQuery,
 			Terminals.XmlRoot,
 			Terminals.XmlSerialize,
+			Terminals.JsonQuery,
+			Terminals.JsonValue,
 			Terminals.Count,
 			Terminals.Trim,
 			Terminals.CharacterCode,
@@ -2919,7 +2921,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		protected IEnumerable<StatementGrammarNode> GetGrammarSpecificFunctionNodes(StatementGrammarNode sourceNode)
 		{
-			return sourceNode.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBlock, Terminals.Count, Terminals.Trim, Terminals.CharacterCode, Terminals.Cast, Terminals.Extract, Terminals.XmlRoot, Terminals.NegationOrNull, Terminals.JsonExists, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, NonTerminals.WithinGroupAggregationFunction);
+			return sourceNode.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBlock, Terminals.Count, Terminals.Trim, Terminals.CharacterCode, Terminals.Cast, Terminals.Extract, Terminals.XmlRoot, Terminals.NegationOrNull, Terminals.JsonExists, Terminals.JsonQuery, Terminals.JsonValue, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, NonTerminals.WithinGroupAggregationFunction);
 		}
 
 		protected void ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(OracleQueryBlock queryBlock, OracleReferenceContainer referenceContainer, IEnumerable<StatementGrammarNode> identifiers, StatementPlacement placement, OracleSelectListColumn selectListColumn, Func<StatementGrammarNode, StatementGrammarNode> getPrefixNonTerminalFromIdentiferFunction = null, Func<StatementGrammarNode, IEnumerable<StatementGrammarNode>> getFunctionCallNodesFromIdentifierFunction = null)

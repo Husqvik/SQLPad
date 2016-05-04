@@ -325,6 +325,11 @@ namespace SqlPad
 			_timerWorkingDocumentSave.Stop();
 
 			SaveWorkingDocuments();
+
+			foreach (var document in AllDocuments)
+			{
+				document.Dispose();
+			}
 		}
 
 		internal void SaveWorkingDocuments()
