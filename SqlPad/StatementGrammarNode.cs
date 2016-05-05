@@ -97,7 +97,9 @@ namespace SqlPad
 		{
 			var parentNode = node.ParentNode;
 			if (parentNode == null)
+			{
 				return null;
+			}
 
 			var index = parentNode._childNodes.IndexOf(node) - 1;
 			return index >= 0
@@ -117,7 +119,9 @@ namespace SqlPad
 		private static StatementGrammarNode GetFollowingNode(StatementGrammarNode node)
 		{
 			if (node.ParentNode == null)
+			{
 				return null;
+			}
 
 			var index = node.ParentNode._childNodes.IndexOf(node) + 1;
 			return index < node.ParentNode._childNodes.Count
@@ -223,7 +227,7 @@ namespace SqlPad
 		private IEnumerable<StatementGrammarNode> GetChildNodes(Func<StatementGrammarNode, bool> filter = null)
 		{
 			return Type == NodeType.Terminal
-				? Enumerable.Empty<StatementGrammarNode>()
+				? EmptyArray
 				: ChildNodes.Where(n => filter == null || filter(n)).SelectMany(n => Enumerable.Repeat(n, 1).Concat(n.GetChildNodes(filter)));
 		}
 
@@ -243,15 +247,21 @@ namespace SqlPad
 		public void AddChildNodes(IEnumerable<StatementGrammarNode> nodes)
 		{
 			if (Type == NodeType.Terminal)
+			{
 				throw new InvalidOperationException("Terminal nodes cannot have child nodes. ");
+			}
 
 			if (ParentNode != null)
+			{
 				throw new InvalidOperationException("Child nodes cannot be added when the node is already associated with parent node. ");
+			}
 
 			foreach (var node in nodes)
 			{
 				if (node.ParentNode != null)
+				{
 					throw new InvalidOperationException($"Node '{node.Id}' has been already associated with another parent. ");
+				}
 
 				if (node.Type == NodeType.Terminal)
 				{
@@ -349,10 +359,14 @@ namespace SqlPad
 		public StatementGrammarNode GetPathFilterAncestor(Func<StatementGrammarNode, bool> pathFilter, string ancestorNodeId, bool includeSelf = false)
 		{
 			if (includeSelf && String.Equals(Id, ancestorNodeId))
+			{
 				return this;
+			}
 
 			if (ParentNode == null || (pathFilter != null && !pathFilter(ParentNode)))
+			{
 				return null;
+			}
 
 			return String.Equals(ParentNode.Id, ancestorNodeId)
 				? ParentNode
@@ -362,7 +376,9 @@ namespace SqlPad
 		public StatementGrammarNode GetPathFilterAncestor(Func<StatementGrammarNode, bool> pathFilter, Func<StatementGrammarNode, bool> ancestorPredicate)
 		{
 			if (ParentNode == null || (pathFilter != null && !pathFilter(ParentNode)))
+			{
 				return null;
+			}
 
 			return ancestorPredicate(ParentNode)
 				? ParentNode
@@ -389,7 +405,9 @@ namespace SqlPad
 		public StatementGrammarNode GetNodeAtPosition(int position, Func<StatementGrammarNode, bool> filter = null)
 		{
 			if (!SourcePosition.ContainsIndex(position))
+			{
 				return null;
+			}
 
 			var node = GetChildNodesAtPosition(this, position)
 				.Where(n => filter == null || filter(n))
@@ -404,7 +422,9 @@ namespace SqlPad
 		{
 			var returnedNodes = new List<StatementGrammarNode>();
 			if (node == null)
+			{
 				return returnedNodes;
+			}
 
 			var childNodesAtPosition = node.ChildNodes.Where(n => n.SourcePosition.ContainsIndex(position));
 			foreach (var childNodeAtPosition in childNodesAtPosition)
@@ -443,7 +463,9 @@ namespace SqlPad
 			{
 				var childNode = node._childNodes[index];
 				if (childNode.SourcePosition.IndexStart == SourcePosition.Empty.IndexStart || childNode.SourcePosition.IndexStart > position)
+				{
 					continue;
+				}
 
 				if (filter == null || filter(childNode))
 				{
@@ -468,17 +490,23 @@ namespace SqlPad
 		public int RemoveLastChildNodeIfOptional()
 		{
 			if (Type == NodeType.Terminal)
+			{
 				throw new InvalidOperationException("Terminal node has no child nodes. ");
+			}
 
 			var index = _childNodes.Count - 1;
 			var node = _childNodes[index];
 			if (node.Type == NodeType.Terminal)
 			{
 				if (node.IsRequired)
+				{
 					return 0;
+				}
 
 				if (_childNodes.Count == 1)
+				{
 					throw new InvalidOperationException("Last terminal cannot be removed. ");
+				}
 				
 				_childNodes.RemoveAt(index);
 				LastTerminalNode = _childNodes[index - 1].LastTerminalNode;

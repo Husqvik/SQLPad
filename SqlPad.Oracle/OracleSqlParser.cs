@@ -169,11 +169,6 @@ namespace SqlPad.Oracle
 			return IsRuleValid(nonTerminalId, OracleTokenReader.Create(text).GetTokens());
 		}
 
-		public bool IsRuleValid(StatementGrammarNode node)
-		{
-			return IsRuleValid(node.Id, node.Terminals.Select(t => (OracleToken)t.Token));
-		}
-
 		private static bool IsRuleValid(string nonTerminalId, IEnumerable<OracleToken> tokens)
 		{
 			var context =
@@ -228,7 +223,9 @@ namespace SqlPad.Oracle
 		private static void EnsureReaderNotNull(OracleTokenReader tokenReader)
 		{
 			if (tokenReader == null)
+			{
 				throw new ArgumentNullException(nameof(tokenReader));
+			}
 		}
 
 		public Task<StatementCollection> ParseAsync(IEnumerable<OracleToken> tokens, CancellationToken cancellationToken)
@@ -330,7 +327,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private IEnumerable<SqlGrammarRuleSequence> GetCompatibleSequences(SqlGrammarRuleSequence sequence, StatementGrammarNode parentNode)
+		private static IEnumerable<SqlGrammarRuleSequence> GetCompatibleSequences(SqlGrammarRuleSequence sequence, StatementGrammarNode parentNode)
 		{
 			var inputItems = sequence.Items
 				.Cast<ISqlGrammarRuleSequenceItem>()
@@ -767,11 +764,15 @@ namespace SqlPad.Oracle
 		private static void TryParseInvalidGrammar(bool preconditionsValid, Func<ParseResult> getForceParseResultFunction, ref ParseResult parseResult, IList<StatementGrammarNode> workingNodes, IEnumerable<StatementGrammarNode> bestCandidateNodes, ref int workingTerminalCount)
 		{
 			if (!preconditionsValid || parseResult.Status == ParseStatus.Success)
+			{
 				return;
+			}
 
 			var bestCandidateResult = getForceParseResultFunction();
 			if (bestCandidateResult.Status == ParseStatus.SequenceNotFound)
+			{
 				return;
+			}
 
 			workingTerminalCount = CreateNewNodeList(bestCandidateNodes, workingNodes);
 
@@ -829,7 +830,9 @@ namespace SqlPad.Oracle
 							 effectiveTerminalCount > currentResult.TerminalCount;
 
 			if (!revertNode)
+			{
 				return 0;
+			}
 			
 			currentResult = newResult;
 			
