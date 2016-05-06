@@ -3567,9 +3567,9 @@ END;";
 		}
 
 		[Test]
-		public void TestIntDataTypeForJsonTableColumn()
+		public void TestSupportedKeywordDataTypesForJsonTableColumn()
 		{
-			const string sqlText = "SELECT NULL FROM JSON_TABLE('{ property: \"value 1\" }', '$' COLUMNS (property INT PATH '$.property'))";
+			const string sqlText = "SELECT NULL FROM JSON_TABLE('{ property: \"value 1\" }', '$' COLUMNS (property1 INT PATH '$.property', property2 NUMBER PATH '$.property', property3 INTEGER PATH '$.property', property4 SMALLINT PATH '$.property'))";
 
 			var statement = Parser.Parse(sqlText).Single();
 

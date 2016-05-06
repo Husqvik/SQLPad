@@ -14,6 +14,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 	public abstract class OracleDatabaseModelBase : IDatabaseModel
 	{
 		public const string SystemParameterNameMaxStringSize = "max_string_size";
+		public const string BuiltInDataTypeBFile = "BFILE";
 		public const string BuiltInDataTypeInt = "INT";
 		public const string BuiltInDataTypeIntervalYearToMonth = "INTERVAL YEAR TO MONTH";
 		public const string BuiltInDataTypeIntervalDayToSecond = "INTERVAL DAY TO SECOND";
@@ -30,6 +31,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		internal static readonly ICollection<string> BuiltInDataTypes =
 			new HashSet<string>
 			{
+				BuiltInDataTypeBFile,
 				TerminalValues.BinaryDouble,
 				TerminalValues.BinaryFloat,
 				TerminalValues.Blob,

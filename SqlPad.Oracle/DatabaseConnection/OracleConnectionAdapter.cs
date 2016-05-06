@@ -489,6 +489,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 				object value;
 				switch (fieldType)
 				{
+					case "BFile":
+						value = new OracleExternalBinaryFile(reader.GetOracleBFile(i));
+						break;
 					case "Blob":
 						value = new OracleBlobValue(reader.GetOracleBlob(i));
 						break;

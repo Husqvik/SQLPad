@@ -311,16 +311,111 @@ namespace SqlPad.Oracle.DatabaseConnection
 		}
 	}
 
+	public class OracleExternalBinaryFile : ILargeBinaryValue, IDisposable
+	{
+		private readonly OracleBFile _bfile;
+		private byte[] _value;
+
+		public bool IsNull { get; }
+
+		public OracleExternalBinaryFile(OracleBFile bfile)
+		{
+			_bfile = bfile;
+			bfile.OpenFile();
+			IsNull = bfile.IsNull || bfile.IsEmpty;
+		}
+
+		public string ToSqlLiteral()
+		{
+			return "NULL /* unsupported */";
+		}
+
+		public string ToXml()
+		{
+			return OracleRawValue.ToXml(Value);
+		}
+
+		public string ToJson()
+		{
+			return OracleRawValue.ToJson(Value);
+		}
+
+		public object RawValue => _bfile;
+
+		public string DataTypeName { get; } = OracleDatabaseModelBase.BuiltInDataTypeBFile;
+
+		public bool IsEditable { get; } = false;
+
+		public long Length => _bfile.Length;
+
+		public void Prefetch()
+		{
+			if (_value == null)
+			{
+				_value =
+					_bfile.IsNull || _bfile.IsEmpty
+						? new byte[0]
+						: _bfile.Value;
+			}
+		}
+
+		public byte[] Value
+		{
+			get
+			{
+				Prefetch();
+
+				return _value;
+			}
+		}
+
+		public byte[] GetChunk(int bytes)
+		{
+			var buffer = new byte[bytes];
+			var bytesRead = _bfile.Read(buffer, 0, bytes);
+			var result = new byte[bytesRead];
+			Array.Copy(buffer, 0, result, 0, bytesRead);
+			return result;
+		}
+
+		public void Dispose()
+		{
+			_bfile.Dispose();
+		}
+
+		public override string ToString()
+		{
+			return _bfile.IsNull ? String.Empty : $"(BFILE[{Length} B])";
+		}
+
+		protected bool Equals(OracleExternalBinaryFile other)
+		{
+			return Equals(_bfile, other._bfile);
+		}
+
+		public override bool Equals(object obj)
+		{
+			if (ReferenceEquals(null, obj)) return false;
+			if (ReferenceEquals(this, obj)) return true;
+			return obj.GetType() == GetType() && Equals((OracleExternalBinaryFile)obj);
+		}
+
+		public override int GetHashCode()
+		{
+			return _bfile.GetHashCode();
+		}
+	}
+
 	public class OracleBlobValue : ILargeBinaryValue, IDisposable
 	{
 		private readonly OracleBlob _blob;
 		private byte[] _value;
 
-		public string DataTypeName => TerminalValues.Blob;
+		public string DataTypeName { get; } = TerminalValues.Blob;
 
-		public bool IsEditable => false;
+		public bool IsEditable { get; } = false;
 
-		public bool IsNull => _blob.IsNull || _blob.IsEmpty;
+		public bool IsNull { get; }
 
 		public object RawValue => _blob;
 
@@ -353,16 +448,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 		}
 
-		private byte[] GetValue()
-		{
-			return _blob.IsNull || _blob.IsEmpty
-					? new byte[0]
-					: _blob.Value;
-		}
-
 		public OracleBlobValue(OracleBlob blob)
 		{
 			_blob = blob;
+			IsNull = blob.IsNull || blob.IsEmpty;
 		}
 
 		public byte[] GetChunk(int bytes)
@@ -381,14 +470,17 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override string ToString()
 		{
-			return Length == 0 ? String.Empty : $"(BLOB[{Length} B])";
+			return _blob.IsNull ? String.Empty : $"(BLOB[{Length} B])";
 		}
 
 		public void Prefetch()
 		{
 			if (_value == null)
 			{
-				_value = GetValue();
+				_value =
+					_blob.IsNull || _blob.IsEmpty
+						? new byte[0]
+						: _blob.Value;
 			}
 		}
 
