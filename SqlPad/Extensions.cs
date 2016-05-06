@@ -239,6 +239,13 @@ namespace SqlPad
 
 			return value.Value ? @true : @false;
 		}
+
+		public static T PopIfNotEmpty<T>(this Stack<T> stack)
+		{
+			return stack.Count == 0
+				? default(T)
+				: stack.Pop();
+		}
 	}
 
 	public class StaticResourceBindingExtension : StaticResourceExtension

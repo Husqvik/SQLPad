@@ -50,6 +50,8 @@ namespace SqlPad.Oracle
 		
 		public bool Column { get; }
 
+		public bool PlSqlProgram { get; private set; }
+
 		public bool UpdateSetColumn { get; }
 
 		public bool AllColumns { get; }
@@ -104,11 +106,11 @@ namespace SqlPad.Oracle
 
 		public ICollection<SuggestedKeywordClause> KeywordsClauses => _keywordsClauses;
 
-	    private bool Any => Schema || SchemaDataObject || PipelinedFunction || SchemaDataObjectReference || Column || AllColumns || JoinType || DataType || JoinCondition || SchemaProgram || DatabaseLink || Sequence || PackageFunction || SpecialFunctionParameter || ExplicitPartition || ExplicitSubPartition || _keywordsClauses.Count > 0;
+		private bool Any => Schema || SchemaDataObject || PipelinedFunction || SchemaDataObjectReference || Column || AllColumns || JoinType || DataType || JoinCondition || SchemaProgram || DatabaseLink || Sequence || PackageFunction || SpecialFunctionParameter || ExplicitPartition || ExplicitSubPartition || _keywordsClauses.Count > 0;
 
-	    public bool ExistsTerminalValue => !String.IsNullOrEmpty(TerminalValuePartUntilCaret);
+		public bool ExistsTerminalValue => !String.IsNullOrEmpty(TerminalValuePartUntilCaret);
 
-	    public string TerminalValuePartUntilCaret { get; private set; }
+		public string TerminalValuePartUntilCaret { get; private set; }
 		
 		public string TerminalValueUnderCursor { get; private set; }
 
@@ -120,14 +122,20 @@ namespace SqlPad.Oracle
 
 			Statement = (OracleStatement)(documentRepository.Statements.GetStatementAtPosition(cursorPosition) ?? documentRepository.Statements.LastOrDefault());
 			if (Statement == null)
+			{
 				return;
+			}
 
 			if (Statement.TerminatorNode != null && Statement.TerminatorNode.SourcePosition.IndexStart < cursorPosition)
+			{
 				return;
+			}
 
 			var nearestTerminal = Statement.GetNearestTerminalToPosition(cursorPosition);
 			if (nearestTerminal == null)
+			{
 				return;
+			}
 
 			var precedingTerminal = nearestTerminal.PrecedingTerminal;
 
@@ -267,9 +275,11 @@ namespace SqlPad.Oracle
 			var isCursorBetweenTwoTerminalsWithPrecedingIdentifierWithoutPrefix = IsCursorTouchingIdentifier && !ReferenceIdentifier.HasObjectIdentifier;
 			Schema = TerminalCandidates.Contains(Terminals.SchemaIdentifier) || isCursorBetweenTwoTerminalsWithPrecedingIdentifierWithoutPrefix;
 
-			var isCurrentClauseSupported = EffectiveTerminal.IsWithinSelectClauseOrExpression() ||
-			                               EffectiveTerminal.ParentNode.Id.In(NonTerminals.WhereClause, NonTerminals.GroupByClause, NonTerminals.HavingClause, NonTerminals.OrderByClause) ||
-			                               EffectiveTerminal.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.NestedQuery), NonTerminals.WhereClause) != null;
+			var isCurrentClauseSupported =
+				EffectiveTerminal.IsWithinSelectClauseOrExpression() ||
+				EffectiveTerminal.ParentNode.Id.In(NonTerminals.WhereClause, NonTerminals.GroupByClause, NonTerminals.HavingClause, NonTerminals.OrderByClause) ||
+				EffectiveTerminal.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.NestedQuery), NonTerminals.WhereClause) != null;
+
 			var isCandidateIdentifier = TerminalCandidates.Contains(Terminals.Identifier);
 			if (isCurrentClauseSupported)
 			{
@@ -344,12 +354,15 @@ namespace SqlPad.Oracle
 				supportDistinct = programReference?.Metadata != null && programReference.Metadata.IsAggregate;
 			}
 
-			var keywordClauses = TerminalCandidates.Where(c => AvailableKeywordsToSuggest.Contains(c.Id) || (InSelectList && String.Equals(c.Id, Terminals.Partition)) || (supportDistinct && c.Id.In(Terminals.Distinct, Terminals.Unique)))
-				.Select(CreateKeywordClause);
+			var keywordClauses =
+				TerminalCandidates
+					.Where(c => AvailableKeywordsToSuggest.Contains(c.Id) || (InSelectList && String.Equals(c.Id, Terminals.Partition)) || (supportDistinct && c.Id.In(Terminals.Distinct, Terminals.Unique)))
+					.Select(CreateKeywordClause);
+
 			_keywordsClauses.AddRange(keywordClauses);
 		}
 
-		private SuggestedKeywordClause CreateKeywordClause(TerminalCandidate candidate)
+		private static SuggestedKeywordClause CreateKeywordClause(TerminalCandidate candidate)
 		{
 			var keywordClause = new SuggestedKeywordClause { TerminalId = candidate.Id };
 			switch (candidate.Id)
@@ -393,6 +406,45 @@ namespace SqlPad.Oracle
 			AnalyzePrefixedColumnReference(effectiveTerminal);
 
 			AnalyzeDataType(effectiveTerminal);
+
+			AnalyzePlSqlReference(effectiveTerminal);
+		}
+
+		private void AnalyzePlSqlReference(StatementGrammarNode effectiveTerminal)
+		{
+			var assignmentStatementTargetNode = effectiveTerminal.GetAncestor(NonTerminals.AssignmentStatementTarget);
+			var plSqlIdentifiers = new Stack<StatementGrammarNode>(GetPlSqlIdentifiers(assignmentStatementTargetNode?[Terminals.PlSqlIdentifier]));
+			if (plSqlIdentifiers.Count == 0 || plSqlIdentifiers.Count > 3)
+			{
+				return;
+			}
+
+			PlSqlProgram = true;
+
+			ReferenceIdentifier =
+				new ReferenceIdentifier
+				{
+					Identifier = plSqlIdentifiers.PopIfNotEmpty(),
+					ObjectIdentifier = plSqlIdentifiers.PopIfNotEmpty(),
+					SchemaIdentifier = plSqlIdentifiers.PopIfNotEmpty(),
+					CursorPosition = CursorPosition
+				};
+		}
+
+		private static IEnumerable<StatementGrammarNode> GetPlSqlIdentifiers(StatementGrammarNode plSqlIdentifier)
+		{
+			while (true)
+			{
+				if (plSqlIdentifier == null)
+				{
+					yield break;
+				}
+
+				yield return plSqlIdentifier;
+
+				var chainedIdentifier = plSqlIdentifier.ParentNode[NonTerminals.DotRecordAttributeChained]?[Terminals.PlSqlIdentifier];
+				plSqlIdentifier = chainedIdentifier;
+			}
 		}
 
 		private void AnalyzeDataType(StatementGrammarNode effectiveTerminal)
@@ -462,7 +514,9 @@ namespace SqlPad.Oracle
 		{
 			var queryTableExpression = effectiveTerminal.GetPathFilterAncestor(n => !n.Id.In(NonTerminals.InnerTableReference, NonTerminals.QueryBlock), NonTerminals.QueryTableExpression);
 			if (queryTableExpression == null)
+			{
 				return;
+			}
 
 			var identifiers = queryTableExpression.GetPathFilterDescendants(n => !n.Id.In(NonTerminals.Expression, NonTerminals.NestedQuery), Terminals.SchemaIdentifier, Terminals.ObjectIdentifier, Terminals.Identifier).ToArray();
 			ReferenceIdentifier = BuildReferenceIdentifier(identifiers);
@@ -501,6 +555,9 @@ namespace SqlPad.Oracle
 			builder.Append("; ");
 			builder.Append("Column: ");
 			builder.Append(Column);
+			builder.Append("; ");
+			builder.Append("PlSqlProgram: ");
+			builder.Append(PlSqlProgram);
 			builder.Append("; ");
 			builder.Append("AllColumns: ");
 			builder.Append(AllColumns);
@@ -551,24 +608,26 @@ namespace SqlPad.Oracle
 
 		public StatementGrammarNode IdentifierUnderCursor => GetTerminalIfUnderCursor(Identifier) ?? GetTerminalIfUnderCursor(ObjectIdentifier) ?? GetTerminalIfUnderCursor(SchemaIdentifier);
 
-	    public int CursorPosition { get; set; }
+		public int CursorPosition { get; set; }
 
 		public bool HasSchemaIdentifier => SchemaIdentifier != null;
-	    public bool HasObjectIdentifier => ObjectIdentifier != null;
-	    public bool HasIdentifier => Identifier != null;
+		public bool HasObjectIdentifier => ObjectIdentifier != null;
+		public bool HasIdentifier => Identifier != null;
 
-	    public string SchemaIdentifierOriginalValue => SchemaIdentifier?.Token.Value;
-	    public string ObjectIdentifierOriginalValue => ObjectIdentifier?.Token.Value;
-	    public string IdentifierOriginalValue => Identifier?.Token.Value;
+		public string SchemaIdentifierOriginalValue => SchemaIdentifier?.Token.Value;
+		public string ObjectIdentifierOriginalValue => ObjectIdentifier?.Token.Value;
+		public string IdentifierOriginalValue => Identifier?.Token.Value;
 
-	    public string SchemaIdentifierEffectiveValue => GetTerminalEffectiveValue(SchemaIdentifier);
-	    public string ObjectIdentifierEffectiveValue => GetTerminalEffectiveValue(ObjectIdentifier);
-	    public string IdentifierEffectiveValue => GetTerminalEffectiveValue(Identifier);
+		public string SchemaIdentifierEffectiveValue => GetTerminalEffectiveValue(SchemaIdentifier);
+		public string ObjectIdentifierEffectiveValue => GetTerminalEffectiveValue(ObjectIdentifier);
+		public string IdentifierEffectiveValue => GetTerminalEffectiveValue(Identifier);
 
-	    private string GetTerminalEffectiveValue(StatementNode terminal)
+		private string GetTerminalEffectiveValue(StatementNode terminal)
 		{
 			if (terminal == null || terminal.SourcePosition.IndexStart > CursorPosition)
+			{
 				return null;
+			}
 
 			return terminal.SourcePosition.IndexEnd < CursorPosition
 				? terminal.Token.Value.Trim('"')

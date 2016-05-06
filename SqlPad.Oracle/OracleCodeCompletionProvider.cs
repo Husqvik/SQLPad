@@ -331,13 +331,13 @@ namespace SqlPad.Oracle
 				completionItems = completionItems.Concat(GenerateCommonTableExpressionReferenceItems(semanticModel, null, null, extraOffset));
 			}
 
+			if (completionType.Column || completionType.PlSqlProgram)
+			{
+				completionItems = completionItems.Concat(GenerateSelectListItems(referenceContainers, cursorPosition, oracleDatabaseModel, completionType, forcedInvokation));
+			}
+
 			if (completionType.Column || completionType.SpecialFunctionParameter)
 			{
-				if (completionType.Column)
-				{
-					completionItems = completionItems.Concat(GenerateSelectListItems(referenceContainers, cursorPosition, oracleDatabaseModel, completionType, forcedInvokation));
-				}
-
 				var programOverloads = ResolveProgramOverloads(referenceContainers, currentTerminal, cursorPosition);
 				var specificFunctionParameterCodeCompletionItems = CodeCompletionSearchHelper.ResolveSpecificFunctionParameterCodeCompletionItems(currentTerminal, programOverloads, oracleDatabaseModel);
 				completionItems = completionItems.Concat(specificFunctionParameterCodeCompletionItems);
@@ -536,7 +536,7 @@ namespace SqlPad.Oracle
 					});
 		}
 
-		private IEnumerable<ICodeCompletionItem> GenerateSimpleColumnItems(OracleDataObjectReference targetDataObject, OracleCodeCompletionType completionType)
+		private static IEnumerable<ICodeCompletionItem> GenerateSimpleColumnItems(OracleObjectWithColumnsReference targetDataObject, OracleCodeCompletionType completionType)
 		{
 			return targetDataObject.Columns
 				.Where(c => !String.Equals(completionType.TerminalValueUnderCursor.ToQuotedIdentifier(), c.Name) && CodeCompletionSearchHelper.IsMatch(c.Name, completionType.TerminalValuePartUntilCaret))
@@ -567,8 +567,8 @@ namespace SqlPad.Oracle
 			var nodeToReplace = completionType.ReferenceIdentifier.IdentifierUnderCursor;
 			var schemaName = completionType.ReferenceIdentifier.SchemaIdentifierOriginalValue;
 
-			var functionReference = programReferences.SingleOrDefault(f => f.ProgramIdentifierNode == currentNode);
-			var addParameterList = functionReference?.ParameterListNode == null;
+			var programReference = programReferences.SingleOrDefault(f => f.ProgramIdentifierNode == currentNode);
+			var addParameterList = programReference?.ParameterListNode == null;
 
 			var tableReferenceSource = (ICollection<OracleObjectWithColumnsReference>)referenceContainers
 				.SelectMany(c => c.ObjectReferences)
@@ -653,22 +653,22 @@ namespace SqlPad.Oracle
 					new OracleProgramMatcher(
 						new ProgramMatchElement(null).SelectOwner(),
 						new ProgramMatchElement(null).SelectPackage(),
-						new ProgramMatchElement(partialName) {AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName}.SelectName().AsResultValue());
+						new ProgramMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectName().AsResultValue());
 
 				var currentSchema = databaseModel.CurrentSchema.ToQuotedIdentifier();
-				var localSchemaFunctionMatcher =
+				var localSchemaProgramMatcher =
 					new OracleProgramMatcher(
 						new ProgramMatchElement(currentSchema).SelectOwner(),
 						new ProgramMatchElement(null).SelectPackage(),
 						new ProgramMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectName().AsResultValue());
 
-				var localSynonymFunctionMatcher =
+				var localSynonymProgramMatcher =
 					new OracleProgramMatcher(
 						new ProgramMatchElement(currentSchema).SelectSynonymOwner(),
 						new ProgramMatchElement(null).SelectPackage(),
 						new ProgramMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectSynonymName().AsResultValue());
 
-				var publicSynonymFunctionMatcher =
+				var publicSynonymProgramMatcher =
 					new OracleProgramMatcher(
 						new ProgramMatchElement(OracleObjectIdentifier.SchemaPublic).SelectSynonymOwner(),
 						new ProgramMatchElement(null).SelectPackage(),
@@ -678,29 +678,32 @@ namespace SqlPad.Oracle
 					new OracleProgramMatcher(
 						new ProgramMatchElement(currentSchema).SelectOwner(),
 						new ProgramMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectPackage().AsResultValue(),
-						null);
+						null)
+					{ AllowPlSql = completionType.PlSqlProgram };
 
 				var localSynonymPackageMatcher =
 					new OracleProgramMatcher(
 						new ProgramMatchElement(currentSchema).SelectSynonymOwner(),
 						new ProgramMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectSynonymPackage().AsResultValue(),
-						null);
+						null)
+					{ AllowPlSql = completionType.PlSqlProgram };
 
 				var publicSynonymPackageMatcher =
 					new OracleProgramMatcher(
 						new ProgramMatchElement(OracleObjectIdentifier.SchemaPublic).SelectSynonymOwner(),
 						new ProgramMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectSynonymPackage().AsResultValue(),
-						null);
+						null)
+					{ AllowPlSql = completionType.PlSqlProgram };
 
 				suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.PackageFunction, nodeToReplace, 0, addParameterList, databaseModel, builtInPackageFunctionMatcher);
 
 				suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.BuiltInFunction, nodeToReplace, 0, addParameterList, databaseModel, builtInNonSchemaFunctionMatcher)
 					.Concat(suggestedFunctions);
 
-				suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.SchemaFunction, nodeToReplace, 0, addParameterList, databaseModel, localSchemaFunctionMatcher)
+				suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.SchemaFunction, nodeToReplace, 0, addParameterList, databaseModel, localSchemaProgramMatcher)
 					.Concat(suggestedFunctions);
 
-				suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.SchemaFunction, nodeToReplace, 0, addParameterList, databaseModel, localSynonymFunctionMatcher, publicSynonymFunctionMatcher)
+				suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.SchemaFunction, nodeToReplace, 0, addParameterList, databaseModel, localSynonymProgramMatcher, publicSynonymProgramMatcher)
 					.Concat(suggestedFunctions);
 
 				suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.Package, nodeToReplace, 0, addParameterList, databaseModel, localSchemaPackageMatcher)
@@ -785,13 +788,13 @@ namespace SqlPad.Oracle
 				: normalizedColumnName.ToSimpleIdentifier();
 		}
 
-		private bool FilterOtherSchemaObject(OracleSchemaObject schemaObject, bool sequencesAllowed)
+		private static bool FilterOtherSchemaObject(OracleSchemaObject schemaObject, bool sequencesAllowed)
 		{
 			var targetObject = schemaObject.GetTargetSchemaObject();
 			return targetObject != null && (String.Equals(targetObject.Type, OracleObjectType.Type) || (sequencesAllowed && String.Equals(targetObject.Type, OracleObjectType.Sequence)));
 		}
 
-		private IEnumerable<OracleCodeCompletionItem> CreateJoinTypeCompletionItems(OracleCodeCompletionType completionType)
+		private static IEnumerable<OracleCodeCompletionItem> CreateJoinTypeCompletionItems(OracleCodeCompletionType completionType)
 		{
 			var formatOption = FormatOptions.Keyword;
 
@@ -813,7 +816,7 @@ namespace SqlPad.Oracle
 				});
 		}
 
-		private IEnumerable<OracleCodeCompletionItem> CreateAsteriskColumnCompletionItems(IEnumerable<OracleObjectWithColumnsReference> tables, bool skipFirstObjectIdentifier, StatementGrammarNode nodeToReplace)
+		private static IEnumerable<OracleCodeCompletionItem> CreateAsteriskColumnCompletionItems(IEnumerable<OracleObjectWithColumnsReference> tables, bool skipFirstObjectIdentifier, StatementGrammarNode nodeToReplace)
 		{
 			var formatOption = FormatOptions.Identifier;
 			var builder = new StringBuilder();
@@ -872,7 +875,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private ICodeCompletionItem CreateColumnCodeCompletionItem(string columnName, string objectPrefix, StatementGrammarNode nodeToReplace, string category = OracleCodeCompletionCategory.Column)
+		private static ICodeCompletionItem CreateColumnCodeCompletionItem(string columnName, string objectPrefix, StatementGrammarNode nodeToReplace, string category = OracleCodeCompletionCategory.Column)
 		{
 			var formatOption = FormatOptions.Identifier;
 			columnName = OracleStatementFormatter.FormatTerminalValue(columnName.ToSimpleIdentifier(), formatOption);
@@ -913,7 +916,7 @@ namespace SqlPad.Oracle
 					});
 		}
 
-		private IEnumerable<ICodeCompletionItem> GenerateCodeItems(string category, StatementGrammarNode node, int insertOffset, bool addParameterList, OracleDatabaseModelBase databaseModel, params OracleProgramMatcher[] matchers)
+		private static IEnumerable<ICodeCompletionItem> GenerateCodeItems(string category, StatementGrammarNode node, int insertOffset, bool addParameterList, OracleDatabaseModelBase databaseModel, params OracleProgramMatcher[] matchers)
 		{
 			string parameterList = null;
 			var parameterListCaretOffset = 0;
@@ -1099,10 +1102,12 @@ namespace SqlPad.Oracle
 			return $"{ownerPrefix}{OracleStatementFormatter.FormatTerminalValue(identifier2.ToSimpleIdentifier(), formatOption)}";
 		}
 
-		private string MakeSaveQuotedIdentifier(string identifierPart)
+		private static string MakeSaveQuotedIdentifier(string identifierPart)
 		{
 			if (String.IsNullOrEmpty(identifierPart) || identifierPart.All(c => c == '"'))
+			{
 				return null;
+			}
 
 			var preFix = identifierPart[0] != '"' && identifierPart[identifierPart.Length - 1] == '"' ? "\"" : null;
 			var postFix = identifierPart[0] == '"' && identifierPart[identifierPart.Length - 1] != '"' ? "\"" : null;
@@ -1174,14 +1179,14 @@ namespace SqlPad.Oracle
 			return suggestionItems;
 		}
 
-		private OracleObjectIdentifier GetJoinedObjectIdentifier(OracleDataObjectReference objectReference, int cursorPosition)
+		private static OracleObjectIdentifier GetJoinedObjectIdentifier(OracleDataObjectReference objectReference, int cursorPosition)
 		{
 			return objectReference.AliasNode == null || objectReference.AliasNode.SourcePosition.IndexEnd < cursorPosition
 				? objectReference.FullyQualifiedObjectName
 				: OracleObjectIdentifier.Create(objectReference.OwnerNode, objectReference.ObjectNode, null);
 		}
 
-		private OracleCodeCompletionItem GenerateJoinConditionSuggestionItem(OracleObjectIdentifier sourceObject, OracleObjectIdentifier targetObject, IList<string> keySourceColumns, IList<string> keyTargetColumns, string itemCategory, bool swapSides, bool skipOnTerminal, int insertOffset, int priority)
+		private static OracleCodeCompletionItem GenerateJoinConditionSuggestionItem(OracleObjectIdentifier sourceObject, OracleObjectIdentifier targetObject, IList<string> keySourceColumns, IList<string> keyTargetColumns, string itemCategory, bool swapSides, bool skipOnTerminal, int insertOffset, int priority)
 		{
 			var builder = new StringBuilder();
 			if (!skipOnTerminal)

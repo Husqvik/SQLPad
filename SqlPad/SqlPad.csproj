@@ -364,6 +364,7 @@
     <Resource Include="EmptyIcon.ico" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Archive.ico" />
     <Content Include="Configuration.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <SubType>Designer</SubType>

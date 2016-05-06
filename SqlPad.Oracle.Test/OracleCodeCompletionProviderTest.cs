@@ -2304,6 +2304,13 @@ ON (EVENTS.ID = SRC.ID)";
 			items[0].Text.ShouldBe("EXISTS");
 		}
 
+		[Test, Ignore]
+		public void TestSpecialCrashingCaseWithinTerminalCandidates()
+		{
+			const string statement = @"SELECT row_number() OVER (PARTITION BY dummy, d, dummy ORDER BY NULL) FROM dual";
+			Should.NotThrow(() => CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 47));
+		}
+
 		[Test]
 		public void TestRegexModifierParameterSuggestion()
 		{
@@ -2733,9 +2740,19 @@ ON (EVENTS.ID = SRC.ID)";
 			[Test]
 			public void TestBodyStatementWhileTyping()
 			{
-				const string statement = @"DECLARE PROCEDURE P1(P1 NUMBER) IS BEGIN NULL; END; BEGIN N; END;";
+				const string statement = "DECLARE PROCEDURE P1(P1 NUMBER) IS BEGIN NULL; END; BEGIN N; END;";
 				var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 59).ToList();
 				items.Count.ShouldBe(0);
+			}
+
+			[Test]
+			public void TestPackageCodeCompletion()
+			{
+				const string statement = "BEGIN OUTPUT END;";
+				var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 12, false).ToList();
+				items.Count.ShouldBe(1);
+				items[0].Name.ShouldBe("DBMS_OUTPUT");
+				items[0].StatementNode.ShouldNotBe(null);
 			}
 		}
 	}

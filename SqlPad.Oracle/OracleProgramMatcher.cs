@@ -36,8 +36,10 @@ namespace SqlPad.Oracle
 				return matchResult;
 			}
 
-			var isSchemaMatched = _ownerMatch == null || (_ownerMatch.Value != null && _ownerMatch.Value.Length == 0 && String.Equals(programMetadata.Identifier.Owner, quotedCurrentSchema)) ||
-			                      _ownerMatch.IsMatch(programMetadata).Any();
+			var isSchemaMatched =
+				_ownerMatch == null ||
+				(_ownerMatch.Value?.Length == 0 && String.Equals(programMetadata.Identifier.Owner, quotedCurrentSchema)) ||
+				_ownerMatch.IsMatch(programMetadata).Any();
 
 			matchResult.IsMatched &= isSchemaMatched;
 
@@ -74,11 +76,11 @@ namespace SqlPad.Oracle
 
 	internal struct ProgramMatchResult
 	{
-		public bool IsMatched { get; set; }
+		public bool IsMatched;
 
-		public OracleProgramMetadata Metadata { get; set; }
-		
-		public IEnumerable<string> Matches { get; set; }
+		public OracleProgramMetadata Metadata;
+
+		public IEnumerable<string> Matches;
 	}
 
 	internal abstract class MatchElement<TElement>
@@ -212,7 +214,7 @@ namespace SqlPad.Oracle
 				return null;
 			}
 
-			return metadata.Owner.Type == OracleObjectType.Function
+			return String.Equals(metadata.Owner.Type, OracleObjectType.Function)
 				? synonyms.Select(s => s.Name)
 				: Enumerable.Repeat(metadata.Identifier.Name, 1);
 		}
@@ -225,7 +227,7 @@ namespace SqlPad.Oracle
 				return null;
 			}
 
-			return metadata.Owner.Type == OracleObjectType.Function
+			return String.Equals(metadata.Owner.Type, OracleObjectType.Function)
 				? null
 				: synonyms.Select(s => s.Name);
 		}
