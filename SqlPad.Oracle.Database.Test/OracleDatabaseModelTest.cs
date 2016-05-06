@@ -381,7 +381,7 @@ WHERE
 				firstRow[0].ShouldBeAssignableTo<OracleBlobValue>();
 				var blobValue = (OracleBlobValue)firstRow[0];
 				blobValue.Length.ShouldBe(0);
-				blobValue.ToString().ShouldBe(String.Empty);
+				blobValue.ToString().ShouldBe("(BLOB[0 B])");
 				blobValue.ToSqlLiteral().ShouldBe("NULL");
 				firstRow[1].ShouldBeAssignableTo<OracleClobValue>();
 				firstRow[1].ToString().ShouldBe(String.Empty);
