@@ -1138,7 +1138,6 @@ namespace SqlPad.Oracle
 			public const string RecordsPerBlockClause = "RecordsPerBlockClause";
 			public const string RecordType = "RecordType";
 			public const string RecordTypeDefinition = "RecordTypeDefinition";
-			public const string RecordVariableDeclaration = "RecordVariableDeclaration";
 			public const string RecoverableOrUnrecoverable = "RecoverableOrUnrecoverable";
 			public const string RedoLogFileSpecification = "RedoLogFileSpecification";
 			public const string ReferenceCursorTypeDefinition = "ReferenceCursorTypeDefinition";

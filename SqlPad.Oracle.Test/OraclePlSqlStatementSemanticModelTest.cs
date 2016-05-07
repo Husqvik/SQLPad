@@ -941,6 +941,28 @@ END;";
 		}
 
 		[Test]
+		public void TestVariableReferenceWithVariableDefinedUsingColumnType()
+		{
+			const string plsqlText =
+@"DECLARE
+	variable dual.dummy%TYPE;
+BEGIN
+	variable := 'A';
+END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
+
+			semanticModel.Programs.Count.ShouldBe(1);
+			var program = semanticModel.Programs[0];
+
+			var variableReferences = program.PlSqlVariableReferences.ToArray();
+			variableReferences.Length.ShouldBe(1);
+			variableReferences[0].Variables.Count.ShouldBe(1);
+		}
+
+		[Test]
 		public void TestModelBuildWithMistypedPlSqlVariableDeclaration()
 		{
 			const string plsqlText =

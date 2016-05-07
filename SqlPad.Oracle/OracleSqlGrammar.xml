@@ -13301,9 +13301,6 @@
           <NonTerminal Id="ExceptionDeclaration" />
         </Sequence>
         <Sequence>
-          <NonTerminal Id="RecordVariableDeclaration" />
-        </Sequence>
-        <Sequence>
           <NonTerminal Id="VariableDeclaration" />
         </Sequence>
       </Sequences>
@@ -13434,18 +13431,6 @@
         <Sequence>
           <Terminal Id="ExceptionIdentifier" />
           <Terminal Id="Exception" />
-          <Terminal Id="Semicolon" />
-        </Sequence>
-      </Sequences>
-    </Rule>
-
-    <Rule StartingNonTerminal="RecordVariableDeclaration">
-      <Sequences>
-        <Sequence>
-          <Terminal Id="PlSqlIdentifier" />
-          <NonTerminal Id="Prefix" IsOptional="true" />
-          <Terminal Id="PlSqlIdentifier" />
-          <NonTerminal Id="PercentCharacterTypeOrRowType" />
           <Terminal Id="Semicolon" />
         </Sequence>
       </Sequences>
@@ -19735,13 +19720,22 @@
 
     <Rule StartingNonTerminal="IndexProperties">
       <Sequences>
-        <!--<Sequence>
+        <Sequence>
           <Terminal Id="IndexType" />
           <Terminal Id="Is" />
           <NonTerminal Id="DomainIndexClauseOrXmlIndexClause" />
-        </Sequence>-->
+          <!-- TODO: other parameters -->
+        </Sequence>
         <Sequence>
           <NonTerminal Id="IndexAttributesOrPartitionedIndexList" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DomainIndexClauseOrXmlIndexClause">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="SchemaObject" />
         </Sequence>
       </Sequences>
     </Rule>
