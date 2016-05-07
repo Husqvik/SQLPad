@@ -1940,7 +1940,8 @@ namespace SqlPad.Oracle.SemanticModel
 				ApplyExplicitCommonTableExpressionColumnNames(queryBlock);
 
 				var columnReferences = queryBlock.AllColumnReferences
-					.Where(c => c.Placement != StatementPlacement.Model && c.Placement != StatementPlacement.PivotClause && (c.SelectListColumn == null || c.SelectListColumn.HasExplicitDefinition))
+					.Where(c => c.Placement != StatementPlacement.Model && c.Placement != StatementPlacement.PivotClause && c.SelectListColumn?.HasExplicitDefinition != false)
+					.OrderBy(c => c.Placement == StatementPlacement.TableReference ? -1 : (int)c.Placement)
 					.ToArray();
 
 				var correlatedReferences = new List<OracleDataObjectReference>();
@@ -1956,7 +1957,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 				if (queryBlock.Type == QueryBlockType.ScalarSubquery && queryBlock.Parent != null)
 				{
-					ResolveColumnObjectReferences(columnReferences.Where(c => c.Placement == StatementPlacement.TableReference), OracleDataObjectReference.EmptyArray, queryBlock.Parent.ObjectReferences);
+					ResolveColumnObjectReferences(columnReferences.TakeWhile(c => c.Placement == StatementPlacement.TableReference), OracleDataObjectReference.EmptyArray, queryBlock.Parent.ObjectReferences);
 				}
 
 				ResolveColumnObjectReferences(columnReferences, queryBlock.ObjectReferences, correlatedReferences);
@@ -2469,7 +2470,8 @@ namespace SqlPad.Oracle.SemanticModel
 
 				if (columnReference.Placement == StatementPlacement.RecursiveSearchOrCycleClause)
 				{
-					var matchedColumns = columnReference.Owner.Columns.Where(c => !c.IsAsterisk && String.Equals(c.NormalizedName, columnReference.NormalizedName) && !columnReference.Owner.AttachedColumns.Contains(c))
+					var matchedColumns = columnReference.Owner.Columns
+						.Where(c => !c.IsAsterisk && String.Equals(c.NormalizedName, columnReference.NormalizedName) && !columnReference.Owner.AttachedColumns.Contains(c))
 						.Join(columnReference.Owner.SelfObjectReference.Columns, c => c.NormalizedName, c => c.Name, (sc, c) => c);
 					
 					columnReference.ColumnNodeColumnReferences.AddRange(matchedColumns);
@@ -2483,9 +2485,10 @@ namespace SqlPad.Oracle.SemanticModel
 					}
 				}
 
-				var referencesSelectListColumn = (columnReference.Placement == StatementPlacement.OrderBy || columnReference.Placement == StatementPlacement.RecursiveSearchOrCycleClause) &&
-				                                 columnReference.ColumnNodeObjectReferences.Count == 0 &&
-				                                 columnReference.OwnerNode == null && columnReference.ColumnNodeColumnReferences.Count > 0;
+				var referencesSelectListColumn =
+					(columnReference.Placement == StatementPlacement.OrderBy || columnReference.Placement == StatementPlacement.RecursiveSearchOrCycleClause) &&
+					columnReference.ColumnNodeObjectReferences.Count == 0 &&
+					columnReference.OwnerNode == null && columnReference.ColumnNodeColumnReferences.Count > 0;
 				if (referencesSelectListColumn)
 				{
 					columnReference.ColumnNodeObjectReferences.Add(columnReference.Owner.SelfObjectReference);
@@ -2493,8 +2496,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 				var columnDescription = columnReference.ColumnNodeColumnReferences.FirstOrDefault();
 
-				if (columnDescription != null &&
-				    columnReference.ColumnNodeObjectReferences.Count == 1)
+				if (columnDescription != null && columnReference.ColumnNodeObjectReferences.Count == 1)
 				{
 					columnReference.ColumnDescription = columnDescription;
 				}
@@ -2659,6 +2661,7 @@ namespace SqlPad.Oracle.SemanticModel
 				new OracleProgramReference
 				{
 					ProgramIdentifierNode = columnReference.ColumnNode,
+					ParameterReferences = ProgramParameterReference.EmptyArray,
 					DatabaseLinkNode = OracleReferenceBuilder.GetDatabaseLinkFromIdentifier(columnReference.ColumnNode)
 				};
 
@@ -2669,6 +2672,12 @@ namespace SqlPad.Oracle.SemanticModel
 			if (programReference.Metadata == null && programReference.SchemaObject == null)
 			{
 				return TryResolveSequenceReference(columnReference);
+			}
+
+			OracleTableCollectionReference tableCollectionReference;
+			if (_rowSourceTableCollectionReferences.TryGetValue(columnReference, out tableCollectionReference))
+			{
+				tableCollectionReference.RowSourceReference = programReference;
 			}
 
 			columnReference.Container.ProgramReferences.Add(programReference);
@@ -3194,7 +3203,7 @@ namespace SqlPad.Oracle.SemanticModel
 			return identifier.ParentNode.ChildNodes.Where(n => n.Id.In(NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.AnalyticClause));
 		}
 
-		protected static IReadOnlyList<ProgramParameterReference> ResolvedParameterReferences(StatementGrammarNode parameterList)
+		protected static IReadOnlyList<ProgramParameterReference> ResolveParameterReferences(StatementGrammarNode parameterList)
 		{
 			if (parameterList == null)
 			{
@@ -3233,7 +3242,7 @@ namespace SqlPad.Oracle.SemanticModel
 					Placement = placement,
 					AnalyticClauseNode = analyticClauseNode,
 					ParameterListNode = parameterList,
-					ParameterReferences = ResolvedParameterReferences(parameterList),
+					ParameterReferences = ResolveParameterReferences(parameterList),
 					SelectListColumn = selectListColumn,
 					Container = container
 				};

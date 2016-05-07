@@ -590,7 +590,8 @@ SELECT * FROM sampleData";
 			functionReference.AnalyticClauseNode.ShouldBe(null);
 			functionReference.SelectListColumn.ShouldNotBe(null);
 			functionReference.ParameterListNode.ShouldBe(null);
-			functionReference.ParameterReferences.ShouldBe(null);
+			functionReference.ParameterReferences.ShouldNotBe(null);
+			functionReference.ParameterReferences.Count.ShouldBe(0);
 			functionReference.RootNode.FirstTerminalNode.Token.Value.ShouldBe("SYS");
 			functionReference.RootNode.LastTerminalNode.Token.Value.ShouldBe("VALUE");
 		}
@@ -1634,6 +1635,24 @@ END;";
 			var tableCollectionReference = (OracleTableCollectionReference)objectReference;
 			tableCollectionReference.RowSourceReference.ShouldBeAssignableTo<OracleProgramReference>();
 			((OracleProgramReference)tableCollectionReference.RowSourceReference).Metadata.ShouldNotBe(null);
+
+			queryBlock.ProgramReferences.Count.ShouldBe(1);
+			queryBlock.ProgramReferences.Single().Metadata.ShouldNotBe(null);
+
+			queryBlock.Columns.Count.ShouldBe(1);
+			queryBlock.Columns[0].ColumnReferences.Count.ShouldBe(1);
+			queryBlock.Columns[0].ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+		}
+
+		[Test]
+		public void TestTableCollectionExpressionColumnUsingPackageFunctionWithoutParameters()
+		{
+			const string query1 = @"SELECT COLUMN_VALUE FROM TABLE(SQLPAD.PIPELINED_FUNCTION)";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
+
+			var queryBlock = semanticModel.QueryBlocks.Single();
 
 			queryBlock.ProgramReferences.Count.ShouldBe(1);
 			queryBlock.ProgramReferences.Single().Metadata.ShouldNotBe(null);
