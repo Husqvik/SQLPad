@@ -143,6 +143,17 @@ namespace SqlPad
 			return new ReadOnlyDictionary<TKey, TValue>(dictionary);
 		}
 
+		public static void AddToValues<TKey, TCollection, TValue>(this IDictionary<TKey, TCollection> dictionary, TKey key, TValue value) where TCollection : ICollection<TValue>, new()
+		{
+			TCollection values;
+			if (!dictionary.TryGetValue(key, out values))
+			{
+				dictionary.Add(key, values = new TCollection());
+			}
+
+			values.Add(value);
+		}
+
 		public static string ToPrettyString(this TimeSpan timeSpan)
 		{
 			if (timeSpan.TotalMilliseconds < 1000)

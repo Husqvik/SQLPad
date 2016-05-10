@@ -1345,12 +1345,12 @@ namespace SqlPad.Oracle
 							semanticError = OracleSemanticErrorType.GroupFunctionNotAllowed;
 						}
 
-						var namedParameterExists = false;
+						var namedParameterRootNodes = new Dictionary<string, List<StatementGrammarNode>>();
 						foreach (var parameterReference in programReference.ParameterReferences)
 						{
 							if (parameterReference.OptionalIdentifierTerminal != null)
 							{
-								namedParameterExists = true;
+								var parameterName = parameterReference.OptionalIdentifierTerminal.Token.Value.ToQuotedIdentifier();
 
 								OracleProgramParameterMetadata parameterMetadata;
 								if (programReference.Metadata.IsBuiltIn)
@@ -1358,16 +1358,32 @@ namespace SqlPad.Oracle
 									validationModel.IdentifierNodeValidity[parameterReference.OptionalIdentifierTerminal] =
 										new InvalidNodeValidationData(OracleSemanticErrorType.NamedParameterNotAllowed) { Node = parameterReference.OptionalIdentifierTerminal };
 								}
-								else if (!programReference.Metadata.NamedParameters.TryGetValue(parameterReference.OptionalIdentifierTerminal.Token.Value.ToQuotedIdentifier(), out parameterMetadata))
+								else if (!programReference.Metadata.NamedParameters.TryGetValue(parameterName, out parameterMetadata))
 								{
 									validationModel.IdentifierNodeValidity[parameterReference.OptionalIdentifierTerminal] =
 										new NodeValidationData { IsRecognized = false, Node = parameterReference.OptionalIdentifierTerminal };
 								}
+
+								namedParameterRootNodes.AddToValues(parameterName, parameterReference.ParameterNode);
 							}
-							else if (namedParameterExists)
+							else if (namedParameterRootNodes.Count > 0)
 							{
 								validationModel.InvalidNonTerminals[parameterReference.ParameterNode] =
 									new InvalidNodeValidationData(OracleSemanticErrorType.PositionalParameterNotAllowed) { Node = parameterReference.ParameterNode };
+							}
+						}
+
+						foreach (var sameNameParameterCollection in namedParameterRootNodes.Values)
+						{
+							if (sameNameParameterCollection.Count == 1)
+							{
+								continue;
+							}
+
+							foreach (var parameterNode in sameNameParameterCollection)
+							{
+								validationModel.InvalidNonTerminals[parameterNode] =
+									new InvalidNodeValidationData(OracleSemanticErrorType.MultipleInstancesOfNamedArgumentInList) { Node = parameterNode };
 							}
 						}
 
@@ -1505,12 +1521,14 @@ namespace SqlPad.Oracle
 
 		private static INodeValidationData GetInvalidIdentifierValidationData(StatementGrammarNode node)
 		{
-			if (!node.Id.IsIdentifierOrAlias())
+			if (!node.Id.IsIdentifierOrAlias() || String.Equals(node.Id, Terminals.DatabaseLinkIdentifier))
+			{
 				return null;
+			}
 
-			var validationResult = ValidateIdentifier(node.Token.Value, node.Id == Terminals.BindVariableIdentifier);
+			var validationResult = ValidateIdentifier(node.Token.Value, String.Equals(node.Id, Terminals.BindVariableIdentifier));
 			string errorMessage;
-			if (node.Id == Terminals.XmlAlias)
+			if (String.Equals(node.Id, Terminals.XmlAlias))
 			{
 				errorMessage = validationResult.IsEmptyQuotedIdentifier
 					? "XML alias length must be at least one character excluding quotes. "

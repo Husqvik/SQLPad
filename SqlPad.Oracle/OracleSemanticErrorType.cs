@@ -21,6 +21,7 @@ namespace SqlPad.Oracle
 		public const string InvalidColumnCount = "Invalid column count";
 		public const string FunctionReturningRowSetRequired = "Function must return a row set";
 		public const string NamedParameterNotAllowed = "Named parameter not allowed";
+		public const string MultipleInstancesOfNamedArgumentInList = "Multiple instances of named argument in list";
 		public const string PositionalParameterNotAllowed = "A positional parameter association may not follow a named association";
 		public const string InvalidColumnIndex = "Invalid column index";
 		public const string GroupFunctionNotAllowed = "Group function is not allowed here";

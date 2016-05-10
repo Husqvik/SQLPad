@@ -2412,6 +2412,31 @@ SELECT * FROM CTE";
 		}
 
 		[Test]
+		public void TestMultipleSameNamedParameters()
+		{
+			const string sqlText = @"SELECT DBMS_XPLAN.DISPLAY_CURSOR(sql_id => NULL, SQL_ID => null) FROM DUAL";
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var invalidNonTerminals = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToList();
+			invalidNonTerminals.Count.ShouldBe(2);
+			invalidNonTerminals[0].IsRecognized.ShouldBe(true);
+			invalidNonTerminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.MultipleInstancesOfNamedArgumentInList);
+			invalidNonTerminals[0].ToolTipText.ShouldBe(OracleSemanticErrorType.MultipleInstancesOfNamedArgumentInList);
+			invalidNonTerminals[0].Node.FirstTerminalNode.Token.Value.ShouldBe("sql_id");
+			invalidNonTerminals[0].Node.LastTerminalNode.Token.Value.ShouldBe("NULL");
+
+			invalidNonTerminals[1].IsRecognized.ShouldBe(true);
+			invalidNonTerminals[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.MultipleInstancesOfNamedArgumentInList);
+			invalidNonTerminals[1].ToolTipText.ShouldBe(OracleSemanticErrorType.MultipleInstancesOfNamedArgumentInList);
+			invalidNonTerminals[1].Node.FirstTerminalNode.Token.Value.ShouldBe("SQL_ID");
+			invalidNonTerminals[1].Node.LastTerminalNode.Token.Value.ShouldBe("null");
+		}
+
+		[Test]
 		public void TestInvalidOrderByColumnIndex()
 		{
 			const string sqlText = @"SELECT T.*, '[' || NAME || ']' FROM (SELECT NAME FROM SELECTION) T ORDER BY 3, 2, 1, 4";
