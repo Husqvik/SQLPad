@@ -1562,7 +1562,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 			if (MainObjectReferenceContainer.MainObjectReference != null)
 			{
-				ResolveFunctionReferences(MainObjectReferenceContainer.ProgramReferences);
+				ResolveProgramReferences(MainObjectReferenceContainer.ProgramReferences);
 				ResolveColumnObjectReferences(MainObjectReferenceContainer.ColumnReferences, new[] { MainObjectReferenceContainer.MainObjectReference }, OracleDataObjectReference.EmptyArray);
 			}
 
@@ -1727,7 +1727,7 @@ namespace SqlPad.Oracle.SemanticModel
 					var grammarSpecificFunctions = GetGrammarSpecificFunctionNodes(condition);
 					CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, null, sourceReferenceContainer.ProgramReferences, StatementPlacement.None, null);
 
-					ResolveFunctionReferences(sourceReferenceContainer.ProgramReferences);
+					ResolveProgramReferences(sourceReferenceContainer.ProgramReferences);
 				}
 
 				var insertTarget =
@@ -1775,7 +1775,7 @@ namespace SqlPad.Oracle.SemanticModel
 					CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, null, insertTarget.ProgramReferences, StatementPlacement.ValuesClause, null);
 
 					ResolveColumnObjectReferences(insertTarget.ColumnReferences, sourceReferenceContainer.ObjectReferences, OracleDataObjectReference.EmptyArray);
-					ResolveFunctionReferences(insertTarget.ProgramReferences);
+					ResolveProgramReferences(insertTarget.ProgramReferences);
 				}
 
 				insertTarget.ColumnReferences.AddRange(targetReferenceContainer.ColumnReferences);
@@ -1920,49 +1920,75 @@ namespace SqlPad.Oracle.SemanticModel
 
 				ResolveOrderByReferences(queryBlock);
 
-				ResolveFunctionReferences(queryBlock.AllProgramReferences);
+				ResolveProgramReferences(queryBlock.AllProgramReferences);
 
 				ResolvePivotTableColumnReferences(queryBlock);
 
-				if (queryBlock.ModelReference != null)
+				ResolveModelColumnAndProgramReferences(queryBlock);
+
+				ResolveNaturalJoinColumnsAndOuterJoinReferences(queryBlock);
+
+				var tableReferenceColumnReferences = new List<OracleColumnReference>();
+				var columnReferences = new List<OracleColumnReference>();
+				foreach (var columnReference in queryBlock.AllColumnReferences)
 				{
-					foreach (var referenceContainer in queryBlock.ModelReference.ChildContainers)
+					if (columnReference.Placement == StatementPlacement.TableReference)
 					{
-						ResolveColumnObjectReferences(referenceContainer.ColumnReferences, referenceContainer.ObjectReferences, OracleDataObjectReference.EmptyArray);
-						ResolveFunctionReferences(referenceContainer.ProgramReferences);
+						tableReferenceColumnReferences.Add(columnReference);
+					}
+					else if (columnReference.Placement != StatementPlacement.Model && columnReference.Placement != StatementPlacement.PivotClause &&
+					         columnReference.SelectListColumn?.HasExplicitDefinition != false)
+					{
+						columnReferences.Add(columnReference);
 					}
 				}
 
-				ResolveNaturalJoinColumnsAndOuterJoinReferences(queryBlock);
+				var correlatedReferences = GetAllCorrelatedDataObjectReferences(queryBlock);
+
+				ResolveColumnObjectReferences(tableReferenceColumnReferences, queryBlock.ObjectReferences, correlatedReferences);
 
 				ExposeAsteriskColumns(queryBlock);
 
 				ApplyExplicitCommonTableExpressionColumnNames(queryBlock);
 
-				var columnReferences = queryBlock.AllColumnReferences
-					.Where(c => c.Placement != StatementPlacement.Model && c.Placement != StatementPlacement.PivotClause && c.SelectListColumn?.HasExplicitDefinition != false)
-					.OrderBy(c => c.Placement == StatementPlacement.TableReference ? -1 : (int)c.Placement)
-					.ToArray();
-
-				var correlatedReferences = new List<OracleDataObjectReference>();
-				if (queryBlock.OuterCorrelatedQueryBlock != null)
-				{
-					correlatedReferences.AddRange(queryBlock.OuterCorrelatedQueryBlock.ObjectReferences);
-				}
-
-				if (queryBlock.CrossOrOuterApplyReference != null)
-				{
-					correlatedReferences.Add(queryBlock.CrossOrOuterApplyReference);
-				}
-
 				if (queryBlock.Type == QueryBlockType.ScalarSubquery && queryBlock.Parent != null)
 				{
-					ResolveColumnObjectReferences(columnReferences.TakeWhile(c => c.Placement == StatementPlacement.TableReference), OracleDataObjectReference.EmptyArray, queryBlock.Parent.ObjectReferences);
+					ResolveColumnObjectReferences(tableReferenceColumnReferences, OracleDataObjectReference.EmptyArray, queryBlock.Parent.ObjectReferences);
 				}
 
 				ResolveColumnObjectReferences(columnReferences, queryBlock.ObjectReferences, correlatedReferences);
 
 				ResolveDatabaseLinks(queryBlock);
+			}
+		}
+
+		private static IReadOnlyCollection<OracleDataObjectReference> GetAllCorrelatedDataObjectReferences(OracleQueryBlock queryBlock)
+		{
+			var correlatedReferences = new List<OracleDataObjectReference>();
+			if (queryBlock.OuterCorrelatedQueryBlock != null)
+			{
+				correlatedReferences.AddRange(queryBlock.OuterCorrelatedQueryBlock.ObjectReferences);
+			}
+
+			if (queryBlock.CrossOrOuterApplyReference != null)
+			{
+				correlatedReferences.Add(queryBlock.CrossOrOuterApplyReference);
+			}
+
+			return correlatedReferences;
+		}
+
+		private void ResolveModelColumnAndProgramReferences(OracleQueryBlock queryBlock)
+		{
+			if (queryBlock.ModelReference == null)
+			{
+				return;
+			}
+
+			foreach (var referenceContainer in queryBlock.ModelReference.ChildContainers)
+			{
+				ResolveColumnObjectReferences(referenceContainer.ColumnReferences, referenceContainer.ObjectReferences, OracleDataObjectReference.EmptyArray);
+				ResolveProgramReferences(referenceContainer.ProgramReferences);
 			}
 		}
 
@@ -2016,7 +2042,7 @@ namespace SqlPad.Oracle.SemanticModel
 			foreach (var pivotTableReference in container.ObjectReferences.OfType<OraclePivotTableReference>())
 			{
 				ResolveColumnObjectReferences(pivotTableReference.SourceReferenceContainer.ColumnReferences, pivotTableReference.SourceReferenceContainer.ObjectReferences, OracleDataObjectReference.EmptyArray);
-				ResolveFunctionReferences(pivotTableReference.SourceReferenceContainer.ProgramReferences);
+				ResolveProgramReferences(pivotTableReference.SourceReferenceContainer.ProgramReferences);
 			}
 		}
 
@@ -2192,12 +2218,12 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 		}
 
-		private void ResolveFunctionReferences(IEnumerable<OracleProgramReference> programReferences)
+		private void ResolveProgramReferences(IEnumerable<OracleProgramReference> programReferences)
 		{
-			ResolveFunctionReferences(programReferences, false);
+			ResolveProgramReferences(programReferences, false);
 		}
 
-		protected void ResolveFunctionReferences(IEnumerable<OracleProgramReference> programReferences, bool includePlSqlObjects)
+		protected void ResolveProgramReferences(IEnumerable<OracleProgramReference> programReferences, bool includePlSqlObjects)
 		{
 			var programsTransferredToTypes = new List<OracleProgramReference>();
 			foreach (var programReference in programReferences)
@@ -2415,7 +2441,7 @@ namespace SqlPad.Oracle.SemanticModel
 			return queryBlockNode == null ? null : QueryBlockNodes[queryBlockNode];
 		}
 
-		private void ResolveColumnObjectReferences(IEnumerable<OracleColumnReference> columnReferences, ICollection<OracleDataObjectReference> accessibleRowSourceReferences, ICollection<OracleDataObjectReference> parentCorrelatedRowSourceReferences)
+		private void ResolveColumnObjectReferences(IEnumerable<OracleColumnReference> columnReferences, ICollection<OracleDataObjectReference> accessibleRowSourceReferences, IEnumerable<OracleDataObjectReference> parentCorrelatedRowSourceReferences)
 		{
 			foreach (var columnReference in columnReferences.ToArray())
 			{

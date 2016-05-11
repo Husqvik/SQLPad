@@ -1663,6 +1663,21 @@ END;";
 		}
 
 		[Test]
+		public void TestTableCollectionExpressionColumnUsingPackageFunctionWithoutParametersExposedViaAsterisk()
+		{
+			const string query1 = @"SELECT COLUMN_VALUE FROM (SELECT * FROM TABLE(SQLPAD.PIPELINED_FUNCTION))";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
+
+			var mainQueryBlock = semanticModel.QueryBlocks.Last();
+
+			mainQueryBlock.Columns.Count.ShouldBe(1);
+			mainQueryBlock.Columns[0].ColumnReferences.Count.ShouldBe(1);
+			mainQueryBlock.Columns[0].ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+		}
+
+		[Test]
 		public void TestXmlTableReference()
 		{
 			const string query1 = @"SELECT * FROM XMLTABLE('for $i in $RSS_DATA/rss/channel/item return $i' PASSING HTTPURITYPE('http://servis.idnes.cz/rss.asp?c=zpravodaj').GETXML() AS RSS_DATA COLUMNS SEQ# FOR ORDINALITY, TITLE VARCHAR2(4000) PATH 'title', DESCRIPTION CLOB PATH 'description') T";

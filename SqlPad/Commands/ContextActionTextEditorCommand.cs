@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
@@ -68,6 +69,7 @@ namespace SqlPad.Commands
 					OnBeforeExecute();
 					await ContextAction.ExecutionHandler.ExecutionHandlerAsync(ContextAction.ExecutionContext, cancellationTokenSource.Token);
 				}
+				catch (TaskCanceledException) { }
 				catch (Exception e)
 				{
 					exception = e;

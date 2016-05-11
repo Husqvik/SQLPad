@@ -236,7 +236,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private void ResolvePlSqlReferences(OraclePlSqlProgram program)
 		{
-			ResolveFunctionReferences(program.ProgramReferences, true);
+			ResolveProgramReferences(program.ProgramReferences, true);
 
 			foreach (var variableReference in program.PlSqlVariableReferences.Concat(program.SqlModels.SelectMany(m => m.AllReferenceContainers).SelectMany(c => c.PlSqlVariableReferences)))
 			{
