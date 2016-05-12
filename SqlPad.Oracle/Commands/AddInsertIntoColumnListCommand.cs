@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using SqlPad.Commands;
+using SqlPad.Oracle.DataDictionary;
 using SqlPad.Oracle.SemanticModel;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
@@ -23,10 +24,11 @@ namespace SqlPad.Oracle.Commands
 
 		protected override CommandCanExecuteResult CanExecute()
 		{
-			return CurrentNode != null &&
-			       CurrentNode.Statement.RootNode.FirstTerminalNode.Id == Terminals.Insert &&
-			       Initialize() &&
-			       ExistNamedColumns();
+			return
+				CurrentNode != null &&
+				String.Equals(CurrentNode.Statement.RootNode.FirstTerminalNode.Id, Terminals.Insert) &&
+				Initialize() &&
+				ExistNamedColumns();
 		}
 
 		private bool Initialize()
@@ -67,14 +69,23 @@ namespace SqlPad.Oracle.Commands
 			foreach (var column in columnNames)
 			{
 				var isSelected = _settingsModel.UseDefaultSettings == null || !_settingsModel.UseDefaultSettings()
-					? _existingColumns.Contains(column.ToQuotedIdentifier())
+					? _existingColumns.Contains(column.Name.ToQuotedIdentifier())
 					: _settingsModel.UseDefaultSettings();
+
+				var columnDescription =
+					new ColumnDescriptionItem
+					{
+						DataType = column.FullTypeName,
+						ColumnName = OracleCodeCompletionProvider.GetPrettyColumnName(column.Name),
+						IsHidden = column.Hidden,
+						Nullable = column.Nullable
+					};
 
 				_settingsModel.AddBooleanOption(
 					new BooleanOption
 					{
-						OptionIdentifier = column,
-						DescriptionContent = column,
+						OptionIdentifier = column.Name.ToSimpleIdentifier(),
+						DescriptionContent = ExpandAsteriskCommand.BuildColumnOptionDescription(columnDescription),
 						Value = isSelected,
 						Tag = column
 					});
@@ -96,7 +107,9 @@ namespace SqlPad.Oracle.Commands
 			ConfigureSettings();
 
 			if (!ExecutionContext.SettingsProvider.GetSettings())
+			{
 				return;
+			}
 
 			var segmentToReplace = GetSegmentToReplace();
 			if (!segmentToReplace.Equals(TextSegment.Empty))
@@ -107,15 +120,18 @@ namespace SqlPad.Oracle.Commands
 
 		private TextSegment GetSegmentToReplace()
 		{
+			var formatOption = OracleConfiguration.Configuration.Formatter.FormatOptions.Identifier;
 			var columnNames = _settingsModel.BooleanOptions.Values
 				.Where(v => v.Value)
-				.Select(v => v.OptionIdentifier)
+				.Select(v => OracleStatementFormatter.FormatTerminalValue(v.OptionIdentifier, formatOption))
 				.ToArray();
 
 			if (columnNames.Length == 0)
+			{
 				return TextSegment.Empty;
+			}
 
-			var columnListText = $"{"("}{String.Join(", ", columnNames)}{")"}";
+			var columnListText = $"({String.Join(", ", columnNames)})";
 			if (_columnList == null)
 			{
 				return new TextSegment
@@ -126,7 +142,8 @@ namespace SqlPad.Oracle.Commands
 				};
 			}
 
-			return new TextSegment
+			return
+				new TextSegment
 				{
 					IndextStart = _columnList.SourcePosition.IndexStart,
 					Length = _columnList.SourcePosition.Length,
@@ -134,11 +151,10 @@ namespace SqlPad.Oracle.Commands
 				};
 		}
 
-		private IReadOnlyList<string> FillColumnNames()
+		private IReadOnlyList<OracleColumn> FillColumnNames()
 		{
 			return _insertTarget.DataObjectReference.Columns
-				.Where(c => !String.IsNullOrEmpty(c.Name))
-				.Select(c => c.Name.ToSimpleIdentifier())
+				.Where(c => !c.Virtual && !c.IsPseudocolumn && !String.IsNullOrEmpty(c.Name))
 				.ToArray();
 		}
 	}

@@ -44,7 +44,7 @@ namespace SqlPad.Oracle.Commands
 
 		private CommandCanExecuteResult ExistExpandableColumns()
 		{
-			var expandedColumns = new List<ExpandedColumn>();
+			var expandedColumns = new List<ColumnDescriptionItem>();
 			var databaseLinkReferences = new List<OracleObjectWithColumnsReference>();
 			FillColumnNames(expandedColumns, databaseLinkReferences, false);
 
@@ -65,7 +65,7 @@ namespace SqlPad.Oracle.Commands
 
 			_settingsModel.IsTextInputVisible = false;
 
-			var expandedColumns = new List<ExpandedColumn>();
+			var expandedColumns = new List<ColumnDescriptionItem>();
 			var databaseLinkReferences = new List<OracleObjectWithColumnsReference>();
 			_asteriskNode = FillColumnNames(expandedColumns, databaseLinkReferences, true);
 
@@ -79,7 +79,7 @@ namespace SqlPad.Oracle.Commands
 				expandedColumns.AddRange(
 					columnNames.Select(
 						n =>
-							new ExpandedColumn
+							new ColumnDescriptionItem
 							{
 								OwnerIdentifier = databaseLinkReference.FullyQualifiedObjectName,
 								ColumnName = n.ToSimpleIdentifier()
@@ -88,58 +88,11 @@ namespace SqlPad.Oracle.Commands
 
 			foreach (var expandedColumn in expandedColumns.Distinct(c => c.ColumnNameLabel))
 			{
-				var descriptionContent = new Grid();
-				descriptionContent.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star), SharedSizeGroup = "ColumnName" });
-				descriptionContent.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto, SharedSizeGroup = "DataType" });
-				descriptionContent.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto, SharedSizeGroup = "Nullable" });
-
-				var columnNameLabel = new TextBlock();
-				descriptionContent.Children.Add(columnNameLabel);
-				
-				var dataTypeLabel =
-					new TextBlock
-					{
-						HorizontalAlignment = HorizontalAlignment.Right,
-						Text = expandedColumn.DataType,
-						Margin = new Thickness(20, 0, 0, 0)
-					};
-
-				Grid.SetColumn(dataTypeLabel, 1);
-				descriptionContent.Children.Add(dataTypeLabel);
-
-				var nullableLabel =
-					new TextBlock
-					{
-						HorizontalAlignment = HorizontalAlignment.Right,
-						Margin = new Thickness(4, 0, 0, 0)
-					};
-
-				if (expandedColumn.Nullable.HasValue)
-				{
-					nullableLabel.Text = expandedColumn.Nullable.Value ? "NULL" : "NOT NULL";
-					Grid.SetColumn(nullableLabel, 2);
-					descriptionContent.Children.Add(nullableLabel);
-				}
-
-				string extraInformation = null;
-				if (expandedColumn.IsPseudocolumn)
-				{
-					extraInformation = " (pseudocolumn)";
-					columnNameLabel.Foreground = dataTypeLabel.Foreground = nullableLabel.Foreground = Brushes.CornflowerBlue;
-				}
-				else if (expandedColumn.IsHidden)
-				{
-					extraInformation = " (invisible)";
-					columnNameLabel.Foreground = dataTypeLabel.Foreground = nullableLabel.Foreground = Brushes.DimGray;
-				}
-
-				columnNameLabel.Text = $"{expandedColumn.ColumnNameLabel}{extraInformation}";
-
 				_settingsModel.AddBooleanOption(
 					new BooleanOption
 					{
 						OptionIdentifier = expandedColumn.ColumnNameLabel,
-						DescriptionContent = descriptionContent,
+						DescriptionContent = BuildColumnOptionDescription(expandedColumn),
 						Value = !expandedColumn.IsPseudocolumn && !expandedColumn.IsHidden && useDefaultSettings,
 						Tag = expandedColumn
 					});
@@ -172,7 +125,7 @@ namespace SqlPad.Oracle.Commands
 		{
 			var columnNames = _settingsModel.BooleanOptions.Values
 				.Where(v => v.Value)
-				.Select(v => ((ExpandedColumn)v.Tag).FormattedColumn)
+				.Select(v => ((ColumnDescriptionItem)v.Tag).FormattedColumn)
 				.ToArray();
 
 			if (columnNames.Length == 0)
@@ -208,7 +161,7 @@ namespace SqlPad.Oracle.Commands
 			return textSegment;
 		}
 
-		private StatementGrammarNode FillColumnNames(List<ExpandedColumn> columnNames, List<OracleObjectWithColumnsReference> databaseLinkReferences, bool includePseudocolumns)
+		private StatementGrammarNode FillColumnNames(List<ColumnDescriptionItem> columnNames, List<OracleObjectWithColumnsReference> databaseLinkReferences, bool includePseudocolumns)
 		{
 			StatementGrammarNode asteriskNode;
 			var asteriskReference = CurrentQueryBlock.Columns.FirstOrDefault(c => c.RootNode == CurrentNode);
@@ -267,7 +220,7 @@ namespace SqlPad.Oracle.Commands
 			return asteriskNode;
 		}
 
-		private static IEnumerable<ExpandedColumn> GetPseudocolumns(OracleDataObjectReference reference)
+		private static IEnumerable<ColumnDescriptionItem> GetPseudocolumns(OracleDataObjectReference reference)
 		{
 			return reference.Pseudocolumns.Select(c => GetExpandedColumn(reference, c, true));
 		}
@@ -280,14 +233,14 @@ namespace SqlPad.Oracle.Commands
 				: null;
 		}
 
-		private static ExpandedColumn GetExpandedColumn(OracleReference objectReference, OracleColumn column, bool isPseudocolumn)
+		private static ColumnDescriptionItem GetExpandedColumn(OracleReference objectReference, OracleColumn column, bool isPseudocolumn)
 		{
 			var nullable = objectReference?.SchemaObject.GetTargetSchemaObject() is OracleView
 				? (bool?)null
 				: column.Nullable;
 
 			return
-				new ExpandedColumn
+				new ColumnDescriptionItem
 				{
 					OwnerIdentifier = objectReference?.FullyQualifiedObjectName ?? OracleObjectIdentifier.Empty,
 					ColumnName = OracleCodeCompletionProvider.GetPrettyColumnName(column.Name),
@@ -298,37 +251,89 @@ namespace SqlPad.Oracle.Commands
 				};
 		}
 
-		[DebuggerDisplay("ExpandedColumn (OwnerIdentifier={OwnerIdentifier}; ColumnName={ColumnName}; IsPseudocolumn={IsPseudocolumn}; IsHidden={IsHidden})")]
-		private struct ExpandedColumn
+		internal static Grid BuildColumnOptionDescription(ColumnDescriptionItem column)
 		{
-			public OracleObjectIdentifier OwnerIdentifier { private get; set; }
+			var descriptionContent = new Grid();
+			descriptionContent.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star), SharedSizeGroup = "ColumnName" });
+			descriptionContent.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto, SharedSizeGroup = "DataType" });
+			descriptionContent.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto, SharedSizeGroup = "Nullable" });
 
-			public string ColumnName { private get; set; }
-			
-			public string DataType { get; set; }
-			
-			public bool IsPseudocolumn { get; set; }
+			var columnNameLabel = new TextBlock();
+			descriptionContent.Children.Add(columnNameLabel);
 
-			public bool IsHidden { get; set; }
-
-			public bool? Nullable { get; set; }
-
-			public string ColumnNameLabel => BuildQualifiedColumnLabel(OwnerIdentifier, ColumnName, false);
-
-			public string FormattedColumn => BuildQualifiedColumnLabel(OwnerIdentifier, ColumnName, true);
-
-			private static string BuildQualifiedColumnLabel(OracleObjectIdentifier columnOwner, string columnName, bool applyFormatting)
-			{
-				var prefix = String.IsNullOrEmpty(columnOwner.Name) ? null : $"{(applyFormatting ? columnOwner.ToFormattedString() : columnOwner.ToString())}.";
-				columnName = columnName.ToSimpleIdentifier();
-				if (applyFormatting)
+			var dataTypeLabel =
+				new TextBlock
 				{
-					var formatOption = OracleConfiguration.Configuration.Formatter.FormatOptions.Identifier;
-					columnName = OracleStatementFormatter.FormatTerminalValue(columnName, formatOption);
-				}
+					HorizontalAlignment = HorizontalAlignment.Right,
+					Text = column.DataType,
+					Margin = new Thickness(20, 0, 0, 0)
+				};
 
-				return $"{prefix}{columnName}";
+			Grid.SetColumn(dataTypeLabel, 1);
+			descriptionContent.Children.Add(dataTypeLabel);
+
+			var nullableLabel =
+				new TextBlock
+				{
+					HorizontalAlignment = HorizontalAlignment.Right,
+					Margin = new Thickness(4, 0, 0, 0)
+				};
+
+			if (column.Nullable.HasValue)
+			{
+				nullableLabel.Text = column.Nullable.Value ? "NULL" : "NOT NULL";
+				Grid.SetColumn(nullableLabel, 2);
+				descriptionContent.Children.Add(nullableLabel);
 			}
+
+			string extraInformation = null;
+			if (column.IsPseudocolumn)
+			{
+				extraInformation = " (pseudocolumn)";
+				columnNameLabel.Foreground = dataTypeLabel.Foreground = nullableLabel.Foreground = Brushes.CornflowerBlue;
+			}
+			else if (column.IsHidden)
+			{
+				extraInformation = " (invisible)";
+				columnNameLabel.Foreground = dataTypeLabel.Foreground = nullableLabel.Foreground = Brushes.DimGray;
+			}
+
+			columnNameLabel.Text = $"{column.ColumnNameLabel}{extraInformation}";
+
+			return descriptionContent;
+		}
+	}
+
+	[DebuggerDisplay("ColumnDescriptionItem (OwnerIdentifier={OwnerIdentifier}; ColumnName={ColumnName}; IsPseudocolumn={IsPseudocolumn}; IsHidden={IsHidden})")]
+	internal struct ColumnDescriptionItem
+	{
+		public OracleObjectIdentifier OwnerIdentifier { private get; set; }
+
+		public string ColumnName { private get; set; }
+
+		public string DataType { get; set; }
+
+		public bool IsPseudocolumn { get; set; }
+
+		public bool IsHidden { get; set; }
+
+		public bool? Nullable { get; set; }
+
+		public string ColumnNameLabel => BuildQualifiedColumnLabel(OwnerIdentifier, ColumnName, false);
+
+		public string FormattedColumn => BuildQualifiedColumnLabel(OwnerIdentifier, ColumnName, true);
+
+		private static string BuildQualifiedColumnLabel(OracleObjectIdentifier columnOwner, string columnName, bool applyFormatting)
+		{
+			var prefix = String.IsNullOrEmpty(columnOwner.Name) ? null : $"{(applyFormatting ? columnOwner.ToFormattedString() : columnOwner.ToString())}.";
+			columnName = columnName.ToSimpleIdentifier();
+			if (applyFormatting)
+			{
+				var formatOption = OracleConfiguration.Configuration.Formatter.FormatOptions.Identifier;
+				columnName = OracleStatementFormatter.FormatTerminalValue(columnName, formatOption);
+			}
+
+			return $"{prefix}{columnName}";
 		}
 	}
 }
