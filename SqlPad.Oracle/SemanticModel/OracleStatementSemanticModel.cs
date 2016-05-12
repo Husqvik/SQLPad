@@ -2956,7 +2956,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		protected IEnumerable<StatementGrammarNode> GetGrammarSpecificFunctionNodes(StatementGrammarNode sourceNode)
 		{
-			return sourceNode.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBlock, Terminals.Count, Terminals.Trim, Terminals.CharacterCode, Terminals.Cast, Terminals.Extract, Terminals.XmlRoot, Terminals.NegationOrNull, Terminals.JsonExists, Terminals.JsonQuery, Terminals.JsonValue, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, NonTerminals.WithinGroupAggregationFunction);
+			return sourceNode.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBlock, Terminals.Count, Terminals.Trim, Terminals.CharacterCode, Terminals.Cast, Terminals.Extract, Terminals.XmlRoot, Terminals.XmlElement, Terminals.XmlSerialize, Terminals.NegationOrNull, Terminals.JsonExists, Terminals.JsonQuery, Terminals.JsonValue, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, NonTerminals.WithinGroupAggregationFunction);
 		}
 
 		protected void ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(OracleQueryBlock queryBlock, OracleReferenceContainer referenceContainer, IEnumerable<StatementGrammarNode> identifiers, StatementPlacement placement, OracleSelectListColumn selectListColumn, Func<StatementGrammarNode, StatementGrammarNode> getPrefixNonTerminalFromIdentiferFunction = null, Func<StatementGrammarNode, IEnumerable<StatementGrammarNode>> getFunctionCallNodesFromIdentifierFunction = null)
@@ -3069,7 +3069,7 @@ namespace SqlPad.Oracle.SemanticModel
 						AliasNode = columnAliasNode, RootNode = columnExpression, Owner = queryBlock
 					};
 
-					var asteriskNode = columnExpression.LastTerminalNode != null && columnExpression.LastTerminalNode.Id == Terminals.Asterisk ? columnExpression.LastTerminalNode : null;
+					var asteriskNode = columnExpression.LastTerminalNode != null && String.Equals(columnExpression.LastTerminalNode.Id, Terminals.Asterisk) ? columnExpression.LastTerminalNode : null;
 
 					if (asteriskNode != null)
 					{
