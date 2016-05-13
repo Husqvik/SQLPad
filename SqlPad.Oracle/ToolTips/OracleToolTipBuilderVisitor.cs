@@ -169,7 +169,11 @@ namespace SqlPad.Oracle.ToolTips
 				return;
 			}
 
-			BuildSimpleToolTip(tableCollectionReference.SchemaObject);
+			ToolTip =
+				new ToolTipObject
+				{
+					DataContext = $"{tableCollectionReference.FullyQualifiedObjectName} ({tableCollectionReference.Type.ToCategoryLabel()})"
+				};
 		}
 
 		private void BuildSimpleToolTip(OracleSchemaObject schemaObject)

@@ -543,6 +543,18 @@ SELECT * FROM CTE";
 		}
 
 		[Test, STAThread]
+		public void TestTableCollectionToolTip()
+		{
+			const string query = "SELECT table_collection.* FROM TABLE (dbms_xplan.display_cursor) table_collection";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 8);
+
+			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
+			toolTip.Control.DataContext.ShouldBe("table_collection (Table collection)");
+		}
+
+		[Test, STAThread]
 		public void TestFunctionIdentifierOverDatabaseLinkToolTip()
 		{
 			const string query = "SELECT SQLPAD_FUNCTION@UNDEFINED_DB_LINK FROM DUAL";
