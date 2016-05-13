@@ -12296,6 +12296,7 @@
     <Rule StartingNonTerminal="SchemaOrPluggableDatabase">
       <Sequences>
         <Sequence>
+          <NonTerminal Id="SchemaPrefix" IsOptional="true" />
           <Terminal Id="Schema" />
         </Sequence>
         <Sequence>
@@ -12379,19 +12380,6 @@
     <Rule StartingNonTerminal="DatabaseEvent">
       <Sequences>
         <Sequence>
-          <Terminal Id="After" />
-          <NonTerminal Id="SystemTriggerAfterOption" />
-        </Sequence>
-        <Sequence>
-          <Terminal Id="Before" />
-          <NonTerminal Id="SystemTriggerBeforeOption" />
-        </Sequence>
-      </Sequences>
-    </Rule>
-    
-    <Rule StartingNonTerminal="SystemTriggerAfterOption">
-      <Sequences>
-        <Sequence>
           <Terminal Id="Startup" />
         </Sequence>
         <Sequence>
@@ -12413,11 +12401,6 @@
           <Terminal Id="Set" />
           <Terminal Id="Container" />
         </Sequence>
-      </Sequences>
-    </Rule>
-    
-    <Rule StartingNonTerminal="SystemTriggerBeforeOption">
-      <Sequences>
         <Sequence>
           <Terminal Id="Shutdown" />
         </Sequence>

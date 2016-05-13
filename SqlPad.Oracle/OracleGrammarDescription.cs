@@ -407,6 +407,7 @@ namespace SqlPad.Oracle
 			public const string DmlStatement = "DmlStatement";
 			public const string DmlTableExpressionClause = "DmlTableExpressionClause";
 			public const string DocumentOrContent = "DocumentOrContent";
+			public const string DomainIndexClauseOrXmlIndexClause = "DomainIndexClauseOrXmlIndexClause";
 			public const string DotRecordAttributeChained = "DotRecordAttributeChained";
 			public const string DropCluster = "DropCluster";
 			public const string DropColumnClause = "DropColumnClause";
@@ -1347,8 +1348,6 @@ namespace SqlPad.Oracle
 			public const string SystemPrivilegeListChained = "SystemPrivilegeListChained";
 			public const string SystemPrivilegeOrAllPrivileges = "SystemPrivilegeOrAllPrivileges";
 			public const string SystemTrigger = "SystemTrigger";
-			public const string SystemTriggerAfterOption = "SystemTriggerAfterOption";
-			public const string SystemTriggerBeforeOption = "SystemTriggerBeforeOption";
 			public const string SystemTriggerDdlOption = "SystemTriggerDdlOption";
 			public const string SystemTriggerEventList = "SystemTriggerEventList";
 			public const string SystemTriggerEventListChained = "SystemTriggerEventListChained";

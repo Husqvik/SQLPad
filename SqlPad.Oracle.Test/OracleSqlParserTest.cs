@@ -3478,6 +3478,21 @@ END;";
 					var statement = Parser.Parse(statement1).Single().Validate();
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
+
+				[Test]
+				public void TestCreateAfterLogonTrigger()
+				{
+					const string statement1 =
+@"CREATE OR REPLACE TRIGGER disable_dynamic_statistics
+AFTER LOGON
+ON PANELMANAGEMENT.SCHEMA
+BEGIN
+	NULL;
+END;";
+
+					var statement = Parser.Parse(statement1).Single().Validate();
+					statement.ParseStatus.ShouldBe(ParseStatus.Success);
+				}
 			}
 
 			public class ConditionalCompilation
