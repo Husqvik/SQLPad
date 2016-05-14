@@ -310,6 +310,15 @@ namespace SqlPad
 
 		private void WindowClosingHandler(object sender, CancelEventArgs e)
 		{
+			var documentBeingExecuted = AllDocuments.FirstOrDefault(d => d.OutputViewers.Any(ov => ov.IsBusy));
+			if (documentBeingExecuted != null)
+			{
+				e.Cancel = true;
+				documentBeingExecuted.TabItem.IsSelected = true;
+				documentBeingExecuted.ShowActiveExecutionWarning();
+				return;
+			}
+
 			var documentWithActiveTransaction = AllDocuments.FirstOrDefault(d => d.OutputViewers.Any(ov => ov.HasActiveTransaction));
 			if (documentWithActiveTransaction != null)
 			{

@@ -52,6 +52,15 @@
 			</MenuItem.Header>
 		</MenuItem>
 
+		<ControlTemplate x:Key="CloseButtonTemplate" TargetType="{x:Type Button}">
+			<Path x:Name="Cross" Data="M0,0 L1,1 M0,1 L1,0" Stretch="Fill" Stroke="{TemplateBinding Foreground}" StrokeThickness="2.5" Width="10" Height="10" />
+			<ControlTemplate.Triggers>
+				<Trigger Property="IsMouseOver" Value="True">
+					<Setter TargetName="Cross" Property="Stroke" Value="Red" />
+				</Trigger>
+			</ControlTemplate.Triggers>
+		</ControlTemplate>
+
 		<ControlTemplate x:Key="EditableTabHeaderControlTemplate" TargetType="{x:Type sqlPad:EditableTabHeaderControl}">
 			<StackPanel Orientation="Horizontal">
 				<StackPanel.Resources>
@@ -217,18 +226,38 @@
 				</TextBlock.LayoutTransform>
 			</TextBlock>
 
-			<TextBlock Text="{Binding TimedNotificationMessage}" DockPanel.Dock="Bottom" Foreground="White" Background="DarkRed">
-				<TextBlock.Style>
+			<DockPanel DockPanel.Dock="Bottom" Background="DarkRed" Visibility="Collapsed">
+				<DockPanel.Style>
 					<Style>
 						<Style.Triggers>
-							<DataTrigger Binding="{Binding TimedNotificationMessage}" Value="">
-								<Setter Property="TextBlock.Visibility" Value="Collapsed" />
+							<DataTrigger Binding="{Binding TimedNotificationMessage, Converter={StaticResource ObjectToVisibilityConverter}}" Value="Visible">
+								<DataTrigger.EnterActions>
+									<BeginStoryboard Name="StoryboardFadeOut">
+										<Storyboard>
+											<ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(DockPanel.Visibility)">
+												<DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{x:Static Visibility.Visible}" />
+												<DiscreteObjectKeyFrame KeyTime="0:0:5" Value="{x:Static Visibility.Collapsed}" />
+											</ObjectAnimationUsingKeyFrames>
+											<DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+												<DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="1"/>
+												<DiscreteDoubleKeyFrame KeyTime="0:0:4.5" Value="1"/>
+												<EasingDoubleKeyFrame KeyTime="0:0:5" Value="0"/>
+											</DoubleAnimationUsingKeyFrames>
+										</Storyboard>
+									</BeginStoryboard>
+								</DataTrigger.EnterActions>
+								<DataTrigger.ExitActions>
+									<StopStoryboard BeginStoryboardName="StoryboardFadeOut" />
+								</DataTrigger.ExitActions>
 							</DataTrigger>
 						</Style.Triggers>
 					</Style>
-				</TextBlock.Style>
-			</TextBlock>
-			
+				</DockPanel.Style>
+
+				<Button Template="{StaticResource CloseButtonTemplate}" Width="14" DockPanel.Dock="Right" Click="TimedNotificationCloseClickHandler" Foreground="White" />
+				<TextBlock Text="{Binding TimedNotificationMessage}" Foreground="White" />
+			</DockPanel>
+
 			<Grid>
 				<Grid.CommandBindings>
 					<CommandBinding Command="commands:GenericCommands.ExecuteDatabaseCommand" Executed="ExecuteDatabaseCommandHandler" CanExecute="CanExecuteDatabaseCommandHandler" />
@@ -393,18 +422,7 @@
 				<ListBox.ItemTemplate>
 					<DataTemplate>
 						<StackPanel Orientation="Horizontal">
-							<Button Width="12" Margin="0,0,6,0" Click="CloseOutputViewerClickHandler" CommandParameter="{Binding}">
-								<Button.Template>
-									<ControlTemplate TargetType="{x:Type Button}">
-										<Path x:Name="Cross" Data="M0,0 L1,1 M0,1 L1,0" Stretch="Fill" Stroke="DimGray" StrokeThickness="2.5" Width="10" Height="10" />
-										<ControlTemplate.Triggers>
-											<Trigger Property="IsMouseOver" Value="True">
-												<Setter TargetName="Cross" Property="Stroke" Value="Red" />
-											</Trigger>
-										</ControlTemplate.Triggers>
-									</ControlTemplate>
-								</Button.Template>
-							</Button>
+							<Button Width="12" Margin="0,0,6,0" Click="CloseOutputViewerClickHandler" CommandParameter="{Binding}" Foreground="DimGray" Template="{StaticResource CloseButtonTemplate}" />
 							<TextBlock Text="{Binding Title}" />
 						</StackPanel>
 					</DataTemplate>

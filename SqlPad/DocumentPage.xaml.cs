@@ -731,6 +731,7 @@ namespace SqlPad
 		private void CancelUserActionHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			Trace.WriteLine("Action is about to cancel. ");
+			HideTimedNotificationMessage();
 			ActiveOutputViewer.CancelUserAction();
 		}
 
@@ -2276,6 +2277,12 @@ namespace SqlPad
 		private void CloseOutputViewerClickHandler(object sender, RoutedEventArgs args)
 		{
 			var outputViewer = (OutputViewer)((Button)args.Source).CommandParameter;
+			if (outputViewer.IsBusy)
+			{
+				ShowActiveExecutionWarning();
+				return;
+			}
+
 			_outputViewers.Remove(outputViewer);
 			if (ActiveOutputViewer == null)
 			{
@@ -2283,6 +2290,12 @@ namespace SqlPad
 			}
 
 			outputViewer.Dispose();
+		}
+
+		public void ShowActiveExecutionWarning()
+		{
+			TimedNotificationMessage = String.Empty;
+			TimedNotificationMessage = "Database command is being executed. ";
 		}
 
 		private void ShowExecutionHistoryExecutedHandler(object sender, ExecutedRoutedEventArgs args)
@@ -2314,6 +2327,16 @@ namespace SqlPad
 			{
 				bindVariableModel.Value = String.Empty;
 			}
+		}
+
+		private void TimedNotificationCloseClickHandler(object sender, RoutedEventArgs e)
+		{
+			HideTimedNotificationMessage();
+		}
+
+		private void HideTimedNotificationMessage()
+		{
+			TimedNotificationMessage = String.Empty;
 		}
 
 		private struct StatementExecutionConfiguration
