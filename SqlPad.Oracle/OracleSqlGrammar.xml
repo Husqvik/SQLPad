@@ -4576,17 +4576,20 @@
       <Sequences>
         <Sequence>
           <Terminal Id="Values" />
-          <NonTerminal Id="ParenthesisEnclosedExpressionOrDefaultValueList" />
+          <NonTerminal Id="ParenthesisEnclosedExpressionOrDefaultValueListOrAssignmentTarget" />
         </Sequence>
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="ParenthesisEnclosedExpressionOrDefaultValueList">
+    <Rule StartingNonTerminal="ParenthesisEnclosedExpressionOrDefaultValueListOrAssignmentTarget">
       <Sequences>
         <Sequence>
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="ExpressionOrDefaultValueList" />
           <Terminal Id="RightParenthesis" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="AssignmentStatementTarget" />
         </Sequence>
       </Sequences>
     </Rule>

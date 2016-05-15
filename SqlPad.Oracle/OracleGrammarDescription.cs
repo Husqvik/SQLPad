@@ -958,7 +958,7 @@ namespace SqlPad.Oracle
 			public const string ParenthesisEnclosedExpressionList = "ParenthesisEnclosedExpressionList";
 			public const string ParenthesisEnclosedExpressionListWithIgnoreNulls = "ParenthesisEnclosedExpressionListWithIgnoreNulls";
 			public const string ParenthesisEnclosedExpressionListWithMandatoryExpressions = "ParenthesisEnclosedExpressionListWithMandatoryExpressions";
-			public const string ParenthesisEnclosedExpressionOrDefaultValueList = "ParenthesisEnclosedExpressionOrDefaultValueList";
+			public const string ParenthesisEnclosedExpressionOrDefaultValueListOrAssignmentTarget = "ParenthesisEnclosedExpressionOrDefaultValueListOrAssignmentTarget";
 			public const string ParenthesisEnclosedExternalTableFieldList = "ParenthesisEnclosedExternalTableFieldList";
 			public const string ParenthesisEnclosedFunctionParameters = "ParenthesisEnclosedFunctionParameters";
 			public const string ParenthesisEnclosedGroupingExpressionList = "ParenthesisEnclosedGroupingExpressionList";

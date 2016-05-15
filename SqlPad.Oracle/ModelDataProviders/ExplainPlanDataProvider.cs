@@ -131,6 +131,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 		{
 			var time = OracleReaderValueConvert.ToInt32(reader["TIME"]);
 			var otherData = OracleReaderValueConvert.ToString(await reader.GetValueAsynchronous(reader.GetOrdinal("OTHER_XML"), cancellationToken));
+			var objectName = OracleReaderValueConvert.ToString(reader["OBJECT_NAME"]);
 
 			var item =
 				new TItem
@@ -141,8 +142,11 @@ namespace SqlPad.Oracle.ModelDataProviders
 					Operation = (string)reader["OPERATION"],
 					Options = OracleReaderValueConvert.ToString(reader["OPTIONS"]),
 					Optimizer = OracleReaderValueConvert.ToString(reader["OPTIMIZER"]),
-					ObjectOwner = OracleReaderValueConvert.ToString(reader["OBJECT_OWNER"]),
-					ObjectName = OracleReaderValueConvert.ToString(reader["OBJECT_NAME"]),
+					ObjectOwner =
+						objectName.StartsWith(":TQ")
+						? String.Empty
+						: OracleReaderValueConvert.ToString(reader["OBJECT_OWNER"]),
+					ObjectName = objectName,
 					ObjectAlias = OracleReaderValueConvert.ToString(reader["OBJECT_ALIAS"]),
 					ObjectType = OracleReaderValueConvert.ToString(reader["OBJECT_TYPE"]),
 					Cost = OracleReaderValueConvert.ToInt64(reader["COST"]),

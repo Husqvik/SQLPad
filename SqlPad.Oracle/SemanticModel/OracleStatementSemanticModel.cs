@@ -1752,8 +1752,9 @@ namespace SqlPad.Oracle.SemanticModel
 					ResolveColumnObjectReferences(targetReferenceContainer.ColumnReferences, insertTarget.ObjectReferences, OracleDataObjectReference.EmptyArray);
 				}
 
-				insertTarget.ValueList = insertIntoClause.ParentNode[NonTerminals.InsertValuesClause, NonTerminals.ParenthesisEnclosedExpressionOrDefaultValueList]
-				                         ?? insertIntoClause.ParentNode[NonTerminals.InsertValuesOrSubquery, NonTerminals.InsertValuesClause, NonTerminals.ParenthesisEnclosedExpressionOrDefaultValueList];
+				insertTarget.ValueList =
+					insertIntoClause.ParentNode[NonTerminals.InsertValuesClause, NonTerminals.ParenthesisEnclosedExpressionOrDefaultValueListOrAssignmentTarget]
+					?? insertIntoClause.ParentNode[NonTerminals.InsertValuesOrSubquery, NonTerminals.InsertValuesClause, NonTerminals.ParenthesisEnclosedExpressionOrDefaultValueListOrAssignmentTarget];
 
 				if (insertTarget.ValueList == null)
 				{

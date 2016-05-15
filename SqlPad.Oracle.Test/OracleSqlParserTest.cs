@@ -2967,6 +2967,26 @@ END;";
 			}
 
 			[Test]
+			public void TestInsertIntoWithObjectValue()
+			{
+				const string statement1 =
+@"CREATE OR REPLACE PROCEDURE test_procedure
+IS
+	TYPE t_table IS TABLE OF test_table%ROWTYPE;
+	data t_table;
+	output_data t_table;
+BEGIN
+	SELECT * BULK COLLECT INTO data FROM test_table;
+
+	FORALL i IN INDICES OF data SAVE EXCEPTIONS
+		INSERT INTO test_table VALUES data(i) RETURNING c1, c2 BULK COLLECT INTO output_data;
+END;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
+
+			[Test]
 			public void TestProcedureCall()
 			{
 				const string statement1 = @"BEGIN P1(1); END;";
