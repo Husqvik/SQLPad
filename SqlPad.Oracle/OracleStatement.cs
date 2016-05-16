@@ -36,7 +36,7 @@ namespace SqlPad.Oracle
 
 		public bool IsPlSql => !String.Equals(RootNode.Id, NonTerminals.StandaloneStatement);
 
-		public string BuildSuccessfulExecutionMessage(int? affectedRows)
+		public string BuildExecutionMessage(int? affectedRows, bool hasCompilationError)
 		{
 			if (String.Equals(RootNode.Id, NonTerminals.PlSqlBlockStatement))
 			{
@@ -45,22 +45,23 @@ namespace SqlPad.Oracle
 
 			if (String.Equals(RootNode.Id, NonTerminals.CreatePlSqlStatement))
 			{
+				var compilationErrorPostfix = hasCompilationError ? " with compilation errors" : null;
 				switch (RootNode[NonTerminals.CreatePlSqlObjectClause]?[0].Id)
 				{
 					case NonTerminals.CreateFunction:
-						return "Function created. ";
+						return $"Function created{compilationErrorPostfix}. ";
 					case NonTerminals.CreateProcedure:
-						return "Procedure created. ";
+						return $"Procedure created{compilationErrorPostfix}. ";
 					case NonTerminals.CreatePackageBody:
-						return "Package body created. ";
+						return $"Package body created{compilationErrorPostfix}. ";
 					case NonTerminals.CreatePackage:
-						return "Package created. ";
+						return $"Package created{compilationErrorPostfix}. ";
 					case NonTerminals.CreateTrigger:
-						return "Trigger created. ";
+						return $"Trigger created{compilationErrorPostfix}. ";
 					case NonTerminals.CreateTypeBody:
-						return "Type body created. ";
+						return $"Type body created{compilationErrorPostfix}. ";
 					case NonTerminals.CreateType:
-						return "Type created. ";
+						return $"Type created{compilationErrorPostfix}. ";
 				}
 			}
 
