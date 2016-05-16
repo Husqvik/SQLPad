@@ -201,7 +201,7 @@ namespace SqlPad.Oracle.SemanticModel
 				{
 					_oldOuterJoinColumnReferences.Add(terminal.ParentNode.ParentNode.ParentNode, terminal.ParentNode);
 				}
-				else if (String.Equals(terminal.Id, Terminals.PlSqlIdentifier) && String.Equals(terminal.ParentNode.Id, NonTerminals.AssignmentStatementTarget))
+				else if (String.Equals(terminal.Id, Terminals.PlSqlIdentifier) && String.Equals(terminal.ParentNode.Id, NonTerminals.PlSqlAssignmentTarget))
 				{
 					plSqlIdentifier = terminal;
 				}

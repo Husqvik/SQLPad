@@ -14730,6 +14730,14 @@
           <NonTerminal Id="AssignmentTriggerReferenceTarget" />
         </Sequence>
         <Sequence>
+          <NonTerminal Id="PlSqlAssignmentTarget" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="PlSqlAssignmentTarget">
+      <Sequences>
+        <Sequence>
           <Terminal Id="PlSqlIdentifier" />
           <NonTerminal Id="PlSqlParenthesisEnclosedExpressionOrIndexer" IsOptional="true" />
           <NonTerminal Id="DotRecordAttributeChained" IsOptional="true" />

@@ -50,7 +50,7 @@ namespace SqlPad.Oracle
 		
 		public bool Column { get; }
 
-		public bool PlSqlProgram { get; private set; }
+		public PlSqlCompletion PlSqlCompletion { get; private set; }
 
 		public bool UpdateSetColumn { get; }
 
@@ -412,14 +412,37 @@ namespace SqlPad.Oracle
 
 		private void AnalyzePlSqlReference(StatementGrammarNode effectiveTerminal)
 		{
-			var assignmentStatementTargetNode = effectiveTerminal.GetAncestor(NonTerminals.AssignmentStatementTarget);
-			var plSqlIdentifiers = new Stack<StatementGrammarNode>(GetPlSqlIdentifiers(assignmentStatementTargetNode?[Terminals.PlSqlIdentifier]));
+			var plSqlIdentifiers = new Stack<StatementGrammarNode>();
+			var parentNode = effectiveTerminal.ParentNode;
+			var plSqlCompletion = PlSqlCompletion.None;
+			var plSqlAssignmentTargetNode = effectiveTerminal.GetAncestor(NonTerminals.PlSqlAssignmentTarget);
+			if (plSqlAssignmentTargetNode != null)
+			{
+				plSqlIdentifiers.PushMany(GetPlSqlIdentifiers(plSqlAssignmentTargetNode[Terminals.PlSqlIdentifier]));
+				plSqlCompletion = PlSqlCompletion.Function | PlSqlCompletion.Procedure;
+			}
+			else if (String.Equals(parentNode.ParentNode.Id, NonTerminals.PlSqlProcedureCall))
+			{
+				var prefixNode = parentNode[NonTerminals.Prefix];
+				if (prefixNode != null)
+				{
+					var schemaIdentifierTerminal = prefixNode[NonTerminals.SchemaPrefix, Terminals.SchemaIdentifier];
+					plSqlIdentifiers.PushIfNotNull(schemaIdentifierTerminal);
+					var objectIdentifierTerminal = prefixNode[NonTerminals.ObjectPrefix, Terminals.ObjectIdentifier];
+					plSqlIdentifiers.PushIfNotNull(objectIdentifierTerminal);
+				}
+
+				var identifierTerminal = parentNode[Terminals.Identifier];
+				plSqlIdentifiers.PushIfNotNull(identifierTerminal);
+				plSqlCompletion = PlSqlCompletion.Procedure;
+			}
+
 			if (plSqlIdentifiers.Count == 0 || plSqlIdentifiers.Count > 3)
 			{
 				return;
 			}
 
-			PlSqlProgram = true;
+			PlSqlCompletion = plSqlCompletion;
 
 			ReferenceIdentifier =
 				new ReferenceIdentifier
@@ -556,8 +579,8 @@ namespace SqlPad.Oracle
 			builder.Append("Column: ");
 			builder.Append(Column);
 			builder.Append("; ");
-			builder.Append("PlSqlProgram: ");
-			builder.Append(PlSqlProgram);
+			builder.Append("PlSqlCompletion: ");
+			builder.Append(PlSqlCompletion);
 			builder.Append("; ");
 			builder.Append("AllColumns: ");
 			builder.Append(AllColumns);
@@ -681,5 +704,13 @@ namespace SqlPad.Oracle
 			Text = text;
 			return this;
 		}
+	}
+
+	[Flags]
+	public enum PlSqlCompletion
+	{
+		None,
+		Function,
+		Procedure
 	}
 }

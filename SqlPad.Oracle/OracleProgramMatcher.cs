@@ -11,7 +11,7 @@ namespace SqlPad.Oracle
 		private readonly ProgramMatchElement _packageMatch;
 		private readonly ProgramMatchElement _identifierMatch;
 
-		public bool AllowPlSql { get; set; }
+		public PlSqlCompletion PlSqlCompletion { get; set; }
 
 		public OracleProgramMatcher(ProgramMatchElement ownerMatch, ProgramMatchElement packageMatch, ProgramMatchElement identifierMatch)
 		{
@@ -22,7 +22,16 @@ namespace SqlPad.Oracle
 
 		public ProgramMatchResult GetMatchResult(OracleProgramMetadata programMetadata, string quotedCurrentSchema)
 		{
-			var programTypeSupported = AllowPlSql || programMetadata.Type != ProgramType.Procedure;
+			var programType = programMetadata.Type;
+			bool programTypeSupported;
+			if (PlSqlCompletion.HasFlag(PlSqlCompletion.Procedure))
+			{
+				programTypeSupported = programType == ProgramType.Procedure || programType == ProgramType.PackageProcedure;
+			}
+			else
+			{
+				programTypeSupported = programType != ProgramType.Procedure;
+			}
 
 			var matchResult =
 				new ProgramMatchResult

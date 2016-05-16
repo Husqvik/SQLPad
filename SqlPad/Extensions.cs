@@ -257,6 +257,22 @@ namespace SqlPad
 				? default(T)
 				: stack.Pop();
 		}
+
+		public static void PushIfNotNull<T>(this Stack<T> stack, T item)
+		{
+			if (item != null)
+			{
+				stack.Push(item);
+			}
+		}
+
+		public static void PushMany<T>(this Stack<T> stack, IEnumerable<T> items)
+		{
+			foreach (var item in items)
+			{
+				stack.Push(item);
+			}
+		}
 	}
 
 	public class StaticResourceBindingExtension : StaticResourceExtension

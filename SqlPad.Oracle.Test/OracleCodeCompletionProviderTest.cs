@@ -2754,6 +2754,26 @@ ON (EVENTS.ID = SRC.ID)";
 				items[0].Name.ShouldBe("DBMS_OUTPUT");
 				items[0].StatementNode.ShouldNotBe(null);
 			}
+
+			[Test]
+			public void TestPackageCodeCompletionWithStatementTerminator()
+			{
+				const string statement = "BEGIN OUTPUT; END;";
+				var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 12, false).ToList();
+				items.Count.ShouldBe(1);
+				items[0].Name.ShouldBe("DBMS_OUTPUT");
+				items[0].StatementNode.ShouldNotBe(null);
+			}
+
+			[Test]
+			public void TestPackageProcedureCodeCompletionWithStatementTerminator()
+			{
+				const string statement = "BEGIN SYS.DBMS_OUTPUT.PUT_L; END;";
+				var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 27, false).ToList();
+				items.Count.ShouldBe(1);
+				items[0].Name.ShouldBe("PUT_LINE");
+				items[0].StatementNode.ShouldNotBe(null);
+			}
 		}
 	}
 }

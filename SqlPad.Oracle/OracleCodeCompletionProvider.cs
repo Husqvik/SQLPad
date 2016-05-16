@@ -331,7 +331,7 @@ namespace SqlPad.Oracle
 				completionItems = completionItems.Concat(GenerateCommonTableExpressionReferenceItems(semanticModel, null, null, extraOffset));
 			}
 
-			if (completionType.Column || completionType.PlSqlProgram)
+			if (completionType.Column || completionType.PlSqlCompletion != PlSqlCompletion.None)
 			{
 				completionItems = completionItems.Concat(GenerateSelectListItems(referenceContainers, cursorPosition, oracleDatabaseModel, completionType, forcedInvokation));
 			}
@@ -487,8 +487,9 @@ namespace SqlPad.Oracle
 				? table.Partitions.Values.SelectMany(p => p.SubPartitions.Values)
 				: (IEnumerable<OraclePartitionBase>)table.Partitions.Values;
 
+			var quotedTerminalValueUnderCursor = completionType.TerminalValueUnderCursor.ToQuotedIdentifier();
 			var partitions = sourcePartitions
-				.Where(p => (String.IsNullOrEmpty(completionType.TerminalValueUnderCursor) || completionType.TerminalValueUnderCursor.ToQuotedIdentifier() != p.Name) &&
+				.Where(p => (String.IsNullOrEmpty(completionType.TerminalValueUnderCursor) || !String.Equals(quotedTerminalValueUnderCursor, p.Name)) &&
 				            CodeCompletionSearchHelper.IsMatch(p.Name, completionType.TerminalValuePartUntilCaret))
 				.Select(l =>
 					new OracleCodeCompletionItem
@@ -605,19 +606,22 @@ namespace SqlPad.Oracle
 						var packageMatcher = new OracleProgramMatcher(
 							new ProgramMatchElement(objectName).SelectOwner(),
 							new ProgramMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectPackage().AsResultValue(),
-							null);
+							null)
+							{ PlSqlCompletion = completionType.PlSqlCompletion };
 
 						suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.Package, nodeToReplace, 0, addParameterList, databaseModel, packageMatcher);
 
 						var packageFunctionMatcher = new OracleProgramMatcher(
 							new ProgramMatchElement(databaseModel.CurrentSchema).SelectOwner(), 
 							new ProgramMatchElement(objectName).SelectPackage(),
-							new ProgramMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectName().AsResultValue());
+							new ProgramMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectName().AsResultValue())
+							{ PlSqlCompletion = completionType.PlSqlCompletion };
 
 						var publicSynonymPackageFunctionMatcher = new OracleProgramMatcher(
 							new ProgramMatchElement(OracleObjectIdentifier.SchemaPublic).SelectSynonymOwner(),
 							new ProgramMatchElement(objectName).SelectSynonymPackage(),
-							new ProgramMatchElement(partialName) {AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName}.SelectSynonymName().AsResultValue());
+							new ProgramMatchElement(partialName) {AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName}.SelectSynonymName().AsResultValue())
+							{ PlSqlCompletion = completionType.PlSqlCompletion };
 
 						suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.PackageFunction, nodeToReplace, 0, addParameterList, databaseModel, packageFunctionMatcher, publicSynonymPackageFunctionMatcher)
 							.Concat(suggestedFunctions);
@@ -625,7 +629,8 @@ namespace SqlPad.Oracle
 						var schemaFunctionMatcher = new OracleProgramMatcher(
 							new ProgramMatchElement(objectName).SelectOwner(),
 							new ProgramMatchElement(null).SelectPackage(),
-							new ProgramMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectName().AsResultValue());
+							new ProgramMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectName().AsResultValue())
+							{ PlSqlCompletion = completionType.PlSqlCompletion };
 
 						suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.SchemaFunction, nodeToReplace, 0, addParameterList, databaseModel, schemaFunctionMatcher)
 							.Concat(suggestedFunctions);
@@ -635,7 +640,8 @@ namespace SqlPad.Oracle
 						var packageFunctionMatcher = new OracleProgramMatcher(
 							new ProgramMatchElement(schemaName).SelectOwner(),
 							new ProgramMatchElement(objectName).SelectPackage(),
-							new ProgramMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectName().AsResultValue());
+							new ProgramMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectName().AsResultValue())
+							{ PlSqlCompletion = completionType.PlSqlCompletion };
 
 						suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.PackageFunction, nodeToReplace, 0, addParameterList, databaseModel, packageFunctionMatcher);
 					}
@@ -647,53 +653,58 @@ namespace SqlPad.Oracle
 					new OracleProgramMatcher(
 						new ProgramMatchElement(OracleObjectIdentifier.SchemaSys).SelectOwner(),
 						new ProgramMatchElement(OracleObjectIdentifier.PackageBuiltInFunction).SelectPackage(),
-						new ProgramMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectName().AsResultValue());
+						new ProgramMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectName().AsResultValue())
+					{ PlSqlCompletion = completionType.PlSqlCompletion };
 
 				var builtInNonSchemaFunctionMatcher =
 					new OracleProgramMatcher(
 						new ProgramMatchElement(null).SelectOwner(),
 						new ProgramMatchElement(null).SelectPackage(),
-						new ProgramMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectName().AsResultValue());
+						new ProgramMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectName().AsResultValue())
+					{ PlSqlCompletion = completionType.PlSqlCompletion };
 
 				var currentSchema = databaseModel.CurrentSchema.ToQuotedIdentifier();
 				var localSchemaProgramMatcher =
 					new OracleProgramMatcher(
 						new ProgramMatchElement(currentSchema).SelectOwner(),
 						new ProgramMatchElement(null).SelectPackage(),
-						new ProgramMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectName().AsResultValue());
+						new ProgramMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectName().AsResultValue())
+					{ PlSqlCompletion = completionType.PlSqlCompletion };
 
 				var localSynonymProgramMatcher =
 					new OracleProgramMatcher(
 						new ProgramMatchElement(currentSchema).SelectSynonymOwner(),
 						new ProgramMatchElement(null).SelectPackage(),
-						new ProgramMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectSynonymName().AsResultValue());
+						new ProgramMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectSynonymName().AsResultValue())
+					{ PlSqlCompletion = completionType.PlSqlCompletion };
 
 				var publicSynonymProgramMatcher =
 					new OracleProgramMatcher(
 						new ProgramMatchElement(OracleObjectIdentifier.SchemaPublic).SelectSynonymOwner(),
 						new ProgramMatchElement(null).SelectPackage(),
-						new ProgramMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectSynonymName().AsResultValue());
+						new ProgramMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectSynonymName().AsResultValue())
+					{ PlSqlCompletion = completionType.PlSqlCompletion };
 
 				var localSchemaPackageMatcher =
 					new OracleProgramMatcher(
 						new ProgramMatchElement(currentSchema).SelectOwner(),
 						new ProgramMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectPackage().AsResultValue(),
 						null)
-					{ AllowPlSql = completionType.PlSqlProgram };
+					{ PlSqlCompletion = completionType.PlSqlCompletion };
 
 				var localSynonymPackageMatcher =
 					new OracleProgramMatcher(
 						new ProgramMatchElement(currentSchema).SelectSynonymOwner(),
 						new ProgramMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectSynonymPackage().AsResultValue(),
 						null)
-					{ AllowPlSql = completionType.PlSqlProgram };
+					{ PlSqlCompletion = completionType.PlSqlCompletion };
 
 				var publicSynonymPackageMatcher =
 					new OracleProgramMatcher(
 						new ProgramMatchElement(OracleObjectIdentifier.SchemaPublic).SelectSynonymOwner(),
 						new ProgramMatchElement(partialName) { AllowStartWithMatch = forcedInvokation, AllowPartialMatch = !forcedInvokation, DeniedValue = currentName }.SelectSynonymPackage().AsResultValue(),
 						null)
-					{ AllowPlSql = completionType.PlSqlProgram };
+					{ PlSqlCompletion = completionType.PlSqlCompletion };
 
 				suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.PackageFunction, nodeToReplace, 0, addParameterList, databaseModel, builtInPackageFunctionMatcher);
 
@@ -711,6 +722,11 @@ namespace SqlPad.Oracle
 
 				suggestedFunctions = GenerateCodeItems(OracleCodeCompletionCategory.Package, nodeToReplace, 0, addParameterList, databaseModel, localSynonymPackageMatcher, publicSynonymPackageMatcher)
 					.Concat(suggestedFunctions);
+			}
+
+			if (completionType.PlSqlCompletion == PlSqlCompletion.Procedure)
+			{
+				return suggestedFunctions;
 			}
 
 			var columnCandidates = tableReferenceSource

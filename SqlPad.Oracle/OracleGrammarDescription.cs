@@ -1020,6 +1020,7 @@ namespace SqlPad.Oracle
 			public const string PivotForClause = "PivotForClause";
 			public const string PivotInClause = "PivotInClause";
 			public const string PlSqlAssignmentStatement = "PlSqlAssignmentStatement";
+			public const string PlSqlAssignmentTarget = "PlSqlAssignmentTarget";
 			public const string PlSqlBasicLoopStatement = "PlSqlBasicLoopStatement";
 			public const string PlSqlBlock = "PlSqlBlock";
 			public const string PlSqlBlockDeclareSection = "PlSqlBlockDeclareSection";

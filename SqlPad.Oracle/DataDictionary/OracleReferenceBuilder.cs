@@ -20,10 +20,11 @@ namespace SqlPad.Oracle.DataDictionary
 			switch (firstChild?.Id)
 			{
 				case NonTerminals.AssignmentStatementTarget:
+					var plSqlAssignmentTarget = firstChild[NonTerminals.PlSqlAssignmentTarget];
 					var percentCharacterTypeOrRowTypeNotFound = dataTypeNode.ChildNodes.Count == 1;
-					if (percentCharacterTypeOrRowTypeNotFound)
+					if (percentCharacterTypeOrRowTypeNotFound && plSqlAssignmentTarget != null)
 					{
-						var chainedIdentifiers = GatherChainedIdentifiers(firstChild).ToList();
+						var chainedIdentifiers = GatherChainedIdentifiers(plSqlAssignmentTarget).ToList();
 						if (chainedIdentifiers.Count <= 2)
 						{
 							typeIdentifier = chainedIdentifiers.LastOrDefault();
@@ -68,9 +69,9 @@ namespace SqlPad.Oracle.DataDictionary
 			return true;
 		}
 
-		private static IEnumerable<StatementGrammarNode> GatherChainedIdentifiers(StatementGrammarNode assignmentStatementTargetNode)
+		private static IEnumerable<StatementGrammarNode> GatherChainedIdentifiers(StatementGrammarNode plSqlAssignmentTargetNode)
 		{
-			var sourceNode = assignmentStatementTargetNode;
+			var sourceNode = plSqlAssignmentTargetNode;
 
 			while (sourceNode != null)
 			{
