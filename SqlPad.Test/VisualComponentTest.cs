@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -304,88 +305,88 @@ WHERE
 		}
 
 		[Test, STAThread]
-		public void TestCsvDataExporter()
+		public async Task TestCsvDataExporter()
 		{
 			var resultViewer = InitializeResultViewer();
 
-			var result = GetExportContent(resultViewer, new CsvDataExporter());
+			var result = await GetExportContent(resultViewer, new CsvDataExporter());
 
 			const string expectedResult = "\"DUMMY1\";\"DUMMY_WITH_UNDERSCORES\"\r\n\"Value \"\"1\"\" '2' <3>\";\"08/16/2014 22:25:34\"\r\n\"\"\"2.\"\"Value\";\"08/16/2014 00:00:00\"\r\n";
 			result.ShouldBe(expectedResult);
 		}
 
 		[Test, STAThread]
-		public void TestTsvDataExporter()
+		public async Task TestTsvDataExporter()
 		{
 			var resultViewer = InitializeResultViewer();
 
-			var result = GetExportContent(resultViewer, new TsvDataExporter());
+			var result = await GetExportContent(resultViewer, new TsvDataExporter());
 
 			const string expectedResult = "\"DUMMY1\"\t\"DUMMY_WITH_UNDERSCORES\"\r\n\"Value \"\"1\"\" '2' <3>\"\t\"08/16/2014 22:25:34\"\r\n\"\"\"2.\"\"Value\"\t\"08/16/2014 00:00:00\"\r\n";
 			result.ShouldBe(expectedResult);
 		}
 
 		[Test, STAThread]
-		public void TestJsonDataExporter()
+		public async Task TestJsonDataExporter()
 		{
 			var resultViewer = InitializeResultViewer();
 
-			var result = GetExportContent(resultViewer, new JsonDataExporter());
+			var result = await GetExportContent(resultViewer, new JsonDataExporter());
 
 			const string expectedResult = "[\r\n  {\r\n    \"DUMMY1\": \"Value \\\"1\\\" '2' <3>\",\r\n    \"DUMMY_WITH_UNDERSCORES\": \"08/16/2014 22:25:34\"\r\n  },\r\n  {\r\n    \"DUMMY1\": \"\\\"2.\\\"Value\",\r\n    \"DUMMY_WITH_UNDERSCORES\": \"08/16/2014 00:00:00\"\r\n  }\r\n]";
 			result.ShouldBe(expectedResult);
 		}
 
 		[Test, STAThread]
-		public void TestXmlDataExporter()
+		public async Task TestXmlDataExporter()
 		{
 			var resultViewer = InitializeResultViewer();
 
-			var result = GetExportContent(resultViewer, new XmlDataExporter());
+			var result = await GetExportContent(resultViewer, new XmlDataExporter());
 
 			const string expectedResult = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<data>\r\n  <row>\r\n    <DUMMY1>Value \"1\" '2' &lt;3&gt;</DUMMY1>\r\n    <DUMMY_WITH_UNDERSCORES>08/16/2014 22:25:34</DUMMY_WITH_UNDERSCORES>\r\n  </row>\r\n  <row>\r\n    <DUMMY1>\"2.\"Value</DUMMY1>\r\n    <DUMMY_WITH_UNDERSCORES>08/16/2014 00:00:00</DUMMY_WITH_UNDERSCORES>\r\n  </row>\r\n</data>";
 			result.ShouldBe(expectedResult);
 		}
 
 		[Test, STAThread]
-		public void TestSqlInsertDataExporter()
+		public async Task TestSqlInsertDataExporter()
 		{
 			var resultViewer = InitializeResultViewer();
 
-			var result = GetExportContent(resultViewer, new SqlInsertDataExporter());
+			var result = await GetExportContent(resultViewer, new SqlInsertDataExporter());
 
 			const string expectedResult = "INSERT INTO MY_TABLE (DUMMY1, DUMMY_WITH_UNDERSCORES) VALUES ('Value \"1\" ''2'' <3>', '08/16/2014 22:25:34');\r\nINSERT INTO MY_TABLE (DUMMY1, DUMMY_WITH_UNDERSCORES) VALUES ('\"2.\"Value', '08/16/2014 00:00:00');\r\n";
 			result.ShouldBe(expectedResult);
 		}
 
 		[Test, STAThread]
-		public void TestSqlUpdateDataExporter()
+		public async Task TestSqlUpdateDataExporter()
 		{
 			var resultViewer = InitializeResultViewer();
 
-			var result = GetExportContent(resultViewer, new SqlUpdateDataExporter());
+			var result = await GetExportContent(resultViewer, new SqlUpdateDataExporter());
 
 			const string expectedResult = "UPDATE MY_TABLE SET DUMMY1 = 'Value \"1\" ''2'' <3>', DUMMY_WITH_UNDERSCORES = '08/16/2014 22:25:34';\r\nUPDATE MY_TABLE SET DUMMY1 = '\"2.\"Value', DUMMY_WITH_UNDERSCORES = '08/16/2014 00:00:00';\r\n";
 			result.ShouldBe(expectedResult);
 		}
 
 		[Test, STAThread]
-		public void TestHtmlDataExporter()
+		public async Task TestHtmlDataExporter()
 		{
 			var resultViewer = InitializeResultViewer();
 
-			var result = GetExportContent(resultViewer, new HtmlDataExporter());
+			var result = await GetExportContent(resultViewer, new HtmlDataExporter());
 
 			const string expectedResult = "<!DOCTYPE html><html><head><title></title></head><body><table border=\"1\" style=\"border-collapse:collapse\"><tr><th>DUMMY1</th><th>DUMMY_WITH_UNDERSCORES</th><tr><tr><td>Value \"1\" '2' &lt;3&gt;</td><td>08/16/2014 22:25:34</td><tr><tr><td>\"2.\"Value</td><td>08/16/2014 00:00:00</td><tr><table>";
 			result.ShouldBe(expectedResult);
 		}
 
 		[Test, STAThread]
-		public void TestExcelDataExporter()
+		public async Task TestExcelDataExporter()
 		{
 			var resultViewer = InitializeResultViewer();
 
-			var tempFileName = GenerateExportFile(resultViewer, new ExcelDataExporter());
+			var tempFileName = await GenerateExportFile(resultViewer, new ExcelDataExporter());
 
 			var package = new ExcelPackage();
 			var stream = new MemoryStream(File.ReadAllBytes(tempFileName));
@@ -402,21 +403,21 @@ WHERE
 			worksheet.Cells[3, 2].Value.ShouldBe("08/16/2014 00:00:00");
 		}
 
-		private static string GetExportContent(ResultViewer resultViewer, IDataExporter dataExporter)
+		private static async Task<string> GetExportContent(ResultViewer resultViewer, IDataExporter dataExporter)
 		{
-			var tempFileName = GenerateExportFile(resultViewer, dataExporter);
+			var tempFileName = await GenerateExportFile(resultViewer, dataExporter);
 
 			var result = File.ReadAllText(tempFileName);
 			File.Delete(tempFileName);
 			return result;
 		}
 
-		private static string GenerateExportFile(ResultViewer resultViewer, IDataExporter dataExporter)
+		private static async Task<string> GenerateExportFile(ResultViewer resultViewer, IDataExporter dataExporter)
 		{
 			var tempFileName = Path.GetTempFileName();
 			var connectionConfiguration = ConfigurationProvider.GetConnectionConfiguration(ConfigurationProvider.ConnectionStrings[0].Name);
 			CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-			dataExporter.ExportToFile(tempFileName, resultViewer, connectionConfiguration.InfrastructureFactory.DataExportConverter);
+			await dataExporter.ExportToFileAsync(tempFileName, resultViewer, connectionConfiguration.InfrastructureFactory.DataExportConverter, CancellationToken.None);
 			return tempFileName;
 		}
 
@@ -443,8 +444,18 @@ WHERE
 					//new object[] {"\"><?,.;:{}[]%$#@!~^&*()_+-§' ,5", new DateTime(2015, 5, 30) }
 				};
 
+			var executionResult =
+				new StatementExecutionResult
+				{
+					StatementModel =
+						new StatementExecutionModel
+						{
+							StatementText = "SELECT * FROM DUAL"
+						}
+				};
+
 			var resultViewer =
-				new ResultViewer(outputViewer, null, new ResultInfo(null, "Test result", ResultIdentifierType.UserDefined), columnHeaders)
+				new ResultViewer(outputViewer, executionResult, new ResultInfo(null, "Test result", ResultIdentifierType.UserDefined), columnHeaders)
 				{
 					ResultGrid = { ItemsSource = dataRows }
 				};

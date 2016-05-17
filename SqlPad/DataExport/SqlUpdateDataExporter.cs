@@ -16,16 +16,6 @@ namespace SqlPad.DataExport
 
 		public bool HasAppendSupport { get; } = false;
 
-		public void ExportToClipboard(ResultViewer resultViewer, IDataExportConverter dataExportConverter)
-		{
-			ExportToFile(null, resultViewer, dataExportConverter);
-		}
-
-		public void ExportToFile(string fileName, ResultViewer resultViewer, IDataExportConverter dataExportConverter)
-		{
-			ExportToFileAsync(fileName, resultViewer, dataExportConverter, CancellationToken.None).Wait();
-		}
-
 		public Task ExportToClipboardAsync(ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress = null)
 		{
 			return ExportToFileAsync(null, resultViewer, dataExportConverter, cancellationToken, reportProgress);
