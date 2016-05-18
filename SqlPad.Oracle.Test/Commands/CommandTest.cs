@@ -26,11 +26,6 @@ namespace SqlPad.Oracle.Test.Commands
 		{
 			_editor = new SqlTextEditor();
 			_documentRepository = TestFixture.CreateDocumentRepository();
-		}
-
-		[TearDown]
-		public void TearDown()
-		{
 			OracleConfiguration.Configuration.Formatter.FormatOptions.Reset();
 		}
 
