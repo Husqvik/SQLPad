@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using NUnit.Framework;
 using Shouldly;
 using SqlPad.Commands;
@@ -16,7 +17,7 @@ namespace SqlPad.Test
 			_editor = new SqlTextEditor();
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void SetLineDuplicationAtLineBeginning()
 		{
 			_editor.Text = "SELECT * FROM SELECTION;";
@@ -26,7 +27,7 @@ namespace SqlPad.Test
 			_editor.CaretOffset.ShouldBe(25);
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void SetLineDuplicationAtLineEnd()
 		{
 			_editor.Text = "SELECT * FROM SELECTION;";
@@ -37,7 +38,7 @@ namespace SqlPad.Test
 			_editor.CaretOffset.ShouldBe(49);
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void SetSelectionDuplicate()
 		{
 			_editor.Text = "SELECT * FROM SELECTION;";
@@ -50,7 +51,7 @@ namespace SqlPad.Test
 			_editor.CaretOffset.ShouldBe(33);
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestBlockComments()
 		{
 			_editor.Text = "SELECT * FROM SELECTION;\nSELECT * FROM RESPONDENTBUCKET";
@@ -64,7 +65,7 @@ namespace SqlPad.Test
 			_editor.SelectionLength.ShouldBe(0);
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestLineComments()
 		{
 			_editor.Text = "SELECT * FROM SELECTION;\nSELECT * FROM RESPONDENTBUCKET";

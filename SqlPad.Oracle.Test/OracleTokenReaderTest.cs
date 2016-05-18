@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
@@ -613,7 +612,7 @@ namespace SqlPad.Oracle.Test
 
 		private static IEnumerable<OracleToken> GetTokensFromOracleSql(string sqlText, bool includeCommentBlocks)
 		{
-			Trace.WriteLine("Statement text: " + sqlText);
+			Console.WriteLine("Statement text: " + sqlText);
 
 			using (var reader = new StringReader(sqlText))
 			{

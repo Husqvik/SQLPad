@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Nito.AsyncEx;
 using NUnit.Framework;
 using OfficeOpenXml;
 using Shouldly;
@@ -21,14 +22,14 @@ namespace SqlPad.Test
 	{
 		private App _app;
 
-		[TestFixtureSetUp]
+		[OneTimeSetUp]
 		public void FixtureSetup()
 		{
 			_app = new App();
 			_app.InitializeComponent();
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void RealApplicationTest()
 		{
 			VisualTestRunner.RunTest("SqlPad.Test.VisualComponentTest, SqlPad.Test", "TestBasicSqlPadBehavior");
@@ -304,7 +305,7 @@ WHERE
 			Editor.TextArea.RaiseEvent(keyEventArgs);
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public async Task TestCsvDataExporter()
 		{
 			var resultViewer = InitializeResultViewer();
@@ -315,7 +316,7 @@ WHERE
 			result.ShouldBe(expectedResult);
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public async Task TestTsvDataExporter()
 		{
 			var resultViewer = InitializeResultViewer();
@@ -326,7 +327,7 @@ WHERE
 			result.ShouldBe(expectedResult);
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public async Task TestJsonDataExporter()
 		{
 			var resultViewer = InitializeResultViewer();
@@ -337,7 +338,7 @@ WHERE
 			result.ShouldBe(expectedResult);
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public async Task TestXmlDataExporter()
 		{
 			var resultViewer = InitializeResultViewer();
@@ -348,7 +349,7 @@ WHERE
 			result.ShouldBe(expectedResult);
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public async Task TestSqlInsertDataExporter()
 		{
 			var resultViewer = InitializeResultViewer();
@@ -359,7 +360,7 @@ WHERE
 			result.ShouldBe(expectedResult);
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public async Task TestSqlUpdateDataExporter()
 		{
 			var resultViewer = InitializeResultViewer();
@@ -370,7 +371,7 @@ WHERE
 			result.ShouldBe(expectedResult);
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public async Task TestHtmlDataExporter()
 		{
 			var resultViewer = InitializeResultViewer();
@@ -381,7 +382,7 @@ WHERE
 			result.ShouldBe(expectedResult);
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public async Task TestExcelDataExporter()
 		{
 			var resultViewer = InitializeResultViewer();
@@ -465,20 +466,24 @@ WHERE
 			return resultViewer;
 		}
 
-		[Test, STAThread]
-		public async void TestLargeTextValueEditorInitialization()
+		[Test, Apartment(ApartmentState.STA)]
+		public void TestLargeTextValueEditorInitialization()
 		{
-			var editor = new LargeValueEditor("Dummy", new TestLargeTextValue());
-			await (Task)typeof(LargeValueEditor).GetMethod("SetEditorValue", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(editor, null);
-			
-			editor.TextEditor.Text.ShouldBe(TestLargeTextValue.TextValue);
-			editor.TabText.Visibility.ShouldBe(Visibility.Visible);
-			editor.TabRaw.Visibility.ShouldBe(Visibility.Visible);
+			AsyncContext.Run(
+				async () =>
+				{
+					var editor = new LargeValueEditor("Dummy", new TestLargeTextValue());
+					await (Task)typeof(LargeValueEditor).GetMethod("SetEditorValue", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(editor, null);
+
+					editor.TextEditor.Text.ShouldBe(TestLargeTextValue.TextValue);
+					editor.TabText.Visibility.ShouldBe(Visibility.Visible);
+					editor.TabRaw.Visibility.ShouldBe(Visibility.Visible);
+				});
 		}
 
 		private class TestLargeTextValue : ILargeTextValue
 		{
-			public const string TextValue = "</root>";
+			public const string TextValue = "<root/>";
 
 			public string DataTypeName => "CLOB";
 

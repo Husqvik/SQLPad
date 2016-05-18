@@ -105,16 +105,14 @@ namespace SqlPad
 					}
 
 					TabRaw.Visibility = Visibility.Visible;
-					HexEditor.Text = await BinaryDataHelper.FormatBinaryDataAsync(Encoding.UTF8.GetBytes(largeTextValue.Value), _cancellationTokenSource.Token);
-					LoadingNotification.Visibility = Visibility.Collapsed;
+					await DisplayRawData(Encoding.UTF8.GetBytes(largeTextValue.Value));
 				}
 				else if (_largeBinaryValue != null)
 				{
 					TabRaw.Visibility = Visibility.Visible;
 					TabRaw.IsSelected = true;
 
-					HexEditor.Text = await BinaryDataHelper.FormatBinaryDataAsync(_largeBinaryValue.Value, _cancellationTokenSource.Token);
-					LoadingNotification.Visibility = Visibility.Collapsed;
+					await DisplayRawData(_largeBinaryValue.Value);
 					ButtonSaveRawAs.Visibility = Visibility.Visible;
 				}
 				else if (collectionValue != null)
@@ -142,6 +140,12 @@ namespace SqlPad
 				Messages.ShowError(e.Message, owner: this);
 				Close();
 			}
+		}
+
+		private async Task DisplayRawData(byte[] data)
+		{
+			HexEditor.Text = await BinaryDataHelper.FormatBinaryDataAsync(data, _cancellationTokenSource.Token);
+			LoadingNotification.Visibility = Visibility.Collapsed;
 		}
 
 		private bool TryOpenPdf()

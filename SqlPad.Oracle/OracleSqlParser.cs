@@ -230,7 +230,7 @@ namespace SqlPad.Oracle
 
 		public Task<StatementCollection> ParseAsync(IEnumerable<OracleToken> tokens, CancellationToken cancellationToken)
 		{
-			return Task.Factory.StartNew(() => ProceedGrammar(tokens, cancellationToken), cancellationToken);
+			return Task.Run(() => ProceedGrammar(tokens, cancellationToken), cancellationToken);
 		}
 
 		public ICollection<TerminalCandidate> GetTerminalCandidates(StatementGrammarNode node)

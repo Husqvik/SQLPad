@@ -69,6 +69,7 @@
   <ItemGroup>
     <Reference Include="EPPlus" />
     <Reference Include="ICSharpCode.AvalonEdit, processorArchitecture=MSIL" />
+    <Reference Include="Nito.AsyncEx, processorArchitecture=MSIL" />
     <Reference Include="nunit.framework,processorArchitecture=MSIL" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />

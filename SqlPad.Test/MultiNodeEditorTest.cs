@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using NUnit.Framework;
 using Shouldly;
 using SqlPad.Commands;
@@ -27,7 +28,7 @@ namespace SqlPad.Test
 			return documentRepository;
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void AddTextToObjectIdentifier()
 		{
 			_editor.Text = "SELECT DUAL.DUMMY C1, DUAL.DUMMY C2 FROM DUAL DUAL";
@@ -43,7 +44,7 @@ namespace SqlPad.Test
 			_editor.Text.ShouldBe("SELECT DUAL.DUMMY C1, DU__AL.DUMMY C2 FROM DUAL DU__AL");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void CancelEditing()
 		{
 			const string originalText = "SELECT DUAL.DUMMY C1, DUAL.DUMMY C2 FROM DUAL DUAL";
@@ -66,7 +67,7 @@ namespace SqlPad.Test
 			_editor.CaretOffset.ShouldBe(originalCaretOffset);
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void ReplaceTextWhenRenamingObjectIdentifier()
 		{
 			_editor.Text = "SELECT DU__AL.DUMMY C1, DU__AL.DUMMY C2 FROM DUAL DU__AL";
@@ -84,7 +85,7 @@ namespace SqlPad.Test
 			_editor.Text.ShouldBe("SELECT DU__AL.DUMMY C1, DUxxAL.DUMMY C2 FROM DUAL DUxxAL");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void RemoveCharacterToObjectIdentifierUsingDelete()
 		{
 			_editor.Text = "SELECT DU_AL.DUMMY C1, DU_AL.DUMMY C2 FROM DUAL DU_AL";
@@ -100,7 +101,7 @@ namespace SqlPad.Test
 			_editor.Text.ShouldBe("SELECT DU_AL.DUMMY C1, DUAL.DUMMY C2 FROM DUAL DUAL");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void RemoveCharacterToObjectIdentifierUsingBackspace()
 		{
 			_editor.Text = "SELECT DU_AL.DUMMY C1, DU_AL.DUMMY C2 FROM DUAL DU_AL";
@@ -116,7 +117,7 @@ namespace SqlPad.Test
 			_editor.Text.ShouldBe("SELECT DU_AL.DUMMY C1, DUAL.DUMMY C2 FROM DUAL DUAL");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void RemoveSelectionToObjectIdentifierUsingDelete()
 		{
 			_editor.Text = "SELECT DU__AL.DUMMY C1, DU__AL.DUMMY C2 FROM DUAL DU__AL";
@@ -134,7 +135,7 @@ namespace SqlPad.Test
 			_editor.Text.ShouldBe("SELECT DU__AL.DUMMY C1, DUAL.DUMMY C2 FROM DUAL DUAL");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void RemoveSelectionToObjectIdentifierUsingBackspace()
 		{
 			_editor.Text = "SELECT DU__AL.DUMMY C1, DU__AL.DUMMY C2 FROM DUAL DU__AL";
@@ -151,7 +152,7 @@ namespace SqlPad.Test
 			_editor.Text.ShouldBe("SELECT DU__AL.DUMMY C1, DUAL.DUMMY C2 FROM DUAL DUAL");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void ReplaceTextWhenRenamingColumnIdentifierWithSameColumnWithSameAliases()
 		{
 			_editor.Text = "SELECT ALIAS1 ALIAS1 FROM (SELECT ALIAS1 ALIAS1 FROM (SELECT DUMMY ALIAS1 FROM DUAL))";
@@ -167,7 +168,7 @@ namespace SqlPad.Test
 			_editor.Text.ShouldBe("SELECT ALIAS1 ALIAS1 FROM (SELECT A__LIAS1 A__LIAS1 FROM (SELECT DUMMY A__LIAS1 FROM DUAL))");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void ReplaceTextWhenRenamingColumnIdentifierWithSameColumnWithMultipleAliases()
 		{
 			_editor.Text = "SELECT ALIAS2 ALIAS3 FROM (SELECT ALIAS1 ALIAS2 FROM (SELECT DUMMY ALIAS1 FROM DUAL))";
@@ -183,7 +184,7 @@ namespace SqlPad.Test
 			_editor.Text.ShouldBe("SELECT ALIAS2 ALIAS3 FROM (SELECT ALIAS1 A__LIAS2 FROM (SELECT DUMMY ALIAS1 FROM DUAL))");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void ReplaceTextWhenRenamingChildColumnIdentifierWithSameColumnWithMultipleAliases()
 		{
 			_editor.Text = "SELECT ALIAS2 ALIAS3 FROM (SELECT ALIAS1 ALIAS2 FROM (SELECT DUMMY ALIAS1 FROM DUAL))";

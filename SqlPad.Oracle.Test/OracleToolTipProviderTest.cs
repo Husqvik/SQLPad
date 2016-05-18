@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using NUnit.Framework;
@@ -17,7 +18,7 @@ namespace SqlPad.Oracle.Test
 		private readonly OracleCodeCompletionProvider _codeCompletionProvider = new OracleCodeCompletionProvider();
 		private readonly SqlDocumentRepository _documentRepository = TestFixture.CreateDocumentRepository();
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestColumnTypeToolTip()
 		{
 			const string query = "SELECT NAME FROM SELECTION";
@@ -43,7 +44,7 @@ namespace SqlPad.Oracle.Test
 			dataModel.HistogramPoints.Count.ShouldBeGreaterThan(0);
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestColumnTypeToolTipFromObjectReferencedUsingSynonym()
 		{
 			const string query = "SELECT DUMMY FROM DUAL";
@@ -55,7 +56,7 @@ namespace SqlPad.Oracle.Test
 			toolTip.Control.DataContext.ShouldBeAssignableTo<ColumnDetailsModel>();
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestRowIdPsedoColumnTypeToolTip()
 		{
 			const string query = "SELECT ROWID FROM SELECTION";
@@ -73,7 +74,7 @@ namespace SqlPad.Oracle.Test
 			dataModel.LastAnalyzed.ShouldBe(new DateTime(2014, 8, 19, 6, 18, 12));
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestNullableColumnTypeToolTip()
 		{
 			const string query = "SELECT RESPONDENTBUCKET_ID FROM SELECTION";
@@ -91,7 +92,7 @@ namespace SqlPad.Oracle.Test
 			dataModel.LastAnalyzed.ShouldBe(new DateTime(2014, 8, 19, 6, 18, 12));
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestNonAliasedInlineViewColumnToolTip()
 		{
 			const string query = "SELECT NAME FROM (SELECT NAME FROM SELECTION)";
@@ -103,7 +104,7 @@ namespace SqlPad.Oracle.Test
 			toolTip.Control.DataContext.ShouldBe("NAME VARCHAR2(50 BYTE) NOT NULL");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestSchemaViewColumnToolTip()
 		{
 			const string query = "SELECT CUSTOMER_ID FROM VIEW_INSTANTSEARCH";
@@ -119,7 +120,7 @@ namespace SqlPad.Oracle.Test
 			dataModel.Comment.ShouldBe("This is a column comment. ");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestDecimalColumnTypeToolTip()
 		{
 			const string query = "SELECT AMOUNT FROM INVOICELINES";
@@ -136,7 +137,7 @@ namespace SqlPad.Oracle.Test
 			dataModel.Nullable.ShouldBe(false);
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestScaleWithoutPrecisionColumnTypeToolTip()
 		{
 			const string query = "SELECT CORRELATION_VALUE FROM INVOICELINES";
@@ -154,7 +155,7 @@ namespace SqlPad.Oracle.Test
 			dataModel.Comment.ShouldBe("This is a column comment. ");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestRecursiveSearchColumnReferenceToolTip()
 		{
 			const string query =
@@ -174,7 +175,7 @@ SELECT * FROM CTE";
 			toolTip.Control.DataContext.ShouldBe("CTE.VAL NULL");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestObjectReferenceToolTipInRecursiveAnchorQueryBlock()
 		{
 			const string query =
@@ -192,7 +193,7 @@ SELECT * FROM CTE";
 			toolTip.Control.ShouldBeAssignableTo<ToolTipTable>();
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestTableObjectToolTip()
 		{
 			const string query = "SELECT NAME FROM SELECTION";
@@ -224,7 +225,7 @@ SELECT * FROM CTE";
 			dataModel.VisiblePartitionDetails.Count.ShouldBe(2);
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestTableObjectToolTipUsingSynonym()
 		{
 			const string query = "SELECT NAME FROM SYNONYM_TO_SELECTION";
@@ -249,7 +250,7 @@ SELECT * FROM CTE";
 			dataModel.RowCount.ShouldBe(8312);
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestTableObjectToolTipInUpdateStatementMainObjectReference()
 		{
 			const string query = "UPDATE SELECTION SET NAME = 'Dummy selection' WHERE SELECTION_ID = 0";
@@ -263,7 +264,7 @@ SELECT * FROM CTE";
 			dataModel.Title.ShouldBe("HUSQVIK.SELECTION (Table)");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestTableObjectToolTipInDeleteStatementMainObjectReference()
 		{
 			const string query = "DELETE SELECTION WHERE SELECTION_ID = 0";
@@ -277,7 +278,7 @@ SELECT * FROM CTE";
 			dataModel.Title.ShouldBe("HUSQVIK.SELECTION (Table)");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestTableObjectToolTipInInsertStatementMainObjectReference()
 		{
 			const string query = "INSERT INTO HUSQVIK.SYNONYM_TO_SELECTION(NAME) VALUES ('Dummy selection')";
@@ -291,7 +292,7 @@ SELECT * FROM CTE";
 			dataModel.Title.ShouldBe("HUSQVIK.SYNONYM_TO_SELECTION (Synonym) => HUSQVIK.SELECTION (Table)");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestTableObjectToolTipInSelectListWithInvalidColumn()
 		{
 			const string query = "SELECT SELECTION.INVALID FROM SELECTION";
@@ -305,7 +306,7 @@ SELECT * FROM CTE";
 			dataModel.Title.ShouldBe("HUSQVIK.SELECTION (Table)");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestTableObjectToolTipInUpdateSetClause()
 		{
 			const string query = "UPDATE HUSQVIK.SELECTION SET SELECTION.PROJECT_ID = HUSQVIK.SELECTION.PROJECT_ID WHERE 1 = 0";
@@ -321,7 +322,7 @@ SELECT * FROM CTE";
 			dataModel.IndexDetails.Count.ShouldBeGreaterThan(0);
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestSynonymReferencedObjectToolTip()
 		{
 			const string query = "SELECT * FROM V$SESSION";
@@ -336,7 +337,7 @@ SELECT * FROM CTE";
 			dataModel.Comment.ShouldBe("V$SESSION displays session information for each current session.");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestObjectSemanticErrorToolTip()
 		{
 			const string query = "SELECT NAME FROM SELECTION, RESPONDENTBUCKET";
@@ -348,7 +349,7 @@ SELECT * FROM CTE";
 			toolTip.Control.DataContext.ShouldBe("Ambiguous reference (SELECTION, RESPONDENTBUCKET)");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestFunctionSemanticErrorToolTip()
 		{
 			const string query = "SELECT TO_CHAR FROM SELECTION";
@@ -360,7 +361,7 @@ SELECT * FROM CTE";
 			toolTip.Control.DataContext.ShouldBe("Invalid parameter count");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestAmbiguousColumnNameFromSingleObjectToolTip()
 		{
 			const string query = "SELECT * FROM (SELECT 1 NAME, 2 NAME, 3 VAL, 4 VAL FROM DUAL)";
@@ -372,7 +373,7 @@ SELECT * FROM CTE";
 			toolTip.Control.DataContext.ShouldBe("Ambiguous reference (NAME, VAL)");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestAmbiguousColumnNameInMultipleObjectAsteriskReferences()
 		{
 			const string query = "SELECT T1.*, T2.* FROM (SELECT 1 C1, 2 C1 FROM DUAL) T1, (SELECT 1 D1, 2 D1 FROM DUAL) T2";
@@ -389,7 +390,7 @@ SELECT * FROM CTE";
 			toolTip.Control.DataContext.ShouldBe("Ambiguous reference (D1)");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestAmbiguousColumnNameFromSingleObjectWithoutAliasToolTip()
 		{
 			const string query = "SELECT DUMMY FROM (SELECT DUAL.DUMMY, X.DUMMY FROM DUAL, DUAL X)";
@@ -401,7 +402,7 @@ SELECT * FROM CTE";
 			toolTip.Control.DataContext.ShouldBe("Ambiguous reference");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestFunctionIdentifierToolTip()
 		{
 			const string query = "SELECT COALESCE(NULL, 1) FROM DUAL";
@@ -414,7 +415,7 @@ SELECT * FROM CTE";
 			metadata.Identifier.FullyQualifiedIdentifier.ShouldBe("SYS.STANDARD.COALESCE");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestPackageIdentifierToolTip()
 		{
 			const string query = "SELECT DBMS_RANDOM.STRING('X', 16) FROM DUAL";
@@ -428,7 +429,7 @@ SELECT * FROM CTE";
 			dataModel.Comment.ShouldBe("The DBMS_RANDOM package provides a built-in random number generator. DBMS_RANDOM is not intended for cryptography.");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestTypeIdentifierToolTip()
 		{
 			const string query = "SELECT XMLTYPE('<Root/>') FROM DUAL";
@@ -440,7 +441,7 @@ SELECT * FROM CTE";
 			toolTip.Control.DataContext.ShouldBe("\"PUBLIC\".XMLTYPE (Synonym) => SYS.XMLTYPE (Object Type)");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestSequenceIdentifierToolTip()
 		{
 			const string query = "SELECT SYNONYM_TO_TEST_SEQ.CURRVAL FROM DUAL";
@@ -454,7 +455,7 @@ SELECT * FROM CTE";
 
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestSequenceColumnIdentifierToolTip()
 		{
 			const string query = "SELECT TEST_SEQ.CURRVAL FROM DUAL";
@@ -466,7 +467,7 @@ SELECT * FROM CTE";
 			toolTip.Control.DataContext.ShouldBe("INTEGER NOT NULL");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestTypeWithCompilationErrorToolTip()
 		{
 			const string query = "SELECT INVALID_OBJECT_TYPE(DUMMY) FROM DUAL";
@@ -478,7 +479,7 @@ SELECT * FROM CTE";
 			toolTip.Control.DataContext.ShouldBe("Object is invalid or unusable");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestDatabaseLinkToolTip()
 		{
 			const string query = "SELECT SQLPAD_FUNCTION@HQ_PDB_LOOPBACK(5) FROM DUAL";
@@ -492,7 +493,7 @@ SELECT * FROM CTE";
 			databaseLink.Host.ShouldBe("localhost:1521/hq_pdb");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestTableCollectionExpressionColumnQualifierToolTip()
 		{
 			const string query = "SELECT COLUMN_VALUE FROM TABLE(SYS.ODCIRAWLIST(NULL)) TEST_TABLE";
@@ -504,7 +505,7 @@ SELECT * FROM CTE";
 			toolTip.Control.DataContext.ShouldBe("TEST_TABLE.COLUMN_VALUE RAW(2000) NULL");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestPackageToolTipWithinTableCollectionExpression()
 		{
 			const string query = "SELECT COLUMN_VALUE FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR()) TEST_TABLE";
@@ -518,7 +519,7 @@ SELECT * FROM CTE";
 			dataModel.Comment.ShouldBe("The DBMS_XPLAN package provides an easy way to display the output of the EXPLAIN PLAN command in several, predefined formats. You can also use the DBMS_XPLAN package to display the plan of a statement stored in the Automatic Workload Repository (AWR) or stored in a SQL tuning set. It further provides a way to display the SQL execution plan and SQL execution runtime statistics for cached SQL cursors based on the information stored in the V$SQL_PLAN and V$SQL_PLAN_STATISTICS_ALL fixed views. Finally, it displays plans from a SQL plan baseline.");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestInlineViewToolTip()
 		{
 			const string query = "SELECT INLINEVIEW.DUMMY FROM (SELECT DUAL.DUMMY FROM DUAL) INLINEVIEW";
@@ -530,7 +531,7 @@ SELECT * FROM CTE";
 			toolTip.Control.DataContext.ShouldBe("INLINEVIEW (Inline View)");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestXmlTableColumnQualifierToolTip()
 		{
 			const string query = "SELECT VALUE FROM XMLTABLE('/root' PASSING XMLTYPE('<root>value</root>') COLUMNS VALUE VARCHAR2(10) PATH '.') XML_DATA";
@@ -542,7 +543,7 @@ SELECT * FROM CTE";
 			toolTip.Control.DataContext.ShouldBe("XML_DATA.VALUE VARCHAR2(10) NULL");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestTableCollectionToolTip()
 		{
 			const string query = "SELECT table_collection.* FROM TABLE (dbms_xplan.display_cursor) table_collection";
@@ -554,7 +555,7 @@ SELECT * FROM CTE";
 			toolTip.Control.DataContext.ShouldBe("table_collection (Table collection)");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestFunctionIdentifierOverDatabaseLinkToolTip()
 		{
 			const string query = "SELECT SQLPAD_FUNCTION@UNDEFINED_DB_LINK FROM DUAL";
@@ -565,7 +566,7 @@ SELECT * FROM CTE";
 			toolTip.ShouldBe(null);
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestToolTipBeforeDatabaseModelLoaded()
 		{
 			const string query = "SELECT S.* FROM SELECTION S";
@@ -579,7 +580,7 @@ SELECT * FROM CTE";
 			toolTip.ShouldBe(null);
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestFunctionOverloadsToolTip()
 		{
 			const string query = "SELECT SQLPAD.SQLPAD_FUNCTION() FROM DUAL";
@@ -594,7 +595,7 @@ SELECT * FROM CTE";
 			itemText.ShouldBe("HUSQVIK.SQLPAD.SQLPAD_FUNCTION(P: NUMBER) RETURN: NUMBER");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestObjectTypeConstructorToolTip()
 		{
 			const string query = "SELECT SYS.ODCIARGDESC() FROM DUAL";
@@ -609,7 +610,7 @@ SELECT * FROM CTE";
 			itemText.ShouldBe("SYS.ODCIARGDESC(ARGTYPE: NUMBER, TABLENAME: VARCHAR2, TABLESCHEMA: VARCHAR2, COLNAME: VARCHAR2, TABLEPARTITIONLOWER: VARCHAR2, TABLEPARTITIONUPPER: VARCHAR2, CARDINALITY: NUMBER) RETURN: SYS.ODCIARGDESC");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestCollectionTypeConstructorToolTip()
 		{
 			const string query = "SELECT SYS.ODCIARGDESCLIST() FROM DUAL";
@@ -624,7 +625,7 @@ SELECT * FROM CTE";
 			itemText.ShouldBe("SYS.ODCIARGDESCLIST([array of SYS.ODCIARGDESC]) RETURN: SYS.ODCIARGDESCLIST");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestPrimitiveTypeCollectionTypeConstructorToolTip()
 		{
 			const string query = "SELECT SYS.ODCIRAWLIST() FROM DUAL";
@@ -639,7 +640,7 @@ SELECT * FROM CTE";
 			itemText.ShouldBe("SYS.ODCIRAWLIST([array of RAW]) RETURN: SYS.ODCIRAWLIST");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestFunctionOverloadWithFunctionReturningCollection()
 		{
 			const string query = "SELECT DBMS_XPLAN.DISPLAY_CURSOR() FROM DUAL";
@@ -654,7 +655,7 @@ SELECT * FROM CTE";
 			itemText.ShouldBe("SYS.DBMS_XPLAN.DISPLAY_CURSOR([SQL_ID: VARCHAR2], [CURSOR_CHILD_NUMBER: NUMBER], [FORMAT: VARCHAR2]) RETURN: SYS.DBMS_XPLAN_TYPE_TABLE");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestNoParenthesisFunctionWithParentheses()
 		{
 			const string query = "SELECT SESSIONTIMEZONE() FROM DUAL";
@@ -666,7 +667,7 @@ SELECT * FROM CTE";
 			toolTip.Control.DataContext.ShouldBe("Non-parenthesis function");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestToolTipOverInvalidDateLiteral()
 		{
 			const string query = "SELECT DATE'' FROM DUAL";
@@ -678,7 +679,7 @@ SELECT * FROM CTE";
 			toolTip.Control.DataContext.ShouldBe(OracleSemanticErrorTooltipText.InvalidDateLiteral);
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestToolTipOverInvalidTimestampLiteral()
 		{
 			const string query = "SELECT TIMESTAMP'' FROM DUAL";
@@ -690,7 +691,7 @@ SELECT * FROM CTE";
 			toolTip.Control.DataContext.ShouldBe(OracleSemanticErrorTooltipText.InvalidTimestampLiteral);
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestNonQualifiedColumnReferenceOverDatabaseLink()
 		{
 			const string query = "SELECT NAME FROM SELECTION@HQ_PDB_LOOPBACK, DUAL@HQ_PDB_LOOPBACK";
@@ -702,7 +703,7 @@ SELECT * FROM CTE";
 			toolTip.Control.DataContext.ShouldBe(OracleSuggestionType.PotentialDatabaseLink);
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestDatabaseLinkToolTipOverSpecialCharacter()
 		{
 			const string query = "SELECT * FROM dual@HQ_PDB_LOOPBACK@LOOPBACK";
@@ -715,7 +716,7 @@ SELECT * FROM CTE";
 			databaseLink.Host.ShouldBe("localhost:1521/hq_pdb");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestFunctionOverloadsToolTipNotShowForNonSchemaFunctions()
 		{
 			const string query = "SELECT MAX(DUMMY) FROM DUAL";
@@ -726,7 +727,7 @@ SELECT * FROM CTE";
 			toolTip.ViewOverloads.Items.Count.ShouldBe(0);
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestToolTipInInsertValuesClause()
 		{
 			const string query = "INSERT INTO SELECTION (SELECTION_ID, SELECTIONNAME, RESPONDENTBUCKET_ID) VALUES (SQLPAD_FUNCTION, XMLTYPE(), SYNONYM_TO_TEST_SEQ.NEXTVAL)";
@@ -748,7 +749,7 @@ SELECT * FROM CTE";
 			toolTipSequence.LabelTitle.Text.ShouldBe("HUSQVIK.SYNONYM_TO_TEST_SEQ (Synonym) => HUSQVIK.TEST_SEQ (Sequence)");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestVarryingArrayConstructorToolTip()
 		{
 			const string query = "SELECT * FROM TABLE(SYS.ODCIRAWLIST(NULL))";
@@ -759,7 +760,7 @@ SELECT * FROM CTE";
 			toolTip.Control.DataContext.ShouldBe("SYS.ODCIRAWLIST (Object Varrying Array)");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestObjectTableConstructorToolTip()
 		{
 			const string query = "SELECT * FROM TABLE(SYS.DBMS_XPLAN_TYPE_TABLE())";
@@ -770,7 +771,7 @@ SELECT * FROM CTE";
 			toolTip.Control.DataContext.ShouldBe("SYS.DBMS_XPLAN_TYPE_TABLE (Object Table)");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestSchemaToolTip()
 		{
 			const string query = "SELECT * FROM HUSQVIK.SELECTION";
@@ -849,7 +850,7 @@ SELECT * FROM CTE";
 			}
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestAsteriskTooltip()
 		{
 			const string query = "SELECT * FROM SELECTION";
@@ -872,7 +873,7 @@ SELECT * FROM CTE";
 			columns[3].FullTypeName.ShouldBe("VARCHAR2(50 BYTE)");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestAsteriskTooltipWithDoubleCommonTableExpressionDefinition()
 		{
 			const string query = @"WITH CTE AS (SELECT 1 C1 FROM DUAL), CTE AS (SELECT 1 C2 FROM DUAL) SELECT * FROM CTE";
@@ -890,7 +891,7 @@ SELECT * FROM CTE";
 			columns[0].Nullable.ShouldBe(false);
 		}
 		
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestAsteriskTooltipWithDoubleCommonTableExpressionDefinitionInDifferentSubqueries()
 		{
 			const string query = @"WITH CTE AS (SELECT 1 C1 FROM DUAL) SELECT * FROM (WITH CTE AS (SELECT 1 C2 FROM DUAL) SELECT * FROM CTE) SUBQUERY";
@@ -908,7 +909,7 @@ SELECT * FROM CTE";
 			columns[0].Nullable.ShouldBe(false);
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestAsteriskTooltipWithUnnamedColumn()
 		{
 			const string query = @"SELECT * FROM (SELECT nvl(""column name"", 0) FROM dual) T";
@@ -926,7 +927,7 @@ SELECT * FROM CTE";
 			columns[0].Nullable.ShouldBe(true);
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestAsteriskTooltipWithFunctionWithCursorParameter()
 		{
 			const string query = @"SELECT * FROM TABLE(SQLPAD.CURSOR_FUNCTION(0, CURSOR(SELECT * FROM SELECTION), NULL)";
@@ -943,7 +944,7 @@ SELECT * FROM CTE";
 			columns[0].ColumnIndex.ShouldBe(1);
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestAsteriskTooltipOnQualifiedReferenceToPivotTable()
 		{
 			const string query =
@@ -982,7 +983,7 @@ FROM (
 			columns[3].ColumnIndex.ShouldBe(4);
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestExplicitPartitionTooltip()
 		{
 			const string query = "SELECT * FROM INVOICES PARTITION (P2015)";
@@ -997,7 +998,7 @@ FROM (
 			dataModel.Owner.ShouldBe(OracleObjectIdentifier.Create("HUSQVIK", "INVOICES"));
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestExplicitSubPartitionTooltip()
 		{
 			const string query = "SELECT * FROM INVOICES SUBPARTITION (P2015_ENTERPRISE)";
@@ -1012,7 +1013,7 @@ FROM (
 			dataModel.Owner.ShouldBe(OracleObjectIdentifier.Create("HUSQVIK", "INVOICES"));
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestDataTypeTooltip()
 		{
 			const string query = "SELECT CAST(NULL AS SYS.ODCIRAWLIST) FROM DUAL";
@@ -1023,7 +1024,7 @@ FROM (
 			toolTip.Control.DataContext.ShouldBe("SYS.ODCIRAWLIST (Object Varrying Array)");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestParameterTooltip()
 		{
 			const string query = "SELECT SQLPAD.SQLPAD_FUNCTION(p => NULL) FROM DUAL";
@@ -1035,7 +1036,7 @@ FROM (
 			dataModel.Title.ShouldBe("P: NUMBER");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestProgramTooltipInRecursiveAnchorQueryBlock()
 		{
 			const string query =
@@ -1053,7 +1054,7 @@ SELECT * FROM sampleData";
 			metadata.Identifier.FullyQualifiedIdentifier.ShouldBe("SYS.STANDARD.ROUND");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestPackageTooltipWhenMetadataNotResolved()
 		{
 			const string query = @"SELECT dbms_output.put_line('value') FROM dual";
@@ -1067,7 +1068,7 @@ SELECT * FROM sampleData";
 			dataModel.Comment.ShouldBe("The DBMS_OUTPUT package enables you to send messages from stored procedures, packages, and triggers. The package is especially useful for displaying PL/SQL debugging information.");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestTypeTooltipInRecursiveAnchorQueryBlock()
 		{
 			const string query =
@@ -1084,7 +1085,7 @@ SELECT * FROM sampleData";
 			toolTip.Control.DataContext.ShouldBe("\"PUBLIC\".XMLTYPE (Synonym) => SYS.XMLTYPE (Object Type)");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestPlSqlVariableReferenceTooltip()
 		{
 			const string plSqlCode =
@@ -1102,7 +1103,7 @@ END;";
 		}
 
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestPlSqlConstantReferenceTooltip()
 		{
 			const string plSqlCode =
@@ -1119,7 +1120,7 @@ END;";
 			toolTip.Control.DataContext.ShouldBe("Constant TEST_CONSTANT: VARCHAR2(255) NOT NULL = 'This' || ' is ' || 'value'");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestPlSqlCursorReferenceTooltipInNestedPlSqlBlock()
 		{
 			const string plSqlCode =
@@ -1138,7 +1139,7 @@ END;";
 			toolTip.Control.DataContext.ShouldBe("Cursor TEST_CURSOR: SELECT dummy FROM dual");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestPlSqlExceptionReferenceTooltip()
 		{
 			const string plSqlCode =
@@ -1155,7 +1156,7 @@ END;";
 			toolTip.Control.DataContext.ShouldBe("Exception TEST_EXCEPTION");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestPlSqlExceptionReferenceWithExceptionInitPragmaTooltip()
 		{
 			const string plSqlCode =
@@ -1173,7 +1174,7 @@ END;";
 			toolTip.Control.DataContext.ShouldBe("Exception DEADLOCK_DETECTED (Error code -60)");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestSqlToolTipInNestedPlSqlBlock()
 		{
 			const string plSqlCode =
@@ -1192,7 +1193,7 @@ END;";
 		}
 
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestToolTipOverTypedVariable()
 		{
 			const string plSqlCode =
@@ -1209,7 +1210,7 @@ END;";
 			toolTip.Control.DataContext.ShouldBe("Variable I: BINARY_INTEGER NOT NULL");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestToolTipOverImplicitCursorColumn()
 		{
 			const string plSqlCode =
@@ -1226,7 +1227,7 @@ END;";
 			toolTip.Control.DataContext.ShouldBe("Cursor column IMPLICIT_CURSOR.DUMMY: VARCHAR2(1 BYTE)");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestTooltipOverExplicitColumnListInCommonTableExpression()
 		{
 			const string query =
@@ -1241,7 +1242,7 @@ SELECT * FROM data";
 			Should.NotThrow(() => _toolTipProvider.GetToolTip(_documentRepository, 12));
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestTooltipOverHierarchicalPseudocolumn()
 		{
 			const string query =
@@ -1268,7 +1269,7 @@ CONNECT BY NOCYCLE
 			toolTip.Control.DataContext.ShouldBe("CONNECT_BY_ISLEAF NUMBER NOT NULL");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestTooltipOverColumnInAnchorQueryBlock()
 		{
 			const string query =
@@ -1286,7 +1287,7 @@ SELECT * FROM generator";
 			toolTip.Control.DataContext.ShouldBe("data.c1 NUMBER NOT NULL");
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestTooltipOverNamedParameterCombinedWithParameterlessFunction()
 		{
 			const string query = @"SELECT DBMS_RANDOM.VALUE(low => 0, high => 5) FROM DUAL WHERE ROWNUM = 1";
@@ -1296,7 +1297,7 @@ SELECT * FROM generator";
 			Should.NotThrow(() => _toolTipProvider.GetToolTip(_documentRepository, 25));
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestTooltipOverSchemaWithinPlSqlVariableDeclaration()
 		{
 			const string query =
@@ -1312,7 +1313,7 @@ END;";
 			toolTip.Control.ShouldBeAssignableTo<ToolTipSchema>();
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestTooltipOverSchemaWithinPlSqlVariableDeclarationValue()
 		{
 			const string query =
@@ -1328,7 +1329,7 @@ END;";
 			toolTip.Control.ShouldBeAssignableTo<ToolTipSchema>();
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestTooltipOverNonExistingColumn()
 		{
 			const string query = @"SELECT non_existing FROM dual";
@@ -1338,7 +1339,7 @@ END;";
 			Should.NotThrow(() => _toolTipProvider.GetToolTip(_documentRepository, 7));
 		}
 
-		[Test, STAThread]
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestTooltipOverAggregateFunctionWithinPivotClause()
 		{
 			const string query =

@@ -17,7 +17,7 @@ namespace SqlPad
 
 		public static Task<string> FormatBinaryDataAsync(byte[] data, CancellationToken cancellationToken, byte bytesPerLine = DefaultBytesPerLine)
 		{
-			return Task.Factory.StartNew(() => FormatBinaryDataInternal(data, cancellationToken, bytesPerLine), cancellationToken);
+			return Task.Run(() => FormatBinaryDataInternal(data, cancellationToken, bytesPerLine), cancellationToken);
 		}
 
 		private static string FormatBinaryDataInternal(ICollection<byte> data, CancellationToken cancellationToken, byte bytesPerLine)
@@ -27,7 +27,7 @@ namespace SqlPad
 				lineCount++;
 
 			var addressLength = data.Count.ToString("X").Length;
-			var lineAddressMask = String.Format("{{0:X{0}}}-{{1:X{0}}}|", addressLength);
+			var lineAddressMask = $"{{0:X{addressLength}}}-{{1:X{addressLength}}}|";
 
 			var lineTerminatorLength = Environment.NewLine.Length;
 			var builderCapacity = (4 * bytesPerLine + lineAddressMask.Length + lineTerminatorLength) * lineCount;

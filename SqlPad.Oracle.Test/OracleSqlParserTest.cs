@@ -16,10 +16,12 @@ namespace SqlPad.Oracle.Test
 	{
 		private static readonly OracleSqlParser Parser = OracleSqlParser.Instance;
 
+		private static readonly string SqlTestFileName = Path.Combine(new Uri(Path.GetDirectoryName(typeof(OracleSqlParserTest).Assembly.CodeBase)).LocalPath, "TestFiles", "SqlStatements1.sql");
+
 		[Test(Description = @"Test complex statement parsing")]
 		public void TestComplexStatementParsing()
 		{
-			using (var reader = File.OpenText(@"TestFiles\SqlStatements1.sql"))
+			using (var reader = File.OpenText(SqlTestFileName))
 			{
 				var statements = Parser.Parse(OracleTokenReader.Create(reader));
 				statements.Count.ShouldBe(20);
@@ -1866,7 +1868,7 @@ FROM DUAL";
 		{
 			var cancellationTokenSource = new CancellationTokenSource();
 
-			using (var reader = File.OpenText(@"TestFiles\SqlStatements1.sql"))
+			using (var reader = File.OpenText(SqlTestFileName))
 			{
 				var parsingStopwatch = Stopwatch.StartNew();
 				var task = Parser.ParseAsync(OracleTokenReader.Create(reader), cancellationTokenSource.Token);
@@ -1880,7 +1882,7 @@ FROM DUAL";
 				parsingStopwatch.Stop();
 				cancellationStopwatch.Stop();
 
-				Trace.WriteLine($"Parsing successfully cancelled; parse time: {parsingStopwatch.ElapsedMilliseconds} ms; cancellation time: {cancellationStopwatch.ElapsedMilliseconds} ms");
+				Console.WriteLine($"Parsing successfully cancelled; parse time: {parsingStopwatch.ElapsedMilliseconds} ms; cancellation time: {cancellationStopwatch.ElapsedMilliseconds} ms");
 			}
 		}
 
@@ -2679,7 +2681,7 @@ ORDER BY symbol, tstamp";
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
-		[Test, Ignore]
+		[Test, Ignore("not solved yet")]
 		public void TestParenthesisEnclosedObjectMember()
 		{
 			const string statement1 = @"(((httpuritype('http://www.yr.no/place/Sweden/Stockholm/Stockholm/forecast.xml')).getxml())).getclobval() FROM dual";
@@ -3742,7 +3744,7 @@ END;";
 				terminalCandidates.ShouldBe(expectedTerminals);
 			}
 
-			[Test, Ignore]
+			[Test, Ignore("difficult to solve")]
 			public void TestTerminalCandidatesAfterLeftParenthesisWithMultiplePotentialExpressionSequnces()
 			{
 				const string statement1 = @"SELECT EXTRACT()";
@@ -6267,7 +6269,7 @@ USING 'localhost:1521/hqpdb'";
 
 			public class CreateAuthorizationSchema
 			{
-				[Test, Ignore]
+				[Test, Ignore("not implemented yet")]
 				public void TestCreateAuthorizationSchema()
 				{
 					const string statementText =
@@ -7839,7 +7841,7 @@ USING 'localhost:1521/hqpdb'";
 
 		private static OracleTokenReader CreateTokenReader(string sqlText)
 		{
-			Trace.WriteLine("SQL text: " + sqlText);
+			Console.WriteLine("SQL text: " + sqlText);
 
 			return OracleTokenReader.Create(new StringReader(sqlText));
 		}

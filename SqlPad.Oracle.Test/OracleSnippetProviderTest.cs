@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using Shouldly;
@@ -16,9 +17,14 @@ namespace SqlPad.Oracle.Test
 		{
 			ConfigurationProvider.SetSnippetsFolder(TempDirectoryName);
 			ConfigurationProvider.SetCodeGenerationItemFolder(TempDirectoryName);
-			File.Copy(@"TestFiles\TestSnippet.xml", Path.Combine(TempDirectoryName, "TestSnippet.xml"), true);
-			File.Copy(@"TestFiles\SnippetSelect.xml", Path.Combine(TempDirectoryName, "SnippetSelect.xml"), true);
-        }
+
+			var sourceDirectoryName = Path.Combine(new Uri(Path.GetDirectoryName(GetType().Assembly.CodeBase)).LocalPath, "TestFiles");
+
+			const string fileNameTestSnippet = "TestSnippet.xml";
+			const string fileNameSelectSnippet = "SnippetSelect.xml";
+			File.Copy(Path.Combine(sourceDirectoryName, fileNameTestSnippet), Path.Combine(TempDirectoryName, fileNameTestSnippet), true);
+			File.Copy(Path.Combine(sourceDirectoryName, fileNameSelectSnippet), Path.Combine(TempDirectoryName, fileNameSelectSnippet), true);
+		}
 
 		[Test]
 		public void TestSnippetSuggestionWithinStatementWhileTyping()

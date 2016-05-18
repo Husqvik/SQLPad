@@ -3,7 +3,6 @@ using System.Linq;
 using NUnit.Framework;
 using Shouldly;
 using System;
-using System.Diagnostics;
 using SqlPad.Oracle.DataDictionary;
 using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
@@ -40,7 +39,7 @@ SELECT * FROM CTE JOIN DUAL ON TO_CHAR(VAL) <> DUMMY CROSS APPLY (SELECT * FROM 
 				var effectiveQuery = query.Substring(0, i);
 				var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, effectiveQuery, effectiveQuery.Length);
 
-				Trace.WriteLine($"Caret position: {effectiveQuery.Length}; Suggested items: {items.Count}");
+				Console.WriteLine($"Caret position: {effectiveQuery.Length}; Suggested items: {items.Count}");
 			}
 		}
 
@@ -2010,7 +2009,7 @@ SELECT * FROM ALL";
 			items[0].StatementNode.ShouldNotBe(null);
 		}
 
-		[Test, Ignore]
+		[Test, Ignore("difficult to implement")]
 		public void TestFunctionSuggestionBeforeStringParameter()
 		{
 			const string testQuery = @"SELECT DBMS_CRYPTO.HASH(HEXTO '', 1) FROM DUAL";
@@ -2304,7 +2303,7 @@ ON (EVENTS.ID = SRC.ID)";
 			items[0].Text.ShouldBe("EXISTS");
 		}
 
-		[Test, Ignore]
+		[Test, Ignore("not solved yet; looks like somethings goes really wrong when building grammar tree although it requires document repository to replicate this issue. ")]
 		public void TestSpecialCrashingCaseWithinTerminalCandidates()
 		{
 			const string statement = @"SELECT row_number() OVER (PARTITION BY dummy, d, dummy ORDER BY NULL) FROM dual";
@@ -2345,7 +2344,7 @@ ON (EVENTS.ID = SRC.ID)";
 				completionType.DataType.ShouldBe(false);
 			}
 
-			[Test, Ignore]
+			[Test, Ignore("not solved yet")]
 			public void TestCodeCompletionTypeAfterExistingConditionInJoinClause()
 			{
 				const string statement = @"SELECT * FROM SELECTION JOIN RESPONDENTBUCKET ON SELECTION.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET AND ";
