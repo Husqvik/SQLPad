@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Security.Principal;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -16,13 +17,8 @@ using SqlPad.FindReplace;
 
 namespace SqlPad
 {
-	/// <summary>
-	/// Interaction logic for MainWindow.xaml
-	/// </summary>
 	public partial class MainWindow
 	{
-		private const string TitleTemplate = "SQL Pad {0} ALPHA ({1})";
-
 		private readonly List<TextEditorAdapter> _editorAdapters = new List<TextEditorAdapter>();
 
 		private readonly WindowDatabaseMonitor _windowDatabaseMonitor;
@@ -40,7 +36,13 @@ namespace SqlPad
 
 			InitializeComponent();
 
-			Title = String.Format(TitleTemplate, App.Version, App.VersionTimestamp);
+			var applicationTitle = $"SQL Pad {App.Version} ALPHA ({App.VersionTimestamp})";
+			if (IsRunningAsAdministrator)
+			{
+				applicationTitle = $"{applicationTitle} (Administrator)";
+			}
+
+			Title = applicationTitle;
 
 			_recentDocumentsMenu = (ContextMenu)Resources["RecentFileMenu"];
 			_recentDocumentsMenu.PlacementTarget = this;
@@ -57,6 +59,15 @@ namespace SqlPad
 			Closed += WindowClosedHandler;
 
 			_windowDatabaseMonitor = new WindowDatabaseMonitor();
+		}
+
+		private bool IsRunningAsAdministrator
+		{
+			get
+			{
+				var principal = new WindowsPrincipal(WindowsIdentity.GetCurrent());
+				return principal.IsInRole(WindowsBuiltInRole.Administrator);
+			}
 		}
 
 		private void RecentDocumentsMenuClosedHandler(object sender, RoutedEventArgs routedEventArgs)
