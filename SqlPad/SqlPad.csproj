@@ -378,6 +378,7 @@
   <PropertyGroup>
     <PreBuildEvent>echo Copying tools to $(TargetDir)...
 xcopy "$(SolutionDir)References\*.dll" "$(TargetDir)" /y
+xcopy "$(SolutionDir)References\Test\*.dll" "$(TargetDir)" /y
 echo Done.</PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
