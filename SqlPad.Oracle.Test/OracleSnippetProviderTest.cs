@@ -35,6 +35,14 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test]
+		public void TestSnippetSuggestionAfterSemicolon()
+		{
+			const string statementText = ";SEL";
+			var snippets = SnippetProvider.GetSnippets(statementText, 4, TestFixture.DatabaseModel).ToArray();
+			snippets.Length.ShouldBe(1);
+		}
+
+		[Test]
 		public void TestSnippetSuggestionAfterCommonTableExpression()
 		{
 			const string statementText = "WITH cte AS (SELECT * FROM DUAL) se";

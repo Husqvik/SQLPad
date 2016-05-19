@@ -23,15 +23,18 @@ namespace SqlPad.Oracle
 		public IEnumerable<ICodeSnippet> GetSnippets(SqlDocumentRepository sqlDocumentRepository, string statementText, int cursorPosition)
 		{
 			if (sqlDocumentRepository?.Statements == null)
+			{
 				return EmptyCollection;
+			}
 
 			var statement = sqlDocumentRepository.Statements.TakeWhile(s => s.SourcePosition.IndexStart <= cursorPosition - 1).LastOrDefault();
 
 			StatementGrammarNode currentNode = null;
 			if (statement != null)
 			{
-				currentNode = statement.GetTerminalAtPosition(cursorPosition)
-				              ?? statement.GetNearestTerminalToPosition(cursorPosition);
+				currentNode =
+					statement.GetTerminalAtPosition(cursorPosition)
+					?? statement.GetNearestTerminalToPosition(cursorPosition);
 			}
 
 			if (currentNode != null &&
@@ -42,7 +45,7 @@ namespace SqlPad.Oracle
 				currentNode = currentNode.PrecedingTerminal.PrecedingTerminal;
 			}
 
-			var textToReplace = new String(statementText.Substring(0, cursorPosition).Reverse().TakeWhile(c => !c.In(' ', '\n', '\t', '(', '\r')).Reverse().ToArray());
+			var textToReplace = new String(statementText.Substring(0, cursorPosition).Reverse().TakeWhile(c => !c.In(' ', '\n', '\t', '(', '\r', ';')).Reverse().ToArray());
 
 			if (String.IsNullOrWhiteSpace(textToReplace))
 			{
