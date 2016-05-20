@@ -523,18 +523,23 @@ namespace SqlPad.Oracle
 					});
 		}
 
-		private IEnumerable<ICodeCompletionItem> GenerateColumnAliases(StatementGrammarNode currentTerminal, OracleCodeCompletionType completionType)
+		private static IEnumerable<ICodeCompletionItem> GenerateColumnAliases(StatementGrammarNode currentTerminal, OracleCodeCompletionType completionType)
 		{
+			var formatOption = FormatOptions.Identifier;
 			return completionType.CurrentQueryBlock.Columns
 				.Where(c => c.HasExplicitAlias)
 				.Select(c =>
-					new OracleCodeCompletionItem
-					{
-						Name = c.NormalizedName.ToSimpleIdentifier(),
-						Text = c.NormalizedName.ToSimpleIdentifier(),
-						Category = OracleCodeCompletionCategory.Column,
-						StatementNode = currentTerminal
-					});
+				{
+					var identifier = OracleStatementFormatter.FormatTerminalValue(c.NormalizedName.ToSimpleIdentifier(), formatOption);
+					return
+						new OracleCodeCompletionItem
+						{
+							Name = identifier,
+							Text = identifier,
+							Category = OracleCodeCompletionCategory.Column,
+							StatementNode = currentTerminal
+						};
+				});
 		}
 
 		private static IEnumerable<ICodeCompletionItem> GenerateSimpleColumnItems(OracleObjectWithColumnsReference targetDataObject, OracleCodeCompletionType completionType)

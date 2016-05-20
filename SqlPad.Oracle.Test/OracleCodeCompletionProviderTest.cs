@@ -2297,16 +2297,29 @@ ON (EVENTS.ID = SRC.ID)";
 			OracleConfiguration.Configuration.Formatter.FormatOptions.Identifier = FormatOption.Lower;
 			OracleConfiguration.Configuration.Formatter.FormatOptions.ReservedWord = FormatOption.Upper;
 
-			const string statement = @"SELECT NULL FROM dual WHERE exi";
+			const string statement = "SELECT NULL FROM dual WHERE exi";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 31).ToList();
 			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("EXISTS");
 			items[0].Text.ShouldBe("EXISTS");
+		}
+
+		[Test]
+		public void TestOrderBySuggestionFormat()
+		{
+			OracleConfiguration.Configuration.Formatter.FormatOptions.Identifier = FormatOption.Lower;
+
+			const string statement = "SELECT NULL TEST_COLUMN FROM dual ORDER BY TEST_COLU";
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 52).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("test_column");
+			items[0].Text.ShouldBe("test_column");
 		}
 
 		[Test, Ignore("not solved yet; looks like somethings goes really wrong when building grammar tree although it requires document repository to replicate this issue. ")]
 		public void TestSpecialCrashingCaseWithinTerminalCandidates()
 		{
-			const string statement = @"SELECT row_number() OVER (PARTITION BY dummy, d, dummy ORDER BY NULL) FROM dual";
+			const string statement = "SELECT row_number() OVER (PARTITION BY dummy, d, dummy ORDER BY NULL) FROM dual";
 			Should.NotThrow(() => CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 47));
 		}
 
