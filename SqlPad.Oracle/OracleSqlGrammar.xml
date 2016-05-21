@@ -7741,12 +7741,12 @@
       <Sequences>
         <Sequence>
           <NonTerminal Id="RowPatternNavigationFunction" />
-          <Terminal Id="As" />
+          <Terminal Id="As" IsOptional="true" />
           <Terminal Id="ColumnAlias" />
         </Sequence>
         <Sequence>
           <NonTerminal Id="Expression" />
-          <Terminal Id="As" />
+          <Terminal Id="As" IsOptional="true" />
           <Terminal Id="ColumnAlias" />
         </Sequence>
       </Sequences>

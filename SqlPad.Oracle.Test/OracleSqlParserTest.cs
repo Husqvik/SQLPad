@@ -2512,6 +2512,25 @@ ORDER BY symbol, tstamp";
 		}
 
 		[Test]
+		public void TestRowPatternMatchingMeasureWithoutAsKeyword()
+		{
+			const string statement1 =
+@"SELECT dummy, alias
+FROM dual
+MATCH_RECOGNIZE(
+  ORDER BY dummy
+  MEASURES p.dummy alias
+  ALL ROWS PER MATCH
+  PATTERN (p)
+  DEFINE p AS dummy IS NOT NULL
+);";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single().Validate();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+		}
+
+		[Test]
 		public void TestNotBetweenCondition()
 		{
 			const string statement1 = @"SELECT * FROM SELECTION WHERE SELECTION_ID NOT BETWEEN 0 AND 3000000";
