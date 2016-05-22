@@ -33,16 +33,17 @@ namespace SqlPad
 
 		public static bool TryGetClipboardText(out string text)
 		{
+			text = null;
+
 			try
 			{
 				text = Clipboard.GetText();
 				return !String.IsNullOrEmpty(text);
 			}
-			catch (COMException)
-			{
-				text = null;
-				return false;
-			}
+			catch (COMException) { }
+			catch (OutOfMemoryException) { }
+
+			return false;
 		}
 
 		private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)

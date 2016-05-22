@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SqlPad.DataExport
 {
-	public abstract class SqlBaseDataExporter : IDataExporter
+	internal abstract class SqlBaseDataExporter : IDataExporter
 	{
 		public abstract string Name { get; }
 
@@ -24,41 +24,75 @@ namespace SqlPad.DataExport
 		public Task ExportToFileAsync(string fileName, ResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress = null)
 		{
 			var orderedColumns = DataExportHelper.GetOrderedExportableColumns(resultViewer.ResultGrid);
-			var columnHeaders = orderedColumns
-				.Select(h => dataExportConverter.ToColumnName(h.Name).Replace("{", "{{").Replace("}", "}}"));
-
-			var sqlTemplate = BuildSqlCommandTemplate(columnHeaders);
-
 			var rows = resultViewer.ResultGrid.Items;
 
-			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(orderedColumns, sqlTemplate, rows, w, dataExportConverter, cancellationToken, reportProgress));
+			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(orderedColumns, rows, w, dataExportConverter, reportProgress, cancellationToken));
 		}
 
+		protected abstract SqlDataExportContextBase CreateExportContext(TextWriter writer, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter, int? totalRows, IProgress<int> reportProgress, CancellationToken cancellationToken);
 
-		protected abstract string BuildSqlCommandTemplate(IEnumerable<string> columnHeaders);
 
-		private static void ExportInternal(IEnumerable<ColumnHeader> orderedColumns, string sqlTemplate, ICollection rows, TextWriter writer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress)
+		protected void ExportInternal(IReadOnlyList<ColumnHeader> orderedColumns, ICollection rows, TextWriter writer, IDataExportConverter dataExportConverter, IProgress<int> reportProgress, CancellationToken cancellationToken)
 		{
-			DataExportHelper.ExportRows(
-				rows,
-				(rowValues, isLastRow) => writer.WriteLine(sqlTemplate, orderedColumns.Select(h => (object)FormatSqlValue(rowValues[h.ColumnIndex], dataExportConverter)).ToArray()),
-				reportProgress,
-				cancellationToken);
-		}
-
-		private static string FormatSqlValue(object value, IDataExportConverter dataExportConverter)
-		{
-			return DataExportHelper.IsNull(value)
-				? "NULL"
-				: dataExportConverter.ToSqlValue(value);
+			DataExportHelper.ExportRowsUsingContext(rows, CreateExportContext(writer, orderedColumns, dataExportConverter, rows.Count, reportProgress, cancellationToken));
 		}
 	}
 
-	public class SqlUpdateDataExporter : SqlBaseDataExporter
+	internal class SqlUpdateDataExporter : SqlBaseDataExporter
+	{
+		public override string Name { get; } = "SQL update";
+
+		protected override SqlDataExportContextBase CreateExportContext(TextWriter writer, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter, int? totalRows, IProgress<int> reportProgress, CancellationToken cancellationToken)
+		{
+			return new SqlUpdateExportContext(writer, columns, dataExportConverter, totalRows, reportProgress, cancellationToken);
+		}
+	}
+
+	internal abstract class SqlDataExportContextBase : DataExportContextBase
+	{
+		private readonly TextWriter _writer;
+		private readonly IReadOnlyList<ColumnHeader> _columns;
+		private readonly IDataExportConverter _dataExportConverter;
+
+		private string _sqlCommandTemplate;
+
+		protected SqlDataExportContextBase(TextWriter writer, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter, int? totalRows, IProgress<int> reportProgress, CancellationToken cancellationToken)
+			: base(totalRows, reportProgress, cancellationToken)
+		{
+			_writer = writer;
+			_columns = columns;
+			_dataExportConverter = dataExportConverter;
+		}
+
+		protected override void InitializeExport()
+		{
+			var columnHeaders = _columns.Select(h => _dataExportConverter.ToColumnName(h.Name).Replace("{", "{{").Replace("}", "}}"));
+			_sqlCommandTemplate = BuildSqlCommandTemplate(columnHeaders);
+		}
+
+		protected override void ExportRow(object[] rowValues)
+		{
+			_writer.WriteLine(_sqlCommandTemplate, _columns.Select(h => (object)FormatSqlValue(rowValues[h.ColumnIndex])).ToArray());
+		}
+
+		protected abstract string BuildSqlCommandTemplate(IEnumerable<string> columnHeaders);
+
+		private string FormatSqlValue(object value)
+		{
+			return IsNull(value)
+				? "NULL"
+				: _dataExportConverter.ToSqlValue(value);
+		}
+	}
+
+	internal class SqlUpdateExportContext : SqlDataExportContextBase
 	{
 		private const string UpdateColumnClauseMask = "{0} = {{{1}}}";
 
-		public override string Name { get; } = "SQL update";
+		public SqlUpdateExportContext(TextWriter writer, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter, int? totalRows, IProgress<int> reportProgress, CancellationToken cancellationToken)
+			: base(writer, columns, dataExportConverter, totalRows, reportProgress, cancellationToken)
+		{
+		}
 
 		protected override string BuildSqlCommandTemplate(IEnumerable<string> columnHeaders)
 		{

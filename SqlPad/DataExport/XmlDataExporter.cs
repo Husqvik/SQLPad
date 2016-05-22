@@ -13,8 +13,6 @@ namespace SqlPad.DataExport
 {
 	public class XmlDataExporter : IDataExporter
 	{
-		private const string Underscore = "_";
-		private static readonly Regex XmlElementNameFormatExpression = new Regex("[^\\w]", RegexOptions.Compiled);
 		private static readonly XmlWriterSettings XmlWriterSettings =
 			new XmlWriterSettings
 			{
@@ -38,32 +36,19 @@ namespace SqlPad.DataExport
 			var orderedColumns = DataExportHelper.GetOrderedExportableColumns(resultViewer.ResultGrid);
 			var rows = (ICollection)resultViewer.ResultGrid.Items;
 
-			return Task.Factory.StartNew(() => ExportInternal(orderedColumns, rows, fileName, dataExportConverter, cancellationToken, reportProgress), cancellationToken);
+			return Task.Run(() => ExportInternal(orderedColumns, rows, fileName, dataExportConverter, reportProgress, cancellationToken), cancellationToken);
 		}
 
-		private static void ExportInternal(IReadOnlyList<ColumnHeader> orderedColumns, ICollection rows, string fileName, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress)
+		private static void ExportInternal(IReadOnlyList<ColumnHeader> orderedColumns, ICollection rows, string fileName, IDataExportConverter dataExportConverter, IProgress<int> reportProgress, CancellationToken cancellationToken)
 		{
 			var stringBuilder = new StringBuilder();
 
 			var exportToClipboard = String.IsNullOrEmpty(fileName);
 
-			var columnHeaders = orderedColumns
-				.Select(h => FormatColumnHeaderAsXmlElementName(h.Name))
-				.ToArray();
-
 			using (var xmlWriter = exportToClipboard ? XmlWriter.Create(stringBuilder, XmlWriterSettings) : XmlWriter.Create(fileName, XmlWriterSettings))
 			{
-				xmlWriter.WriteStartDocument();
-				xmlWriter.WriteStartElement("data");
-
-				DataExportHelper.ExportRows(
-					rows,
-					(rowValues, isLastRow) => ExportRow(xmlWriter, rowValues, orderedColumns, columnHeaders, dataExportConverter),
-					reportProgress,
-					cancellationToken);
-
-				xmlWriter.WriteEndElement();
-				xmlWriter.WriteEndDocument();
+				var exportContext = new XmlDataExportContext(xmlWriter, orderedColumns, dataExportConverter, rows.Count, reportProgress, cancellationToken);
+				DataExportHelper.ExportRowsUsingContext(rows, exportContext);
 			}
 
 			if (exportToClipboard)
@@ -71,22 +56,58 @@ namespace SqlPad.DataExport
 				Application.Current.Dispatcher.InvokeAsync(() => Clipboard.SetText(stringBuilder.ToString()));
 			}
 		}
+	}
 
-		private static void ExportRow(XmlWriter xmlWriter, IReadOnlyList<object> rowValues, IReadOnlyList<ColumnHeader> orderedColumns, IReadOnlyList<string> columnHeaders, IDataExportConverter dataExportConverter)
+	internal class XmlDataExportContext : DataExportContextBase
+	{
+		private const string Underscore = "_";
+
+		private static readonly Regex XmlElementNameFormatExpression = new Regex("[^\\w]", RegexOptions.Compiled);
+
+		private readonly XmlWriter _xmlWriter;
+		private readonly IReadOnlyList<ColumnHeader> _columns;
+		private readonly string[] _columnHeaders;
+		private readonly IDataExportConverter _dataExportConverter;
+
+		public XmlDataExportContext(XmlWriter xmlWriter, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter, int? totalRows, IProgress<int> reportProgress, CancellationToken cancellationToken)
+			: base(totalRows, reportProgress, cancellationToken)
 		{
-			xmlWriter.WriteStartElement("row");
+			_xmlWriter = xmlWriter;
+			_columns = columns;
+			_dataExportConverter = dataExportConverter;
 
-			for (var i = 0; i < orderedColumns.Count; i++)
-			{
-				xmlWriter.WriteElementString(columnHeaders[i], FormatXmlValue(rowValues[orderedColumns[i].ColumnIndex], dataExportConverter));
-			}
-
-			xmlWriter.WriteEndElement();
+			_columnHeaders = columns
+				.Select(h => FormatColumnHeaderAsXmlElementName(h.Name))
+				.ToArray();
 		}
 
-		private static string FormatXmlValue(object value, IDataExportConverter dataExportConverter)
+		protected override void InitializeExport()
 		{
-			return DataExportHelper.IsNull(value) ? null : dataExportConverter.ToXml(value);
+			_xmlWriter.WriteStartDocument();
+			_xmlWriter.WriteStartElement("data");
+		}
+
+		public override void Complete()
+		{
+			_xmlWriter.WriteEndElement();
+			_xmlWriter.WriteEndDocument();
+		}
+
+		protected override void ExportRow(object[] rowValues)
+		{
+			_xmlWriter.WriteStartElement("row");
+
+			for (var i = 0; i < _columns.Count; i++)
+			{
+				_xmlWriter.WriteElementString(_columnHeaders[i], FormatXmlValue(rowValues[_columns[i].ColumnIndex]));
+			}
+
+			_xmlWriter.WriteEndElement();
+		}
+
+		private string FormatXmlValue(object value)
+		{
+			return IsNull(value) ? null : _dataExportConverter.ToXml(value);
 		}
 
 		private static string FormatColumnHeaderAsXmlElementName(string header)

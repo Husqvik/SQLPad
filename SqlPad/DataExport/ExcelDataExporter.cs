@@ -28,79 +28,104 @@ namespace SqlPad.DataExport
 			var orderedColumns = DataExportHelper.GetOrderedExportableColumns(resultViewer.ResultGrid);
 			var rows = (ICollection)resultViewer.ResultGrid.Items;
 			var worksheetName = resultViewer.Title;
-			return Task.Factory.StartNew(() => ExportInternal(fileName, worksheetName, orderedColumns, rows, cancellationToken, reportProgress), cancellationToken);
+			return Task.Run(() => ExportInternal(fileName, worksheetName, orderedColumns, rows, reportProgress, cancellationToken), cancellationToken);
 		}
 
-		private static void ExportInternal(string fileName, string worksheetName, IReadOnlyList<ColumnHeader> orderedColumns, ICollection rows, CancellationToken cancellationToken, IProgress<int> reportProgress)
+		private static void ExportInternal(string fileName, string worksheetName, IReadOnlyList<ColumnHeader> orderedColumns, ICollection rows, IProgress<int> reportProgress, CancellationToken cancellationToken)
 		{
-			var package = new ExcelPackage(new FileInfo(fileName));
-			if (package.Workbook.Worksheets[worksheetName] != null)
+			var exportContext = new ExcelDataExportContext(fileName, worksheetName, orderedColumns, rows.Count, reportProgress, cancellationToken);
+			DataExportHelper.ExportRowsUsingContext(rows, exportContext);
+		}
+	}
+
+	internal class ExcelDataExportContext : DataExportContextBase
+	{
+		private readonly string _fileName;
+		private readonly string _worksheetName;
+		private readonly IReadOnlyList<ColumnHeader> _columns;
+
+		private ExcelPackage _package;
+		private ExcelWorksheet _worksheet;
+		private int _currentRowIndex;
+
+		public ExcelDataExportContext(string fileName, string worksheetName, IReadOnlyList<ColumnHeader> columns, int? totalRows, IProgress<int> reportProgress, CancellationToken cancellationToken)
+			: base(totalRows, reportProgress, cancellationToken)
+		{
+			_fileName = fileName;
+			_worksheetName = worksheetName;
+			_columns = columns;
+		}
+
+		protected override void InitializeExport()
+		{
+			_currentRowIndex = 1;
+
+			_package = new ExcelPackage(new FileInfo(_fileName));
+			if (_package.Workbook.Worksheets[_worksheetName] != null)
 			{
-				package.Workbook.Worksheets.Delete(worksheetName);
+				_package.Workbook.Worksheets.Delete(_worksheetName);
 			}
 
-			var worksheet = package.Workbook.Worksheets.Add(worksheetName);
-			var rowCount = rows.Count;
-			var totalCells = orderedColumns.Count * rowCount;
+			_worksheet = _package.Workbook.Worksheets.Add(_worksheetName);
 
-			for (var i = 0; i < orderedColumns.Count; i++)
+			for (var i = 0; i < _columns.Count; i++)
 			{
-				var column = orderedColumns[i];
-				var cell = worksheet.Cells[1, i + 1];
-				cell.Value = column.Name;
-				cell.Style.Font.Bold = true;
+				var column = _columns[i];
+				var excelColumn = _worksheet.Column(i + 1);
 
-				var isNumeric = column.IsNumeric;
-				var rowIndex = 2;
-				foreach (object[] rowValues in rows)
-				{
-					cancellationToken.ThrowIfCancellationRequested();
-
-					var progress = (int)Math.Round((i * rowCount + rowIndex - 2) * 100f / totalCells);
-					reportProgress?.Report(progress);
-
-					var stringValue = FormatValue(rowValues[i]);
-					object value;
-
-					decimal number;
-					if (isNumeric && Decimal.TryParse(stringValue, out number))
-					{
-						value = number;
-					}
-					else
-					{
-						value = stringValue;
-					}
-
-					worksheet.Cells[rowIndex, i + 1].Value = value;
-
-					rowIndex++;
-				}
-
-				var excelColumn = worksheet.Column(i + 1);
-				excelColumn.AutoFit();
-
-				var columnCells = worksheet.Cells[2, i + 1, rowIndex, i + 1];
 				if (column.DataType == typeof(DateTime))
 				{
-					columnCells.Style.Numberformat.Format = ConfigurationProvider.Configuration.ResultGrid.DateFormat;
+					excelColumn.Style.Numberformat.Format = ConfigurationProvider.Configuration.ResultGrid.DateFormat;
 				}
-				else if (isNumeric)
+				else if (column.IsNumeric)
 				{
 					excelColumn.Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
 				}
+
+				var cell = _worksheet.Cells[1, i + 1];
+				cell.Value = column.Name;
+				cell.Style.Font.Bold = true;
+			}
+		}
+
+		protected override void ExportRow(object[] rowValues)
+		{
+			_currentRowIndex++;
+
+			for (var i = 0; i < _columns.Count; i++)
+			{
+				var stringValue = FormatValue(rowValues[i]);
+				object value;
+
+				decimal number;
+				if (_columns[i].IsNumeric && Decimal.TryParse(stringValue, out number))
+				{
+					value = number;
+				}
+				else
+				{
+					value = stringValue;
+				}
+
+				_worksheet.Cells[_currentRowIndex, i + 1].Value = value;
+			}
+		}
+
+		public override void Complete()
+		{
+			for (var i = 1; i <= _columns.Count; i++)
+			{
+				_worksheet.Column(i).AutoFit();
 			}
 
-			package.Save();
-
-			reportProgress?.Report(100);
+			_package.Save();
 		}
 
 		private static string FormatValue(object value)
 		{
-			return DataExportHelper.IsNull(value)
+			return IsNull(value)
 				? null
-				: CellValueConverter.Instance.Convert(value, typeof (String), null, CultureInfo.CurrentUICulture).ToString();
+				: CellValueConverter.Instance.Convert(value, typeof(String), null, CultureInfo.CurrentUICulture).ToString();
 		}
 	}
 }
