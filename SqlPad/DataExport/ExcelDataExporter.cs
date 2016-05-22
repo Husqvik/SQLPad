@@ -111,7 +111,7 @@ namespace SqlPad.DataExport
 			}
 		}
 
-		public override void Complete()
+		protected override void FinalizeExport()
 		{
 			for (var i = 1; i <= _columns.Count; i++)
 			{

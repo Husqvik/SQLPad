@@ -68,7 +68,7 @@ namespace SqlPad.Oracle
 				var folder = new Uri(Path.GetDirectoryName(typeof (OracleHelpProvider).Assembly.CodeBase)).LocalPath;
 				using (var reader = XmlReader.Create(Path.Combine(folder, "OracleDocumentation.xml")))
 				{
-					var documentation = (Documentation)new XmlSerializer(typeof (Documentation)).Deserialize(reader);
+					var documentation = (Documentation)new XmlSerializer(typeof(Documentation)).Deserialize(reader);
 
 					_sqlFunctionDocumentation = documentation.Functions.ToLookup(f => f.Name.ToQuotedIdentifier());
 
@@ -77,13 +77,10 @@ namespace SqlPad.Oracle
 					var dataDictionaryObjects = documentation.DataDictionary.ToDictionary(o => OracleObjectIdentifier.Create(OracleObjectIdentifier.SchemaSys, o.Name));
 					_dataDictionaryObjects = dataDictionaryObjects.AsReadOnly();
 
-					var packageDocumentations = new Dictionary<OracleObjectIdentifier, DocumentationPackage>();
 					var packageProgramDocumentations = new Dictionary<OracleProgramIdentifier, DocumentationPackageSubProgram>();
 					foreach (var packageDocumentation in documentation.Packages)
 					{
 						var packageIdentifier = OracleObjectIdentifier.Create(OracleObjectIdentifier.SchemaSys, packageDocumentation.Name);
-						packageDocumentations.Add(packageIdentifier, packageDocumentation);
-
 						var dataDictionaryObjectDocumentation =
 							new DocumentationDataDictionaryObject
 							{

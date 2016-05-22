@@ -38,7 +38,6 @@ namespace SqlPad
 
 		private static readonly string[] OpeningParenthesisOrBrackets = { "(", "[", "{" };
 		private static readonly string[] ClosingParenthesisOrBrackets = { ")", "]", "}" };
-		private static readonly ColorCodeToBrushConverter TabHeaderBrushConverter = new ColorCodeToBrushConverter();
 
 		private SqlDocumentRepository _documentRepository;
 		private ICodeCompletionProvider _codeCompletionProvider;
@@ -297,10 +296,10 @@ namespace SqlPad
 					Template = (ControlTemplate)Application.Current.Resources["TabItemControlTemplate"]
 				};
 
-			var textColorBinding = new Binding(nameof(DocumentHeaderTextColorCode)) { Source = this, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged, Converter = TabHeaderBrushConverter };
+			var textColorBinding = new Binding(nameof(DocumentHeaderTextColorCode)) { Source = this, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged, Converter = ColorCodeToBrushConverter.Instance };
 			header.SetBinding(ForegroundProperty, textColorBinding);
 
-			var backgroundColorBinding = new Binding(nameof(DocumentHeaderBackgroundColorCode)) { Source = this, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged, Converter = TabHeaderBrushConverter };
+			var backgroundColorBinding = new Binding(nameof(DocumentHeaderBackgroundColorCode)) { Source = this, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged, Converter = ColorCodeToBrushConverter.Instance };
 			TabItem.SetBinding(BackgroundProperty, backgroundColorBinding);
 		}
 
@@ -1501,12 +1500,12 @@ namespace SqlPad
 
 		private void TextEnteringHandler(object sender, TextCompositionEventArgs e)
 		{
-			if (Editor.IsReadOnly)
+			/*if (Editor.IsReadOnly)
 			{
 				TimedNotificationMessage = "Editor is read only please wait until the action is finished. ";
 				_timerTimedNotification.Start();
 				e.Handled = true;
-			}
+			}*/
 
 			if (!Editor.IsMultiSelectionActive)
 			{

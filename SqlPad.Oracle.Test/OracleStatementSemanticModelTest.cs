@@ -3511,5 +3511,25 @@ SELECT value FROM data";
 			var xmlTypeReference = mainQueryBlock.DataTypeReferences.First();
 			xmlTypeReference.ResolvedDataType.FullyQualifiedName.Name.ShouldBe("XMLTYPE");
 		}
+
+		[Test]
+		public void TestPivotAggregatedColumnResolutionInSelectList()
+		{
+			const string query1 =
+@"SELECT
+	val
+FROM (
+	SELECT 'etc' val, 1 ispartno FROM dual)
+	PIVOT (max(val) FOR ispartno IN (1 AS partnumber, 0 AS version))";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single().Validate();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
+			var mainQueryBlock = semanticModel.QueryBlocks.Last();
+			mainQueryBlock.Columns.Count.ShouldBe(1);
+			mainQueryBlock.Columns[0].ColumnReferences.Count.ShouldBe(1);
+			mainQueryBlock.Columns[0].ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(0);
+		}
 	}
 }

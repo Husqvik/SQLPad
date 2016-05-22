@@ -21,6 +21,8 @@ namespace SqlPad.DataExport
 	public interface IDataExportContext
 	{
 		void AppendRows(IEnumerable<object[]> rows);
+
+		void Complete();
 	}
 
 	public class DataExporters

@@ -70,7 +70,7 @@ namespace SqlPad.DataExport
 			_writer.WriteLine('[');
 		}
 
-		public override void Complete()
+		protected override void FinalizeExport()
 		{
 			_writer.WriteLine();
 			_writer.Write(']');

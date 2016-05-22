@@ -2968,7 +2968,7 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 		}
 
-		private OracleReference ResolveColumnFunctionOrDataTypeReferenceFromIdentifier(OracleQueryBlock queryBlock, OracleReferenceContainer referenceContainer, StatementGrammarNode identifier, StatementPlacement placement, OracleSelectListColumn selectListColumn, Func<StatementGrammarNode, StatementGrammarNode> getPrefixNonTerminalFromIdentiferFunction, Func<StatementGrammarNode, IEnumerable<StatementGrammarNode>> getExtraFunctionCallNodesFromIdentifierFunction)
+		private static OracleReference ResolveColumnFunctionOrDataTypeReferenceFromIdentifier(OracleQueryBlock queryBlock, OracleReferenceContainer referenceContainer, StatementGrammarNode identifier, StatementPlacement placement, OracleSelectListColumn selectListColumn, Func<StatementGrammarNode, StatementGrammarNode> getPrefixNonTerminalFromIdentiferFunction, Func<StatementGrammarNode, IEnumerable<StatementGrammarNode>> getExtraFunctionCallNodesFromIdentifierFunction)
 		{
 			var hasNotDatabaseLink = OracleReferenceBuilder.GetDatabaseLinkFromIdentifier(identifier) == null;
 			var dataTypeReference = ResolveDataTypeReference(queryBlock, referenceContainer, identifier, placement, selectListColumn);
@@ -3225,7 +3225,7 @@ namespace SqlPad.Oracle.SemanticModel
 			return newProgramReferences.AsReadOnly();
 		}
 
-		private static IEnumerable<StatementGrammarNode> GetFunctionCallNodes(StatementGrammarNode identifier)
+		private static IEnumerable<StatementGrammarNode> GetFunctionCallNodes(StatementNode identifier)
 		{
 			return identifier.ParentNode.ChildNodes.Where(n => n.Id.In(NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.AnalyticClause));
 		}
@@ -3262,9 +3262,10 @@ namespace SqlPad.Oracle.SemanticModel
 				{
 					ProgramIdentifierNode = identifierNode,
 					DatabaseLinkNode = OracleReferenceBuilder.GetDatabaseLinkFromIdentifier(identifierNode),
-					RootNode = identifierNode.GetAncestor(NonTerminals.Expression)
-					           ?? identifierNode.GetAncestor(NonTerminals.TableCollectionInnerExpression)
-					           ?? identifierNode.GetAncestor(NonTerminals.PlSqlProcedureCall),
+					RootNode =
+						identifierNode.GetAncestor(NonTerminals.Expression)
+						?? identifierNode.GetAncestor(NonTerminals.TableCollectionInnerExpression)
+						?? identifierNode.GetAncestor(NonTerminals.PlSqlProcedureCall),
 					Owner = queryBlock,
 					Placement = placement,
 					AnalyticClauseNode = analyticClauseNode,
@@ -3288,7 +3289,12 @@ namespace SqlPad.Oracle.SemanticModel
 		private static OracleColumnReference CreateColumnReference(OracleReferenceContainer container, OracleQueryBlock queryBlock, OracleSelectListColumn selectListColumn, StatementPlacement placement, StatementGrammarNode identifierNode, StatementGrammarNode prefixNonTerminal)
 		{
 			StatementGrammarNode rootNode;
-			if (String.Equals(identifierNode.ParentNode.Id, NonTerminals.IdentifierList) || String.Equals(identifierNode.ParentNode.Id, NonTerminals.ColumnIdentifierChainedList) || String.Equals(identifierNode.Id, Terminals.RowNumberPseudocolumn) || String.Equals(identifierNode.Id, Terminals.Level) || String.Equals(identifierNode.Id, Terminals.User))
+			if (String.Equals(identifierNode.ParentNode.Id, NonTerminals.IdentifierList) ||
+				String.Equals(identifierNode.ParentNode.Id, NonTerminals.ColumnIdentifierChainedList) ||
+				String.Equals(identifierNode.Id, Terminals.RowNumberPseudocolumn) ||
+				String.Equals(identifierNode.Id, Terminals.Level) ||
+				String.Equals(identifierNode.Id, Terminals.User) ||
+				String.Equals(identifierNode.ParentNode.Id, NonTerminals.IdentifierOrParenthesisEnclosedIdentifierList))
 			{
 				rootNode = identifierNode;
 			}
@@ -3302,7 +3308,11 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 			else
 			{
-				rootNode = identifierNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.AliasedExpressionOrAllTableColumns), NonTerminals.PrefixedColumnReference) ?? identifierNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.AliasedExpressionOrAllTableColumns), NonTerminals.PrefixedAsterisk) ?? identifierNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.QueryTableExpression), NonTerminals.TableCollectionInnerExpression) ?? identifierNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.AliasedExpressionOrAllTableColumns), NonTerminals.Expression);
+				rootNode =
+					identifierNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.AliasedExpressionOrAllTableColumns), NonTerminals.PrefixedColumnReference)
+					?? identifierNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.AliasedExpressionOrAllTableColumns), NonTerminals.PrefixedAsterisk)
+					?? identifierNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.QueryTableExpression), NonTerminals.TableCollectionInnerExpression)
+					?? identifierNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.AliasedExpressionOrAllTableColumns), NonTerminals.Expression);
 			}
 
 			var columnReference =

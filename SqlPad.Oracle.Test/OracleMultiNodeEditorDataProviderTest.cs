@@ -120,6 +120,24 @@ PIVOT (
 		}
 
 		[Test]
+		public void TestExplicitColumnNameUsedInBothAnotherCommonTableExpressionAndMainQueryBlock()
+		{
+			const string sqlText =
+@"WITH data(value) AS (
+	SELECT 'value' FROM dual),
+seq_data (seq, value) AS (
+	SELECT ROWNUM, value FROM data)
+SELECT t1.value column1, t2.value column2 FROM seq_data t1, seq_data t2";
+
+			var multiNodeEditorData = GetMultiNodeEditorData(sqlText, 10);
+			multiNodeEditorData.CurrentNode.ShouldNotBe(null);
+			var segments = multiNodeEditorData.SynchronizedSegments.OrderBy(s => s.IndexStart).ToArray();
+			segments.Length.ShouldBe(1);
+			segments[0].IndexStart.ShouldBe(96);
+			segments[0].Length.ShouldBe(5);
+		}
+
+		[Test]
 		public void TestMultipleAliasedCteUsages()
 		{
 			const string sqlText =

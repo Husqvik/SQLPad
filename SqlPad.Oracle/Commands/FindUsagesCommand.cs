@@ -553,9 +553,12 @@ namespace SqlPad.Oracle.Commands
 				}
 
 				usages = parentReferences.Select(c => new TerminalUsage { Terminal = c.ColumnNode, Option = DisplayOptions.Usage });
+				if (parentQueryBlock.ExplicitColumnNameList != null)
+				{
+					continue;
+				}
 
 				var parentColumnReferences = parentReferences.Where(c => c.SelectListColumn != null && c.SelectListColumn.IsDirectReference).ToArray();
-
 				if (parentColumnReferences.Length == 1)
 				{
 					var parentColumnReference = parentColumnReferences[0];

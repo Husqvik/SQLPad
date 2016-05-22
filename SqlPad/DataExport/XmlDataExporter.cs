@@ -87,7 +87,7 @@ namespace SqlPad.DataExport
 			_xmlWriter.WriteStartElement("data");
 		}
 
-		public override void Complete()
+		protected override void FinalizeExport()
 		{
 			_xmlWriter.WriteEndElement();
 			_xmlWriter.WriteEndDocument();

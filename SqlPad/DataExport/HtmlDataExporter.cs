@@ -64,7 +64,7 @@ namespace SqlPad.DataExport
 			_writer.Write(headerLine);
 		}
 
-		public override void Complete()
+		protected override void FinalizeExport()
 		{
 			_writer.Write("<table>");
 		}

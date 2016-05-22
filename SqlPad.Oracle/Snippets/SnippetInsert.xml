@@ -1,9 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Snippet Name="Insert" Description="" xmlns="http://husqvik.com/SqlPad/2014/02" Rdbms="Oracle" Version="*">
-  <Text><![CDATA[INSERT INTO {0} VALUES ();]]></Text>
+  <Text><![CDATA[INSERT INTO {0} VALUES ({1});]]></Text>
   <Description><![CDATA[INSERT INTO <table> VALUES ()]]></Description>
   <Parameters>
     <Parameter Index="0" DefaultValue="" />
+    <Parameter Index="1" DefaultValue="" />
   </Parameters>
   <AllowedTerminals>
     <Terminal Id ="Insert" />

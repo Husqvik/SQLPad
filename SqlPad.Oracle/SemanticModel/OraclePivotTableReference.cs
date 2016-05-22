@@ -139,9 +139,15 @@ namespace SqlPad.Oracle.SemanticModel
 			var pivotForColumnList = PivotClause[NonTerminals.PivotForClause, NonTerminals.IdentifierOrParenthesisEnclosedIdentifierList];
 			if (pivotForColumnList != null)
 			{
+				var aggregatedColumnNames =
+					SourceReferenceContainer.ColumnReferences
+						.Where(c => AggregateFunctions.Any(f => f.SourcePosition.Contains(c.RootNode.SourcePosition)))
+						.Select(c => c.NormalizedName);
+
 				var groupingColumns = pivotForColumnList
 					.GetDescendants(Terminals.Identifier)
 					.Select(i => i.Token.Value.ToQuotedIdentifier())
+					.Concat(aggregatedColumnNames)
 					.ToHashSet();
 
 				switch (PivotClause.Id)

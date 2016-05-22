@@ -49,6 +49,7 @@ namespace SqlPad.DataExport
 		private readonly CancellationToken _cancellationToken;
 
 		private bool _isInitialized;
+		private bool _isFinalized;
 
 		protected int CurrentRowIndex { get; private set; }
 
@@ -72,7 +73,12 @@ namespace SqlPad.DataExport
 			CurrentRowIndex = 0;
 		}
 
-		public virtual void Complete() { }
+		public void Complete()
+		{
+			FinalizeExport();
+
+			_isFinalized = true;
+		}
 
 		public void AppendRows(IEnumerable<object[]> rows)
 		{
@@ -81,15 +87,23 @@ namespace SqlPad.DataExport
 				throw new InvalidOperationException($"{GetType().Name} has not been initialized. ");
 			}
 
+			if (_isFinalized)
+			{
+				throw new InvalidOperationException($"{GetType().Name} has been finalized. ");
+			}
+
 			foreach (var rowValues in rows)
 			{
 				_cancellationToken.ThrowIfCancellationRequested();
 
 				ExportRow(rowValues);
 
-				if (_totalRows.HasValue && _reportProgress != null)
+				if (_reportProgress != null)
 				{
-					var progress = (int)Math.Round(CurrentRowIndex * 100f / _totalRows.Value);
+					var progress = _totalRows.HasValue
+						? (int)Math.Round(CurrentRowIndex * 100f / _totalRows.Value)
+						: CurrentRowIndex;
+
 					_reportProgress.Report(progress);
 				}
 
@@ -113,6 +127,8 @@ namespace SqlPad.DataExport
 		protected abstract void ExportRow(object[] rowValues);
 
 		protected virtual void InitializeExport() { }
+
+		protected virtual void FinalizeExport() { }
 	}
 
 	internal class CsvDataExportContext : DataExportContextBase

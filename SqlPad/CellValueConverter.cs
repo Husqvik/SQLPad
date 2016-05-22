@@ -136,6 +136,8 @@ namespace SqlPad
 
 	public class ColorCodeToBrushConverter : IValueConverter
 	{
+		public static readonly ColorCodeToBrushConverter Instance = new ColorCodeToBrushConverter();
+
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			var colorCode = (string)value;
