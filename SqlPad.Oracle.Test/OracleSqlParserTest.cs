@@ -1882,7 +1882,7 @@ FROM DUAL";
 				parsingStopwatch.Stop();
 				cancellationStopwatch.Stop();
 
-				Console.WriteLine($"Parsing successfully cancelled; parse time: {parsingStopwatch.ElapsedMilliseconds} ms; cancellation time: {cancellationStopwatch.ElapsedMilliseconds} ms");
+				Trace.WriteLine($"Parsing successfully cancelled; parse time: {parsingStopwatch.ElapsedMilliseconds} ms; cancellation time: {cancellationStopwatch.ElapsedMilliseconds} ms");
 			}
 		}
 
@@ -7860,7 +7860,7 @@ USING 'localhost:1521/hqpdb'";
 
 		private static OracleTokenReader CreateTokenReader(string sqlText)
 		{
-			Console.WriteLine("SQL text: " + sqlText);
+			Trace.WriteLine("SQL text: " + sqlText);
 
 			return OracleTokenReader.Create(new StringReader(sqlText));
 		}

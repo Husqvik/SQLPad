@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -73,14 +74,14 @@ WHERE
 					refreshFinishedResetEvent.WaitOne();
 				}
 
-				Console.WriteLine("Assert original database model");
+				Trace.WriteLine("Assert original database model");
 				await AssertDatabaseModel(databaseModel);
 
 				using (var modelClone = OracleDatabaseModel.GetDatabaseModel(ConnectionString, "Clone"))
 				{
 					await modelClone.Refresh();
 
-					Console.WriteLine("Assert cloned database model");
+					Trace.WriteLine("Assert cloned database model");
 					await AssertDatabaseModel(modelClone);
 				}
 			}
@@ -91,25 +92,25 @@ WHERE
 			databaseModel.Version.Major.ShouldBeGreaterThanOrEqualTo(11);
 
 			databaseModel.AllObjects.Count.ShouldBeGreaterThan(0);
-			Console.WriteLine($"All object dictionary has {databaseModel.AllObjects.Count} members. ");
+			Trace.WriteLine($"All object dictionary has {databaseModel.AllObjects.Count} members. ");
 			
 			databaseModel.DatabaseLinks.Count.ShouldBeGreaterThan(0);
-			Console.WriteLine($"Database link dictionary has {databaseModel.DatabaseLinks.Count} members. ");
+			Trace.WriteLine($"Database link dictionary has {databaseModel.DatabaseLinks.Count} members. ");
 
 			databaseModel.CharacterSets.Count.ShouldBeGreaterThan(0);
-			Console.WriteLine($"Character set collection has {databaseModel.CharacterSets.Count} members. ");
+			Trace.WriteLine($"Character set collection has {databaseModel.CharacterSets.Count} members. ");
 
 			databaseModel.StatisticsKeys.Count.ShouldBeGreaterThan(0);
-			Console.WriteLine($"Statistics key dictionary has {databaseModel.StatisticsKeys.Count} members. ");
+			Trace.WriteLine($"Statistics key dictionary has {databaseModel.StatisticsKeys.Count} members. ");
 
 			databaseModel.SystemParameters.Count.ShouldBeGreaterThan(0);
-			Console.WriteLine($"System parameters dictionary has {databaseModel.SystemParameters.Count} members. ");
+			Trace.WriteLine($"System parameters dictionary has {databaseModel.SystemParameters.Count} members. ");
 
 			var objectForScriptCreation = databaseModel.GetFirstSchemaObject<OracleSchemaObject>(databaseModel.GetPotentialSchemaObjectIdentifiers("SYS", "OBJ$"));
 			objectForScriptCreation.ShouldNotBe(null);
 			var objectScript = await databaseModel.ObjectScriptExtractor.ExtractSchemaObjectScriptAsync(objectForScriptCreation, CancellationToken.None);
 
-			Console.WriteLine("Object script output: " + Environment.NewLine + objectScript + Environment.NewLine);
+			Trace.WriteLine("Object script output: " + Environment.NewLine + objectScript + Environment.NewLine);
 
 			objectScript.ShouldNotBe(null);
 			objectScript.Length.ShouldBeGreaterThan(100);
@@ -159,7 +160,7 @@ WHERE
 			planItemCollection.PlanText.ShouldNotBe(null);
 			planItemCollection.PlanText.ShouldNotBe(String.Empty);
 
-			Console.WriteLine($"Display cursor output: {Environment.NewLine}{planItemCollection.PlanText}{Environment.NewLine}");
+			Trace.WriteLine($"Display cursor output: {Environment.NewLine}{planItemCollection.PlanText}{Environment.NewLine}");
 
 			planItemCollection.PlanText.ShouldContain(executionModel.StatementText);
 
@@ -169,7 +170,7 @@ WHERE
 			statisticsRecords.Length.ShouldBeGreaterThan(0);
 
 			var statistics = String.Join(Environment.NewLine, statisticsRecords.Select(r => $"{r.Name.PadRight(40)}: {r.Value}"));
-			Console.WriteLine($"Execution statistics output: {Environment.NewLine}{statistics}{Environment.NewLine}");
+			Trace.WriteLine($"Execution statistics output: {Environment.NewLine}{statistics}{Environment.NewLine}");
 
 			connectionAdapter.TraceFileName.ShouldNotBe(null);
 			connectionAdapter.TraceFileName.ShouldNotBe(String.Empty);
@@ -500,7 +501,7 @@ END;",
 				var viewText = await databaseModel.ObjectScriptExtractor.ExtractViewTextAsync(viewIdentifier, CancellationToken.None);
 				viewText.Length.ShouldBeGreaterThan(0);
 
-				Console.WriteLine($"Expanded view {viewIdentifier}:{Environment.NewLine}{viewText}");
+				Trace.WriteLine($"Expanded view {viewIdentifier}:{Environment.NewLine}{viewText}");
 			}
 		}
 
@@ -687,7 +688,7 @@ WHERE
 			await ExecuteDataProvider(displayCursorDataProvider);
 
 			displayCursorDataProvider.PlanText.ShouldNotBe(null);
-			Console.WriteLine(displayCursorDataProvider.PlanText);
+			Trace.WriteLine(displayCursorDataProvider.PlanText);
 		}
 
 		[Test]

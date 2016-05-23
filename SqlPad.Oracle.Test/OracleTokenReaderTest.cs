@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
@@ -8,8 +9,8 @@ using Shouldly;
 namespace SqlPad.Oracle.Test
 {
 	[TestFixture]
-    public class OracleTokenReaderTest
-    {
+	public class OracleTokenReaderTest
+	{
 		[Test(Description = @"Tests '(' and '""' characters as tokens separators. ")]
 		public void TestParenthesisAndQuotesAsTokenSeparators()
 		{
@@ -600,19 +601,19 @@ namespace SqlPad.Oracle.Test
 			tokenIndexes.ShouldBe(new[] { 0 });
 		}
 
-		private string[] GetTokenValuesFromOracleSql(string sqlText, bool includeCommentBlocks = false)
+		private static string[] GetTokenValuesFromOracleSql(string sqlText, bool includeCommentBlocks = false)
 		{
 			return GetTokensFromOracleSql(sqlText, includeCommentBlocks).Select(t => t.Value).ToArray();
 		}
 
-		private int[] GetTokenIndexesFromOracleSql(string sqlText, bool includeCommentBlocks = false)
+		private static int[] GetTokenIndexesFromOracleSql(string sqlText, bool includeCommentBlocks = false)
 		{
 			return GetTokensFromOracleSql(sqlText, includeCommentBlocks).Select(t => t.Index).ToArray();
 		}
 
 		private static IEnumerable<OracleToken> GetTokensFromOracleSql(string sqlText, bool includeCommentBlocks)
 		{
-			Console.WriteLine("Statement text: " + sqlText);
+			Trace.WriteLine("Statement text: " + sqlText);
 
 			using (var reader = new StringReader(sqlText))
 			{
