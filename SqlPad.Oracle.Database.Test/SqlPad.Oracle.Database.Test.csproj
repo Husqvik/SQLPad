@@ -85,6 +85,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConsoleTraceListenerTestFixture.cs" />
     <Compile Include="OracleDatabaseModelTest.cs" />
     <Compile Include="OracleDebuggerSessionTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -86,7 +86,7 @@
     <Compile Include="Commands\TestCommandSettings.cs" />
     <Compile Include="Commands\CommandTest.cs" />
     <Compile Include="Commands\OracleTestCommandSettingsProviderFactory.cs" />
-    <Compile Include="GlobalTestFixture.cs" />
+    <Compile Include="ConsoleTraceListenerTestFixture.cs" />
     <Compile Include="MiscellaneousTest.cs" />
     <Compile Include="OracleCodeCompletionProviderTest.cs" />
     <Compile Include="OracleMultiNodeEditorDataProviderTest.cs" />

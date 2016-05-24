@@ -1,10 +1,10 @@
 ﻿using System.Diagnostics;
 using NUnit.Framework;
 
-namespace SqlPad.Oracle.Test
+namespace SqlPad.Test
 {
 	[SetUpFixture]
-	public class GlobalTestFixture
+	public class ConsoleTraceListenerTestFixture
 	{
 		[OneTimeSetUp]
 		public void SetUp()
