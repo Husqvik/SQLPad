@@ -5901,6 +5901,7 @@
         </Sequence>
         <Sequence>
           <Terminal Id="SystemDate" />
+          <NonTerminal Id="UndocumentedSystemDatePostfix" IsOptional="true" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -5957,6 +5958,15 @@
         <Sequence>
           <Terminal Id="PlSqlCompilationParameter" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+    
+    <Rule StartingNonTerminal="UndocumentedSystemDatePostfix">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="AtCharacter" />
+          <Terminal Id="ExclamationMark" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -19978,6 +19988,7 @@
     <Terminal Id="Colon" Value=":" />
     <Terminal Id="Asterisk" Value="*" />
     <Terminal Id="AtCharacter" Value="@" />
+    <Terminal Id="ExclamationMark" Value="!" />
     <Terminal Id="Space" RegexValue="[:space:]+" />
     <Terminal Id="Union" Value="UNION" ReservedWord="Sql" />
     <Terminal Id="All" Value="ALL" ReservedWord="Sql" />

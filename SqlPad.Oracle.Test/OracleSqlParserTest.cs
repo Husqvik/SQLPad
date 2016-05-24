@@ -2700,6 +2700,16 @@ MATCH_RECOGNIZE(
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
+		[Test]
+		public void TestUndocumentedSysdateSyntaxWithExtraSymbols()
+		{
+			const string statement1 = @"SELECT SYSDATE@!FROM dual";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+		}
+
 		[Test, Ignore("not solved yet")]
 		public void TestParenthesisEnclosedObjectMember()
 		{

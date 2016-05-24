@@ -1032,7 +1032,7 @@ se";
 		}
 
 		[Test]
-		public void TestToCharSpecialParameterCompletion()
+		public void TestToCharNlsParameterCompletion()
 		{
 			const string statement = @"SELECT TO_CHAR(12.34, '9G999D00', '') FROM DUAL";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 35).ToList();
@@ -1076,6 +1076,18 @@ se";
 			items[33].Name.ShouldStartWith("YYYY-MM-DD\"T\"HH24:MI:SS - XML date time - ");
 			items[33].Text.ShouldBe("'YYYY-MM-DD\"T\"HH24:MI:SS'");
 			items[33].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+		}
+
+
+		[Test]
+		public void TestToDateNlsParameterCompletion()
+		{
+			const string statement = "SELECT TO_DATE('Tue, 24', 'Dy, DD', '') FROM dual";
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 37).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("NLS_DATE_LANGUAGE = <language>");
+			items[0].Text.ShouldBe("'NLS_DATE_LANGUAGE = <language>'");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 		}
 
 		[Test]

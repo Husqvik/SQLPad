@@ -372,6 +372,14 @@ namespace SqlPad.Oracle.Test
 			toCharWithNlsParameterFunctionMetadata.Owner = builtInFunctionPackage;
 			builtInFunctionPackage.Programs.Add(toCharWithNlsParameterFunctionMetadata);
 
+			var toDateWithNlsParameterFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "TO_DATE", 1), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
+			toDateWithNlsParameterFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Date, OracleObjectIdentifier.Empty, false));
+			toDateWithNlsParameterFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"LEFT\"", 1, 1, 0, ParameterDirection.Input, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
+			toDateWithNlsParameterFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"FORMAT\"", 2, 2, 0, ParameterDirection.Input, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
+			toDateWithNlsParameterFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"PARMS\"", 3, 3, 0, ParameterDirection.Input, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
+			toDateWithNlsParameterFunctionMetadata.Owner = builtInFunctionPackage;
+			builtInFunctionPackage.Programs.Add(toDateWithNlsParameterFunctionMetadata);
+
 			var roundFunctionOverload1Metadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.IdentifierBuiltInProgramRound, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
 			roundFunctionOverload1Metadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
 			roundFunctionOverload1Metadata.AddParameter(new OracleProgramParameterMetadata("\"LEFT\"", 1, 1, 0, ParameterDirection.Input, TerminalValues.Number, OracleObjectIdentifier.Empty, false));

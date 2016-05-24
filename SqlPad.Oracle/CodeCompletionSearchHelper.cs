@@ -51,8 +51,9 @@ namespace SqlPad.Oracle
 			}
 
 			var truncFunctionOverload = specificFunctionOverloads
-				.FirstOrDefault(o => o.CurrentParameterIndex == 1 && o.ProgramMetadata.Identifier.In(OracleProgramIdentifier.IdentifierBuiltInProgramTrunc, OracleProgramIdentifier.IdentifierBuiltInProgramRound) &&
-				                     String.Equals(o.ProgramMetadata.Parameters[o.CurrentParameterIndex + 1].DataType, "VARCHAR2"));
+				.FirstOrDefault(o =>
+					o.CurrentParameterIndex == 1 && o.ProgramMetadata.Identifier.In(OracleProgramIdentifier.IdentifierBuiltInProgramTrunc, OracleProgramIdentifier.IdentifierBuiltInProgramRound) &&
+					String.Equals(o.ProgramMetadata.Parameters[o.CurrentParameterIndex + 1].DataType, "VARCHAR2"));
 
 			if (truncFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(truncFunctionOverload))
 			{
@@ -71,8 +72,10 @@ namespace SqlPad.Oracle
 			}
 
 			var toCharFunctionOverload = specificFunctionOverloads
-				.FirstOrDefault(o => o.CurrentParameterIndex == 1 && o.ProgramMetadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramToChar &&
-									 String.Equals(o.ProgramMetadata.Parameters[o.CurrentParameterIndex + 1].DataType, "VARCHAR2"));
+				.FirstOrDefault(o =>
+					o.CurrentParameterIndex == 1 && o.ProgramMetadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramToChar &&
+					String.Equals(o.ProgramMetadata.Parameters[o.CurrentParameterIndex + 1].DataType, "VARCHAR2"));
+
 			if (toCharFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(toCharFunctionOverload))
 			{
 				BuildCommonDateFormatCompletionItems(currentNode, completionItems);
@@ -90,8 +93,10 @@ namespace SqlPad.Oracle
 			}
 
 			toCharFunctionOverload = specificFunctionOverloads
-				.FirstOrDefault(o => o.CurrentParameterIndex == 2 && o.ProgramMetadata.Identifier.In(OracleProgramIdentifier.IdentifierBuiltInProgramToChar, OracleProgramIdentifier.IdentifierBuiltInProgramToNumber) &&
-				                     String.Equals(o.ProgramMetadata.Parameters[o.CurrentParameterIndex + 1].DataType, "VARCHAR2"));
+				.FirstOrDefault(o =>
+					o.CurrentParameterIndex == 2 && o.ProgramMetadata.Identifier.In(OracleProgramIdentifier.IdentifierBuiltInProgramToChar, OracleProgramIdentifier.IdentifierBuiltInProgramToNumber) &&
+					String.Equals(o.ProgramMetadata.Parameters[o.CurrentParameterIndex + 1].DataType, "VARCHAR2"));
+
 			if (toCharFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(toCharFunctionOverload))
 			{
 				const string itemText = "NLS_NUMERIC_CHARACTERS = '<decimal separator><group separator>' NLS_CURRENCY = 'currency_symbol' NLS_ISO_CURRENCY = <territory> NLS_DATE_LANGUAGE = <language>";
@@ -100,12 +105,24 @@ namespace SqlPad.Oracle
 			}
 
 			var toToDateOrTimestampFunctionOverload = specificFunctionOverloads
-				.FirstOrDefault(o => o.CurrentParameterIndex == 1 && o.ProgramMetadata.Identifier.In(OracleProgramIdentifier.IdentifierBuiltInProgramToDate, OracleProgramIdentifier.IdentifierBuiltInProgramToTimestamp, OracleProgramIdentifier.IdentifierBuiltInProgramToTimestampWithTimeZone) &&
-									 String.Equals(o.ProgramMetadata.Parameters[o.CurrentParameterIndex + 1].DataType, "VARCHAR2"));
+				.FirstOrDefault(
+					o => o.CurrentParameterIndex == 1 && o.ProgramMetadata.Identifier.In(OracleProgramIdentifier.IdentifierBuiltInProgramToDate, OracleProgramIdentifier.IdentifierBuiltInProgramToTimestamp, OracleProgramIdentifier.IdentifierBuiltInProgramToTimestampWithTimeZone) &&
+					     String.Equals(o.ProgramMetadata.Parameters[o.CurrentParameterIndex + 1].DataType, "VARCHAR2"));
+
 			if (toToDateOrTimestampFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(toToDateOrTimestampFunctionOverload))
 			{
 				BuildCommonDateFormatCompletionItems(currentNode, completionItems);
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "J", "J - Julian day; the number of days since January 1, 4712 BC. Number specified with J must be integers. "));
+			}
+
+			var toToDateOrTimestampFunctionNlsParameter = specificFunctionOverloads
+				.FirstOrDefault(
+					o => o.CurrentParameterIndex == 2 && o.ProgramMetadata.Identifier.In(OracleProgramIdentifier.IdentifierBuiltInProgramToDate, OracleProgramIdentifier.IdentifierBuiltInProgramToTimestamp, OracleProgramIdentifier.IdentifierBuiltInProgramToTimestampWithTimeZone) &&
+						 String.Equals(o.ProgramMetadata.Parameters[o.CurrentParameterIndex + 1].DataType, "VARCHAR2"));
+
+			if (toToDateOrTimestampFunctionNlsParameter != null && HasSingleStringLiteralParameterOrNoParameterToken(toToDateOrTimestampFunctionNlsParameter))
+			{
+				completionItems.Add(BuildParameterCompletionItem(currentNode, "NLS_DATE_LANGUAGE = <language>", "NLS_DATE_LANGUAGE = <language>"));
 			}
 
 			var randomStringFunctionOverload = specificFunctionOverloads
