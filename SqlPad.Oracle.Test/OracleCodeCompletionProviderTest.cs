@@ -4,6 +4,7 @@ using NUnit.Framework;
 using Shouldly;
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using SqlPad.Oracle.DataDictionary;
 using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
@@ -35,12 +36,15 @@ SEARCH DEPTH FIRST BY VAL SET SEQ#
 CYCLE VAL SET CYCLE# TO 'X' DEFAULT 'O'
 SELECT * FROM CTE JOIN DUAL ON TO_CHAR(VAL) <> DUMMY CROSS APPLY (SELECT * FROM DUAL) T2 WHERE VAL = SEQ# AND CYCLE# = 'O' ORDER BY SEQ# DESC, VAL";
 
+			var allocatedCharacters = (int)Math.Ceiling(Math.Log10(query.Length));
+
 			for (var i = 1; i < query.Length; i++)
 			{
 				var effectiveQuery = query.Substring(0, i);
 				var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, effectiveQuery, effectiveQuery.Length);
 
-				Trace.WriteLine($"Caret position: {effectiveQuery.Length}; Suggested items: {items.Count}");
+				var paddedCaretPosition = effectiveQuery.Length.ToString(CultureInfo.InvariantCulture).PadLeft(allocatedCharacters);
+				Trace.WriteLine($"Caret position: {paddedCaretPosition}; Suggested items: {items.Count}");
 			}
 		}
 
