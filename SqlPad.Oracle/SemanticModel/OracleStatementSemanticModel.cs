@@ -29,7 +29,7 @@ namespace SqlPad.Oracle.SemanticModel
 			Terminals.Cast,
 			Terminals.XmlCast,
 			Terminals.XmlElement,
-			//Terminals.XmlForest,
+			Terminals.XmlForest,
 			Terminals.XmlParse,
 			Terminals.XmlQuery,
 			Terminals.XmlRoot,
@@ -2957,7 +2957,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		protected IEnumerable<StatementGrammarNode> GetGrammarSpecificFunctionNodes(StatementGrammarNode sourceNode)
 		{
-			return sourceNode.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBlock, Terminals.Count, Terminals.Trim, Terminals.CharacterCode, Terminals.Cast, Terminals.Extract, Terminals.XmlRoot, Terminals.XmlElement, Terminals.XmlSerialize, Terminals.NegationOrNull, Terminals.JsonExists, Terminals.JsonQuery, Terminals.JsonValue, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, NonTerminals.WithinGroupAggregationFunction);
+			return sourceNode.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBlock, Terminals.Count, Terminals.Trim, Terminals.CharacterCode, Terminals.Cast, Terminals.Extract, Terminals.XmlRoot, Terminals.XmlElement, Terminals.XmlSerialize, Terminals.XmlForest, Terminals.NegationOrNull, Terminals.JsonExists, Terminals.JsonQuery, Terminals.JsonValue, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, NonTerminals.WithinGroupAggregationFunction);
 		}
 
 		protected void ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(OracleQueryBlock queryBlock, OracleReferenceContainer referenceContainer, IEnumerable<StatementGrammarNode> identifiers, StatementPlacement placement, OracleSelectListColumn selectListColumn, Func<StatementGrammarNode, StatementGrammarNode> getPrefixNonTerminalFromIdentiferFunction = null, Func<StatementGrammarNode, IEnumerable<StatementGrammarNode>> getFunctionCallNodesFromIdentifierFunction = null)
@@ -3192,14 +3192,18 @@ namespace SqlPad.Oracle.SemanticModel
 							parameterNodes.AddIfNotNull(parameterList[NonTerminals.Expression]);
 							parameterNodes.AddIfNotNull(parameterList[Terminals.StringLiteral]);
 							break;
+						case NonTerminals.XmlSimpleFunctionParameterClause:
+							var expressionNodes = parameterList.GetPathFilterDescendants(n => !n.Id.In(NonTerminals.NestedQuery), NonTerminals.Expression);
+							parameterNodes.AddRange(expressionNodes);
+							break;
 						case NonTerminals.AggregateFunctionParameter:
 						case NonTerminals.ParenthesisEnclosedExpressionListWithIgnoreNulls:
 							firstParameterExpression = parameterList[NonTerminals.Expression];
 							parameterNodes.Add(firstParameterExpression);
 							goto default;
 						default:
-							var nodes = parameterList.GetPathFilterDescendants(n => n != firstParameterExpression && !n.Id.In(NonTerminals.NestedQuery, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.Expression), NonTerminals.ExpressionList, NonTerminals.OptionalParameterExpressionList).Select(n => n.ChildNodes.FirstOrDefault());
-							parameterNodes.AddRange(nodes);
+							var expressionListNodes = parameterList.GetPathFilterDescendants(n => n != firstParameterExpression && !n.Id.In(NonTerminals.NestedQuery, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.Expression), NonTerminals.ExpressionList, NonTerminals.OptionalParameterExpressionList).Select(n => n.ChildNodes.FirstOrDefault());
+							parameterNodes.AddRange(expressionListNodes);
 							break;
 					}
 				}

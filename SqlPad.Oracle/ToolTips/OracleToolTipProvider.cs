@@ -126,6 +126,7 @@ namespace SqlPad.Oracle.ToolTips
 					case Terminals.XmlParse:
 					case Terminals.XmlQuery:
 					case Terminals.XmlRoot:
+					case Terminals.XmlForest:
 					case Terminals.PlSqlIdentifier:
 					case Terminals.ExceptionIdentifier:
 					case Terminals.CursorIdentifier:
