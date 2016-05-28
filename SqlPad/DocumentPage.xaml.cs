@@ -1494,7 +1494,7 @@ namespace SqlPad
 		{
 			var activeStatement = _documentRepository.Statements.GetStatementAtPosition(Editor.CaretOffset);
 			var terminal = activeStatement?.GetTerminalAtPosition(Editor.CaretOffset, t => t.Type == NodeType.Terminal && String.Equals(t.Token.Value, ")"));
-			return terminal != null && terminal.SourcePosition.IndexStart == Editor.CaretOffset &&
+			return terminal?.SourcePosition.IndexStart == Editor.CaretOffset &&
 			       terminal.ParentNode.ChildNodes.Any(n => n.Type == NodeType.Terminal && n != terminal && String.Equals(n.Token.Value, "("));
 		}
 
@@ -1527,10 +1527,15 @@ namespace SqlPad
 				_multiNodeEditor = null;
 			}
 
-			if (e.Text.Length == 1 && _completionWindow != null && e.Text == "\t")
+			if (String.Equals(e.Text, "\t"))
 			{
-				_completionWindow.CompletionList.RequestInsertion(e);
+				PerformCodeComplete();
 			}
+		}
+
+		private void PerformCodeComplete()
+		{
+			_completionWindow?.CompletionList.RequestInsertion(EventArgs.Empty);
 		}
 
 		internal void ActivateSnippet(int completionSegmentOffset, int completionSegmentLength, CompletionData completionData)
@@ -2104,6 +2109,8 @@ namespace SqlPad
 				}
 				else if (_backgroundRenderer.ActiveSnippet != null)
 				{
+					PerformCodeComplete();
+
 					if (!_backgroundRenderer.ActiveSnippet.SelectNextParameter())
 					{
 						_backgroundRenderer.ActiveSnippet = null;
