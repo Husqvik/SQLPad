@@ -54,7 +54,7 @@ namespace SqlPad
 			}
 		}
 
-		private IEnumerable<ResultViewer> ResultViewers => TabControlResult.Items.OfType<ResultViewer>();
+		private IEnumerable<DataGridResultViewer> ResultViewers => TabControlResult.Items.OfType<DataGridResultViewer>();
 
 		public bool KeepDatabaseOutputHistory { get; set; }
 
@@ -134,7 +134,7 @@ namespace SqlPad
 				foreach (var resultInfoColumnHeaders in statementResult.ResultInfoColumnHeaders.Where(r => r.Key.Type == ResultIdentifierType.UserDefined))
 				{
 					var resultViewer =
-						new ResultViewer(this, statementResult, resultInfoColumnHeaders.Key, resultInfoColumnHeaders.Value)
+						new DataGridResultViewer(this, statementResult, resultInfoColumnHeaders.Key)
 						{
 							AutoRefreshInterval = refreshInterval
 						};
@@ -157,7 +157,7 @@ namespace SqlPad
 		{
 			var resultViewers = TabControlResult.Items
 				.Cast<TabItem>()
-				.Select(i => i.Content as ResultViewer)
+				.Select(i => i.Content as DataGridResultViewer)
 				.Where(v => v != null)
 				.ToArray();
 
@@ -178,7 +178,7 @@ namespace SqlPad
 		private void ResultTabSelectedHandler(object sender, RoutedEventArgs args)
 		{
 			var tabItem = (TabItem)sender;
-			ActiveResultViewer = (ResultViewer)tabItem.Content;
+			ActiveResultViewer = (DataGridResultViewer)tabItem.Content;
 			ActiveResultViewer.ResultViewTabHeaderPopup.PlacementTarget = (UIElement)tabItem.Header;
 		}
 
@@ -495,7 +495,7 @@ namespace SqlPad
 
 		private bool IsTabAlwaysVisible(object tabItem)
 		{
-			return ((TabItem)tabItem).Content is ResultViewer || tabItem.In(TabExecutionLog, TabDatabaseOutput, TabTrace);
+			return ((TabItem)tabItem).Content is DataGridResultViewer || tabItem.In(TabExecutionLog, TabDatabaseOutput, TabTrace);
 		}
 
 		private void ErrorListMouseDoubleClickHandler(object sender, MouseButtonEventArgs e)
@@ -622,7 +622,7 @@ namespace SqlPad
 		private void OutputViewerMouseMoveHandler(object sender, MouseEventArgs e)
 		{
 			var selectedItem = (TabItem)TabControlResult.SelectedItem;
-			var resultViewer = selectedItem.Content as ResultViewer;
+			var resultViewer = selectedItem.Content as DataGridResultViewer;
 			if (resultViewer == null)
 			{
 				return;

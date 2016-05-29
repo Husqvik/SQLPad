@@ -15,7 +15,7 @@ namespace SqlPad
 		public static readonly DependencyProperty TitleProperty = DependencyProperty.Register(nameof(Title), typeof(string), typeof(OutputViewer), new UIPropertyMetadata(TitlePropertyChangedCallbackHandler));
 		public static readonly DependencyProperty DatabaseOutputProperty = DependencyProperty.Register(nameof(DatabaseOutput), typeof(string), typeof(OutputViewer), new UIPropertyMetadata(String.Empty));
 		public static readonly DependencyProperty ExecutionLogProperty = DependencyProperty.Register(nameof(ExecutionLog), typeof(string), typeof(OutputViewer), new UIPropertyMetadata(String.Empty));
-		public static readonly DependencyProperty ActiveResultViewerProperty = DependencyProperty.Register(nameof(ActiveResultViewer), typeof(ResultViewer), typeof(OutputViewer), new UIPropertyMetadata());
+		public static readonly DependencyProperty ActiveResultViewerProperty = DependencyProperty.Register(nameof(ActiveResultViewer), typeof(DataGridResultViewer), typeof(OutputViewer), new UIPropertyMetadata());
 
 		public static readonly DependencyProperty IsDebuggerControlVisibleProperty = DependencyProperty.Register(nameof(IsDebuggerControlVisible), typeof(bool), typeof(OutputViewer), new UIPropertyMetadata(false));
 		public static readonly DependencyProperty IsDebuggerControlEnabledProperty = DependencyProperty.Register(nameof(IsDebuggerControlEnabled), typeof(bool), typeof(OutputViewer), new UIPropertyMetadata(true));
@@ -27,9 +27,9 @@ namespace SqlPad
 
 		#region dependency property accessors
 		[Bindable(true)]
-		public ResultViewer ActiveResultViewer
+		public DataGridResultViewer ActiveResultViewer
 		{
-			get { return (ResultViewer)GetValue(ActiveResultViewerProperty); }
+			get { return (DataGridResultViewer)GetValue(ActiveResultViewerProperty); }
 			set { SetValue(ActiveResultViewerProperty, value); }
 		}
 

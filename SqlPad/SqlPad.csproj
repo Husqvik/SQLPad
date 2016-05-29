@@ -131,8 +131,8 @@
     <Compile Include="IDebuggerSession.cs" />
     <Compile Include="OutputViewer.DependencyProperties.cs" />
     <Compile Include="ResultSetDataGridTemplateSelector.cs" />
-    <Compile Include="ResultViewer.xaml.cs">
-      <DependentUpon>ResultViewer.xaml</DependentUpon>
+    <Compile Include="DataGridResultViewer.xaml.cs">
+      <DependentUpon>DataGridResultViewer.xaml</DependentUpon>
     </Compile>
     <Compile Include="SqlEditor.xaml.cs">
       <DependentUpon>SqlEditor.xaml</DependentUpon>
@@ -282,7 +282,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="ResultViewer.xaml">
+    <Page Include="DataGridResultViewer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

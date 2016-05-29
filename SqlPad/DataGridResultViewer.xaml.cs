@@ -23,22 +23,22 @@ using Xceed.Wpf.Toolkit;
 
 namespace SqlPad
 {
-	public partial class ResultViewer
+	public partial class DataGridResultViewer
 	{
 		#region dependency properties registration
-		public static readonly DependencyProperty IsSelectedCellLimitInfoVisibleProperty = DependencyProperty.Register(nameof(IsSelectedCellLimitInfoVisible), typeof(bool), typeof(ResultViewer), new UIPropertyMetadata());
-		public static readonly DependencyProperty IsSelectedCellAggregatedInfoVisibleProperty = DependencyProperty.Register(nameof(IsSelectedCellAggregatedInfoVisible), typeof(bool), typeof(ResultViewer), new UIPropertyMetadata());
-		public static readonly DependencyProperty IsSelectedCellInfoVisibleProperty = DependencyProperty.Register(nameof(IsSelectedCellInfoVisible), typeof(bool), typeof(ResultViewer), new UIPropertyMetadata());
-		public static readonly DependencyProperty SelectedCellValueCountProperty = DependencyProperty.Register(nameof(SelectedCellValueCount), typeof(long), typeof(ResultViewer), new UIPropertyMetadata(0L));
-		public static readonly DependencyProperty SelectedCellDistinctValueCountProperty = DependencyProperty.Register(nameof(SelectedCellDistinctValueCount), typeof(long), typeof(ResultViewer), new UIPropertyMetadata(0L));
-		public static readonly DependencyProperty SelectedCellSumProperty = DependencyProperty.Register(nameof(SelectedCellSum), typeof(object), typeof(ResultViewer), new UIPropertyMetadata());
-		public static readonly DependencyProperty SelectedCellAverageProperty = DependencyProperty.Register(nameof(SelectedCellAverage), typeof(object), typeof(ResultViewer), new UIPropertyMetadata());
-		public static readonly DependencyProperty SelectedCellMinProperty = DependencyProperty.Register(nameof(SelectedCellMin), typeof(object), typeof(ResultViewer), new UIPropertyMetadata());
-		public static readonly DependencyProperty SelectedCellMaxProperty = DependencyProperty.Register(nameof(SelectedCellMax), typeof(object), typeof(ResultViewer), new UIPropertyMetadata());
-		public static readonly DependencyProperty SelectedRowIndexProperty = DependencyProperty.Register(nameof(SelectedRowIndex), typeof(int), typeof(ResultViewer), new UIPropertyMetadata(0));
-		public static readonly DependencyProperty AutoRefreshIntervalProperty = DependencyProperty.Register(nameof(AutoRefreshInterval), typeof(TimeSpan), typeof(ResultViewer), new UIPropertyMetadata(TimeSpan.FromSeconds(60), AutoRefreshIntervalChangedCallback));
-		public static readonly DependencyProperty AutoRefreshEnabledProperty = DependencyProperty.Register(nameof(AutoRefreshEnabled), typeof(bool), typeof(ResultViewer), new UIPropertyMetadata(false, AutoRefreshEnabledChangedCallback));
-		public static readonly DependencyProperty SearchMatchCountProperty = DependencyProperty.Register(nameof(SearchMatchCount), typeof(int?), typeof(ResultViewer), new UIPropertyMetadata());
+		public static readonly DependencyProperty IsSelectedCellLimitInfoVisibleProperty = DependencyProperty.Register(nameof(IsSelectedCellLimitInfoVisible), typeof(bool), typeof(DataGridResultViewer), new UIPropertyMetadata());
+		public static readonly DependencyProperty IsSelectedCellAggregatedInfoVisibleProperty = DependencyProperty.Register(nameof(IsSelectedCellAggregatedInfoVisible), typeof(bool), typeof(DataGridResultViewer), new UIPropertyMetadata());
+		public static readonly DependencyProperty IsSelectedCellInfoVisibleProperty = DependencyProperty.Register(nameof(IsSelectedCellInfoVisible), typeof(bool), typeof(DataGridResultViewer), new UIPropertyMetadata());
+		public static readonly DependencyProperty SelectedCellValueCountProperty = DependencyProperty.Register(nameof(SelectedCellValueCount), typeof(long), typeof(DataGridResultViewer), new UIPropertyMetadata(0L));
+		public static readonly DependencyProperty SelectedCellDistinctValueCountProperty = DependencyProperty.Register(nameof(SelectedCellDistinctValueCount), typeof(long), typeof(DataGridResultViewer), new UIPropertyMetadata(0L));
+		public static readonly DependencyProperty SelectedCellSumProperty = DependencyProperty.Register(nameof(SelectedCellSum), typeof(object), typeof(DataGridResultViewer), new UIPropertyMetadata());
+		public static readonly DependencyProperty SelectedCellAverageProperty = DependencyProperty.Register(nameof(SelectedCellAverage), typeof(object), typeof(DataGridResultViewer), new UIPropertyMetadata());
+		public static readonly DependencyProperty SelectedCellMinProperty = DependencyProperty.Register(nameof(SelectedCellMin), typeof(object), typeof(DataGridResultViewer), new UIPropertyMetadata());
+		public static readonly DependencyProperty SelectedCellMaxProperty = DependencyProperty.Register(nameof(SelectedCellMax), typeof(object), typeof(DataGridResultViewer), new UIPropertyMetadata());
+		public static readonly DependencyProperty SelectedRowIndexProperty = DependencyProperty.Register(nameof(SelectedRowIndex), typeof(int), typeof(DataGridResultViewer), new UIPropertyMetadata(0));
+		public static readonly DependencyProperty AutoRefreshIntervalProperty = DependencyProperty.Register(nameof(AutoRefreshInterval), typeof(TimeSpan), typeof(DataGridResultViewer), new UIPropertyMetadata(TimeSpan.FromSeconds(60), AutoRefreshIntervalChangedCallback));
+		public static readonly DependencyProperty AutoRefreshEnabledProperty = DependencyProperty.Register(nameof(AutoRefreshEnabled), typeof(bool), typeof(DataGridResultViewer), new UIPropertyMetadata(false, AutoRefreshEnabledChangedCallback));
+		public static readonly DependencyProperty SearchMatchCountProperty = DependencyProperty.Register(nameof(SearchMatchCount), typeof(int?), typeof(DataGridResultViewer), new UIPropertyMetadata());
 		#endregion
 
 		#region dependency property accessors
@@ -122,7 +122,7 @@ namespace SqlPad
 		private static void AutoRefreshIntervalChangedCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
 		{
 			var interval = (TimeSpan)args.NewValue;
-			var resultViewer = (ResultViewer)dependencyObject;
+			var resultViewer = (DataGridResultViewer)dependencyObject;
 			if (interval.TotalSeconds < 1)
 			{
 				interval = TimeSpan.FromSeconds(1);
@@ -141,7 +141,7 @@ namespace SqlPad
 
 		private static void AutoRefreshEnabledChangedCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
 		{
-			var resultViewer = (ResultViewer)dependencyObject;
+			var resultViewer = (DataGridResultViewer)dependencyObject;
 			var enable = (bool)args.NewValue;
 			if (enable)
 			{
@@ -170,7 +170,6 @@ namespace SqlPad
 		private readonly ObservableCollection<object[]> _resultRows = new ObservableCollection<object[]>();
 		private readonly StatementExecutionResult _executionResult;
 
-		private IReadOnlyList<ColumnHeader> _columnHeaders;
 		private DateTime _lastRefresh;
 		private bool _searchedTextHighlightUsed;
 		private LastSearchedCell _lastSearchedCell = LastSearchedCell.Empty;
@@ -185,12 +184,13 @@ namespace SqlPad
 
 		private bool IsBusy => _outputViewer.IsBusy || _outputViewer.ConnectionAdapter.IsExecuting || _outputViewer.IsDebuggerControlVisible;
 
-		public ResultViewer(OutputViewer outputViewer, StatementExecutionResult executionResult, ResultInfo resultInfo, IReadOnlyList<ColumnHeader> columnHeaders)
+		private IReadOnlyList<ColumnHeader> ColumnHeaders => _executionResult.ResultInfoColumnHeaders[_resultInfo];
+
+		public DataGridResultViewer(OutputViewer outputViewer, StatementExecutionResult executionResult, ResultInfo resultInfo)
 		{
 			_outputViewer = outputViewer;
 			_executionResult = executionResult;
 			_resultInfo = resultInfo;
-			_columnHeaders = columnHeaders;
 
 			Title = resultInfo.Title;
 
@@ -308,7 +308,7 @@ namespace SqlPad
 		{
 			var childReferenceDataSources = await _outputViewer.StatementValidator.ApplyReferenceConstraintsAsync(_executionResult, _outputViewer.ConnectionAdapter.DatabaseModel, cancellationToken);
 
-			DataGridHelper.InitializeDataGridColumns(ResultGrid, _columnHeaders, _outputViewer.StatementValidator, _outputViewer.ConnectionAdapter);
+			DataGridHelper.InitializeDataGridColumns(ResultGrid, ColumnHeaders, _outputViewer.StatementValidator, _outputViewer.ConnectionAdapter);
 
 			AddChildReferenceColumns(ResultGrid, childReferenceDataSources);
 		}
@@ -335,7 +335,7 @@ namespace SqlPad
 
 			using (var writer = File.CreateText(dialog.FileName))
 			{
-				CSharpQueryClassGenerator.Generate(_executionResult.StatementModel, _columnHeaders, writer);
+				CSharpQueryClassGenerator.Generate(_executionResult.StatementModel, ColumnHeaders, writer);
 			}
 		}
 

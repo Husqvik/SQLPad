@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
@@ -404,7 +405,7 @@ WHERE
 			worksheet.Cells[3, 2].Value.ShouldBe("08/16/2014 00:00:00");
 		}
 
-		private static async Task<string> GetExportContent(ResultViewer resultViewer, IDataExporter dataExporter)
+		private static async Task<string> GetExportContent(DataGridResultViewer resultViewer, IDataExporter dataExporter)
 		{
 			var tempFileName = await GenerateExportFile(resultViewer, dataExporter);
 
@@ -413,7 +414,7 @@ WHERE
 			return result;
 		}
 
-		private static async Task<string> GenerateExportFile(ResultViewer resultViewer, IDataExporter dataExporter)
+		private static async Task<string> GenerateExportFile(DataGridResultViewer resultViewer, IDataExporter dataExporter)
 		{
 			var tempFileName = Path.GetTempFileName();
 			var connectionConfiguration = ConfigurationProvider.GetConnectionConfiguration(ConfigurationProvider.ConnectionStrings[0].Name);
@@ -422,7 +423,7 @@ WHERE
 			return tempFileName;
 		}
 
-		private static ResultViewer InitializeResultViewer()
+		private static DataGridResultViewer InitializeResultViewer()
 		{
 			var columnHeaders =
 				new[]
@@ -445,6 +446,8 @@ WHERE
 					//new object[] {"\"><?,.;:{}[]%$#@!~^&*()_+-§' ,5", new DateTime(2015, 5, 30) }
 				};
 
+			var resultInfo = new ResultInfo(null, "Test result", ResultIdentifierType.UserDefined);
+
 			var executionResult =
 				new StatementExecutionResult
 				{
@@ -452,11 +455,16 @@ WHERE
 						new StatementExecutionModel
 						{
 							StatementText = "SELECT * FROM DUAL"
+						},
+					ResultInfoColumnHeaders =
+						new Dictionary<ResultInfo, IReadOnlyList<ColumnHeader>>
+						{
+							{ resultInfo, columnHeaders }
 						}
 				};
 
 			var resultViewer =
-				new ResultViewer(outputViewer, executionResult, new ResultInfo(null, "Test result", ResultIdentifierType.UserDefined), columnHeaders)
+				new DataGridResultViewer(outputViewer, executionResult, resultInfo)
 				{
 					ResultGrid = { ItemsSource = dataRows }
 				};
