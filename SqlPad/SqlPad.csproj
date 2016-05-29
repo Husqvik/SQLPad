@@ -110,6 +110,7 @@
     <Compile Include="ClipboardManager.cs" />
     <Compile Include="ColumnHeader.cs" />
     <Compile Include="CSharpQueryClassGenerator.cs" />
+    <Compile Include="DataExport\DataExportContextBase.cs" />
     <Compile Include="FoldingSection.cs" />
     <Compile Include="IConnectionAdapter.cs" />
     <Compile Include="ResultInfo.cs" />
