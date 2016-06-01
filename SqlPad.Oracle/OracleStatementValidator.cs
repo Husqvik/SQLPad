@@ -229,7 +229,7 @@ namespace SqlPad.Oracle
 			return validationModel;
 		}
 
-		private void ValidatePlSqlPrograms(OracleValidationModel validationModel)
+		private static void ValidatePlSqlPrograms(OracleValidationModel validationModel)
 		{
 			var semanticModel = validationModel.SemanticModel as OraclePlSqlStatementSemanticModel;
 			if (semanticModel == null)
@@ -256,7 +256,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private void ValidateVariousClauseSupport(OracleValidationModel validationModel)
+		private static void ValidateVariousClauseSupport(OracleValidationModel validationModel)
 		{
 			if (validationModel.Statement.IsPlSql)
 			{
@@ -280,7 +280,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private void ResolveSuspiciousConditions(OracleValidationModel validationModel)
+		private static void ResolveSuspiciousConditions(OracleValidationModel validationModel)
 		{
 			foreach (var container in validationModel.SemanticModel.AllReferenceContainers)
 			{
@@ -808,11 +808,11 @@ namespace SqlPad.Oracle
 
 					if (queryBlock.RecursiveCycleClause != null)
 					{
-						var cycleMarkLiterals = queryBlock.RecursiveCycleClause.ChildNodes.Where(n => n.Id == NonTerminals.StringOrNumberLiteral);
+						var cycleMarkLiterals = queryBlock.RecursiveCycleClause.ChildNodes.Where(n => String.Equals(n.Id, NonTerminals.StringOrNumberLiteral));
 						foreach (var cycleMarkLiteral in cycleMarkLiterals)
 						{
 							var isValid = false;
-							if (cycleMarkLiteral.FirstTerminalNode.Id == Terminals.StringLiteral)
+							if (String.Equals(cycleMarkLiteral.FirstTerminalNode.Id, Terminals.StringLiteral))
 							{
 								var value = cycleMarkLiteral.FirstTerminalNode.Token.Value.ToPlainString();
 								isValid = value.Length == 1;
@@ -1144,8 +1144,8 @@ namespace SqlPad.Oracle
 					var semanticError = GetCompilationError(typeReference);
 					var node = typeReference.ObjectNode;
 					var targetTypeObject = typeReference.SchemaObject.GetTargetSchemaObject() as OracleTypeObject;
-					if (semanticError == OracleSemanticErrorType.None && targetTypeObject != null &&
-						targetTypeObject.TypeCode == OracleTypeBase.TypeCodeObject && targetTypeObject.Attributes.Count != typeReference.ParameterReferences.Count)
+					if (String.Equals(semanticError, OracleSemanticErrorType.None) && targetTypeObject != null &&
+						String.Equals(targetTypeObject.TypeCode, OracleTypeBase.TypeCodeObject) && targetTypeObject.Attributes.Count != typeReference.ParameterReferences.Count)
 					{
 						semanticError = OracleSemanticErrorType.InvalidParameterCount;
 						node = typeReference.ParameterListNode;
@@ -1416,7 +1416,7 @@ namespace SqlPad.Oracle
 				{
 					semanticError = OracleSemanticErrorType.InvalidParameterCount;
 				}
-				else if (programReference.Metadata.DisplayType == OracleProgramMetadata.DisplayTypeParenthesis)
+				else if (String.Equals(programReference.Metadata.DisplayType, OracleProgramMetadata.DisplayTypeParenthesis))
 				{
 					semanticError = OracleSemanticErrorType.MissingParenthesis;
 				}
@@ -1442,7 +1442,7 @@ namespace SqlPad.Oracle
 				validationModel.ProgramNodeValidity[programReference.ObjectNode] = new InvalidNodeValidationData(packageSemanticError) { IsRecognized = programReference.SchemaObject != null, Node = programReference.ObjectNode };
 			}
 
-			var isRecognizedWithoutError = semanticError == OracleSemanticErrorType.None && isRecognized;
+			var isRecognizedWithoutError = String.Equals(semanticError, OracleSemanticErrorType.None) && isRecognized;
 			if (isRecognizedWithoutError)
 			{
 				if (!programReference.Metadata.IsPackageFunction && programReference.SchemaObject != null && !programReference.SchemaObject.IsValid)
@@ -1793,7 +1793,7 @@ namespace SqlPad.Oracle
 		public StatementGrammarNode Node { get; set; }
 
 		public virtual string ToolTipText =>
-			SemanticErrorType == OracleSemanticErrorType.None
+			String.Equals(SemanticErrorType, OracleSemanticErrorType.None)
 				? Node.Type == NodeType.NonTerminal
 					? null
 					: Node.Id
