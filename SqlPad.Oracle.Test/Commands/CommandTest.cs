@@ -272,12 +272,23 @@ ORDER BY
 		public void TestBasicWrapAsInlineViewCommand()
 		{
 			_editor.Text = @"SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM SELECTION S";
-			_editor.CaretOffset = 0;
 
 			CanExecuteCommand(OracleCommands.WrapAsInlineView).ShouldBe(true);
 			ExecuteCommand(OracleCommands.WrapAsInlineView, new TestCommandSettings(new CommandSettingsModel { Value = "IV" } ));
 
 			_editor.Text.ShouldBe(@"SELECT IV.RESPONDENTBUCKET_ID, IV.SELECTION_ID, IV.PROJECT_ID, IV.NAME, IV.""1"" FROM (SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM SELECTION S) IV");
+		}
+
+		[Test, Apartment(ApartmentState.STA)]
+		public void TestWrapAsInlineViewCommandWithTableWithInvisibleColumns()
+		{
+			_editor.Text = @"SELECT NULL FROM ""CaseSensitiveTable""";
+			_editor.CaretOffset = 18;
+
+			CanExecuteCommand(OracleCommands.WrapAsInlineView).ShouldBe(true);
+			ExecuteCommand(OracleCommands.WrapAsInlineView, new TestCommandSettings(new CommandSettingsModel()));
+
+			_editor.Text.ShouldBe(@"SELECT NULL FROM (SELECT ""CaseSensitiveColumn"", VIRTUAL_COLUMN FROM ""CaseSensitiveTable"") ""CaseSensitiveTable""");
 		}
 
 		[Test, Apartment(ApartmentState.STA)]
@@ -352,7 +363,6 @@ FROM
 		public void TestWrapAsInlineViewCommandWithoutAlias()
 		{
 			_editor.Text = @"SELECT S.RESPONDENTBUCKET_ID, S.SELECTION_ID, PROJECT_ID, NAME, 1 FROM SELECTION S";
-			_editor.CaretOffset = 0;
 
 			CanExecuteCommand(OracleCommands.WrapAsInlineView).ShouldBe(true);
 			ExecuteCommand(OracleCommands.WrapAsInlineView, new TestCommandSettings(new CommandSettingsModel()));
@@ -364,7 +374,6 @@ FROM
 		public void TestWrapAsInlineViewCommandWithOrderByClause()
 		{
 			_editor.Text = @"SELECT DUMMY FROM DUAL ORDER BY DUAL.DUMMY";
-			_editor.CaretOffset = 0;
 
 			CanExecuteCommand(OracleCommands.WrapAsInlineView).ShouldBe(true);
 			ExecuteCommand(OracleCommands.WrapAsInlineView, new TestCommandSettings(new CommandSettingsModel()));
@@ -400,7 +409,6 @@ FROM
 		public void TestBasicWrapAsInlineViewCommandWithFunctionInvokationWithSingleIdentifierParameter()
 		{
 			_editor.Text = @"SELECT COUNT(DISTINCT SELECTION_ID) OVER (), RESPONDENTBUCKET_ID FROM SELECTION";
-			_editor.CaretOffset = 0;
 
 			ExecuteCommand(OracleCommands.WrapAsInlineView, new TestCommandSettings(new CommandSettingsModel { Value = "IV" }));
 
@@ -411,7 +419,6 @@ FROM
 		public void TestBasicWrapAsCommonTableExpressionCommand()
 		{
 			_editor.Text = "SELECT 1, 1 + 1 MYCOLUMN, DUMMY || '3' COLUMN3 FROM DUAL";
-			_editor.CaretOffset = 0;
 
 			ExecuteCommand(OracleCommands.WrapAsCommonTableExpression, new TestCommandSettings(new CommandSettingsModel { Value = "MYQUERY" } ));
 
@@ -422,7 +429,6 @@ FROM
 		public void TestBasicWrapAsCommonTableExpressionWithOrderByClause()
 		{
 			_editor.Text = "SELECT DUMMY FROM DUAL ORDER BY DUAL.DUMMY";
-			_editor.CaretOffset = 0;
 
 			ExecuteCommand(OracleCommands.WrapAsCommonTableExpression, new TestCommandSettings(new CommandSettingsModel { Value = "MYQUERY" }));
 
@@ -444,7 +450,6 @@ FROM
 		public void TestBasicToggleQuotedNotationCommandOn()
 		{
 			_editor.Text = "SELECT \"PUBLIC\".DUAL.DUMMY, S.PROJECT_ID FROM SELECTION S, \"PUBLIC\".DUAL";
-			_editor.CaretOffset = 0;
 
 			ExecuteCommand(OracleCommands.ToggleQuotedNotation);
 
@@ -455,7 +460,6 @@ FROM
 		public void TestBasicToggleQuotedNotationCommandOff()
 		{
 			_editor.Text = "SELECT \"PUBLIC\".\"DUAL\".\"DUMMY\", \"S\".\"PROJECT_ID\" FROM \"SELECTION\" \"S\", \"PUBLIC\".\"DUAL\"";
-			_editor.CaretOffset = 0;
 
 			ExecuteCommand(OracleCommands.ToggleQuotedNotation);
 
@@ -466,7 +470,6 @@ FROM
 		public void TestBasicToggleQuotedNotationCommandWithSubqueryWithQuotedNotation()
 		{
 			_editor.Text = "SELECT DUMMY FROM (SELECT \"DUMMY\" FROM \"DUAL\")";
-			_editor.CaretOffset = 0;
 
 			ExecuteCommand(OracleCommands.ToggleQuotedNotation);
 
@@ -781,7 +784,6 @@ selECT NULL, 'null' FRom selection";
 		public void TestModifyCaseCommandWithUnrecognizedGrammar()
 		{
 			_editor.Text = @"lot of invalid tokens preceding; select 'null' as ""null"" from dual and lot of invalid tokens following";
-			_editor.CaretOffset = 0;
 			_editor.SelectionLength = _editor.Text.Length;
 
 			ExecuteCommand(ModifyCaseCommand.MakeUpperCase);

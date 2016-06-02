@@ -46,7 +46,7 @@ namespace SqlPad.Oracle.Commands
 
 		private bool CanWrapSubquery()
 		{
-			return CurrentNode.Id == Terminals.Select &&
+			return String.Equals(CurrentNode.Id, Terminals.Select) &&
 			       CurrentQueryBlock.Columns.Any(c => !String.IsNullOrEmpty(c.NormalizedName));
 		}
 
@@ -83,6 +83,7 @@ namespace SqlPad.Oracle.Commands
 			var builder = new SqlTextBuilder();
 			builder.AppendReservedWord("(SELECT ");
 			var columnList = String.Join(", ", _dataObjectReference.Columns
+				.Where(c => !c.Hidden)
 				.Select(c => OracleStatementFormatter.FormatTerminalValue(c.Name.ToSimpleIdentifier(), formatOptions.Identifier)));
 
 			builder.AppendText(columnList);
