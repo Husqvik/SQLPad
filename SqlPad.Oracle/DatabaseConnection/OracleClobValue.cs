@@ -887,7 +887,23 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override int GetHashCode()
 		{
-			return RawValue.GetHashCode();
+			if (IsNull)
+			{
+				return 0;
+			}
+
+			unchecked
+			{
+				var bytes = ((OracleDate)RawValue).BinData;
+
+				var hashCode = 0;
+				foreach (var b in bytes)
+				{
+					hashCode = (hashCode * 397) ^ b;
+				}
+
+				return hashCode;
+			}
 		}
 	}
 
