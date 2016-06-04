@@ -1,0 +1,24 @@
+﻿<UserControl x:Class="SqlPad.FileResultViewer"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:SqlPad"
+             mc:Ignorable="d" 
+             d:DesignHeight="140" d:DesignWidth="384"
+             Loaded="FileResultViewerLoadedHandler"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}">
+	<UserControl.Resources>
+		<local:PluralConverter x:Key="PluralConverter" />
+	</UserControl.Resources>
+
+	<ItemsControl ItemsSource="{Binding ResultSets}">
+		<ItemsControl.ItemTemplate>
+			<DataTemplate>
+				<TextBlock>
+					<Run Text="{Binding ResultSetName}" FontWeight="Bold"/><Run Text=": " /><Run Text="{Binding RowCount, Converter={StaticResource PluralConverter}, ConverterParameter='row'}" />
+				</TextBlock>
+			</DataTemplate>
+		</ItemsControl.ItemTemplate>
+	</ItemsControl>
+</UserControl>

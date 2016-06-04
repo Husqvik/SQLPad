@@ -17,7 +17,9 @@ namespace SqlPad
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			if (value == DBNull.Value)
+			{
 				return ConfigurationProvider.Configuration.ResultGrid.NullPlaceholder;
+			}
 
 			try
 			{
@@ -214,6 +216,26 @@ namespace SqlPad
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			return value.Equals(true) ? parameter : Binding.DoNothing;
+		}
+	}
+
+	public class PluralConverter : ValueConverterBase
+	{
+		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			if (value == null)
+			{
+				return String.Empty;
+			}
+
+			var numberValue = System.Convert.ToInt64(value);
+			var unit = System.Convert.ToString(parameter);
+			if (numberValue != 1)
+			{
+				unit = $"{unit}s";
+			}
+
+			return $"{numberValue} {unit}";
 		}
 	}
 }

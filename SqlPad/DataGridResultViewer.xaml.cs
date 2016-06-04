@@ -23,7 +23,7 @@ using Xceed.Wpf.Toolkit;
 
 namespace SqlPad
 {
-	public partial class DataGridResultViewer
+	public partial class DataGridResultViewer : IResultViewer
 	{
 		#region dependency properties registration
 		public static readonly DependencyProperty IsSelectedCellLimitInfoVisibleProperty = DependencyProperty.Register(nameof(IsSelectedCellLimitInfoVisible), typeof(bool), typeof(DataGridResultViewer), new UIPropertyMetadata());
@@ -277,14 +277,15 @@ namespace SqlPad
 			_refreshProgressBarTimer.Stop();
 
 			await _outputViewer.ExecuteUsingCancellationToken(
-				async ct => await App.SafeActionAsync(
-					async () =>
-					{
-						await _outputViewer.ConnectionAdapter.RefreshResult(_executionResult, ct);
-						_resultRows.Clear();
-						await ApplyReferenceConstraints(ct);
-						await FetchNextRows(ct);
-					}));
+				async t =>
+					await App.SafeActionAsync(
+						async () =>
+						{
+							await _outputViewer.ConnectionAdapter.RefreshResult(_executionResult, t);
+							_resultRows.Clear();
+							await ApplyReferenceConstraints(t);
+							await FetchNextRows(t);
+						}));
 
 			AutorefreshProgressBar.Value = AutorefreshProgressBar.Maximum;
 
@@ -509,7 +510,8 @@ namespace SqlPad
 
 				operationMonitor.Close();
 
-				if (exception != null && !(exception is OperationCanceledException))
+				var isOperationCanceledException = exception is OperationCanceledException;
+				if (exception != null && !isOperationCanceledException)
 				{
 					Messages.ShowError(exception.Message);
 				}

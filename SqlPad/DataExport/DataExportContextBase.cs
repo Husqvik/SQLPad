@@ -6,16 +6,18 @@ namespace SqlPad.DataExport
 {
 	internal abstract class DataExportContextBase : IDataExportContext
 	{
-		private readonly int? _totalRows;
+		private readonly long? _totalRows;
 		private readonly IProgress<int> _reportProgress;
 		private readonly CancellationToken _cancellationToken;
 
 		private bool _isInitialized;
 		private bool _isFinalized;
 
-		protected int CurrentRowIndex { get; private set; }
+		private string TypeName => GetType().Name;
 
-		protected DataExportContextBase(int? totalRows, IProgress<int> reportProgress, CancellationToken cancellationToken)
+		public long CurrentRowIndex { get; private set; }
+
+		protected DataExportContextBase(long? totalRows, IProgress<int> reportProgress, CancellationToken cancellationToken)
 		{
 			_totalRows = totalRows;
 			_reportProgress = reportProgress;
@@ -26,7 +28,7 @@ namespace SqlPad.DataExport
 		{
 			if (_isInitialized)
 			{
-				throw new InvalidOperationException($"{GetType().Name} has been already initialized. ");
+				throw new InvalidOperationException($"{TypeName} has been already initialized. ");
 			}
 
 			InitializeExport();
@@ -46,12 +48,12 @@ namespace SqlPad.DataExport
 		{
 			if (!_isInitialized)
 			{
-				throw new InvalidOperationException($"{GetType().Name} has not been initialized. ");
+				throw new InvalidOperationException($"{TypeName} has not been initialized. ");
 			}
 
 			if (_isFinalized)
 			{
-				throw new InvalidOperationException($"{GetType().Name} has been finalized. ");
+				throw new InvalidOperationException($"{TypeName} has been completed. ");
 			}
 
 			foreach (var rowValues in rows)
@@ -66,13 +68,13 @@ namespace SqlPad.DataExport
 						? (int)Math.Round(CurrentRowIndex * 100f / _totalRows.Value)
 						: CurrentRowIndex;
 
-					_reportProgress.Report(progress);
+					_reportProgress.Report((int)progress);
 				}
 
 				CurrentRowIndex++;
 			}
 
-			_reportProgress?.Report(100);
+			_reportProgress?.Report(_totalRows.HasValue ? 100 : (int)CurrentRowIndex);
 		}
 
 		protected static bool IsNull(object value)

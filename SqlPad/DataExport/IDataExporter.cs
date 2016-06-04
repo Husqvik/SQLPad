@@ -20,6 +20,8 @@ namespace SqlPad.DataExport
 
 	public interface IDataExportContext
 	{
+		long CurrentRowIndex { get; }
+
 		void AppendRows(IEnumerable<object[]> rows);
 
 		void Complete();

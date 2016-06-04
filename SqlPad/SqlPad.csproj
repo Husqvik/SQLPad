@@ -111,6 +111,9 @@
     <Compile Include="ColumnHeader.cs" />
     <Compile Include="CSharpQueryClassGenerator.cs" />
     <Compile Include="DataExport\DataExportContextBase.cs" />
+    <Compile Include="FileResultViewer.xaml.cs">
+      <DependentUpon>FileResultViewer.xaml</DependentUpon>
+    </Compile>
     <Compile Include="FoldingSection.cs" />
     <Compile Include="IConnectionAdapter.cs" />
     <Compile Include="ResultInfo.cs" />
@@ -251,6 +254,10 @@
     <Compile Include="WorkDocumentCollection.cs" />
     <Compile Include="WpfExtensions.cs" />
     <Page Include="ComplexTypeViewer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="FileResultViewer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
