@@ -18,11 +18,11 @@ namespace SqlPad
 
 	public partial class FileResultViewer : IResultViewer
 	{
-		private readonly ObservableCollection<ExportResultInfo> _resultSets = new ObservableCollection<ExportResultInfo>();
+		private readonly ObservableCollection<ExportResultInfo> _exportResultSets = new ObservableCollection<ExportResultInfo>();
 		private readonly OutputViewer _outputViewer;
 		private readonly StatementExecutionResult _executionResult;
 
-		public IReadOnlyList<ExportResultInfo> ResultSets => _resultSets;
+		public IReadOnlyList<ExportResultInfo> ExportResultSets => _exportResultSets;
 
 		public TabItem TabItem { get; }
 
@@ -36,7 +36,11 @@ namespace SqlPad
 			TabItem =
 				new TabItem
 				{
-					Header = "tmp",
+					Header =
+						new HeaderedContentControl
+						{
+							Content = new AccessText { Text = "_Result to file" }
+						},
 					Content = this
 				};
 		}
@@ -48,24 +52,35 @@ namespace SqlPad
 
 		private async void FileResultViewerLoadedHandler(object sender, RoutedEventArgs e)
 		{
+			foreach (var kvp in _executionResult.ResultInfoColumnHeaders)
+			{
+				var exportResultInfo = new ExportResultInfo(kvp.Key, kvp.Value);
+				_exportResultSets.Add(exportResultInfo);
+			}
+
 			await _outputViewer.ExecuteUsingCancellationToken(ExportRows);
 		}
 
 		private async Task ExportRows(CancellationToken cancellationToken)
 		{
-			foreach (var resultInfo in _executionResult.ResultInfoColumnHeaders.Keys)
+			foreach (var exportResultSet in _exportResultSets)
 			{
 				var dataExporter = new JsonDataExporter();
+				var exportFileName = $@"E:\sqlpad_export_test_{DateTime.Now.Ticks}.tmp";
+				var exportContext = await dataExporter.StartExportAsync(exportFileName, exportResultSet.ColumnHeaders, _outputViewer.DocumentPage.InfrastructureFactory.DataExportConverter, cancellationToken);
+				exportResultSet.FileName = exportFileName;
 
-				while (_outputViewer.ConnectionAdapter.CanFetch(resultInfo))
+				while (_outputViewer.ConnectionAdapter.CanFetch(exportResultSet.ResultInfo))
 				{
 					if (cancellationToken.IsCancellationRequested)
 					{
 						return;
 					}
 
-					await ExportNextBatch(null, resultInfo, cancellationToken);
+					await ExportNextBatch(exportContext, exportResultSet.ResultInfo, cancellationToken);
 				}
+
+				exportContext.Complete();
 			}
 		}
 
@@ -82,8 +97,7 @@ namespace SqlPad
 			}
 			else
 			{
-				//AppendRows(innerTask.Result);
-
+				exportContext.AppendRows(innerTask.Result);
 				await _outputViewer.UpdateExecutionStatisticsIfEnabled();
 			}
 		}
@@ -91,9 +105,26 @@ namespace SqlPad
 
 	public class ExportResultInfo : ModelBase
 	{
+		private string _fileName;
 		private long _rowCount;
 
-		public string ResultSetName { get; set; }
+		public ResultInfo ResultInfo { get; }
+
+		public IReadOnlyList<ColumnHeader> ColumnHeaders { get; }
+
+		public ExportResultInfo(ResultInfo resultInfo, IReadOnlyList<ColumnHeader> columnHeaders)
+		{
+			ColumnHeaders = columnHeaders;
+			ResultInfo = resultInfo;
+		}
+
+		public string ResultSetName => ResultInfo.Title;
+
+		public string FileName
+		{
+			get { return _fileName; }
+			set { UpdateValueAndRaisePropertyChanged(ref _fileName, value); }
+		}
 
 		public long RowCount
 		{

@@ -12,7 +12,7 @@
 		<local:PluralConverter x:Key="PluralConverter" />
 	</UserControl.Resources>
 
-	<ItemsControl ItemsSource="{Binding ResultSets}">
+	<ItemsControl ItemsSource="{Binding ExportResultSets}">
 		<ItemsControl.ItemTemplate>
 			<DataTemplate>
 				<TextBlock>

@@ -22,6 +22,13 @@ namespace SqlPad.DataExport
 			return ExportToFileAsync(null, resultViewer, dataExportConverter, cancellationToken, reportProgress);
 		}
 
+		public async Task<IDataExportContext> StartExportAsync(string fileName, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
+		{
+			var exportContext = new JsonDataExportContext(File.CreateText(fileName), columns, dataExportConverter, null, null, cancellationToken);
+			await Task.Run(() => exportContext.Initialize(), cancellationToken);
+			return exportContext;
+		}
+
 		public Task ExportToFileAsync(string fileName, DataGridResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress = null)
 		{
 			var orderedColumns = DataExportHelper.GetOrderedExportableColumns(resultViewer.ResultGrid);
@@ -74,6 +81,7 @@ namespace SqlPad.DataExport
 		{
 			_writer.WriteLine();
 			_writer.Write(']');
+			_writer.Dispose();
 		}
 
 		protected override void ExportRow(object[] rowValues)

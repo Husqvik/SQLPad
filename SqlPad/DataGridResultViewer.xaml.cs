@@ -199,11 +199,7 @@ namespace SqlPad
 			var header =
 				new HeaderedContentControl
 				{
-					Content =
-						new AccessText
-						{
-							Text = Title
-						}
+					Content = new AccessText { Text = Title }
 				};
 
 			TabItem =
