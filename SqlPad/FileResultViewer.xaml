@@ -15,6 +15,7 @@
 	<DockPanel Margin="4">
 		<GroupBox Header="Settings" DockPanel.Dock="Top">
 			<StackPanel Orientation="Horizontal">
+				<TextBlock Text="Path: " />
 				<TextBox MinWidth="180" VerticalContentAlignment="Center" />
 				<Button Content="..." MinWidth="20" Click="BrowseExportFolderClickHandler" />
 				<ComboBox ItemsSource="{x:Static dataExport:DataExporters.All}" SelectedValue="{Binding DataExporter}">

@@ -37,6 +37,16 @@ namespace SqlPad.DataExport
 			CurrentRowIndex = 0;
 		}
 
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+		}
+
 		public void Complete()
 		{
 			FinalizeExport();

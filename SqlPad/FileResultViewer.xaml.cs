@@ -57,20 +57,22 @@ namespace SqlPad
 			foreach (var exportResultInfo in _exportResultSets)
 			{
 				var exportFileName = $@"E:\sqlpad_export_test_{exportResultInfo.CommandNumber}_{DateTime.Now.Ticks}.tmp";
-				var exportContext = await DataExporter.StartExportAsync(exportFileName, exportResultInfo.ColumnHeaders, _outputViewer.DocumentPage.InfrastructureFactory.DataExportConverter, cancellationToken);
-				exportResultInfo.FileName = exportFileName;
-
-				while (_outputViewer.ConnectionAdapter.CanFetch(exportResultInfo.ResultInfo))
+				using (var exportContext = await DataExporter.StartExportAsync(exportFileName, exportResultInfo.ColumnHeaders, _outputViewer.DocumentPage.InfrastructureFactory.DataExportConverter, cancellationToken))
 				{
-					if (cancellationToken.IsCancellationRequested)
+					exportResultInfo.FileName = exportFileName;
+
+					while (_outputViewer.ConnectionAdapter.CanFetch(exportResultInfo.ResultInfo))
 					{
-						return;
+						if (cancellationToken.IsCancellationRequested)
+						{
+							return;
+						}
+
+						await ExportNextBatch(exportContext, exportResultInfo, cancellationToken);
 					}
 
-					await ExportNextBatch(exportContext, exportResultInfo, cancellationToken);
+					exportContext.Complete();
 				}
-
-				exportContext.Complete();
 
 				exportResultInfo.IsCompleted = true;
 			}

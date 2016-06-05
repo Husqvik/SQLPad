@@ -20,7 +20,7 @@ namespace SqlPad.DataExport
 		Task ExportToClipboardAsync(DataGridResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress = null);
 	}
 
-	public interface IDataExportContext
+	public interface IDataExportContext : IDisposable
 	{
 		long CurrentRowIndex { get; }
 

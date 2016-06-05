@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
-using SqlPad.DataExport;
 
 namespace SqlPad
 {

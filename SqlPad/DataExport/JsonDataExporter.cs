@@ -95,6 +95,11 @@ namespace SqlPad.DataExport
 			_writer.Write(_jsonRowTemplate, values);
 		}
 
+		protected override void Dispose(bool disposing)
+		{
+			_writer.Dispose();
+		}
+
 		private string FormatJsonValue(object value)
 		{
 			return IsNull(value) ? "null" : _dataExportConverter.ToJson(value);
