@@ -1,61 +1,52 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using SqlPad.DataExport;
 
 namespace SqlPad
 {
-	public interface IResultViewer
+	public partial class FileResultViewer
 	{
-		TabItem TabItem { get; }
+		public static readonly DependencyProperty DataExporterProperty = DependencyProperty.Register(nameof(DataExporter), typeof(IDataExporter), typeof(FileResultViewer), new UIPropertyMetadata(DataExporters.Json));
 
-		void Close();
-	}
+		[Bindable(true)]
+		public IDataExporter DataExporter
+		{
+			get { return (IDataExporter)GetValue(DataExporterProperty); }
+			set { SetValue(DataExporterProperty, value); }
+		}
 
-	public partial class FileResultViewer : IResultViewer
-	{
 		private readonly ObservableCollection<ExportResultInfo> _exportResultSets = new ObservableCollection<ExportResultInfo>();
 		private readonly OutputViewer _outputViewer;
-		private readonly StatementExecutionResult _executionResult;
 
 		public IReadOnlyList<ExportResultInfo> ExportResultSets => _exportResultSets;
 
-		public TabItem TabItem { get; }
-
-		public FileResultViewer(OutputViewer outputViewer, StatementExecutionResult executionResult)
+		public FileResultViewer(OutputViewer outputViewer)
 		{
 			InitializeComponent();
 
 			_outputViewer = outputViewer;
-			_executionResult = executionResult;
-
-			TabItem =
-				new TabItem
-				{
-					Header =
-						new HeaderedContentControl
-						{
-							Content = new AccessText { Text = "_Result to file" }
-						},
-					Content = this
-				};
 		}
 
-		public void Close()
+		public async Task SaveExecutionResult(StatementExecutionBatchResult executionResult)
 		{
-			_outputViewer.TabControlResult.RemoveTabItemWithoutBindingError(TabItem);
-		}
+			_exportResultSets.Clear();
 
-		private async void FileResultViewerLoadedHandler(object sender, RoutedEventArgs e)
-		{
-			foreach (var kvp in _executionResult.ResultInfoColumnHeaders)
+			var commandNumber = 0;
+			foreach (var statementResult in executionResult.StatementResults)
 			{
-				var exportResultInfo = new ExportResultInfo(kvp.Key, kvp.Value);
-				_exportResultSets.Add(exportResultInfo);
+				commandNumber++;
+
+				foreach (var kvp in statementResult.ResultInfoColumnHeaders)
+				{
+					var exportResultInfo = new ExportResultInfo(commandNumber, kvp.Key, kvp.Value);
+					_exportResultSets.Add(exportResultInfo);
+				}
 			}
 
 			await _outputViewer.ExecuteUsingCancellationToken(ExportRows);
@@ -63,32 +54,33 @@ namespace SqlPad
 
 		private async Task ExportRows(CancellationToken cancellationToken)
 		{
-			foreach (var exportResultSet in _exportResultSets)
+			foreach (var exportResultInfo in _exportResultSets)
 			{
-				var dataExporter = new JsonDataExporter();
-				var exportFileName = $@"E:\sqlpad_export_test_{DateTime.Now.Ticks}.tmp";
-				var exportContext = await dataExporter.StartExportAsync(exportFileName, exportResultSet.ColumnHeaders, _outputViewer.DocumentPage.InfrastructureFactory.DataExportConverter, cancellationToken);
-				exportResultSet.FileName = exportFileName;
+				var exportFileName = $@"E:\sqlpad_export_test_{exportResultInfo.CommandNumber}_{DateTime.Now.Ticks}.tmp";
+				var exportContext = await DataExporter.StartExportAsync(exportFileName, exportResultInfo.ColumnHeaders, _outputViewer.DocumentPage.InfrastructureFactory.DataExportConverter, cancellationToken);
+				exportResultInfo.FileName = exportFileName;
 
-				while (_outputViewer.ConnectionAdapter.CanFetch(exportResultSet.ResultInfo))
+				while (_outputViewer.ConnectionAdapter.CanFetch(exportResultInfo.ResultInfo))
 				{
 					if (cancellationToken.IsCancellationRequested)
 					{
 						return;
 					}
 
-					await ExportNextBatch(exportContext, exportResultSet.ResultInfo, cancellationToken);
+					await ExportNextBatch(exportContext, exportResultInfo, cancellationToken);
 				}
 
 				exportContext.Complete();
+
+				exportResultInfo.IsCompleted = true;
 			}
 		}
 
-		private async Task ExportNextBatch(IDataExportContext exportContext, ResultInfo resultInfo, CancellationToken cancellationToken)
+		private async Task ExportNextBatch(IDataExportContext exportContext, ExportResultInfo exportResultInfo, CancellationToken cancellationToken)
 		{
 			Task<IReadOnlyList<object[]>> innerTask = null;
 			var batchSize = ConfigurationProvider.Configuration.ResultGrid.FetchRowsBatchSize - exportContext.CurrentRowIndex % ConfigurationProvider.Configuration.ResultGrid.FetchRowsBatchSize;
-			var exception = await App.SafeActionAsync(() => innerTask = _outputViewer.ConnectionAdapter.FetchRecordsAsync(resultInfo, (int)batchSize, cancellationToken));
+			var exception = await App.SafeActionAsync(() => innerTask = _outputViewer.ConnectionAdapter.FetchRecordsAsync(exportResultInfo.ResultInfo, (int)batchSize, cancellationToken));
 			if (exception != null)
 			{
 				var errorMessage = Messages.GetExceptionErrorMessage(exception);
@@ -97,9 +89,27 @@ namespace SqlPad
 			}
 			else
 			{
-				exportContext.AppendRows(innerTask.Result);
+				try
+				{
+					exportContext.AppendRows(innerTask.Result);
+				}
+				catch (OperationCanceledException)
+				{
+					Trace.WriteLine("User has canceled export operation. ");
+					return;
+				}
+				finally
+				{
+					exportResultInfo.RowCount = exportContext.CurrentRowIndex;
+				}
+				
 				await _outputViewer.UpdateExecutionStatisticsIfEnabled();
 			}
+		}
+
+		private void BrowseExportFolderClickHandler(object sender, RoutedEventArgs e)
+		{
+			
 		}
 	}
 
@@ -107,13 +117,17 @@ namespace SqlPad
 	{
 		private string _fileName;
 		private long _rowCount;
+		private bool _isCompleted;
+
+		public int CommandNumber { get; }
 
 		public ResultInfo ResultInfo { get; }
 
 		public IReadOnlyList<ColumnHeader> ColumnHeaders { get; }
 
-		public ExportResultInfo(ResultInfo resultInfo, IReadOnlyList<ColumnHeader> columnHeaders)
+		public ExportResultInfo(int commandNumber, ResultInfo resultInfo, IReadOnlyList<ColumnHeader> columnHeaders)
 		{
+			CommandNumber = commandNumber;
 			ColumnHeaders = columnHeaders;
 			ResultInfo = resultInfo;
 		}
@@ -130,6 +144,12 @@ namespace SqlPad
 		{
 			get { return _rowCount; }
 			set { UpdateValueAndRaisePropertyChanged(ref _rowCount, value); }
+		}
+
+		public bool IsCompleted
+		{
+			get { return _isCompleted; }
+			set { UpdateValueAndRaisePropertyChanged(ref _isCompleted, value); }
 		}
 	}
 }

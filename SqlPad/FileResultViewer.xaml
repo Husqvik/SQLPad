@@ -4,21 +4,40 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:SqlPad"
+             xmlns:dataExport="clr-namespace:SqlPad.DataExport"
              mc:Ignorable="d" 
              d:DesignHeight="140" d:DesignWidth="384"
-             Loaded="FileResultViewerLoadedHandler"
              DataContext="{Binding RelativeSource={RelativeSource Self}}">
 	<UserControl.Resources>
 		<local:PluralConverter x:Key="PluralConverter" />
 	</UserControl.Resources>
 
-	<ItemsControl ItemsSource="{Binding ExportResultSets}">
-		<ItemsControl.ItemTemplate>
-			<DataTemplate>
-				<TextBlock>
-					<Run Text="{Binding ResultSetName}" FontWeight="Bold"/><Run Text=": " /><Run Text="{Binding RowCount, Converter={StaticResource PluralConverter}, ConverterParameter='row'}" />
-				</TextBlock>
-			</DataTemplate>
-		</ItemsControl.ItemTemplate>
-	</ItemsControl>
+	<DockPanel Margin="4">
+		<GroupBox Header="Settings" DockPanel.Dock="Top">
+			<StackPanel Orientation="Horizontal">
+				<TextBox MinWidth="180" VerticalContentAlignment="Center" />
+				<Button Content="..." MinWidth="20" Click="BrowseExportFolderClickHandler" />
+				<ComboBox ItemsSource="{x:Static dataExport:DataExporters.All}" SelectedValue="{Binding DataExporter}">
+					<ComboBox.ItemTemplate>
+						<DataTemplate>
+							<TextBlock Text="{Binding Name}" />
+						</DataTemplate>
+					</ComboBox.ItemTemplate>
+				</ComboBox>
+			</StackPanel>
+		</GroupBox>
+
+		<GroupBox Header="Files">
+			<ItemsControl ItemsSource="{Binding ExportResultSets}">
+				<ItemsControl.ItemTemplate>
+					<DataTemplate>
+						<TextBlock>
+							<Run Text="{Binding ResultSetName, Mode=OneTime}" FontWeight="Bold" /><Run Text=": " />
+							<Run Text="{Binding RowCount, Converter={StaticResource PluralConverter}, ConverterParameter='row'}" />
+						</TextBlock>
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
+		</GroupBox>
+	</DockPanel>
 </UserControl>

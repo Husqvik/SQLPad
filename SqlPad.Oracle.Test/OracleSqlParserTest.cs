@@ -1882,7 +1882,7 @@ FROM DUAL";
 				parsingStopwatch.Stop();
 				cancellationStopwatch.Stop();
 
-				Trace.WriteLine($"Parsing successfully cancelled; parse time: {parsingStopwatch.ElapsedMilliseconds} ms; cancellation time: {cancellationStopwatch.ElapsedMilliseconds} ms");
+				Trace.WriteLine($"Parsing successfully canceled; parse time: {parsingStopwatch.ElapsedMilliseconds} ms; cancellation time: {cancellationStopwatch.ElapsedMilliseconds} ms");
 			}
 		}
 

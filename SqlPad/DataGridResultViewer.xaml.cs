@@ -23,7 +23,7 @@ using Xceed.Wpf.Toolkit;
 
 namespace SqlPad
 {
-	public partial class DataGridResultViewer : IResultViewer
+	public partial class DataGridResultViewer
 	{
 		#region dependency properties registration
 		public static readonly DependencyProperty IsSelectedCellLimitInfoVisibleProperty = DependencyProperty.Register(nameof(IsSelectedCellLimitInfoVisible), typeof(bool), typeof(DataGridResultViewer), new UIPropertyMetadata());

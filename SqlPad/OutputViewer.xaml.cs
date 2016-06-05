@@ -22,13 +22,13 @@ namespace SqlPad
 
 		private static readonly TimeSpan DefaultRefreshInterval = TimeSpan.FromMinutes(1);
 
-		private readonly DispatcherTimer _timerExecutionMonitor;
 		private readonly Stopwatch _stopWatch = new Stopwatch();
 		private readonly StringBuilder _databaseOutputBuilder = new StringBuilder();
 		private readonly SessionExecutionStatisticsCollection _sessionExecutionStatistics = new SessionExecutionStatisticsCollection();
 		private readonly ObservableCollection<CompilationError> _compilationErrors = new ObservableCollection<CompilationError>();
-		private readonly DatabaseProviderConfiguration _providerConfiguration;
 		private readonly StringBuilder _executionLogBuilder = new StringBuilder();
+		private readonly DispatcherTimer _timerExecutionMonitor;
+		private readonly DatabaseProviderConfiguration _providerConfiguration;
 
 		private bool _isRunning;
 		private object _previousSelectedTab;
@@ -45,6 +45,8 @@ namespace SqlPad
 
 		public ITraceViewer TraceViewer { get; }
 
+		public FileResultViewer FileResultViewer { get; }
+
 		private bool IsCancellationRequested
 		{
 			get
@@ -54,7 +56,7 @@ namespace SqlPad
 			}
 		}
 
-		private IEnumerable<DataGridResultViewer> ResultViewers => TabControlResult.Items.OfType<DataGridResultViewer>();
+		private IEnumerable<DataGridResultViewer> DataGridResultViewers => TabControlResult.Items.OfType<DataGridResultViewer>();
 
 		public bool KeepDatabaseOutputHistory { get; set; }
 
@@ -81,6 +83,8 @@ namespace SqlPad
 
 		public OutputViewer(DocumentPage documentPage)
 		{
+			FileResultViewer = new FileResultViewer(this);
+
 			InitializeComponent();
 
 			_timerExecutionMonitor = new DispatcherTimer(DispatcherPriority.Normal, Dispatcher) { Interval = TimeSpan.FromMilliseconds(100) };
@@ -122,25 +126,17 @@ namespace SqlPad
 
 		private int InitializeResultViewers()
 		{
-			var tabControlIndex = 0;
-			var refreshInterval = DocumentPage.WorkDocument.RefreshInterval;
-			if (refreshInterval == TimeSpan.Zero)
+			if (DataOutputType == DataOutputType.File)
 			{
-				refreshInterval = DefaultRefreshInterval;
+				return 1;
 			}
 
+			var tabControlIndex = 0;
 			foreach (var statementResult in _executionResult.StatementResults)
 			{
 				foreach (var resultInfoColumnHeaders in statementResult.ResultInfoColumnHeaders.Where(r => r.Key.Type == ResultIdentifierType.UserDefined))
 				{
-					var resultViewer =
-						new DataGridResultViewer(this, statementResult, resultInfoColumnHeaders.Key)
-						{
-							AutoRefreshInterval = refreshInterval
-						};
-
-					resultViewer.TabItem.AddHandler(Selector.SelectedEvent, (RoutedEventHandler)ResultTabSelectedHandler);
-
+					var resultViewer = InitializeResultViewer(statementResult, resultInfoColumnHeaders.Key);
 					if (ActiveResultViewer == null)
 					{
 						ActiveResultViewer = resultViewer;
@@ -151,6 +147,25 @@ namespace SqlPad
 			}
 
 			return tabControlIndex;
+		}
+
+		private DataGridResultViewer InitializeResultViewer(StatementExecutionResult statementResult, ResultInfo resultInfo)
+		{
+			var refreshInterval = DocumentPage.WorkDocument.RefreshInterval;
+			if (refreshInterval == TimeSpan.Zero)
+			{
+				refreshInterval = DefaultRefreshInterval;
+			}
+
+			var resultViewer =
+				new DataGridResultViewer(this, statementResult, resultInfo)
+				{
+					AutoRefreshInterval = refreshInterval
+				};
+
+			resultViewer.TabItem.AddHandler(Selector.SelectedEvent, (RoutedEventHandler)ResultTabSelectedHandler);
+
+			return resultViewer;
 		}
 
 		private void RemoveResultViewers()
@@ -380,6 +395,11 @@ namespace SqlPad
 				}
 
 				TabControlResult.SelectedItem = TabCompilationErrors;
+			}
+
+			if (DataOutputType == DataOutputType.File)
+			{
+				await FileResultViewer.SaveExecutionResult(_executionResult);
 			}
 
 			var resultViewerCount = InitializeResultViewers();
@@ -643,7 +663,7 @@ namespace SqlPad
 
 		private void ApplicationDeactivatedHandler(object sender, EventArgs eventArgs)
 		{
-			foreach (var viewer in ResultViewers)
+			foreach (var viewer in DataGridResultViewers)
 			{
 				viewer.ResultViewTabHeaderPopup.IsOpen = false;
 			}

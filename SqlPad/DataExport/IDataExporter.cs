@@ -44,12 +44,12 @@ namespace SqlPad.DataExport
 		{
 			Csv,
 			Tsv,
-			Xml,
-			Json,
-			Html,
 			Excel,
+			Html,
+			Json,
 			SqlInsert,
-			SqlUpdate
+			SqlUpdate,
+			Xml
 		};
 	}
 }

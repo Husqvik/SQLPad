@@ -1,7 +1,9 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
+using SqlPad.DataExport;
 
 namespace SqlPad
 {
@@ -23,6 +25,7 @@ namespace SqlPad
 		public static readonly DependencyProperty IsTransactionControlEnabledProperty = DependencyProperty.Register(nameof(IsTransactionControlEnabled), typeof(bool), typeof(OutputViewer), new UIPropertyMetadata(true));
 		public static readonly DependencyProperty HasActiveTransactionProperty = DependencyProperty.Register(nameof(HasActiveTransaction), typeof(bool), typeof(OutputViewer), new UIPropertyMetadata(false));
 		public static readonly DependencyProperty TransactionIdentifierProperty = DependencyProperty.Register(nameof(TransactionIdentifier), typeof(string), typeof(OutputViewer), new UIPropertyMetadata());
+		public static readonly DependencyProperty DataOutputTypeProperty = DependencyProperty.Register(nameof(DataOutputType), typeof(DataOutputType), typeof(OutputViewer), new UIPropertyMetadata(DataOutputType.DataGrid, DataOutputTypePropertyChangedCallbackHandler));
 		#endregion
 
 		#region dependency property accessors
@@ -141,6 +144,41 @@ namespace SqlPad
 		{
 			((OutputViewer)dependencyObject).ConnectionAdapter.Identifier = (string)args.NewValue;
 		}
+
+		[Bindable(true)]
+		public DataOutputType DataOutputType
+		{
+			get { return (DataOutputType)GetValue(DataOutputTypeProperty); }
+			set { SetValue(DataOutputTypeProperty, value); }
+		}
+
+		private static void DataOutputTypePropertyChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
+		{
+			var outputViewer = (OutputViewer)dependencyObject;
+			if (Equals(outputViewer.TabControlResult.SelectedItem, outputViewer.TabResultToFile) && (DataOutputType)args.NewValue == DataOutputType.DataGrid)
+			{
+				outputViewer.TabExecutionLog.IsSelected = true;
+			}
+		}
 		#endregion
+	}
+
+	public enum DataOutputType
+	{
+		DataGrid,
+		File
+	}
+
+	public class DataOutputTypeBooleanConverter : IValueConverter
+	{
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			return (DataOutputType)value == DataOutputType.File;
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			return (DataOutputType)System.Convert.ToInt32((bool)value);
+		}
 	}
 }

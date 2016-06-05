@@ -228,8 +228,8 @@ namespace SqlPad
 			var documentsToClose = allDocuments.Where(p => !p.Equals(currentDocument)).ToArray();
 			foreach (var page in documentsToClose)
 			{
-				var isCancelled = !CloseDocument(page);
-				if (isCancelled)
+				var isCanceled = !CloseDocument(page);
+				if (isCanceled)
 				{
 					break;
 				}
