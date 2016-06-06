@@ -3,20 +3,31 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:SqlPad"
+             xmlns:sqlPad="clr-namespace:SqlPad"
              xmlns:dataExport="clr-namespace:SqlPad.DataExport"
              mc:Ignorable="d" 
              d:DesignHeight="140" d:DesignWidth="384"
              DataContext="{Binding RelativeSource={RelativeSource Self}}">
 	<UserControl.Resources>
-		<local:PluralConverter x:Key="PluralConverter" />
+		<sqlPad:PluralConverter x:Key="PluralConverter" />
+		<sqlPad:DataSpaceConverter x:Key="DataSpaceConverter" />
 	</UserControl.Resources>
 
 	<DockPanel Margin="4">
 		<GroupBox Header="Settings" DockPanel.Dock="Top">
+			<GroupBox.Style>
+				<Style>
+					<Style.Triggers>
+						<DataTrigger Binding="{Binding IsExecuting}" Value="True">
+							<Setter Property="GroupBox.IsEnabled" Value="False" />
+						</DataTrigger>
+					</Style.Triggers>
+				</Style>
+			</GroupBox.Style>
+
 			<StackPanel Orientation="Horizontal">
-				<TextBlock Text="Path: " />
-				<TextBox MinWidth="180" VerticalContentAlignment="Center" />
+				<TextBlock Text="Path: " VerticalAlignment="Center" />
+				<TextBox MinWidth="180" VerticalContentAlignment="Center" Text="{Binding OutputPath}" />
 				<Button Content="..." MinWidth="20" Click="BrowseExportFolderClickHandler" />
 				<ComboBox ItemsSource="{x:Static dataExport:DataExporters.All}" SelectedValue="{Binding DataExporter}">
 					<ComboBox.ItemTemplate>
@@ -29,13 +40,70 @@
 		</GroupBox>
 
 		<GroupBox Header="Files">
-			<ItemsControl ItemsSource="{Binding ExportResultSets}">
+			<ItemsControl ItemsSource="{Binding ExportResultInfoCollection}">
 				<ItemsControl.ItemTemplate>
 					<DataTemplate>
-						<TextBlock>
-							<Run Text="{Binding ResultSetName, Mode=OneTime}" FontWeight="Bold" /><Run Text=": " />
-							<Run Text="{Binding RowCount, Converter={StaticResource PluralConverter}, ConverterParameter='row'}" />
-						</TextBlock>
+						<StackPanel Orientation="Horizontal">
+							<TextBlock>
+								<TextBlock.Style>
+									<Style>
+										<Style.Triggers>
+											<DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=sqlPad:FileResultViewer}, Path=ExportResultInfoCollection.Count}" Value="1">
+												<Setter Property="TextBlock.Visibility" Value="Collapsed" />
+											</DataTrigger>
+										</Style.Triggers>
+									</Style>
+								</TextBlock.Style>
+								
+								<Run Text="Command " /><Run Text="{Binding CommandNumber, Mode=OneTime}" /><Run Text=" - " />
+							</TextBlock>
+							
+							<TextBlock>
+								<Run Text="{Binding ResultSetName, Mode=OneTime}" />
+							</TextBlock>
+
+							<TextBlock>
+								<TextBlock.Style>
+									<Style>
+										<Style.Triggers>
+											<DataTrigger Binding="{Binding FileName}" Value="{x:Null}">
+												<Setter Property="TextBlock.Visibility" Value="Collapsed" />
+											</DataTrigger>
+										</Style.Triggers>
+									</Style>
+								</TextBlock.Style>
+								
+								<Run Text=" -> "/><Hyperlink Click="FileNameHyperlinkClickHandler"><Run Text="{Binding FileName}"/></Hyperlink>
+							</TextBlock>
+
+							<TextBlock>
+								<TextBlock.Style>
+									<Style>
+										<Style.Triggers>
+											<DataTrigger Binding="{Binding IsWaiting}" Value="True">
+												<Setter Property="TextBlock.Visibility" Value="Collapsed" />
+											</DataTrigger>
+										</Style.Triggers>
+									</Style>
+								</TextBlock.Style>
+
+								<Run Text=": " /><Run Text="{Binding RowCount, Converter={StaticResource PrettyPrintNumericConverter}}" /><Run Text="{Binding RowCount, Converter={StaticResource PluralConverter}, ConverterParameter=' row'}" /><Run Text=" (" /><Run Text="{Binding FileSizeBytes, Converter={StaticResource DataSpaceConverter}, Mode=OneWay}" /><Run Text=")" />
+							</TextBlock>
+
+							<TextBlock Text=": Waiting" Visibility="{Binding IsWaiting, Converter={StaticResource ObjectToVisibilityConverter}}" />
+
+							<TextBlock Text=" (done.)">
+								<TextBlock.Style>
+									<Style>
+										<Style.Triggers>
+											<DataTrigger Binding="{Binding IsCompleted}" Value="False">
+												<Setter Property="TextBlock.Visibility" Value="Collapsed" />
+											</DataTrigger>
+										</Style.Triggers>
+									</Style>
+								</TextBlock.Style>
+							</TextBlock>
+						</StackPanel>
 					</DataTemplate>
 				</ItemsControl.ItemTemplate>
 			</ItemsControl>

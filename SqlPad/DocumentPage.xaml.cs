@@ -501,7 +501,7 @@ namespace SqlPad
 
 		private void OpenContainingFolderCommandExecutedHandler(object sender, ExecutedRoutedEventArgs args)
 		{
-			Process.Start("explorer.exe", "/select," + WorkDocument.File.FullName);
+			App.OpenExplorerAndSelectFile(WorkDocument.File.FullName);
 		}
 
 		public bool Save()

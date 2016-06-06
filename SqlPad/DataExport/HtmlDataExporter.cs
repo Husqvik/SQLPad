@@ -22,9 +22,11 @@ namespace SqlPad.DataExport
 			return ExportToFileAsync(null, resultViewer, dataExportConverter, cancellationToken, reportProgress);
 		}
 
-		public Task<IDataExportContext> StartExportAsync(string fileName, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
+		public async Task<IDataExportContext> StartExportAsync(string fileName, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
+			var exportContext = new HtmlDataExportContext(File.CreateText(fileName), columns, null, null, cancellationToken);
+			await exportContext.InitializeAsync();
+			return exportContext;
 		}
 
 		public Task ExportToFileAsync(string fileName, DataGridResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress = null)
@@ -67,6 +69,11 @@ namespace SqlPad.DataExport
 			var columnHeaders = _columns.Select(h => h.Name.Replace(QuoteCharacter, EscapedQuote));
 			var headerLine = BuildlTableRowTemplate(columnHeaders.Select(h => $"<th>{h}</th>"));
 			_writer.Write(headerLine);
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			_writer.Dispose();
 		}
 
 		protected override void FinalizeExport()

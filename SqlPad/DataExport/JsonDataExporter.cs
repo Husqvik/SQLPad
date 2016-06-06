@@ -25,7 +25,7 @@ namespace SqlPad.DataExport
 		public async Task<IDataExportContext> StartExportAsync(string fileName, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
 		{
 			var exportContext = new JsonDataExportContext(File.CreateText(fileName), columns, dataExportConverter, null, null, cancellationToken);
-			await Task.Run(() => exportContext.Initialize(), cancellationToken);
+			await exportContext.InitializeAsync();
 			return exportContext;
 		}
 

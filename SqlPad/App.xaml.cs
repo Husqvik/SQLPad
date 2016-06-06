@@ -36,6 +36,11 @@ namespace SqlPad
 			}
 		}
 
+		public static void OpenExplorerAndSelectFile(string fileName)
+		{
+			Process.Start("explorer.exe", $"/select,{fileName}");
+		}
+
 		private static void AdjustThreadPool(int requiredThreads)
 		{
 			var minSize = requiredThreads - 1;

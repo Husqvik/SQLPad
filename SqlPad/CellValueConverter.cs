@@ -235,7 +235,7 @@ namespace SqlPad
 				unit = $"{unit}s";
 			}
 
-			return $"{numberValue} {unit}";
+			return unit;
 		}
 	}
 }

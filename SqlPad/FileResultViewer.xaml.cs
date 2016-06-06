@@ -3,16 +3,20 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Documents;
 using SqlPad.DataExport;
 
 namespace SqlPad
 {
 	public partial class FileResultViewer
 	{
-		public static readonly DependencyProperty DataExporterProperty = DependencyProperty.Register(nameof(DataExporter), typeof(IDataExporter), typeof(FileResultViewer), new UIPropertyMetadata(DataExporters.Json));
+		public static readonly DependencyProperty DataExporterProperty = DependencyProperty.Register(nameof(DataExporter), typeof(IDataExporter), typeof(FileResultViewer), new UIPropertyMetadata(DataExporters.Csv));
+		public static readonly DependencyProperty OutputPathProperty = DependencyProperty.Register(nameof(OutputPath), typeof(string), typeof(FileResultViewer), new UIPropertyMetadata());
+		public static readonly DependencyProperty IsExecutingProperty = DependencyProperty.Register(nameof(IsExecuting), typeof(bool), typeof(FileResultViewer), new UIPropertyMetadata());
 
 		[Bindable(true)]
 		public IDataExporter DataExporter
@@ -21,21 +25,43 @@ namespace SqlPad
 			set { SetValue(DataExporterProperty, value); }
 		}
 
-		private readonly ObservableCollection<ExportResultInfo> _exportResultSets = new ObservableCollection<ExportResultInfo>();
+		[Bindable(true)]
+		public string OutputPath
+		{
+			get { return (string)GetValue(OutputPathProperty); }
+			set { SetValue(OutputPathProperty, value); }
+		}
+
+		[Bindable(true)]
+		public bool IsExecuting
+		{
+			get { return (bool)GetValue(IsExecutingProperty); }
+			private set { SetValue(IsExecutingProperty, value); }
+		}
+
+		private readonly ObservableCollection<ExportResultInfo> _exportResultInfoCollection = new ObservableCollection<ExportResultInfo>();
 		private readonly OutputViewer _outputViewer;
 
-		public IReadOnlyList<ExportResultInfo> ExportResultSets => _exportResultSets;
+		public IReadOnlyList<ExportResultInfo> ExportResultInfoCollection => _exportResultInfoCollection;
 
 		public FileResultViewer(OutputViewer outputViewer)
 		{
 			InitializeComponent();
 
 			_outputViewer = outputViewer;
+
+			if (String.IsNullOrEmpty(OutputPath))
+			{
+				var userDocumentPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+				OutputPath = userDocumentPath;
+			}
 		}
 
 		public async Task SaveExecutionResult(StatementExecutionBatchResult executionResult)
 		{
-			_exportResultSets.Clear();
+			IsExecuting = true;
+
+			_exportResultInfoCollection.Clear();
 
 			var commandNumber = 0;
 			foreach (var statementResult in executionResult.StatementResults)
@@ -45,17 +71,20 @@ namespace SqlPad
 				foreach (var kvp in statementResult.ResultInfoColumnHeaders)
 				{
 					var exportResultInfo = new ExportResultInfo(commandNumber, kvp.Key, kvp.Value);
-					_exportResultSets.Add(exportResultInfo);
+					_exportResultInfoCollection.Add(exportResultInfo);
 				}
 			}
 
 			await _outputViewer.ExecuteUsingCancellationToken(ExportRows);
+
+			IsExecuting = false;
 		}
 
 		private async Task ExportRows(CancellationToken cancellationToken)
 		{
-			foreach (var exportResultInfo in _exportResultSets)
+			foreach (var exportResultInfo in _exportResultInfoCollection)
 			{
+				exportResultInfo.IsWaiting = false;
 				var exportFileName = $@"E:\sqlpad_export_test_{exportResultInfo.CommandNumber}_{DateTime.Now.Ticks}.tmp";
 				using (var exportContext = await DataExporter.StartExportAsync(exportFileName, exportResultInfo.ColumnHeaders, _outputViewer.DocumentPage.InfrastructureFactory.DataExportConverter, cancellationToken))
 				{
@@ -103,6 +132,7 @@ namespace SqlPad
 				finally
 				{
 					exportResultInfo.RowCount = exportContext.CurrentRowIndex;
+					exportResultInfo.FileSizeBytes = new FileInfo(exportResultInfo.FileName).Length;
 				}
 				
 				await _outputViewer.UpdateExecutionStatisticsIfEnabled();
@@ -113,12 +143,21 @@ namespace SqlPad
 		{
 			
 		}
+
+		private void FileNameHyperlinkClickHandler(object sender, RoutedEventArgs e)
+		{
+			var hyperlink = (Hyperlink)sender;
+			var exportResultInfo = (ExportResultInfo)hyperlink.DataContext;
+			App.OpenExplorerAndSelectFile(exportResultInfo.FileName);
+		}
 	}
 
 	public class ExportResultInfo : ModelBase
 	{
 		private string _fileName;
 		private long _rowCount;
+		private long _fileSizeBytes;
+		private bool _isWaiting = true;
 		private bool _isCompleted;
 
 		public int CommandNumber { get; }
@@ -146,6 +185,18 @@ namespace SqlPad
 		{
 			get { return _rowCount; }
 			set { UpdateValueAndRaisePropertyChanged(ref _rowCount, value); }
+		}
+
+		public long FileSizeBytes
+		{
+			get { return _fileSizeBytes; }
+			set { UpdateValueAndRaisePropertyChanged(ref _fileSizeBytes, value); }
+		}
+
+		public bool IsWaiting
+		{
+			get { return _isWaiting; }
+			set { UpdateValueAndRaisePropertyChanged(ref _isWaiting, value); }
 		}
 
 		public bool IsCompleted

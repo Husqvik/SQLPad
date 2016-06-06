@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace SqlPad.DataExport
 {
@@ -22,6 +23,11 @@ namespace SqlPad.DataExport
 			_totalRows = totalRows;
 			_reportProgress = reportProgress;
 			_cancellationToken = cancellationToken;
+		}
+
+		public async Task InitializeAsync()
+		{
+			await Task.Run(() => Initialize(), _cancellationToken);
 		}
 
 		public void Initialize()

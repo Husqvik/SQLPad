@@ -126,11 +126,6 @@ namespace SqlPad
 
 		private int InitializeResultViewers()
 		{
-			if (DataOutputType == DataOutputType.File)
-			{
-				return 1;
-			}
-
 			var tabControlIndex = 0;
 			foreach (var statementResult in _executionResult.StatementResults)
 			{
@@ -400,13 +395,6 @@ namespace SqlPad
 			if (DataOutputType == DataOutputType.File)
 			{
 				await FileResultViewer.SaveExecutionResult(_executionResult);
-			}
-
-			var resultViewerCount = InitializeResultViewers();
-			if (resultViewerCount > 0)
-			{
-				StatusInfo.ResultGridAvailable = true;
-
 				if (!keepPreviousSelectedTab)
 				{
 					TabControlResult.SelectedIndex = 0;
@@ -414,7 +402,20 @@ namespace SqlPad
 			}
 			else
 			{
-				StatusInfo.SuccessfulExecutionMessage = lastStatementResult.SuccessfulExecutionMessage;
+				var resultViewerCount = InitializeResultViewers();
+				if (resultViewerCount > 0)
+				{
+					StatusInfo.ResultGridAvailable = true;
+
+					if (!keepPreviousSelectedTab)
+					{
+						TabControlResult.SelectedIndex = 0;
+					}
+				}
+				else
+				{
+					StatusInfo.SuccessfulExecutionMessage = lastStatementResult.SuccessfulExecutionMessage;
+				}
 			}
 		}
 
