@@ -354,7 +354,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return metadata;
 		}
 
-		private KeyValuePair<OracleProgramIdentifier, OracleProgramParameterMetadata> MapProgramParameterMetadata(IDataRecord reader)
+		private static KeyValuePair<OracleProgramIdentifier, OracleProgramParameterMetadata> MapProgramParameterMetadata(IDataRecord reader)
 		{
 			var identifier = CreateFunctionIdentifierFromReaderValues(reader["OWNER"], reader["PACKAGE_NAME"], reader["PROGRAM_NAME"], reader["OVERLOAD"]);
 
@@ -392,7 +392,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return OracleProgramIdentifier.CreateFromValues(owner == DBNull.Value ? null : QualifyStringObject(owner), package == DBNull.Value ? null : QualifyStringObject(package), QualifyStringObject(name), Convert.ToInt32(overload));
 		}
 
-		private OracleTypeObject MapTypeAttributes(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
+		private static OracleTypeObject MapTypeAttributes(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
 		{
 			var typeFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["TYPE_NAME"]));
 			OracleSchemaObject typeObject;
@@ -426,7 +426,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return type;
 		}
 
-		private OracleTypeCollection MapCollectionTypeAttributes(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
+		private static OracleTypeCollection MapCollectionTypeAttributes(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
 		{
 			var typeFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["TYPE_NAME"]));
 			OracleSchemaObject typeObject;
@@ -472,7 +472,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return new KeyValuePair<string, string>((string)reader["NAME"], OracleReaderValueConvert.ToString(reader["VALUE"]));
 		}
 
-		private OracleSequence MapSequence(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
+		private static OracleSequence MapSequence(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
 		{
 			var sequenceFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["SEQUENCE_OWNER"]), QualifyStringObject(reader["SEQUENCE_NAME"]));
 			OracleSchemaObject sequenceObject;
@@ -497,7 +497,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return new KeyValuePair<OracleObjectIdentifier, string>(OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["CONSTRAINT_NAME"])), column[0] == '"' ? column : QualifyStringObject(column));
 		}
 
-		private KeyValuePair<OracleConstraint, OracleObjectIdentifier> MapConstraintWithReferenceIdentifier(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
+		private static KeyValuePair<OracleConstraint, OracleObjectIdentifier> MapConstraintWithReferenceIdentifier(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
 		{
 			var remoteConstraintIdentifier = OracleObjectIdentifier.Empty;
 			var owner = QualifyStringObject(reader["OWNER"]);
@@ -580,7 +580,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				: DataUnit.NotApplicable;
 		}
 
-		private OracleSchemaObject MapSynonymTarget(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
+		private static OracleSchemaObject MapSynonymTarget(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
 		{
 			var synonymFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["SYNONYM_NAME"]));
 			OracleSchemaObject synonymObject;
@@ -603,7 +603,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return synonymObject;
 		}
 
-		private OracleTable MapTable(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
+		private static OracleTable MapTable(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
 		{
 			var tableFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["TABLE_NAME"]));
 			OracleSchemaObject schemaObject;
@@ -617,7 +617,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return table;
 		}
 
-		private OraclePartition MapPartitions(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
+		private static OraclePartition MapPartitions(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
 		{
 			var ownerTable = GetTableForPartition(reader, allObjects);
 			if (ownerTable == null)
@@ -637,7 +637,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return partition;
 		}
 
-		private OracleTable MapPartitionKeys(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects, Func<OracleTable, ICollection<string>> getKeyCollectionFunction)
+		private static OracleTable MapPartitionKeys(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects, Func<OracleTable, ICollection<string>> getKeyCollectionFunction)
 		{
 			var ownerTable = GetTableForPartition(reader, allObjects);
 			if (ownerTable == null)
@@ -650,7 +650,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return ownerTable;
 		}
 
-		private OracleTable GetTableForPartition(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
+		private static OracleTable GetTableForPartition(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
 		{
 			var tableFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["TABLE_OWNER"]), QualifyStringObject(reader["TABLE_NAME"]));
 			OracleSchemaObject schemaObject;
@@ -680,7 +680,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return subPartition;
 		}
 
-		private object MapSchemaObject(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
+		private static object MapSchemaObject(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
 		{
 			var objectTypeIdentifer = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["OBJECT_NAME"]));
 			var objectType = (string)reader["OBJECT_TYPE"];

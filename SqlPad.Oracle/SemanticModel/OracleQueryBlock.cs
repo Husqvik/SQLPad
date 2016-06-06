@@ -16,7 +16,7 @@ namespace SqlPad.Oracle.SemanticModel
 		private readonly List<OracleQueryBlock> _commonTableExpressions = new List<OracleQueryBlock>();
 		private readonly List<OracleProgramMetadata> _attachedFunctions = new List<OracleProgramMetadata>();
 		private readonly List<OracleJoinDescription> _joinDescriptions = new List<OracleJoinDescription>();
-		
+
 		private OracleDataObjectReference _selfObjectReference;
 		private bool? _hasRemoteAsteriskReferences;
 		private ILookup<string, OracleSelectListColumn> _namedColumns;
@@ -80,7 +80,7 @@ namespace SqlPad.Oracle.SemanticModel
 		public StatementGrammarNode AliasNode { get; set; }
 
 		public QueryBlockType Type { get; set; }
-		
+
 		public StatementGrammarNode RootNode { get; }
 
 		public StatementGrammarNode WhereClause { get; set; }
@@ -104,15 +104,13 @@ namespace SqlPad.Oracle.SemanticModel
 		public IReadOnlyDictionary<StatementGrammarNode, string> ExplicitColumnNames { get; set; }
 
 		public StatementGrammarNode RecursiveSearchClause { get; set; }
-		
+
 		public StatementGrammarNode RecursiveCycleClause { get; set; }
-		
-		public OracleDataObjectReference CrossOrOuterApplyReference { get; set; }
 
 		public OracleStatement Statement { get; }
-		
+
 		public bool IsRecursive { get; set; }
-		
+
 		public bool IsRedundant { get; set; }
 
 		public IList<OracleJoinDescription> JoinDescriptions => _joinDescriptions;

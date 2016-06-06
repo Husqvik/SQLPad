@@ -582,7 +582,8 @@ namespace SqlPad.Oracle.SemanticModel
 									Owner = queryBlock,
 									RootNode = tableReferenceNonterminal,
 									ObjectNode = nestedQueryTableReferenceQueryBlock,
-									AliasNode = objectReferenceAlias
+									AliasNode = objectReferenceAlias,
+									IsLateral = queryTableExpression[Terminals.Lateral] != null
 								};
 
 							queryBlock.ObjectReferences.Add(objectReference);
@@ -1829,12 +1830,10 @@ namespace SqlPad.Oracle.SemanticModel
 				return;
 			}
 
-			var parentCorrelatedQueryBlock = GetQueryBlock(tableReferenceJoinClause);
-			queryBlock.CrossOrOuterApplyReference = parentCorrelatedQueryBlock.ObjectReferences.SingleOrDefault(o => o.RootNode == parentTableReferenceNode);
-
 			var appliedTableReferenceNode = crossOrOuterApplyClause[NonTerminals.TableReference];
 			if (appliedTableReferenceNode != null)
 			{
+				var parentCorrelatedQueryBlock = GetQueryBlock(tableReferenceJoinClause);
 				var appliedDataObjectReference = parentCorrelatedQueryBlock.ObjectReferences.SingleOrDefault(o => o.RootNode == appliedTableReferenceNode);
 				if (appliedDataObjectReference != null)
 				{
@@ -1963,7 +1962,7 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 		}
 
-		private static IReadOnlyCollection<OracleDataObjectReference> GetAllCorrelatedDataObjectReferences(OracleQueryBlock queryBlock)
+		private IReadOnlyCollection<OracleDataObjectReference> GetAllCorrelatedDataObjectReferences(OracleQueryBlock queryBlock)
 		{
 			var correlatedReferences = new List<OracleDataObjectReference>();
 			if (queryBlock.OuterCorrelatedQueryBlock != null)
@@ -1971,9 +1970,25 @@ namespace SqlPad.Oracle.SemanticModel
 				correlatedReferences.AddRange(queryBlock.OuterCorrelatedQueryBlock.ObjectReferences);
 			}
 
-			if (queryBlock.CrossOrOuterApplyReference != null)
+			var parentQueryBlockRoot = queryBlock.RootNode.GetAncestor(NonTerminals.QueryBlock);
+			if (parentQueryBlockRoot != null)
 			{
-				correlatedReferences.Add(queryBlock.CrossOrOuterApplyReference);
+				var parentObjectReferences = QueryBlockNodes[parentQueryBlockRoot].ObjectReferences;
+				var parentReference = parentObjectReferences.SingleOrDefault(o => o.QueryBlocks.Any(qb => qb == queryBlock));
+				if (parentReference != null)
+				{
+					var addPrecedingFromClauseRowSources = parentReference.IsLateral;
+					if (!addPrecedingFromClauseRowSources)
+					{
+						var joinClauseNode = queryBlock.RootNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.FromClause), NonTerminals.JoinClause);
+						addPrecedingFromClauseRowSources = joinClauseNode?[NonTerminals.CrossOrOuterApplyClause] != null;
+					}
+
+					if (addPrecedingFromClauseRowSources)
+					{
+						correlatedReferences.AddRange(parentObjectReferences.TakeWhile(r => r != parentReference));
+					}
+				}
 			}
 
 			return correlatedReferences;

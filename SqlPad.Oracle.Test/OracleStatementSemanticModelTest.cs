@@ -3531,5 +3531,63 @@ FROM (
 			mainQueryBlock.Columns[0].ColumnReferences.Count.ShouldBe(1);
 			mainQueryBlock.Columns[0].ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(0);
 		}
+
+		[Test]
+		public void TestLateralViewReferences()
+		{
+			const string query1 =
+@"SELECT
+	NULL
+FROM
+	dual,
+	LATERAL (SELECT NULL c1 FROM dual t WHERE 'X' = dual.dummy)";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single().Validate();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
+			var mainQueryBlock = semanticModel.QueryBlocks.Last();
+			mainQueryBlock.ObjectReferences.Count.ShouldBe(2);
+			var inlineViewReference = mainQueryBlock.ObjectReferences.Single(r => r.Type == ReferenceType.InlineView);
+			inlineViewReference.IsLateral.ShouldBe(true);
+
+			var inlineView = inlineViewReference.QueryBlocks.Single();
+			inlineView.ColumnReferences.Count.ShouldBe(1);
+			inlineView.ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+		}
+
+		[Test]
+		public void TestComplexCrossApplyReferences()
+		{
+			const string query1 =
+@"SELECT
+	NULL
+FROM
+	dual t1,
+	dual t2
+	CROSS APPLY (SELECT NULL c1 FROM dual t WHERE 'X' = t1.dummy) t3
+	CROSS APPLY (SELECT NULL c1 FROM dual t WHERE 'X' = t3.c1) t4";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single().Validate();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
+			var mainQueryBlock = semanticModel.QueryBlocks.Last();
+			mainQueryBlock.ObjectReferences.Count.ShouldBe(4);
+			var inlineViewReferences = mainQueryBlock.ObjectReferences.Where(r => r.Type == ReferenceType.InlineView).ToArray();
+			inlineViewReferences.Length.ShouldBe(2);
+
+			var inlineView3Reference = inlineViewReferences[0];
+			inlineView3Reference.IsLateral.ShouldBe(false);
+			var inlineView3 = inlineView3Reference.QueryBlocks.Single();
+			inlineView3.ColumnReferences.Count.ShouldBe(1);
+			inlineView3.ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+
+			var inlineView4Reference = inlineViewReferences[0];
+			inlineView4Reference.IsLateral.ShouldBe(false);
+			var inlineView4 = inlineView4Reference.QueryBlocks.Single();
+			inlineView4.ColumnReferences.Count.ShouldBe(1);
+			inlineView4.ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
+		}
 	}
 }

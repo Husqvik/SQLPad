@@ -134,7 +134,7 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public override string Type => OracleObjectType.Table;
 
-	    public IDictionary<string, OraclePartition> Partitions { get; set; } = new Dictionary<string, OraclePartition>();
+		public IDictionary<string, OraclePartition> Partitions { get; set; } = new Dictionary<string, OraclePartition>();
 
 		public ICollection<string> PartitionKeyColumns { get; set; } = new List<string>();
 
@@ -291,13 +291,13 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public override string TypeCode => _typeCode;
 
-	    public IList<OracleTypeAttribute> Attributes { get; set; }
+		public IList<OracleTypeAttribute> Attributes { get; set; }
 
 		protected override OracleProgramMetadata BuildConstructorMetadata()
 		{
 			var constructorMetadata = new OracleProgramMetadata(ProgramType.ObjectConstructor, OracleProgramIdentifier.CreateFromValues(FullyQualifiedName.Owner, null, FullyQualifiedName.Name), false, false, false, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeParenthesis, false);
 			var constructorParameters = Attributes.Select(
-				(a, i) => new OracleProgramParameterMetadata(a.Name.ToSimpleIdentifier(), i + 1, i + 1, 0, ParameterDirection.Input, GetFunctionParameterTypeName(a.DataType), GetFunctionParameterCustomTypeIdentifier(a.DataType), false));
+				(a, i) => new OracleProgramParameterMetadata(a.Name, i + 1, i + 1, 0, ParameterDirection.Input, GetFunctionParameterTypeName(a.DataType), GetFunctionParameterCustomTypeIdentifier(a.DataType), false));
 
 			var returnParameter = new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TypeCodeObject, FullyQualifiedName, false);
 			constructorMetadata.AddParameter(returnParameter);

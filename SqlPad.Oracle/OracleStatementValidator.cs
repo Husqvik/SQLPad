@@ -1152,6 +1152,11 @@ namespace SqlPad.Oracle
 					}
 
 					validationModel.ProgramNodeValidity[node] = new InvalidNodeValidationData(semanticError) { Node = node };
+
+					if (targetTypeObject != null)
+					{
+						ValidateNamedParameters(validationModel, typeReference);
+					}
 				}
 				else
 				{
@@ -1323,7 +1328,6 @@ namespace SqlPad.Oracle
 							? Int32.MaxValue
 							: programReference.Metadata.MaximumArguments;
 
-						// TODO: Handle optional parameters
 						var parameterListSemanticError = OracleSemanticErrorType.None;
 						if ((programReference.ParameterReferences.Count < programReference.Metadata.MinimumArguments) ||
 						    (programReference.ParameterReferences.Count > maximumParameterCount))
@@ -1345,47 +1349,7 @@ namespace SqlPad.Oracle
 							semanticError = OracleSemanticErrorType.GroupFunctionNotAllowed;
 						}
 
-						var namedParameterRootNodes = new Dictionary<string, List<StatementGrammarNode>>();
-						foreach (var parameterReference in programReference.ParameterReferences)
-						{
-							if (parameterReference.OptionalIdentifierTerminal != null)
-							{
-								var parameterName = parameterReference.OptionalIdentifierTerminal.Token.Value.ToQuotedIdentifier();
-
-								OracleProgramParameterMetadata parameterMetadata;
-								if (programReference.Metadata.IsBuiltIn)
-								{
-									validationModel.IdentifierNodeValidity[parameterReference.OptionalIdentifierTerminal] =
-										new InvalidNodeValidationData(OracleSemanticErrorType.NamedParameterNotAllowed) { Node = parameterReference.OptionalIdentifierTerminal };
-								}
-								else if (!programReference.Metadata.NamedParameters.TryGetValue(parameterName, out parameterMetadata))
-								{
-									validationModel.IdentifierNodeValidity[parameterReference.OptionalIdentifierTerminal] =
-										new NodeValidationData { IsRecognized = false, Node = parameterReference.OptionalIdentifierTerminal };
-								}
-
-								namedParameterRootNodes.AddToValues(parameterName, parameterReference.ParameterNode);
-							}
-							else if (namedParameterRootNodes.Count > 0)
-							{
-								validationModel.InvalidNonTerminals[parameterReference.ParameterNode] =
-									new InvalidNodeValidationData(OracleSemanticErrorType.PositionalParameterNotAllowed) { Node = parameterReference.ParameterNode };
-							}
-						}
-
-						foreach (var sameNameParameterCollection in namedParameterRootNodes.Values)
-						{
-							if (sameNameParameterCollection.Count == 1)
-							{
-								continue;
-							}
-
-							foreach (var parameterNode in sameNameParameterCollection)
-							{
-								validationModel.InvalidNonTerminals[parameterNode] =
-									new InvalidNodeValidationData(OracleSemanticErrorType.MultipleInstancesOfNamedArgumentInList) { Node = parameterNode };
-							}
-						}
+						ValidateNamedParameters(validationModel, programReference);
 
 						if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramLnNvl && programReference.ParameterReferences.Count == 1)
 						{
@@ -1396,7 +1360,7 @@ namespace SqlPad.Oracle
 							    (parameterNode[0] != null && String.Equals(parameterNode[0].Id, Terminals.LeftParenthesis)))
 							{
 								validationModel.InvalidNonTerminals[parameterNode] =
-									new InvalidNodeValidationData(OracleSemanticErrorType.IncorrectUseOfLnNvlOperator) {Node = parameterNode};
+									new InvalidNodeValidationData(OracleSemanticErrorType.IncorrectUseOfLnNvlOperator) { Node = parameterNode };
 							}
 						}
 						else if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramExtract && programReference.ParameterReferences.Count == 1)
@@ -1481,6 +1445,51 @@ namespace SqlPad.Oracle
 			if (!validationModel.ProgramNodeValidity.ContainsKey(programReference.ProgramIdentifierNode))
 			{
 				validationModel.ProgramNodeValidity[programReference.ProgramIdentifierNode] = new InvalidNodeValidationData(semanticError) { IsRecognized = isRecognized, Node = programReference.ProgramIdentifierNode };
+			}
+		}
+
+		private static void ValidateNamedParameters(OracleValidationModel validationModel, OracleProgramReferenceBase programReference)
+		{
+			var namedParameterRootNodes = new Dictionary<string, List<StatementGrammarNode>>();
+			foreach (var parameterReference in programReference.ParameterReferences)
+			{
+				if (parameterReference.OptionalIdentifierTerminal != null)
+				{
+					var parameterName = parameterReference.OptionalIdentifierTerminal.Token.Value.ToQuotedIdentifier();
+
+					OracleProgramParameterMetadata parameterMetadata;
+					if (programReference.Metadata.IsBuiltIn)
+					{
+						validationModel.IdentifierNodeValidity[parameterReference.OptionalIdentifierTerminal] =
+							new InvalidNodeValidationData(OracleSemanticErrorType.NamedParameterNotAllowed) { Node = parameterReference.OptionalIdentifierTerminal };
+					}
+					else if (!programReference.Metadata.NamedParameters.TryGetValue(parameterName, out parameterMetadata))
+					{
+						validationModel.IdentifierNodeValidity[parameterReference.OptionalIdentifierTerminal] =
+							new NodeValidationData { IsRecognized = false, Node = parameterReference.OptionalIdentifierTerminal };
+					}
+
+					namedParameterRootNodes.AddToValues(parameterName, parameterReference.ParameterNode);
+				}
+				else if (namedParameterRootNodes.Count > 0)
+				{
+					validationModel.InvalidNonTerminals[parameterReference.ParameterNode] =
+						new InvalidNodeValidationData(OracleSemanticErrorType.PositionalParameterNotAllowed) { Node = parameterReference.ParameterNode };
+				}
+			}
+
+			foreach (var sameNameParameterCollection in namedParameterRootNodes.Values)
+			{
+				if (sameNameParameterCollection.Count == 1)
+				{
+					continue;
+				}
+
+				foreach (var parameterNode in sameNameParameterCollection)
+				{
+					validationModel.InvalidNonTerminals[parameterNode] =
+						new InvalidNodeValidationData(OracleSemanticErrorType.MultipleInstancesOfNamedArgumentInList) { Node = parameterNode };
+				}
 			}
 		}
 

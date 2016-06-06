@@ -3605,5 +3605,19 @@ END;";
 			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
 			validationModel.IdentifierNodeValidity.Count.ShouldBe(0);
 		}
+
+		[Test]
+		public void TestNamedParameterWithObjectTypeConstructor()
+		{
+			const string sqlText = "SELECT sys.odciargdesc(argtype => 0, tablename => 'T', tableschema => USER, colname => 'C', tablepartitionlowe => NULL, tablepartitionuppe => NULL, cardinalit => NULL) FROM dual";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			validationModel.IdentifierNodeValidity.Count.ShouldBe(3);
+		}
 	}
 }

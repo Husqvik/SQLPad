@@ -99,6 +99,8 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public bool IsOuterJoined { get; set; }
 
+		public bool IsLateral { get; set; }
+
 		public OracleDataObjectReference(ReferenceType referenceType)
 		{
 			Type = referenceType;
