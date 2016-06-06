@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Documents;
+using System.Windows.Threading;
 using SqlPad.DataExport;
 
 namespace SqlPad
@@ -41,6 +42,7 @@ namespace SqlPad
 
 		private readonly ObservableCollection<ExportResultInfo> _exportResultInfoCollection = new ObservableCollection<ExportResultInfo>();
 		private readonly OutputViewer _outputViewer;
+		private readonly DispatcherTimer _exportClockTimer;
 
 		public IReadOnlyList<ExportResultInfo> ExportResultInfoCollection => _exportResultInfoCollection;
 
@@ -49,6 +51,9 @@ namespace SqlPad
 			InitializeComponent();
 
 			_outputViewer = outputViewer;
+
+			_exportClockTimer = new DispatcherTimer(DispatcherPriority.Normal, Dispatcher) { Interval = TimeSpan.FromMilliseconds(40) };
+			_exportClockTimer.Tick += UpdateExportClockTickHandler;
 
 			if (String.IsNullOrEmpty(OutputPath))
 			{
@@ -61,6 +66,7 @@ namespace SqlPad
 		{
 			IsExecuting = true;
 
+			_exportClockTimer.Start();
 			_exportResultInfoCollection.Clear();
 
 			var commandNumber = 0;
@@ -77,6 +83,8 @@ namespace SqlPad
 
 			await _outputViewer.ExecuteUsingCancellationToken(ExportRows);
 
+			_exportClockTimer.Stop();
+
 			IsExecuting = false;
 		}
 
@@ -84,8 +92,10 @@ namespace SqlPad
 		{
 			foreach (var exportResultInfo in _exportResultInfoCollection)
 			{
-				exportResultInfo.IsWaiting = false;
-				var exportFileName = $@"E:\sqlpad_export_test_{exportResultInfo.CommandNumber}_{DateTime.Now.Ticks}.tmp";
+				exportResultInfo.StartTimestamp = DateTime.Now;
+				_exportClockTimer.Tag = exportResultInfo;
+
+				var exportFileName = $@"E:\sqlpad_export_test_{exportResultInfo.CommandNumber}_{DateTime.Now.Ticks}.tmp"; // TODO
 				using (var exportContext = await DataExporter.StartExportAsync(exportFileName, exportResultInfo.ColumnHeaders, _outputViewer.DocumentPage.InfrastructureFactory.DataExportConverter, cancellationToken))
 				{
 					exportResultInfo.FileName = exportFileName;
@@ -103,7 +113,7 @@ namespace SqlPad
 					exportContext.Complete();
 				}
 
-				exportResultInfo.IsCompleted = true;
+				exportResultInfo.CompleteTimestamp = DateTime.Now;
 			}
 		}
 
@@ -139,6 +149,13 @@ namespace SqlPad
 			}
 		}
 
+		private static void UpdateExportClockTickHandler(object sender, EventArgs e)
+		{
+			var timer = (DispatcherTimer)sender;
+			var exportResultInfo = (ExportResultInfo)timer.Tag;
+			exportResultInfo?.RefreshDuration();
+		}
+
 		private void BrowseExportFolderClickHandler(object sender, RoutedEventArgs e)
 		{
 			
@@ -157,8 +174,8 @@ namespace SqlPad
 		private string _fileName;
 		private long _rowCount;
 		private long _fileSizeBytes;
-		private bool _isWaiting = true;
-		private bool _isCompleted;
+		private DateTime? _startTimestamp;
+		private DateTime? _completeTimestamp;
 
 		public int CommandNumber { get; }
 
@@ -193,16 +210,40 @@ namespace SqlPad
 			set { UpdateValueAndRaisePropertyChanged(ref _fileSizeBytes, value); }
 		}
 
-		public bool IsWaiting
+		public DateTime? StartTimestamp
 		{
-			get { return _isWaiting; }
-			set { UpdateValueAndRaisePropertyChanged(ref _isWaiting, value); }
+			get { return _startTimestamp; }
+			set { UpdateValueAndRaisePropertyChanged(ref _startTimestamp, value); }
 		}
 
-		public bool IsCompleted
+		public DateTime? CompleteTimestamp
 		{
-			get { return _isCompleted; }
-			set { UpdateValueAndRaisePropertyChanged(ref _isCompleted, value); }
+			get { return _completeTimestamp; }
+			set
+			{
+				UpdateValueAndRaisePropertyChanged(ref _completeTimestamp, value);
+				RefreshDuration();
+			}
+		}
+
+		public TimeSpan? Duration
+		{
+			get
+			{
+				if (_startTimestamp == null)
+				{
+					return null;
+				}
+
+				return _completeTimestamp.HasValue
+					? _completeTimestamp - _startTimestamp
+					: DateTime.Now - _startTimestamp;
+			}
+		}
+
+		public void RefreshDuration()
+		{
+			RaisePropertyChanged(nameof(Duration));
 		}
 	}
 }

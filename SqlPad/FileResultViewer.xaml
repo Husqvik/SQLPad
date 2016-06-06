@@ -57,10 +57,8 @@
 								
 								<Run Text="Command " /><Run Text="{Binding CommandNumber, Mode=OneTime}" /><Run Text=" - " />
 							</TextBlock>
-							
-							<TextBlock>
-								<Run Text="{Binding ResultSetName, Mode=OneTime}" />
-							</TextBlock>
+
+							<TextBlock Text="{Binding ResultSetName, Mode=OneTime}" />
 
 							<TextBlock>
 								<TextBlock.Style>
@@ -76,33 +74,26 @@
 								<Run Text=" -> "/><Hyperlink Click="FileNameHyperlinkClickHandler"><Run Text="{Binding FileName}"/></Hyperlink>
 							</TextBlock>
 
-							<TextBlock>
-								<TextBlock.Style>
-									<Style>
-										<Style.Triggers>
-											<DataTrigger Binding="{Binding IsWaiting}" Value="True">
-												<Setter Property="TextBlock.Visibility" Value="Collapsed" />
-											</DataTrigger>
-										</Style.Triggers>
-									</Style>
-								</TextBlock.Style>
+							<TextBlock Text=": " />
 
-								<Run Text=": " /><Run Text="{Binding RowCount, Converter={StaticResource PrettyPrintNumericConverter}}" /><Run Text="{Binding RowCount, Converter={StaticResource PluralConverter}, ConverterParameter=' row'}" /><Run Text=" (" /><Run Text="{Binding FileSizeBytes, Converter={StaticResource DataSpaceConverter}, Mode=OneWay}" /><Run Text=")" />
+							<TextBlock Visibility="{Binding StartTimestamp, Converter={StaticResource ObjectToVisibilityConverter}}">
+								<Run Text="{Binding RowCount, Converter={StaticResource PrettyPrintNumericConverter}}" /><Run Text="{Binding RowCount, Converter={StaticResource PluralConverter}, ConverterParameter=' row'}" /><Run Text=" (" /><Run Text="{Binding Duration, Converter={StaticResource TimeSpanConverter}, Mode=OneWay}" /><Run Text="; " /><Run Text="{Binding FileSizeBytes, Converter={StaticResource DataSpaceConverter}, Mode=OneWay}" /><Run Text=")" />
 							</TextBlock>
 
-							<TextBlock Text=": Waiting" Visibility="{Binding IsWaiting, Converter={StaticResource ObjectToVisibilityConverter}}" />
-
-							<TextBlock Text=" (done.)">
+							<TextBlock Text="Waiting... ">
 								<TextBlock.Style>
 									<Style>
+										<Setter Property="TextBlock.Visibility" Value="Collapsed" />
 										<Style.Triggers>
-											<DataTrigger Binding="{Binding IsCompleted}" Value="False">
-												<Setter Property="TextBlock.Visibility" Value="Collapsed" />
+											<DataTrigger Binding="{Binding StartTimestamp}" Value="{x:Null}">
+												<Setter Property="TextBlock.Visibility" Value="Visible" />
 											</DataTrigger>
 										</Style.Triggers>
 									</Style>
 								</TextBlock.Style>
 							</TextBlock>
+
+							<TextBlock Text=" (done.)" Visibility="{Binding CompleteTimestamp, Converter={StaticResource ObjectToVisibilityConverter}}" />
 						</StackPanel>
 					</DataTemplate>
 				</ItemsControl.ItemTemplate>

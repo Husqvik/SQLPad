@@ -106,6 +106,15 @@ namespace SqlPad
 		}
 	}
 
+	public class TimeSpanConverter : ValueConverterBase
+	{
+		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			var timeSpan = (TimeSpan?)value;
+			return value == null ? ValueNotAvailable : timeSpan.Value.ToPrettyString();
+		}
+	}
+
 	public class RatioConverter : ValueConverterBase
 	{
 		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)

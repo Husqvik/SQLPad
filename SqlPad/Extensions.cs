@@ -176,9 +176,9 @@ namespace SqlPad
 				return $"{timeSpan.Hours}:{timeSpan.Minutes:00}:{timeSpan.Seconds:00}";
 			}
 
-			var plural = timeSpan.TotalDays >= 2 ? "s" : null;
+			var pluralPostfix = timeSpan.TotalDays >= 2 ? "s" : null;
 
-			return $"{(int)timeSpan.TotalDays} day{plural} {timeSpan.Hours}:{timeSpan.Minutes:00}:{timeSpan.Seconds:00}";
+			return $"{(int)timeSpan.TotalDays} day{pluralPostfix} {timeSpan.Hours}:{timeSpan.Minutes:00}:{timeSpan.Seconds:00}";
 		}
 
 		public static async Task<byte[]> ReadAllBytesAsync(this FileStream file, CancellationToken cancellationToken)
