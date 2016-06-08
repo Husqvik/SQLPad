@@ -18,7 +18,7 @@ namespace SqlPad
 	{
 		public static bool In<T>(this T o, params T[] elements)
 		{
-			return elements.Any(e => e.Equals(o));
+			return elements.Any(e => Equals(e, o));
 		}
 
 		public static IEnumerable<TItem> Distinct<TItem, TValue>(this IEnumerable<TItem> source, Func<TItem, TValue> selector)

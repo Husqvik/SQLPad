@@ -227,7 +227,8 @@ namespace SqlPad
 
 		private void SelectDefaultTabIfNeeded()
 		{
-			if (TabControlResult.SelectedItem == null || TabControlResult.SelectedItem.In(TabExecutionPlan, TabStatistics, TabCompilationErrors, TabDebugger))
+			if (TabControlResult.SelectedItem.In(null, TabExecutionPlan, TabStatistics, TabCompilationErrors, TabDebugger) ||
+				((TabItem)TabControlResult.SelectedItem).Content is DataGridResultViewer)
 			{
 				TabExecutionLog.IsSelected = true;
 			}
