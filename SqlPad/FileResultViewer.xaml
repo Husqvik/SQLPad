@@ -76,9 +76,15 @@
 
 							<TextBlock Text=": " />
 
-							<TextBlock Visibility="{Binding StartTimestamp, Converter={StaticResource ObjectToVisibilityConverter}}">
-								<Run Text="{Binding RowCount, Converter={StaticResource PrettyPrintNumericConverter}}" /><Run Text="{Binding RowCount, Converter={StaticResource PluralConverter}, ConverterParameter=' row'}" /><Run Text=" (" /><Run Text="{Binding Duration, Converter={StaticResource TimeSpanConverter}, Mode=OneWay}" /><Run Text="; " /><Run Text="{Binding FileSizeBytes, Converter={StaticResource DataSpaceConverter}, Mode=OneWay}" /><Run Text=")" />
-							</TextBlock>
+							<StackPanel Orientation="Horizontal" Visibility="{Binding StartTimestamp, Converter={StaticResource ObjectToVisibilityConverter}}">
+								<TextBlock>
+									<Run Text="{Binding RowCount, Converter={StaticResource PrettyPrintNumericConverter}}" /><Run Text="{Binding RowCount, Converter={StaticResource PluralConverter}, ConverterParameter=' row'}" /><Run Text=" (" /><Run Text="{Binding Duration, Converter={StaticResource TimeSpanConverter}, Mode=OneWay}" />
+								</TextBlock>
+								<TextBlock Visibility="{Binding FileSizeBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
+									<Run Text="; " /><Run Text="{Binding FileSizeBytes, Converter={StaticResource DataSpaceConverter}, Mode=OneWay}" />
+								</TextBlock>
+								<TextBlock Text=")" />
+							</StackPanel>
 
 							<TextBlock Text="Waiting... ">
 								<TextBlock.Style>
@@ -93,7 +99,7 @@
 								</TextBlock.Style>
 							</TextBlock>
 
-							<TextBlock Text=" (done.)" Visibility="{Binding CompleteTimestamp, Converter={StaticResource ObjectToVisibilityConverter}}" />
+							<TextBlock Text=" (done)" Visibility="{Binding CompleteTimestamp, Converter={StaticResource ObjectToVisibilityConverter}}" />
 						</StackPanel>
 					</DataTemplate>
 				</ItemsControl.ItemTemplate>

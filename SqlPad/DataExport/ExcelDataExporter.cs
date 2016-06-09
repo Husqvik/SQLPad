@@ -118,7 +118,12 @@ namespace SqlPad.DataExport
 			}
 		}
 
-		protected override void FinalizeExport()
+		protected override Task FinalizeExport()
+		{
+			return Task.Run((Action)FinalizeInternal);
+		}
+
+		private void FinalizeInternal()
 		{
 			for (var i = 1; i <= _columns.Count; i++)
 			{

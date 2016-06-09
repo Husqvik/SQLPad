@@ -110,10 +110,11 @@ namespace SqlPad
 						await ExportNextBatch(exportContext, exportResultInfo, cancellationToken);
 					}
 
-					exportContext.Complete();
+					await exportContext.CompleteAsync();
 				}
 
 				exportResultInfo.CompleteTimestamp = DateTime.Now;
+				exportResultInfo.RefreshFileSize();
 			}
 		}
 
@@ -132,7 +133,7 @@ namespace SqlPad
 			{
 				try
 				{
-					exportContext.AppendRows(innerTask.Result);
+					await exportContext.AppendRowsAsync(innerTask.Result);
 				}
 				catch (OperationCanceledException)
 				{
@@ -142,7 +143,7 @@ namespace SqlPad
 				finally
 				{
 					exportResultInfo.RowCount = exportContext.CurrentRowIndex;
-					exportResultInfo.FileSizeBytes = new FileInfo(exportResultInfo.FileName).Length;
+					exportResultInfo.RefreshFileSize();
 				}
 				
 				await _outputViewer.UpdateExecutionStatisticsIfEnabled();
@@ -173,7 +174,7 @@ namespace SqlPad
 	{
 		private string _fileName;
 		private long _rowCount;
-		private long _fileSizeBytes;
+		private long? _fileSizeBytes;
 		private DateTime? _startTimestamp;
 		private DateTime? _completeTimestamp;
 
@@ -204,10 +205,10 @@ namespace SqlPad
 			set { UpdateValueAndRaisePropertyChanged(ref _rowCount, value); }
 		}
 
-		public long FileSizeBytes
+		public long? FileSizeBytes
 		{
 			get { return _fileSizeBytes; }
-			set { UpdateValueAndRaisePropertyChanged(ref _fileSizeBytes, value); }
+			private set { UpdateValueAndRaisePropertyChanged(ref _fileSizeBytes, value); }
 		}
 
 		public DateTime? StartTimestamp
@@ -244,6 +245,16 @@ namespace SqlPad
 		public void RefreshDuration()
 		{
 			RaisePropertyChanged(nameof(Duration));
+		}
+
+		public void RefreshFileSize()
+		{
+			var fileInfo = new FileInfo(FileName);
+
+			if (fileInfo.Exists)
+			{
+				FileSizeBytes = fileInfo.Length;
+			}
 		}
 	}
 }

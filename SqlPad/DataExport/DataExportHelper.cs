@@ -43,8 +43,8 @@ namespace SqlPad.DataExport
 		public static void ExportRowsUsingContext(ICollection rows, DataExportContextBase exportContext)
 		{
 			exportContext.Initialize();
-			exportContext.AppendRows(rows.Cast<object[]>());
-			exportContext.Complete();
+			exportContext.AppendRowsAsync(rows.Cast<object[]>());
+			exportContext.CompleteAsync().Wait();
 		}
 
 		private static void RunExportActionInternal(string fileName, StringBuilder stringBuilder, Action<TextWriter> exportAction)

@@ -24,9 +24,9 @@ namespace SqlPad.DataExport
 	{
 		long CurrentRowIndex { get; }
 
-		void AppendRows(IEnumerable<object[]> rows);
+		Task AppendRowsAsync(IEnumerable<object[]> rows);
 
-		void Complete();
+		Task CompleteAsync();
 	}
 
 	public class DataExporters

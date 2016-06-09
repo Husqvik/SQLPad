@@ -53,14 +53,14 @@ namespace SqlPad.DataExport
 		{
 		}
 
-		public void Complete()
+		public async Task CompleteAsync()
 		{
-			FinalizeExport();
+			await FinalizeExport();
 
 			_isFinalized = true;
 		}
 
-		public void AppendRows(IEnumerable<object[]> rows)
+		public async Task AppendRowsAsync(IEnumerable<object[]> rows)
 		{
 			if (!_isInitialized)
 			{
@@ -72,6 +72,13 @@ namespace SqlPad.DataExport
 				throw new InvalidOperationException($"{TypeName} has been completed. ");
 			}
 
+			await Task.Run(() => AppenRowsInternal(rows), _cancellationToken);
+
+			_reportProgress?.Report(_totalRows.HasValue ? 100 : (int)CurrentRowIndex);
+		}
+
+		private void AppenRowsInternal(IEnumerable<object[]> rows)
+		{
 			foreach (var rowValues in rows)
 			{
 				_cancellationToken.ThrowIfCancellationRequested();
@@ -89,8 +96,6 @@ namespace SqlPad.DataExport
 
 				CurrentRowIndex++;
 			}
-
-			_reportProgress?.Report(_totalRows.HasValue ? 100 : (int)CurrentRowIndex);
 		}
 
 		protected static bool IsNull(object value)
@@ -108,6 +113,9 @@ namespace SqlPad.DataExport
 
 		protected virtual void InitializeExport() { }
 
-		protected virtual void FinalizeExport() { }
+		protected virtual Task FinalizeExport()
+		{
+			return Task.CompletedTask;
+		}
 	}
 }

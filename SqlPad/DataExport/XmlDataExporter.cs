@@ -16,6 +16,7 @@ namespace SqlPad.DataExport
 		private static readonly XmlWriterSettings XmlWriterSettings =
 			new XmlWriterSettings
 			{
+				Async = true,
 				Indent = true,
 				Encoding = Encoding.UTF8
 			};
@@ -99,11 +100,10 @@ namespace SqlPad.DataExport
 			_xmlWriter.Dispose();
 		}
 
-		protected override void FinalizeExport()
+		protected override async Task FinalizeExport()
 		{
-			_xmlWriter.WriteEndElement();
-			_xmlWriter.WriteEndDocument();
-			_xmlWriter.Dispose();
+			await _xmlWriter.WriteEndElementAsync();
+			await _xmlWriter.WriteEndDocumentAsync();
 		}
 
 		protected override void ExportRow(object[] rowValues)

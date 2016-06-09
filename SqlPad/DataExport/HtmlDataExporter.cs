@@ -76,10 +76,9 @@ namespace SqlPad.DataExport
 			_writer.Dispose();
 		}
 
-		protected override void FinalizeExport()
+		protected override Task FinalizeExport()
 		{
-			_writer.Write("<table>");
-			_writer.Dispose();
+			return _writer.WriteAsync("<table>");
 		}
 
 		protected override void ExportRow(object[] rowValues)

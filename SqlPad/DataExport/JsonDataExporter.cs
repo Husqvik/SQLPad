@@ -77,11 +77,10 @@ namespace SqlPad.DataExport
 			_writer.WriteLine('[');
 		}
 
-		protected override void FinalizeExport()
+		protected override async Task FinalizeExport()
 		{
-			_writer.WriteLine();
-			_writer.Write(']');
-			_writer.Dispose();
+			await _writer.WriteLineAsync();
+			await _writer.WriteAsync(']');
 		}
 
 		protected override void ExportRow(object[] rowValues)
