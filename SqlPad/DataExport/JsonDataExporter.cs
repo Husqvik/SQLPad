@@ -37,10 +37,10 @@ namespace SqlPad.DataExport
 			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(orderedColumns, rows, w, dataExportConverter, reportProgress, cancellationToken));
 		}
 
-		private static void ExportInternal(IReadOnlyList<ColumnHeader> orderedColumns, ICollection rows, TextWriter writer, IDataExportConverter dataExportConverter, IProgress<int> reportProgress, CancellationToken cancellationToken)
+		private static Task ExportInternal(IReadOnlyList<ColumnHeader> orderedColumns, ICollection rows, TextWriter writer, IDataExportConverter dataExportConverter, IProgress<int> reportProgress, CancellationToken cancellationToken)
 		{
 			var exportContext = new JsonDataExportContext(writer, orderedColumns, dataExportConverter, rows.Count, reportProgress, cancellationToken);
-			DataExportHelper.ExportRowsUsingContext(rows, exportContext);
+			return DataExportHelper.ExportRowsUsingContext(rows, exportContext);
 		}
 	}
 

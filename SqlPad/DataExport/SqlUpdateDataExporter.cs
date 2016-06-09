@@ -39,9 +39,9 @@ namespace SqlPad.DataExport
 		protected abstract SqlDataExportContextBase CreateExportContext(TextWriter writer, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter, int? totalRows, IProgress<int> reportProgress, CancellationToken cancellationToken);
 
 
-		protected void ExportInternal(IReadOnlyList<ColumnHeader> orderedColumns, ICollection rows, TextWriter writer, IDataExportConverter dataExportConverter, IProgress<int> reportProgress, CancellationToken cancellationToken)
+		protected Task ExportInternal(IReadOnlyList<ColumnHeader> orderedColumns, ICollection rows, TextWriter writer, IDataExportConverter dataExportConverter, IProgress<int> reportProgress, CancellationToken cancellationToken)
 		{
-			DataExportHelper.ExportRowsUsingContext(rows, CreateExportContext(writer, orderedColumns, dataExportConverter, rows.Count, reportProgress, cancellationToken));
+			return DataExportHelper.ExportRowsUsingContext(rows, CreateExportContext(writer, orderedColumns, dataExportConverter, rows.Count, reportProgress, cancellationToken));
 		}
 	}
 

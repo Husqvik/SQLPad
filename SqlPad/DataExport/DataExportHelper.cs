@@ -12,17 +12,15 @@ namespace SqlPad.DataExport
 {
 	internal static class DataExportHelper
 	{
-		public static Task RunExportActionAsync(string fileName, Action<TextWriter> exportAction)
+		public static async Task RunExportActionAsync(string fileName, Func<TextWriter, Task> exportAction)
 		{
 			var stringBuilder = new StringBuilder();
-			var exportTask = Task.Run(() => RunExportActionInternal(fileName, stringBuilder, exportAction));
+			await RunExportActionInternal(fileName, stringBuilder, exportAction);
 			var exportToClipboard = String.IsNullOrEmpty(fileName);
 			if (exportToClipboard)
 			{
-				exportTask = exportTask.ContinueWith(t => SetToClipboard(stringBuilder), TaskContinuationOptions.OnlyOnRanToCompletion);
+				SetToClipboard(stringBuilder);
 			}
-
-			return exportTask;
 		}
 
 		private static void SetToClipboard(StringBuilder stringBuilder)
@@ -40,20 +38,20 @@ namespace SqlPad.DataExport
 					.ToArray();
 		}
 
-		public static void ExportRowsUsingContext(ICollection rows, DataExportContextBase exportContext)
+		public static async Task ExportRowsUsingContext(ICollection rows, DataExportContextBase exportContext)
 		{
-			exportContext.Initialize();
-			exportContext.AppendRowsAsync(rows.Cast<object[]>());
-			exportContext.CompleteAsync().Wait();
+			await exportContext.InitializeAsync();
+			await exportContext.AppendRowsAsync(rows.Cast<object[]>());
+			await exportContext.FinalizeAsync();
 		}
 
-		private static void RunExportActionInternal(string fileName, StringBuilder stringBuilder, Action<TextWriter> exportAction)
+		private static async Task RunExportActionInternal(string fileName, StringBuilder stringBuilder, Func<TextWriter, Task> exportAction)
 		{
 			var exportToClipboard = String.IsNullOrEmpty(fileName);
 
 			using (var writer = exportToClipboard ? (TextWriter)new StringWriter(stringBuilder) : File.CreateText(fileName))
 			{
-				exportAction(writer);
+				await exportAction(writer);
 			}
 		}
 	}

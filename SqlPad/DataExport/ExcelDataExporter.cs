@@ -38,10 +38,10 @@ namespace SqlPad.DataExport
 			return Task.Run(() => ExportInternal(fileName, worksheetName, orderedColumns, rows, reportProgress, cancellationToken), cancellationToken);
 		}
 
-		private static void ExportInternal(string fileName, string worksheetName, IReadOnlyList<ColumnHeader> orderedColumns, ICollection rows, IProgress<int> reportProgress, CancellationToken cancellationToken)
+		private static Task ExportInternal(string fileName, string worksheetName, IReadOnlyList<ColumnHeader> orderedColumns, ICollection rows, IProgress<int> reportProgress, CancellationToken cancellationToken)
 		{
 			var exportContext = new ExcelDataExportContext(fileName, worksheetName, orderedColumns, rows.Count, reportProgress, cancellationToken);
-			DataExportHelper.ExportRowsUsingContext(rows, exportContext);
+			return DataExportHelper.ExportRowsUsingContext(rows, exportContext);
 		}
 	}
 

@@ -26,7 +26,7 @@ namespace SqlPad.DataExport
 
 		Task AppendRowsAsync(IEnumerable<object[]> rows);
 
-		Task CompleteAsync();
+		Task FinalizeAsync();
 	}
 
 	public class DataExporters

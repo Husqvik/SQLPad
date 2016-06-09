@@ -110,7 +110,7 @@ namespace SqlPad
 						await ExportNextBatch(exportContext, exportResultInfo, cancellationToken);
 					}
 
-					await exportContext.CompleteAsync();
+					await exportContext.FinalizeAsync();
 				}
 
 				exportResultInfo.CompleteTimestamp = DateTime.Now;

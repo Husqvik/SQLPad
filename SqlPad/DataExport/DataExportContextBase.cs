@@ -30,7 +30,7 @@ namespace SqlPad.DataExport
 			await Task.Run(() => Initialize(), _cancellationToken);
 		}
 
-		public void Initialize()
+		private void Initialize()
 		{
 			if (_isInitialized)
 			{
@@ -53,7 +53,7 @@ namespace SqlPad.DataExport
 		{
 		}
 
-		public async Task CompleteAsync()
+		public async Task FinalizeAsync()
 		{
 			await FinalizeExport();
 

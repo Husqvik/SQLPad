@@ -42,10 +42,10 @@ namespace SqlPad.DataExport
 			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(orderedColumns, rows, w, reportProgress, cancellationToken));
 		}
 
-		private void ExportInternal(IReadOnlyList<ColumnHeader> orderedColumns, ICollection rows, TextWriter writer, IProgress<int> reportProgress, CancellationToken cancellationToken)
+		private Task ExportInternal(IReadOnlyList<ColumnHeader> orderedColumns, ICollection rows, TextWriter writer, IProgress<int> reportProgress, CancellationToken cancellationToken)
 		{
 			var exportContext = new CsvDataExportContext(writer, orderedColumns, Separator, rows.Count, reportProgress, cancellationToken);
-			DataExportHelper.ExportRowsUsingContext(rows, exportContext);
+			return DataExportHelper.ExportRowsUsingContext(rows, exportContext);
 		}
 	}
 

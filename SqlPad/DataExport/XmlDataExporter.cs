@@ -44,10 +44,10 @@ namespace SqlPad.DataExport
 			var orderedColumns = DataExportHelper.GetOrderedExportableColumns(resultViewer.ResultGrid);
 			var rows = (ICollection)resultViewer.ResultGrid.Items;
 
-			return Task.Run(() => ExportInternal(orderedColumns, rows, fileName, dataExportConverter, reportProgress, cancellationToken), cancellationToken);
+			return ExportInternal(orderedColumns, rows, fileName, dataExportConverter, reportProgress, cancellationToken);
 		}
 
-		private static void ExportInternal(IReadOnlyList<ColumnHeader> orderedColumns, ICollection rows, string fileName, IDataExportConverter dataExportConverter, IProgress<int> reportProgress, CancellationToken cancellationToken)
+		private static async Task ExportInternal(IReadOnlyList<ColumnHeader> orderedColumns, ICollection rows, string fileName, IDataExportConverter dataExportConverter, IProgress<int> reportProgress, CancellationToken cancellationToken)
 		{
 			var stringBuilder = new StringBuilder();
 
@@ -56,12 +56,12 @@ namespace SqlPad.DataExport
 			using (var xmlWriter = exportToClipboard ? XmlWriter.Create(stringBuilder, XmlWriterSettings) : XmlWriter.Create(fileName, XmlWriterSettings))
 			{
 				var exportContext = new XmlDataExportContext(xmlWriter, orderedColumns, dataExportConverter, rows.Count, reportProgress, cancellationToken);
-				DataExportHelper.ExportRowsUsingContext(rows, exportContext);
+				await DataExportHelper.ExportRowsUsingContext(rows, exportContext);
 			}
 
 			if (exportToClipboard)
 			{
-				Application.Current.Dispatcher.InvokeAsync(() => Clipboard.SetText(stringBuilder.ToString()));
+				Clipboard.SetText(stringBuilder.ToString());
 			}
 		}
 	}
