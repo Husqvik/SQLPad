@@ -35,6 +35,8 @@ namespace SqlPad
 		public static readonly DependencyProperty SelectedCellAverageProperty = DependencyProperty.Register(nameof(SelectedCellAverage), typeof(object), typeof(DataGridResultViewer), new UIPropertyMetadata());
 		public static readonly DependencyProperty SelectedCellMinProperty = DependencyProperty.Register(nameof(SelectedCellMin), typeof(object), typeof(DataGridResultViewer), new UIPropertyMetadata());
 		public static readonly DependencyProperty SelectedCellMaxProperty = DependencyProperty.Register(nameof(SelectedCellMax), typeof(object), typeof(DataGridResultViewer), new UIPropertyMetadata());
+		public static readonly DependencyProperty SelectedCellModeProperty = DependencyProperty.Register(nameof(SelectedCellMode), typeof(object), typeof(DataGridResultViewer), new UIPropertyMetadata());
+		public static readonly DependencyProperty SelectedCellMedianProperty = DependencyProperty.Register(nameof(SelectedCellMedian), typeof(object), typeof(DataGridResultViewer), new UIPropertyMetadata());
 		public static readonly DependencyProperty SelectedRowIndexProperty = DependencyProperty.Register(nameof(SelectedRowIndex), typeof(int), typeof(DataGridResultViewer), new UIPropertyMetadata(0));
 		public static readonly DependencyProperty AutoRefreshIntervalProperty = DependencyProperty.Register(nameof(AutoRefreshInterval), typeof(TimeSpan), typeof(DataGridResultViewer), new UIPropertyMetadata(TimeSpan.FromSeconds(60), AutoRefreshIntervalChangedCallback));
 		public static readonly DependencyProperty AutoRefreshEnabledProperty = DependencyProperty.Register(nameof(AutoRefreshEnabled), typeof(bool), typeof(DataGridResultViewer), new UIPropertyMetadata(false, AutoRefreshEnabledChangedCallback));
@@ -89,6 +91,20 @@ namespace SqlPad
 		{
 			get { return GetValue(SelectedCellAverageProperty); }
 			private set { SetValue(SelectedCellAverageProperty, value); }
+		}
+
+		[Bindable(true)]
+		public object SelectedCellMode
+		{
+			get { return GetValue(SelectedCellModeProperty); }
+			private set { SetValue(SelectedCellModeProperty, value); }
+		}
+
+		[Bindable(true)]
+		public object SelectedCellMedian
+		{
+			get { return GetValue(SelectedCellMedianProperty); }
+			private set { SetValue(SelectedCellMedianProperty, value); }
 		}
 
 		[Bindable(true)]

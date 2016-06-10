@@ -41,6 +41,10 @@ namespace SqlPad.Oracle
 
 		public object Sum => GetValue(_oracleNumberSum, OracleDate.Null, OracleTimeStamp.Null, OracleTimeStampTZ.Null, OracleTimeStampLTZ.Null, _oracleYearToMonthSum, _oracleDayToSecondSum);
 
+		public object Mode { get; }
+
+		public object Median { get; }
+
 		public long Count { get; private set; }
 
 		public long DistinctCount => _distinctValues.Count;

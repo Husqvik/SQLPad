@@ -68,6 +68,10 @@ namespace SqlPad
 
 		object Sum { get; }
 
+		object Mode { get; }
+
+		object Median { get; }
+
 		long Count { get; }
 
 		long DistinctCount { get; }

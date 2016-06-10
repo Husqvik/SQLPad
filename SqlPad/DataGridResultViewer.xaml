@@ -138,6 +138,10 @@
 				<TextBox Text="{Binding SelectedCellSum, Converter={x:Static sqlPad:CellValueConverter.Instance}}" />
 				<TextBlock Text=" Average: " />
 				<TextBox Text="{Binding SelectedCellAverage, Converter={x:Static sqlPad:CellValueConverter.Instance}}" />
+				<!--<TextBlock Text=" Mode: " />
+				<TextBox Text="{Binding SelectedCellMode, Converter={x:Static sqlPad:CellValueConverter.Instance}}" />
+				<TextBlock Text=" Median: " />
+				<TextBox Text="{Binding SelectedCellMedian, Converter={x:Static sqlPad:CellValueConverter.Instance}}" />-->
 			</StackPanel>
 		</StackPanel>
 
