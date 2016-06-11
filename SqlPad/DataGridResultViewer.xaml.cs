@@ -30,7 +30,7 @@ namespace SqlPad
 		public static readonly DependencyProperty IsSelectedCellAggregatedInfoVisibleProperty = DependencyProperty.Register(nameof(IsSelectedCellAggregatedInfoVisible), typeof(bool), typeof(DataGridResultViewer), new UIPropertyMetadata());
 		public static readonly DependencyProperty IsSelectedCellInfoVisibleProperty = DependencyProperty.Register(nameof(IsSelectedCellInfoVisible), typeof(bool), typeof(DataGridResultViewer), new UIPropertyMetadata());
 		public static readonly DependencyProperty SelectedCellValueCountProperty = DependencyProperty.Register(nameof(SelectedCellValueCount), typeof(long), typeof(DataGridResultViewer), new UIPropertyMetadata(0L));
-		public static readonly DependencyProperty SelectedCellDistinctValueCountProperty = DependencyProperty.Register(nameof(SelectedCellDistinctValueCount), typeof(long), typeof(DataGridResultViewer), new UIPropertyMetadata(0L));
+		public static readonly DependencyProperty SelectedCellDistinctValueCountProperty = DependencyProperty.Register(nameof(SelectedCellDistinctValueCount), typeof(long?), typeof(DataGridResultViewer), new UIPropertyMetadata());
 		public static readonly DependencyProperty SelectedCellSumProperty = DependencyProperty.Register(nameof(SelectedCellSum), typeof(object), typeof(DataGridResultViewer), new UIPropertyMetadata());
 		public static readonly DependencyProperty SelectedCellAverageProperty = DependencyProperty.Register(nameof(SelectedCellAverage), typeof(object), typeof(DataGridResultViewer), new UIPropertyMetadata());
 		public static readonly DependencyProperty SelectedCellMinProperty = DependencyProperty.Register(nameof(SelectedCellMin), typeof(object), typeof(DataGridResultViewer), new UIPropertyMetadata());
@@ -73,9 +73,9 @@ namespace SqlPad
 		}
 
 		[Bindable(true)]
-		public long SelectedCellDistinctValueCount
+		public long? SelectedCellDistinctValueCount
 		{
-			get { return (long)GetValue(SelectedCellDistinctValueCountProperty); }
+			get { return (long?)GetValue(SelectedCellDistinctValueCountProperty); }
 			private set { SetValue(SelectedCellDistinctValueCountProperty, value); }
 		}
 
@@ -629,6 +629,8 @@ namespace SqlPad
 				SelectedCellMin = valueAggregator.Minimum;
 				SelectedCellMax = valueAggregator.Maximum;
 				SelectedCellAverage = valueAggregator.Average;
+				SelectedCellMode = valueAggregator.Mode;
+				SelectedCellMedian = valueAggregator.Median;
 
 				IsSelectedCellLimitInfoVisible = valueAggregator.LimitValuesAvailable;
 				IsSelectedCellAggregatedInfoVisible = valueAggregator.AggregatedValuesAvailable;

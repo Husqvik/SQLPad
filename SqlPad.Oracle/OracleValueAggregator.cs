@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using SqlPad.Oracle.DatabaseConnection;
 #if ORACLE_MANAGED_DATA_ACCESS_CLIENT
 using Oracle.ManagedDataAccess.Types;
@@ -10,11 +11,13 @@ using Oracle.DataAccess.Types;
 
 namespace SqlPad.Oracle
 {
-	[DebuggerDisplay("OracleValueAggregator (Count={Count}; Minimum={Minimum}; Maximum={Maximum}; Sum={Sum}; Average={Average})")]
+	[DebuggerDisplay("OracleValueAggregator (Count={Count}; DistinctCount={DistinctCount}; Minimum={Minimum}; Maximum={Maximum}; Sum={Sum}; Average={Average}; Mode={Mode}; Median={Median})")]
 	public class OracleValueAggregator : IValueAggregator
 	{
 		private readonly HashSet<object> _distinctValues = new HashSet<object>();
-		private ValueType _valueType;
+		private readonly List<Tuple<Type, object>> _typeValues = new List<Tuple<Type, object>>();
+
+		private Type _valueType;
 		private OracleDecimal _oracleNumberSum;
 		private OracleIntervalYM _oracleYearToMonthSum;
 		private OracleIntervalDS _oracleDayToSecondSum;
@@ -41,17 +44,49 @@ namespace SqlPad.Oracle
 
 		public object Sum => GetValue(_oracleNumberSum, OracleDate.Null, OracleTimeStamp.Null, OracleTimeStampTZ.Null, OracleTimeStampLTZ.Null, _oracleYearToMonthSum, _oracleDayToSecondSum);
 
-		public object Mode { get; }
+		public object Mode
+		{
+			get
+			{
+				var modeValues =
+					_typeValues
+						.Where(t => t.Item1 == _valueType)
+						.GroupBy(t => t.Item2)
+						.Select(g => new { Value = g.Key, Count = g.Count() })
+						.OrderByDescending(g => g.Count)
+						.Take(2)
+						.ToArray();
+
+				if (modeValues.Length == 0)
+				{
+					return null;
+				}
+
+				var mostNumerousItem = modeValues[0];
+
+				if (modeValues.Length == 1)
+				{
+					return mostNumerousItem.Value;
+				}
+
+				return mostNumerousItem.Count == modeValues[1].Count
+					? null
+					: mostNumerousItem.Value;
+			}
+		}
 
 		public object Median { get; }
 
 		public long Count { get; private set; }
 
-		public long DistinctCount => _distinctValues.Count;
+		public long? DistinctCount =>
+			LimitValuesAvailable
+				? _distinctValues.Count
+				: (long?)null;
 
-		public bool AggregatedValuesAvailable { get; private set; } = true;
+		public bool AggregatedValuesAvailable { get; private set; }
 
-		public bool LimitValuesAvailable { get; private set; } = true;
+		public bool LimitValuesAvailable { get; private set; }
 
 		public OracleValueAggregator()
 		{
@@ -71,22 +106,23 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			Count++;
-
-			var valueType = ValueType.None;
+			Type valueType = null;
 
 			var oracleNumber = value as OracleNumber;
 			if (value is int || value is long || value is decimal || value is short || value is uint || value is ulong || value is ushort)
 			{
-				valueType = ValueType.Number;
+				valueType = typeof(OracleDecimal);
 				value = oracleNumber = new OracleNumber(new OracleDecimal(Convert.ToDecimal(value)));
 			}
 
 			var oracleDate = value as OracleDateTime;
 			if (value is DateTime)
 			{
+				valueType = typeof(OracleDate);
 				value = oracleDate = new OracleDateTime(new OracleDate(Convert.ToDateTime(value)));
 			}
+
+			Count++;
 
 			_distinctValues.Add(value);
 
@@ -97,7 +133,7 @@ namespace SqlPad.Oracle
 			var oracleIntervalDayToSecond = value as OracleIntervalDayToSecond;
 			if (oracleNumber != null)
 			{
-				valueType = ValueType.Number;
+				valueType = typeof(OracleDecimal);
 				var typedValue = (OracleDecimal)oracleNumber.RawValue;
 				_oracleNumberMinimum = OracleDecimal.Min(_oracleNumberMinimum, typedValue);
 				_oracleNumberMaximum = OracleDecimal.Max(_oracleNumberMaximum, typedValue);
@@ -105,7 +141,7 @@ namespace SqlPad.Oracle
 			}
 			else if (oracleDate != null)
 			{
-				valueType = ValueType.Date;
+				valueType = typeof(OracleDate);
 				var typedValue = (OracleDate)oracleDate.RawValue;
 				if (OracleDate.LessThan(typedValue, _oracleDateMinimum))
 				{
@@ -121,7 +157,7 @@ namespace SqlPad.Oracle
 			}
 			else if (oracleTimestamp != null)
 			{
-				valueType = ValueType.Timestamp;
+				valueType = typeof(OracleTimeStamp);
 				var typedValue = (OracleTimeStamp)oracleTimestamp.RawValue;
 				if (OracleTimeStamp.LessThan(typedValue, _oracleTimeStampMinimum))
 				{
@@ -137,7 +173,7 @@ namespace SqlPad.Oracle
 			}
 			else if (oracleTimestampTimezone != null)
 			{
-				valueType = ValueType.TimestampWithTimezone;
+				valueType = typeof(OracleTimeStampTZ);
 				var typedValue = (OracleTimeStampTZ)oracleTimestampTimezone.RawValue;
 				if (OracleTimeStampTZ.LessThan(typedValue, _oracleTimeStampTimezoneMinimum))
 				{
@@ -153,7 +189,7 @@ namespace SqlPad.Oracle
 			}
 			else if (oracleTimestampLocalTimezone != null)
 			{
-				valueType = ValueType.TimestampWithLocalTimezone;
+				valueType = typeof(OracleTimeStampLTZ);
 				var typedValue = (OracleTimeStampLTZ)oracleTimestampLocalTimezone.RawValue;
 				if (OracleTimeStampLTZ.LessThan(typedValue, _oracleTimeStampLocalTimezoneMinimum))
 				{
@@ -169,7 +205,7 @@ namespace SqlPad.Oracle
 			}
 			else if (oracleIntervalYearToMonth != null)
 			{
-				valueType = ValueType.IntervalYearToMonth;
+				valueType = typeof(OracleIntervalYM);
 				var typedValue = (OracleIntervalYM)oracleIntervalYearToMonth.RawValue;
 				if (OracleIntervalYM.LessThan(typedValue, _oracleYearToMonthMinimum))
 				{
@@ -185,7 +221,7 @@ namespace SqlPad.Oracle
 			}
 			else if (oracleIntervalDayToSecond != null)
 			{
-				valueType = ValueType.IntervalDayToSecond;
+				valueType = typeof(OracleIntervalDS);
 				var typedValue = (OracleIntervalDS)oracleIntervalDayToSecond.RawValue;
 
 				if (OracleIntervalDS.LessThan(typedValue, _oracleDayToSecondMinimum))
@@ -206,44 +242,80 @@ namespace SqlPad.Oracle
 				LimitValuesAvailable = false;
 			}
 
-			if (_valueType == ValueType.None)
+			if (LimitValuesAvailable)
+			{
+				_typeValues.Add(Tuple.Create(valueType, value));
+			}
+
+			if (_valueType == null)
 			{
 				_valueType = valueType;
 			}
 			else if (_valueType != valueType)
 			{
-				AggregatedValuesAvailable = false;
-				LimitValuesAvailable = false;
-				Reset();
+				SetIndeterminate();
 			}
 		}
 
 		private object GetValue(OracleDecimal number, OracleDate date, OracleTimeStamp timestamp, OracleTimeStampTZ timestampWithTimezone, OracleTimeStampLTZ timestampWithLocalTimeZone, OracleIntervalYM yearToMonth, OracleIntervalDS dayToSecond)
 		{
-			switch (_valueType)
+			if (!LimitValuesAvailable)
 			{
-				case ValueType.Number:
-					return number.IsNull ? null : new OracleNumber(number);
-				case ValueType.Date:
-					return date.IsNull ? null : new OracleDateTime(date);
-				case ValueType.Timestamp:
-					return timestamp.IsNull ? null : new OracleTimestamp(timestamp);
-				case ValueType.TimestampWithTimezone:
-					return timestampWithTimezone.IsNull ? null : new OracleTimestampWithTimeZone(timestampWithTimezone);
-				case ValueType.TimestampWithLocalTimezone:
-					return timestampWithLocalTimeZone.IsNull ? null : new OracleTimestampWithLocalTimeZone(timestampWithLocalTimeZone);
-				case ValueType.IntervalYearToMonth:
-					return yearToMonth.IsNull ? null : new OracleIntervalYearToMonth(yearToMonth);
-				case ValueType.IntervalDayToSecond:
-					return dayToSecond.IsNull ? null : new OracleIntervalDayToSecond(dayToSecond);
-				default:
-					return null;
+				return null;
 			}
+
+			if (_valueType == typeof(OracleDecimal))
+			{
+				return number.IsNull ? null : new OracleNumber(number);
+			}
+
+			if (_valueType == typeof(OracleDate))
+			{
+				return date.IsNull ? null : new OracleDateTime(date);
+			}
+
+			if (_valueType == typeof(OracleTimeStamp))
+			{
+				return timestamp.IsNull ? null : new OracleTimestamp(timestamp);
+			}
+
+			if (_valueType == typeof(OracleTimeStampTZ))
+			{
+				return timestampWithTimezone.IsNull ? null : new OracleTimestampWithTimeZone(timestampWithTimezone);
+			}
+
+			if (_valueType == typeof(OracleTimeStampLTZ))
+			{
+				return timestampWithLocalTimeZone.IsNull ? null : new OracleTimestampWithLocalTimeZone(timestampWithLocalTimeZone);
+			}
+
+			if (_valueType == typeof(OracleIntervalYM))
+			{
+				return yearToMonth.IsNull ? null : new OracleIntervalYearToMonth(yearToMonth);
+			}
+
+			if (_valueType == typeof(OracleIntervalDS))
+			{
+				return dayToSecond.IsNull ? null : new OracleIntervalDayToSecond(dayToSecond);
+			}
+
+			return null;
 		}
 
 		private void Reset()
 		{
-			_valueType = ValueType.None;
+			_valueType = null;
+			SetIndeterminate();
+
+			AggregatedValuesAvailable = true;
+			LimitValuesAvailable = true;
+		}
+
+		private void SetIndeterminate()
+		{
+			AggregatedValuesAvailable = false;
+			LimitValuesAvailable = false;
+
 			_oracleNumberSum = OracleDecimal.Zero;
 			_oracleYearToMonthSum = OracleIntervalYM.Zero;
 			_oracleDayToSecondSum = OracleIntervalDS.Zero;
@@ -262,18 +334,7 @@ namespace SqlPad.Oracle
 			_oracleYearToMonthMaximum = OracleIntervalYM.MinValue;
 			_oracleDayToSecondMaximum = OracleIntervalDS.MinValue;
 			_distinctValues.Clear();
-		}
-
-		private enum ValueType
-		{
-			None,
-			Number,
-			Date,
-			Timestamp,
-			TimestampWithTimezone,
-			TimestampWithLocalTimezone,
-			IntervalYearToMonth,
-			IntervalDayToSecond
+			_typeValues.Clear();
 		}
 	}
 }

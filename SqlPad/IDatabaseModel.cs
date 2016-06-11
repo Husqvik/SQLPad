@@ -74,7 +74,7 @@ namespace SqlPad
 
 		long Count { get; }
 
-		long DistinctCount { get; }
+		long? DistinctCount { get; }
 
 		void AddValue(object value);
 	}
