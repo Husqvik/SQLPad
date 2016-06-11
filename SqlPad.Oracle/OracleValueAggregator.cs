@@ -17,6 +17,7 @@ namespace SqlPad.Oracle
 		private readonly HashSet<object> _distinctValues = new HashSet<object>();
 		private readonly List<Tuple<Type, object>> _typeValues = new List<Tuple<Type, object>>();
 
+		private bool _isIndeterminate;
 		private Type _valueType;
 		private OracleDecimal _oracleNumberSum;
 		private OracleIntervalYM _oracleYearToMonthSum;
@@ -36,6 +37,13 @@ namespace SqlPad.Oracle
 		private OracleTimeStampLTZ _oracleTimeStampLocalTimezoneMaximum;
 		private OracleTimeStampTZ _oracleTimeStampTimezoneMaximum;
 
+		private IEnumerable<object> SourceValues =>
+			_typeValues
+				.Where(t => t.Item1 == _valueType)
+				.Select(t => t.Item2);
+
+		private IReadOnlyList<object> OrderedSourceValues => SourceValues.OrderBy(SelectComparable).ToArray();
+
 		public object Minimum => GetValue(_oracleNumberMinimum, _oracleDateMinimum, _oracleTimeStampMinimum, _oracleTimeStampTimezoneMinimum, _oracleTimeStampLocalTimezoneMinimum, _oracleYearToMonthMinimum, _oracleDayToSecondMinimum);
 
 		public object Maximum => GetValue(_oracleNumberMaximum, _oracleDateMaximum, _oracleTimeStampMaximum, _oracleTimeStampTimezoneMaximum, _oracleTimeStampLocalTimezoneMaximum, _oracleYearToMonthMaximum, _oracleDayToSecondMaximum);
@@ -49,9 +57,8 @@ namespace SqlPad.Oracle
 			get
 			{
 				var modeValues =
-					_typeValues
-						.Where(t => t.Item1 == _valueType)
-						.GroupBy(t => t.Item2)
+					SourceValues
+						.GroupBy(t => t)
 						.Select(g => new { Value = g.Key, Count = g.Count() })
 						.OrderByDescending(g => g.Count)
 						.Take(2)
@@ -75,14 +82,38 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		public object Median { get; }
+		public object Median
+		{
+			get
+			{
+				var values = OrderedSourceValues;
+				if (values.Count == 0)
+				{
+					return null;
+				}
+
+				var middleIndex = (values.Count - 1) / 2;
+				var middleValue = values[middleIndex];
+
+				if (values.Count % 2 != 0)
+				{
+					return middleValue;
+				}
+
+				var aggregator = new OracleValueAggregator();
+				aggregator.AddValue(middleValue);
+				aggregator.AddValue(values[middleIndex + 1]);
+
+				return aggregator.Average;
+			}
+		}
 
 		public long Count { get; private set; }
 
 		public long? DistinctCount =>
-			LimitValuesAvailable
-				? _distinctValues.Count
-				: (long?)null;
+			_isIndeterminate
+				? (long?)null
+				: _distinctValues.Count;
 
 		public bool AggregatedValuesAvailable { get; private set; }
 
@@ -106,19 +137,17 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			Type valueType = null;
+			Type valueType;
 
 			var oracleNumber = value as OracleNumber;
 			if (value is int || value is long || value is decimal || value is short || value is uint || value is ulong || value is ushort)
 			{
-				valueType = typeof(OracleDecimal);
 				value = oracleNumber = new OracleNumber(new OracleDecimal(Convert.ToDecimal(value)));
 			}
 
 			var oracleDate = value as OracleDateTime;
 			if (value is DateTime)
 			{
-				valueType = typeof(OracleDate);
 				value = oracleDate = new OracleDateTime(new OracleDate(Convert.ToDateTime(value)));
 			}
 
@@ -238,6 +267,7 @@ namespace SqlPad.Oracle
 			}
 			else
 			{
+				valueType = typeof(object);
 				AggregatedValuesAvailable = false;
 				LimitValuesAvailable = false;
 			}
@@ -305,10 +335,12 @@ namespace SqlPad.Oracle
 		private void Reset()
 		{
 			_valueType = null;
+			_distinctValues.Clear();
 			SetIndeterminate();
 
 			AggregatedValuesAvailable = true;
 			LimitValuesAvailable = true;
+			_isIndeterminate = false;
 		}
 
 		private void SetIndeterminate()
@@ -333,8 +365,18 @@ namespace SqlPad.Oracle
 			_oracleTimeStampLocalTimezoneMaximum = OracleTimeStampLTZ.MinValue;
 			_oracleYearToMonthMaximum = OracleIntervalYM.MinValue;
 			_oracleDayToSecondMaximum = OracleIntervalDS.MinValue;
-			_distinctValues.Clear();
 			_typeValues.Clear();
+			_isIndeterminate = true;
+		}
+
+		private static object SelectComparable(object value)
+		{
+			var sqlPadValue = value as IValue;
+			value = sqlPadValue == null
+				? value
+				: sqlPadValue.RawValue;
+
+			return value as IComparable;
 		}
 	}
 }
