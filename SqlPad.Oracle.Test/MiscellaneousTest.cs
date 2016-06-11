@@ -93,6 +93,24 @@ namespace SqlPad.Oracle.Test
 				OracleObjectIdentifier identifier;
 				OracleStatement.TryGetPlSqlUnitName(statement, out identifier).ShouldBe(false);
 			}
+
+			[Test]
+			public void TestFeedbackMessage()
+			{
+				var statement = (OracleStatement)Parser.Parse("CREATE PROCEDURE TEST_SCHEMA.TEST_PROCEDURE")[0];
+				var message = statement.BuildExecutionFeedbackMessage(null, false);
+
+				message.ShouldBe("Procedure created. ");
+			}
+
+			[Test]
+			public void TestCompilationErrorFeedbackMessage()
+			{
+				var statement = (OracleStatement)Parser.Parse("CREATE FUNCTION TEST_SCHEMA.TEST_FUNCTION")[0];
+				var message = statement.BuildExecutionFeedbackMessage(null, true);
+
+				message.ShouldBe("Function created with compilation errors. ");
+			}
 		}
 	}
 }

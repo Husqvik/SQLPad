@@ -797,7 +797,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 					currentStatementResult.SuccessfulExecutionMessage = statement == null
 						? OracleStatement.DefaultMessageCommandExecutedSuccessfully
-						: statement.BuildExecutionMessage(currentStatementResult.AffectedRowCount, _userCommandHasCompilationErrors);
+						: statement.BuildExecutionFeedbackMessage(currentStatementResult.AffectedRowCount, _userCommandHasCompilationErrors);
 				}
 			}
 			catch (OracleException exception)

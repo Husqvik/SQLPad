@@ -36,7 +36,7 @@ namespace SqlPad.Oracle
 
 		public bool IsPlSql => !String.Equals(RootNode.Id, NonTerminals.StandaloneStatement);
 
-		public string BuildExecutionMessage(int? affectedRows, bool hasCompilationError)
+		public string BuildExecutionFeedbackMessage(int? affectedRows, bool hasCompilationError)
 		{
 			if (String.Equals(RootNode.Id, NonTerminals.PlSqlBlockStatement))
 			{
