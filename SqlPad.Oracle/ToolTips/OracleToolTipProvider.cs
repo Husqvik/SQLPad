@@ -297,7 +297,7 @@ namespace SqlPad.Oracle.ToolTips
 							FullTypeName = c.ColumnDescription.FullTypeName,
 							Nullable = nullable,
 							ColumnIndex = i + 1,
-							RowSourceName = validObjectReference?.FullyQualifiedObjectName.ToString()
+							RowSourceName = validObjectReference?.FullyQualifiedObjectName.ToLabel()
 						};
 				}).ToArray();
 

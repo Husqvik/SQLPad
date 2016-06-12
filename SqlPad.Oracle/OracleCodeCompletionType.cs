@@ -273,7 +273,9 @@ namespace SqlPad.Oracle
 			}
 
 			var isCursorBetweenTwoTerminalsWithPrecedingIdentifierWithoutPrefix = IsCursorTouchingIdentifier && !ReferenceIdentifier.HasObjectIdentifier;
-			Schema = TerminalCandidates.Contains(Terminals.SchemaIdentifier) || isCursorBetweenTwoTerminalsWithPrecedingIdentifierWithoutPrefix;
+			Schema =
+				TerminalCandidates.Contains(Terminals.SchemaIdentifier) ||
+				(String.Equals(EffectiveTerminal.Id, Terminals.SchemaIdentifier) && String.Equals(nearestTerminal.Id, Terminals.Dot));
 
 			var isCurrentClauseSupported =
 				EffectiveTerminal.IsWithinSelectClauseOrExpression() ||

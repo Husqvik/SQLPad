@@ -64,10 +64,17 @@ namespace SqlPad.Oracle.DataDictionary
 
 			var references = identifiers.Where(i => !String.IsNullOrEmpty(i.NormalizedName))
 				.GroupBy(i => i.NormalizedName)
-				.ToDictionary(g => g.Key, g => g.GroupBy(o => o.NormalizedOwner).ToDictionary(go => go.Key, go => go.Count()));
+				.ToDictionary(
+					g => g.Key,
+					g =>
+						g.GroupBy(o => o.NormalizedOwner)
+							.ToDictionary(go => go.Key, go => go.Count())
+				);
 
 			if (references.Count == 0)
+			{
 				return identifiers;
+			}
 
 			foreach (var nameOwners in references)
 			{
@@ -75,32 +82,38 @@ namespace SqlPad.Oracle.DataDictionary
 				foreach (var ownerCounts in nameOwners.Value.Where(oc => oc.Value == 1))
 				{
 					if (!ownerSpecified || !String.IsNullOrEmpty(ownerCounts.Key))
+					{
 						uniqueIdentifiers.Add(sourceIdentifiers.Single(i => i == Create(ownerCounts.Key, nameOwners.Key)));
+					}
 				}
 			}
 
 			return uniqueIdentifiers;
 		}
 
-		#region Overrides of ValueType
 		public override string ToString()
 		{
-			var ownerPrefix = !HasOwner ? null : $"{Owner.ToSimpleIdentifier()}.";
+			var ownerPrefix = HasOwner ? $"{Owner.ToSimpleIdentifier()}." : null;
 			return $"{ownerPrefix}{Name.ToSimpleIdentifier()}";
 		}
-		#endregion
+
+		public string ToLabel()
+		{
+			var ownerPrefix = HasOwner ? $"{NormalizedOwner.ToSimpleIdentifier()}." : null;
+			return $"{ownerPrefix}{NormalizedName.ToSimpleIdentifier()}";
+		}
 
 		public string ToFormattedString()
 		{
 			var formatOption = OracleConfiguration.Configuration.Formatter.FormatOptions.Identifier;
-			var ownerPrefix = !HasOwner ? null : $"{OracleStatementFormatter.FormatTerminalValue(Owner.ToSimpleIdentifier(), formatOption)}.";
+			var ownerPrefix = HasOwner ? $"{OracleStatementFormatter.FormatTerminalValue(Owner.ToSimpleIdentifier(), formatOption)}." : null;
 			return $"{ownerPrefix}{OracleStatementFormatter.FormatTerminalValue(Name.ToSimpleIdentifier(), formatOption)}";
 		}
 
 		public string ToNormalizedString()
 		{
-			var ownerPrefix = !HasOwner ? null : NormalizedOwner + ".";
-			return ownerPrefix + NormalizedName;
+			var ownerPrefix = HasOwner ? $"{NormalizedOwner}." : null;
+			return $"{ownerPrefix}{NormalizedName}";
 		}
 
 		#region Equality members

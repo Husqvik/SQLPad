@@ -874,6 +874,23 @@ SELECT * FROM CTE";
 		}
 
 		[Test, Apartment(ApartmentState.STA)]
+		public void TestAsteriskTooltipRowSourceCase()
+		{
+			const string query = "SELECT * FROM dual";
+			_documentRepository.UpdateStatements(query);
+
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 7);
+			toolTip.Control.ShouldBeAssignableTo<ToolTipAsterisk>();
+			var toolTipSequence = (ToolTipAsterisk)toolTip.Control;
+			var columns = toolTipSequence.Columns.ToArray();
+			columns.Length.ShouldBe(1);
+			columns[0].Name.ShouldBe("DUMMY");
+			columns[0].FullTypeName.ShouldBe("VARCHAR2(1 BYTE)");
+			columns[0].RowSourceName.ShouldBe("DUAL");
+			columns[0].ColumnIndex.ShouldBe(1);
+		}
+
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestAsteriskTooltipWithDoubleCommonTableExpressionDefinition()
 		{
 			const string query = @"WITH CTE AS (SELECT 1 C1 FROM DUAL), CTE AS (SELECT 1 C2 FROM DUAL) SELECT * FROM CTE";

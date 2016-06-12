@@ -920,7 +920,10 @@ namespace SqlPad.Oracle
 			var formatOption = FormatOptions.Identifier;
 
 			return databaseModel.AllSchemas.Values
-				.Where(s => !String.Equals(s.Name, OracleObjectIdentifier.SchemaPublic) && (!String.Equals(MakeSaveQuotedIdentifier(schemaNamePart), s.Name) && CodeCompletionSearchHelper.IsMatch(s.Name, schemaNamePart)))
+				.Where(s =>
+					!String.Equals(s.Name, OracleObjectIdentifier.SchemaPublic) &&
+					!String.Equals(MakeSaveQuotedIdentifier(schemaNamePart), s.Name) &&
+					CodeCompletionSearchHelper.IsMatch(s.Name, schemaNamePart))
 				.Select(
 					s =>
 					{

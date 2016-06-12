@@ -75,7 +75,7 @@ namespace SqlPad.Oracle.ToolTips
 			var labelBuilder = new ToolTipLabelBuilder();
 			labelBuilder.AddElement(qualifiedColumnName);
 			labelBuilder.AddElement(columnReference.ColumnDescription.FullTypeName);
-			labelBuilder.AddElement($"{(columnReference.ColumnDescription.Nullable ? null : "NOT ")}{"NULL"}");
+			labelBuilder.AddElement($"{(columnReference.ColumnDescription.Nullable ? null : "NOT ")}NULL");
 
 			ToolTip = new ToolTipObject { DataContext = labelBuilder.ToString() };
 		}
@@ -322,7 +322,7 @@ namespace SqlPad.Oracle.ToolTips
 				ToolTip =
 					new ToolTipObject
 					{
-						DataContext = $"{objectReference.FullyQualifiedObjectName} ({objectReference.Type.ToCategoryLabel()})"
+						DataContext = $"{objectReference.FullyQualifiedObjectName.ToLabel()} ({objectReference.Type.ToCategoryLabel()})"
 					};
 			}
 		}

@@ -2333,6 +2333,16 @@ ON (EVENTS.ID = SRC.ID)";
 			items[0].Text.ShouldBe("test_column");
 		}
 
+		[Test, Ignore("not fixed yet")]
+		public void TestCodeCompletionAtDotAfterSchemaIdentifier()
+		{
+			const string statement = @"SELECT NULL FROM husqvi.selection";
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 23).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("HUSQVIK");
+			items[0].Text.ShouldBe("HUSQVIK");
+		}
+
 		[Test, Ignore("not solved yet; looks like somethings goes really wrong when building grammar tree although it requires document repository to replicate this issue. ")]
 		public void TestSpecialCrashingCaseWithinTerminalCandidates()
 		{
@@ -2598,6 +2608,14 @@ ON (EVENTS.ID = SRC.ID)";
 				const string statement = @"SELECT NULL FROM SELECTION S1 JOIN SELECTION S2 ON S1.SELECTION_ID = S2.SELECTION_ID AND S2.PROJECT_ID >= (SELECT MIN(PROJECT_ID) FROM )";
 				var completionType = InitializeCodeCompletionType(statement, 135);
 				completionType.SchemaDataObject.ShouldBe(true);
+			}
+
+			[Test]
+			public void TestCodeCompletionTypeAtDotAfterSchemaIdentifier()
+			{
+				const string statement = @"SELECT NULL FROM husqvi.selection";
+				var completionType = InitializeCodeCompletionType(statement, 23);
+				completionType.Schema.ShouldBe(true);
 			}
 
 			public class ReferenceIdentifierTest
