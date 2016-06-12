@@ -61,7 +61,7 @@ namespace SqlPad
 			_windowDatabaseMonitor = new WindowDatabaseMonitor();
 		}
 
-		private bool IsRunningAsAdministrator
+		private static bool IsRunningAsAdministrator
 		{
 			get
 			{
@@ -98,16 +98,11 @@ namespace SqlPad
 
 		internal DocumentPage ActiveDocument => ((TabItem)DocumentTabControl.SelectedItem).Content as DocumentPage;
 
-		internal IEnumerable<DocumentPage> AllDocuments
-		{
-			get
-			{
-				return DocumentTabControl.Items
-					.Cast<TabItem>()
-					.Select(t => t.Content)
-					.OfType<DocumentPage>();
-			}
-		}
+		internal IEnumerable<DocumentPage> AllDocuments =>
+			DocumentTabControl.Items
+				.Cast<TabItem>()
+				.Select(t => t.Content)
+				.OfType<DocumentPage>();
 
 		private void WindowLoadedHandler(object sender, RoutedEventArgs e)
 		{
@@ -283,7 +278,7 @@ namespace SqlPad
 			return true;
 		}
 
-		private bool ConfirmDocumentSave(DocumentPage document)
+		private static bool ConfirmDocumentSave(DocumentPage document)
 		{
 			var message = document.WorkDocument.File == null
 				? "Do you want to save the document?"
@@ -366,14 +361,21 @@ namespace SqlPad
 			Trace.WriteLine($"{DateTime.Now} - Working document collection saved. ");
 		}
 
-		private void WindowClosedHandler(object sender, EventArgs e)
+		private static void WindowClosedHandler(object sender, EventArgs e)
 		{
 			ConfigurationProvider.Dispose();
 		}
 
 		private void OpenFileHandler(object sender, ExecutedRoutedEventArgs e)
 		{
-			var dialog = new OpenFileDialog { Filter = DocumentPage.FileMaskDefault, CheckFileExists = true, Multiselect = true };
+			var dialog =
+				new OpenFileDialog
+				{
+					Filter = DocumentPage.FileMaskDefault,
+					CheckFileExists = true,
+					Multiselect = true
+				};
+
 			if (dialog.ShowDialog() != true)
 			{
 				return;
@@ -489,7 +491,6 @@ namespace SqlPad
 			}
 
 			_recentDocumentsMenu.ItemsSource = items;
-
 			_recentDocumentsMenu.IsOpen = true;
 		}
 
@@ -518,6 +519,8 @@ namespace SqlPad
 
 		private void ShowDatabaseMonitorExecutedHandler(object sender, ExecutedRoutedEventArgs e)
 		{
+			ActiveDocument.EnsurePopupClosed();
+
 			if (_windowDatabaseMonitor.IsVisible)
 			{
 				if (_windowDatabaseMonitor.WindowState == WindowState.Minimized)
@@ -537,6 +540,8 @@ namespace SqlPad
 
 		private void ShowClipboardHistoryHandler(object sender, ExecutedRoutedEventArgs args)
 		{
+			ActiveDocument.EnsurePopupClosed();
+
 			new WindowClipboardHistory { Owner = this }
 				.ShowDialog();
 		}

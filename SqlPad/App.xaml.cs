@@ -185,10 +185,12 @@ namespace SqlPad
 
 		internal static void ShowExecutionHistory(string providerName)
 		{
-			var configuration = WorkDocumentCollection.GetProviderConfiguration(providerName);
-
 			lock (ExecutionHistoryWindows)
 			{
+				MainWindow.ActiveDocument.EnsurePopupClosed();
+
+				var configuration = WorkDocumentCollection.GetProviderConfiguration(providerName);
+
 				StatementExecutionHistory window;
 				if (!ExecutionHistoryWindows.TryGetValue(providerName, out window))
 				{

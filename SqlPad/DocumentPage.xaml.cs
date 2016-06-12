@@ -201,6 +201,11 @@ namespace SqlPad
 			Editor.Document.Insert(insertIndex, builder.ToString());
 		}
 
+		internal void EnsurePopupClosed()
+		{
+			DynamicPopup.IsOpen = false;
+		}
+
 		internal void NotifyExecutionEvent()
 		{
 			IsRunning = IsBusy;
@@ -1166,12 +1171,12 @@ namespace SqlPad
 
 		private void ApplicationDeactivatedHandler(object sender, EventArgs args)
 		{
-			DynamicPopup.IsOpen = false;
+			EnsurePopupClosed();
 		}
 
 		private void DocumentTabControlSelectionChangedHandler(object sender, SelectionChangedEventArgs selectionChangedEventArgs)
 		{
-			DynamicPopup.IsOpen = false;
+			EnsurePopupClosed();
 			_isToolTipOpenByCaretChange = false;
 			_isToolTipOpenByShortCut = false;
 		}
@@ -1856,8 +1861,8 @@ namespace SqlPad
 
 		private void ToolTipPinHandler(object sender, EventArgs args)
 		{
-			DynamicPopup.IsOpen = false;
-			
+			EnsurePopupClosed();
+
 			var toolTip = (IToolTip)sender;
 			var parent = (Decorator)VisualTreeHelper.GetParent(toolTip.Control);
 			parent.Child = null;
@@ -1962,7 +1967,7 @@ namespace SqlPad
 		{
 			if (!_isToolTipOpenByShortCut && !_isToolTipOpenByCaretChange)
 			{
-				DynamicPopup.IsOpen = false;
+				EnsurePopupClosed();
 			}
 		}
 
@@ -2093,7 +2098,7 @@ namespace SqlPad
 
 			if (DynamicPopup != null)
 			{
-				DynamicPopup.IsOpen = false;
+				EnsurePopupClosed();
 			}
 
 			var isReturn = args.Key == Key.Return;
