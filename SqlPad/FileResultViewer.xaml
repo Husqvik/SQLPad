@@ -26,9 +26,7 @@
 			</GroupBox.Style>
 
 			<StackPanel Orientation="Horizontal">
-				<TextBlock Text="Path: " VerticalAlignment="Center" />
-				<TextBox MinWidth="180" VerticalContentAlignment="Center" Text="{Binding OutputPath}" />
-				<Button Content="..." MinWidth="20" Click="BrowseExportFolderClickHandler" />
+				<TextBlock Text="File format: " VerticalAlignment="Center" />
 				<ComboBox ItemsSource="{x:Static dataExport:DataExporters.All}" SelectedValue="{Binding DataExporter}">
 					<ComboBox.ItemTemplate>
 						<DataTemplate>
@@ -36,6 +34,9 @@
 						</DataTemplate>
 					</ComboBox.ItemTemplate>
 				</ComboBox>
+				<TextBlock Margin="4,0,0,0" Text="Path: " VerticalAlignment="Center" />
+				<TextBox MinWidth="180" VerticalContentAlignment="Center" Text="{Binding OutputPath}" />
+				<Button Content="..." MinWidth="20" Click="BrowseExportFolderClickHandler" />
 			</StackPanel>
 		</GroupBox>
 

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Threading;
+using Microsoft.WindowsAPICodePack.Dialogs;
 using SqlPad.DataExport;
 
 namespace SqlPad
@@ -159,7 +160,21 @@ namespace SqlPad
 
 		private void BrowseExportFolderClickHandler(object sender, RoutedEventArgs e)
 		{
-			
+			var selectFolderDialog =
+				new CommonOpenFileDialog
+				{
+					IsFolderPicker = true,
+					InitialDirectory = OutputPath,
+					AddToMostRecentlyUsedList = false,
+					EnsurePathExists = true,
+					EnsureReadOnly = false,
+					EnsureValidNames = true
+				};
+
+			if (selectFolderDialog.ShowDialog() == CommonFileDialogResult.Ok)
+			{
+				OutputPath = selectFolderDialog.FileName;
+			}
 		}
 
 		private void FileNameHyperlinkClickHandler(object sender, RoutedEventArgs e)

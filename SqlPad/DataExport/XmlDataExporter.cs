@@ -112,7 +112,8 @@ namespace SqlPad.DataExport
 
 			for (var i = 0; i < _columns.Count; i++)
 			{
-				_xmlWriter.WriteElementString(_columnHeaders[i], FormatXmlValue(rowValues[_columns[i].ColumnIndex]));
+				var value = rowValues[_columns[i].ColumnIndex];
+				_xmlWriter.WriteElementString(_columnHeaders[i], FormatXmlValue(value));
 			}
 
 			_xmlWriter.WriteEndElement();

@@ -81,6 +81,8 @@
   <ItemGroup>
     <Reference Include="EPPlus" />
     <Reference Include="ICSharpCode.AvalonEdit" />
+    <Reference Include="Microsoft.WindowsAPICodePack, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.WindowsAPICodePack.Shell, processorArchitecture=MSIL" />
     <Reference Include="MoonPdfLib" />
     <Reference Include="Newtonsoft.Json" />
     <Reference Include="PresentationFramework.Aero2" />
