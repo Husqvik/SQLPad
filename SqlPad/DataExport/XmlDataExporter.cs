@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -49,19 +50,25 @@ namespace SqlPad.DataExport
 
 		private static async Task ExportInternal(IReadOnlyList<ColumnHeader> orderedColumns, ICollection rows, string fileName, IDataExportConverter dataExportConverter, IProgress<int> reportProgress, CancellationToken cancellationToken)
 		{
-			var stringBuilder = new StringBuilder();
-
-			var exportToClipboard = String.IsNullOrEmpty(fileName);
-
-			using (var xmlWriter = exportToClipboard ? XmlWriter.Create(stringBuilder, XmlWriterSettings) : XmlWriter.Create(fileName, XmlWriterSettings))
+			using (var stream = new MemoryStream())
 			{
-				var exportContext = new XmlDataExportContext(xmlWriter, orderedColumns, dataExportConverter, rows.Count, reportProgress, cancellationToken);
-				await DataExportHelper.ExportRowsUsingContext(rows, exportContext);
-			}
+				var exportToClipboard = String.IsNullOrEmpty(fileName);
 
-			if (exportToClipboard)
-			{
-				Clipboard.SetText(stringBuilder.ToString());
+				using (var xmlWriter = exportToClipboard ? XmlWriter.Create(stream, XmlWriterSettings) : XmlWriter.Create(fileName, XmlWriterSettings))
+				{
+					var exportContext = new XmlDataExportContext(xmlWriter, orderedColumns, dataExportConverter, rows.Count, reportProgress, cancellationToken);
+					await DataExportHelper.ExportRowsUsingContext(rows, exportContext);
+				}
+
+				if (exportToClipboard)
+				{
+					stream.Seek(0, SeekOrigin.Begin);
+
+					using (var reader = new StreamReader(stream))
+					{
+						Clipboard.SetText(reader.ReadToEnd());
+					}
+				}
 			}
 		}
 	}

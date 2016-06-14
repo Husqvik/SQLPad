@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
+using System.Xml;
 
 namespace SqlPad
 {
@@ -251,6 +252,11 @@ namespace SqlPad
 			return value.Value ? @true : @false;
 		}
 
+		public static string ToXmlCompliant(this string text)
+		{
+			return new String(text.Where(XmlConvert.IsXmlChar).ToArray());
+		}
+
 		public static T PopIfNotEmpty<T>(this Stack<T> stack)
 		{
 			return stack.Count == 0
@@ -285,7 +291,7 @@ namespace SqlPad
 			return (Path == null ? value : PathEvaluator.Eval(value, Path));
 		}
 
-		class PathEvaluator : DependencyObject
+		private class PathEvaluator : DependencyObject
 		{
 			private static readonly DependencyProperty DummyProperty = DependencyProperty.Register("Dummy", typeof(object), typeof(PathEvaluator), new UIPropertyMetadata(null));
 

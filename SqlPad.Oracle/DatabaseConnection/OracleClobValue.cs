@@ -25,7 +25,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public bool IsEditable => false;
 
-	    public abstract string DataTypeName { get; }
+		public abstract string DataTypeName { get; }
 
 		public abstract object RawValue { get; }
 
@@ -35,7 +35,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public string ToXml()
 		{
-			return $"<![CDATA[{Value}]]>";
+			return $"<![CDATA[{Value.ToXmlCompliant()}]]>";
 		}
 
 		public string ToJson()
@@ -191,7 +191,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public string ToXml()
 		{
-			return Preview;
+			return Preview.ToXmlCompliant();
 		}
 
 		public string ToJson()

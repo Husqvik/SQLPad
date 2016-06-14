@@ -39,7 +39,7 @@ namespace SqlPad.Oracle
 			var vendorValue = value as IValue;
 			return vendorValue != null
 				? vendorValue.ToXml()
-				: value.ToString();
+				: value.ToString().ToXmlCompliant();
 		}
 
 		public string ToJson(object value)
