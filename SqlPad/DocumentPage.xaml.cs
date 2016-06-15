@@ -204,6 +204,7 @@ namespace SqlPad
 		internal void EnsurePopupClosed()
 		{
 			DynamicPopup.IsOpen = false;
+			ActiveOutputViewer.ActiveResultViewer?.EnsurePopupClosed();
 		}
 
 		internal void NotifyExecutionEvent()

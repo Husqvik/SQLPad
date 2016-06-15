@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
 using System.Security;
 using System.Threading.Tasks;
 
@@ -68,7 +69,7 @@ namespace SqlPad
 
 		object Sum { get; }
 
-		object Mode { get; }
+		Mode Mode { get; }
 
 		object Median { get; }
 
@@ -77,6 +78,16 @@ namespace SqlPad
 		long? DistinctCount { get; }
 
 		void AddValue(object value);
+	}
+
+	[DebuggerDisplay("Mode (Value={Value}; Count={Count})")]
+	public struct Mode
+	{
+		public static readonly Mode Empty = new Mode();
+
+		public object Value { get; set; }
+
+		public long? Count { get; set; }
 	}
 
 	public class DatabaseModelConnectionErrorArgs : EventArgs

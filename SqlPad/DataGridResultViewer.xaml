@@ -138,8 +138,13 @@
 				<TextBox Text="{Binding SelectedCellSum, Converter={x:Static sqlPad:CellValueConverter.Instance}}" />
 				<TextBlock Text=" Average: " ToolTip="An average is the sum of a list of numbers divided by the number of numbers in the list. " />
 				<TextBox Text="{Binding SelectedCellAverage, Converter={x:Static sqlPad:CellValueConverter.Instance}}" />
-				<TextBlock Text=" Mode: " ToolTip="The mode is the value that appears most often in a set of data. " />
-				<TextBox Text="{Binding SelectedCellMode, Converter={x:Static sqlPad:CellValueConverter.Instance}}" />
+				<StackPanel Orientation="Horizontal" Visibility="{Binding SelectedCellModeValue, Converter={StaticResource ObjectToVisibilityConverter}}">
+					<TextBlock Text=" Mode: " ToolTip="The mode is the value that appears most often in a set of data. " />
+					<TextBox Text="{Binding SelectedCellModeValue, Converter={x:Static sqlPad:CellValueConverter.Instance}}" />
+					<TextBlock Text=" (" />
+					<TextBox Text="{Binding SelectedCellModeCount, Converter={x:Static sqlPad:CellValueConverter.Instance}}" ToolTip="number of values" />
+					<TextBlock Text=")" />
+				</StackPanel>
 				<TextBlock Text=" Median: " ToolTip="A median is the value separating the higher half of a data sample from the lower half. " />
 				<TextBox Text="{Binding SelectedCellMedian, Converter={x:Static sqlPad:CellValueConverter.Instance}}" />
 			</StackPanel>

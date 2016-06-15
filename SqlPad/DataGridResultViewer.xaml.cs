@@ -35,7 +35,8 @@ namespace SqlPad
 		public static readonly DependencyProperty SelectedCellAverageProperty = DependencyProperty.Register(nameof(SelectedCellAverage), typeof(object), typeof(DataGridResultViewer), new UIPropertyMetadata());
 		public static readonly DependencyProperty SelectedCellMinProperty = DependencyProperty.Register(nameof(SelectedCellMin), typeof(object), typeof(DataGridResultViewer), new UIPropertyMetadata());
 		public static readonly DependencyProperty SelectedCellMaxProperty = DependencyProperty.Register(nameof(SelectedCellMax), typeof(object), typeof(DataGridResultViewer), new UIPropertyMetadata());
-		public static readonly DependencyProperty SelectedCellModeProperty = DependencyProperty.Register(nameof(SelectedCellMode), typeof(object), typeof(DataGridResultViewer), new UIPropertyMetadata());
+		public static readonly DependencyProperty SelectedCellModeValueProperty = DependencyProperty.Register(nameof(SelectedCellModeValue), typeof(object), typeof(DataGridResultViewer), new UIPropertyMetadata());
+		public static readonly DependencyProperty SelectedCellModeCountProperty = DependencyProperty.Register(nameof(SelectedCellModeCount), typeof(long), typeof(DataGridResultViewer), new UIPropertyMetadata());
 		public static readonly DependencyProperty SelectedCellMedianProperty = DependencyProperty.Register(nameof(SelectedCellMedian), typeof(object), typeof(DataGridResultViewer), new UIPropertyMetadata());
 		public static readonly DependencyProperty SelectedRowIndexProperty = DependencyProperty.Register(nameof(SelectedRowIndex), typeof(int), typeof(DataGridResultViewer), new UIPropertyMetadata(0));
 		public static readonly DependencyProperty AutoRefreshIntervalProperty = DependencyProperty.Register(nameof(AutoRefreshInterval), typeof(TimeSpan), typeof(DataGridResultViewer), new UIPropertyMetadata(TimeSpan.FromSeconds(60), AutoRefreshIntervalChangedCallback));
@@ -94,10 +95,17 @@ namespace SqlPad
 		}
 
 		[Bindable(true)]
-		public object SelectedCellMode
+		public object SelectedCellModeValue
 		{
-			get { return GetValue(SelectedCellModeProperty); }
-			private set { SetValue(SelectedCellModeProperty, value); }
+			get { return GetValue(SelectedCellModeValueProperty); }
+			private set { SetValue(SelectedCellModeValueProperty, value); }
+		}
+
+		[Bindable(true)]
+		public long? SelectedCellModeCount
+		{
+			get { return (long?)GetValue(SelectedCellModeCountProperty); }
+			private set { SetValue(SelectedCellModeCountProperty, value); }
 		}
 
 		[Bindable(true)]
@@ -310,6 +318,11 @@ namespace SqlPad
 			DataGridTabHeaderPopupTextBox.FontFamily = _outputViewer.DocumentPage.Editor.FontFamily;
 			DataGridTabHeaderPopupTextBox.FontSize = _outputViewer.DocumentPage.Editor.FontSize;
 			ResultViewTabHeaderPopup.IsOpen = true;
+		}
+
+		internal void EnsurePopupClosed()
+		{
+			ResultViewTabHeaderPopup.IsOpen = false;
 		}
 
 		private async void InitializedHandler(object sender, EventArgs args)
@@ -629,7 +642,8 @@ namespace SqlPad
 				SelectedCellMin = valueAggregator.Minimum;
 				SelectedCellMax = valueAggregator.Maximum;
 				SelectedCellAverage = valueAggregator.Average;
-				SelectedCellMode = valueAggregator.Mode;
+				SelectedCellModeValue = valueAggregator.Mode.Value;
+				SelectedCellModeCount = valueAggregator.Mode.Count;
 				SelectedCellMedian = valueAggregator.Median;
 
 				IsSelectedCellLimitInfoVisible = valueAggregator.LimitValuesAvailable;

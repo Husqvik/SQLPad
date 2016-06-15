@@ -132,7 +132,8 @@ namespace SqlPad.Oracle.Test
 				aggregator.Sum.ShouldBe(new OracleNumber(new OracleDecimal(3m)));
 				aggregator.Minimum.ShouldBe(new OracleNumber(new OracleDecimal(1m)));
 				aggregator.Maximum.ShouldBe(new OracleNumber(new OracleDecimal(2m)));
-				aggregator.Mode.ShouldBe(null);
+				aggregator.Mode.Value.ShouldBe(null);
+				aggregator.Mode.Count.ShouldBe(null);
 				aggregator.Median.ShouldBe(new OracleNumber(new OracleDecimal(1.5m)));
 				aggregator.Count.ShouldBe(2);
 				aggregator.DistinctCount.ShouldBe(2);
@@ -151,7 +152,8 @@ namespace SqlPad.Oracle.Test
 				aggregator.Sum.ShouldBe(null);
 				aggregator.Minimum.ShouldBe(new OracleDateTime(2016, 6, 11, 0, 0, 0));
 				aggregator.Maximum.ShouldBe(new OracleDateTime(2016, 6, 12, 0, 0, 0));
-				aggregator.Mode.ShouldBe(null);
+				aggregator.Mode.Value.ShouldBe(null);
+				aggregator.Mode.Count.ShouldBe(null);
 				aggregator.Median.ShouldBe(null);
 				aggregator.Count.ShouldBe(2);
 				aggregator.DistinctCount.ShouldBe(2);
@@ -174,7 +176,8 @@ namespace SqlPad.Oracle.Test
 				aggregator.Sum.ShouldBe(new OracleIntervalYearToMonth(new OracleIntervalYM(6, 0)));
 				aggregator.Minimum.ShouldBe(oneYear);
 				aggregator.Maximum.ShouldBe(twoYear);
-				aggregator.Mode.ShouldBe(null);
+				aggregator.Mode.Value.ShouldBe(null);
+				aggregator.Mode.Count.ShouldBe(null);
 				aggregator.Median.ShouldBe(new OracleIntervalYearToMonth(new OracleIntervalYM(1, 6)));
 				aggregator.Count.ShouldBe(4);
 				aggregator.DistinctCount.ShouldBe(2);
@@ -196,7 +199,8 @@ namespace SqlPad.Oracle.Test
 				aggregator.Sum.ShouldBe(null);
 				aggregator.Minimum.ShouldBe(null);
 				aggregator.Maximum.ShouldBe(null);
-				aggregator.Mode.ShouldBe(null);
+				aggregator.Mode.Value.ShouldBe(null);
+				aggregator.Mode.Count.ShouldBe(null);
 				aggregator.Median.ShouldBe(null);
 				aggregator.Count.ShouldBe(4);
 				aggregator.DistinctCount.ShouldBe(null);
@@ -216,10 +220,25 @@ namespace SqlPad.Oracle.Test
 				aggregator.Sum.ShouldBe(null);
 				aggregator.Minimum.ShouldBe(null);
 				aggregator.Maximum.ShouldBe(null);
-				aggregator.Mode.ShouldBe(null);
+				aggregator.Mode.Value.ShouldBe(null);
+				aggregator.Mode.Count.ShouldBe(null);
 				aggregator.Median.ShouldBe(null);
 				aggregator.Count.ShouldBe(3);
 				aggregator.DistinctCount.ShouldBe(2);
+			}
+
+			[Test]
+			public void TestIntervalDayToSecondMode()
+			{
+				var aggregator = new OracleValueAggregator();
+				var oneDay = new OracleIntervalDayToSecond(new OracleIntervalDS(1d));
+				aggregator.AddValue(oneDay);
+				aggregator.AddValue(oneDay);
+				var twoDays = new OracleIntervalDayToSecond(new OracleIntervalDS(2d));
+				aggregator.AddValue(twoDays);
+
+				aggregator.Mode.Value.ShouldBe(oneDay);
+				aggregator.Mode.Count.ShouldBe(2);
 			}
 		}
 	}

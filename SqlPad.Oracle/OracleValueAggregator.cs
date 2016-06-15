@@ -11,7 +11,7 @@ using Oracle.DataAccess.Types;
 
 namespace SqlPad.Oracle
 {
-	[DebuggerDisplay("OracleValueAggregator (Count={Count}; DistinctCount={DistinctCount}; Minimum={Minimum}; Maximum={Maximum}; Sum={Sum}; Average={Average}; Mode={Mode}; Median={Median})")]
+	[DebuggerDisplay("OracleValueAggregator (Count={Count}; DistinctCount={DistinctCount}; Minimum={Minimum}; Maximum={Maximum}; Sum={Sum}; Average={Average}; Median={Median})")]
 	public class OracleValueAggregator : IValueAggregator
 	{
 		private readonly HashSet<object> _distinctValues = new HashSet<object>();
@@ -52,33 +52,33 @@ namespace SqlPad.Oracle
 
 		public object Sum => GetValue(_oracleNumberSum, OracleDate.Null, OracleTimeStamp.Null, OracleTimeStampTZ.Null, OracleTimeStampLTZ.Null, _oracleYearToMonthSum, _oracleDayToSecondSum);
 
-		public object Mode
+		public Mode Mode
 		{
 			get
 			{
 				var modeValues =
 					SourceValues
 						.GroupBy(t => t)
-						.Select(g => new { Value = g.Key, Count = g.Count() })
+						.Select(g => new Mode { Value = g.Key, Count = g.Count() })
 						.OrderByDescending(g => g.Count)
 						.Take(2)
 						.ToArray();
 
 				if (modeValues.Length == 0)
 				{
-					return null;
+					return Mode.Empty;
 				}
 
 				var mostNumerousItem = modeValues[0];
 
 				if (modeValues.Length == 1)
 				{
-					return mostNumerousItem.Value;
+					return mostNumerousItem;
 				}
 
 				return mostNumerousItem.Count == modeValues[1].Count
-					? null
-					: mostNumerousItem.Value;
+					? Mode.Empty
+					: mostNumerousItem;
 			}
 		}
 

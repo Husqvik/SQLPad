@@ -70,7 +70,7 @@ namespace SqlPad.Oracle.ToolTips
 
 			var qualifiedColumnName = isSchemaObject && String.Equals(targetSchemaObject.Type, OracleObjectType.Sequence)
 				? null
-				: $"{objectPrefix}{columnReference.Name.ToSimpleIdentifier()}";
+				: $"{objectPrefix}{columnReference.NormalizedName.ToSimpleIdentifier()}";
 
 			var labelBuilder = new ToolTipLabelBuilder();
 			labelBuilder.AddElement(qualifiedColumnName);
