@@ -11,6 +11,8 @@
 		<sqlPad:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
 		<sqlPad:DateTimeLabelConverter x:Key="DateTimeConverter" />
 		<sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintNumericConverter" />
+		<sqlPad:DataSpaceConverter x:Key="DataSpaceConverter" />
+		<sqlPad:TimeSpanConverter x:Key="TimeSpanConverter" />
 
 		<SolidColorBrush x:Key="PopupBackgroundBrush" Color="#F1F2F7"/>
 		<SolidColorBrush x:Key="PopupBorderBrush" Color="#767676"/>

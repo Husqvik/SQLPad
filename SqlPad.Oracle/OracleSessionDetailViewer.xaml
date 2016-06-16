@@ -17,11 +17,8 @@
 				<ResourceDictionary Source="Themes/Common.xaml"/>
 			</ResourceDictionary.MergedDictionaries>
 
-			<sqlPad:DataSpaceConverter x:Key="DataSpaceConverter" />
 			<sqlPad:ListAggregationConverter x:Key="ListAggregationConverter" />
 			<oracle:SessionIdSummaryConverter x:Key="SessionIdSummaryConverter" />
-			<sqlPad:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
-			<sqlPad:PrettyPrintIntegerConverter x:Key="PrettyPrintIntegerConverter" />
 
 			<Style x:Key="CellRealOnly">
 				<Setter Property="TextBoxBase.IsReadOnly" Value="True" />

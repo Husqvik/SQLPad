@@ -36,7 +36,7 @@ namespace SqlPad
 		public static readonly DependencyProperty SelectedCellMinProperty = DependencyProperty.Register(nameof(SelectedCellMin), typeof(object), typeof(DataGridResultViewer), new UIPropertyMetadata());
 		public static readonly DependencyProperty SelectedCellMaxProperty = DependencyProperty.Register(nameof(SelectedCellMax), typeof(object), typeof(DataGridResultViewer), new UIPropertyMetadata());
 		public static readonly DependencyProperty SelectedCellModeValueProperty = DependencyProperty.Register(nameof(SelectedCellModeValue), typeof(object), typeof(DataGridResultViewer), new UIPropertyMetadata());
-		public static readonly DependencyProperty SelectedCellModeCountProperty = DependencyProperty.Register(nameof(SelectedCellModeCount), typeof(long), typeof(DataGridResultViewer), new UIPropertyMetadata());
+		public static readonly DependencyProperty SelectedCellModeCountProperty = DependencyProperty.Register(nameof(SelectedCellModeCount), typeof(long?), typeof(DataGridResultViewer), new UIPropertyMetadata());
 		public static readonly DependencyProperty SelectedCellMedianProperty = DependencyProperty.Register(nameof(SelectedCellMedian), typeof(object), typeof(DataGridResultViewer), new UIPropertyMetadata());
 		public static readonly DependencyProperty SelectedRowIndexProperty = DependencyProperty.Register(nameof(SelectedRowIndex), typeof(int), typeof(DataGridResultViewer), new UIPropertyMetadata(0));
 		public static readonly DependencyProperty AutoRefreshIntervalProperty = DependencyProperty.Register(nameof(AutoRefreshInterval), typeof(TimeSpan), typeof(DataGridResultViewer), new UIPropertyMetadata(TimeSpan.FromSeconds(60), AutoRefreshIntervalChangedCallback));

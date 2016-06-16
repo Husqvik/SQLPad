@@ -83,9 +83,11 @@ namespace SqlPad
 			{
 				commandNumber++;
 
+				var resultNumber = 0;
 				foreach (var kvp in statementResult.ResultInfoColumnHeaders)
 				{
-					var exportResultInfo = new ExportResultInfo(commandNumber, kvp.Key, kvp.Value);
+					resultNumber++;
+					var exportResultInfo = new ExportResultInfo(commandNumber, resultNumber, kvp.Key, kvp.Value);
 					_exportResultInfoCollection.Add(exportResultInfo);
 				}
 			}
@@ -110,7 +112,7 @@ namespace SqlPad
 				exportResultInfo.StartTimestamp = DateTime.Now;
 				_exportClockTimer.Tag = exportResultInfo;
 
-				var exportFileName = Path.Combine(OutputPath, $@"{FileName}_{exportResultInfo.CommandNumber}_{DateTime.Now.Ticks}.{DataExporter.FileExtension}");
+				var exportFileName = Path.Combine(OutputPath, $@"{FileName}_{exportResultInfo.CommandNumber}_{exportResultInfo.ResultNumber}_{DateTime.Now.Ticks}.{DataExporter.FileExtension}");
 				using (var exportContext = await DataExporter.StartExportAsync(exportFileName, exportResultInfo.ColumnHeaders, _outputViewer.DocumentPage.InfrastructureFactory.DataExportConverter, cancellationToken))
 				{
 					exportResultInfo.FileName = exportFileName;
@@ -209,13 +211,16 @@ namespace SqlPad
 
 		public int CommandNumber { get; }
 
+		public int ResultNumber { get; }
+
 		public ResultInfo ResultInfo { get; }
 
 		public IReadOnlyList<ColumnHeader> ColumnHeaders { get; }
 
-		public ExportResultInfo(int commandNumber, ResultInfo resultInfo, IReadOnlyList<ColumnHeader> columnHeaders)
+		public ExportResultInfo(int commandNumber, int resultNumber, ResultInfo resultInfo, IReadOnlyList<ColumnHeader> columnHeaders)
 		{
 			CommandNumber = commandNumber;
+			ResultNumber = resultNumber;
 			ColumnHeaders = columnHeaders;
 			ResultInfo = resultInfo;
 		}

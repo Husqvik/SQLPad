@@ -6,11 +6,10 @@
              xmlns:sqlPad="clr-namespace:SqlPad"
              xmlns:dataExport="clr-namespace:SqlPad.DataExport"
              mc:Ignorable="d" 
-             d:DesignHeight="140" d:DesignWidth="540"
+             d:DesignHeight="140" d:DesignWidth="600"
              DataContext="{Binding RelativeSource={RelativeSource Self}}">
 	<UserControl.Resources>
 		<sqlPad:PluralConverter x:Key="PluralConverter" />
-		<sqlPad:DataSpaceConverter x:Key="DataSpaceConverter" />
 	</UserControl.Resources>
 
 	<DockPanel Margin="4">
@@ -40,7 +39,7 @@
 				<TextBlock Margin="4,0,0,0" Text="File name: " VerticalAlignment="Center" />
 				<TextBox VerticalContentAlignment="Center" Text="{Binding FileName}" />
 				<TextBlock VerticalAlignment="Center">
-					<Run Text="_&lt;command number&gt;_&lt;ticks&gt;." /><Run Text="{Binding DataExporter.FileExtension, Mode=OneWay}" />
+					<Run Text="_&lt;command number&gt;_&lt;result number&gt;_&lt;ticks&gt;." /><Run Text="{Binding DataExporter.FileExtension, Mode=OneWay}" />
 				</TextBlock>
 			</StackPanel>
 		</GroupBox>
