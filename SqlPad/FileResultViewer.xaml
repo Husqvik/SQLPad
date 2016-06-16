@@ -6,7 +6,7 @@
              xmlns:sqlPad="clr-namespace:SqlPad"
              xmlns:dataExport="clr-namespace:SqlPad.DataExport"
              mc:Ignorable="d" 
-             d:DesignHeight="140" d:DesignWidth="384"
+             d:DesignHeight="140" d:DesignWidth="540"
              DataContext="{Binding RelativeSource={RelativeSource Self}}">
 	<UserControl.Resources>
 		<sqlPad:PluralConverter x:Key="PluralConverter" />
@@ -36,7 +36,12 @@
 				</ComboBox>
 				<TextBlock Margin="4,0,0,0" Text="Path: " VerticalAlignment="Center" />
 				<TextBox MinWidth="180" VerticalContentAlignment="Center" Text="{Binding OutputPath}" />
-				<Button Content="..." MinWidth="20" Click="BrowseExportFolderClickHandler" />
+				<Button Content="..." MinWidth="20" Margin="2,0" Click="BrowseExportFolderClickHandler" />
+				<TextBlock Margin="4,0,0,0" Text="File name: " VerticalAlignment="Center" />
+				<TextBox VerticalContentAlignment="Center" Text="{Binding FileName}" />
+				<TextBlock VerticalAlignment="Center">
+					<Run Text="_&lt;command number&gt;_&lt;ticks&gt;." /><Run Text="{Binding DataExporter.FileExtension, Mode=OneWay}" />
+				</TextBlock>
 			</StackPanel>
 		</GroupBox>
 

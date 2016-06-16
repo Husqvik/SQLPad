@@ -1301,7 +1301,7 @@ SELECT * FROM generator";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 68);
 			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
-			toolTip.Control.DataContext.ShouldBe("data.c1 NUMBER NOT NULL");
+			toolTip.Control.DataContext.ShouldBe("DATA.C1 NUMBER NOT NULL");
 		}
 
 		[Test, Apartment(ApartmentState.STA)]

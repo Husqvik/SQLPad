@@ -11,6 +11,8 @@ namespace SqlPad.DataExport
 
 		string FileNameFilter { get; }
 
+		string FileExtension { get; }
+
 		bool HasAppendSupport { get; }
 
 		Task<IDataExportContext> StartExportAsync(string fileName, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter, CancellationToken cancellationToken);

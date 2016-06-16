@@ -15,6 +15,8 @@ namespace SqlPad.DataExport
 
 		public string FileNameFilter { get; } = "JSON files (*.json)|*.json|All files (*.*)|*";
 
+		public string FileExtension { get; } = "json";
+
 		public bool HasAppendSupport { get; } = false;
 
 		public Task ExportToClipboardAsync(DataGridResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress = null)

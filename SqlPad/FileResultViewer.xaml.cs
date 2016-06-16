@@ -18,6 +18,7 @@ namespace SqlPad
 	{
 		public static readonly DependencyProperty DataExporterProperty = DependencyProperty.Register(nameof(DataExporter), typeof(IDataExporter), typeof(FileResultViewer), new UIPropertyMetadata(DataExporters.Csv));
 		public static readonly DependencyProperty OutputPathProperty = DependencyProperty.Register(nameof(OutputPath), typeof(string), typeof(FileResultViewer), new UIPropertyMetadata());
+		public static readonly DependencyProperty FileNameProperty = DependencyProperty.Register(nameof(FileName), typeof(string), typeof(FileResultViewer), new UIPropertyMetadata("Result"));
 		public static readonly DependencyProperty IsExecutingProperty = DependencyProperty.Register(nameof(IsExecuting), typeof(bool), typeof(FileResultViewer), new UIPropertyMetadata());
 
 		[Bindable(true)]
@@ -32,6 +33,13 @@ namespace SqlPad
 		{
 			get { return (string)GetValue(OutputPathProperty); }
 			set { SetValue(OutputPathProperty, value); }
+		}
+
+		[Bindable(true)]
+		public string FileName
+		{
+			get { return (string)GetValue(FileNameProperty); }
+			set { SetValue(FileNameProperty, value); }
 		}
 
 		[Bindable(true)]
@@ -82,11 +90,17 @@ namespace SqlPad
 				}
 			}
 
-			await _outputViewer.ExecuteUsingCancellationToken(ExportRows);
+			var exception = await App.SafeActionAsync(() => _outputViewer.ExecuteUsingCancellationToken(ExportRows));
 
 			_exportClockTimer.Stop();
 
 			IsExecuting = false;
+
+			if (exception != null)
+			{
+				Trace.WriteLine($"Saving result to file failed: {exception}");
+				Messages.ShowError(exception.Message);
+			}
 		}
 
 		private async Task ExportRows(CancellationToken cancellationToken)
@@ -96,7 +110,7 @@ namespace SqlPad
 				exportResultInfo.StartTimestamp = DateTime.Now;
 				_exportClockTimer.Tag = exportResultInfo;
 
-				var exportFileName = $@"E:\sqlpad_export_test_{exportResultInfo.CommandNumber}_{DateTime.Now.Ticks}.tmp"; // TODO
+				var exportFileName = Path.Combine(OutputPath, $@"{FileName}_{exportResultInfo.CommandNumber}_{DateTime.Now.Ticks}.{DataExporter.FileExtension}");
 				using (var exportContext = await DataExporter.StartExportAsync(exportFileName, exportResultInfo.ColumnHeaders, _outputViewer.DocumentPage.InfrastructureFactory.DataExportConverter, cancellationToken))
 				{
 					exportResultInfo.FileName = exportFileName;

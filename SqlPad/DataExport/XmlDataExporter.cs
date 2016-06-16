@@ -26,6 +26,8 @@ namespace SqlPad.DataExport
 
 		public string FileNameFilter { get; } = "XML files (*.xml)|*.xml|All files (*.*)|*";
 
+		public string FileExtension { get; } = "xml";
+
 		public bool HasAppendSupport { get; } = false;
 
 		public Task ExportToClipboardAsync(DataGridResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress = null)

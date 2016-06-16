@@ -16,6 +16,8 @@ namespace SqlPad.DataExport
 
 		public string FileNameFilter { get; } = "Excel files (*.xlsx)|*.xlsx|All files (*.*)|*";
 
+		public string FileExtension { get; } = "xlsx";
+
 		public bool HasAppendSupport { get; } = true;
 
 		public Task ExportToClipboardAsync(DataGridResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress = null)

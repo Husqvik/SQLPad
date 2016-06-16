@@ -65,7 +65,7 @@ namespace SqlPad.Oracle.ToolTips
 			}
 
 			var objectPrefix = columnReference.ObjectNode == null && !String.IsNullOrEmpty(validObjectReference.FullyQualifiedObjectName.Name)
-				? $"{validObjectReference.FullyQualifiedObjectName}."
+				? $"{validObjectReference.FullyQualifiedObjectName.ToLabel()}."
 				: null;
 
 			var qualifiedColumnName = isSchemaObject && String.Equals(targetSchemaObject.Type, OracleObjectType.Sequence)

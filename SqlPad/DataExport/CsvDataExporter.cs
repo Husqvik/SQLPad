@@ -19,6 +19,8 @@ namespace SqlPad.DataExport
 
 		public virtual string FileNameFilter { get; } = "CSV files (*.csv)|*.csv|All files (*.*)|*";
 
+		public virtual string FileExtension { get; } = "csv";
+
 		public bool HasAppendSupport { get; } = false;
 
 		public Task ExportToClipboardAsync(DataGridResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress = null)

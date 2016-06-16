@@ -15,6 +15,8 @@ namespace SqlPad.DataExport
 
 		public string FileNameFilter { get; } = "HTML files (*.html)|*.html|All files (*.*)|*";
 
+		public string FileExtension { get; } = "html";
+
 		public bool HasAppendSupport { get; } = false;
 
 		public Task ExportToClipboardAsync(DataGridResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress = null)

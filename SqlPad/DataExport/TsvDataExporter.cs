@@ -6,6 +6,8 @@ namespace SqlPad.DataExport
 
 		public override string FileNameFilter { get; } = "TSV files (*.tsv)|*.tsv|All files (*.*)|*";
 
-	    protected override string Separator { get; } = "\t";
+		public override string FileExtension { get; } = "tsv";
+
+		protected override string Separator { get; } = "\t";
 	}
 }
