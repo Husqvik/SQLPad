@@ -3589,5 +3589,33 @@ FROM
 			inlineView4.ColumnReferences.Count.ShouldBe(1);
 			inlineView4.ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
 		}
+
+		[Test]
+		public void TestUnfinisedInlineFunctionParameterDefinition()
+		{
+			const string query1 =
+@"with function test_function(p) return number
+as
+begin
+    return p;
+end;
+SELECT test_function(1) FROM dual;";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single().Validate();
+
+			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
+			var mainQueryBlock = semanticModel.QueryBlocks.Single();
+
+			mainQueryBlock.AttachedFunctions.Count.ShouldBe(1);
+			var testFunction = mainQueryBlock.AttachedFunctions[0];
+			testFunction.Parameters.Count.ShouldBe(2);
+			testFunction.Parameters[0].Direction.ShouldBe(ParameterDirection.ReturnValue);
+			var parameter = testFunction.Parameters[1];
+
+			parameter.Name.ShouldBe("\"P\"");
+			parameter.Direction.ShouldBe(ParameterDirection.Input);
+			parameter.DataType.ShouldBe(String.Empty);
+			parameter.IsOptional.ShouldBe(false);
+		}
 	}
 }

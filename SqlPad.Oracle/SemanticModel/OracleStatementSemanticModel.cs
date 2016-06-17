@@ -361,15 +361,26 @@ namespace SqlPad.Oracle.SemanticModel
 				var parameterName = parameterDeclaration[Terminals.ParameterIdentifier].Token.Value.ToQuotedIdentifier();
 				var parameterDirectionDeclaration = parameterDeclaration[NonTerminals.ParameterDirectionDeclaration];
 
-				var direction = parameterDirectionDeclaration[Terminals.Out] == null ? ParameterDirection.Input : ParameterDirection.Output;
-				if (direction == ParameterDirection.Output && parameterDeclaration[Terminals.In] != null)
+				var direction = ParameterDirection.Input;
+				var isOptional = false;
+				var parameterType = String.Empty;
+
+				if (parameterDirectionDeclaration != null)
 				{
-					direction = ParameterDirection.InputOutput;
+					if (parameterDirectionDeclaration[Terminals.Out] != null)
+					{
+						direction = ParameterDirection.Output;
+					}
+
+					if (direction == ParameterDirection.Output && parameterDeclaration[Terminals.In] != null)
+					{
+						direction = ParameterDirection.InputOutput;
+					}
+
+					isOptional = parameterDirectionDeclaration[NonTerminals.VariableDeclarationDefaultValue] != null;
+
+					parameterType = ResolveParameterType(parameterDirectionDeclaration);
 				}
-
-				var isOptional = parameterDirectionDeclaration[NonTerminals.VariableDeclarationDefaultValue] != null;
-
-				var parameterType = ResolveParameterType(parameterDirectionDeclaration);
 
 				metadata.AddParameter(new OracleProgramParameterMetadata(parameterName, parameterIndex, parameterIndex, 0, direction, parameterType, OracleObjectIdentifier.Empty, isOptional));
 			}
