@@ -123,9 +123,11 @@
 			<TextBlock Text="Count: " />
 			<TextBox Text="{Binding SelectedCellValueCount}" />
 
-			<TextBlock Text=" (distinct: " />
-			<TextBox Text="{Binding SelectedCellDistinctValueCount}" />
-			<TextBlock Text=") " Margin="-2,0,0,0" />
+			<StackPanel Orientation="Horizontal" Visibility="{Binding SelectedCellDistinctValueCount, Converter={StaticResource ObjectToVisibilityConverter}}">
+				<TextBlock Text=" (distinct: " />
+				<TextBox Text="{Binding SelectedCellDistinctValueCount}" />
+				<TextBlock Text=") " Margin="-2,0,0,0" />
+			</StackPanel>
 
 			<StackPanel Orientation="Horizontal" Visibility="{Binding IsSelectedCellLimitInfoVisible, Converter={StaticResource ObjectToVisibilityConverter}}">
 				<TextBlock Text=" Min: " />
@@ -142,8 +144,8 @@
 					<TextBlock Text=" Mode: " ToolTip="The mode is the value that appears most often in a set of data. " />
 					<TextBox Text="{Binding SelectedCellModeValue, Converter={x:Static sqlPad:CellValueConverter.Instance}}" />
 					<TextBlock Text=" (" />
-					<TextBox Text="{Binding SelectedCellModeCount, Converter={x:Static sqlPad:CellValueConverter.Instance}}" ToolTip="number of values" />
-					<TextBlock Text=")" />
+					<TextBox Text="{Binding SelectedCellModeCount, Converter={x:Static sqlPad:CellValueConverter.Instance}}" ToolTip="number of values" Margin="-2,0,0,0" />
+					<TextBlock Text=")" Margin="-2,0,0,0" />
 				</StackPanel>
 				<TextBlock Text=" Median: " ToolTip="A median is the value separating the higher half of a data sample from the lower half. " />
 				<TextBox Text="{Binding SelectedCellMedian, Converter={x:Static sqlPad:CellValueConverter.Instance}}" />

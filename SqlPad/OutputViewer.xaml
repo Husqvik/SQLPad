@@ -22,7 +22,7 @@
 				<sqlPad:DataOutputTypeBooleanConverter x:Key="DataOutputTypeBooleanConverter" />
 			</StackPanel.Resources>
 
-			<ToggleButton Content="_F" ToolTip="Enable/disable result to file" Margin="2" Background="Transparent" IsChecked="{Binding DataOutputType, Converter={StaticResource DataOutputTypeBooleanConverter}}" />
+			<ToggleButton Content="_F" ToolTip="Enable/disable result to file" Margin="2" Background="Transparent" IsChecked="{Binding DataOutputType, Converter={StaticResource DataOutputTypeBooleanConverter}}" IsEnabled="{Binding IsTransactionControlEnabled}" />
 			<ToggleButton Content="_Pin" ToolTip="Keep/reuse current result view" Margin="2" IsChecked="{Binding IsPinned}" Background="Transparent" />
 			<ToggleButton Content="F_K" ToolTip="Enable/disable foreign key children data access" Margin="2" IsChecked="{Binding EnableChildReferenceDataSources}" Background="Transparent" />
 		</StackPanel>

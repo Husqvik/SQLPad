@@ -223,6 +223,8 @@ namespace SqlPad
 			RemoveResultViewers();
 
 			WriteDatabaseOutput(String.Empty);
+
+			FileResultViewer.Initialize();
 		}
 
 		private void SelectDefaultTabIfNeeded()

@@ -158,6 +158,10 @@ namespace SqlPad
 			{
 				outputViewer.TabExecutionLog.IsSelected = true;
 			}
+			else if ((DataOutputType)args.NewValue == DataOutputType.File)
+			{
+				outputViewer.TabResultToFile.IsSelected = true;
+			}
 		}
 		#endregion
 	}

@@ -20,6 +20,7 @@ namespace SqlPad
 		public static readonly DependencyProperty OutputPathProperty = DependencyProperty.Register(nameof(OutputPath), typeof(string), typeof(FileResultViewer), new UIPropertyMetadata());
 		public static readonly DependencyProperty FileNameProperty = DependencyProperty.Register(nameof(FileName), typeof(string), typeof(FileResultViewer), new UIPropertyMetadata("Result"));
 		public static readonly DependencyProperty IsExecutingProperty = DependencyProperty.Register(nameof(IsExecuting), typeof(bool), typeof(FileResultViewer), new UIPropertyMetadata());
+		public static readonly DependencyProperty IsWaitingForResultProperty = DependencyProperty.Register(nameof(IsWaitingForResult), typeof(bool), typeof(FileResultViewer), new UIPropertyMetadata(true));
 
 		[Bindable(true)]
 		public IDataExporter DataExporter
@@ -49,6 +50,13 @@ namespace SqlPad
 			private set { SetValue(IsExecutingProperty, value); }
 		}
 
+		[Bindable(true)]
+		public bool IsWaitingForResult
+		{
+			get { return (bool)GetValue(IsWaitingForResultProperty); }
+			private set { SetValue(IsWaitingForResultProperty, value); }
+		}
+
 		private readonly ObservableCollection<ExportResultInfo> _exportResultInfoCollection = new ObservableCollection<ExportResultInfo>();
 		private readonly OutputViewer _outputViewer;
 		private readonly DispatcherTimer _exportClockTimer;
@@ -71,8 +79,14 @@ namespace SqlPad
 			}
 		}
 
+		public void Initialize()
+		{
+			IsWaitingForResult = true;
+		}
+
 		public async Task SaveExecutionResult(StatementExecutionBatchResult executionResult)
 		{
+			IsWaitingForResult = false;
 			IsExecuting = true;
 
 			_exportClockTimer.Start();

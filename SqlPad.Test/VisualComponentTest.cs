@@ -33,7 +33,7 @@ namespace SqlPad.Test
 		[Test, Apartment(ApartmentState.STA)]
 		public void RealApplicationTest()
 		{
-			VisualTestRunner.RunTest("SqlPad.Test.VisualComponentTest, SqlPad.Test", "TestBasicSqlPadBehavior");
+			VisualTestRunner.RunTest("SqlPad.Test.VisualComponentTest, SqlPad.Test", nameof(TestBasicSqlPadBehavior));
 		}
 
 		private static SqlTextEditor Editor => DocumentPage.Editor;
@@ -145,7 +145,13 @@ WHERE
 			outputViewer.TransactionIdentifier.ShouldBe("1.2.3456 (read committed)");
 			outputViewer.SessionExecutionStatistics.Count.ShouldBeGreaterThan(0);
 			outputViewer.ActiveResultViewer.ShouldNotBe(null);
+
+			outputViewer.ActiveResultViewer.ResultGrid.SelectAllCells();
+
 			outputViewer.SetValue(OutputViewer.HasActiveTransactionProperty, false);
+
+			outputViewer.DataOutputType = DataOutputType.File;
+			outputViewer.TabControlResult.SelectedContent.ShouldBe(outputViewer.FileResultViewer);
 
 			var statusInfo = outputViewer.StatusInfo;
 			statusInfo.ResultGridAvailable.ShouldBe(true);

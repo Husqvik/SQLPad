@@ -44,7 +44,32 @@
 			</StackPanel>
 		</GroupBox>
 
+		<TextBlock DockPanel.Dock="Top" FontSize="20" Visibility="{Binding IsWaitingForResult, Converter={StaticResource ObjectToVisibilityConverter}}">
+			<TextBlock.Style>
+				<Style>
+					<Setter Property="TextBlock.Text" Value="Waiting until commands are being executed... " />
+					<Style.Triggers>
+						<DataTrigger Binding="{Binding ExportResultInfoCollection.Count}" Value="1">
+							<DataTrigger.Setters>
+								<Setter Property="TextBlock.Text" Value="Waiting until command is being executed... " />
+							</DataTrigger.Setters>
+						</DataTrigger>
+					</Style.Triggers>
+				</Style>
+			</TextBlock.Style>
+		</TextBlock>
+
 		<GroupBox Header="Files">
+			<GroupBox.Style>
+				<Style>
+					<Style.Triggers>
+						<DataTrigger Binding="{Binding IsWaitingForResult}" Value="True">
+							<Setter Property="GroupBox.Visibility" Value="Collapsed" />
+						</DataTrigger>
+					</Style.Triggers>
+				</Style>
+			</GroupBox.Style>
+
 			<ItemsControl ItemsSource="{Binding ExportResultInfoCollection}">
 				<ItemsControl.ItemTemplate>
 					<DataTemplate>
