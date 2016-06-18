@@ -223,8 +223,6 @@ namespace SqlPad
 			RemoveResultViewers();
 
 			WriteDatabaseOutput(String.Empty);
-
-			FileResultViewer.Initialize();
 		}
 
 		private void SelectDefaultTabIfNeeded()
@@ -299,6 +297,8 @@ namespace SqlPad
 			var beforeExecutionText = DocumentPage.Editor.Text;
 
 			Initialize();
+
+			FileResultViewer.Initialize();
 
 			ConnectionAdapter.EnableDatabaseOutput = EnableDatabaseOutput;
 

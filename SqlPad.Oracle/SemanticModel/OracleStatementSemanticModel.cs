@@ -547,18 +547,18 @@ namespace SqlPad.Oracle.SemanticModel
 						var expression = tableCollection.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBlock, NonTerminals.Expression).FirstOrDefault();
 						if (expression != null)
 						{
-							var identifiers = expression.GetDescendantsWithinSameQueryBlock(Terminals.Identifier, Terminals.User, Terminals.DataTypeIdentifier).ToList();
+							var identifierNodes = expression.GetDescendantsWithinSameQueryBlock(Terminals.Identifier, Terminals.User, Terminals.DataTypeIdentifier).ToList();
 							var grammarSpecificProgramReferences = CreateGrammarSpecificFunctionReferences(GetGrammarSpecificFunctionNodes(expression), queryBlock, queryBlock.ProgramReferences, StatementPlacement.TableReference, null);
-							if (identifiers.Count > 0 || grammarSpecificProgramReferences.Count > 0)
+							if (identifierNodes.Count > 0 || grammarSpecificProgramReferences.Count > 0)
 							{
 								OracleReference tableCollectionReference;
-								var functionIdentifierNode = identifiers.FirstOrDefault();
+								var identifierNode = identifierNodes.FirstOrDefault();
 								if (grammarSpecificProgramReferences.Count == 0 ||
-								    functionIdentifierNode.SourcePosition.IndexStart < (tableCollectionReference = grammarSpecificProgramReferences[0]).RootNode.SourcePosition.IndexStart)
+								    identifierNode.SourcePosition.IndexStart < (tableCollectionReference = grammarSpecificProgramReferences[0]).RootNode.SourcePosition.IndexStart)
 								{
-									var prefixNonTerminal = functionIdentifierNode.ParentNode.ParentNode[NonTerminals.Prefix];
-									tableCollectionReference = ResolveColumnFunctionOrDataTypeReferenceFromIdentifier(queryBlock, queryBlock, functionIdentifierNode, StatementPlacement.TableReference, null, n => prefixNonTerminal, null);
-									identifiers.RemoveAt(0);
+									var prefixNonTerminal = identifierNode.ParentNode.ParentNode[NonTerminals.Prefix];
+									tableCollectionReference = ResolveColumnFunctionOrDataTypeReferenceFromIdentifier(queryBlock, queryBlock, identifierNode, StatementPlacement.TableReference, null, n => prefixNonTerminal, null);
+									identifierNodes.RemoveAt(0);
 								}
 
 								var tableCollectionDataObjectReference =
@@ -573,7 +573,7 @@ namespace SqlPad.Oracle.SemanticModel
 								_rootNodeObjectReference.Add(tableCollectionDataObjectReference.RootNode, tableCollectionDataObjectReference);
 								_rowSourceTableCollectionReferences.Add(tableCollectionReference, tableCollectionDataObjectReference);
 
-								ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(queryBlock, queryBlock, identifiers, StatementPlacement.TableReference, null);
+								ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(queryBlock, queryBlock, identifierNodes, StatementPlacement.TableReference, null);
 							}
 						}
 
@@ -2019,7 +2019,7 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 		}
 
-		private void ResolveNaturalJoinColumnsAndOuterJoinReferences(OracleQueryBlock queryBlock)
+		private static void ResolveNaturalJoinColumnsAndOuterJoinReferences(OracleQueryBlock queryBlock)
 		{
 			foreach (var joinDescription in queryBlock.JoinDescriptions)
 			{

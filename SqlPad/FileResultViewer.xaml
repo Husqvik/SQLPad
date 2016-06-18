@@ -6,14 +6,14 @@
              xmlns:sqlPad="clr-namespace:SqlPad"
              xmlns:dataExport="clr-namespace:SqlPad.DataExport"
              mc:Ignorable="d" 
-             d:DesignHeight="140" d:DesignWidth="600"
+             d:DesignHeight="160" d:DesignWidth="420"
              DataContext="{Binding RelativeSource={RelativeSource Self}}">
 	<UserControl.Resources>
 		<sqlPad:PluralConverter x:Key="PluralConverter" />
 	</UserControl.Resources>
 
 	<DockPanel Margin="4">
-		<GroupBox Header="Settings" DockPanel.Dock="Top">
+		<GroupBox DockPanel.Dock="Top">
 			<GroupBox.Style>
 				<Style>
 					<Style.Triggers>
@@ -24,23 +24,35 @@
 				</Style>
 			</GroupBox.Style>
 
-			<StackPanel Orientation="Horizontal">
-				<TextBlock Text="File format: " VerticalAlignment="Center" />
-				<ComboBox ItemsSource="{x:Static dataExport:DataExporters.All}" SelectedValue="{Binding DataExporter}">
-					<ComboBox.ItemTemplate>
-						<DataTemplate>
-							<TextBlock Text="{Binding Name}" />
-						</DataTemplate>
-					</ComboBox.ItemTemplate>
-				</ComboBox>
-				<TextBlock Margin="4,0,0,0" Text="Path: " VerticalAlignment="Center" />
-				<TextBox MinWidth="180" VerticalContentAlignment="Center" Text="{Binding OutputPath}" />
-				<Button Content="..." MinWidth="20" Margin="2,0" Click="BrowseExportFolderClickHandler" />
-				<TextBlock Margin="4,0,0,0" Text="File name: " VerticalAlignment="Center" />
-				<TextBox VerticalContentAlignment="Center" Text="{Binding FileName}" />
-				<TextBlock VerticalAlignment="Center">
-					<Run Text="_&lt;command number&gt;_&lt;result number&gt;_&lt;ticks&gt;." /><Run Text="{Binding DataExporter.FileExtension, Mode=OneWay}" />
-				</TextBlock>
+			<GroupBox.Header>
+				<TextBlock Text="Settings" FontWeight="Bold"/>
+			</GroupBox.Header>
+
+			<StackPanel>
+				<StackPanel Orientation="Horizontal" Margin="2">
+					<TextBlock Text="File format: " VerticalAlignment="Center" />
+					<ComboBox ItemsSource="{x:Static dataExport:DataExporters.All}" SelectedValue="{Binding DataExporter}">
+						<ComboBox.ItemTemplate>
+							<DataTemplate>
+								<TextBlock Text="{Binding Name}" />
+							</DataTemplate>
+						</ComboBox.ItemTemplate>
+					</ComboBox>
+				</StackPanel>
+
+				<StackPanel Orientation="Horizontal" Margin="2">
+					<TextBlock Text="Path: " VerticalAlignment="Center" />
+					<TextBox MinWidth="180" VerticalContentAlignment="Center" Text="{Binding OutputPath}" />
+					<Button Content="..." MinWidth="20" Margin="2,0" Click="BrowseExportFolderClickHandler" />
+				</StackPanel>
+
+				<StackPanel Orientation="Horizontal" Margin="2">
+					<TextBlock Text="File name: " VerticalAlignment="Center" />
+					<TextBox Text="{Binding FileName}" />
+					<TextBlock VerticalAlignment="Center">
+						<Run Text="_&lt;command number&gt;_&lt;result number&gt;_&lt;ticks&gt;." /><Run Text="{Binding DataExporter.FileExtension, Mode=OneWay}" />
+					</TextBlock>
+				</StackPanel>
 			</StackPanel>
 		</GroupBox>
 
@@ -59,7 +71,7 @@
 			</TextBlock.Style>
 		</TextBlock>
 
-		<GroupBox Header="Files">
+		<GroupBox>
 			<GroupBox.Style>
 				<Style>
 					<Style.Triggers>
@@ -70,10 +82,14 @@
 				</Style>
 			</GroupBox.Style>
 
+			<GroupBox.Header>
+				<TextBlock Text="Files" FontWeight="Bold"/>
+			</GroupBox.Header>
+
 			<ItemsControl ItemsSource="{Binding ExportResultInfoCollection}">
 				<ItemsControl.ItemTemplate>
 					<DataTemplate>
-						<StackPanel Orientation="Horizontal">
+						<StackPanel Orientation="Horizontal" Margin="2">
 							<TextBlock>
 								<TextBlock.Style>
 									<Style>
@@ -116,13 +132,17 @@
 								<TextBlock Text=")" />
 							</StackPanel>
 
-							<TextBlock Text="Waiting... ">
+							<TextBlock>
 								<TextBlock.Style>
 									<Style>
 										<Setter Property="TextBlock.Visibility" Value="Collapsed" />
+										<Setter Property="TextBlock.Text" Value="Waiting... " />
 										<Style.Triggers>
 											<DataTrigger Binding="{Binding StartTimestamp}" Value="{x:Null}">
 												<Setter Property="TextBlock.Visibility" Value="Visible" />
+											</DataTrigger>
+											<DataTrigger Binding="{Binding IsCancelled}" Value="True">
+												<Setter Property="TextBlock.Text" Value="Cancelled" />
 											</DataTrigger>
 										</Style.Triggers>
 									</Style>

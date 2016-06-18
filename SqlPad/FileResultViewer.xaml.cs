@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -20,7 +21,7 @@ namespace SqlPad
 		public static readonly DependencyProperty OutputPathProperty = DependencyProperty.Register(nameof(OutputPath), typeof(string), typeof(FileResultViewer), new UIPropertyMetadata());
 		public static readonly DependencyProperty FileNameProperty = DependencyProperty.Register(nameof(FileName), typeof(string), typeof(FileResultViewer), new UIPropertyMetadata("Result"));
 		public static readonly DependencyProperty IsExecutingProperty = DependencyProperty.Register(nameof(IsExecuting), typeof(bool), typeof(FileResultViewer), new UIPropertyMetadata());
-		public static readonly DependencyProperty IsWaitingForResultProperty = DependencyProperty.Register(nameof(IsWaitingForResult), typeof(bool), typeof(FileResultViewer), new UIPropertyMetadata(true));
+		public static readonly DependencyProperty IsWaitingForResultProperty = DependencyProperty.Register(nameof(IsWaitingForResult), typeof(bool), typeof(FileResultViewer), new UIPropertyMetadata());
 
 		[Bindable(true)]
 		public IDataExporter DataExporter
@@ -115,6 +116,9 @@ namespace SqlPad
 			if (exception != null)
 			{
 				Trace.WriteLine($"Saving result to file failed: {exception}");
+
+				CancelWaitingResults();
+
 				Messages.ShowError(exception.Message);
 			}
 		}
@@ -135,6 +139,7 @@ namespace SqlPad
 					{
 						if (cancellationToken.IsCancellationRequested)
 						{
+							CancelWaitingResults();
 							return;
 						}
 
@@ -146,6 +151,14 @@ namespace SqlPad
 
 				exportResultInfo.CompleteTimestamp = DateTime.Now;
 				exportResultInfo.RefreshFileSize();
+			}
+		}
+
+		private void CancelWaitingResults()
+		{
+			foreach (var exportResultInfo in _exportResultInfoCollection.Where(i => i.StartTimestamp == null))
+			{
+				exportResultInfo.IsCancelled = true;
 			}
 		}
 
@@ -222,6 +235,7 @@ namespace SqlPad
 		private long? _fileSizeBytes;
 		private DateTime? _startTimestamp;
 		private DateTime? _completeTimestamp;
+		private bool _isCancelled;
 
 		public int CommandNumber { get; }
 
@@ -273,6 +287,12 @@ namespace SqlPad
 				UpdateValueAndRaisePropertyChanged(ref _completeTimestamp, value);
 				RefreshDuration();
 			}
+		}
+
+		public bool IsCancelled
+		{
+			get { return _isCancelled; }
+			set { UpdateValueAndRaisePropertyChanged(ref _isCancelled, value); }
 		}
 
 		public TimeSpan? Duration
