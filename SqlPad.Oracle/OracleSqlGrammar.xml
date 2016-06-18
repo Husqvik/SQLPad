@@ -6461,6 +6461,10 @@
           <NonTerminal Id="DataTypeVarcharSimplePrecision" />
         </Sequence>
         <Sequence>
+          <Terminal Id="Integer" />
+          <NonTerminal Id="DataTypeSimplePrecision" />
+        </Sequence>
+        <Sequence>
           <NonTerminal Id="BuiltInDataType" />
         </Sequence>
         <Sequence>

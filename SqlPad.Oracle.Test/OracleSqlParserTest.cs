@@ -3412,6 +3412,15 @@ END;";
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
+			[Test]
+			public void TestConstrainedIntegerDataType()
+			{
+				const string statement1 = @"DECLARE value INTEGER(38); BEGIN NULL; END;";
+
+				var statement = Parser.Parse(statement1).Single().Validate();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
+			}
+
 			public class Triggers
 			{
 				[Test]
