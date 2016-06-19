@@ -123,6 +123,7 @@
       <DependentUpon>Documentation.xsd</DependentUpon>
     </Compile>
     <Compile Include="Documentation.Extensions.cs" />
+    <Compile Include="ExecutionPlan\ExecutionPlanItem.cs" />
     <Compile Include="ExecutionPlan\ExecutionPlanItemCollection.cs" />
     <Compile Include="ExecutionPlan\ExecutionPlanTreeView.xaml.cs">
       <DependentUpon>ExecutionPlanTreeView.xaml</DependentUpon>
