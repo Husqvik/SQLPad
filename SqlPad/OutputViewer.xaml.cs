@@ -83,6 +83,8 @@ namespace SqlPad
 
 		public OutputViewer(DocumentPage documentPage)
 		{
+			DocumentPage = documentPage;
+
 			FileResultViewer = new FileResultViewer(this);
 
 			InitializeComponent();
@@ -93,8 +95,6 @@ namespace SqlPad
 			Application.Current.Deactivated += ApplicationDeactivatedHandler;
 
 			Initialize();
-
-			DocumentPage = documentPage;
 
 			_providerConfiguration = WorkDocumentCollection.GetProviderConfiguration(DocumentPage.CurrentConnection.ProviderName);
 

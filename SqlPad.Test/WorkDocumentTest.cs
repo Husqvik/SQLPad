@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows.Media;
 using NUnit.Framework;
 using Shouldly;
+using SqlPad.DataExport;
 
 namespace SqlPad.Test
 {
@@ -37,6 +38,9 @@ namespace SqlPad.Test
 					KeepDatabaseOutputHistory = true,
 					FontSize = 16,
 					DebuggerViewDefaultTabIndex = 1,
+					ExportOutputPath = Path.GetRandomFileName(),
+					ExportOutputFileName = "OutputFile.dat",
+					DataExporter = typeof(SqlInsertDataExporter).FullName,
 					RefreshInterval = TimeSpan.FromSeconds(900),
 					HeaderTextColorCode = Colors.Crimson.ToString(),
 					HeaderBackgroundColorCode = Colors.CornflowerBlue.ToString(),
@@ -73,7 +77,7 @@ namespace SqlPad.Test
 
 			var fileInfo = new FileInfo(Path.Combine(TempDirectoryName, "WorkArea", WorkDocumentCollection.ConfigurationFileName));
 			fileInfo.Exists.ShouldBe(true);
-			fileInfo.Length.ShouldBe(408);
+			fileInfo.Length.ShouldBe(482);
 
 			WorkDocumentCollection.Configure();
 			WorkDocumentCollection.WorkingDocuments.Count.ShouldBe(1);
@@ -99,6 +103,9 @@ namespace SqlPad.Test
 			deserializedWorkingDocument.DebuggerViewDefaultTabIndex.ShouldBe(newWorkingDocument.DebuggerViewDefaultTabIndex);
 			deserializedWorkingDocument.HeaderTextColorCode.ShouldBe(newWorkingDocument.HeaderTextColorCode);
 			deserializedWorkingDocument.HeaderBackgroundColorCode.ShouldBe(newWorkingDocument.HeaderBackgroundColorCode);
+			deserializedWorkingDocument.ExportOutputFileName.ShouldBe(newWorkingDocument.ExportOutputFileName);
+			deserializedWorkingDocument.ExportOutputPath.ShouldBe(newWorkingDocument.ExportOutputPath);
+			deserializedWorkingDocument.DataExporter.ShouldBe(newWorkingDocument.DataExporter);
 			deserializedWorkingDocument.WatchItems.Length.ShouldBe(newWorkingDocument.WatchItems.Length);
 			deserializedWorkingDocument.WatchItems[0].ShouldBe(watchVariable1);
 			deserializedWorkingDocument.WatchItems[1].ShouldBe(watchVariable2);

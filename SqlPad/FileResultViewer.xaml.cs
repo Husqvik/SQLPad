@@ -17,9 +17,9 @@ namespace SqlPad
 {
 	public partial class FileResultViewer
 	{
-		public static readonly DependencyProperty DataExporterProperty = DependencyProperty.Register(nameof(DataExporter), typeof(IDataExporter), typeof(FileResultViewer), new UIPropertyMetadata(DataExporters.Csv));
-		public static readonly DependencyProperty OutputPathProperty = DependencyProperty.Register(nameof(OutputPath), typeof(string), typeof(FileResultViewer), new UIPropertyMetadata());
-		public static readonly DependencyProperty FileNameProperty = DependencyProperty.Register(nameof(FileName), typeof(string), typeof(FileResultViewer), new UIPropertyMetadata("Result"));
+		public static readonly DependencyProperty DataExporterProperty = DependencyProperty.Register(nameof(DataExporter), typeof(IDataExporter), typeof(FileResultViewer), new UIPropertyMetadata(DataExporters.Csv, DataExporterPropertyChangedCallbackHandler));
+		public static readonly DependencyProperty OutputPathProperty = DependencyProperty.Register(nameof(OutputPath), typeof(string), typeof(FileResultViewer), new UIPropertyMetadata(OutputPathPropertyChangedCallbackHandler));
+		public static readonly DependencyProperty FileNameProperty = DependencyProperty.Register(nameof(FileName), typeof(string), typeof(FileResultViewer), new UIPropertyMetadata("Result", FileNamePropertyChangedCallbackHandler));
 		public static readonly DependencyProperty IsExecutingProperty = DependencyProperty.Register(nameof(IsExecuting), typeof(bool), typeof(FileResultViewer), new UIPropertyMetadata());
 		public static readonly DependencyProperty IsWaitingForResultProperty = DependencyProperty.Register(nameof(IsWaitingForResult), typeof(bool), typeof(FileResultViewer), new UIPropertyMetadata());
 
@@ -30,6 +30,12 @@ namespace SqlPad
 			set { SetValue(DataExporterProperty, value); }
 		}
 
+		private static void DataExporterPropertyChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
+		{
+			var fileResultViewer = (FileResultViewer)dependencyObject;
+			fileResultViewer._outputViewer.DocumentPage.WorkDocument.DataExporter = args.NewValue.GetType().FullName;
+		}
+
 		[Bindable(true)]
 		public string OutputPath
 		{
@@ -37,11 +43,23 @@ namespace SqlPad
 			set { SetValue(OutputPathProperty, value); }
 		}
 
+		private static void OutputPathPropertyChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
+		{
+			var fileResultViewer = (FileResultViewer)dependencyObject;
+			fileResultViewer._outputViewer.DocumentPage.WorkDocument.ExportOutputPath = (string)args.NewValue;
+		}
+
 		[Bindable(true)]
 		public string FileName
 		{
 			get { return (string)GetValue(FileNameProperty); }
 			set { SetValue(FileNameProperty, value); }
+		}
+
+		private static void FileNamePropertyChangedCallbackHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
+		{
+			var fileResultViewer = (FileResultViewer)dependencyObject;
+			fileResultViewer._outputViewer.DocumentPage.WorkDocument.ExportOutputFileName = (string)args.NewValue;
 		}
 
 		[Bindable(true)]
@@ -73,10 +91,37 @@ namespace SqlPad
 			_exportClockTimer = new DispatcherTimer(DispatcherPriority.Normal, Dispatcher) { Interval = TimeSpan.FromMilliseconds(40) };
 			_exportClockTimer.Tick += UpdateExportClockTickHandler;
 
-			if (String.IsNullOrEmpty(OutputPath))
+			InitializeSettings();
+		}
+
+		private void InitializeSettings()
+		{
+			var exportOutputPath = _outputViewer.DocumentPage.WorkDocument.ExportOutputPath;
+			if (String.IsNullOrEmpty(exportOutputPath) || !Directory.Exists(exportOutputPath))
 			{
 				var userDocumentPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-				OutputPath = userDocumentPath;
+				OutputPath = _outputViewer.DocumentPage.WorkDocument.ExportOutputPath = userDocumentPath;
+			}
+			else
+			{
+				OutputPath = exportOutputPath;
+			}
+
+			var fileName = _outputViewer.DocumentPage.WorkDocument.ExportOutputFileName;
+			if (String.IsNullOrEmpty(fileName))
+			{
+				_outputViewer.DocumentPage.WorkDocument.ExportOutputFileName = FileName;
+			}
+			else
+			{
+				FileName = fileName;
+			}
+
+			var dataExportTypeName = _outputViewer.DocumentPage.WorkDocument.DataExporter;
+			var dataExporter = DataExporters.All.SingleOrDefault(e => String.Equals(e.GetType().FullName, dataExportTypeName));
+			if (dataExporter != null)
+			{
+				DataExporter = dataExporter;
 			}
 		}
 

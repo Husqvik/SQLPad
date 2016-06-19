@@ -55,8 +55,14 @@ namespace SqlPad
 
 		public FileInfo File => String.IsNullOrEmpty(DocumentFileName) ? null : new FileInfo(DocumentFileName);
 
-	    public string DocumentFileName { get; set; }
-		
+		public string DocumentFileName { get; set; }
+
+		public string DataExporter { get; set; }
+
+		public string ExportOutputPath { get; set; }
+
+		public string ExportOutputFileName { get; set; }
+
 		public string DocumentTitle { get; set; }
 		
 		public string ConnectionName { get; set; }
@@ -127,7 +133,10 @@ namespace SqlPad
 				VisualTop = VisualTop,
 				HeaderBackgroundColorCode = HeaderBackgroundColorCode,
 				HeaderTextColorCode = HeaderTextColorCode,
-				RefreshInterval = RefreshInterval
+				RefreshInterval = RefreshInterval,
+				ExportOutputFileName = ExportOutputFileName,
+				ExportOutputPath = ExportOutputPath,
+				DataExporter = DataExporter
 			};
 		}
 	}

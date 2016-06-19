@@ -75,7 +75,7 @@
 			<GroupBox.Style>
 				<Style>
 					<Style.Triggers>
-						<DataTrigger Binding="{Binding IsWaitingForResult}" Value="True">
+						<DataTrigger Binding="{Binding ExportResultInfoCollection.Count}" Value="0">
 							<Setter Property="GroupBox.Visibility" Value="Collapsed" />
 						</DataTrigger>
 					</Style.Triggers>

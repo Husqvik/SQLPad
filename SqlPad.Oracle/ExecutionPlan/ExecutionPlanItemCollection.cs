@@ -87,20 +87,22 @@ namespace SqlPad.Oracle.ExecutionPlan
 				}
 
 				nextItem = nextItem.Parent;
-				var allChildrenExecuted = nextItem.ChildItems.Count(i => i.ExecutionOrder == 0) == 0;
-				if (!allChildrenExecuted)
+				var allChildrenExecuted = nextItem.ChildItems.All(i => i.ExecutionOrder != 0);
+				if (allChildrenExecuted)
 				{
-					var otherBranchItemIndex = _leafItems.FindIndex(i => i.IsChildFrom(nextItem));
-					if (otherBranchItemIndex == -1)
-					{
-						return;
-					}
-
-					var otherBranchLeafItem = _leafItems[otherBranchItemIndex];
-					_leafItems.RemoveAt(otherBranchItemIndex);
-
-					ResolveExecutionOrder(otherBranchLeafItem, nextItem);
+					continue;
 				}
+
+				var otherBranchItemIndex = _leafItems.FindIndex(i => i.IsChildFrom(nextItem));
+				if (otherBranchItemIndex == -1)
+				{
+					return;
+				}
+
+				var otherBranchLeafItem = _leafItems[otherBranchItemIndex];
+				_leafItems.RemoveAt(otherBranchItemIndex);
+
+				ResolveExecutionOrder(otherBranchLeafItem, nextItem);
 			} while (true);
 		}
 
