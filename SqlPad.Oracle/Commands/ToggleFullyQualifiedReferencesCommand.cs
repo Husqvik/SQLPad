@@ -13,6 +13,12 @@ namespace SqlPad.Oracle.Commands
 	{
 		public const string Title = "Toggle fully qualified references";
 
+		private IEnumerable<OracleReferenceContainer> SourceReferenceContainers =>
+			CurrentQueryBlock == null
+				? SemanticModel.AllReferenceContainers
+				: SemanticModel.QueryBlocks.Where(qb => CurrentQueryBlock.RootNode.SourcePosition.Contains(qb.RootNode.SourcePosition))
+					.SelectMany(qb => Enumerable.Repeat((OracleReferenceContainer)qb, 1).Concat(qb.Columns));
+
 		private ToggleFullyQualifiedReferencesCommand(ActionExecutionContext executionContext)
 			: base(executionContext)
 		{
@@ -20,16 +26,15 @@ namespace SqlPad.Oracle.Commands
 
 		protected override CommandCanExecuteResult CanExecute()
 		{
-			return ExecutionContext.SelectionLength == 0 && CurrentNode != null &&
-			       CurrentQueryBlock != null &&
-			       CurrentNode.Id.In(Terminals.Select, Terminals.Update, Terminals.Insert, Terminals.Delete) &&
-			       GetMissingQualifications().Any();
+			return
+				ExecutionContext.SelectionLength == 0 && CurrentNode != null &&
+				CurrentNode.Id.In(Terminals.Select, Terminals.Update, Terminals.Insert, Terminals.Delete) &&
+				GetMissingQualifications().Any();
 		}
 
 		protected override void Execute()
 		{
-			ExecutionContext.SegmentsToReplace
-				.AddRange(GetMissingQualifications());
+			ExecutionContext.SegmentsToReplace.AddRange(GetMissingQualifications());
 		}
 
 		private IEnumerable<TextSegment> GetMissingQualifications()
@@ -39,7 +44,8 @@ namespace SqlPad.Oracle.Commands
 
 		private IEnumerable<TextSegment> GetMissingFunctionQualifications()
 		{
-			return CurrentQueryBlock.AllProgramReferences
+			return SourceReferenceContainers
+				.SelectMany(c => c.ProgramReferences)
 				.Where(f => f.OwnerNode == null && f.Metadata != null && !f.Metadata.IsBuiltIn)
 				.Select(f =>
 					new TextSegment
@@ -52,7 +58,8 @@ namespace SqlPad.Oracle.Commands
 
 		private IEnumerable<TextSegment> GetMissingObjectReferenceQualifications()
 		{
-			return CurrentQueryBlock.ObjectReferences
+			return SourceReferenceContainers
+				.SelectMany(c => c.ObjectReferences)
 				.Where(o => o.OwnerNode == null && o.Type == ReferenceType.SchemaObject && o.SchemaObject != null && !String.Equals(o.SchemaObject.FullyQualifiedName.Owner, OracleObjectIdentifier.SchemaPublic))
 				.Select(o =>
 					new TextSegment
@@ -65,9 +72,10 @@ namespace SqlPad.Oracle.Commands
 
 		private IEnumerable<TextSegment> GetMissingColumnReferenceObjectQualifications()
 		{
-			var columnReferences = CurrentQueryBlock.AllColumnReferences
+			var columnReferences = SourceReferenceContainers
+				.SelectMany(c => c.ColumnReferences)
 				.Where(c => c.ValidObjectReference != null && (!c.ReferencesAllColumns || c.ObjectNode != null));
-			
+
 			var qualificationBuilder = new StringBuilder();
 			foreach (var column in columnReferences)
 			{
@@ -76,8 +84,8 @@ namespace SqlPad.Oracle.Commands
 				var validObjectReference = column.ValidObjectReference;
 				var tableReference = validObjectReference as OracleDataObjectReference;
 				if (column.OwnerNode == null && validObjectReference.Type == ReferenceType.SchemaObject &&
-					(tableReference?.AliasNode == null) &&
-					validObjectReference.SchemaObject != null && !String.Equals(validObjectReference.SchemaObject.FullyQualifiedName.Owner, OracleObjectIdentifier.SchemaPublic))
+				    tableReference?.AliasNode == null &&
+				    validObjectReference.SchemaObject != null && !String.Equals(validObjectReference.SchemaObject.FullyQualifiedName.Owner, OracleObjectIdentifier.SchemaPublic))
 				{
 					qualificationBuilder.Append(validObjectReference.SchemaObject.Owner.ToSimpleIdentifier());
 					qualificationBuilder.Append(".");
@@ -91,7 +99,7 @@ namespace SqlPad.Oracle.Commands
 						qualificationBuilder.Append(validObjectReference.FullyQualifiedObjectName.Name);
 						qualificationBuilder.Append(".");
 					}
-					
+
 					indexStart = column.ColumnNode.SourcePosition.IndexStart;
 				}
 				else
@@ -100,7 +108,9 @@ namespace SqlPad.Oracle.Commands
 				}
 
 				if (qualificationBuilder.Length == 0)
+				{
 					continue;
+				}
 
 				yield return
 					new TextSegment

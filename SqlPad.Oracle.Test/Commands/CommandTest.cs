@@ -1141,8 +1141,22 @@ FROM
 			_editor.Text = @"SELECT DUMMY FROM (SELECT DUMMY FROM DUAL)";
 			_editor.SelectionLength = 0;
 
-			// TODO: Update when toogle off is implemented
-			CanExecuteCommand(OracleCommands.ToggleFullyQualifiedReferences).ShouldBe(false);
+			CanExecuteCommand(OracleCommands.ToggleFullyQualifiedReferences).ShouldBe(true);
+			ExecuteCommand(OracleCommands.ToggleFullyQualifiedReferences);
+
+			_editor.Text.ShouldBe("SELECT DUMMY FROM (SELECT DUAL.DUMMY FROM DUAL)");
+		}
+
+		[Test, Apartment(ApartmentState.STA)]
+		public void TestToggleFullyQualifiedReferencesWithinInlineView()
+		{
+			_editor.Text = @"SELECT DUMMY FROM (SELECT DUMMY FROM DUAL) T";
+			_editor.CaretOffset = 19;
+
+			CanExecuteCommand(OracleCommands.ToggleFullyQualifiedReferences).ShouldBe(true);
+			ExecuteCommand(OracleCommands.ToggleFullyQualifiedReferences);
+
+			_editor.Text.ShouldBe("SELECT DUMMY FROM (SELECT DUAL.DUMMY FROM DUAL) T");
 		}
 
 		[Test, Apartment(ApartmentState.STA)]

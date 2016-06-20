@@ -192,5 +192,17 @@ WHERE
 			segments[0].IndexStart.ShouldBe(5);
 			segments[1].IndexStart.ShouldBe(163);
 		}
+
+		[Test]
+		public void TestColumnUsedInAsTableCollectionExpression()
+		{
+			const string sqlText = "SELECT (SELECT NULL FROM TABLE(tbl)) FROM (SELECT COLLECT(dummy) tbl FROM dual)";
+
+			var multiNodeEditorData = GetMultiNodeEditorData(sqlText, 65);
+			multiNodeEditorData.CurrentNode.ShouldNotBe(null);
+			multiNodeEditorData.SynchronizedSegments.Count.ShouldBe(1);
+			var segments = multiNodeEditorData.SynchronizedSegments.ToArray();
+			segments[0].IndexStart.ShouldBe(31);
+		}
 	}
 }

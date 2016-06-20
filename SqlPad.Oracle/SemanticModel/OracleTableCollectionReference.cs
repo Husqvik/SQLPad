@@ -21,14 +21,29 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 		}
 
+		public override string Name => AliasNode?.Token.Value;
+
+		public override IEnumerable<OracleDataObjectReference> IncludeInnerReferences
+		{
+			get
+			{
+				yield return this;
+
+				var columnSourceReference = _rowSourceReference as OracleColumnReference;
+				var innerObjectReferences = columnSourceReference?.ValidObjectReference as OracleDataObjectReference;
+				if (innerObjectReferences != null)
+				{
+					yield return innerObjectReferences;
+				}
+			}
+		}
+
 		public OracleTableCollectionReference(OracleReferenceContainer referenceContainer) : base(ReferenceType.TableCollection)
 		{
 			referenceContainer.ObjectReferences.Add(this);
 			Container = referenceContainer;
 			Placement = StatementPlacement.TableReference;
 		}
-
-		public override string Name => AliasNode?.Token.Value;
 
 		protected override OracleObjectIdentifier BuildFullyQualifiedObjectName()
 		{
