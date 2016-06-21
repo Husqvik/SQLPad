@@ -1139,12 +1139,32 @@ FROM
 		public void TestToggleFullyQualifiedReferencesOnNonAliasedTableReference()
 		{
 			_editor.Text = @"SELECT DUMMY FROM (SELECT DUMMY FROM DUAL)";
-			_editor.SelectionLength = 0;
 
 			CanExecuteCommand(OracleCommands.ToggleFullyQualifiedReferences).ShouldBe(true);
 			ExecuteCommand(OracleCommands.ToggleFullyQualifiedReferences);
 
 			_editor.Text.ShouldBe("SELECT DUMMY FROM (SELECT DUAL.DUMMY FROM DUAL)");
+		}
+
+		[Test, Apartment(ApartmentState.STA)]
+		public void TestToggleFullyQualifiedReferencesAtSingleColumnReference()
+		{
+			_editor.Text = @"SELECT NAME, NAME FROM SELECTION";
+			_editor.CaretOffset = 7;
+
+			CanExecuteCommand(OracleCommands.ToggleFullyQualifiedReferences).ShouldBe(true);
+			ExecuteCommand(OracleCommands.ToggleFullyQualifiedReferences);
+
+			_editor.Text.ShouldBe("SELECT HUSQVIK.SELECTION.NAME, NAME FROM HUSQVIK.SELECTION");
+		}
+
+		[Test, Apartment(ApartmentState.STA)]
+		public void TestToggleFullyQualifiedReferencesAtSingleUnresolvedColumnReference()
+		{
+			_editor.Text = @"SELECT NAME FROM DUAL";
+			_editor.CaretOffset = 7;
+
+			CanExecuteCommand(OracleCommands.ToggleFullyQualifiedReferences).ShouldBe(false);
 		}
 
 		[Test, Apartment(ApartmentState.STA)]

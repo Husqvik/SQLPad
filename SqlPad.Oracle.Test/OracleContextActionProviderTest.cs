@@ -73,7 +73,7 @@ namespace SqlPad.Oracle.Test
 
 			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 49).Where(a => a.Name == AddAliasCommand.Title).ToArray();
 			actions.Length.ShouldBe(1);
-			actions[0].Name.ShouldBe("Add Alias");
+			actions[0].Name.ShouldBe(AddAliasCommand.Title);
 		}
 
 		[Test]
@@ -123,7 +123,7 @@ namespace SqlPad.Oracle.Test
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 41).SingleOrDefault(a => a.Name == UnnestInlineViewCommand.Title);
 			action.ShouldNotBe(null);
-			action.Name.ShouldBe("Unnest");
+			action.Name.ShouldBe(UnnestInlineViewCommand.Title);
 		}
 
 		[Test]
@@ -188,7 +188,7 @@ namespace SqlPad.Oracle.Test
 			const string query1 = "SELECT*FROM DUAL";
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 7).SingleOrDefault(a => a.Name == ExpandAsteriskCommand.Title);
 			action.ShouldNotBe(null);
-			action.Name.ShouldBe("Expand");
+			action.Name.ShouldBe(ExpandAsteriskCommand.Title);
 		}
 
 		[Test]
@@ -198,7 +198,7 @@ namespace SqlPad.Oracle.Test
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 0).SingleOrDefault(a => a.Name == ToggleFullyQualifiedReferencesCommand.Title);
 			action.ShouldNotBe(null);
-			action.Name.ShouldBe("Toggle fully qualified references");
+			action.Name.ShouldBe(ToggleFullyQualifiedReferencesCommand.Title);
 		}
 
 		[Test]
@@ -208,7 +208,7 @@ namespace SqlPad.Oracle.Test
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 7).SingleOrDefault(a => a.Name == AddMissingColumnCommand.Title);
 			action.ShouldNotBe(null);
-			action.Name.ShouldBe("Add missing column");
+			action.Name.ShouldBe(AddMissingColumnCommand.Title);
 		}
 
 		[Test]
@@ -279,9 +279,9 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query1 = @"INSERT INTO SELECTION SELECT * FROM SELECTION";
 
-			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 9).ToArray();
+			var actions = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 9).Where(a => a.Name == AddInsertIntoColumnListCommand.Title).ToArray();
 			actions.Length.ShouldBe(1);
-			actions[0].Name.ShouldBe("Add Column List");
+			actions[0].Name.ShouldBe(AddInsertIntoColumnListCommand.Title);
 		}
 
 		[Test]

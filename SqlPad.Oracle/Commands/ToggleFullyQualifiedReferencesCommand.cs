@@ -11,7 +11,9 @@ namespace SqlPad.Oracle.Commands
 {
 	internal class ToggleFullyQualifiedReferencesCommand : OracleCommandBase
 	{
-		public const string Title = "Toggle fully qualified references";
+		public const string Title = "Toggle fully qualified reference";
+
+		private static readonly TextSegment[] EmptySegments = new TextSegment[0];
 
 		private IEnumerable<OracleReferenceContainer> SourceReferenceContainers =>
 			CurrentQueryBlock == null
@@ -19,17 +21,24 @@ namespace SqlPad.Oracle.Commands
 				: SemanticModel.QueryBlocks.Where(qb => CurrentQueryBlock.RootNode.SourcePosition.Contains(qb.RootNode.SourcePosition))
 					.SelectMany(qb => Enumerable.Repeat((OracleReferenceContainer)qb, 1).Concat(qb.Columns));
 
+		private Lazy<OracleReference> SingleReference => new Lazy<OracleReference>(() => SemanticModel.GetReference<OracleReference>(CurrentNode));
+
 		private ToggleFullyQualifiedReferencesCommand(ActionExecutionContext executionContext)
 			: base(executionContext)
 		{
 		}
 
+		protected override Func<StatementGrammarNode, bool> CurrentNodeFilterFunction => n => !n.Id.In(Terminals.Dot, Terminals.Comma, Terminals.LeftParenthesis, Terminals.RightParenthesis);
+
 		protected override CommandCanExecuteResult CanExecute()
 		{
-			return
-				ExecutionContext.SelectionLength == 0 && CurrentNode != null &&
-				CurrentNode.Id.In(Terminals.Select, Terminals.Update, Terminals.Insert, Terminals.Delete) &&
-				GetMissingQualifications().Any();
+			if (ExecutionContext.SelectionLength > 0 || CurrentNode == null)
+			{
+				return false;
+			}
+
+			var isSupportedTerminal = CurrentNode.Id.In(Terminals.Select, Terminals.Update, Terminals.Insert, Terminals.Delete) || CurrentNode.Id.IsIdentifier();
+			return isSupportedTerminal && GetMissingQualifications().Any();
 		}
 
 		protected override void Execute()
@@ -44,38 +53,72 @@ namespace SqlPad.Oracle.Commands
 
 		private IEnumerable<TextSegment> GetMissingFunctionQualifications()
 		{
-			return SourceReferenceContainers
-				.SelectMany(c => c.ProgramReferences)
+			var programReference = SingleReference.Value as OracleProgramReference;
+			if (SingleReference.Value != null && programReference == null)
+			{
+				return EmptySegments;
+			}
+
+			var sourceProgramReferences = programReference == null
+				? SourceReferenceContainers.SelectMany(c => c.ProgramReferences)
+				: Enumerable.Repeat(programReference, 1);
+
+			var formatOption = OracleConfiguration.Configuration.Formatter.FormatOptions.Identifier;
+			return sourceProgramReferences
 				.Where(f => f.OwnerNode == null && f.Metadata != null && !f.Metadata.IsBuiltIn)
 				.Select(f =>
 					new TextSegment
 					{
 						IndextStart = (f.ObjectNode ?? f.ProgramIdentifierNode).SourcePosition.IndexStart,
 						Length = 0,
-						Text = $"{f.Metadata.Identifier.Owner.ToSimpleIdentifier()}."
+						Text = $"{OracleStatementFormatter.FormatTerminalValue(f.Metadata.Identifier.Owner.ToSimpleIdentifier(), formatOption)}."
 					});
 		}
 
 		private IEnumerable<TextSegment> GetMissingObjectReferenceQualifications()
 		{
-			return SourceReferenceContainers
-				.SelectMany(c => c.ObjectReferences)
+			var objectReference = SingleReference.Value as OracleObjectWithColumnsReference;
+			if (SingleReference.Value != null && objectReference == null)
+			{
+				var dataObjectReference = SingleReference.Value as OracleColumnReference;
+				if (dataObjectReference?.ValidObjectReference == null)
+				{
+					return EmptySegments;
+				}
+			}
+
+			var sourceObjectReferences = objectReference == null
+				? SourceReferenceContainers.SelectMany(c => c.ObjectReferences)
+				: Enumerable.Repeat(objectReference, 1);
+
+			var formatOption = OracleConfiguration.Configuration.Formatter.FormatOptions.Identifier;
+			return sourceObjectReferences
 				.Where(o => o.OwnerNode == null && o.Type == ReferenceType.SchemaObject && o.SchemaObject != null && !String.Equals(o.SchemaObject.FullyQualifiedName.Owner, OracleObjectIdentifier.SchemaPublic))
 				.Select(o =>
 					new TextSegment
 					{
 						IndextStart = o.ObjectNode.SourcePosition.IndexStart,
 						Length = 0,
-						Text = $"{o.SchemaObject.Owner.ToSimpleIdentifier()}."
+						Text = $"{OracleStatementFormatter.FormatTerminalValue(o.SchemaObject.Owner.ToSimpleIdentifier(), formatOption)}."
 					});
 		}
 
 		private IEnumerable<TextSegment> GetMissingColumnReferenceObjectQualifications()
 		{
-			var columnReferences = SourceReferenceContainers
-				.SelectMany(c => c.ColumnReferences)
+			var columnReference = SingleReference.Value as OracleColumnReference;
+			if (SingleReference.Value != null && columnReference?.ValidObjectReference == null)
+			{
+				yield break;
+			}
+
+			var sourceObjectReferences = columnReference == null
+				? SourceReferenceContainers.SelectMany(c => c.ColumnReferences)
+				: Enumerable.Repeat(columnReference, 1);
+
+			var columnReferences = sourceObjectReferences
 				.Where(c => c.ValidObjectReference != null && (!c.ReferencesAllColumns || c.ObjectNode != null));
 
+			var formatOption = OracleConfiguration.Configuration.Formatter.FormatOptions.Identifier;
 			var qualificationBuilder = new StringBuilder();
 			foreach (var column in columnReferences)
 			{
@@ -87,7 +130,7 @@ namespace SqlPad.Oracle.Commands
 				    tableReference?.AliasNode == null &&
 				    validObjectReference.SchemaObject != null && !String.Equals(validObjectReference.SchemaObject.FullyQualifiedName.Owner, OracleObjectIdentifier.SchemaPublic))
 				{
-					qualificationBuilder.Append(validObjectReference.SchemaObject.Owner.ToSimpleIdentifier());
+					qualificationBuilder.Append(OracleStatementFormatter.FormatTerminalValue(validObjectReference.SchemaObject.Owner.ToSimpleIdentifier(), formatOption));
 					qualificationBuilder.Append(".");
 				}
 
