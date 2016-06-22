@@ -12,7 +12,7 @@ namespace SqlPad
 		{
 			SqlPadTextBox.ConfigureCommands(this);
 
-			CommandBindings.Add(new CommandBinding(ClearPhraseCommand, (s, args) => Text = String.Empty, SqlPadTextBox.BuildCanExecuteIfWritableAndSelectionNotEmpty(this)));
+			CommandBindings.Add(new CommandBinding(ClearPhraseCommand, (s, args) => Text = String.Empty));
 		}
 	}
 }

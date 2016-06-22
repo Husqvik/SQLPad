@@ -14,14 +14,9 @@ namespace SqlPad
 
 		public static void ConfigureCommands(TextBox textBox)
 		{
-			var canExecuteRoutedEventHandler = BuildCanExecuteIfWritableAndSelectionNotEmpty(textBox);
+			var canExecuteRoutedEventHandler = (CanExecuteRoutedEventHandler)((s, args) => args.CanExecute = CanExecuteModifyCase(textBox));
 			textBox.CommandBindings.Add(new CommandBinding(MakeLowerCaseCommand, (s, args) => LowerCaseExecuted(textBox), canExecuteRoutedEventHandler));
 			textBox.CommandBindings.Add(new CommandBinding(MakeUpperCaseCommand, (s, args) => UpperCaseExecuted(textBox), canExecuteRoutedEventHandler));
-		}
-
-		public static CanExecuteRoutedEventHandler BuildCanExecuteIfWritableAndSelectionNotEmpty(TextBox textBox)
-		{
-			return (s, args) => args.CanExecute = CanExecuteModifyCase(textBox);
 		}
 
 		public SqlPadTextBox()
