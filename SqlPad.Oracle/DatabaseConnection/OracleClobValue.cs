@@ -572,7 +572,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override int GetHashCode()
 		{
-			return _value.GetHashCode();
+			return IsNull ? 0 : ((OracleTimeStamp)RawValue).BinData.GetContentHashCode();
 		}
 
 		internal static string FormatValue(OracleDateTime dateTime, int nanoseconds, int fractionPrecision)
@@ -887,23 +887,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override int GetHashCode()
 		{
-			if (IsNull)
-			{
-				return 0;
-			}
-
-			unchecked
-			{
-				var bytes = ((OracleDate)RawValue).BinData;
-
-				var hashCode = 0;
-				foreach (var b in bytes)
-				{
-					hashCode = (hashCode * 397) ^ b;
-				}
-
-				return hashCode;
-			}
+			return IsNull ? 0 : ((OracleDate)RawValue).BinData.GetContentHashCode();
 		}
 	}
 
@@ -968,7 +952,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override int GetHashCode()
 		{
-			return _value.GetHashCode();
+			return IsNull ? 0 : ((OracleTimeStampTZ)RawValue).BinData.GetContentHashCode();
 		}
 	}
 
@@ -1033,7 +1017,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override int GetHashCode()
 		{
-			return _value.GetHashCode();
+			return IsNull ? 0 : ((OracleTimeStampLTZ)RawValue).BinData.GetContentHashCode();
 		}
 	}
 

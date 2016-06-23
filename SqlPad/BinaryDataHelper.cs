@@ -10,14 +10,23 @@ namespace SqlPad
 	{
 		private const byte DefaultBytesPerLine = 16;
 
-		public static string FormatBinaryData(byte[] data, byte bytesPerLine = DefaultBytesPerLine)
-		{
-			return FormatBinaryDataInternal(data, CancellationToken.None, bytesPerLine);
-		}
-
 		public static Task<string> FormatBinaryDataAsync(byte[] data, CancellationToken cancellationToken, byte bytesPerLine = DefaultBytesPerLine)
 		{
 			return Task.Run(() => FormatBinaryDataInternal(data, cancellationToken, bytesPerLine), cancellationToken);
+		}
+
+		public static int GetContentHashCode(this byte[] bytes)
+		{
+			unchecked
+			{
+				var hashCode = 0;
+				foreach (var b in bytes)
+				{
+					hashCode = (hashCode * 397) ^ b;
+				}
+
+				return hashCode;
+			}
 		}
 
 		private static string FormatBinaryDataInternal(ICollection<byte> data, CancellationToken cancellationToken, byte bytesPerLine)

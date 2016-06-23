@@ -240,6 +240,18 @@ namespace SqlPad.Oracle.Test
 				aggregator.Mode.Value.ShouldBe(oneDay);
 				aggregator.Mode.Count.ShouldBe(2);
 			}
+
+			[Test]
+			public void TestDateMode()
+			{
+				var aggregator = new OracleValueAggregator();
+				var date = new OracleDateTime(new OracleDate(2016, 6, 22));
+				aggregator.AddValue(date);
+				aggregator.AddValue(date);
+
+				aggregator.Mode.Value.ShouldBe(date);
+				aggregator.Mode.Count.ShouldBe(2);
+			}
 		}
 	}
 }

@@ -22,20 +22,6 @@ namespace SqlPad.Oracle
 		private OracleDecimal _oracleNumberSum;
 		private OracleIntervalYM _oracleYearToMonthSum;
 		private OracleIntervalDS _oracleDayToSecondSum;
-		private OracleDecimal _oracleNumberMinimum;
-		private OracleDate _oracleDateMinimum;
-		private OracleTimeStamp _oracleTimeStampMinimum;
-		private OracleTimeStampLTZ _oracleTimeStampLocalTimezoneMinimum;
-		private OracleTimeStampTZ _oracleTimeStampTimezoneMinimum;
-		private OracleIntervalYM _oracleYearToMonthMinimum;
-		private OracleIntervalDS _oracleDayToSecondMinimum;
-		private OracleDecimal _oracleNumberMaximum;
-		private OracleDate _oracleDateMaximum;
-		private OracleIntervalYM _oracleYearToMonthMaximum;
-		private OracleIntervalDS _oracleDayToSecondMaximum;
-		private OracleTimeStamp _oracleTimeStampMaximum;
-		private OracleTimeStampLTZ _oracleTimeStampLocalTimezoneMaximum;
-		private OracleTimeStampTZ _oracleTimeStampTimezoneMaximum;
 
 		private IEnumerable<object> SourceValues =>
 			_typeValues
@@ -44,9 +30,9 @@ namespace SqlPad.Oracle
 
 		private IReadOnlyList<object> OrderedSourceValues => SourceValues.OrderBy(SelectComparable).ToArray();
 
-		public object Minimum => GetValue(_oracleNumberMinimum, _oracleDateMinimum, _oracleTimeStampMinimum, _oracleTimeStampTimezoneMinimum, _oracleTimeStampLocalTimezoneMinimum, _oracleYearToMonthMinimum, _oracleDayToSecondMinimum);
+		public object Minimum => OrderedSourceValues.FirstOrDefault();
 
-		public object Maximum => GetValue(_oracleNumberMaximum, _oracleDateMaximum, _oracleTimeStampMaximum, _oracleTimeStampTimezoneMaximum, _oracleTimeStampLocalTimezoneMaximum, _oracleYearToMonthMaximum, _oracleDayToSecondMaximum);
+		public object Maximum => OrderedSourceValues.LastOrDefault();
 
 		public object Average => GetValue(_oracleNumberSum / Count, OracleDate.Null, OracleTimeStamp.Null, OracleTimeStampTZ.Null, OracleTimeStampLTZ.Null, _oracleYearToMonthSum / (int)Count, _oracleDayToSecondSum / (int)Count);
 
@@ -164,105 +150,38 @@ namespace SqlPad.Oracle
 			{
 				valueType = typeof(OracleDecimal);
 				var typedValue = (OracleDecimal)oracleNumber.RawValue;
-				_oracleNumberMinimum = OracleDecimal.Min(_oracleNumberMinimum, typedValue);
-				_oracleNumberMaximum = OracleDecimal.Max(_oracleNumberMaximum, typedValue);
 				_oracleNumberSum += typedValue;
 			}
 			else if (oracleDate != null)
 			{
 				valueType = typeof(OracleDate);
-				var typedValue = (OracleDate)oracleDate.RawValue;
-				if (OracleDate.LessThan(typedValue, _oracleDateMinimum))
-				{
-					_oracleDateMinimum = typedValue;
-				}
-
-				if (OracleDate.GreaterThan(typedValue, _oracleDateMaximum))
-				{
-					_oracleDateMaximum = typedValue;
-				}
-
 				AggregatedValuesAvailable = false;
 			}
 			else if (oracleTimestamp != null)
 			{
 				valueType = typeof(OracleTimeStamp);
-				var typedValue = (OracleTimeStamp)oracleTimestamp.RawValue;
-				if (OracleTimeStamp.LessThan(typedValue, _oracleTimeStampMinimum))
-				{
-					_oracleTimeStampMinimum = typedValue;
-				}
-
-				if (OracleTimeStamp.GreaterThan(typedValue, _oracleTimeStampMaximum))
-				{
-					_oracleTimeStampMaximum = typedValue;
-				}
-
 				AggregatedValuesAvailable = false;
 			}
 			else if (oracleTimestampTimezone != null)
 			{
 				valueType = typeof(OracleTimeStampTZ);
-				var typedValue = (OracleTimeStampTZ)oracleTimestampTimezone.RawValue;
-				if (OracleTimeStampTZ.LessThan(typedValue, _oracleTimeStampTimezoneMinimum))
-				{
-					_oracleTimeStampTimezoneMinimum = typedValue;
-				}
-
-				if (OracleTimeStampTZ.GreaterThan(typedValue, _oracleTimeStampTimezoneMaximum))
-				{
-					_oracleTimeStampTimezoneMaximum = typedValue;
-				}
-
 				AggregatedValuesAvailable = false;
 			}
 			else if (oracleTimestampLocalTimezone != null)
 			{
 				valueType = typeof(OracleTimeStampLTZ);
-				var typedValue = (OracleTimeStampLTZ)oracleTimestampLocalTimezone.RawValue;
-				if (OracleTimeStampLTZ.LessThan(typedValue, _oracleTimeStampLocalTimezoneMinimum))
-				{
-					_oracleTimeStampLocalTimezoneMinimum = typedValue;
-				}
-
-				if (OracleTimeStampLTZ.GreaterThan(typedValue, _oracleTimeStampLocalTimezoneMaximum))
-				{
-					_oracleTimeStampLocalTimezoneMaximum = typedValue;
-				}
-
 				AggregatedValuesAvailable = false;
 			}
 			else if (oracleIntervalYearToMonth != null)
 			{
 				valueType = typeof(OracleIntervalYM);
 				var typedValue = (OracleIntervalYM)oracleIntervalYearToMonth.RawValue;
-				if (OracleIntervalYM.LessThan(typedValue, _oracleYearToMonthMinimum))
-				{
-					_oracleYearToMonthMinimum = typedValue;
-				}
-
-				if (OracleIntervalYM.GreaterThan(typedValue, _oracleYearToMonthMaximum))
-				{
-					_oracleYearToMonthMaximum = typedValue;
-				}
-
 				_oracleYearToMonthSum += typedValue;
 			}
 			else if (oracleIntervalDayToSecond != null)
 			{
 				valueType = typeof(OracleIntervalDS);
 				var typedValue = (OracleIntervalDS)oracleIntervalDayToSecond.RawValue;
-
-				if (OracleIntervalDS.LessThan(typedValue, _oracleDayToSecondMinimum))
-				{
-					_oracleDayToSecondMinimum = typedValue;
-				}
-
-				if (OracleIntervalDS.GreaterThan(typedValue, _oracleDayToSecondMaximum))
-				{
-					_oracleDayToSecondMaximum = typedValue;
-				}
-
 				_oracleDayToSecondSum += typedValue;
 			}
 			else
@@ -351,20 +270,6 @@ namespace SqlPad.Oracle
 			_oracleNumberSum = OracleDecimal.Zero;
 			_oracleYearToMonthSum = OracleIntervalYM.Zero;
 			_oracleDayToSecondSum = OracleIntervalDS.Zero;
-			_oracleNumberMinimum = OracleDecimal.MaxValue;
-			_oracleDateMinimum = OracleDate.MaxValue;
-			_oracleTimeStampMinimum = OracleTimeStamp.MaxValue;
-			_oracleTimeStampTimezoneMinimum = OracleTimeStampTZ.MaxValue;
-			_oracleTimeStampLocalTimezoneMinimum = OracleTimeStampLTZ.MaxValue;
-			_oracleYearToMonthMinimum = OracleIntervalYM.MaxValue;
-			_oracleDayToSecondMinimum = OracleIntervalDS.MaxValue;
-			_oracleNumberMaximum = OracleDecimal.MinValue;
-			_oracleDateMaximum = OracleDate.MinValue;
-			_oracleTimeStampMaximum = OracleTimeStamp.MinValue;
-			_oracleTimeStampTimezoneMaximum = OracleTimeStampTZ.MinValue;
-			_oracleTimeStampLocalTimezoneMaximum = OracleTimeStampLTZ.MinValue;
-			_oracleYearToMonthMaximum = OracleIntervalYM.MinValue;
-			_oracleDayToSecondMaximum = OracleIntervalDS.MinValue;
 			_typeValues.Clear();
 			_isIndeterminate = true;
 		}
