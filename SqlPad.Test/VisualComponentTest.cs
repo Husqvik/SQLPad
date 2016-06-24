@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
@@ -425,7 +426,12 @@ WHERE
 			var tempFileName = Path.GetTempFileName();
 			var connectionConfiguration = ConfigurationProvider.GetConnectionConfiguration(ConfigurationProvider.ConnectionStrings[0].Name);
 			CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-			await dataExporter.ExportToFileAsync(tempFileName, resultViewer, connectionConfiguration.InfrastructureFactory.DataExportConverter, CancellationToken.None);
+			using (var exportContext = await dataExporter.StartExportAsync(ExportOptions.ToFile(tempFileName, resultViewer.Title), DataExportHelper.GetOrderedExportableColumns(resultViewer.ResultGrid), connectionConfiguration.InfrastructureFactory.DataExportConverter, CancellationToken.None))
+			{
+				await exportContext.AppendRowsAsync(resultViewer.ResultGrid.Items.Cast<object[]>());
+				await exportContext.FinalizeAsync();
+			}
+
 			return tempFileName;
 		}
 

@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -23,31 +22,11 @@ namespace SqlPad.DataExport
 
 		public bool HasAppendSupport { get; } = false;
 
-		public Task ExportToClipboardAsync(DataGridResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress = null)
+		public async Task<IDataExportContext> StartExportAsync(ExportOptions options, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
 		{
-			return ExportToFileAsync(null, resultViewer, dataExportConverter, cancellationToken, reportProgress);
-		}
-
-		public async Task<IDataExportContext> StartExportAsync(string fileName, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
-		{
-			var exportContext = new CsvDataExportContext(File.CreateText(fileName), columns, Separator, null, null, cancellationToken);
+			var exportContext = new CsvDataExportContext(options, columns, Separator, cancellationToken);
 			await exportContext.InitializeAsync();
 			return exportContext;
-		}
-
-		public Task ExportToFileAsync(string fileName, DataGridResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress = null)
-		{
-			var orderedColumns = DataExportHelper.GetOrderedExportableColumns(resultViewer.ResultGrid);
-
-			var rows = (ICollection)resultViewer.ResultGrid.Items;
-
-			return DataExportHelper.RunExportActionAsync(fileName, w => ExportInternal(orderedColumns, rows, w, reportProgress, cancellationToken));
-		}
-
-		private Task ExportInternal(IReadOnlyList<ColumnHeader> orderedColumns, ICollection rows, TextWriter writer, IProgress<int> reportProgress, CancellationToken cancellationToken)
-		{
-			var exportContext = new CsvDataExportContext(writer, orderedColumns, Separator, rows.Count, reportProgress, cancellationToken);
-			return DataExportHelper.ExportRowsUsingContext(rows, exportContext);
 		}
 	}
 
@@ -58,25 +37,33 @@ namespace SqlPad.DataExport
 		private const string DoubleQuotes = "\"\"";
 
 		private readonly IReadOnlyList<ColumnHeader> _columns;
-		private readonly TextWriter _writer;
 		private readonly string _separator;
 
-		public CsvDataExportContext(TextWriter writer, IReadOnlyList<ColumnHeader> columns, string separator, int? totalRows, IProgress<int> reportProgress, CancellationToken cancellationToken)
-			: base(totalRows, reportProgress, cancellationToken)
+		private TextWriter _writer;
+
+		public CsvDataExportContext(ExportOptions exportOptions, IReadOnlyList<ColumnHeader> columns, string separator, CancellationToken cancellationToken)
+			: base(exportOptions, cancellationToken)
 		{
-			_writer = writer;
 			_columns = columns;
 			_separator = separator;
 		}
 
 		protected override void InitializeExport()
 		{
+			_writer = DataExportHelper.InitializeWriter(ExportOptions.FileName, ClipboardData);
+
 			WriteHeader();
+		}
+
+		protected override Task FinalizeExport()
+		{
+			return _writer.FlushAsync();
 		}
 
 		protected override void Dispose(bool disposing)
 		{
-			_writer.Dispose();
+			_writer?.Dispose();
+			base.Dispose(disposing);
 		}
 
 		private void WriteHeader()

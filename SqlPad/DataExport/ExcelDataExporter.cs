@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -20,48 +19,25 @@ namespace SqlPad.DataExport
 
 		public bool HasAppendSupport { get; } = true;
 
-		public Task ExportToClipboardAsync(DataGridResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress = null)
+		public async Task<IDataExportContext> StartExportAsync(ExportOptions options, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
 		{
-			return ExportToFileAsync(null, resultViewer, dataExportConverter, cancellationToken, reportProgress);
-		}
-
-		public async Task<IDataExportContext> StartExportAsync(string fileName, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
-		{
-			var exportContext = new ExcelDataExportContext(fileName, "tmp", columns, null, null, cancellationToken);
+			var exportContext = new ExcelDataExportContext(options, columns, cancellationToken);
 			await exportContext.InitializeAsync();
 			return exportContext;
-		}
-
-		public Task ExportToFileAsync(string fileName, DataGridResultViewer resultViewer, IDataExportConverter dataExportConverter, CancellationToken cancellationToken, IProgress<int> reportProgress = null)
-		{
-			var orderedColumns = DataExportHelper.GetOrderedExportableColumns(resultViewer.ResultGrid);
-			var rows = (ICollection)resultViewer.ResultGrid.Items;
-			var worksheetName = resultViewer.Title;
-			return Task.Run(() => ExportInternal(fileName, worksheetName, orderedColumns, rows, reportProgress, cancellationToken), cancellationToken);
-		}
-
-		private static Task ExportInternal(string fileName, string worksheetName, IReadOnlyList<ColumnHeader> orderedColumns, ICollection rows, IProgress<int> reportProgress, CancellationToken cancellationToken)
-		{
-			var exportContext = new ExcelDataExportContext(fileName, worksheetName, orderedColumns, rows.Count, reportProgress, cancellationToken);
-			return DataExportHelper.ExportRowsUsingContext(rows, exportContext);
 		}
 	}
 
 	internal class ExcelDataExportContext : DataExportContextBase
 	{
-		private readonly string _fileName;
-		private readonly string _worksheetName;
 		private readonly IReadOnlyList<ColumnHeader> _columns;
 
 		private ExcelPackage _package;
 		private ExcelWorksheet _worksheet;
 		private int _currentRowIndex;
 
-		public ExcelDataExportContext(string fileName, string worksheetName, IReadOnlyList<ColumnHeader> columns, int? totalRows, IProgress<int> reportProgress, CancellationToken cancellationToken)
-			: base(totalRows, reportProgress, cancellationToken)
+		public ExcelDataExportContext(ExportOptions exportOptions, IReadOnlyList<ColumnHeader> columns, CancellationToken cancellationToken)
+			: base(exportOptions, cancellationToken)
 		{
-			_fileName = fileName;
-			_worksheetName = worksheetName;
 			_columns = columns;
 		}
 
@@ -69,13 +45,21 @@ namespace SqlPad.DataExport
 		{
 			_currentRowIndex = 1;
 
-			_package = new ExcelPackage(new FileInfo(_fileName));
-			if (_package.Workbook.Worksheets[_worksheetName] != null)
+			if (ExportOptions.IntoClipboard)
 			{
-				_package.Workbook.Worksheets.Delete(_worksheetName);
+				throw new NotSupportedException("Excel export does not support clipboard. ");
 			}
 
-			_worksheet = _package.Workbook.Worksheets.Add(_worksheetName);
+			_package = new ExcelPackage(new FileInfo(ExportOptions.FileName));
+
+			var worksheetName = ExportOptions.ExportName;
+
+			if (_package.Workbook.Worksheets[worksheetName] != null)
+			{
+				_package.Workbook.Worksheets.Delete(worksheetName);
+			}
+
+			_worksheet = _package.Workbook.Worksheets.Add(worksheetName);
 
 			for (var i = 0; i < _columns.Count; i++)
 			{

@@ -1,28 +1,46 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace SqlPad.DataExport
 {
 	internal abstract class DataExportContextBase : IDataExportContext
 	{
-		private readonly long? _totalRows;
-		private readonly IProgress<int> _reportProgress;
 		private readonly CancellationToken _cancellationToken;
 
 		private bool _isInitialized;
 		private bool _isFinalized;
+		private long _totalRows;
+		private IProgress<int> _progress;
+
+		protected readonly MemoryStream ClipboardData;
 
 		private string TypeName => GetType().Name;
 
+		protected ExportOptions ExportOptions { get; }
+
 		public long CurrentRowIndex { get; private set; }
 
-		protected DataExportContextBase(long? totalRows, IProgress<int> reportProgress, CancellationToken cancellationToken)
+		protected DataExportContextBase(ExportOptions exportOptions, CancellationToken cancellationToken)
 		{
-			_totalRows = totalRows;
-			_reportProgress = reportProgress;
+			ExportOptions = exportOptions;
+
 			_cancellationToken = cancellationToken;
+
+			if (ExportOptions.IntoClipboard)
+			{
+				ClipboardData = new MemoryStream();
+			}
+		}
+
+		public void SetProgress(long totalRowCount, IProgress<int> progress)
+		{
+			_totalRows = totalRowCount;
+			_progress = progress;
 		}
 
 		public async Task InitializeAsync()
@@ -36,6 +54,8 @@ namespace SqlPad.DataExport
 			{
 				throw new InvalidOperationException($"{TypeName} has been already initialized. ");
 			}
+
+			_progress?.Report(0);
 
 			InitializeExport();
 
@@ -51,13 +71,33 @@ namespace SqlPad.DataExport
 
 		protected virtual void Dispose(bool disposing)
 		{
+			ClipboardData?.Dispose();
 		}
 
 		public async Task FinalizeAsync()
 		{
 			await FinalizeExport();
 
+			_progress?.Report(100);
+
 			_isFinalized = true;
+
+			SetToClipboard();
+		}
+
+		private void SetToClipboard()
+		{
+			if (!ExportOptions.IntoClipboard)
+			{
+				return;
+			}
+
+			ClipboardData.Seek(0, SeekOrigin.Begin);
+
+			using (var reader = new StreamReader(ClipboardData, Encoding.UTF8, true, 32768, true))
+			{
+				Clipboard.SetText(reader.ReadToEnd());
+			}
 		}
 
 		public async Task AppendRowsAsync(IEnumerable<object[]> rows)
@@ -72,12 +112,10 @@ namespace SqlPad.DataExport
 				throw new InvalidOperationException($"{TypeName} has been completed. ");
 			}
 
-			await Task.Run(() => AppenRowsInternal(rows), _cancellationToken);
-
-			_reportProgress?.Report(_totalRows.HasValue ? 100 : (int)CurrentRowIndex);
+			await Task.Run(() => AppendRowsInternal(rows), _cancellationToken);
 		}
 
-		private void AppenRowsInternal(IEnumerable<object[]> rows)
+		private void AppendRowsInternal(IEnumerable<object[]> rows)
 		{
 			foreach (var rowValues in rows)
 			{
@@ -85,13 +123,13 @@ namespace SqlPad.DataExport
 
 				ExportRow(rowValues);
 
-				if (_reportProgress != null)
+				if (_progress != null)
 				{
-					var progress = _totalRows.HasValue
-						? (int)Math.Round(CurrentRowIndex * 100f / _totalRows.Value)
-						: CurrentRowIndex;
+					var progress = _totalRows > 0
+						? (int)Math.Round(CurrentRowIndex * 100f / _totalRows)
+						: 100;
 
-					_reportProgress.Report((int)progress);
+					_progress.Report(progress);
 				}
 
 				CurrentRowIndex++;

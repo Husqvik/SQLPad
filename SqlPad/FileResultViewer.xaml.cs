@@ -176,7 +176,9 @@ namespace SqlPad
 				_exportClockTimer.Tag = exportResultInfo;
 
 				var exportFileName = Path.Combine(OutputPath, $@"{FileName}_{exportResultInfo.CommandNumber}_{exportResultInfo.ResultNumber}_{DateTime.Now.Ticks}.{DataExporter.FileExtension}");
-				using (var exportContext = await DataExporter.StartExportAsync(exportFileName, exportResultInfo.ColumnHeaders, _outputViewer.DocumentPage.InfrastructureFactory.DataExportConverter, cancellationToken))
+				var exportOptions = ExportOptions.ToFile(exportFileName, exportResultInfo.ResultSetName);
+
+				using (var exportContext = await DataExporter.StartExportAsync(exportOptions, exportResultInfo.ColumnHeaders, _outputViewer.DocumentPage.InfrastructureFactory.DataExportConverter, cancellationToken))
 				{
 					exportResultInfo.FileName = exportFileName;
 

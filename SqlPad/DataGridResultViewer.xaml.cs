@@ -14,7 +14,6 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Threading;
 using Microsoft.Win32;
 using SqlPad.DataExport;
@@ -510,23 +509,38 @@ namespace SqlPad
 		private async void ExportDataFileHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			var dataExporter = (IDataExporter)args.Parameter;
-			var dialog = new SaveFileDialog { Filter = dataExporter.FileNameFilter, OverwritePrompt = !dataExporter.HasAppendSupport };
+			var dialog =
+				new SaveFileDialog
+				{
+					Filter = dataExporter.FileNameFilter,
+					OverwritePrompt = !dataExporter.HasAppendSupport
+				};
+
 			if (dialog.ShowDialog() != true)
 			{
 				return;
 			}
 
-			await ExportData((token, progress) => dataExporter.ExportToFileAsync(dialog.FileName, this, _outputViewer.DocumentPage.InfrastructureFactory.DataExportConverter, token, progress));
+			await ExportData(dataExporter, ExportOptions.ToFile(dialog.FileName, Title));
 		}
 
-		private static async Task ExportData(Func<CancellationToken, IProgress<int>, Task> getExportTaskFunction)
+		private async Task ExportData(IDataExporter dataExporter, ExportOptions exportOptions)
 		{
 			using (var cancellationTokenSource = new CancellationTokenSource())
 			{
 				var operationMonitor = new WindowOperationMonitor(cancellationTokenSource) { IsIndeterminate = false };
 				operationMonitor.Show();
 
-				var exception = await App.SafeActionAsync(() => getExportTaskFunction(cancellationTokenSource.Token, operationMonitor));
+				var exception = await App.SafeActionAsync(
+					async delegate
+					{
+						using (var exportContext = await dataExporter.StartExportAsync(exportOptions, DataExportHelper.GetOrderedExportableColumns(ResultGrid), _outputViewer.DocumentPage.InfrastructureFactory.DataExportConverter, cancellationTokenSource.Token))
+						{
+							exportContext.SetProgress(_resultRows.Count, operationMonitor);
+							await exportContext.AppendRowsAsync(_resultRows);
+							await exportContext.FinalizeAsync();
+						}
+					});
 
 				operationMonitor.Close();
 
@@ -541,7 +555,7 @@ namespace SqlPad
 		private async void ExportDataClipboardHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			var dataExporter = (IDataExporter)args.Parameter;
-			await ExportData((token, progress) => dataExporter.ExportToClipboardAsync(this, _outputViewer.DocumentPage.InfrastructureFactory.DataExportConverter, token, progress));
+			await ExportData(dataExporter, ExportOptions.ToClipboard);
 		}
 
 		private async void ResultGridScrollChangedHandler(object sender, ScrollChangedEventArgs args)
