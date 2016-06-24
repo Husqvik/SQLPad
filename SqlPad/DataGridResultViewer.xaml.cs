@@ -487,7 +487,7 @@ namespace SqlPad
 
 			childRecordDataGrid.AddHandler(VirtualizingStackPanel.CleanUpVirtualizedItemEvent, (CleanUpVirtualizedItemEventHandler)CleanUpVirtualizedItemHandler);
 			childRecordDataGrid.BeginningEdit += App.DataGridBeginningEditCancelTextInputHandlerImplementation;
-			childRecordDataGrid.MouseDoubleClick += ResultGridMouseDoubleClickHandler;
+			childRecordDataGrid.RowStyle = (Style)Resources["DataGridRowStyle"];
 
 			var columnHeaders = executionResult.ResultInfoColumnHeaders.Values.Last();
 			DataGridHelper.InitializeDataGridColumns(childRecordDataGrid, columnHeaders, _outputViewer.StatementValidator, _outputViewer.ConnectionAdapter);
@@ -503,13 +503,8 @@ namespace SqlPad
 
 		private void ResultGridMouseDoubleClickHandler(object sender, MouseButtonEventArgs args)
 		{
-			var senderDataGrid = (DataGrid)sender;
-			var visual = args.OriginalSource as Visual;
-			var originalDataGrid = visual?.FindParentVisual<DataGrid>();
-			if (Equals(originalDataGrid, senderDataGrid))
-			{
-				DataGridHelper.ShowLargeValueEditor(senderDataGrid);
-			}
+			var dataGrid = ((DataGridRow)sender).FindParentVisual<DataGrid>();
+			DataGridHelper.ShowLargeValueEditor(dataGrid);
 		}
 
 		private async void ExportDataFileHandler(object sender, ExecutedRoutedEventArgs args)

@@ -67,8 +67,13 @@
 		          BeginningEdit="DataGridBeginningEditCancelTextInputHandler"
 		          ContextMenuOpening="SessionGridContextMenuOpeningHandler"
 		          SelectionChanged="SessionDataGridSelectionChangedHandler"
-		          Sorting="SessionDataGridSortingHandler"
-		          MouseDoubleClick="SessionDataGridMouseDoubleClickHandler">
+		          Sorting="SessionDataGridSortingHandler">
+			<DataGrid.RowStyle>
+				<Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource DefaultDataGridRowHeight}">
+					<EventSetter Event="MouseDoubleClick" Handler="SessionDataGridMouseDoubleClickHandler"/>
+				</Style>
+			</DataGrid.RowStyle>
+
 			<DataGrid.ContextMenu>
 				<ContextMenu x:Name="SessionGridContextMenu" />
 			</DataGrid.ContextMenu>

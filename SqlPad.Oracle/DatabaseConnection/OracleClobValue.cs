@@ -818,7 +818,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 	public class OracleDateTime : IValue
 	{
-		public const string IsoDateDotNetFormatMask = "yyyy-MM-dd HH:mm:ss";
+		public const string IsoDateDotNetFormatMask = "yyyy-MM-dd";
+		public const string IsoDateTimeDotNetFormatMask = "yyyy-MM-dd HH:mm:ss";
 
 		public DateTime Value { get; }
 
@@ -826,9 +827,15 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public string ToSqlLiteral()
 		{
-			return IsNull
-				? TerminalValues.Null
-				: $"TO_DATE('{(IsBeforeCrist ? "-" : null)}{Value.ToString(IsoDateDotNetFormatMask)}', 'SYYYY-MM-DD HH24:MI:SS')";
+			if (IsNull)
+			{
+				return TerminalValues.Null;
+			}
+
+			var beforeChristPrefix = IsBeforeCrist ? "-" : null;
+			return Value.Hour == 0 && Value.Minute == 0 && Value.Second == 0
+				? $"DATE'{beforeChristPrefix}{Value.ToString(IsoDateDotNetFormatMask)}'"
+				: $"TO_DATE('{beforeChristPrefix}{Value.ToString(IsoDateTimeDotNetFormatMask)}', 'SYYYY-MM-DD HH24:MI:SS')";
 		}
 
 		public string ToXml()

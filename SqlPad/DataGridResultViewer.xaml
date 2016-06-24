@@ -36,6 +36,10 @@
 		<RoutedCommand x:Key="RefreshCommand" />
 
 		<RoutedCommand x:Key="CloseSearchBar" />
+
+		<Style x:Key="DataGridRowStyle" TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource DefaultDataGridRowHeight}">
+			<EventSetter Event="MouseDoubleClick" Handler="ResultGridMouseDoubleClickHandler" />
+		</Style>
 	</UserControl.Resources>
 
 	<UserControl.InputBindings>
@@ -166,8 +170,8 @@
 		          ScrollViewer.ScrollChanged="ResultGridScrollChangedHandler"
 		          ScrollViewer.IsDeferredScrollingEnabled="True"
 		          VirtualizingStackPanel.CleanUpVirtualizedItem="CleanUpVirtualizedItemHandler"
-		          MouseDoubleClick="ResultGridMouseDoubleClickHandler"
-		          DataGridColumnHeader.Click="ColumnHeaderMouseClickHandler">
+		          DataGridColumnHeader.Click="ColumnHeaderMouseClickHandler"
+		          RowStyle="{StaticResource DataGridRowStyle}">
 
 			<DataGrid.CommandBindings>
 				<CommandBinding Command="{StaticResource ExportToCsvFileCommand}" Executed="ExportDataFileHandler"

@@ -253,7 +253,7 @@ WHERE
 			var executionModel =
 				new StatementExecutionModel
 				{
-					StatementText = "SELECT TO_BLOB(RAWTOHEX('BLOB')), TO_CLOB('" + clobParameter + "'), TO_NCLOB('NCLOB DATA'), DATA_DEFAULT, TIMESTAMP'2014-11-01 14:16:32.123456789 CET' AT TIME ZONE '02:00', TIMESTAMP'2014-11-01 14:16:32.123456789', 0.1234567890123456789012345678901234567891, XMLTYPE('<root/>'), 1.23456789012345678901234567890123456789E-125, DATE'-4712-01-01' FROM ALL_TAB_COLS WHERE OWNER = 'SYS' AND TABLE_NAME = 'DUAL'",
+					StatementText = "SELECT TO_BLOB(RAWTOHEX('BLOB')), TO_CLOB('" + clobParameter + "'), TO_NCLOB('NCLOB DATA'), DATA_DEFAULT, TIMESTAMP'2014-11-01 14:16:32.123456789 CET' AT TIME ZONE '02:00', TIMESTAMP'2014-11-01 14:16:32.123456789', 0.1234567890123456789012345678901234567891, XMLTYPE('<root/>'), 1.23456789012345678901234567890123456789E-125, DATE'-4712-01-01', TO_DATE('2016-06-24 9:35:16', 'SYYYY-MM-DD HH24:MI:SS') FROM ALL_TAB_COLS WHERE OWNER = 'SYS' AND TABLE_NAME = 'DUAL'",
 					BindVariables = new BindVariableModel[0]
 				};
 
@@ -270,7 +270,7 @@ WHERE
 				var resultInfo = result.ResultInfoColumnHeaders.Keys.First();
 
 				var columnHeaders = result.ResultInfoColumnHeaders[resultInfo];
-				columnHeaders.Count.ShouldBe(10);
+				columnHeaders.Count.ShouldBe(11);
 				columnHeaders[0].DatabaseDataType.ShouldBe("Blob");
 				columnHeaders[1].DatabaseDataType.ShouldBe("Clob");
 				columnHeaders[2].DatabaseDataType.ShouldBe("NClob");
@@ -281,6 +281,7 @@ WHERE
 				columnHeaders[7].DatabaseDataType.ShouldBe("XmlType");
 				columnHeaders[8].DatabaseDataType.ShouldBe("Decimal");
 				columnHeaders[9].DatabaseDataType.ShouldBe("Date");
+				columnHeaders[10].DatabaseDataType.ShouldBe("Date");
 
 				var resultSet = await connectionAdapter.FetchRecordsAsync(resultInfo, Int32.MaxValue, CancellationToken.None);
 
@@ -341,11 +342,13 @@ WHERE
 				numberValue.ToString().ShouldBe(expectedValue);
 				numberValue.ToSqlLiteral().ShouldBe("1.23456789012345678901234567890123456789E-125");
 				firstRow[9].ShouldBeAssignableTo<OracleDateTime>();
-				var dateValue = (OracleDateTime)firstRow[9];
-				dateValue.ToString().ShouldBe("BC 01/01/4712 00:00:00");
-				dateValue.ToSqlLiteral().ShouldBe("TO_DATE('-4712-01-01 00:00:00', 'SYYYY-MM-DD HH24:MI:SS')");
-				dateValue.ToXml().ShouldBe("4712-01-01T00:00:00");
-				dateValue.ToJson().ShouldBe("\"4712-01-01T00:00:00\"");
+				var dateValue1 = (OracleDateTime)firstRow[9];
+				dateValue1.ToString().ShouldBe("BC 01/01/4712 00:00:00");
+				dateValue1.ToSqlLiteral().ShouldBe("DATE'-4712-01-01'");
+				dateValue1.ToXml().ShouldBe("4712-01-01T00:00:00");
+				dateValue1.ToJson().ShouldBe("\"4712-01-01T00:00:00\"");
+				var dateValue2 = (OracleDateTime)firstRow[10];
+				dateValue2.ToSqlLiteral().ShouldBe("TO_DATE('2016-06-24 09:35:16', 'SYYYY-MM-DD HH24:MI:SS')");
 			}
 		}
 

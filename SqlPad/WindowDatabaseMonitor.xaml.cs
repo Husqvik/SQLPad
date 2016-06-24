@@ -257,25 +257,25 @@ namespace SqlPad
 			return true;
 		}
 
-		private void SessionDataGridSortingHandler(object sender, DataGridSortingEventArgs e)
+		private void SessionDataGridSortingHandler(object sender, DataGridSortingEventArgs args)
 		{
-			var sortDirection = e.Column.SortDirection == ListSortDirection.Ascending
+			var sortDirection = args.Column.SortDirection == ListSortDirection.Ascending
 				? ListSortDirection.Descending
 				: ListSortDirection.Ascending;
 
 			var providerConfiguration = WorkDocumentCollection.GetProviderConfiguration(CurrentConnection.ProviderName);
-			providerConfiguration.DatabaseMonitorConfiguration.SortMemberPath = e.Column.SortMemberPath;
+			providerConfiguration.DatabaseMonitorConfiguration.SortMemberPath = args.Column.SortMemberPath;
 			providerConfiguration.DatabaseMonitorConfiguration.SortColumnOrder = sortDirection;
 		}
 
-		private void SessionDataGridMouseDoubleClickHandler(object sender, MouseButtonEventArgs e)
+		private void SessionDataGridMouseDoubleClickHandler(object sender, MouseButtonEventArgs args)
 		{
 			DataGridHelper.ShowLargeValueEditor(SessionDataGrid, r => ((DatabaseSession)r)?.Values);
 		}
 
-		private void WindowClosingHandler(object sender, CancelEventArgs e)
+		private void WindowClosingHandler(object sender, CancelEventArgs args)
 		{
-			e.Cancel = true;
+			args.Cancel = true;
 			Hide();
 
 			StoreWindowConfiguration();
@@ -294,35 +294,35 @@ namespace SqlPad
 			WorkDocumentCollection.StoreWindowProperties(this, _customProperties);
 		}
 
-		private void RefreshExecutedHandler(object sender, ExecutedRoutedEventArgs e)
+		private void RefreshExecutedHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			Refresh();
 		}
 
-		private void RefreshCanExecuteHandler(object sender, CanExecuteRoutedEventArgs e)
+		private void RefreshCanExecuteHandler(object sender, CanExecuteRoutedEventArgs args)
 		{
 			lock (LockObject)
 			{
-				e.CanExecute = !_isBusy;
+				args.CanExecute = !_isBusy;
 			}
 		}
 
-		private void DatabaseSessionFilterHandler(object sender, FilterEventArgs e)
+		private void DatabaseSessionFilterHandler(object sender, FilterEventArgs args)
 		{
-			var session = (DatabaseSession)e.Item;
+			var session = (DatabaseSession)args.Item;
 			var filterSystemSession = !UserSessionOnly || session.Type == SessionType.User;
 			var filterInactiveSession = !ActiveSessionOnly || session.IsActive;
 			var filterChildSession = !MasterSessionOnly || session.Owner == null;
-			e.Accepted = filterSystemSession && filterInactiveSession && filterChildSession;
+			args.Accepted = filterSystemSession && filterInactiveSession && filterChildSession;
 		}
 
-		private async void SessionDataGridSelectionChangedHandler(object sender, SelectionChangedEventArgs e)
+		private async void SessionDataGridSelectionChangedHandler(object sender, SelectionChangedEventArgs args)
 		{
 			_sessionDetailViewer.Shutdown();
 
-			if (e.AddedItems.Count > 0)
+			if (args.AddedItems.Count > 0)
 			{
-				var exception = await App.SafeActionAsync(() => _sessionDetailViewer.Initialize((DatabaseSession)e.AddedItems[0], CancellationToken.None));
+				var exception = await App.SafeActionAsync(() => _sessionDetailViewer.Initialize((DatabaseSession)args.AddedItems[0], CancellationToken.None));
 				if (exception == null)
 				{
 					SessionDetailViewer.Content = _sessionDetailViewer.Control;
@@ -351,14 +351,14 @@ namespace SqlPad
 			Trace.WriteLine($"Session monitor auto-refresh has been {timerState}. ");
 		}
 
-		private void SessionGridContextMenuOpeningHandler(object sender, RoutedEventArgs e)
+		private void SessionGridContextMenuOpeningHandler(object sender, RoutedEventArgs args)
 		{
 			SessionGridContextMenu.Items.Clear();
 
 			var databaseSession = (DatabaseSession)SessionDataGrid.SelectedItem;
 			if (databaseSession == null)
 			{
-				e.Handled = true;
+				args.Handled = true;
 			}
 			else
 			{
