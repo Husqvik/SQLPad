@@ -20,8 +20,8 @@ namespace SqlPad.DataExport
 
 		public async Task<IDataExportContext> StartExportAsync(ExportOptions options, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
 		{
-			var exportContext = new HtmlDataExportContext(options, columns, cancellationToken);
-			await exportContext.InitializeAsync();
+			var exportContext = new HtmlDataExportContext(options, columns);
+			await exportContext.InitializeAsync(cancellationToken);
 			return exportContext;
 		}
 	}
@@ -36,8 +36,8 @@ namespace SqlPad.DataExport
 
 		private TextWriter _writer;
 
-		public HtmlDataExportContext(ExportOptions exportOptions, IReadOnlyList<ColumnHeader> columns, CancellationToken cancellationToken)
-			: base(exportOptions, cancellationToken)
+		public HtmlDataExportContext(ExportOptions exportOptions, IReadOnlyList<ColumnHeader> columns)
+			: base(exportOptions)
 		{
 			_columns = columns;
 			_htmlTableRowTemplate = BuildlTableRowTemplate(Enumerable.Range(0, _columns.Count).Select(i => $"<td>{{{i}}}</td>"));

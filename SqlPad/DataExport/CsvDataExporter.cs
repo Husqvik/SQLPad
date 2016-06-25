@@ -24,13 +24,13 @@ namespace SqlPad.DataExport
 
 		public async Task<IDataExportContext> StartExportAsync(ExportOptions options, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
 		{
-			var exportContext = new CsvDataExportContext(options, columns, Separator, cancellationToken);
-			await exportContext.InitializeAsync();
+			var exportContext = new SeparatedValueDataExportContext(options, columns, Separator);
+			await exportContext.InitializeAsync(cancellationToken);
 			return exportContext;
 		}
 	}
 
-	internal class CsvDataExportContext : DataExportContextBase
+	internal class SeparatedValueDataExportContext : DataExportContextBase
 	{
 		private const string MaskWrapByQuote = "\"{0}\"";
 		private const string QuoteCharacter = "\"";
@@ -41,8 +41,8 @@ namespace SqlPad.DataExport
 
 		private TextWriter _writer;
 
-		public CsvDataExportContext(ExportOptions exportOptions, IReadOnlyList<ColumnHeader> columns, string separator, CancellationToken cancellationToken)
-			: base(exportOptions, cancellationToken)
+		public SeparatedValueDataExportContext(ExportOptions exportOptions, IReadOnlyList<ColumnHeader> columns, string separator)
+			: base(exportOptions)
 		{
 			_columns = columns;
 			_separator = separator;

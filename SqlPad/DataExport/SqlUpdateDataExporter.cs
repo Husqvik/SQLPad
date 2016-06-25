@@ -19,21 +19,21 @@ namespace SqlPad.DataExport
 
 		public async Task<IDataExportContext> StartExportAsync(ExportOptions options, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
 		{
-			var exportContext = CreateExportContext(options, columns, dataExportConverter, cancellationToken);
-			await exportContext.InitializeAsync();
+			var exportContext = CreateExportContext(options, columns, dataExportConverter);
+			await exportContext.InitializeAsync(cancellationToken);
 			return exportContext;
 		}
 
-		protected abstract SqlDataExportContextBase CreateExportContext(ExportOptions exportOptions, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter, CancellationToken cancellationToken);
+		protected abstract SqlDataExportContextBase CreateExportContext(ExportOptions exportOptions, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter);
 	}
 
 	internal class SqlUpdateDataExporter : SqlBaseDataExporter
 	{
 		public override string Name { get; } = "SQL update";
 
-		protected override SqlDataExportContextBase CreateExportContext(ExportOptions exportOptions, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
+		protected override SqlDataExportContextBase CreateExportContext(ExportOptions exportOptions, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter)
 		{
-			return new SqlUpdateExportContext(exportOptions, columns, dataExportConverter, cancellationToken);
+			return new SqlUpdateExportContext(exportOptions, columns, dataExportConverter);
 		}
 	}
 
@@ -45,8 +45,8 @@ namespace SqlPad.DataExport
 		private TextWriter _writer;
 		private string _sqlCommandTemplate;
 
-		protected SqlDataExportContextBase(ExportOptions exportOptions, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
-			: base(exportOptions, cancellationToken)
+		protected SqlDataExportContextBase(ExportOptions exportOptions, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter)
+			: base(exportOptions)
 		{
 			_columns = columns;
 			_dataExportConverter = dataExportConverter;
@@ -90,8 +90,8 @@ namespace SqlPad.DataExport
 	{
 		private const string UpdateColumnClauseMask = "{0} = {{{1}}}";
 
-		public SqlUpdateExportContext(ExportOptions exportOptions, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
-			: base(exportOptions, columns, dataExportConverter, cancellationToken)
+		public SqlUpdateExportContext(ExportOptions exportOptions, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter)
+			: base(exportOptions, columns, dataExportConverter)
 		{
 		}
 

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
 
 namespace SqlPad.DataExport
 {
@@ -10,16 +9,16 @@ namespace SqlPad.DataExport
 	{
 		public override string Name { get; } = "SQL insert";
 
-		protected override SqlDataExportContextBase CreateExportContext(ExportOptions exportOptions, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
+		protected override SqlDataExportContextBase CreateExportContext(ExportOptions exportOptions, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter)
 		{
-			return new SqlInsertExportContext(exportOptions, columns, dataExportConverter, cancellationToken);
+			return new SqlInsertExportContext(exportOptions, columns, dataExportConverter);
 		}
 	}
 
 	internal class SqlInsertExportContext : SqlDataExportContextBase
 	{
-		public SqlInsertExportContext(ExportOptions exportOptions, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
-			: base(exportOptions, columns, dataExportConverter, cancellationToken)
+		public SqlInsertExportContext(ExportOptions exportOptions, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter)
+			: base(exportOptions, columns, dataExportConverter)
 		{
 		}
 

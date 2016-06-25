@@ -20,8 +20,8 @@ namespace SqlPad.DataExport
 
 		public async Task<IDataExportContext> StartExportAsync(ExportOptions options, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
 		{
-			var exportContext = new JsonDataExportContext(options, columns, dataExportConverter, cancellationToken);
-			await exportContext.InitializeAsync();
+			var exportContext = new JsonDataExportContext(options, columns, dataExportConverter);
+			await exportContext.InitializeAsync(cancellationToken);
 			return exportContext;
 		}
 	}
@@ -38,8 +38,8 @@ namespace SqlPad.DataExport
 
 		private TextWriter _writer;
 
-		public JsonDataExportContext(ExportOptions exportOptions, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
-			: base(exportOptions, cancellationToken)
+		public JsonDataExportContext(ExportOptions exportOptions, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter)
+			: base(exportOptions)
 		{
 			_columns = columns;
 			_dataExportConverter = dataExportConverter;

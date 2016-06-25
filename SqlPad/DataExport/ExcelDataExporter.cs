@@ -21,8 +21,8 @@ namespace SqlPad.DataExport
 
 		public async Task<IDataExportContext> StartExportAsync(ExportOptions options, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter, CancellationToken cancellationToken)
 		{
-			var exportContext = new ExcelDataExportContext(options, columns, cancellationToken);
-			await exportContext.InitializeAsync();
+			var exportContext = new ExcelDataExportContext(options, columns);
+			await exportContext.InitializeAsync(cancellationToken);
 			return exportContext;
 		}
 	}
@@ -35,8 +35,8 @@ namespace SqlPad.DataExport
 		private ExcelWorksheet _worksheet;
 		private int _currentRowIndex;
 
-		public ExcelDataExportContext(ExportOptions exportOptions, IReadOnlyList<ColumnHeader> columns, CancellationToken cancellationToken)
-			: base(exportOptions, cancellationToken)
+		public ExcelDataExportContext(ExportOptions exportOptions, IReadOnlyList<ColumnHeader> columns)
+			: base(exportOptions)
 		{
 			_columns = columns;
 		}

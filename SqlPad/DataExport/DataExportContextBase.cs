@@ -10,12 +10,11 @@ namespace SqlPad.DataExport
 {
 	internal abstract class DataExportContextBase : IDataExportContext
 	{
-		private readonly CancellationToken _cancellationToken;
-
 		private bool _isInitialized;
 		private bool _isFinalized;
 		private long _totalRows;
 		private IProgress<int> _progress;
+		private CancellationToken _cancellationToken;
 
 		protected readonly MemoryStream ClipboardData;
 
@@ -25,11 +24,9 @@ namespace SqlPad.DataExport
 
 		public long CurrentRowIndex { get; private set; }
 
-		protected DataExportContextBase(ExportOptions exportOptions, CancellationToken cancellationToken)
+		protected DataExportContextBase(ExportOptions exportOptions)
 		{
 			ExportOptions = exportOptions;
-
-			_cancellationToken = cancellationToken;
 
 			if (ExportOptions.IntoClipboard)
 			{
@@ -43,9 +40,9 @@ namespace SqlPad.DataExport
 			_progress = progress;
 		}
 
-		public async Task InitializeAsync()
+		public async Task InitializeAsync(CancellationToken cancellationToken)
 		{
-			await Task.Run(() => Initialize(), _cancellationToken);
+			await Task.Run(() => Initialize(), _cancellationToken = cancellationToken);
 		}
 
 		private void Initialize()
