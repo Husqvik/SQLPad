@@ -8,7 +8,8 @@
              xmlns:componentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
              xmlns:system="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d"
-             d:DesignHeight="160" d:DesignWidth="240">
+             d:DesignHeight="160" d:DesignWidth="240"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}">
 	<UserControl.Resources>
 		<ResourceDictionary>
 			<ResourceDictionary.MergedDictionaries>
@@ -1014,7 +1015,7 @@
 		</ResourceDictionary>
 	</UserControl.Resources>
 
-	<TreeView x:Name="TreeView" ItemTemplateSelector="{StaticResource PlanItemTemplateSelector}" ScrollViewer.IsDeferredScrollingEnabled="True">
+	<TreeView x:Name="TreeView" ItemTemplateSelector="{StaticResource PlanItemTemplateSelector}" ScrollViewer.IsDeferredScrollingEnabled="{Binding IsDeferredScrollingEnabled}">
 		<TreeView.Resources>
 			<RoutedCommand x:Key="CommandSaveContentAsPng" />
 		</TreeView.Resources>

@@ -8,7 +8,7 @@ using System.Windows;
 
 namespace SqlPad.DataExport
 {
-	internal abstract class DataExportContextBase : IDataExportContext
+	public abstract class DataExportContextBase : IDataExportContext
 	{
 		private bool _isInitialized;
 		private bool _isFinalized;

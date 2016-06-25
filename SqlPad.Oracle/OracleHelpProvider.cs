@@ -178,7 +178,7 @@ namespace SqlPad.Oracle
 
 		private static void ShowSqlFunctionDocumentation(OracleProgramIdentifier identifier)
 		{
-			var isBuiltInSqlFunction = (String.IsNullOrEmpty(identifier.Package) || String.Equals(identifier.Package, OracleObjectIdentifier.PackageBuiltInFunction));
+			var isBuiltInSqlFunction = String.IsNullOrEmpty(identifier.Package) || String.Equals(identifier.Package, OracleObjectIdentifier.PackageBuiltInFunction);
 			if (isBuiltInSqlFunction)
 			{
 				foreach (var documentation in _sqlFunctionDocumentation[identifier.Name])

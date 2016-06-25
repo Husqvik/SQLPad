@@ -46,7 +46,7 @@
 						</RadioButton>
 					</StackPanel>
 				</GroupBox>
-				<executionPlan:ExecutionPlanTreeView x:Name="ExecutionPlanTreeView" />
+				<executionPlan:ExecutionPlanTreeView x:Name="ExecutionPlanTreeView" IsDeferredScrollingEnabled="False" />
 			</DockPanel>
 		</TabItem>
 		<TabItem x:Name="TabPlainText" Header="Plain text" Visibility="{Binding TextExecutionPlan, Converter={StaticResource ObjectToVisibilityConverter}}">

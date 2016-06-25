@@ -16,7 +16,7 @@
 	</Window.TaskbarItemInfo>
 
 	<Window.Resources>
-		<ContextMenu x:Key="RecentFileMenu" Placement="Relative" VerticalOffset="64" d:DataContext="{d:DesignInstance local:RecentFileItem}">
+		<ContextMenu x:Key="RecentFileMenu" Placement="Relative" VerticalOffset="64" d:DataContext="{d:DesignInstance local:RecentFileItem}" Closed="RecentDocumentsMenuClosedHandler">
 			<ContextMenu.ItemContainerStyle>
 				<Style TargetType="MenuItem">
 					<Setter Property="Command" Value="{Binding Command}" />
@@ -45,13 +45,6 @@
 				<TextBlock Margin="5" Text="{Binding Path=Header.(ContentControl.Content)}" />
 			</Border>
 		</DataTemplate>
-
-		<!--<VisualBrush x:Key="OutlineBoxBrush" TileMode="None" Viewbox="0,0,1,1" ViewboxUnits="RelativeToBoundingBox" Viewport="0,0,1,1" ViewportUnits="RelativeToBoundingBox" Stretch="None">-->
-		<!--<VisualBrush x:Key="OutlineBoxBrush" TileMode="None" Viewbox="-3,-3,16,16" ViewboxUnits="Absolute" Viewport="-3,-3,16,16" ViewportUnits="Absolute" Stretch="None">
-			<VisualBrush.Visual>
-				<Rectangle Stroke="GreenYellow" Fill="Transparent" StrokeThickness="3"></Rectangle>
-			</VisualBrush.Visual>
-		</VisualBrush>-->
 	</Window.Resources>
 
 	<Window.InputBindings>

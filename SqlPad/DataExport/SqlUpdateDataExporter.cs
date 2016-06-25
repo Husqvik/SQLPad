@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SqlPad.DataExport
 {
-	internal abstract class SqlBaseDataExporter : IDataExporter
+	public abstract class SqlBaseDataExporter : IDataExporter
 	{
 		public abstract string Name { get; }
 
@@ -24,14 +24,14 @@ namespace SqlPad.DataExport
 			return exportContext;
 		}
 
-		protected abstract SqlDataExportContextBase CreateExportContext(ExportOptions exportOptions, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter);
+		protected abstract DataExportContextBase CreateExportContext(ExportOptions exportOptions, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter);
 	}
 
 	internal class SqlUpdateDataExporter : SqlBaseDataExporter
 	{
 		public override string Name { get; } = "SQL update";
 
-		protected override SqlDataExportContextBase CreateExportContext(ExportOptions exportOptions, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter)
+		protected override DataExportContextBase CreateExportContext(ExportOptions exportOptions, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter)
 		{
 			return new SqlUpdateExportContext(exportOptions, columns, dataExportConverter);
 		}

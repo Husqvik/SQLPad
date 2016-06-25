@@ -15,6 +15,7 @@ namespace SqlPad.Oracle.ExecutionPlan
 	{
 		public static readonly DependencyProperty RootItemProperty = DependencyProperty.Register(nameof(RootItem), typeof(ExecutionPlanItem), typeof(ExecutionPlanTreeView), new FrameworkPropertyMetadata(RootItemChangedHandler));
 		public static readonly DependencyProperty ShowCumulativeExecutionsProperty = DependencyProperty.Register(nameof(ShowCumulativeExecutions), typeof(bool), typeof(ExecutionPlanTreeView), new FrameworkPropertyMetadata());
+		public static readonly DependencyProperty IsDeferredScrollingEnabledProperty = DependencyProperty.Register(nameof(IsDeferredScrollingEnabled), typeof(bool), typeof(ExecutionPlanTreeView), new FrameworkPropertyMetadata(true));
 
 		public ExecutionPlanItem RootItem
 		{
@@ -42,6 +43,12 @@ namespace SqlPad.Oracle.ExecutionPlan
 			set { SetValue(ShowCumulativeExecutionsProperty, value); }
 		}
 
+		public bool IsDeferredScrollingEnabled
+		{
+			get { return (bool)GetValue(IsDeferredScrollingEnabledProperty); }
+			set { SetValue(IsDeferredScrollingEnabledProperty, value); }
+		}
+
 		public ExecutionPlanTreeView()
 		{
 			InitializeComponent();
@@ -65,7 +72,7 @@ namespace SqlPad.Oracle.ExecutionPlan
 
 		private void SaveContentAsPng(string fileName)
 		{
-			var content = (TreeViewItem)(TreeView.ItemContainerGenerator.ContainerFromItem(TreeView.Items[0]));
+			var content = (TreeViewItem)TreeView.ItemContainerGenerator.ContainerFromItem(TreeView.Items[0]);
 			var presentationSource = PresentationSource.FromVisual(content);
 			var dpiX = 96.0 * presentationSource.CompositionTarget.TransformToDevice.M11;
 			var dpiY = 96.0 * presentationSource.CompositionTarget.TransformToDevice.M22;
@@ -124,13 +131,9 @@ namespace SqlPad.Oracle.ExecutionPlan
 				return ExecutionStatisticsPlanItemTemplate;
 			}
 
-			var executionMonitorPlanItem = item as SqlMonitorPlanItem;
-			if (executionMonitorPlanItem != null)
-			{
-				return ExecutionMonitorPlanItemTemplate;
-			}
-
-			return ExplainPlanTemplateTemplate;
+			return item is SqlMonitorPlanItem
+				? ExecutionMonitorPlanItemTemplate
+				: ExplainPlanTemplateTemplate;
 		}
 	}
 

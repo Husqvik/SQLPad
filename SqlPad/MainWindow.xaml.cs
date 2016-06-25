@@ -23,8 +23,9 @@ namespace SqlPad
 
 		private readonly WindowDatabaseMonitor _windowDatabaseMonitor;
 		private readonly FindReplaceManager _findReplaceManager;
-		private readonly ContextMenu _recentDocumentsMenu;
 		private readonly DispatcherTimer _timerWorkingDocumentSave;
+
+		private ContextMenu RecentFileMenu => (ContextMenu)Resources["RecentFileMenu"];
 
 		public MainWindow()
 		{
@@ -44,9 +45,7 @@ namespace SqlPad
 
 			Title = applicationTitle;
 
-			_recentDocumentsMenu = (ContextMenu)Resources["RecentFileMenu"];
-			_recentDocumentsMenu.PlacementTarget = this;
-			_recentDocumentsMenu.Closed += RecentDocumentsMenuClosedHandler;
+			RecentFileMenu.PlacementTarget = this;
 
 			_findReplaceManager = (FindReplaceManager)Application.Current.Resources["FindReplaceManager"];
 			_findReplaceManager.OwnerWindow = this;
@@ -72,9 +71,9 @@ namespace SqlPad
 
 		private void RecentDocumentsMenuClosedHandler(object sender, RoutedEventArgs routedEventArgs)
 		{
-			_recentDocumentsMenu.ItemsSource = null;
-			_recentDocumentsMenu.CommandBindings.Clear();
-			_recentDocumentsMenu.InputBindings.Clear();
+			RecentFileMenu.ItemsSource = null;
+			RecentFileMenu.CommandBindings.Clear();
+			RecentFileMenu.InputBindings.Clear();
 		}
 
 		private static bool EnsureValidConfiguration()
@@ -473,7 +472,7 @@ namespace SqlPad
 				return;
 			}
 
-			_recentDocumentsMenu.HorizontalOffset = (Width - 240) / 2;
+			RecentFileMenu.HorizontalOffset = (Width - 240) / 2;
 			RecentDocumentsMenuClosedHandler(null, null);
 
 			var items = new List<RecentFileItem>();
@@ -481,17 +480,17 @@ namespace SqlPad
 			{
 				var item = new RecentFileItem(WorkDocumentCollection.RecentDocuments[i], i);
 				items.Add(item);
-				_recentDocumentsMenu.CommandBindings.Add(new CommandBinding(item.Command, OpenRecentFileHandler));
+				RecentFileMenu.CommandBindings.Add(new CommandBinding(item.Command, OpenRecentFileHandler));
 
 				if (i < 10)
 				{
 					var shortcut = (Key)Enum.Parse(typeof(Key), String.Format(CultureInfo.InvariantCulture, "NumPad{0}", i));
-					_recentDocumentsMenu.InputBindings.Add(new KeyBinding(item.Command, shortcut, ModifierKeys.None) { CommandParameter = item.WorkDocument });
+					RecentFileMenu.InputBindings.Add(new KeyBinding(item.Command, shortcut, ModifierKeys.None) { CommandParameter = item.WorkDocument });
 				}
 			}
 
-			_recentDocumentsMenu.ItemsSource = items;
-			_recentDocumentsMenu.IsOpen = true;
+			RecentFileMenu.ItemsSource = items;
+			RecentFileMenu.IsOpen = true;
 		}
 
 		private void OpenRecentFileHandler(object sender, ExecutedRoutedEventArgs args)

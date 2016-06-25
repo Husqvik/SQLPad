@@ -9,7 +9,7 @@ namespace SqlPad.DataExport
 	{
 		public override string Name { get; } = "SQL insert";
 
-		protected override SqlDataExportContextBase CreateExportContext(ExportOptions exportOptions, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter)
+		protected override DataExportContextBase CreateExportContext(ExportOptions exportOptions, IReadOnlyList<ColumnHeader> columns, IDataExportConverter dataExportConverter)
 		{
 			return new SqlInsertExportContext(exportOptions, columns, dataExportConverter);
 		}
