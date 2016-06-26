@@ -315,17 +315,6 @@ namespace SqlPad
 						element =>
 						{
 							element.BackgroundBrush = backgroundBrush;
-
-							//ProcessSegmentAtLine(line, semanticError.Node.SourcePosition,
-							//	element => element.TextRunProperties.SetTextDecorations(Resources.BoxedText));
-
-							/*ProcessSegmentAtLine(line, nodeSemanticError.Key.SourcePosition,
-							element =>
-							{
-								element.BackgroundBrush = Resources.OutlineBoxBrush;
-								var x = 1;
-							});*/
-
 							/*
 						// This lambda gets called once for every VisualLineElement
 						// between the specified offsets.
