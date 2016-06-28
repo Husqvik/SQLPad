@@ -70,6 +70,7 @@
     <Reference Include="ICSharpCode.AvalonEdit, processorArchitecture=MSIL" />
     <Reference Include="nunit.framework, processorArchitecture=MSIL" />
     <Reference Include="Oracle.DataAccess, processorArchitecture=x86" />
+    <Reference Include="Oracle.ManagedDataAccess" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="Shouldly" />

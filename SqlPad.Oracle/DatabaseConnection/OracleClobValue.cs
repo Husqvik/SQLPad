@@ -124,6 +124,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		}
 	}
 
+#if !ORACLE_MANAGED_DATA_ACCESS_CLIENT
 	public class OracleXmlValue : OracleLargeTextValue, IDisposable
 	{
 		private readonly OracleXmlType _xmlType;
@@ -168,6 +169,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_xmlType.Dispose();
 		}
 	}
+#endif
 
 	public class OracleSimpleValue : ILargeTextValue, IComparable
 	{

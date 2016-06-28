@@ -309,9 +309,14 @@ namespace SqlPad.Oracle.DatabaseConnection
 				{
 					await commandReader.Command.ExecuteNonQueryAsynchronous(cancellationToken);
 					stopWatch.Stop();
+
+#if ORACLE_MANAGED_DATA_ACCESS_CLIENT
+					dataReader = ((OracleRefCursor)commandReader.RefCursorInfo.Parameter.Value).GetDataReader();
+#else
 					dataReader = commandReader.RefCursorInfo.Parameter != null
 						? ((OracleRefCursor)commandReader.RefCursorInfo.Parameter.Value).GetDataReader()
 						: commandReader.Command.ImplicitRefCursors[commandReader.RefCursorInfo.ImplicitCursorIndex.Value].GetDataReader();
+#endif
 				}
 				else
 				{
@@ -1047,6 +1052,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private IEnumerable<KeyValuePair<ResultInfo, IReadOnlyList<ColumnHeader>>> AcquireImplicitRefCursors(OracleCommand command)
 		{
+#if ORACLE_MANAGED_DATA_ACCESS_CLIENT
+			yield break;
+#else
+
 			if (command.ImplicitRefCursors == null)
 			{
 				yield break;
@@ -1067,6 +1076,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					yield return AcquireRefCursor(command, refCursor, cursorInfo);
 				}
 			}
+#endif
 		}
 
 		private KeyValuePair<ResultInfo, IReadOnlyList<ColumnHeader>> AcquireRefCursor(OracleCommand command, OracleRefCursor refCursor, RefCursorInfo refCursorInfo)

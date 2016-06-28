@@ -183,10 +183,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return App.ExecuteAsynchronous(delegate { }, () => clob.Read(buffer, offset, count), cancellationToken);
 		}
 
+#if !ORACLE_MANAGED_DATA_ACCESS_CLIENT
 		public static Task<int> ReadAsynchronous(this OracleXmlStream xmlStream, char[] buffer, int offset, int count, CancellationToken cancellationToken)
 		{
 			return App.ExecuteAsynchronous(delegate { }, () => xmlStream.Read(buffer, offset, count), cancellationToken);
 		}
+#endif
 
 		public static Task RollbackAsynchronous(this OracleTransaction transaction)
 		{

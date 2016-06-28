@@ -1,9 +1,13 @@
 ﻿using System;
 using NUnit.Framework;
-using Oracle.DataAccess.Types;
 using Shouldly;
 using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.DataDictionary;
+#if ORACLE_MANAGED_DATA_ACCESS_CLIENT
+using Oracle.ManagedDataAccess.Types;
+#else
+using Oracle.DataAccess.Types;
+#endif
 
 namespace SqlPad.Oracle.Test
 {
