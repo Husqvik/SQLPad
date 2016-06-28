@@ -5,8 +5,12 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Oracle.DataAccess.Client;
 using SqlPad.Oracle.DatabaseConnection;
+#if ORACLE_MANAGED_DATA_ACCESS_CLIENT
+using Oracle.ManagedDataAccess.Client;
+#else
+using Oracle.DataAccess.Client;
+#endif
 
 namespace SqlPad.Oracle.ToolTips
 {
