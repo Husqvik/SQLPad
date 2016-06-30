@@ -34,7 +34,7 @@ namespace SqlPad.Test
 		[Test, Apartment(ApartmentState.STA)]
 		public void RealApplicationTest()
 		{
-			VisualTestRunner.RunTest("SqlPad.Test.VisualComponentTest, SqlPad.Test", nameof(TestBasicSqlPadBehavior));
+			VisualTestRunner.RunTest(typeof(VisualComponentTest).AssemblyQualifiedName, nameof(TestBasicSqlPadBehavior));
 		}
 
 		private static SqlTextEditor Editor => DocumentPage.Editor;
@@ -425,7 +425,8 @@ WHERE
 		{
 			var tempFileName = Path.GetTempFileName();
 			var connectionConfiguration = ConfigurationProvider.GetConnectionConfiguration(ConfigurationProvider.ConnectionStrings[0].Name);
-			CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+			Thread.CurrentThread.CurrentCulture = CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+
 			using (var exportContext = await dataExporter.StartExportAsync(ExportOptions.ToFile(tempFileName, resultViewer.Title), DataExportHelper.GetOrderedExportableColumns(resultViewer.ResultGrid), connectionConfiguration.InfrastructureFactory.DataExportConverter, CancellationToken.None))
 			{
 				await exportContext.AppendRowsAsync(resultViewer.ResultGrid.Items.Cast<object[]>());
