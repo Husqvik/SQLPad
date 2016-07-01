@@ -324,9 +324,9 @@ namespace SqlPad
 			ResultViewTabHeaderPopup.IsOpen = false;
 		}
 
-		private async void InitializedHandler(object sender, EventArgs args)
+		public Task Initialize()
 		{
-			await _outputViewer.ExecuteUsingCancellationToken(ApplyReferenceConstraints);
+			return _outputViewer.ExecuteUsingCancellationToken(ApplyReferenceConstraints);
 		}
 
 		private async Task ApplyReferenceConstraints(CancellationToken cancellationToken)

@@ -8,7 +8,6 @@
 			 xmlns:dataExport="clr-namespace:SqlPad.DataExport"
 			 mc:Ignorable="d"
 			 d:DesignHeight="140" d:DesignWidth="384"
-			 Initialized="InitializedHandler"
 			 DataContext="{Binding RelativeSource={RelativeSource Self}}">
 
 	<UserControl.Resources>

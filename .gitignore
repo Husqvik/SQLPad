@@ -16,6 +16,9 @@ local.properties
 .settings/
 .loadpath
 
+# IntelliJ IDEA work files
+.idea/
+
 # External tool builders
 .externalToolBuilders/
 

@@ -56,7 +56,11 @@ namespace SqlPad
 			}
 		}
 
-		private IEnumerable<DataGridResultViewer> DataGridResultViewers => TabControlResult.Items.OfType<DataGridResultViewer>();
+		private IEnumerable<DataGridResultViewer> DataGridResultViewers =>
+			TabControlResult.Items
+				.Cast<TabItem>()
+				.Select(t => t.Content)
+				.OfType<DataGridResultViewer>();
 
 		public bool KeepDatabaseOutputHistory { get; set; }
 
@@ -124,14 +128,16 @@ namespace SqlPad
 			e.Accepted = ShowAllSessionExecutionStatistics || ((SessionExecutionStatisticsRecord)e.Item).Value != 0;
 		}
 
-		private int InitializeResultViewers()
+		private async Task InitializeResultViewers()
 		{
 			var tabControlIndex = 0;
 			foreach (var statementResult in _executionResult.StatementResults)
 			{
 				foreach (var resultInfoColumnHeaders in statementResult.ResultInfoColumnHeaders.Where(r => r.Key.Type == ResultIdentifierType.UserDefined))
 				{
-					var resultViewer = InitializeResultViewer(statementResult, resultInfoColumnHeaders.Key);
+					var resultViewer = CreateResultViewer(statementResult, resultInfoColumnHeaders.Key);
+					await resultViewer.Initialize();
+
 					if (ActiveResultViewer == null)
 					{
 						ActiveResultViewer = resultViewer;
@@ -140,11 +146,9 @@ namespace SqlPad
 					TabControlResult.Items.Insert(tabControlIndex++, resultViewer.TabItem);
 				}
 			}
-
-			return tabControlIndex;
 		}
 
-		private DataGridResultViewer InitializeResultViewer(StatementExecutionResult statementResult, ResultInfo resultInfo)
+		private DataGridResultViewer CreateResultViewer(StatementExecutionResult statementResult, ResultInfo resultInfo)
 		{
 			var refreshInterval = DocumentPage.WorkDocument.RefreshInterval;
 			if (refreshInterval == TimeSpan.Zero)
@@ -405,8 +409,9 @@ namespace SqlPad
 			}
 			else
 			{
-				var resultViewerCount = InitializeResultViewers();
-				if (resultViewerCount > 0)
+				await InitializeResultViewers();
+
+				if (DataGridResultViewers.Any())
 				{
 					StatusInfo.ResultGridAvailable = true;
 

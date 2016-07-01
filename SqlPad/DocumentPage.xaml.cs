@@ -1558,7 +1558,7 @@ namespace SqlPad
 			IReadOnlyCollection<CompletionData> items;
 			try
 			{
-				items = await Task.Factory.StartNew(
+				items = await Task.Run(
 					() =>
 						_codeSnippetProvider.GetSnippets(_documentRepository, _documentRepository.StatementText, caretOffset)
 							.Select(s => new CompletionData(s, this))

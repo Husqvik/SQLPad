@@ -17,15 +17,8 @@ namespace SqlPad.Test
 			var appDomain = AppDomain.CreateDomain("TestDomain", AppDomain.CurrentDomain.Evidence, AppDomain.CurrentDomain.SetupInformation);
 			appDomain.SetData(DomainParameterTestClassName, testClassName);
 			appDomain.SetData(DomainParameterTestMethodName, testMethodName);
-
-			try
-			{
-				appDomain.DoCallBack(RunSqlPad);
-			}
-			finally
-			{
-				AppDomain.Unload(appDomain);
-			}
+			appDomain.DoCallBack(RunSqlPad);
+			AppDomain.Unload(appDomain);
 		}
 
 		public static void Wait(double seconds)
