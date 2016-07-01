@@ -93,7 +93,7 @@ public class Query
 		_connection = connection;
 	}
 
-	private IEnumerable<ResultRow> Execute(System.Int32 testBindVariable1, System.String testBindVariable2)
+	public IEnumerable<ResultRow> Execute(Int32 testBindVariable1, String testBindVariable2)
 	{
 		using (var command = _connection.CreateCommand())
 		{

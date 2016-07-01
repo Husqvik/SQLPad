@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using Nito.AsyncEx;
 using NUnit.Framework;
@@ -44,7 +43,7 @@ namespace SqlPad.Test
 			get
 			{
 				var mainWindow = (MainWindow)Application.Current.MainWindow;
-				return (DocumentPage)((TabItem)mainWindow.DocumentTabControl.SelectedItem).Content;
+				return mainWindow.ActiveDocument;
 			}
 		}
 
@@ -506,11 +505,11 @@ WHERE
 		{
 			public const string TextValue = "<root/>";
 
-			public string DataTypeName => "CLOB";
+			public string DataTypeName { get; } = "CLOB";
 
-		    public bool IsEditable => false;
+			public bool IsEditable { get; } = false;
 
-		    public bool IsNull => false;
+			public bool IsNull { get; } = false;
 
 			public object RawValue
 			{
@@ -534,11 +533,11 @@ WHERE
 
 			public long Length => TextValue.Length;
 
-		    public string Preview { get { throw new NotImplementedException(); } }
+			public string Preview { get { throw new NotImplementedException(); } }
 
 			public string Value => TextValue;
 
-		    public void GetChunk(StringBuilder stringBuilder, int offset, int length)
+			public void GetChunk(StringBuilder stringBuilder, int offset, int length)
 			{
 				throw new NotImplementedException();
 			}

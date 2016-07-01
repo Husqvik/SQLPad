@@ -632,6 +632,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 	internal class OracleToNetTypeMapper
 	{
+		public static readonly string OracleDataAccessAssemblyName = typeof(OracleDecimal).Assembly.GetName().Name;
+
 		public static Type MapOracleTypeToNetType(OracleObjectIdentifier typeIdentifier)
 		{
 			var targetType = typeof(string);

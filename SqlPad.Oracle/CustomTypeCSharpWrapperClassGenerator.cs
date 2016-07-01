@@ -6,9 +6,9 @@ namespace SqlPad.Oracle
 {
 	public class CustomTypeCSharpWrapperClassGenerator
 	{
-		private const string UsingClause =
-@"using Oracle.DataAccess.Client;
-using Oracle.DataAccess.Types;
+		private static readonly string UsingClause =
+$@"using {OracleToNetTypeMapper.OracleDataAccessAssemblyName}.Client;
+using {OracleToNetTypeMapper.OracleDataAccessAssemblyName}.Types;
 ";
 
 		private const string CustomTypeBase =
@@ -92,7 +92,7 @@ using Oracle.DataAccess.Types;
 			{
 				var attributeName = attribute.Name.Trim('"');
 				writer.WriteLine($"	[OracleObjectMapping(\"{attributeName}\")]");
-				writer.WriteLine($"	public {OracleToNetTypeMapper.MapOracleTypeToNetType(attribute.DataType.FullyQualifiedName)} {attributeName};");
+				writer.WriteLine($"	public {OracleToNetTypeMapper.MapOracleTypeToNetType(attribute.DataType.FullyQualifiedName).Name} {attributeName};");
 			}
 
 			writer.WriteLine();
@@ -113,7 +113,7 @@ using Oracle.DataAccess.Types;
 			foreach (var attribute in type.Attributes)
 			{
 				var attributeName = attribute.Name.Trim('"');
-				writer.WriteLine($"		{attributeName} = ({OracleToNetTypeMapper.MapOracleTypeToNetType(attribute.DataType.FullyQualifiedName)})OracleUdt.GetValue(connection, pointerUdt, \"{attributeName}\");");
+				writer.WriteLine($"		{attributeName} = ({OracleToNetTypeMapper.MapOracleTypeToNetType(attribute.DataType.FullyQualifiedName).Name})OracleUdt.GetValue(connection, pointerUdt, \"{attributeName}\");");
 			}
 
 			writer.WriteLine("	}");
