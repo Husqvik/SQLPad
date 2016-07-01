@@ -23,7 +23,7 @@ public class Query
 		_connection = connection;
 	}}
 
-	private IEnumerable<ResultRow> Execute({1})
+	public IEnumerable<ResultRow> Execute({1})
 	{{
 		using (var command = _connection.CreateCommand())
 		{{
@@ -73,7 +73,7 @@ public class Query
 				{
 					index++;
 
-					bindVariableBuilder.Append(bindVariable.InputType);
+					bindVariableBuilder.Append(bindVariable.InputType.Name);
 					bindVariableBuilder.Append(" ");
 					bindVariableBuilder.Append(bindVariable.Name);
 
