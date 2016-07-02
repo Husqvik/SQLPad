@@ -198,7 +198,7 @@ namespace SqlPad.Oracle.SemanticModel
 					ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(null, program, identifiers, StatementPlacement.None, null, null, GetFunctionCallNodes);
 
 					var grammarSpecificFunctions = GetGrammarSpecificFunctionNodes(node);
-					CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, null, program.ProgramReferences, StatementPlacement.None, null);
+					CreateGrammarSpecificFunctionReferences(grammarSpecificFunctions, program, null, StatementPlacement.None, null);
 					break;
 			}
 		}

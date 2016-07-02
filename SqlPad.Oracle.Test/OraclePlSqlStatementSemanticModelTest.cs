@@ -1000,6 +1000,22 @@ END;";
 		}
 
 		[Test]
+		public void TestProgramReferenceContainerWithinPlSqlDeclaration()
+		{
+			const string plsqlText =
+@"DECLARE var VARCHAR2(9) := cast(10 AS NUMBER);
+BEGIN NULL; END;";
+
+			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).First();
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
+
+			var program = semanticModel.Programs.Single();
+			var castReference = semanticModel.AllReferenceContainers.SelectMany(c => c.ProgramReferences).Single();
+			castReference.Name.ShouldBe("cast");
+			castReference.Container.ShouldBe(program);
+		}
+
+		[Test]
 		public void TestPackagePrograms()
 		{
 			const string plsqlText =
