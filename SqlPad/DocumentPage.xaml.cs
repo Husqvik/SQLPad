@@ -564,10 +564,11 @@ namespace SqlPad
 			WorkDocument.SelectionLength = Editor.SelectionLength;
 			WorkDocument.SelectionType = Editor.IsMultiSelectionActive ? SelectionType.Rectangle : SelectionType.Simple;
 
+			WorkDocument.EnableDatabaseOutput = ActiveOutputViewer.EnableDatabaseOutput;
+			WorkDocument.KeepDatabaseOutputHistory = ActiveOutputViewer.KeepDatabaseOutputHistory;
+
 			if (ActiveOutputViewer.ActiveResultViewer != null)
 			{
-				WorkDocument.EnableDatabaseOutput = ActiveOutputViewer.EnableDatabaseOutput;
-				WorkDocument.KeepDatabaseOutputHistory = ActiveOutputViewer.KeepDatabaseOutputHistory;
 				WorkDocument.RefreshInterval = ActiveOutputViewer.ActiveResultViewer.AutoRefreshInterval;
 			}
 

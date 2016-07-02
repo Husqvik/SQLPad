@@ -39,6 +39,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private readonly string _connectionStringName;
 		private readonly string _moduleName;
+		private readonly string _initialSchema;
 		private readonly ConnectionStringSettings _connectionString;
 		private readonly OracleDataDictionaryMapper _dataDictionaryMapper;
 
@@ -78,7 +79,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			ConnectionIdentifier = identifier;
 			_moduleName = $"{ModuleNameSqlPadDatabaseModelBase}/{identifier}";
-			_currentSchema = connectionStringBuilder.UserID.ToQuotedIdentifier().Trim('"');
+			_initialSchema = _currentSchema = connectionStringBuilder.UserID.ToQuotedIdentifier().Trim('"');
 			_connectionStringName = $"{connectionStringBuilder.DataSource}_{_currentSchema}";
 
 			HasDbaPrivilege = String.Equals(connectionStringBuilder.DBAPrivilege.ToUpperInvariant(), "SYSDBA");
@@ -235,7 +236,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override string CurrentSchema
 		{
-			get { return _currentSchema; }
+			get
+			{
+				return _schemas.Contains(_currentSchema)
+					? _currentSchema
+					: _initialSchema;
+			}
 			set
 			{
 				_currentSchema = value;

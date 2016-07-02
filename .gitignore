@@ -18,6 +18,7 @@ local.properties
 
 # IntelliJ IDEA work files
 .idea/
+*.sln.iml
 
 # External tool builders
 .externalToolBuilders/
