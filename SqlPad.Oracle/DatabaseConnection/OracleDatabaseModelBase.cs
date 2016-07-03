@@ -114,8 +114,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public abstract IConnectionAdapter CreateConnectionAdapter();
 
-		public abstract Task<ExecutionPlanItemCollection> ExplainPlanAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
-
 		public abstract Task UpdatePartitionDetailsAsync(PartitionDetailsModel dataModel, CancellationToken cancellationToken);
 
 		public abstract Task UpdateSubPartitionDetailsAsync(SubPartitionDetailsModel dataModel, CancellationToken cancellationToken);

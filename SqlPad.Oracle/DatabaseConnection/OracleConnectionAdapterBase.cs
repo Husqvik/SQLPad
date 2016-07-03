@@ -40,6 +40,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public abstract Task RollbackTransaction();
 
+		public abstract Task<ExecutionPlanItemCollection> ExplainPlanAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken);
+
 		public abstract Task<ExecutionStatisticsPlanItemCollection> GetCursorExecutionStatisticsAsync(CancellationToken cancellationToken);
 
 		public abstract Task ActivateTraceEvents(IEnumerable<OracleTraceEvent> traceEvents, string traceIdentifier, CancellationToken cancellationToken);

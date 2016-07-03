@@ -76,9 +76,7 @@ namespace SqlPad.Oracle.ExecutionPlan
 		{
 			ResetView();
 
-			var databaseModel = (OracleDatabaseModelBase)_outputViewer.DocumentPage.DatabaseModel;
-			var itemCollection = await databaseModel.ExplainPlanAsync(executionModel, cancellationToken);
-
+			var itemCollection = await ((OracleConnectionAdapterBase)_outputViewer.ConnectionAdapter).ExplainPlanAsync(executionModel, cancellationToken);
 			if (itemCollection != null)
 			{
 				SetRootItem(itemCollection.RootItem);

@@ -350,22 +350,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_connectionAdapters.Remove(connectionAdapter);
 		}
 
-		public override async Task<ExecutionPlanItemCollection> ExplainPlanAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
-		{
-			var targetTable = OracleConfiguration.Configuration.GetExplainPlanTargetTable(ConnectionString.Name);
-			if (String.IsNullOrEmpty(targetTable.Name))
-			{
-				throw new InvalidOperationException($"OracleConfiguration/Connections/Connection[@ConnectionName = '{ConnectionString.Name}']/ExecutionPlan/TargetTable[Name] is missing. ");
-			}
-
-			var planKey = Convert.ToString(executionModel.StatementText.GetHashCode());
-			var explainPlanDataProvider = new ExplainPlanDataProvider(executionModel.StatementText, planKey, targetTable);
-
-			await UpdateModelAsync(cancellationToken, false, explainPlanDataProvider.CreateExplainPlanUpdater, explainPlanDataProvider.LoadExplainPlanUpdater);
-
-			return explainPlanDataProvider.ItemCollection;
-		}
-
 		public override async Task UpdatePartitionDetailsAsync(PartitionDetailsModel dataModel, CancellationToken cancellationToken)
 		{
 			var partitionDataProvider = new PartitionDataProvider(dataModel, Version);

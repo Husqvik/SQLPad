@@ -273,6 +273,23 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return ExecuteUserTransactionAction(async t => await t.RollbackAsynchronous());
 		}
 
+		public override async Task<ExecutionPlanItemCollection> ExplainPlanAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
+		{
+			var connectionName = _databaseModel.ConnectionString.Name;
+			var targetTable = OracleConfiguration.Configuration.GetExplainPlanTargetTable(connectionName);
+			if (String.IsNullOrEmpty(targetTable.Name))
+			{
+				throw new InvalidOperationException($"OracleConfiguration/Connections/Connection[@ConnectionName = '{connectionName}']/ExecutionPlan/TargetTable[Name] is missing. ");
+			}
+
+			var planKey = Convert.ToString(executionModel.StatementText.GetHashCode());
+			var explainPlanDataProvider = new ExplainPlanDataProvider(executionModel.StatementText, planKey, targetTable);
+
+			await OracleDatabaseModel.UpdateModelAsync(_databaseModel.ConnectionString.ConnectionString, _currentSchema, cancellationToken, false, explainPlanDataProvider.CreateExplainPlanUpdater, explainPlanDataProvider.LoadExplainPlanUpdater);
+
+			return explainPlanDataProvider.ItemCollection;
+		}
+
 		public override async Task<ExecutionStatisticsPlanItemCollection> GetCursorExecutionStatisticsAsync(CancellationToken cancellationToken)
 		{
 			var cursorExecutionStatisticsDataProvider = new CursorExecutionStatisticsDataProvider(_userCommandSqlId, _userCommandChildNumber);

@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using SqlPad.Oracle.DatabaseConnection;
 using SqlPad.Oracle.DataDictionary;
-using SqlPad.Oracle.ExecutionPlan;
 using SqlPad.Oracle.ToolTips;
 using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
@@ -1422,18 +1421,7 @@ namespace SqlPad.Oracle.Test
 
 		public override bool HasDbaPrivilege { get; } = false;
 
-	    public override string DatabaseDomainName => CurrentDatabaseDomainNameInternal;
-
-	    public override Task<ExecutionPlanItemCollection> ExplainPlanAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
-		{
-			var rootItem = new ExecutionPlanItem();
-			OracleTestConnectionAdapter.SetBasePlanItemData(rootItem);
-
-			var planItemCollection = new ExecutionPlanItemCollection { rootItem };
-			planItemCollection.Freeze();
-
-			return Task.FromResult(planItemCollection);
-		}
+		public override string DatabaseDomainName => CurrentDatabaseDomainNameInternal;
 
 		private static OracleDataType BuildPrimitiveDataType(string typeName, int? length = null, int? precision = null, int? scale = null, DataUnit dataUnit = DataUnit.NotApplicable)
 		{

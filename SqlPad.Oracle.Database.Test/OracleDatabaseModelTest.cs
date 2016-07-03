@@ -827,7 +827,8 @@ SELECT /*+ parallel(g1 2) parallel(g2 2) monitor */ avg(g1.val * 10000 + g2.val)
 						StatementText = ExplainPlanTestQuery
 					};
 
-				planItemCollection = await databaseModel.ExplainPlanAsync(executionModel, CancellationToken.None);
+				var connectionAdapter = (OracleConnectionAdapter)databaseModel.CreateConnectionAdapter();
+				planItemCollection = await connectionAdapter.ExplainPlanAsync(executionModel, CancellationToken.None);
 			}
 
 			var rootItem = planItemCollection.RootItem;
@@ -988,7 +989,8 @@ ORDER BY
 						StatementText = testQuery
 					};
 
-				planItemCollection = await databaseModel.ExplainPlanAsync(executionModel, CancellationToken.None);
+				var connectionAdapter = (OracleConnectionAdapter)databaseModel.CreateConnectionAdapter();
+				planItemCollection = await connectionAdapter.ExplainPlanAsync(executionModel, CancellationToken.None);
 			}
 
 			var executionOrder = planItemCollection.AllItems.Values.Select(i => i.ExecutionOrder).ToArray();

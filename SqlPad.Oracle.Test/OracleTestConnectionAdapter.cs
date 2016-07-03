@@ -133,6 +133,17 @@ namespace SqlPad.Oracle.Test
 
 		public override Task RollbackTransaction() => Task.CompletedTask;
 
+		public override Task<ExecutionPlanItemCollection> ExplainPlanAsync(StatementExecutionModel executionModel, CancellationToken cancellationToken)
+		{
+			var rootItem = new ExecutionPlanItem();
+			SetBasePlanItemData(rootItem);
+
+			var planItemCollection = new ExecutionPlanItemCollection { rootItem };
+			planItemCollection.Freeze();
+
+			return Task.FromResult(planItemCollection);
+		}
+
 		public override Task<ExecutionStatisticsPlanItemCollection> GetCursorExecutionStatisticsAsync(CancellationToken cancellationToken)
 		{
 			var rootItem = new ExecutionStatisticsPlanItem();
@@ -190,7 +201,7 @@ Note
        * parameter 'statistics_level' is set to 'ALL', at session or system level
 ";
 
-		internal static void SetBasePlanItemData(ExecutionPlanItem planItem)
+		private static void SetBasePlanItemData(ExecutionPlanItem planItem)
 		{
 			planItem.Operation = "Operation";
 			planItem.Options = "Options";
