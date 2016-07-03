@@ -29,7 +29,6 @@ namespace SqlPad.Oracle.DatabaseConnection
 	public class OracleConnectionAdapter : OracleConnectionAdapterBase
 	{
 		private const string ModuleNameSqlPadDatabaseModelBase = "Database model";
-		private const string UserCommand = "User command";
 
 		private static int _counter;
 
@@ -285,7 +284,23 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var planKey = Convert.ToString(DateTime.UtcNow.Ticks);
 			var explainPlanDataProvider = new ExplainPlanDataProvider(executionModel.StatementText, planKey, targetTable);
 
-			await OracleDatabaseModel.UpdateModelAsync(_databaseModel.ConnectionString.ConnectionString, _currentSchema, false, cancellationToken, explainPlanDataProvider.CreateExplainPlanUpdater, explainPlanDataProvider.LoadExplainPlanUpdater);
+			_isExecuting = true;
+
+			try
+			{
+				if (!HasActiveTransaction && _userTransaction != null)
+				{
+					await _userTransaction.RollbackAsynchronous();
+					DisposeUserTransaction();
+				}
+
+				await EnsureUserConnectionOpen(cancellationToken);
+				await OracleDatabaseModel.UpdateModelAsync(_userConnection, _currentSchema, false, cancellationToken, explainPlanDataProvider.CreateExplainPlanUpdater, explainPlanDataProvider.LoadExplainPlanUpdater);
+			}
+			finally
+			{
+				_isExecuting = false;
+			}
 
 			return explainPlanDataProvider.ItemCollection;
 		}
@@ -421,11 +436,13 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			_userTransactionInfo = null;
 
-			if (_userTransaction != null)
+			if (_userTransaction == null)
 			{
-				_userTransaction.Dispose();
-				_userTransaction = null;
+				return;
 			}
+
+			_userTransaction.Dispose();
+			_userTransaction = null;
 		}
 
 		private void DisposeUserConnection()
@@ -741,7 +758,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					await _databaseModel.UpdateModelAsync(true, cancellationToken, _executionStatisticsDataProvider.SessionBeginExecutionStatisticsDataProvider);
 				}
 
-				_userConnection.ActionName = UserCommand;
+				_userConnection.ActionName = "User command";
 
 				foreach (var executionModel in batchExecutionModel.Statements)
 				{

@@ -421,86 +421,91 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		internal static async Task UpdateModelAsync(string connectionString, string currentSchema, bool suppressException, CancellationToken cancellationToken, params IModelDataProvider[] updaters)
 		{
-			using (var connection = new OracleConnection())
+			using (var connection = new OracleConnection { ConnectionString = connectionString })
 			{
-				using (var command = connection.CreateCommand())
+				await UpdateModelAsync(connection, currentSchema, suppressException, cancellationToken, updaters);
+				await connection.CloseAsynchronous(cancellationToken);
+			}
+		}
+
+		internal static async Task UpdateModelAsync(OracleConnection connection, string currentSchema, bool suppressException, CancellationToken cancellationToken, params IModelDataProvider[] updaters)
+		{
+			using (var command = connection.CreateCommand())
+			{
+				command.BindByName = true;
+
+				OracleTransaction transaction = null;
+
+				try
 				{
-					command.BindByName = true;
-
-					OracleTransaction transaction = null;
-
-					try
+					foreach (var updater in updaters)
 					{
-						foreach (var updater in updaters)
+						command.ResetParametersToAvoidOdacBug();
+						command.CommandText = String.Empty;
+						command.CommandType = CommandType.Text;
+						updater.InitializeCommand(command);
+
+						try
 						{
-							command.ResetParametersToAvoidOdacBug();
-							command.CommandText = String.Empty;
-							command.CommandType = CommandType.Text;
-							updater.InitializeCommand(command);
-
-							try
+							if (updater.IsValid)
 							{
-								if (updater.IsValid)
+								if (connection.State == ConnectionState.Closed)
 								{
-									if (await connection.EnsureConnectionOpen(connectionString, cancellationToken))
-									{
-										connection.ModuleName = "SQLPad backround";
-										connection.ActionName = "Model data provider";
+									await connection.OpenAsynchronous(cancellationToken);
+									connection.ModuleName = "SQLPad backround";
+									connection.ActionName = "Model data provider";
 
-										if (!String.IsNullOrEmpty(currentSchema))
+									if (!String.IsNullOrEmpty(currentSchema))
+									{
+										using (var setSchemaCommand = connection.CreateCommand())
 										{
-											using (var setSchemaCommand = connection.CreateCommand())
-											{
-												await setSchemaCommand.SetSchema(currentSchema, cancellationToken);
-											}
-										}
-
-										transaction = connection.BeginTransaction();
-									}
-
-									if (updater.HasScalarResult)
-									{
-										var result = await command.ExecuteScalarAsynchronous(cancellationToken);
-										updater.MapScalarValue(result);
-									}
-									else
-									{
-										using (var reader = await command.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken))
-										{
-											await updater.MapReaderData(reader, cancellationToken);
+											await setSchemaCommand.SetSchema(currentSchema, cancellationToken);
 										}
 									}
-								}
-							}
-							catch (OracleException exception)
-							{
-								if (exception.Number == (int)OracleErrorCode.UserInvokedCancellation)
-								{
-									break;
+
+									transaction = connection.BeginTransaction();
 								}
 
-								throw;
+								if (updater.HasScalarResult)
+								{
+									var result = await command.ExecuteScalarAsynchronous(cancellationToken);
+									updater.MapScalarValue(result);
+								}
+								else
+								{
+									using (var reader = await command.ExecuteReaderAsynchronous(CommandBehavior.Default, cancellationToken))
+									{
+										await updater.MapReaderData(reader, cancellationToken);
+									}
+								}
 							}
 						}
-					}
-					catch (Exception e)
-					{
-						Trace.WriteLine($"Update model failed: {e}");
-
-						if (!suppressException)
+						catch (OracleException exception)
 						{
+							if (exception.Number == (int)OracleErrorCode.UserInvokedCancellation)
+							{
+								break;
+							}
+
 							throw;
 						}
 					}
-					finally
-					{
-						if (transaction != null)
-						{
-							await transaction.RollbackAsynchronous();
-							transaction.Dispose();
-						}
+				}
+				catch (Exception e)
+				{
+					Trace.WriteLine($"Update model failed: {e}");
 
-						await connection.CloseAsynchronous(cancellationToken);
+					if (!suppressException)
+					{
+						throw;
+					}
+				}
+				finally
+				{
+					if (transaction != null)
+					{
+						await transaction.RollbackAsynchronous();
+						transaction.Dispose();
 					}
 				}
 			}
