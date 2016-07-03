@@ -126,7 +126,7 @@ SELECT * FROM CTE JOIN DUAL ON TO_CHAR(VAL) <> DUMMY CROSS APPLY (SELECT * FROM 
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, "SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P ON", 53).ToArray();
 			items.Length.ShouldBe(0);
 
-			items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, "SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P ON ", 54).ToArray();
+			items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, "SELECT S.* FROM SELECTION S JOIN HUSQVIK.PROJECT P ON ", 54, categories: new[] { OracleCodeCompletionCategory.JoinConditionByName, OracleCodeCompletionCategory.JoinConditionByReferenceConstraint }).ToArray();
 			items.Length.ShouldBe(1);
 			items[0].Name.ShouldBe("S.PROJECT_ID = P.PROJECT_ID");
 			items[0].Text.ShouldBe("S.PROJECT_ID = P.PROJECT_ID");
@@ -159,7 +159,7 @@ SELECT * FROM CTE JOIN DUAL ON TO_CHAR(VAL) <> DUMMY CROSS APPLY (SELECT * FROM 
 		[Test]
 		public void TestJoinConditionSuggestionAfterTableFunctionClause()
 		{
-			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, "SELECT * FROM SELECTION JOIN TABLE(PIPELINED_FUNCTION) T ON ", 60).ToArray();
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, "SELECT * FROM SELECTION JOIN TABLE(PIPELINED_FUNCTION) T ON ", 60, categories: new [] { OracleCodeCompletionCategory.JoinConditionByName }).ToArray();
 			items.Length.ShouldBe(0);
 			// TODO: Add proper implementation
 		}
@@ -1051,7 +1051,7 @@ se";
 		{
 			const string statement = @"SELECT dbms_metadata.get_ddl() FROM dual";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 29).ToList();
-			items.Count.ShouldBe(73);
+			items.Count.ShouldBe(76);
 			items[0].Name.ShouldBe("AQ_QUEUE");
 			items[0].Text.ShouldBe("'AQ_QUEUE'");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
@@ -2042,7 +2042,7 @@ SELECT * FROM ALL";
 		{
 			const string testQuery = @"SELECT * FROM SELECTION LEFT JOIN (SELECT 1 SELECTION_ID FROM DUAL) ON ";
 
-			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, testQuery, 71).ToArray();
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, testQuery, 71, categories: new[] { OracleCodeCompletionCategory.JoinConditionByName }).ToArray();
 			items.Length.ShouldBe(0);
 		}
 
@@ -2239,9 +2239,10 @@ ON (EVENTS.ID = SRC.ID)";
 		public void TestNextDaySpecialParameterCompletion()
 		{
 			const string statement = @"SELECT NEXT_DAY(SYSDATE, ) FROM DUAL";
-			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 25).ToArray();
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 25, categories: new[] { OracleCodeCompletionCategory.FunctionParameter }).ToArray();
 			items.Length.ShouldBe(7);
 			items[0].Name.ShouldBe("Friday");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 			items[0].Text.ShouldBe("'Friday'");
 			items[1].Name.ShouldBe("Monday");
 			items[2].Name.ShouldBe("Saturday");
@@ -2333,7 +2334,7 @@ ON (EVENTS.ID = SRC.ID)";
 			items[0].Text.ShouldBe("test_column");
 		}
 
-		[Test, Ignore("not fixed yet")]
+		[Test]
 		public void TestCodeCompletionAtDotAfterSchemaIdentifier()
 		{
 			const string statement = @"SELECT NULL FROM husqvi.selection";
