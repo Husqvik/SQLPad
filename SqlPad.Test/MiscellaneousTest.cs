@@ -23,7 +23,7 @@ namespace SqlPad.Test
 			}
 
 			[Test]
-			public void TestToXmlComplianTest()
+			public void TestToXmlCompliantTest()
 			{
 				const string text = "a\x0000b";
 				var result = text.ToXmlCompliant();
