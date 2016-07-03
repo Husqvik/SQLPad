@@ -48,7 +48,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private async Task UpdateDataModel(CancellationToken cancellationToken, IModelDataProvider scriptDataProvider)
 		{
 			var connectionString = OracleConnectionStringRepository.GetBackgroundConnectionString(_databaseModel.ConnectionString.ConnectionString);
-			await OracleDatabaseModel.UpdateModelAsync(connectionString, _databaseModel.CurrentSchema, cancellationToken, false, scriptDataProvider);
+			await OracleDatabaseModel.UpdateModelAsync(connectionString, _databaseModel.CurrentSchema, false, cancellationToken, scriptDataProvider);
 		}
 	}
 }

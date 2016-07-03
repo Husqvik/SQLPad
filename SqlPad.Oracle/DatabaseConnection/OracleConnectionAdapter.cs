@@ -244,7 +244,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override async Task<ICollection<SessionExecutionStatisticsRecord>> GetExecutionStatisticsAsync(CancellationToken cancellationToken)
 		{
-			await _databaseModel.UpdateModelAsync(cancellationToken, true, _executionStatisticsDataProvider.SessionEndExecutionStatisticsDataProvider);
+			await _databaseModel.UpdateModelAsync(true, cancellationToken, _executionStatisticsDataProvider.SessionEndExecutionStatisticsDataProvider);
 			return _executionStatisticsDataProvider.ExecutionStatistics;
 		}
 
@@ -282,10 +282,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 				throw new InvalidOperationException($"OracleConfiguration/Connections/Connection[@ConnectionName = '{connectionName}']/ExecutionPlan/TargetTable[Name] is missing. ");
 			}
 
-			var planKey = Convert.ToString(executionModel.StatementText.GetHashCode());
+			var planKey = Convert.ToString(DateTime.UtcNow.Ticks);
 			var explainPlanDataProvider = new ExplainPlanDataProvider(executionModel.StatementText, planKey, targetTable);
 
-			await OracleDatabaseModel.UpdateModelAsync(_databaseModel.ConnectionString.ConnectionString, _currentSchema, cancellationToken, false, explainPlanDataProvider.CreateExplainPlanUpdater, explainPlanDataProvider.LoadExplainPlanUpdater);
+			await OracleDatabaseModel.UpdateModelAsync(_databaseModel.ConnectionString.ConnectionString, _currentSchema, false, cancellationToken, explainPlanDataProvider.CreateExplainPlanUpdater, explainPlanDataProvider.LoadExplainPlanUpdater);
 
 			return explainPlanDataProvider.ItemCollection;
 		}
@@ -294,7 +294,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			var cursorExecutionStatisticsDataProvider = new CursorExecutionStatisticsDataProvider(_userCommandSqlId, _userCommandChildNumber);
 			var displayCursorDataProvider = new DisplayCursorDataProvider(_userCommandSqlId, _userCommandChildNumber, _databaseModel.Version);
-			await _databaseModel.UpdateModelAsync(cancellationToken, false, cursorExecutionStatisticsDataProvider, displayCursorDataProvider);
+			await _databaseModel.UpdateModelAsync(false, cancellationToken, cursorExecutionStatisticsDataProvider, displayCursorDataProvider);
 			cursorExecutionStatisticsDataProvider.ItemCollection.PlanText = displayCursorDataProvider.PlanText;
 			return cursorExecutionStatisticsDataProvider.ItemCollection;
 		}
@@ -738,7 +738,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				if (batchExecutionModel.GatherExecutionStatistics)
 				{
 					_executionStatisticsDataProvider = new SessionExecutionStatisticsDataProvider(_databaseModel.StatisticsKeys, _userSessionIdentifier.Value.SessionId);
-					await _databaseModel.UpdateModelAsync(cancellationToken, true, _executionStatisticsDataProvider.SessionBeginExecutionStatisticsDataProvider);
+					await _databaseModel.UpdateModelAsync(true, cancellationToken, _executionStatisticsDataProvider.SessionBeginExecutionStatisticsDataProvider);
 				}
 
 				_userConnection.ActionName = UserCommand;
@@ -1211,7 +1211,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private async Task<IReadOnlyList<CompilationError>> RetrieveCompilationErrors(StatementBase statement, CancellationToken cancellationToken)
 		{
 			var compilationErrorUpdater = new CompilationErrorDataProvider(statement, _currentSchema);
-			await _databaseModel.UpdateModelAsync(cancellationToken, true, compilationErrorUpdater);
+			await _databaseModel.UpdateModelAsync(true, cancellationToken, compilationErrorUpdater);
 			return compilationErrorUpdater.Errors;
 		}
 

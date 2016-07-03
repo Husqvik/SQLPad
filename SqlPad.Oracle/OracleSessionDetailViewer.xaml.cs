@@ -181,7 +181,7 @@ namespace SqlPad.Oracle
 				var activeSessionHistoryDataProvider = new SqlMonitorActiveSessionHistoryDataProvider(planItemCollection);
 				var planMonitorDataProvider = new SqlMonitorSessionPlanMonitorDataProvider(planItemCollection);
 				var sessionLongOperationDataProvider = new SessionLongOperationPlanMonitorDataProvider(planItemCollection);
-				await OracleDatabaseModel.UpdateModelAsync(OracleConnectionStringRepository.GetBackgroundConnectionString(_connectionString.ConnectionString), null, cancellationToken, false, sessionMonitorDataProvider, planMonitorDataProvider, activeSessionHistoryDataProvider, sessionLongOperationDataProvider);
+				await OracleDatabaseModel.UpdateModelAsync(OracleConnectionStringRepository.GetBackgroundConnectionString(_connectionString.ConnectionString), null, false, cancellationToken, sessionMonitorDataProvider, planMonitorDataProvider, activeSessionHistoryDataProvider, sessionLongOperationDataProvider);
 				if (planItemCollection != _planItemCollection)
 				{
 					return;
@@ -216,7 +216,7 @@ namespace SqlPad.Oracle
 				if (!String.IsNullOrEmpty(_oracleSessionValues.SqlId) && _oracleSessionValues.ExecutionId.HasValue)
 				{
 					var monitorDataProvider = new SqlMonitorDataProvider(_oracleSessionValues.Instance, _oracleSessionValues.Id, _oracleSessionValues.ExecutionStart.Value, _oracleSessionValues.ExecutionId.Value, _oracleSessionValues.SqlId, _oracleSessionValues.ChildNumber.Value);
-					await OracleDatabaseModel.UpdateModelAsync(OracleConnectionStringRepository.GetBackgroundConnectionString(_connectionString.ConnectionString), null, cancellationToken, false, monitorDataProvider);
+					await OracleDatabaseModel.UpdateModelAsync(OracleConnectionStringRepository.GetBackgroundConnectionString(_connectionString.ConnectionString), null, false, cancellationToken, monitorDataProvider);
 
 					_planItemCollection = monitorDataProvider.ItemCollection;
 					_planItemCollection.RefreshPeriod = DefaultRefreshPeriod;

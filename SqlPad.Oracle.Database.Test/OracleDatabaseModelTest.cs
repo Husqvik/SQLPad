@@ -730,13 +730,13 @@ SELECT /*+ parallel(g1 2) parallel(g2 2) monitor */ avg(g1.val * 10000 + g2.val)
 				var sessionValues = (OracleSessionValues)databaseSessions.Rows.Single(s => s.Id == connectionAdapter.SessionIdentifier.Value.SessionId).ProviderValues;
 
 				var monitorDataProvider = new SqlMonitorDataProvider(sessionValues.Instance, sessionValues.Id, sessionValues.ExecutionStart.Value, sessionValues.ExecutionId.Value, sessionValues.SqlId, sessionValues.ChildNumber.Value);
-				await OracleDatabaseModel.UpdateModelAsync(ConnectionString.ConnectionString, null, CancellationToken.None, false, monitorDataProvider);
+				await OracleDatabaseModel.UpdateModelAsync(ConnectionString.ConnectionString, null, false, CancellationToken.None, monitorDataProvider);
 				var planItemCollection = monitorDataProvider.ItemCollection;
 				var sessionMonitorDataProvider = new SessionMonitorDataProvider(planItemCollection);
 				var activeSessionHistoryDataProvider = new SqlMonitorActiveSessionHistoryDataProvider(planItemCollection);
 				var planMonitorDataProvider = new SqlMonitorSessionPlanMonitorDataProvider(planItemCollection);
 				var sessionLongOperationDataProvider = new SessionLongOperationPlanMonitorDataProvider(planItemCollection);
-				await OracleDatabaseModel.UpdateModelAsync(ConnectionString.ConnectionString, null, CancellationToken.None, false, sessionMonitorDataProvider, planMonitorDataProvider, activeSessionHistoryDataProvider, sessionLongOperationDataProvider);
+				await OracleDatabaseModel.UpdateModelAsync(ConnectionString.ConnectionString, null, false, CancellationToken.None, sessionMonitorDataProvider, planMonitorDataProvider, activeSessionHistoryDataProvider, sessionLongOperationDataProvider);
 
 				var statementBatchResult = executionTask.Result;
 				statementBatchResult.StatementResults.Count.ShouldBe(1);
@@ -1003,7 +1003,7 @@ ORDER BY
 		{
 			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{
-				await (Task)typeof (OracleDatabaseModel).GetMethod("UpdateModelAsync", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(databaseModel, new object[] { CancellationToken.None, false, updaters });
+				await (Task)typeof (OracleDatabaseModel).GetMethod("UpdateModelAsync", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(databaseModel, new object[] { false, CancellationToken.None, updaters });
 			}
 		}
 	}

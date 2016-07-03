@@ -16,7 +16,6 @@ using Oracle.ManagedDataAccess.Client;
 #else
 using Oracle.DataAccess.Client;
 #endif
-using SqlPad.Oracle.ExecutionPlan;
 using SqlPad.Oracle.ModelDataProviders;
 using SqlPad.Oracle.ToolTips;
 using Timer = System.Timers.Timer;
@@ -354,14 +353,14 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			var partitionDataProvider = new PartitionDataProvider(dataModel, Version);
 			var spaceAllocationDataProvider = new TableSpaceAllocationDataProvider(dataModel, dataModel.Owner, dataModel.Name);
-			await UpdateModelAsync(cancellationToken, true, partitionDataProvider.PartitionDetailDataProvider, partitionDataProvider.SubPartitionDetailDataProvider, spaceAllocationDataProvider);
+			await UpdateModelAsync(true, cancellationToken, partitionDataProvider.PartitionDetailDataProvider, partitionDataProvider.SubPartitionDetailDataProvider, spaceAllocationDataProvider);
 		}
 
 		public override async Task UpdateSubPartitionDetailsAsync(SubPartitionDetailsModel dataModel, CancellationToken cancellationToken)
 		{
 			var partitionDataProvider = new PartitionDataProvider(dataModel, Version);
 			var spaceAllocationDataProvider = new TableSpaceAllocationDataProvider(dataModel, dataModel.Owner, dataModel.Name);
-			await UpdateModelAsync(cancellationToken, true, partitionDataProvider.SubPartitionDetailDataProvider, spaceAllocationDataProvider);
+			await UpdateModelAsync(true, cancellationToken, partitionDataProvider.SubPartitionDetailDataProvider, spaceAllocationDataProvider);
 		}
 
 		public override async Task UpdateTableDetailsAsync(OracleObjectIdentifier objectIdentifier, TableDetailsModel dataModel, CancellationToken cancellationToken)
@@ -375,14 +374,14 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var partitionDataProvider = new PartitionDataProvider(dataModel, objectIdentifier, Version);
 			var tablespaceDetailDataProvider = new TablespaceDetailDataProvider(dataModel.TablespaceDataModel);
 			var datafileDataProvider = new TablespaceFilesDataProvider(dataModel.TablespaceDataModel);
-			await UpdateModelAsync(cancellationToken, true, tableDetailDataProvider, tableCommentDataProvider, spaceAllocationDataProvider, tableInMemorySpaceAllocationDataProvider, indexDetailDataProvider, indexColumnDataProvider, partitionDataProvider.PartitionDetailDataProvider, partitionDataProvider.SubPartitionDetailDataProvider, tablespaceDetailDataProvider, datafileDataProvider);
+			await UpdateModelAsync(true, cancellationToken, tableDetailDataProvider, tableCommentDataProvider, spaceAllocationDataProvider, tableInMemorySpaceAllocationDataProvider, indexDetailDataProvider, indexColumnDataProvider, partitionDataProvider.PartitionDetailDataProvider, partitionDataProvider.SubPartitionDetailDataProvider, tablespaceDetailDataProvider, datafileDataProvider);
 		}
 
 		public override async Task UpdateViewDetailsAsync(OracleObjectIdentifier objectIdentifier, ObjectDetailsModel dataModel, CancellationToken cancellationToken)
 		{
 			var viewCommentDataProvider = new CommentDataProvider(dataModel, objectIdentifier, null);
 			var columnConstraintDataProvider = new ConstraintDataProvider(dataModel, objectIdentifier, null);
-			await UpdateModelAsync(cancellationToken, true, viewCommentDataProvider, columnConstraintDataProvider);
+			await UpdateModelAsync(true, cancellationToken, viewCommentDataProvider, columnConstraintDataProvider);
 		}
 
 		public override async Task UpdateColumnDetailsAsync(OracleObjectIdentifier objectIdentifier, string columnName, ColumnDetailsModel dataModel, CancellationToken cancellationToken)
@@ -394,7 +393,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var indexColumnDataProvider = new IndexColumnDataProvider(dataModel, objectIdentifier, columnName);
 			var detailHistogramDataProvider = new ColumnDetailHistogramDataProvider(dataModel, objectIdentifier, columnName);
 			var columnInMemoryDetailsDataProvider = new ColumnDetailInMemoryDataProvider(dataModel, objectIdentifier, columnName, Version);
-			await UpdateModelAsync(cancellationToken, true, columnDetailDataProvider, columnCommentDataProvider, columnConstraintDataProvider, columnIndexesDataProvider, indexColumnDataProvider, detailHistogramDataProvider, columnInMemoryDetailsDataProvider);
+			await UpdateModelAsync(true, cancellationToken, columnDetailDataProvider, columnCommentDataProvider, columnConstraintDataProvider, columnIndexesDataProvider, indexColumnDataProvider, detailHistogramDataProvider, columnInMemoryDetailsDataProvider);
 		}
 
 		public override async Task UpdateUserDetailsAsync(OracleSchemaModel dataModel, CancellationToken cancellationToken)
@@ -405,22 +404,22 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var temporaryTablespaceDetailDataProvider = new TablespaceDetailDataProvider(dataModel.TemporaryTablespaceModel);
 			var temporaryDatafileDataProvider = new TablespaceFilesDataProvider(dataModel.TemporaryTablespaceModel);
 			var profileDataProvider = new ProfileDetailsDataProvider(dataModel.ProfileModel);
-			await UpdateModelAsync(cancellationToken, true, userDetailDataProvider, defaultTablespaceDetailDataProvider, temporaryTablespaceDetailDataProvider, defaultDatafileDataProvider, temporaryDatafileDataProvider, profileDataProvider);
+			await UpdateModelAsync(true, cancellationToken, userDetailDataProvider, defaultTablespaceDetailDataProvider, temporaryTablespaceDetailDataProvider, defaultDatafileDataProvider, temporaryDatafileDataProvider, profileDataProvider);
 		}
 
 		public override async Task<IReadOnlyList<string>> GetRemoteTableColumnsAsync(string databaseLink, OracleObjectIdentifier schemaObject, CancellationToken cancellationToken)
 		{
 			var remoteTableColumnDataProvider = new RemoteTableColumnDataProvider(databaseLink, schemaObject);
-			await UpdateModelAsync(cancellationToken, false, remoteTableColumnDataProvider);
+			await UpdateModelAsync(false, cancellationToken, remoteTableColumnDataProvider);
 			return remoteTableColumnDataProvider.Columns;
 		}
 
-		internal Task UpdateModelAsync(CancellationToken cancellationToken, bool suppressException, params IModelDataProvider[] updaters)
+		internal Task UpdateModelAsync(bool suppressException, CancellationToken cancellationToken, params IModelDataProvider[] updaters)
 		{
-			return UpdateModelAsync(BackgroundConnectionString, _currentSchema, cancellationToken, suppressException, updaters);
+			return UpdateModelAsync(BackgroundConnectionString, _currentSchema, suppressException, cancellationToken, updaters);
 		}
 
-		internal static async Task UpdateModelAsync(string connectionString, string currentSchema, CancellationToken cancellationToken, bool suppressException, params IModelDataProvider[] updaters)
+		internal static async Task UpdateModelAsync(string connectionString, string currentSchema, bool suppressException, CancellationToken cancellationToken, params IModelDataProvider[] updaters)
 		{
 			using (var connection = new OracleConnection())
 			{
