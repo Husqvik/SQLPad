@@ -1169,6 +1169,841 @@
             <param name="context"></param>
             <returns></returns>
         </member>
+        <member name="T:NUnit.Framework.Internal.Execution.EventListenerTextWriter">
+            <summary>
+            EventListenerTextWriter sends text output to the currently active
+            ITestEventListener in the form of a TestOutput object. If no event 
+            listener is active in the contet, or if there is no context,
+            the output is forwarded to the supplied default writer.
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.EventListenerTextWriter.#ctor(System.String,System.IO.TextWriter)">
+            <summary>
+            Construct an EventListenerTextWriter
+            </summary>
+            <param name="streamName">The name of the stream to use for events</param>
+            <param name="defaultWriter">The default writer to use if no listener is available</param>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.EventListenerTextWriter.Write(System.Char)">
+            <summary>
+            Write a single char
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.EventListenerTextWriter.Write(System.String)">
+            <summary>
+            Write a string
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.EventListenerTextWriter.WriteLine(System.String)">
+            <summary>
+            Write a string followed by a newline
+            </summary>
+        </member>
+        <member name="P:NUnit.Framework.Internal.Execution.EventListenerTextWriter.Encoding">
+            <summary>
+            Get the Encoding for this TextWriter
+            </summary>
+        </member>
+        <member name="T:NUnit.Framework.Internal.Execution.CommandBuilder">
+            <summary>
+            A utility class to create TestCommands
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.CommandBuilder.MakeOneTimeSetUpCommand(NUnit.Framework.Internal.TestSuite,System.Collections.Generic.List{NUnit.Framework.Internal.Commands.SetUpTearDownItem},System.Collections.Generic.List{NUnit.Framework.Internal.Commands.TestActionItem})">
+            <summary>
+            Gets the command to be executed before any of
+            the child tests are run.
+            </summary>
+            <returns>A TestCommand</returns>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.CommandBuilder.MakeOneTimeTearDownCommand(NUnit.Framework.Internal.TestSuite,System.Collections.Generic.List{NUnit.Framework.Internal.Commands.SetUpTearDownItem},System.Collections.Generic.List{NUnit.Framework.Internal.Commands.TestActionItem})">
+            <summary>
+            Gets the command to be executed after all of the
+            child tests are run.
+            </summary>
+            <returns>A TestCommand</returns>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.CommandBuilder.MakeTestCommand(NUnit.Framework.Internal.TestMethod)">
+            <summary>
+            Creates a test command for use in running this test.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.CommandBuilder.MakeSkipCommand(NUnit.Framework.Internal.Test)">
+            <summary>
+            Creates a command for skipping a test. The result returned will
+            depend on the test RunState.
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.CommandBuilder.BuildSetUpTearDownList(System.Type,System.Type,System.Type)">
+            <summary>
+            Builds the set up tear down list.
+            </summary>
+            <param name="fixtureType">Type of the fixture.</param>
+            <param name="setUpType">Type of the set up attribute.</param>
+            <param name="tearDownType">Type of the tear down attribute.</param>
+            <returns>A list of SetUpTearDownItems</returns>
+        </member>
+        <member name="T:NUnit.Framework.Internal.Execution.CompositeWorkItem">
+            <summary>
+            A CompositeWorkItem represents a test suite and
+            encapsulates the execution of the suite as well
+            as all its child tests.
+            </summary>
+        </member>
+        <member name="P:NUnit.Framework.Internal.Execution.CompositeWorkItem.Children">
+            <summary>
+            List of Child WorkItems
+            </summary>
+        </member>
+        <member name="F:NUnit.Framework.Internal.Execution.CompositeWorkItem._countOrder">
+            <summary>
+            A count of how many tests in the work item have a value for the Order Property
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.CompositeWorkItem.#ctor(NUnit.Framework.Internal.TestSuite,NUnit.Framework.Interfaces.ITestFilter)">
+            <summary>
+            Construct a CompositeWorkItem for executing a test suite
+            using a filter to select child tests.
+            </summary>
+            <param name="suite">The TestSuite to be executed</param>
+            <param name="childFilter">A filter used to select child tests</param>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.CompositeWorkItem.PerformWork">
+            <summary>
+            Method that actually performs the work. Overridden
+            in CompositeWorkItem to do setup, run all child
+            items and then do teardown.
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.CompositeWorkItem.WorkItemOrderComparer.Compare(NUnit.Framework.Internal.Execution.WorkItem,NUnit.Framework.Internal.Execution.WorkItem)">
+            <summary>
+            Compares two objects and returns a value indicating whether one is less than, equal to, or greater than the other.
+            </summary>
+            <returns>
+            A signed integer that indicates the relative values of <paramref name="x"/> and <paramref name="y"/>, as shown in the following table.Value Meaning Less than zero<paramref name="x"/> is less than <paramref name="y"/>.Zero<paramref name="x"/> equals <paramref name="y"/>.Greater than zero<paramref name="x"/> is greater than <paramref name="y"/>.
+            </returns>
+            <param name="x">The first object to compare.</param><param name="y">The second object to compare.</param>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.CompositeWorkItem.SortChildren">
+            <summary>
+            Sorts tests under this suite.
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.CompositeWorkItem.Cancel(System.Boolean)">
+            <summary>
+            Cancel (abort or stop) a CompositeWorkItem and all of its children
+            </summary>
+            <param name="force">true if the CompositeWorkItem and all of its children should be aborted, false if it should allow all currently running tests to complete</param>
+        </member>
+        <member name="T:NUnit.Framework.Internal.Execution.EventPumpState">
+            <summary>
+            The EventPumpState enum represents the state of an
+            EventPump.
+            </summary>
+        </member>
+        <member name="F:NUnit.Framework.Internal.Execution.EventPumpState.Stopped">
+            <summary>
+            The pump is stopped
+            </summary>
+        </member>
+        <member name="F:NUnit.Framework.Internal.Execution.EventPumpState.Pumping">
+            <summary>
+            The pump is pumping events with no stop requested
+            </summary>
+        </member>
+        <member name="F:NUnit.Framework.Internal.Execution.EventPumpState.Stopping">
+            <summary>
+            The pump is pumping events but a stop has been requested
+            </summary>
+        </member>
+        <member name="T:NUnit.Framework.Internal.Execution.EventPump">
+            <summary>
+            EventPump pulls events out of an EventQueue and sends
+            them to a listener. It is used to send events back to
+            the client without using the CallContext of the test
+            runner thread.
+            </summary>
+        </member>
+        <member name="F:NUnit.Framework.Internal.Execution.EventPump._eventListener">
+            <summary>
+            The downstream listener to which we send events
+            </summary>
+        </member>
+        <member name="F:NUnit.Framework.Internal.Execution.EventPump._events">
+            <summary>
+            The queue that holds our events
+            </summary>
+        </member>
+        <member name="F:NUnit.Framework.Internal.Execution.EventPump._pumpThread">
+            <summary>
+            Thread to do the pumping
+            </summary>
+        </member>
+        <member name="F:NUnit.Framework.Internal.Execution.EventPump._pumpState">
+            <summary>
+            The current state of the eventpump
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.EventPump.#ctor(NUnit.Framework.Interfaces.ITestListener,NUnit.Framework.Internal.Execution.EventQueue)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="eventListener">The EventListener to receive events</param>
+            <param name="events">The event queue to pull events from</param>
+        </member>
+        <member name="P:NUnit.Framework.Internal.Execution.EventPump.PumpState">
+            <summary>
+            Gets or sets the current state of the pump
+            </summary>
+        </member>
+        <member name="P:NUnit.Framework.Internal.Execution.EventPump.Name">
+            <summary>
+            Gets or sets the name of this EventPump
+            (used only internally and for testing).
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.EventPump.Dispose">
+            <summary>
+            Dispose stops the pump
+            Disposes the used WaitHandle, too.
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.EventPump.Start">
+            <summary>
+            Start the pump
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.EventPump.Stop">
+            <summary>
+            Tell the pump to stop after emptying the queue.
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.EventPump.PumpThreadProc">
+            <summary>
+            Our thread proc for removing items from the event
+            queue and sending them on. Note that this would
+            need to do more locking if any other thread were
+            removing events from the queue.
+            </summary>
+        </member>
+        <member name="T:NUnit.Framework.Internal.Execution.Event">
+            <summary>
+            NUnit.Core.Event is the abstract base for all stored events.
+            An Event is the stored representation of a call to the
+            ITestListener interface and is used to record such calls
+            or to queue them for forwarding on another thread or at
+            a later time.
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.Event.Send(NUnit.Framework.Interfaces.ITestListener)">
+            <summary>
+            The Send method is implemented by derived classes to send the event to the specified listener.
+            </summary>
+            <param name="listener">The listener.</param>
+        </member>
+        <member name="T:NUnit.Framework.Internal.Execution.TestStartedEvent">
+            <summary>
+            TestStartedEvent holds information needed to call the TestStarted method.
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.TestStartedEvent.#ctor(NUnit.Framework.Interfaces.ITest)">
+            <summary>
+            Initializes a new instance of the <see cref="T:NUnit.Framework.Internal.Execution.TestStartedEvent"/> class.
+            </summary>
+            <param name="test">The test.</param>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.TestStartedEvent.Send(NUnit.Framework.Interfaces.ITestListener)">
+            <summary>
+            Calls TestStarted on the specified listener.
+            </summary>
+            <param name="listener">The listener.</param>
+        </member>
+        <member name="T:NUnit.Framework.Internal.Execution.TestFinishedEvent">
+            <summary>
+            TestFinishedEvent holds information needed to call the TestFinished method.
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.TestFinishedEvent.#ctor(NUnit.Framework.Interfaces.ITestResult)">
+            <summary>
+            Initializes a new instance of the <see cref="T:NUnit.Framework.Internal.Execution.TestFinishedEvent"/> class.
+            </summary>
+            <param name="result">The result.</param>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.TestFinishedEvent.Send(NUnit.Framework.Interfaces.ITestListener)">
+            <summary>
+            Calls TestFinished on the specified listener.
+            </summary>
+            <param name="listener">The listener.</param>
+        </member>
+        <member name="T:NUnit.Framework.Internal.Execution.TestOutputEvent">
+            <summary>
+            TestOutputEvent holds information needed to call the TestOutput method.
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.TestOutputEvent.#ctor(NUnit.Framework.Interfaces.TestOutput)">
+            <summary>
+            Initializes a new instance of the <see cref="T:NUnit.Framework.Internal.Execution.TestOutputEvent"/> class.
+            </summary>
+            <param name="output">The output object.</param>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.TestOutputEvent.Send(NUnit.Framework.Interfaces.ITestListener)">
+            <summary>
+            Calls TestOutput on the specified listener.
+            </summary>
+            <param name="listener">The listener.</param>
+        </member>
+        <member name="T:NUnit.Framework.Internal.Execution.EventQueue">
+            <summary>
+            Implements a queue of work items each of which
+            is queued as a WaitCallback.
+            </summary>
+        </member>
+        <member name="P:NUnit.Framework.Internal.Execution.EventQueue.Count">
+            <summary>
+            Gets the count of items in the queue.
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.EventQueue.Enqueue(NUnit.Framework.Internal.Execution.Event)">
+            <summary>
+            Enqueues the specified event
+            </summary>
+            <param name="e">The event to enqueue.</param>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.EventQueue.Dequeue(System.Boolean)">
+            <summary>
+            Removes the first element from the queue and returns it (or <c>null</c>).
+            </summary>
+            <param name="blockWhenEmpty">
+            If <c>true</c> and the queue is empty, the calling thread is blocked until
+            either an element is enqueued, or <see cref="M:NUnit.Framework.Internal.Execution.EventQueue.Stop"/> is called.
+            </param>
+            <returns>
+            <list type="bullet">
+              <item>
+                <term>If the queue not empty</term>
+                <description>the first element.</description>
+              </item>
+              <item>
+                <term>otherwise, if <paramref name="blockWhenEmpty"/>==<c>false</c>
+                  or <see cref="M:NUnit.Framework.Internal.Execution.EventQueue.Stop"/> has been called</term>
+                <description><c>null</c>.</description>
+              </item>
+            </list>
+            </returns>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.EventQueue.Stop">
+            <summary>
+            Stop processing of the queue
+            </summary>
+        </member>
+        <member name="T:NUnit.Framework.Internal.Execution.IWorkItemDispatcher">
+            <summary>
+            An IWorkItemDispatcher handles execution of work items.
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.IWorkItemDispatcher.Dispatch(NUnit.Framework.Internal.Execution.WorkItem)">
+            <summary>
+            Dispatch a single work item for execution. The first
+            work item dispatched is saved as the top-level
+            work item and used when stopping the run.
+            </summary>
+            <param name="work">The item to dispatch</param>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.IWorkItemDispatcher.CancelRun(System.Boolean)">
+            <summary>
+            Cancel the ongoing run completely.
+            If no run is in process, the call has no effect.
+            </summary>
+            <param name="force">true if the IWorkItemDispatcher should abort all currently running WorkItems, false if it should allow all currently running WorkItems to complete</param>
+        </member>
+        <member name="T:NUnit.Framework.Internal.Execution.ParallelWorkItemDispatcher">
+            <summary>
+            ParallelWorkItemDispatcher handles execution of work items by
+            queuing them for worker threads to process.
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.ParallelWorkItemDispatcher.#ctor(System.Int32)">
+            <summary>
+            Construct a ParallelWorkItemDispatcher
+            </summary>
+            <param name="levelOfParallelism">Number of workers to use</param>
+        </member>
+        <member name="P:NUnit.Framework.Internal.Execution.ParallelWorkItemDispatcher.Shifts">
+            <summary>
+            Enumerates all the shifts supported by the dispatcher
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.ParallelWorkItemDispatcher.Dispatch(NUnit.Framework.Internal.Execution.WorkItem)">
+            <summary>
+            Dispatch a single work item for execution. The first
+            work item dispatched is saved as the top-level
+            work item and used when stopping the run.
+            </summary>
+            <param name="work">The item to dispatch</param>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.ParallelWorkItemDispatcher.CancelRun(System.Boolean)">
+            <summary>
+            Cancel the ongoing run completely.
+            If no run is in process, the call has no effect.
+            </summary>
+        </member>
+        <member name="T:NUnit.Framework.Internal.Execution.QueuingEventListener">
+            <summary>
+            QueuingEventListener uses an EventQueue to store any
+            events received on its EventListener interface.
+            </summary>
+        </member>
+        <member name="P:NUnit.Framework.Internal.Execution.QueuingEventListener.Events">
+            <summary>
+            The EventQueue created and filled by this listener
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.QueuingEventListener.#ctor">
+            <summary>
+            Construct a QueuingEventListener
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.QueuingEventListener.TestStarted(NUnit.Framework.Interfaces.ITest)">
+            <summary>
+            A test has started
+            </summary>
+            <param name="test">The test that is starting</param>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.QueuingEventListener.TestFinished(NUnit.Framework.Interfaces.ITestResult)">
+            <summary>
+            A test case finished
+            </summary>
+            <param name="result">Result of the test case</param>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.QueuingEventListener.TestOutput(NUnit.Framework.Interfaces.TestOutput)">
+            <summary>
+            Called when a test produces output for immediate display
+            </summary>
+            <param name="output">A TestOutput object containing the text to display</param>
+        </member>
+        <member name="T:NUnit.Framework.Internal.Execution.SimpleWorkItem">
+            <summary>
+            A SimpleWorkItem represents a single test case and is
+            marked as completed immediately upon execution. This
+            class is also used for skipped or ignored test suites.
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.SimpleWorkItem.#ctor(NUnit.Framework.Internal.TestMethod,NUnit.Framework.Interfaces.ITestFilter)">
+            <summary>
+            Construct a simple work item for a test.
+            </summary>
+            <param name="test">The test to be executed</param>
+            <param name="filter">The filter used to select this test</param>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.SimpleWorkItem.PerformWork">
+            <summary>
+            Method that performs actually performs the work.
+            </summary>
+        </member>
+        <member name="T:NUnit.Framework.Internal.Execution.SimpleWorkItemDispatcher">
+            <summary>
+            SimpleWorkItemDispatcher handles execution of WorkItems by
+            directly executing them. It is provided so that a dispatcher
+            is always available in the context, thereby simplifying the
+            code needed to run child tests.
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.SimpleWorkItemDispatcher.Dispatch(NUnit.Framework.Internal.Execution.WorkItem)">
+            <summary>
+            Dispatch a single work item for execution. The first
+            work item dispatched is saved as the top-level
+            work item and a thread is created on which to
+            run it. Subsequent calls come from the top level
+            item or its descendants on the proper thread.
+            </summary>
+            <param name="work">The item to dispatch</param>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.SimpleWorkItemDispatcher.CancelRun(System.Boolean)">
+            <summary>
+            Cancel (abort or stop) the ongoing run.
+            If no run is in process, the call has no effect.
+            </summary>
+            <param name="force">true if the run should be aborted, false if it should allow its currently running test to complete</param>
+        </member>
+        <member name="T:NUnit.Framework.Internal.Execution.TestWorker">
+            <summary>
+            A TestWorker pulls work items from a queue
+            and executes them.
+            </summary>
+        </member>
+        <member name="E:NUnit.Framework.Internal.Execution.TestWorker.Busy">
+            <summary>
+            Event signaled immediately before executing a WorkItem
+            </summary>
+        </member>
+        <member name="E:NUnit.Framework.Internal.Execution.TestWorker.Idle">
+            <summary>
+            Event signaled immediately after executing a WorkItem
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.TestWorker.#ctor(NUnit.Framework.Internal.Execution.WorkItemQueue,System.String,System.Threading.ApartmentState)">
+            <summary>
+            Construct a new TestWorker.
+            </summary>
+            <param name="queue">The queue from which to pull work items</param>
+            <param name="name">The name of this worker</param>
+            <param name="apartmentState">The apartment state to use for running tests</param>
+        </member>
+        <member name="P:NUnit.Framework.Internal.Execution.TestWorker.Name">
+            <summary>
+            The name of this worker - also used for the thread
+            </summary>
+        </member>
+        <member name="P:NUnit.Framework.Internal.Execution.TestWorker.IsAlive">
+            <summary>
+            Indicates whether the worker thread is running
+            </summary>
+        </member>
+        <member name="F:NUnit.Framework.Internal.Execution.TestWorker._currentWorkItem">
+            <summary>
+            Our ThreadProc, which pulls and runs tests in a loop
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.TestWorker.Start">
+            <summary>
+            Start processing work items.
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.TestWorker.Cancel(System.Boolean)">
+            <summary>
+            Stop the thread, either immediately or after finishing the current WorkItem
+            </summary>
+            <param name="force">true if the thread should be aborted, false if it should allow the currently running test to complete</param>
+        </member>
+        <member name="T:NUnit.Framework.Internal.Execution.TextCapture">
+            <summary>
+            The TextCapture class intercepts console output and writes it
+            to the current execution context, if one is present on the thread.
+            If no execution context is found, the output is written to a
+            default destination, normally the original destination of the
+            intercepted output.
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.TextCapture.#ctor(System.IO.TextWriter)">
+            <summary>
+            Construct a TextCapture object
+            </summary>
+            <param name="defaultWriter">The default destination for non-intercepted output</param>
+        </member>
+        <member name="P:NUnit.Framework.Internal.Execution.TextCapture.Encoding">
+            <summary>
+            Gets the Encoding in use by this TextWriter
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.TextCapture.Write(System.Char)">
+            <summary>
+            Writes a single character
+            </summary>
+            <param name="value">The char to write</param>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.TextCapture.Write(System.String)">
+            <summary>
+            Writes a string
+            </summary>
+            <param name="value">The string to write</param>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.TextCapture.WriteLine(System.String)">
+            <summary>
+            Writes a string followed by a line terminator
+            </summary>
+            <param name="value">The string to write</param>
+        </member>
+        <member name="T:NUnit.Framework.Internal.Execution.WorkItem">
+             <summary>
+             A WorkItem may be an individual test case, a fixture or
+             a higher level grouping of tests. All WorkItems inherit
+             from the abstract WorkItem class, which uses the template
+             pattern to allow derived classes to perform work in
+             whatever way is needed.
+            
+             A WorkItem is created with a particular TestExecutionContext
+             and is responsible for re-establishing that context in the
+             current thread before it begins or resumes execution.
+             </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.WorkItem.CreateWorkItem(NUnit.Framework.Interfaces.ITest,NUnit.Framework.Interfaces.ITestFilter)">
+            <summary>
+            Creates a work item.
+            </summary>
+            <param name="test">The test for which this WorkItem is being created.</param>
+            <param name="filter">The filter to be used in selecting any child Tests.</param>
+            <returns></returns>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.WorkItem.#ctor(NUnit.Framework.Internal.Test)">
+            <summary>
+            Construct a WorkItem for a particular test.
+            </summary>
+            <param name="test">The test that the WorkItem will run</param>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.WorkItem.InitializeContext(NUnit.Framework.Internal.TestExecutionContext)">
+            <summary>
+            Initialize the TestExecutionContext. This must be done
+            before executing the WorkItem.
+            </summary>
+            <remarks>
+            Originally, the context was provided in the constructor
+            but delaying initialization of the context until the item
+            is about to be dispatched allows changes in the parent
+            context during OneTimeSetUp to be reflected in the child.
+            </remarks>
+            <param name="context">The TestExecutionContext to use</param>
+        </member>
+        <member name="E:NUnit.Framework.Internal.Execution.WorkItem.Completed">
+            <summary>
+            Event triggered when the item is complete
+            </summary>
+        </member>
+        <member name="P:NUnit.Framework.Internal.Execution.WorkItem.State">
+            <summary>
+            Gets the current state of the WorkItem
+            </summary>
+        </member>
+        <member name="P:NUnit.Framework.Internal.Execution.WorkItem.Test">
+            <summary>
+            The test being executed by the work item
+            </summary>
+        </member>
+        <member name="P:NUnit.Framework.Internal.Execution.WorkItem.Context">
+            <summary>
+            The execution context
+            </summary>
+        </member>
+        <member name="P:NUnit.Framework.Internal.Execution.WorkItem.WorkerId">
+            <summary>
+            The unique id of the worker executing this item.
+            </summary>
+        </member>
+        <member name="P:NUnit.Framework.Internal.Execution.WorkItem.Actions">
+            <summary>
+            The test actions to be performed before and after this test
+            </summary>
+        </member>
+        <member name="P:NUnit.Framework.Internal.Execution.WorkItem.IsParallelizable">
+            <summary>
+            Indicates whether this WorkItem may be run in parallel
+            </summary>
+        </member>
+        <member name="P:NUnit.Framework.Internal.Execution.WorkItem.Result">
+            <summary>
+            The test result
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.WorkItem.Execute">
+            <summary>
+            Execute the current work item, including any
+            child work items.
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.WorkItem.Cancel(System.Boolean)">
+            <summary>
+            Cancel (abort or stop) a WorkItem
+            </summary>
+            <param name="force">true if the WorkItem should be aborted, false if it should run to completion</param>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.WorkItem.PerformWork">
+            <summary>
+            Method that performs actually performs the work. It should
+            set the State to WorkItemState.Complete when done.
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.WorkItem.WorkItemComplete">
+            <summary>
+            Method called by the derived class when all work is complete
+            </summary>
+        </member>
+        <member name="T:NUnit.Framework.Internal.Execution.WorkItemQueueState">
+            <summary>
+            WorkItemQueueState indicates the current state of a WorkItemQueue
+            </summary>
+        </member>
+        <member name="F:NUnit.Framework.Internal.Execution.WorkItemQueueState.Paused">
+            <summary>
+            The queue is paused
+            </summary>
+        </member>
+        <member name="F:NUnit.Framework.Internal.Execution.WorkItemQueueState.Running">
+            <summary>
+            The queue is running
+            </summary>
+        </member>
+        <member name="F:NUnit.Framework.Internal.Execution.WorkItemQueueState.Stopped">
+            <summary>
+            The queue is stopped
+            </summary>
+        </member>
+        <member name="T:NUnit.Framework.Internal.Execution.WorkItemQueue">
+            <summary>
+            A WorkItemQueue holds work items that are ready to
+            be run, either initially or after some dependency
+            has been satisfied.
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.WorkItemQueue.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:NUnit.Framework.Internal.Execution.WorkItemQueue"/> class.
+            </summary>
+            <param name="name">The name of the queue.</param>
+        </member>
+        <member name="P:NUnit.Framework.Internal.Execution.WorkItemQueue.Name">
+            <summary>
+            Gets the name of the work item queue.
+            </summary>
+        </member>
+        <member name="P:NUnit.Framework.Internal.Execution.WorkItemQueue.ItemsProcessed">
+            <summary>
+            Gets the total number of items processed so far
+            </summary>
+        </member>
+        <member name="P:NUnit.Framework.Internal.Execution.WorkItemQueue.MaxCount">
+            <summary>
+            Gets the maximum number of work items.
+            </summary>
+        </member>
+        <member name="P:NUnit.Framework.Internal.Execution.WorkItemQueue.State">
+            <summary>
+            Gets the current state of the queue
+            </summary>
+        </member>
+        <member name="P:NUnit.Framework.Internal.Execution.WorkItemQueue.IsEmpty">
+            <summary>
+            Get a bool indicating whether the queue is empty.
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.WorkItemQueue.Enqueue(NUnit.Framework.Internal.Execution.WorkItem)">
+            <summary>
+            Enqueue a WorkItem to be processed
+            </summary>
+            <param name="work">The WorkItem to process</param>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.WorkItemQueue.Dequeue">
+            <summary>
+            Dequeue a WorkItem for processing
+            </summary>
+            <returns>A WorkItem or null if the queue has stopped</returns>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.WorkItemQueue.Start">
+            <summary>
+             Start or restart processing of items from the queue
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.WorkItemQueue.Stop">
+            <summary>
+            Signal the queue to stop
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.WorkItemQueue.Pause">
+            <summary>
+            Pause the queue for restarting later
+            </summary>
+        </member>
+        <member name="T:NUnit.Framework.Internal.Execution.WorkItemState">
+            <summary>
+            The current state of a work item
+            </summary>
+        </member>
+        <member name="F:NUnit.Framework.Internal.Execution.WorkItemState.Ready">
+            <summary>
+            Ready to run or continue
+            </summary>
+        </member>
+        <member name="F:NUnit.Framework.Internal.Execution.WorkItemState.Running">
+            <summary>
+            Work Item is executing
+            </summary>
+        </member>
+        <member name="F:NUnit.Framework.Internal.Execution.WorkItemState.Complete">
+            <summary>
+            Complete
+            </summary>
+        </member>
+        <member name="T:NUnit.Framework.Internal.Execution.WorkShift">
+             <summary>
+             The dispatcher needs to do different things at different,
+             non-overlapped times. For example, non-parallel tests may
+             not be run at the same time as parallel tests. We model
+             this using the metaphor of a working shift. The WorkShift
+             class associates one or more WorkItemQueues with one or
+             more TestWorkers.
+            
+             Work in the queues is processed until all queues are empty
+             and all workers are idle. Both tests are needed because a
+             worker that is busy may end up adding more work to one of
+             the queues. At that point, the shift is over and another
+             shift may begin. This cycle continues until all the tests
+             have been run.
+             </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.WorkShift.#ctor(System.String)">
+            <summary>
+            Construct a WorkShift
+            </summary>
+        </member>
+        <member name="E:NUnit.Framework.Internal.Execution.WorkShift.EndOfShift">
+            <summary>
+            Event that fires when the shift has ended
+            </summary>
+        </member>
+        <member name="P:NUnit.Framework.Internal.Execution.WorkShift.IsActive">
+            <summary>
+            Gets a flag indicating whether the shift is currently active
+            </summary>
+        </member>
+        <member name="P:NUnit.Framework.Internal.Execution.WorkShift.Queues">
+            <summary>
+            Gets a list of the queues associated with this shift.
+            </summary>
+            <remarks>Used for testing</remarks>
+        </member>
+        <member name="P:NUnit.Framework.Internal.Execution.WorkShift.Workers">
+            <summary>
+            Gets the list of workers associated with this shift.
+            </summary>
+        </member>
+        <member name="P:NUnit.Framework.Internal.Execution.WorkShift.HasWork">
+            <summary>
+            Gets a bool indicating whether this shift has any work to do
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.WorkShift.AddQueue(NUnit.Framework.Internal.Execution.WorkItemQueue)">
+            <summary>
+            Add a WorkItemQueue to the shift, starting it if the
+            shift is currently active.
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.WorkShift.Assign(NUnit.Framework.Internal.Execution.TestWorker)">
+            <summary>
+            Assign a worker to the shift.
+            </summary>
+            <param name="worker"></param>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.WorkShift.Start">
+            <summary>
+            Start or restart processing for the shift
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.WorkShift.EndShift">
+            <summary>
+            End the shift, pausing all queues and raising
+            the EndOfShift event.
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.WorkShift.ShutDown">
+            <summary>
+            Shut down the shift.
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.Execution.WorkShift.Cancel(System.Boolean)">
+            <summary>
+            Cancel (abort or stop) the shift without completing all work
+            </summary>
+            <param name="force">true if the WorkShift should be aborted, false if it should allow its currently running tests to complete</param>
+        </member>
         <member name="T:NUnit.Framework.Internal.Filters.ClassNameFilter">
             <summary>
             ClassName filter selects tests based on the class FullName
@@ -1710,825 +2545,6 @@
             </summary>
             <param name="exception">The exception.</param>
             <returns>A string representation of the stack trace.</returns>
-        </member>
-        <member name="T:NUnit.Framework.Internal.Execution.CommandBuilder">
-            <summary>
-            A utility class to create TestCommands
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.CommandBuilder.MakeOneTimeSetUpCommand(NUnit.Framework.Internal.TestSuite,System.Collections.Generic.List{NUnit.Framework.Internal.Commands.SetUpTearDownItem},System.Collections.Generic.List{NUnit.Framework.Internal.Commands.TestActionItem})">
-            <summary>
-            Gets the command to be executed before any of
-            the child tests are run.
-            </summary>
-            <returns>A TestCommand</returns>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.CommandBuilder.MakeOneTimeTearDownCommand(NUnit.Framework.Internal.TestSuite,System.Collections.Generic.List{NUnit.Framework.Internal.Commands.SetUpTearDownItem},System.Collections.Generic.List{NUnit.Framework.Internal.Commands.TestActionItem})">
-            <summary>
-            Gets the command to be executed after all of the
-            child tests are run.
-            </summary>
-            <returns>A TestCommand</returns>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.CommandBuilder.MakeTestCommand(NUnit.Framework.Internal.TestMethod)">
-            <summary>
-            Creates a test command for use in running this test.
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.CommandBuilder.MakeSkipCommand(NUnit.Framework.Internal.Test)">
-            <summary>
-            Creates a command for skipping a test. The result returned will
-            depend on the test RunState.
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.CommandBuilder.BuildSetUpTearDownList(System.Type,System.Type,System.Type)">
-            <summary>
-            Builds the set up tear down list.
-            </summary>
-            <param name="fixtureType">Type of the fixture.</param>
-            <param name="setUpType">Type of the set up attribute.</param>
-            <param name="tearDownType">Type of the tear down attribute.</param>
-            <returns>A list of SetUpTearDownItems</returns>
-        </member>
-        <member name="T:NUnit.Framework.Internal.Execution.CompositeWorkItem">
-            <summary>
-            A CompositeWorkItem represents a test suite and
-            encapsulates the execution of the suite as well
-            as all its child tests.
-            </summary>
-        </member>
-        <member name="P:NUnit.Framework.Internal.Execution.CompositeWorkItem.Children">
-            <summary>
-            List of Child WorkItems
-            </summary>
-        </member>
-        <member name="F:NUnit.Framework.Internal.Execution.CompositeWorkItem._countOrder">
-            <summary>
-            A count of how many tests in the work item have a value for the Order Property
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.CompositeWorkItem.#ctor(NUnit.Framework.Internal.TestSuite,NUnit.Framework.Interfaces.ITestFilter)">
-            <summary>
-            Construct a CompositeWorkItem for executing a test suite
-            using a filter to select child tests.
-            </summary>
-            <param name="suite">The TestSuite to be executed</param>
-            <param name="childFilter">A filter used to select child tests</param>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.CompositeWorkItem.PerformWork">
-            <summary>
-            Method that actually performs the work. Overridden
-            in CompositeWorkItem to do setup, run all child
-            items and then do teardown.
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.CompositeWorkItem.WorkItemOrderComparer.Compare(NUnit.Framework.Internal.Execution.WorkItem,NUnit.Framework.Internal.Execution.WorkItem)">
-            <summary>
-            Compares two objects and returns a value indicating whether one is less than, equal to, or greater than the other.
-            </summary>
-            <returns>
-            A signed integer that indicates the relative values of <paramref name="x"/> and <paramref name="y"/>, as shown in the following table.Value Meaning Less than zero<paramref name="x"/> is less than <paramref name="y"/>.Zero<paramref name="x"/> equals <paramref name="y"/>.Greater than zero<paramref name="x"/> is greater than <paramref name="y"/>.
-            </returns>
-            <param name="x">The first object to compare.</param><param name="y">The second object to compare.</param>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.CompositeWorkItem.SortChildren">
-            <summary>
-            Sorts tests under this suite.
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.CompositeWorkItem.Cancel(System.Boolean)">
-            <summary>
-            Cancel (abort or stop) a CompositeWorkItem and all of its children
-            </summary>
-            <param name="force">true if the CompositeWorkItem and all of its children should be aborted, false if it should allow all currently running tests to complete</param>
-        </member>
-        <member name="T:NUnit.Framework.Internal.Execution.EventPumpState">
-            <summary>
-            The EventPumpState enum represents the state of an
-            EventPump.
-            </summary>
-        </member>
-        <member name="F:NUnit.Framework.Internal.Execution.EventPumpState.Stopped">
-            <summary>
-            The pump is stopped
-            </summary>
-        </member>
-        <member name="F:NUnit.Framework.Internal.Execution.EventPumpState.Pumping">
-            <summary>
-            The pump is pumping events with no stop requested
-            </summary>
-        </member>
-        <member name="F:NUnit.Framework.Internal.Execution.EventPumpState.Stopping">
-            <summary>
-            The pump is pumping events but a stop has been requested
-            </summary>
-        </member>
-        <member name="T:NUnit.Framework.Internal.Execution.EventPump">
-            <summary>
-            EventPump pulls events out of an EventQueue and sends
-            them to a listener. It is used to send events back to
-            the client without using the CallContext of the test
-            runner thread.
-            </summary>
-        </member>
-        <member name="F:NUnit.Framework.Internal.Execution.EventPump.synchronousEventSent">
-            <summary>
-            The handle on which a thread enqueuing an event with <see cref="P:NUnit.Framework.Internal.Execution.Event.IsSynchronous"/> == <c>true</c>
-            waits, until the EventPump has sent the event to its listeners.
-            </summary>
-        </member>
-        <member name="F:NUnit.Framework.Internal.Execution.EventPump.eventListener">
-            <summary>
-            The downstream listener to which we send events
-            </summary>
-        </member>
-        <member name="F:NUnit.Framework.Internal.Execution.EventPump.events">
-            <summary>
-            The queue that holds our events
-            </summary>
-        </member>
-        <member name="F:NUnit.Framework.Internal.Execution.EventPump.pumpThread">
-            <summary>
-            Thread to do the pumping
-            </summary>
-        </member>
-        <member name="F:NUnit.Framework.Internal.Execution.EventPump.pumpState">
-            <summary>
-            The current state of the eventpump
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.EventPump.#ctor(NUnit.Framework.Interfaces.ITestListener,NUnit.Framework.Internal.Execution.EventQueue)">
-            <summary>
-            Constructor
-            </summary>
-            <param name="eventListener">The EventListener to receive events</param>
-            <param name="events">The event queue to pull events from</param>
-        </member>
-        <member name="P:NUnit.Framework.Internal.Execution.EventPump.PumpState">
-            <summary>
-            Gets or sets the current state of the pump
-            </summary>
-            <remarks>
-            On <c>volatile</c> and <see cref="M:System.Threading.Thread.MemoryBarrier"/>, see
-            "http://www.albahari.com/threading/part4.aspx".
-            </remarks>
-        </member>
-        <member name="P:NUnit.Framework.Internal.Execution.EventPump.Name">
-            <summary>
-            Gets or sets the name of this EventPump
-            (used only internally and for testing).
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.EventPump.Dispose">
-            <summary>
-            Dispose stops the pump
-            Disposes the used WaitHandle, too.
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.EventPump.Start">
-            <summary>
-            Start the pump
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.EventPump.Stop">
-            <summary>
-            Tell the pump to stop after emptying the queue.
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.EventPump.PumpThreadProc">
-            <summary>
-            Our thread proc for removing items from the event
-            queue and sending them on. Note that this would
-            need to do more locking if any other thread were
-            removing events from the queue.
-            </summary>
-        </member>
-        <member name="T:NUnit.Framework.Internal.Execution.Event">
-            <summary>
-            NUnit.Core.Event is the abstract base for all stored events.
-            An Event is the stored representation of a call to the
-            ITestListener interface and is used to record such calls
-            or to queue them for forwarding on another thread or at
-            a later time.
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.Event.Send(NUnit.Framework.Interfaces.ITestListener)">
-            <summary>
-            The Send method is implemented by derived classes to send the event to the specified listener.
-            </summary>
-            <param name="listener">The listener.</param>
-        </member>
-        <member name="P:NUnit.Framework.Internal.Execution.Event.IsSynchronous">
-            <summary>
-            Gets a value indicating whether this event is delivered synchronously by the NUnit <see cref="T:NUnit.Framework.Internal.Execution.EventPump"/>.
-            <para>
-            If <c>true</c>, and if <see cref="M:NUnit.Framework.Internal.Execution.EventQueue.SetWaitHandleForSynchronizedEvents(System.Threading.AutoResetEvent)"/> has been used to
-            set a WaitHandle, <see cref="M:NUnit.Framework.Internal.Execution.EventQueue.Enqueue(NUnit.Framework.Internal.Execution.Event)"/> blocks its calling thread until the <see cref="T:NUnit.Framework.Internal.Execution.EventPump"/>
-            thread has delivered the event and sets the WaitHandle.
-            </para>
-            </summary>
-        </member>
-        <member name="T:NUnit.Framework.Internal.Execution.TestStartedEvent">
-            <summary>
-            TestStartedEvent holds information needed to call the TestStarted method.
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.TestStartedEvent.#ctor(NUnit.Framework.Interfaces.ITest)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NUnit.Framework.Internal.Execution.TestStartedEvent"/> class.
-            </summary>
-            <param name="test">The test.</param>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.TestStartedEvent.Send(NUnit.Framework.Interfaces.ITestListener)">
-            <summary>
-            Calls TestStarted on the specified listener.
-            </summary>
-            <param name="listener">The listener.</param>
-        </member>
-        <member name="T:NUnit.Framework.Internal.Execution.TestFinishedEvent">
-            <summary>
-            TestFinishedEvent holds information needed to call the TestFinished method.
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.TestFinishedEvent.#ctor(NUnit.Framework.Interfaces.ITestResult)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NUnit.Framework.Internal.Execution.TestFinishedEvent"/> class.
-            </summary>
-            <param name="result">The result.</param>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.TestFinishedEvent.Send(NUnit.Framework.Interfaces.ITestListener)">
-            <summary>
-            Calls TestFinished on the specified listener.
-            </summary>
-            <param name="listener">The listener.</param>
-        </member>
-        <member name="T:NUnit.Framework.Internal.Execution.EventQueue">
-            <summary>
-            Implements a queue of work items each of which
-            is queued as a WaitCallback.
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.EventQueue.#ctor">
-            <summary>
-            Construct a new EventQueue
-            </summary>
-        </member>
-        <member name="F:NUnit.Framework.Internal.Execution.EventQueue.synchronousEventSent">
-            <summary>
-            WaitHandle for synchronous event delivery in <see cref="M:NUnit.Framework.Internal.Execution.EventQueue.Enqueue(NUnit.Framework.Internal.Execution.Event)"/>.
-            <para>
-            Having just one handle for the whole <see cref="T:NUnit.Framework.Internal.Execution.EventQueue"/> implies that
-            there may be only one producer (the test thread) for synchronous events.
-            If there can be multiple producers for synchronous events, one would have
-            to introduce one WaitHandle per event.
-            </para>
-            </summary>
-        </member>
-        <member name="P:NUnit.Framework.Internal.Execution.EventQueue.Count">
-            <summary>
-            Gets the count of items in the queue.
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.EventQueue.SetWaitHandleForSynchronizedEvents(System.Threading.AutoResetEvent)">
-            <summary>
-            Sets a handle on which to wait, when <see cref="M:NUnit.Framework.Internal.Execution.EventQueue.Enqueue(NUnit.Framework.Internal.Execution.Event)"/> is called
-            for an <see cref="T:NUnit.Framework.Internal.Execution.Event"/> with <see cref="P:NUnit.Framework.Internal.Execution.Event.IsSynchronous"/> == true.
-            </summary>
-            <param name="synchronousEventWaitHandle">
-            The wait handle on which to wait, when <see cref="M:NUnit.Framework.Internal.Execution.EventQueue.Enqueue(NUnit.Framework.Internal.Execution.Event)"/> is called
-            for an <see cref="T:NUnit.Framework.Internal.Execution.Event"/> with <see cref="P:NUnit.Framework.Internal.Execution.Event.IsSynchronous"/> == true.
-            <para>The caller is responsible for disposing this wait handle.</para>
-            </param>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.EventQueue.Enqueue(NUnit.Framework.Internal.Execution.Event)">
-            <summary>
-            Enqueues the specified event
-            </summary>
-            <param name="e">The event to enqueue.</param>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.EventQueue.Dequeue(System.Boolean)">
-            <summary>
-            Removes the first element from the queue and returns it (or <c>null</c>).
-            </summary>
-            <param name="blockWhenEmpty">
-            If <c>true</c> and the queue is empty, the calling thread is blocked until
-            either an element is enqueued, or <see cref="M:NUnit.Framework.Internal.Execution.EventQueue.Stop"/> is called.
-            </param>
-            <returns>
-            <list type="bullet">
-              <item>
-                <term>If the queue not empty</term>
-                <description>the first element.</description>
-              </item>
-              <item>
-                <term>otherwise, if <paramref name="blockWhenEmpty"/>==<c>false</c>
-                  or <see cref="M:NUnit.Framework.Internal.Execution.EventQueue.Stop"/> has been called</term>
-                <description><c>null</c>.</description>
-              </item>
-            </list>
-            </returns>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.EventQueue.Stop">
-            <summary>
-            Stop processing of the queue
-            </summary>
-        </member>
-        <member name="T:NUnit.Framework.Internal.Execution.IWorkItemDispatcher">
-            <summary>
-            An IWorkItemDispatcher handles execution of work items.
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.IWorkItemDispatcher.Dispatch(NUnit.Framework.Internal.Execution.WorkItem)">
-            <summary>
-            Dispatch a single work item for execution. The first
-            work item dispatched is saved as the top-level
-            work item and used when stopping the run.
-            </summary>
-            <param name="work">The item to dispatch</param>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.IWorkItemDispatcher.CancelRun(System.Boolean)">
-            <summary>
-            Cancel the ongoing run completely.
-            If no run is in process, the call has no effect.
-            </summary>
-            <param name="force">true if the IWorkItemDispatcher should abort all currently running WorkItems, false if it should allow all currently running WorkItems to complete</param>
-        </member>
-        <member name="T:NUnit.Framework.Internal.Execution.ParallelWorkItemDispatcher">
-            <summary>
-            ParallelWorkItemDispatcher handles execution of work items by
-            queuing them for worker threads to process.
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.ParallelWorkItemDispatcher.#ctor(System.Int32)">
-            <summary>
-            Construct a ParallelWorkItemDispatcher
-            </summary>
-            <param name="levelOfParallelism">Number of workers to use</param>
-        </member>
-        <member name="P:NUnit.Framework.Internal.Execution.ParallelWorkItemDispatcher.Shifts">
-            <summary>
-            Enumerates all the shifts supported by the dispatcher
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.ParallelWorkItemDispatcher.Dispatch(NUnit.Framework.Internal.Execution.WorkItem)">
-            <summary>
-            Dispatch a single work item for execution. The first
-            work item dispatched is saved as the top-level
-            work item and used when stopping the run.
-            </summary>
-            <param name="work">The item to dispatch</param>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.ParallelWorkItemDispatcher.CancelRun(System.Boolean)">
-            <summary>
-            Cancel the ongoing run completely.
-            If no run is in process, the call has no effect.
-            </summary>
-        </member>
-        <member name="T:NUnit.Framework.Internal.Execution.QueuingEventListener">
-            <summary>
-            QueuingEventListener uses an EventQueue to store any
-            events received on its EventListener interface.
-            </summary>
-        </member>
-        <member name="P:NUnit.Framework.Internal.Execution.QueuingEventListener.Events">
-            <summary>
-            The EvenQueue created and filled by this listener
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.QueuingEventListener.TestStarted(NUnit.Framework.Interfaces.ITest)">
-            <summary>
-            A test has started
-            </summary>
-            <param name="test">The test that is starting</param>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.QueuingEventListener.TestFinished(NUnit.Framework.Interfaces.ITestResult)">
-            <summary>
-            A test case finished
-            </summary>
-            <param name="result">Result of the test case</param>
-        </member>
-        <member name="T:NUnit.Framework.Internal.Execution.SimpleWorkItem">
-            <summary>
-            A SimpleWorkItem represents a single test case and is
-            marked as completed immediately upon execution. This
-            class is also used for skipped or ignored test suites.
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.SimpleWorkItem.#ctor(NUnit.Framework.Internal.TestMethod,NUnit.Framework.Interfaces.ITestFilter)">
-            <summary>
-            Construct a simple work item for a test.
-            </summary>
-            <param name="test">The test to be executed</param>
-            <param name="filter">The filter used to select this test</param>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.SimpleWorkItem.PerformWork">
-            <summary>
-            Method that performs actually performs the work.
-            </summary>
-        </member>
-        <member name="T:NUnit.Framework.Internal.Execution.SimpleWorkItemDispatcher">
-            <summary>
-            SimpleWorkItemDispatcher handles execution of WorkItems by
-            directly executing them. It is provided so that a dispatcher
-            is always available in the context, thereby simplifying the
-            code needed to run child tests.
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.SimpleWorkItemDispatcher.Dispatch(NUnit.Framework.Internal.Execution.WorkItem)">
-            <summary>
-            Dispatch a single work item for execution. The first
-            work item dispatched is saved as the top-level
-            work item and a thread is created on which to
-            run it. Subsequent calls come from the top level
-            item or its descendants on the proper thread.
-            </summary>
-            <param name="work">The item to dispatch</param>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.SimpleWorkItemDispatcher.CancelRun(System.Boolean)">
-            <summary>
-            Cancel (abort or stop) the ongoing run.
-            If no run is in process, the call has no effect.
-            </summary>
-            <param name="force">true if the run should be aborted, false if it should allow its currently running test to complete</param>
-        </member>
-        <member name="T:NUnit.Framework.Internal.Execution.TestWorker">
-            <summary>
-            A TestWorker pulls work items from a queue
-            and executes them.
-            </summary>
-        </member>
-        <member name="E:NUnit.Framework.Internal.Execution.TestWorker.Busy">
-            <summary>
-            Event signaled immediately before executing a WorkItem
-            </summary>
-        </member>
-        <member name="E:NUnit.Framework.Internal.Execution.TestWorker.Idle">
-            <summary>
-            Event signaled immediately after executing a WorkItem
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.TestWorker.#ctor(NUnit.Framework.Internal.Execution.WorkItemQueue,System.String,System.Threading.ApartmentState)">
-            <summary>
-            Construct a new TestWorker.
-            </summary>
-            <param name="queue">The queue from which to pull work items</param>
-            <param name="name">The name of this worker</param>
-            <param name="apartmentState">The apartment state to use for running tests</param>
-        </member>
-        <member name="P:NUnit.Framework.Internal.Execution.TestWorker.Name">
-            <summary>
-            The name of this worker - also used for the thread
-            </summary>
-        </member>
-        <member name="P:NUnit.Framework.Internal.Execution.TestWorker.IsAlive">
-            <summary>
-            Indicates whether the worker thread is running
-            </summary>
-        </member>
-        <member name="F:NUnit.Framework.Internal.Execution.TestWorker._currentWorkItem">
-            <summary>
-            Our ThreadProc, which pulls and runs tests in a loop
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.TestWorker.Start">
-            <summary>
-            Start processing work items.
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.TestWorker.Cancel(System.Boolean)">
-            <summary>
-            Stop the thread, either immediately or after finishing the current WorkItem
-            </summary>
-            <param name="force">true if the thread should be aborted, false if it should allow the currently running test to complete</param>
-        </member>
-        <member name="T:NUnit.Framework.Internal.Execution.TextCapture">
-            <summary>
-            The TextCapture class intercepts console output and writes it
-            to the current execution context, if one is present on the thread.
-            If no execution context is found, the output is written to a
-            default destination, normally the original destination of the
-            intercepted output.
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.TextCapture.#ctor(System.IO.TextWriter)">
-            <summary>
-            Construct a TextCapture object
-            </summary>
-            <param name="defaultWriter">The default destination for non-intercepted output</param>
-        </member>
-        <member name="P:NUnit.Framework.Internal.Execution.TextCapture.Encoding">
-            <summary>
-            Gets the Encoding in use by this TextWriter
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.TextCapture.Write(System.Char)">
-            <summary>
-            Writes a single character
-            </summary>
-            <param name="value">The char to write</param>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.TextCapture.Write(System.String)">
-            <summary>
-            Writes a string
-            </summary>
-            <param name="value">The string to write</param>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.TextCapture.WriteLine(System.String)">
-            <summary>
-            Writes a string followed by a line terminator
-            </summary>
-            <param name="value">The string to write</param>
-        </member>
-        <member name="T:NUnit.Framework.Internal.Execution.WorkItem">
-             <summary>
-             A WorkItem may be an individual test case, a fixture or
-             a higher level grouping of tests. All WorkItems inherit
-             from the abstract WorkItem class, which uses the template
-             pattern to allow derived classes to perform work in
-             whatever way is needed.
-            
-             A WorkItem is created with a particular TestExecutionContext
-             and is responsible for re-establishing that context in the
-             current thread before it begins or resumes execution.
-             </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.WorkItem.CreateWorkItem(NUnit.Framework.Interfaces.ITest,NUnit.Framework.Interfaces.ITestFilter)">
-            <summary>
-            Creates a work item.
-            </summary>
-            <param name="test">The test for which this WorkItem is being created.</param>
-            <param name="filter">The filter to be used in selecting any child Tests.</param>
-            <returns></returns>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.WorkItem.#ctor(NUnit.Framework.Internal.Test)">
-            <summary>
-            Construct a WorkItem for a particular test.
-            </summary>
-            <param name="test">The test that the WorkItem will run</param>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.WorkItem.InitializeContext(NUnit.Framework.Internal.TestExecutionContext)">
-            <summary>
-            Initialize the TestExecutionContext. This must be done
-            before executing the WorkItem.
-            </summary>
-            <remarks>
-            Originally, the context was provided in the constructor
-            but delaying initialization of the context until the item
-            is about to be dispatched allows changes in the parent
-            context during OneTimeSetUp to be reflected in the child.
-            </remarks>
-            <param name="context">The TestExecutionContext to use</param>
-        </member>
-        <member name="E:NUnit.Framework.Internal.Execution.WorkItem.Completed">
-            <summary>
-            Event triggered when the item is complete
-            </summary>
-        </member>
-        <member name="P:NUnit.Framework.Internal.Execution.WorkItem.State">
-            <summary>
-            Gets the current state of the WorkItem
-            </summary>
-        </member>
-        <member name="P:NUnit.Framework.Internal.Execution.WorkItem.Test">
-            <summary>
-            The test being executed by the work item
-            </summary>
-        </member>
-        <member name="P:NUnit.Framework.Internal.Execution.WorkItem.Context">
-            <summary>
-            The execution context
-            </summary>
-        </member>
-        <member name="P:NUnit.Framework.Internal.Execution.WorkItem.WorkerId">
-            <summary>
-            The unique id of the worker executing this item.
-            </summary>
-        </member>
-        <member name="P:NUnit.Framework.Internal.Execution.WorkItem.Actions">
-            <summary>
-            The test actions to be performed before and after this test
-            </summary>
-        </member>
-        <member name="P:NUnit.Framework.Internal.Execution.WorkItem.IsParallelizable">
-            <summary>
-            Indicates whether this WorkItem may be run in parallel
-            </summary>
-        </member>
-        <member name="P:NUnit.Framework.Internal.Execution.WorkItem.Result">
-            <summary>
-            The test result
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.WorkItem.Execute">
-            <summary>
-            Execute the current work item, including any
-            child work items.
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.WorkItem.Cancel(System.Boolean)">
-            <summary>
-            Cancel (abort or stop) a WorkItem
-            </summary>
-            <param name="force">true if the WorkItem should be aborted, false if it should run to completion</param>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.WorkItem.PerformWork">
-            <summary>
-            Method that performs actually performs the work. It should
-            set the State to WorkItemState.Complete when done.
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.WorkItem.WorkItemComplete">
-            <summary>
-            Method called by the derived class when all work is complete
-            </summary>
-        </member>
-        <member name="T:NUnit.Framework.Internal.Execution.WorkItemQueueState">
-            <summary>
-            WorkItemQueueState indicates the current state of a WorkItemQueue
-            </summary>
-        </member>
-        <member name="F:NUnit.Framework.Internal.Execution.WorkItemQueueState.Paused">
-            <summary>
-            The queue is paused
-            </summary>
-        </member>
-        <member name="F:NUnit.Framework.Internal.Execution.WorkItemQueueState.Running">
-            <summary>
-            The queue is running
-            </summary>
-        </member>
-        <member name="F:NUnit.Framework.Internal.Execution.WorkItemQueueState.Stopped">
-            <summary>
-            The queue is stopped
-            </summary>
-        </member>
-        <member name="T:NUnit.Framework.Internal.Execution.WorkItemQueue">
-            <summary>
-            A WorkItemQueue holds work items that are ready to
-            be run, either initially or after some dependency
-            has been satisfied.
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.WorkItemQueue.#ctor(System.String)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NUnit.Framework.Internal.Execution.WorkItemQueue"/> class.
-            </summary>
-            <param name="name">The name of the queue.</param>
-        </member>
-        <member name="P:NUnit.Framework.Internal.Execution.WorkItemQueue.Name">
-            <summary>
-            Gets the name of the work item queue.
-            </summary>
-        </member>
-        <member name="P:NUnit.Framework.Internal.Execution.WorkItemQueue.ItemsProcessed">
-            <summary>
-            Gets the total number of items processed so far
-            </summary>
-        </member>
-        <member name="P:NUnit.Framework.Internal.Execution.WorkItemQueue.MaxCount">
-            <summary>
-            Gets the maximum number of work items.
-            </summary>
-        </member>
-        <member name="P:NUnit.Framework.Internal.Execution.WorkItemQueue.State">
-            <summary>
-            Gets the current state of the queue
-            </summary>
-        </member>
-        <member name="P:NUnit.Framework.Internal.Execution.WorkItemQueue.IsEmpty">
-            <summary>
-            Get a bool indicating whether the queue is empty.
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.WorkItemQueue.Enqueue(NUnit.Framework.Internal.Execution.WorkItem)">
-            <summary>
-            Enqueue a WorkItem to be processed
-            </summary>
-            <param name="work">The WorkItem to process</param>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.WorkItemQueue.Dequeue">
-            <summary>
-            Dequeue a WorkItem for processing
-            </summary>
-            <returns>A WorkItem or null if the queue has stopped</returns>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.WorkItemQueue.Start">
-            <summary>
-             Start or restart processing of items from the queue
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.WorkItemQueue.Stop">
-            <summary>
-            Signal the queue to stop
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.WorkItemQueue.Pause">
-            <summary>
-            Pause the queue for restarting later
-            </summary>
-        </member>
-        <member name="T:NUnit.Framework.Internal.Execution.WorkItemState">
-            <summary>
-            The current state of a work item
-            </summary>
-        </member>
-        <member name="F:NUnit.Framework.Internal.Execution.WorkItemState.Ready">
-            <summary>
-            Ready to run or continue
-            </summary>
-        </member>
-        <member name="F:NUnit.Framework.Internal.Execution.WorkItemState.Running">
-            <summary>
-            Work Item is executing
-            </summary>
-        </member>
-        <member name="F:NUnit.Framework.Internal.Execution.WorkItemState.Complete">
-            <summary>
-            Complete
-            </summary>
-        </member>
-        <member name="T:NUnit.Framework.Internal.Execution.WorkShift">
-             <summary>
-             The dispatcher needs to do different things at different,
-             non-overlapped times. For example, non-parallel tests may
-             not be run at the same time as parallel tests. We model
-             this using the metaphor of a working shift. The WorkShift
-             class associates one or more WorkItemQueues with one or
-             more TestWorkers.
-            
-             Work in the queues is processed until all queues are empty
-             and all workers are idle. Both tests are needed because a
-             worker that is busy may end up adding more work to one of
-             the queues. At that point, the shift is over and another
-             shift may begin. This cycle continues until all the tests
-             have been run.
-             </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.WorkShift.#ctor(System.String)">
-            <summary>
-            Construct a WorkShift
-            </summary>
-        </member>
-        <member name="E:NUnit.Framework.Internal.Execution.WorkShift.EndOfShift">
-            <summary>
-            Event that fires when the shift has ended
-            </summary>
-        </member>
-        <member name="P:NUnit.Framework.Internal.Execution.WorkShift.IsActive">
-            <summary>
-            Gets a flag indicating whether the shift is currently active
-            </summary>
-        </member>
-        <member name="P:NUnit.Framework.Internal.Execution.WorkShift.Queues">
-            <summary>
-            Gets a list of the queues associated with this shift.
-            </summary>
-            <remarks>Used for testing</remarks>
-        </member>
-        <member name="P:NUnit.Framework.Internal.Execution.WorkShift.Workers">
-            <summary>
-            Gets the list of workers associated with this shift.
-            </summary>
-        </member>
-        <member name="P:NUnit.Framework.Internal.Execution.WorkShift.HasWork">
-            <summary>
-            Gets a bool indicating whether this shift has any work to do
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.WorkShift.AddQueue(NUnit.Framework.Internal.Execution.WorkItemQueue)">
-            <summary>
-            Add a WorkItemQueue to the shift, starting it if the
-            shift is currently active.
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.WorkShift.Assign(NUnit.Framework.Internal.Execution.TestWorker)">
-            <summary>
-            Assign a worker to the shift.
-            </summary>
-            <param name="worker"></param>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.WorkShift.Start">
-            <summary>
-            Start or restart processing for the shift
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.WorkShift.EndShift">
-            <summary>
-            End the shift, pausing all queues and raising
-            the EndOfShift event.
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.WorkShift.ShutDown">
-            <summary>
-            Shut down the shift.
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Internal.Execution.WorkShift.Cancel(System.Boolean)">
-            <summary>
-            Cancel (abort or stop) the shift without completing all work
-            </summary>
-            <param name="force">true if the WorkShift should be aborted, false if it should allow its currently running tests to complete</param>
         </member>
         <member name="T:NUnit.Framework.Internal.TextMessageWriter">
             <summary>
@@ -3747,9 +3763,14 @@
             The minimum duration for tests
             </summary>
         </member>
-        <member name="F:NUnit.Framework.Internal.TestResult._children">
+        <member name="F:NUnit.Framework.Internal.TestResult.InternalAssertCount">
             <summary>
-            List of child results
+            Aggregate assertion count
+            </summary>
+        </member>
+        <member name="F:NUnit.Framework.Internal.TestResult.RwLock">
+            <summary>
+            ReaderWriterLock
             </summary>
         </member>
         <member name="M:NUnit.Framework.Internal.TestResult.#ctor(NUnit.Framework.Interfaces.ITest)">
@@ -3839,8 +3860,6 @@
         <member name="P:NUnit.Framework.Internal.TestResult.HasChildren">
             <summary>
             Indicates whether this result has any child results.
-            Test HasChildren before accessing Children to avoid
-            the creation of an empty collection.
             </summary>
         </member>
         <member name="P:NUnit.Framework.Internal.TestResult.Children">
@@ -3873,13 +3892,6 @@
             <param name="parentNode">The parent node.</param>
             <param name="recursive">If true, descendant results are included</param>
             <returns></returns>
-        </member>
-        <member name="M:NUnit.Framework.Internal.TestResult.AddResult(NUnit.Framework.Interfaces.ITestResult)">
-            <summary>
-            Adds a child result to this result, setting this result's
-            ResultState to Failure if the child result failed.
-            </summary>
-            <param name="result">The result to be added</param>
         </member>
         <member name="M:NUnit.Framework.Internal.TestResult.SetResult(NUnit.Framework.Interfaces.ResultState)">
             <summary>
@@ -4197,16 +4209,10 @@
             </summary>
             <param name="other">An existing instance of TestExecutionContext.</param>
         </member>
-        <member name="F:NUnit.Framework.Internal.TestExecutionContext.CONTEXT_KEY">
-            <summary>
-            The current context, head of the list of saved contexts.
-            </summary>
-        </member>
         <member name="P:NUnit.Framework.Internal.TestExecutionContext.CurrentContext">
             <summary>
-            Gets the current context.
+            Gets and sets the current context.
             </summary>
-            <value>The current context.</value>
         </member>
         <member name="M:NUnit.Framework.Internal.TestExecutionContext.GetTestExecutionContext">
             <summary>
@@ -4273,7 +4279,8 @@
         </member>
         <member name="P:NUnit.Framework.Internal.TestExecutionContext.Dispatcher">
             <summary>
-            The current WorkItemDispatcher
+            The current WorkItemDispatcher. Made public for 
+            use by nunitlite.tests
             </summary>
         </member>
         <member name="P:NUnit.Framework.Internal.TestExecutionContext.ParallelScope">
@@ -4540,6 +4547,12 @@
             </summary>
             <param name="result">The result of the test</param>
         </member>
+        <member name="M:NUnit.Framework.Internal.TestListener.TestOutput(NUnit.Framework.Interfaces.TestOutput)">
+            <summary>
+            Called when a test produces output for immediate display
+            </summary>
+            <param name="output">A TestOutput object containing the text to display</param>
+        </member>
         <member name="M:NUnit.Framework.Internal.TestListener.#ctor">
             <summary>
             Construct a new TestListener - private so it may not be used.
@@ -4554,6 +4567,16 @@
             <summary>
             TestNameGenerator is able to create test names according to
             a coded pattern.
+            </summary>
+        </member>
+        <member name="F:NUnit.Framework.Internal.TestNameGenerator.DefaultTestNamePattern">
+            <summary>
+            Default pattern used to generate names
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Internal.TestNameGenerator.#ctor">
+            <summary>
+            Construct a TestNameGenerator
             </summary>
         </member>
         <member name="M:NUnit.Framework.Internal.TestNameGenerator.#ctor(System.String)">
@@ -4575,21 +4598,6 @@
             </summary>
             <param name="testMethod">A TestMethod</param>
             <param name="args">Arguments to be used</param>
-            <returns>The display name</returns>
-        </member>
-        <member name="M:NUnit.Framework.Internal.TestNameGenerator.GetDisplayName(System.Reflection.MethodInfo)">
-            <summary>
-            Get the display name for a MethodInfo
-            </summary>
-            <param name="method">A MethodInfo</param>
-            <returns>The display name</returns>
-        </member>
-        <member name="M:NUnit.Framework.Internal.TestNameGenerator.GetDisplayName(System.Reflection.MethodInfo,System.Object[])">
-            <summary>
-            Get the display name for a method with args
-            </summary>
-            <param name="method">A MethodInfo</param>
-            <param name="args">Argument list for the method</param>
             <returns>The display name</returns>
         </member>
         <member name="T:NUnit.Framework.Internal.TestParameters">
@@ -4682,6 +4690,12 @@
             </summary>
             <param name="result">The result of the test</param>
         </member>
+        <member name="M:NUnit.Framework.Internal.TestProgressReporter.TestOutput(NUnit.Framework.Interfaces.TestOutput)">
+            <summary>
+            Called when a test produces output for immediate display
+            </summary>
+            <param name="output">A TestOutput object containing the text to display</param>
+        </member>
         <member name="M:NUnit.Framework.Internal.TestProgressReporter.GetParent(NUnit.Framework.Interfaces.ITest)">
             <summary>
             Returns the parent test item for the targer test item if it exists
@@ -4767,6 +4781,16 @@
             The teardown methods
             </summary>
         </member>
+        <member name="F:NUnit.Framework.Internal.Test.DeclaringTypeInfo">
+            <summary>
+            Used to cache the declaring type for this MethodInfo
+            </summary>
+        </member>
+        <member name="F:NUnit.Framework.Internal.Test._method">
+            <summary>
+            Method property backing field
+            </summary>
+        </member>
         <member name="M:NUnit.Framework.Internal.Test.#ctor(System.String)">
             <summary>
             Constructs a test given its name
@@ -4812,8 +4836,8 @@
         </member>
         <member name="P:NUnit.Framework.Internal.Test.ClassName">
             <summary>
-            Gets the name of the class containing this test. Returns
-            null if the test is not associated with a class.
+            Gets the name of the class where this test was declared.
+            Returns null if the test is not associated with a class.
             </summary>
         </member>
         <member name="P:NUnit.Framework.Internal.Test.MethodName">
@@ -5378,6 +5402,11 @@
             that match the specified flags.
             </summary>
         </member>
+        <member name="M:NUnit.Framework.Internal.TypeWrapper.GetConstructor(System.Type[])">
+            <summary>
+            Gets the public constructor taking the specified argument Types
+            </summary>
+        </member>
         <member name="M:NUnit.Framework.Internal.TypeWrapper.HasConstructor(System.Type[])">
             <summary>
             Returns a value indicating whether this Type has a public constructor taking the specified argument Types.
@@ -5428,6 +5457,16 @@
             when running the test and all its children.
             </summary>
         </member>
+        <member name="P:NUnit.Framework.Internal.TestCaseResult.HasChildren">
+            <summary>
+            Indicates whether this result has any child results.
+            </summary>
+        </member>
+        <member name="P:NUnit.Framework.Internal.TestCaseResult.Children">
+            <summary>
+            Gets the collection of child results.
+            </summary>
+        </member>
         <member name="T:NUnit.Framework.Internal.TestSuiteResult">
             <summary>
             Represents the result of running a test suite
@@ -5463,87 +5502,22 @@
             when running the test and all its children.
             </summary>
         </member>
+        <member name="P:NUnit.Framework.Internal.TestSuiteResult.HasChildren">
+            <summary>
+            Indicates whether this result has any child results.
+            </summary>
+        </member>
+        <member name="P:NUnit.Framework.Internal.TestSuiteResult.Children">
+            <summary>
+            Gets the collection of child results.
+            </summary>
+        </member>
         <member name="M:NUnit.Framework.Internal.TestSuiteResult.AddResult(NUnit.Framework.Interfaces.ITestResult)">
             <summary>
-            Add a child result
+            Adds a child result to this result, setting this result's
+            ResultState to Failure if the child result failed.
             </summary>
-            <param name="result">The child result to be added</param>
-        </member>
-        <member name="T:NUnit.Framework.Compatibility.AttributeHelper">
-            <summary>
-            Provides a platform-independent methods for getting attributes
-            for use by AttributeConstraint and AttributeExistsConstraint.
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Compatibility.AttributeHelper.GetCustomAttributes(System.Object,System.Type,System.Boolean)">
-            <summary>
-            Gets the custom attributes from the given object.
-            </summary>
-            <remarks>Portable libraries do not have an ICustomAttributeProvider, so we need to cast to each of
-            it's direct subtypes and try to get attributes off those instead.</remarks>
-            <param name="actual">The actual.</param>
-            <param name="attributeType">Type of the attribute.</param>
-            <param name="inherit">if set to <c>true</c> [inherit].</param>
-            <returns>A list of the given attribute on the given object.</returns>
-        </member>
-        <member name="T:NUnit.Framework.Compatibility.LongLivedMarshalByRefObject">
-            <summary>
-            A MarshalByRefObject that lives forever
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Compatibility.LongLivedMarshalByRefObject.InitializeLifetimeService">
-            <summary>
-            Obtains a lifetime service object to control the lifetime policy for this instance.
-            </summary>
-        </member>
-        <member name="T:NUnit.Framework.Compatibility.Stopwatch">
-            <summary>
-            This class is a System.Diagnostics.Stopwatch on operating systems that support it. On those that don't,
-            it replicates the functionality at the resolution supported.
-            </summary>
-        </member>
-        <member name="T:NUnit.Framework.Guard">
-            <summary>
-            Class used to guard against unexpected argument values
-            or operations by throwing an appropriate exception.
-            </summary>
-        </member>
-        <member name="M:NUnit.Framework.Guard.ArgumentNotNull(System.Object,System.String)">
-            <summary>
-            Throws an exception if an argument is null
-            </summary>
-            <param name="value">The value to be tested</param>
-            <param name="name">The name of the argument</param>
-        </member>
-        <member name="M:NUnit.Framework.Guard.ArgumentNotNullOrEmpty(System.String,System.String)">
-            <summary>
-            Throws an exception if a string argument is null or empty
-            </summary>
-            <param name="value">The value to be tested</param>
-            <param name="name">The name of the argument</param>
-        </member>
-        <member name="M:NUnit.Framework.Guard.ArgumentInRange(System.Boolean,System.String,System.String)">
-            <summary>
-            Throws an ArgumentOutOfRangeException if the specified condition is not met.
-            </summary>
-            <param name="condition">The condition that must be met</param>
-            <param name="message">The exception message to be used</param>
-            <param name="paramName">The name of the argument</param>
-        </member>
-        <member name="M:NUnit.Framework.Guard.ArgumentValid(System.Boolean,System.String,System.String)">
-            <summary>
-            Throws an ArgumentException if the specified condition is not met.
-            </summary>
-            <param name="condition">The condition that must be met</param>
-            <param name="message">The exception message to be used</param>
-            <param name="paramName">The name of the argument</param>
-        </member>
-        <member name="M:NUnit.Framework.Guard.OperationValid(System.Boolean,System.String)">
-            <summary>
-            Throws an InvalidOperationException if the specified condition is not met.
-            </summary>
-            <param name="condition">The condition that must be met</param>
-            <param name="message">The exception message to be used</param>
+            <param name="result">The result to be added</param>
         </member>
         <member name="T:NUnit.Framework.ActionTargets">
             <summary>
@@ -5581,7 +5555,7 @@
             Initializes a new instance of the <see cref="T:NUnit.Framework.Api.DefaultTestAssemblyBuilder"/> class.
             </summary>
         </member>
-        <member name="M:NUnit.Framework.Api.DefaultTestAssemblyBuilder.Build(System.Reflection.Assembly,System.Collections.IDictionary)">
+        <member name="M:NUnit.Framework.Api.DefaultTestAssemblyBuilder.Build(System.Reflection.Assembly,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
             Build a suite of tests from a provided assembly
             </summary>
@@ -5591,7 +5565,7 @@
             A TestSuite containing the tests found in the assembly
             </returns>
         </member>
-        <member name="M:NUnit.Framework.Api.DefaultTestAssemblyBuilder.Build(System.String,System.Collections.IDictionary)">
+        <member name="M:NUnit.Framework.Api.DefaultTestAssemblyBuilder.Build(System.String,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
             Build a suite of tests given the filename of an assembly
             </summary>
@@ -5739,7 +5713,7 @@
             <param name="targetNode">Target node</param>
             <returns>The new node</returns>
         </member>
-        <member name="M:NUnit.Framework.Api.FrameworkController.InsertSettingsElement(NUnit.Framework.Interfaces.TNode,System.Collections.IDictionary)">
+        <member name="M:NUnit.Framework.Api.FrameworkController.InsertSettingsElement(NUnit.Framework.Interfaces.TNode,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
             Inserts settings element
             </summary>
@@ -5840,7 +5814,7 @@
             an assembly filename.
             </summary>
         </member>
-        <member name="M:NUnit.Framework.Api.ITestAssemblyBuilder.Build(System.Reflection.Assembly,System.Collections.IDictionary)">
+        <member name="M:NUnit.Framework.Api.ITestAssemblyBuilder.Build(System.Reflection.Assembly,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
             Build a suite of tests from a provided assembly
             </summary>
@@ -5848,7 +5822,7 @@
             <param name="options">A dictionary of options to use in building the suite</param>
             <returns>A TestSuite containing the tests found in the assembly</returns>
         </member>
-        <member name="M:NUnit.Framework.Api.ITestAssemblyBuilder.Build(System.String,System.Collections.IDictionary)">
+        <member name="M:NUnit.Framework.Api.ITestAssemblyBuilder.Build(System.String,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
             Build a suite of tests given the filename of an assembly
             </summary>
@@ -5890,7 +5864,7 @@
             Indicates whether a test run is complete
             </summary>
         </member>
-        <member name="M:NUnit.Framework.Api.ITestAssemblyRunner.Load(System.String,System.Collections.IDictionary)">
+        <member name="M:NUnit.Framework.Api.ITestAssemblyRunner.Load(System.String,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
             Loads the tests found in an Assembly, returning an
             indication of whether or not the load succeeded.
@@ -5899,7 +5873,7 @@
             <param name="settings">Dictionary of options to use in loading the test</param>
             <returns>An ITest representing the loaded tests</returns>
         </member>
-        <member name="M:NUnit.Framework.Api.ITestAssemblyRunner.Load(System.Reflection.Assembly,System.Collections.IDictionary)">
+        <member name="M:NUnit.Framework.Api.ITestAssemblyRunner.Load(System.Reflection.Assembly,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
             Loads the tests found in an Assembly, returning an
             indication of whether or not the load succeeded.
@@ -5999,7 +5973,7 @@
             The TestExecutionContext for the top level WorkItem
             </summary>
         </member>
-        <member name="M:NUnit.Framework.Api.NUnitTestAssemblyRunner.Load(System.String,System.Collections.IDictionary)">
+        <member name="M:NUnit.Framework.Api.NUnitTestAssemblyRunner.Load(System.String,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
             Loads the tests found in an Assembly
             </summary>
@@ -6007,7 +5981,7 @@
             <param name="settings">Dictionary of option settings for loading the assembly</param>
             <returns>True if the load was successful</returns>
         </member>
-        <member name="M:NUnit.Framework.Api.NUnitTestAssemblyRunner.Load(System.Reflection.Assembly,System.Collections.IDictionary)">
+        <member name="M:NUnit.Framework.Api.NUnitTestAssemblyRunner.Load(System.Reflection.Assembly,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
             Loads the tests found in an Assembly
             </summary>
@@ -6049,16 +6023,16 @@
             <param name="timeout">Time to wait in milliseconds</param>
             <returns>True if the run completed, otherwise false</returns>
         </member>
-        <member name="M:NUnit.Framework.Api.NUnitTestAssemblyRunner.StartRun(NUnit.Framework.Interfaces.ITestListener)">
-            <summary>
-            Initiate the test run.
-            </summary>
-        </member>
         <member name="M:NUnit.Framework.Api.NUnitTestAssemblyRunner.StopRun(System.Boolean)">
             <summary>
             Signal any test run that is in process to stop. Return without error if no test is running.
             </summary>
             <param name="force">If true, kill any tests that are currently running</param>
+        </member>
+        <member name="M:NUnit.Framework.Api.NUnitTestAssemblyRunner.StartRun(NUnit.Framework.Interfaces.ITestListener)">
+            <summary>
+            Initiate the test run.
+            </summary>
         </member>
         <member name="M:NUnit.Framework.Api.NUnitTestAssemblyRunner.CreateTestExecutionContext(NUnit.Framework.Interfaces.ITestListener)">
             <summary>
@@ -9785,6 +9759,14 @@
             </summary>
             <param name="itemConstraint"></param>
         </member>
+        <member name="P:NUnit.Framework.Constraints.AllItemsConstraint.DisplayName">
+            <summary> 
+            The display name of this Constraint for use by ToString().
+            The default value is the name of the constraint with
+            trailing "Constraint" removed. Derived classes may set
+            this to another name in their constructors.
+            </summary>
+        </member>
         <member name="M:NUnit.Framework.Constraints.AllItemsConstraint.ApplyTo``1(``0)">
             <summary>
             Apply the item constraint to each item in the collection,
@@ -10016,6 +9998,14 @@
             </summary>
             <param name="expected"></param>
         </member>
+        <member name="P:NUnit.Framework.Constraints.CollectionContainsConstraint.DisplayName">
+            <summary> 
+            The display name of this Constraint for use by ToString().
+            The default value is the name of the constraint with
+            trailing "Constraint" removed. Derived classes may set
+            this to another name in their constructors.
+            </summary>
+        </member>
         <member name="P:NUnit.Framework.Constraints.CollectionContainsConstraint.Description">
             <summary>
             The Description of what this constraint tests, for
@@ -10052,6 +10042,14 @@
             Construct a CollectionEquivalentConstraint
             </summary>
             <param name="expected"></param>
+        </member>
+        <member name="P:NUnit.Framework.Constraints.CollectionEquivalentConstraint.DisplayName">
+            <summary> 
+            The display name of this Constraint for use by ToString().
+            The default value is the name of the constraint with
+            trailing "Constraint" removed. Derived classes may set
+            this to another name in their constructors.
+            </summary>
         </member>
         <member name="P:NUnit.Framework.Constraints.CollectionEquivalentConstraint.Description">
             <summary>
@@ -10152,6 +10150,14 @@
             Construct a CollectionOrderedConstraint
             </summary>
         </member>
+        <member name="P:NUnit.Framework.Constraints.CollectionOrderedConstraint.DisplayName">
+            <summary> 
+            The display name of this Constraint for use by ToString().
+            The default value is the name of the constraint with
+            trailing "Constraint" removed. Derived classes may set
+            this to another name in their constructors.
+            </summary>
+        </member>
         <member name="P:NUnit.Framework.Constraints.CollectionOrderedConstraint.Descending">
             <summary>
              If used performs a reverse comparison
@@ -10209,6 +10215,14 @@
             </summary>
             <param name="expected">The collection that the actual value is expected to be a subset of</param>
         </member>
+        <member name="P:NUnit.Framework.Constraints.CollectionSubsetConstraint.DisplayName">
+            <summary> 
+            The display name of this Constraint for use by ToString().
+            The default value is the name of the constraint with
+            trailing "Constraint" removed. Derived classes may set
+            this to another name in their constructors.
+            </summary>
+        </member>
         <member name="P:NUnit.Framework.Constraints.CollectionSubsetConstraint.Description">
             <summary>
             The Description of what this constraint tests, for
@@ -10241,6 +10255,14 @@
             Construct a CollectionSupersetConstraint
             </summary>
             <param name="expected">The collection that the actual value is expected to be a superset of</param>
+        </member>
+        <member name="P:NUnit.Framework.Constraints.CollectionSupersetConstraint.DisplayName">
+            <summary> 
+            The display name of this Constraint for use by ToString().
+            The default value is the name of the constraint with
+            trailing "Constraint" removed. Derived classes may set
+            this to another name in their constructors.
+            </summary>
         </member>
         <member name="P:NUnit.Framework.Constraints.CollectionSupersetConstraint.Description">
             <summary>
@@ -11796,6 +11818,14 @@
             </summary>
             <param name="expected"></param>
         </member>
+        <member name="P:NUnit.Framework.Constraints.DictionaryContainsKeyConstraint.DisplayName">
+            <summary> 
+            The display name of this Constraint for use by ToString().
+            The default value is the name of the constraint with
+            trailing "Constraint" removed. Derived classes may set
+            this to another name in their constructors.
+            </summary>
+        </member>
         <member name="P:NUnit.Framework.Constraints.DictionaryContainsKeyConstraint.Description">
             <summary>
             The Description of what this constraint tests, for
@@ -11818,6 +11848,14 @@
             Construct a DictionaryContainsValueConstraint
             </summary>
             <param name="expected"></param>
+        </member>
+        <member name="P:NUnit.Framework.Constraints.DictionaryContainsValueConstraint.DisplayName">
+            <summary> 
+            The display name of this Constraint for use by ToString().
+            The default value is the name of the constraint with
+            trailing "Constraint" removed. Derived classes may set
+            this to another name in their constructors.
+            </summary>
         </member>
         <member name="P:NUnit.Framework.Constraints.DictionaryContainsValueConstraint.Description">
             <summary>
@@ -12209,6 +12247,14 @@
             </summary>
             <param name="type">The expected Type.</param>
         </member>
+        <member name="P:NUnit.Framework.Constraints.ExactTypeConstraint.DisplayName">
+            <summary> 
+            The display name of this Constraint for use by ToString().
+            The default value is the name of the constraint with
+            trailing "Constraint" removed. Derived classes may set
+            this to another name in their constructors.
+            </summary>
+        </member>
         <member name="M:NUnit.Framework.Constraints.ExactTypeConstraint.Matches(System.Object)">
             <summary>
             Apply the constraint to an actual value, returning true if it succeeds
@@ -12532,6 +12578,14 @@
             </summary>
             <param name="type">The expected Type</param>
         </member>
+        <member name="P:NUnit.Framework.Constraints.InstanceOfTypeConstraint.DisplayName">
+            <summary> 
+            The display name of this Constraint for use by ToString().
+            The default value is the name of the constraint with
+            trailing "Constraint" removed. Derived classes may set
+            this to another name in their constructors.
+            </summary>
+        </member>
         <member name="M:NUnit.Framework.Constraints.InstanceOfTypeConstraint.Matches(System.Object)">
             <summary>
             Apply the constraint to an actual value, returning true if it succeeds
@@ -12819,6 +12873,14 @@
             Construct a SomeItemsConstraint on top of an existing constraint
             </summary>
             <param name="itemConstraint"></param>
+        </member>
+        <member name="P:NUnit.Framework.Constraints.NoItemConstraint.DisplayName">
+            <summary> 
+            The display name of this Constraint for use by ToString().
+            The default value is the name of the constraint with
+            trailing "Constraint" removed. Derived classes may set
+            this to another name in their constructors.
+            </summary>
         </member>
         <member name="M:NUnit.Framework.Constraints.NoItemConstraint.ApplyTo``1(``0)">
             <summary>
@@ -13423,12 +13485,12 @@
             Abstract base class used for prefixes
             </summary>
         </member>
-        <member name="F:NUnit.Framework.Constraints.PrefixConstraint.baseConstraint">
+        <member name="P:NUnit.Framework.Constraints.PrefixConstraint.BaseConstraint">
             <summary>
             The base constraint
             </summary>
         </member>
-        <member name="F:NUnit.Framework.Constraints.PrefixConstraint.descriptionPrefix">
+        <member name="P:NUnit.Framework.Constraints.PrefixConstraint.DescriptionPrefix">
             <summary>
             Prefix used in forming the constraint description
             </summary>
@@ -13722,6 +13784,14 @@
             Construct a SomeItemsConstraint on top of an existing constraint
             </summary>
             <param name="itemConstraint"></param>
+        </member>
+        <member name="P:NUnit.Framework.Constraints.SomeItemsConstraint.DisplayName">
+            <summary> 
+            The display name of this Constraint for use by ToString().
+            The default value is the name of the constraint with
+            trailing "Constraint" removed. Derived classes may set
+            this to another name in their constructors.
+            </summary>
         </member>
         <member name="M:NUnit.Framework.Constraints.SomeItemsConstraint.ApplyTo``1(``0)">
             <summary>
@@ -15525,6 +15595,12 @@
             </summary>
             <param name="result">The result of the test</param>
         </member>
+        <member name="M:NUnit.Framework.Interfaces.ITestListener.TestOutput(NUnit.Framework.Interfaces.TestOutput)">
+            <summary>
+            Called when a test produces output for immediate display
+            </summary>
+            <param name="output">A TestOutput object containing the text to display</param>
+        </member>
         <member name="T:NUnit.Framework.Interfaces.ITestBuilder">
             <summary>
             The ITestBuilder interface is exposed by a class that knows how to
@@ -15741,6 +15817,11 @@
             <summary>
             Returns an array of IMethodInfos for methods of this Type
             that match the specified flags.
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Interfaces.ITypeInfo.GetConstructor(System.Type[])">
+            <summary>
+            Gets the public constructor taking the specified argument Types
             </summary>
         </member>
         <member name="M:NUnit.Framework.Interfaces.ITypeInfo.HasConstructor(System.Type[])">
@@ -15990,6 +16071,47 @@
             <summary>
             The test has been ignored. May appear on
             a Test, when the IgnoreAttribute is used.
+            </summary>
+        </member>
+        <member name="T:NUnit.Framework.Interfaces.TestOutput">
+            <summary>
+            The TestOutput class holds a unit of output from 
+            a test to a specific output stream
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Interfaces.TestOutput.#ctor(System.String,System.String,System.String)">
+            <summary>
+            Construct with text, ouput destination type and
+            the name of the test that produced the output.
+            </summary>
+            <param name="text">Text to be output</param>
+            <param name="stream">Name of the stream or channel to which the text should be written</param>
+            <param name="testName">FullName of test that produced the output</param>
+        </member>
+        <member name="M:NUnit.Framework.Interfaces.TestOutput.ToString">
+            <summary>
+            Return string representation of the object for debugging
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:NUnit.Framework.Interfaces.TestOutput.Text">
+            <summary>
+            Get the text 
+            </summary>
+        </member>
+        <member name="P:NUnit.Framework.Interfaces.TestOutput.Stream">
+            <summary>
+            Get the output type
+            </summary>
+        </member>
+        <member name="P:NUnit.Framework.Interfaces.TestOutput.TestName">
+            <summary>
+            Get the name of the test that created the output
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.Interfaces.TestOutput.ToXml">
+            <summary>
+            Convert the TestOutput object to an XML string
             </summary>
         </member>
         <member name="T:NUnit.Framework.Interfaces.TestStatus">
@@ -16803,6 +16925,21 @@
             Gets a TextWriter that will send output to the current test result.
             </summary>
         </member>
+        <member name="F:NUnit.Framework.TestContext.Error">
+            <summary>
+            Gets a TextWriter that will send output directly to Console.Error
+            </summary>
+        </member>
+        <member name="F:NUnit.Framework.TestContext.Progress">
+            <summary>
+            Gets a TextWriter for use in displaying immediate progress messages
+            </summary>
+        </member>
+        <member name="F:NUnit.Framework.TestContext.Parameters">
+            <summary>
+            TestParameters object holds parameters for the test run, if any are specified
+            </summary>
+        </member>
         <member name="P:NUnit.Framework.TestContext.Test">
             <summary>
             Get a representation of the current test.
@@ -17103,6 +17240,66 @@
             <param name="reason">The reason.</param>
             <returns></returns>
         </member>
+        <member name="T:NUnit.Framework.TestParameters">
+            <summary>
+            TestParameters class holds any named parameters supplied to the test run
+            </summary>
+        </member>
+        <member name="P:NUnit.Framework.TestParameters.Count">
+            <summary>
+            Gets the number of test parameters
+            </summary>
+        </member>
+        <member name="P:NUnit.Framework.TestParameters.Names">
+            <summary>
+            Gets a collection of the test parameter names
+            </summary>
+        </member>
+        <member name="M:NUnit.Framework.TestParameters.Exists(System.String)">
+            <summary>
+            Gets a flag indicating whether a parameter with the specified name exists.N
+            </summary>
+            <param name="name">Name of the parameter</param>
+            <returns>True if it exists, otherwise false</returns>
+        </member>
+        <member name="P:NUnit.Framework.TestParameters.Item(System.String)">
+            <summary>
+            Indexer provides access to the internal dictionary
+            </summary>
+            <param name="name">Name of the parameter</param>
+            <returns>Value of the parameter or null if not present</returns>
+        </member>
+        <member name="M:NUnit.Framework.TestParameters.Get(System.String)">
+            <summary>
+            Get method is a simple alternative to the indexer
+            </summary>
+            <param name="name">Name of the paramter</param>
+            <returns>Value of the parameter or null if not present</returns>
+        </member>
+        <member name="M:NUnit.Framework.TestParameters.Get(System.String,System.String)">
+            <summary>
+            Get the value of a parameter or a default string
+            </summary>
+            <param name="name">Name of the parameter</param>
+            <param name="defaultValue">Default value of the parameter</param>
+            <returns>Value of the parameter or default value if not present</returns>
+        </member>
+        <member name="M:NUnit.Framework.TestParameters.Get``1(System.String,``0)">
+            <summary>
+            Get the value of a parameter or return a default
+            </summary>
+            <typeparam name="T">The return Type</typeparam>
+            <param name="name">Name of the parameter</param>
+            <param name="defaultValue">Default value of the parameter</param>
+            <returns>Value of the parameter or default value if not present</returns>
+        </member>
+        <member name="M:NUnit.Framework.TestParameters.Add(System.String,System.String)">
+            <summary>
+            Adds a parameter to the list
+            </summary>
+            <param name="name">Name of the parameter</param>
+            <param name="value">Value of the parameter</param>
+        </member>
         <member name="T:NUnit.Framework.Throws">
             <summary>
             Helper class with properties and methods that supply
@@ -17184,6 +17381,49 @@
             <summary>
             Directory used for file output if not specified on commandline.
             </summary>
+        </member>
+        <member name="T:NUnit.Guard">
+            <summary>
+            Class used to guard against unexpected argument values
+            or operations by throwing an appropriate exception.
+            </summary>
+        </member>
+        <member name="M:NUnit.Guard.ArgumentNotNull(System.Object,System.String)">
+            <summary>
+            Throws an exception if an argument is null
+            </summary>
+            <param name="value">The value to be tested</param>
+            <param name="name">The name of the argument</param>
+        </member>
+        <member name="M:NUnit.Guard.ArgumentNotNullOrEmpty(System.String,System.String)">
+            <summary>
+            Throws an exception if a string argument is null or empty
+            </summary>
+            <param name="value">The value to be tested</param>
+            <param name="name">The name of the argument</param>
+        </member>
+        <member name="M:NUnit.Guard.ArgumentInRange(System.Boolean,System.String,System.String)">
+            <summary>
+            Throws an ArgumentOutOfRangeException if the specified condition is not met.
+            </summary>
+            <param name="condition">The condition that must be met</param>
+            <param name="message">The exception message to be used</param>
+            <param name="paramName">The name of the argument</param>
+        </member>
+        <member name="M:NUnit.Guard.ArgumentValid(System.Boolean,System.String,System.String)">
+            <summary>
+            Throws an ArgumentException if the specified condition is not met.
+            </summary>
+            <param name="condition">The condition that must be met</param>
+            <param name="message">The exception message to be used</param>
+            <param name="paramName">The name of the argument</param>
+        </member>
+        <member name="M:NUnit.Guard.OperationValid(System.Boolean,System.String)">
+            <summary>
+            Throws an InvalidOperationException if the specified condition is not met.
+            </summary>
+            <param name="condition">The condition that must be met</param>
+            <param name="message">The exception message to be used</param>
         </member>
         <member name="T:NUnit.Common.PackageSettings">
             <summary>
@@ -17301,6 +17541,11 @@
             Defaults to false.
             </summary>
         </member>
+        <member name="F:NUnit.Common.PackageSettings.LoadUserProfile">
+            <summary>
+            Bool flag indicating that user profile should be loaded on test runner processes
+            </summary>
+        </member>
         <member name="F:NUnit.Common.PackageSettings.DefaultTimeout">
             <summary>
             Integer value in milliseconds for the default timeout value
@@ -17344,6 +17589,16 @@
             If true, use of the event queue is suppressed and test events are synchronous.
             </summary>
         </member>
+        <member name="F:NUnit.Common.PackageSettings.DefaultTestNamePattern">
+            <summary>
+            The default naming pattern used in generating test names
+            </summary>
+        </member>
+        <member name="F:NUnit.Common.PackageSettings.TestParameters">
+            <summary>
+            Parameters to be passed on to the test
+            </summary>
+        </member>
         <member name="F:NUnit.Common.PackageSettings.ImageRuntimeVersion">
             <summary>
             If the package represents an assembly, then this is the CLR version
@@ -17366,6 +17621,60 @@
         <member name="F:NUnit.Common.PackageSettings.ImageTargetFrameworkName">
             <summary>
             The FrameworkName specified on a TargetFrameworkAttribute for the assembly
+            </summary>
+        </member>
+        <member name="T:NUnit.Compatibility.AttributeHelper">
+            <summary>
+            Provides a platform-independent methods for getting attributes
+            for use by AttributeConstraint and AttributeExistsConstraint.
+            </summary>
+        </member>
+        <member name="M:NUnit.Compatibility.AttributeHelper.GetCustomAttributes(System.Object,System.Type,System.Boolean)">
+            <summary>
+            Gets the custom attributes from the given object.
+            </summary>
+            <remarks>Portable libraries do not have an ICustomAttributeProvider, so we need to cast to each of
+            it's direct subtypes and try to get attributes off those instead.</remarks>
+            <param name="actual">The actual.</param>
+            <param name="attributeType">Type of the attribute.</param>
+            <param name="inherit">if set to <c>true</c> [inherit].</param>
+            <returns>A list of the given attribute on the given object.</returns>
+        </member>
+        <member name="T:NUnit.Compatibility.LongLivedMarshalByRefObject">
+            <summary>
+            A MarshalByRefObject that lives forever
+            </summary>
+        </member>
+        <member name="M:NUnit.Compatibility.LongLivedMarshalByRefObject.InitializeLifetimeService">
+            <summary>
+            Obtains a lifetime service object to control the lifetime policy for this instance.
+            </summary>
+        </member>
+        <member name="T:NUnit.Compatibility.AdditionalTypeExtensions">
+            <summary>
+            Type extensions that apply to all target frameworks
+            </summary>
+        </member>
+        <member name="M:NUnit.Compatibility.AdditionalTypeExtensions.ParametersMatch(System.Reflection.ParameterInfo[],System.Type[])">
+            <summary>
+            Determines if the given <see cref="T:System.Type"/> array is castable/matches the <see cref="T:System.Reflection.ParameterInfo"/> array.
+            </summary>
+            <param name="pinfos"></param>
+            <param name="ptypes"></param>
+            <returns></returns>
+        </member>
+        <member name="M:NUnit.Compatibility.AdditionalTypeExtensions.IsCastableFrom(System.Type,System.Type)">
+            <summary>
+            Determines if one type can be implicitly converted from another
+            </summary>
+            <param name="to"></param>
+            <param name="from"></param>
+            <returns></returns>
+        </member>
+        <member name="T:NUnit.Compatibility.NUnitNullType">
+            <summary>
+            This class is used as a flag when we get a parameter list for a method/constructor, but
+            we do not know one of the types because null was passed in.
             </summary>
         </member>
     </members>
