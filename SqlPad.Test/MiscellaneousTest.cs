@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text;
@@ -18,8 +19,14 @@ namespace SqlPad.Test
 				var bytes = Encoding.UTF8.GetBytes("d676čžřčýžřáýíýžážřá");
 				var hextString = bytes.ToHexString();
 
-				const string expectedResult = "64363736C48DC5BEC599C48DC3BDC5BEC599C3A1C3BDC3ADC3BDC5BEC3A1C5BEC599C3A1";
-				hextString.ShouldBe(expectedResult);
+				hextString.ShouldBe("64363736C48DC5BEC599C48DC3BDC5BEC599C3A1C3BDC3ADC3BDC5BEC3A1C5BEC599C3A1");
+			}
+
+			[Test]
+			public void TestEmptyToHexString()
+			{
+				var hextString = new byte[0].ToHexString();
+				hextString.ShouldBe(String.Empty);
 			}
 
 			[Test]

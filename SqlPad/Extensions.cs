@@ -98,17 +98,21 @@ namespace SqlPad
 			}
 		}
 
-		public static string ToHexString(this byte[] byteArray)
-		{
-			var characters = new char[byteArray.Length * 2];
+		private static readonly char[] HexSymbolLookup = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
-			for (var i = 0; i < byteArray.Length; ++i)
+		public static string ToHexString(this byte[] data)
+		{
+			var length = data.Length;
+			var characters = new char[length * 2];
+			var sourceIndex = 0;
+			var targetIndex = 0;
+
+			byte @byte;
+			while (sourceIndex < length)
 			{
-				var b = ((byte)(byteArray[i] >> 4));
-				var index = 2 * i;
-				characters[index] = (char)(b > 9 ? b + 0x37 : b + 0x30);
-				b = ((byte)(byteArray[i] & 0xF));
-				characters[index + 1] = (char)(b > 9 ? b + 0x37 : b + 0x30);
+				@byte = data[sourceIndex++];
+				characters[targetIndex++] = HexSymbolLookup[@byte >> 4];
+				characters[targetIndex++] = HexSymbolLookup[@byte & 0xF];
 			}
 
 			return new string(characters);
