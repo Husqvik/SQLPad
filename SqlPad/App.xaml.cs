@@ -121,7 +121,7 @@ namespace SqlPad
 
 			try
 			{
-				Task.Factory.StartNew(synchronousOperation, cancellationToken)
+				Task.Run(synchronousOperation, cancellationToken)
 					.ContinueWith(t => AfterExecutionHandler(t, source, registration), CancellationToken.None);
 			}
 			catch (Exception exception)

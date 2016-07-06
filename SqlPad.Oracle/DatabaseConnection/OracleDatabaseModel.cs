@@ -1095,7 +1095,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					} while (true);
 
 					_schemas = _databaseModel._dataDictionaryMapper.GetSchemaNames().ToList().AsReadOnly();
-					Trace.WriteLine("Schema metadata loaded. ");
+					Trace.WriteLine($"{DateTime.Now} - Connection string '{_databaseModel._connectionStringName}' schema metadata loaded. ");
 				}
 			}
 		}
