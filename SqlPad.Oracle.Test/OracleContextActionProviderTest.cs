@@ -478,5 +478,14 @@ namespace SqlPad.Oracle.Test
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 14).SingleOrDefault(a => a.Name == ExpandViewCommand.Title);
 			action.ShouldNotBe(null);
 		}
+
+		[Test]
+		public void TestConfigureNamedParameterCommandAvailable()
+		{
+			const string query1 = @"SELECT to_char(10) FROM dual";
+
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 7).SingleOrDefault(a => a.Name == ConfigureNamedParameterCommand.Title);
+			action.ShouldNotBe(null);
+		}
 	}
 }

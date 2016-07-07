@@ -325,8 +325,12 @@ namespace SqlPad.Oracle.Commands
 
 		private static string BuildQualifiedColumnLabel(OracleObjectIdentifier columnOwner, string columnName, bool applyFormatting)
 		{
-			var prefix = String.IsNullOrEmpty(columnOwner.Name) ? null : $"{(applyFormatting ? columnOwner.ToFormattedString() : columnOwner.ToString())}.";
+			var prefix = String.IsNullOrEmpty(columnOwner.Name)
+				? null
+				: $"{(applyFormatting ? columnOwner.ToFormattedString() : columnOwner.ToLabel())}.";
+
 			columnName = columnName.ToSimpleIdentifier();
+
 			if (applyFormatting)
 			{
 				var formatOption = OracleConfiguration.Configuration.Formatter.FormatOptions.Identifier;

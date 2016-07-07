@@ -157,18 +157,26 @@ namespace SqlPad.Oracle
 				actionList.Add(new ContextAction(ExpandViewCommand.Title, OracleCommands.ExpandView, executionContext, true));
 			}
 
-			var actions = ResolveAmbiguousColumnCommand.ResolveCommandHandlers(semanticModel, currentTerminal)
-				.Select(c => new ContextAction("Resolve as " + c.Name, c, executionContext));
+			if (OracleCommands.ConfigureNamedParameters.CanExecuteHandler(executionContext))
+			{
+				actionList.Add(new ContextAction(ConfigureNamedParameterCommand.Title, OracleCommands.ConfigureNamedParameters, executionContext));
+			}
+
+			var actions =
+				ResolveAmbiguousColumnCommand.ResolveCommandHandlers(semanticModel, currentTerminal)
+					.Select(c => new ContextAction("Resolve as " + c.Name, c, executionContext));
 
 			actionList.AddRange(actions);
 
-			actions = BindVariableLiteralConversionCommand.ResolveCommandHandlers(semanticModel, currentTerminal)
-				.Select(c => new ContextAction(c.Name, c, executionContext));
+			actions =
+				BindVariableLiteralConversionCommand.ResolveCommandHandlers(semanticModel, currentTerminal)
+					.Select(c => new ContextAction(c.Name, c, executionContext));
 
 			actionList.AddRange(actions);
 
-			actions = LiteralBindVariableConversionCommand.ResolveCommandHandlers(semanticModel, currentTerminal)
-				.Select(c => new ContextAction(c.Name, c, executionContext));
+			actions =
+				LiteralBindVariableConversionCommand.ResolveCommandHandlers(semanticModel, currentTerminal)
+					.Select(c => new ContextAction(c.Name, c, executionContext));
 
 			actionList.AddRange(actions);
 
