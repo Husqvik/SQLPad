@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,6 +20,8 @@ namespace SqlPad.Oracle.Commands
 		{
 		}
 
+		protected override Func<StatementGrammarNode, bool> CurrentNodeFilterFunction { get; } = n => !String.Equals(n.Id, OracleGrammarDescription.Terminals.LeftParenthesis);
+
 		protected override CommandCanExecuteResult CanExecute()
 		{
 			if (CurrentNode == null)
@@ -30,7 +33,7 @@ namespace SqlPad.Oracle.Commands
 				.SelectMany(c => ((IEnumerable<OracleProgramReferenceBase>)c.ProgramReferences).Concat(c.TypeReferences))
 				.SingleOrDefault(r => r.Metadata != null && r.AllIdentifierTerminals.Any(t => t == CurrentNode));
 
-			return _programReference != null && _programReference.Metadata.NamedParameters.Count > 0;
+			return _programReference != null && _programReference.Metadata.NamedParameters.Count > 0 && GetNamePrefixSegments().Any();
 		}
 
 		protected override void Execute()
@@ -42,6 +45,11 @@ namespace SqlPad.Oracle.Commands
 				return;
 			}*/
 
+			ExecutionContext.SegmentsToReplace.AddRange(GetNamePrefixSegments());
+		}
+
+		private IEnumerable<TextSegment> GetNamePrefixSegments()
+		{
 			var formatOption = OracleConfiguration.Configuration.Formatter.FormatOptions.Identifier;
 			var parameterNames = _programReference.Metadata.NamedParameters.Keys.ToArray();
 
@@ -53,14 +61,12 @@ namespace SqlPad.Oracle.Commands
 					break;
 				}
 
-				var segment =
+				yield return
 					new TextSegment
 					{
 						IndextStart = parameterReference.ParameterNode.SourcePosition.IndexStart,
 						Text = $"{OracleStatementFormatter.FormatTerminalValue(parameterNames[i].ToSimpleIdentifier(), formatOption)} => "
 					};
-
-				ExecutionContext.SegmentsToReplace.Add(segment);
 			}
 		}
 

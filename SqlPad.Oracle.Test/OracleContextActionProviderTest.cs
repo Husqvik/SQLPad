@@ -357,6 +357,15 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test]
+		public void TestConvertLiteralToBindVariableNotAvailableAtPlSqlProcedureReference()
+		{
+			const string query1 = @"BEGIN sqlpad.sqlpad_procedure(); END;";
+
+			var actionCount = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 13).Count(a => a.Name.StartsWith("Convert"));
+			actionCount.ShouldBe(0);
+		}
+
+		[Test]
 		public void TestConvertAllLiteralOccurencesToBindVariablesAvailable()
 		{
 			const string query1 = @"SELECT 'VALUE', 'VALUE' FROM DUAL";
