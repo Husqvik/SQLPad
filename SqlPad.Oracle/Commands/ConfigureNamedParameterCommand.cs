@@ -40,8 +40,9 @@ namespace SqlPad.Oracle.Commands
 		protected override void Execute()
 		{
 			/*var settingsModel = ConfigureSettings();
+			var useDefaultSettings = settingsModel.UseDefaultSettings == null || settingsModel.UseDefaultSettings();
 
-			if (!ExecutionContext.SettingsProvider.GetSettings())
+			if (!useDefaultSettings && !ExecutionContext.SettingsProvider.GetSettings())
 			{
 				return;
 			}*/
@@ -112,7 +113,7 @@ namespace SqlPad.Oracle.Commands
 
 			settingsModel.IsTextInputVisible = false;
 			settingsModel.Title = "Configure Named Parameters";
-			settingsModel.Heading = settingsModel.Title;
+			settingsModel.Heading = "Parameters: ";
 
 			foreach (var parameter in _programReference.Metadata.NamedParameters.Values)
 			{
