@@ -1,4 +1,4 @@
-#SQLPad 0.4.0.382
+#SQLPad 0.4.0.383
 
 [![Oracle.DataAccess](https://ci.appveyor.com/api/projects/status/t4iti5bn5ubs2k3k?svg=true&pendingText=Oracle.DataAccess%20-%20pending&passingText=Oracle.DataAccess%20-%20passed&failingText=Oracle.DataAccess%20-%20failed)](https://ci.appveyor.com/project/Husqvik/sqlpad-j6chv)
 [![Oracle.ManagedDataAccess](https://ci.appveyor.com/api/projects/status/m0pnyw7gp73tg59c?svg=true&pendingText=Oracle.ManagedDataAccess%20-%20pending&passingText=Oracle.ManagedDataAccess%20-%20passed&failingText=Oracle.ManagedDataAccess%20-%20failed)](https://ci.appveyor.com/project/Husqvik/sqlpad)

@@ -658,11 +658,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 				try
 				{
 					await command.ExecuteNonQueryAsynchronous(cancellationToken);
-					Trace.WriteLine($"Startup script command '{command.CommandText}' executed successfully. ");
+					Trace.WriteLine($"{DateTime.Now} - Startup script command '{command.CommandText}' executed successfully. ");
 				}
 				catch (Exception e)
 				{
-					Trace.WriteLine($"Startup script command '{command.CommandText}' failed: {e}");
+					Trace.WriteLine($"{DateTime.Now} - Startup script command '{command.CommandText}' failed: {e}");
 				}
 			}
 		}
@@ -676,11 +676,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 				try
 				{
 					_userTraceFileName = (string)await command.ExecuteScalarAsynchronous(cancellationToken);
-					Trace.WriteLine($"Instance {_userSessionIdentifier.Value.Instance} Session ID {_userSessionIdentifier.Value.SessionId} trace file name is {_userTraceFileName}. ");
+					Trace.WriteLine($"{DateTime.Now} - Instance {_userSessionIdentifier.Value.Instance} Session ID {_userSessionIdentifier.Value.SessionId} trace file name is {_userTraceFileName}. ");
 				}
 				catch (Exception e)
 				{
-					Trace.WriteLine($"Trace file name retrieval failed: {e}");
+					Trace.WriteLine($"{DateTime.Now} - Trace file name retrieval failed: {e}");
 				}
 			}
 		}
@@ -691,7 +691,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var isConnectionStateChanged = await _userConnection.EnsureConnectionOpen(connectionString, cancellationToken);
 			if (isConnectionStateChanged)
 			{
-				Trace.WriteLine("User connection has been open. ");
+				Trace.WriteLine($"{DateTime.Now} - User connection has been open. ");
 			}
 
 			if (isConnectionStateChanged || _userSessionIdentifier == null)

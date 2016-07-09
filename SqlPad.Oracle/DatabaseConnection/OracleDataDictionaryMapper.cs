@@ -277,7 +277,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private void WriteTrace(string message)
 		{
-			WriteTrace(message, _databaseModel.ConnectionString.Name);
+			WriteTrace(_databaseModel.ConnectionString.Name, message);
 		}
 
 		internal static void WriteTrace(string connectionIdentifier, string message)

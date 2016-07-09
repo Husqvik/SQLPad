@@ -1187,11 +1187,12 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 			var validationModel = BuildValidationModel(sqlText, statement);
 			var nodeValidityDictionary = validationModel.ProgramNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
 			var programNodeValidity = nodeValidityDictionary.Values.ToList();
-			programNodeValidity.Count.ShouldBe(1);
-			programNodeValidity[0].IsRecognized.ShouldBe(true);
-			programNodeValidity[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidParameterCount);
-			programNodeValidity[0].Node.ShouldNotBe(null);
-			var invalidTerminals = programNodeValidity[0].Node.Terminals.ToArray();
+			programNodeValidity.Count.ShouldBe(2);
+			programNodeValidity[0].Node.Token.Value.ShouldBe("ODCIARGDESC");
+			programNodeValidity[1].IsRecognized.ShouldBe(true);
+			programNodeValidity[1].SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidParameterCount);
+			programNodeValidity[1].Node.ShouldNotBe(null);
+			var invalidTerminals = programNodeValidity[1].Node.Terminals.ToArray();
 			invalidTerminals.Length.ShouldBe(3);
 			invalidTerminals[0].Token.Value.ShouldBe("(");
 			invalidTerminals[1].Token.Value.ShouldBe("1");
@@ -3618,6 +3619,20 @@ END;";
 			var validationModel = BuildValidationModel(sqlText, statement);
 
 			validationModel.IdentifierNodeValidity.Count.ShouldBe(3);
+		}
+
+		[Test]
+		public void TestProgramNodeValidityForTypeWithInvalidParameterCount()
+		{
+			const string sqlText = "SELECT sys.odciargdesc() FROM dual";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			validationModel.ProgramNodeValidity.Keys.Count(n => n.Id == Terminals.Identifier).ShouldBe(1);
 		}
 	}
 }

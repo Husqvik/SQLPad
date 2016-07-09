@@ -93,7 +93,7 @@ namespace SqlPad.Oracle
 							if (objectReference.OwnerNode != null)
 							{
 								var isRecognized = databaseModel != null && databaseModel.ExistsSchema(objectReference.OwnerNode.Token.Value);
-								validationModel.ObjectNodeValidity[objectReference.OwnerNode] = new NodeValidationData { IsRecognized = isRecognized };
+								validationModel.ObjectNodeValidity[objectReference.OwnerNode] = new NodeValidationData { IsRecognized = isRecognized, Node = objectReference.OwnerNode };
 							}
 
 							validationModel.ObjectNodeValidity[objectReference.ObjectNode] = new NodeValidationData { IsRecognized = objectReference.SchemaObject != null, Node = objectReference.ObjectNode };
@@ -1141,17 +1141,29 @@ namespace SqlPad.Oracle
 			{
 				if (typeReference.DatabaseLinkNode == null)
 				{
-					var semanticError = GetCompilationError(typeReference);
-					var node = typeReference.ObjectNode;
 					var targetTypeObject = typeReference.SchemaObject.GetTargetSchemaObject() as OracleTypeObject;
-					if (String.Equals(semanticError, OracleSemanticErrorType.None) && targetTypeObject != null &&
-						String.Equals(targetTypeObject.TypeCode, OracleTypeBase.TypeCodeObject) && targetTypeObject.Attributes.Count != typeReference.ParameterReferences.Count)
+					var compilationError = GetCompilationError(typeReference);
+					var objectIdentifierTerminal = typeReference.ObjectNode;
+					StatementGrammarNode errorNode = null;
+					if (String.Equals(compilationError, OracleSemanticErrorType.None))
 					{
-						semanticError = OracleSemanticErrorType.InvalidParameterCount;
-						node = typeReference.ParameterListNode;
+						if (String.Equals(targetTypeObject?.TypeCode, OracleTypeBase.TypeCodeObject) &&
+							targetTypeObject.Attributes.Count != typeReference.ParameterReferences.Count)
+						{
+							errorNode = typeReference.ParameterListNode ?? objectIdentifierTerminal;
+							validationModel.ProgramNodeValidity[errorNode] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidParameterCount) { Node = errorNode };
+						}
+					}
+					else
+					{
+						errorNode = objectIdentifierTerminal;
+						validationModel.ProgramNodeValidity[errorNode] = new InvalidNodeValidationData(compilationError) { Node = errorNode };
 					}
 
-					validationModel.ProgramNodeValidity[node] = new InvalidNodeValidationData(semanticError) { Node = node };
+					if (errorNode != objectIdentifierTerminal)
+					{
+						validationModel.ProgramNodeValidity[objectIdentifierTerminal] = new NodeValidationData { IsRecognized = true, Node = objectIdentifierTerminal };
+					}
 
 					if (targetTypeObject != null)
 					{

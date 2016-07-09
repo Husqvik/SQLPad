@@ -166,7 +166,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private void SetRefreshTimerInterval()
 		{
 			_refreshTimer.Interval = ConfigurationProvider.Configuration.DataModel.DataModelRefreshPeriod * 60000;
-			Trace.WriteLine($"Data model refresh timer set: {ConfigurationProvider.Configuration.DataModel.DataModelRefreshPeriod} minute(s). ");
+			Trace.WriteLine($"{DateTime.Now} - Data model '{_connectionStringName}/{ConnectionIdentifier}' refresh timer set: {ConfigurationProvider.Configuration.DataModel.DataModelRefreshPeriod} minute(s). ");
 		}
 
 		public static void ValidateConfiguration()
