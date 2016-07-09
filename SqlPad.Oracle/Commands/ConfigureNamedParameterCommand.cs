@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using SqlPad.Commands;
@@ -33,7 +34,7 @@ namespace SqlPad.Oracle.Commands
 				.SelectMany(c => ((IEnumerable<OracleProgramReferenceBase>)c.ProgramReferences).Concat(c.TypeReferences))
 				.SingleOrDefault(r => r.Metadata != null && r.AllIdentifierTerminals.Any(t => t == CurrentNode));
 
-			return _programReference != null && _programReference.Metadata.NamedParameters.Count > 0 && GetNamePrefixSegments().Any();
+			return _programReference?.ParameterListNode != null && _programReference.Metadata.NamedParameters.Count > 0 && GetNamePrefixSegments().Any();
 		}
 
 		protected override void Execute()
@@ -51,21 +52,54 @@ namespace SqlPad.Oracle.Commands
 		private IEnumerable<TextSegment> GetNamePrefixSegments()
 		{
 			var formatOption = OracleConfiguration.Configuration.Formatter.FormatOptions.Identifier;
-			var parameterNames = _programReference.Metadata.NamedParameters.Keys.ToArray();
+			var parameterNameMetadata = _programReference.Metadata.NamedParameters.ToArray();
+			var parameterReferences = _programReference.ParameterReferences;
 
-			for (var i = 0; i < _programReference.ParameterReferences.Count && i < parameterNames.Length; i++)
+			var parameterIndexStart = _programReference.ParameterListNode.FirstTerminalNode.SourcePosition.IndexEnd + 1;
+			var segmentTextBuilder = new StringBuilder();
+			for (var i = 0; i < parameterNameMetadata.Length; i++)
 			{
-				var parameterReference = _programReference.ParameterReferences[i];
-				if (parameterReference.OptionalIdentifierTerminal != null)
+				var parameterReference = i < parameterReferences.Count ? parameterReferences[i] : (ProgramParameterReference?)null;
+				if (parameterReference?.OptionalIdentifierTerminal != null)
 				{
 					break;
 				}
 
+				var parameterMetadata = parameterNameMetadata[i];
+				var namedParameterPrefix = $"{OracleStatementFormatter.FormatTerminalValue(parameterMetadata.Key.ToSimpleIdentifier(), formatOption)} => ";
+
+				if (parameterReference.HasValue)
+				{
+					parameterIndexStart = parameterReference.Value.ParameterNode.SourcePosition.IndexStart;
+
+					yield return
+						new TextSegment
+						{
+							IndextStart = parameterIndexStart,
+							Text = namedParameterPrefix
+						};
+
+					parameterIndexStart += namedParameterPrefix.Length;
+				}
+				else
+				{
+					segmentTextBuilder.Append(namedParameterPrefix);
+					segmentTextBuilder.Append("NULL");
+
+					if (i < parameterNameMetadata.Length - 1)
+					{
+						segmentTextBuilder.Append(", ");
+					}
+				}
+			}
+
+			if (segmentTextBuilder.Length > 0)
+			{
 				yield return
 					new TextSegment
 					{
-						IndextStart = parameterReference.ParameterNode.SourcePosition.IndexStart,
-						Text = $"{OracleStatementFormatter.FormatTerminalValue(parameterNames[i].ToSimpleIdentifier(), formatOption)} => "
+						IndextStart = parameterIndexStart,
+						Text = segmentTextBuilder.ToString()
 					};
 			}
 		}

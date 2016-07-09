@@ -1,4 +1,4 @@
-#SQLPad 0.4.0.379
+#SQLPad 0.4.0.380
 
 [![Oracle.DataAccess](https://ci.appveyor.com/api/projects/status/t4iti5bn5ubs2k3k?svg=true&pendingText=Oracle.DataAccess%20-%20pending&passingText=Oracle.DataAccess%20-%20passed&failingText=Oracle.DataAccess%20-%20failed)](https://ci.appveyor.com/project/Husqvik/sqlpad-j6chv)
 [![Oracle.ManagedDataAccess](https://ci.appveyor.com/api/projects/status/m0pnyw7gp73tg59c?svg=true&pendingText=Oracle.ManagedDataAccess%20-%20pending&passingText=Oracle.ManagedDataAccess%20-%20passed&failingText=Oracle.ManagedDataAccess%20-%20failed)](https://ci.appveyor.com/project/Husqvik/sqlpad)
@@ -149,6 +149,8 @@ Resolve ambiguous column
 
 Wrap current query block as inline view
 
+Add named parameters
+
 #####@Row source:
 
 Add alias
@@ -190,14 +192,14 @@ Requirements
 ------------
 Microsoft .NET 4.6
 
-[Oracle Data Access Components 12c - 32 bit](http://www.oracle.com/technetwork/topics/dotnet/downloads/net-downloads-160392.html) - unmanaged driver preferred (due to certain limitations of managed driver, e. g., lack of UDTs types support)
+[Oracle Data Access Components 12c - 32 bit](http://www.oracle.com/technetwork/topics/dotnet/downloads/net-downloads-160392.html) - unmanaged driver preferred (due to certain limitations of managed driver, e. g., lack of XML and UDT types support)
 
 Configuration
 -------------
 
 #####SqlPad.exe.config
 
-Connection string must be Oracle ADO.NET compliant, see [http://www.oracle.com/technetwork/topics/dotnet/install121024-2704210.html](http://www.oracle.com/technetwork/topics/dotnet/install121024-2704210.html).
+Connection string must be Oracle ADO.NET compliant, see [http://www.oracle.com/technetwork/topics/dotnet/install121024-2704210.html](http://www.oracle.com/technetwork/topics/dotnet/install121024-2704210.html). Managed driver might require additional configuration, see [https://docs.oracle.com/html/E41125_02/featConfig.htm#BABEGGHD](https://docs.oracle.com/html/E41125_02/featConfig.htm#BABEGGHD);
 
 	<connectionStrings>
 		<clear/>

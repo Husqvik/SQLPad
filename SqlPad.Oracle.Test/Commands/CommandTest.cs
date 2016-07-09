@@ -1928,6 +1928,51 @@ MODEL
 		}
 
 		[Test, Apartment(ApartmentState.STA)]
+		public void TestConfigureNamedParametersCommand()
+		{
+			const string statementText = @"SELECT SYS.ODCIARGDESC() FROM DUAL";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 11;
+
+			CanExecuteCommand(OracleCommands.ConfigureNamedParameters).ShouldBe(true);
+			ExecuteCommand(OracleCommands.ConfigureNamedParameters);
+
+			const string expectedResult = @"SELECT SYS.ODCIARGDESC(ARGTYPE => NULL, TABLENAME => NULL, TABLESCHEMA => NULL, COLNAME => NULL, TABLEPARTITIONLOWER => NULL, TABLEPARTITIONUPPER => NULL, CARDINALITY => NULL) FROM DUAL";
+
+			_editor.Text.ShouldBe(expectedResult);
+		}
+
+		[Test, Apartment(ApartmentState.STA)]
+		public void TestConfigureNamedParametersCommandWithValues()
+		{
+			const string statementText = @"SELECT SYS.ODCIARGDESC(NULL, NULL, NULL, NULL, NULL, NULL, NULL) FROM DUAL";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 11;
+
+			CanExecuteCommand(OracleCommands.ConfigureNamedParameters).ShouldBe(true);
+			ExecuteCommand(OracleCommands.ConfigureNamedParameters);
+
+			const string expectedResult = @"SELECT SYS.ODCIARGDESC(ARGTYPE => NULL, TABLENAME => NULL, TABLESCHEMA => NULL, COLNAME => NULL, TABLEPARTITIONLOWER => NULL, TABLEPARTITIONUPPER => NULL, CARDINALITY => NULL) FROM DUAL";
+
+			_editor.Text.ShouldBe(expectedResult);
+		}
+
+		[Test, Apartment(ApartmentState.STA)]
+		public void TestConfigureNamedParametersCommandWithExistingNamedPrefixes()
+		{
+			const string statementText = @"SELECT SYS.ODCIARGDESC(NULL, NULL, NULL, NULL, TABLEPARTITIONLOWER => NULL, TABLEPARTITIONUPPER => NULL, CARDINALITY => NULL) FROM DUAL";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 11;
+
+			CanExecuteCommand(OracleCommands.ConfigureNamedParameters).ShouldBe(true);
+			ExecuteCommand(OracleCommands.ConfigureNamedParameters);
+
+			const string expectedResult = @"SELECT SYS.ODCIARGDESC(ARGTYPE => NULL, TABLENAME => NULL, TABLESCHEMA => NULL, COLNAME => NULL, TABLEPARTITIONLOWER => NULL, TABLEPARTITIONUPPER => NULL, CARDINALITY => NULL) FROM DUAL";
+
+			_editor.Text.ShouldBe(expectedResult);
+		}
+
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestGenerateCustomTypeCSharpWrapperClassCommand()
 		{
 			const string statementText = @"SELECT SYS.ODCIARGDESC() FROM DUAL";

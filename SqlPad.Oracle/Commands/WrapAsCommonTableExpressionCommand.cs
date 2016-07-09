@@ -18,9 +18,10 @@ namespace SqlPad.Oracle.Commands
 
 		protected override CommandCanExecuteResult CanExecute()
 		{
-			return CurrentNode != null && CurrentQueryBlock != null &&
-			       CurrentNode.Id == Terminals.Select &&
-			       CurrentQueryBlock.Columns.Any(c => !String.IsNullOrEmpty(c.NormalizedName));
+			return
+				CurrentQueryBlock != null &&
+				String.Equals(CurrentNode?.Id, Terminals.Select) &&
+				CurrentQueryBlock.Columns.Any(c => !String.IsNullOrEmpty(c.NormalizedName));
 		}
 
 		private CommandSettingsModel ConfigureSettings()
@@ -97,7 +98,6 @@ namespace SqlPad.Oracle.Commands
 				new TextSegment
 				{
 					IndextStart = startIndex,
-					Length = 0,
 					Text = builder.ToString()
 				});
 
