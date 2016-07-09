@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SqlPad.Oracle.DataDictionary;
-using SqlPad.Oracle.ExecutionPlan;
 using SqlPad.Oracle.ToolTips;
 using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
@@ -27,6 +26,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 		public const int PlSqlMaxLengthVarchar = 32767;
 		public const int PlSqlMaxLengthNVarchar = 16383;
 		public const int PlSqlMaxLengthRaw = 32767;
+
+		private static readonly OracleProgramMetadata[] EmptyMetadataCollection = new OracleProgramMetadata[0];
 
 		internal static readonly ICollection<string> BuiltInDataTypes =
 			new HashSet<string>
@@ -223,7 +224,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 				var schemaObjectFound = (String.IsNullOrWhiteSpace(identifier.Package) && AllObjects.TryGetValue(OracleObjectIdentifier.Create(identifier.Owner, identifier.Name), out schemaObject)) ||
 				                        AllObjects.TryGetValue(OracleObjectIdentifier.Create(identifier.Owner, identifier.Package), out schemaObject);
 				if (!schemaObjectFound || !TryGetSchemaObjectProgramMetadata(schemaObject, out programMetadataSource))
+				{
 					return result;
+				}
 
 				result.SchemaObject = schemaObject;
 				var programName = String.IsNullOrEmpty(identifier.Package) ? schemaObject.GetTargetSchemaObject().Name : identifier.Name;
@@ -341,7 +344,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				return true;
 			}
 
-			functionMetadata = new OracleProgramMetadata[0];
+			functionMetadata = EmptyMetadataCollection;
 			return false;
 		}
 

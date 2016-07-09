@@ -493,7 +493,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				}
 				catch (Exception e)
 				{
-					Trace.WriteLine($"Update model failed: {e}");
+					Trace.WriteLine($"{DateTime.Now} - Update model failed: {e}");
 
 					if (!suppressException)
 					{
@@ -723,7 +723,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				}
 				catch (Exception e)
 				{
-					Trace.WriteLine($"Storing metadata cache failed: {e}");
+					Trace.WriteLine($"{DateTime.Now} - Storing metadata cache failed: {e}");
 				}
 			}
 
@@ -771,21 +771,13 @@ namespace SqlPad.Oracle.DatabaseConnection
 						var programIdentifier = OracleObjectIdentifier.Create(programMetadata.Identifier.Owner, programMetadata.Identifier.Name);
 						if (allObjects.TryGetFirstValue(out schemaObject, programIdentifier))
 						{
-							if (programMetadata.Type == ProgramType.Function)
-							{
-								((OracleFunction)schemaObject).Metadata = programMetadata;
-							}
-							else
-							{
-								((OracleProcedure)schemaObject).Metadata = programMetadata;
-							}
-							
+							((OracleSchemaProgram)schemaObject).Metadata = programMetadata;
 							programMetadata.Owner = schemaObject;
 						}
 					}
 				}
 
-				Trace.WriteLine($"Function and procedure metadata schema object mapping finished in {stopwatch.Elapsed}. ");
+				OracleDataDictionaryMapper.WriteTrace(ConnectionString.Name, $"Function and procedure metadata schema object mapping finished in {stopwatch.Elapsed}. ");
 
 				stopwatch.Reset();
 
@@ -796,11 +788,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 				var statisticsKeys = SafeFetchDictionary(_dataDictionaryMapper.GetStatisticsKeys, "OracleDataDictionaryMapper.GetStatisticsKeys failed: ");
 				var systemParameters = SafeFetchDictionary(_dataDictionaryMapper.GetSystemParameters, "OracleDataDictionaryMapper.GetSystemParameters failed: ");
 
-				Trace.WriteLine($"Unique constraint, database link, character sets, statistics keys and system parameter mapping finished in {stopwatch.Elapsed}. ");
+				OracleDataDictionaryMapper.WriteTrace(ConnectionString.Name, $"Unique constraint, database link, character sets, statistics keys and system parameter mapping finished in {stopwatch.Elapsed}. ");
 
 				_dataDictionary = new OracleDataDictionary(allObjects, databaseLinks, nonSchemaBuiltInFunctionMetadata, characterSets, statisticsKeys, systemParameters, lastRefresh);
 
-				Trace.WriteLine($"{DateTime.Now} - Data dictionary metadata cache has been initialized successfully. ");
+				OracleDataDictionaryMapper.WriteTrace(ConnectionString.Name, "Data dictionary metadata cache has been initialized successfully. ");
 
 				//_customTypeGenerator.GenerateCustomTypeAssembly(_dataDictionary);
 
@@ -810,7 +802,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 			catch(Exception e)
 			{
-				Trace.WriteLine($"Oracle data dictionary refresh failed: {e}");
+				OracleDataDictionaryMapper.WriteTrace(ConnectionString.Name, $"Oracle data dictionary refresh failed: {e}");
 				return false;
 			}
 		}
@@ -819,10 +811,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			var stopwatch = Stopwatch.StartNew();
 			RefreshSchemas(_dataDictionaryMapper.GetSchemaNames());
-			Trace.WriteLine($"Fetch schema metadata finished in {stopwatch.Elapsed}. ");
+			Trace.WriteLine($"{DateTime.Now} - Fetch schema metadata finished in {stopwatch.Elapsed}. ");
 		}
 
-		private Dictionary<TKey, TValue> SafeFetchDictionary<TKey, TValue>(Func<IEnumerable<KeyValuePair<TKey, TValue>>> fetchKeyValuePairFunction, string traceMessage)
+		private static Dictionary<TKey, TValue> SafeFetchDictionary<TKey, TValue>(Func<IEnumerable<KeyValuePair<TKey, TValue>>> fetchKeyValuePairFunction, string traceMessage)
 		{
 			try
 			{
@@ -863,7 +855,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				}
 				catch (Exception e)
 				{
-					Trace.WriteLine($"Oracle data dictionary cache deserialization failed: {e}");
+					Trace.WriteLine($"{DateTime.Now} - Oracle data dictionary cache deserialization failed: {e}");
 				}
 				finally
 				{
@@ -892,7 +884,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			catch (Exception e)
 			{
 				_dataDictionary = OracleDataDictionary.EmptyDictionary;
-				Trace.WriteLine($"All function metadata or unique constraint referring reference constraint lookup initialization from cache failed: {e}");
+				Trace.WriteLine($"{DateTime.Now} - All function metadata or unique constraint referring reference constraint lookup initialization from cache failed: {e}");
 			}
 		}
 
@@ -933,7 +925,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override Task Initialize()
 		{
-			return Task.Factory.StartNew(InitializeInternal);
+			return Task.Run((Action)InitializeInternal);
 		}
 
 		private void InitializeInternal()
@@ -944,7 +936,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 			catch (Exception e)
 			{
-				Trace.WriteLine($"Database model initialization failed: {e}");
+				Trace.WriteLine($"{DateTime.Now} - Database model for connection '{ConnectionString.Name}' initialization failed: {e}");
 
 				InitializationFailed?.Invoke(this, new DatabaseModelConnectionErrorArgs(e));
 
