@@ -767,6 +767,51 @@ FROM
 		}
 
 		[Test]
+		public void TestResolveInsertValueColumnTypes()
+		{
+			const string query1 = @"INSERT INTO selection (name, created, status, project_id) VALUES (NULL, NULL, NULL, NULL)";
+
+			_documentRepository.UpdateStatements(query1);
+			var items = CodeCompletionProvider.ResolveProgramOverloads(_documentRepository, 83).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("SELECTION");
+			items[0].Parameters.Count.ShouldBe(4);
+			items[0].Parameters[3].ShouldBe("PROJECT_ID: NUMBER(9) NOT NULL");
+			items[0].CurrentParameterIndex.ShouldBe(3);
+			items[0].ReturnedDatatype.ShouldBe(null);
+		}
+
+		[Test]
+		public void TestResolveInsertValueColumnTypesBeforeInsertValueList()
+		{
+			const string query1 = @"INSERT INTO selection (name, created, status, project_id) VALUES (NULL, NULL, NULL, NULL)";
+
+			_documentRepository.UpdateStatements(query1);
+			var items = CodeCompletionProvider.ResolveProgramOverloads(_documentRepository, 65).ToList();
+			items.Count.ShouldBe(0);
+		}
+
+		[Test]
+		public void TestResolveInsertValueColumnTypesAfterInsertValueList()
+		{
+			const string query1 = @"INSERT INTO selection (name, created, status, project_id) VALUES (NULL, NULL, NULL, NULL)";
+
+			_documentRepository.UpdateStatements(query1);
+			var items = CodeCompletionProvider.ResolveProgramOverloads(_documentRepository, 89).ToList();
+			items.Count.ShouldBe(0);
+		}
+
+		[Test]
+		public void TestResolveInsertValueColumnTypesWhenWithinFunctionParameterList()
+		{
+			const string query1 = @"INSERT INTO selection (project_id) VALUES (undefined())";
+
+			_documentRepository.UpdateStatements(query1);
+			var items = CodeCompletionProvider.ResolveProgramOverloads(_documentRepository, 53).ToList();
+			items.Count.ShouldBe(0);
+		}
+
+		[Test]
 		public void TestResolveProgramOverloadsWithinPlSqlContext()
 		{
 			const string query1 = @"BEGIN dbms_output.put_line(''); END;";

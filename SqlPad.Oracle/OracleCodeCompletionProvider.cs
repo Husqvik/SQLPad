@@ -33,7 +33,7 @@ namespace SqlPad.Oracle
 
 		private static OracleConfigurationFormatterFormatOptions FormatOptions => OracleConfiguration.Configuration.Formatter.FormatOptions;
 
-		public ICollection<ProgramOverloadDescription> ResolveProgramOverloads(SqlDocumentRepository documentRepository, int cursorPosition)
+		public IReadOnlyCollection<ProgramOverloadDescription> ResolveProgramOverloads(SqlDocumentRepository documentRepository, int cursorPosition)
 		{
 			var emptyCollection = new ProgramOverloadDescription[0];
 			var node = documentRepository.Statements.GetNodeAtPosition(cursorPosition);
@@ -43,9 +43,7 @@ namespace SqlPad.Oracle
 			}
 
 			var semanticModel = (OracleStatementSemanticModel)documentRepository.ValidationModels[node.Statement].SemanticModel;
-			var referenceContainers = semanticModel.AllReferenceContainers;
-			var programOverloadSource = ResolveProgramOverloads(referenceContainers, node, cursorPosition);
-
+			var programOverloadSource = ResolveProgramOverloads(semanticModel.AllReferenceContainers, node, cursorPosition);
 			var programOverloads = programOverloadSource
 				.Select(
 					o =>
@@ -65,28 +63,65 @@ namespace SqlPad.Oracle
 								CurrentParameterIndex = o.CurrentParameterIndex,
 								ReturnedDatatype = returnParameter?.FullDataTypeName
 							};
-					});
-			
-			return programOverloads.ToArray();
+					})
+				.ToArray();
+
+			return FindProgramReference(semanticModel.AllReferenceContainers, node) != null
+				? programOverloads
+				: ResolveInsertValuesDataTypes(semanticModel, node, cursorPosition).ToArray();
 		}
 
-		private static string BuildParameterLabel(OracleProgramParameterMetadata parameterMetadata)
+		private static IEnumerable<ProgramOverloadDescription> ResolveInsertValuesDataTypes(OracleStatementSemanticModel semanticModel, StatementGrammarNode node, int cursorPosition)
+		{
+			var insertTarget = semanticModel.InsertTargets.SingleOrDefault(t => t.ValueList != null && node.HasAncestor(t.ValueList));
+			if (insertTarget == null || insertTarget.Columns.Count == 0 || node == insertTarget.ValueList.FirstTerminalNode || insertTarget.ValueList.LastTerminalNode.SourcePosition.IndexStart < cursorPosition)
+			{
+				yield break;
+			}
+
+			var columnLookup = insertTarget.DataObjectReference.Columns.ToLookup(c => c.Name);
+			var currentParameterIndex = insertTarget.ValueExpressions.TakeWhile(n => !node.HasAncestor(n) && n.FollowingTerminal.SourcePosition.IndexStart < cursorPosition).Count();
+
+			yield return
+				new ProgramOverloadDescription
+				{
+					CurrentParameterIndex = currentParameterIndex,
+					Name = insertTarget.DataObjectReference.FullyQualifiedObjectName.ToLabel(),
+					Parameters = insertTarget.Columns.Values.Select(name => BuildInsertColumnLabel(name, columnLookup[name].SingleOrDefault())).ToArray()
+				};
+		}
+
+		private static string BuildInsertColumnLabel(string name, OracleColumn column)
+		{
+			var columnLabel = BuildNameDataTypeLabel(name, column?.FullTypeName);
+			var nullability = column == null || column.Nullable ? "NULL" : "NOT NULL";
+			return $"{columnLabel} {nullability}";
+		}
+
+		private static string BuildNameDataTypeLabel(string name, string dataTypeLabel)
 		{
 			string parameterName;
 			string dataType;
-			if (String.IsNullOrEmpty(parameterMetadata.Name))
+			if (String.IsNullOrEmpty(name))
 			{
-				parameterName = parameterMetadata.FullDataTypeName;
+				parameterName = dataTypeLabel;
 				dataType = null;
 			}
 			else
 			{
-				parameterName = parameterMetadata.Name.ToSimpleIdentifier();
-				dataType = parameterMetadata.FullDataTypeName;
+				parameterName = name.ToSimpleIdentifier();
+				dataType = dataTypeLabel;
 			}
 
-			var isPartialMetadata = String.IsNullOrEmpty(parameterMetadata.FullDataTypeName) || dataType == null;
+			var isPartialMetadata = String.IsNullOrEmpty(dataTypeLabel) || dataType == null;
 			var parameterLabel = $"{parameterName}{(isPartialMetadata ? null : ": ")}{dataType}";
+
+			return parameterLabel;
+		}
+
+		private static string BuildParameterLabel(OracleProgramParameterMetadata parameterMetadata)
+		{
+			var parameterLabel = BuildNameDataTypeLabel(parameterMetadata.Name, parameterMetadata.FullDataTypeName);
 			if (parameterMetadata.IsOptional)
 			{
 				parameterLabel = $"[{parameterLabel}]";
@@ -114,11 +149,7 @@ namespace SqlPad.Oracle
 
 		private static IEnumerable<OracleCodeCompletionFunctionOverload> ResolveProgramOverloads(IEnumerable<OracleReferenceContainer> referenceContainers, StatementGrammarNode node, int cursorPosition)
 		{
-			var programReferenceBase = referenceContainers.SelectMany(c => ((IEnumerable<OracleProgramReferenceBase>)c.ProgramReferences).Concat(c.TypeReferences))
-				.Where(f => node.HasAncestor(f.ParameterListNode))
-				.OrderByDescending(r => r.RootNode.Level)
-				.FirstOrDefault();
-
+			var programReferenceBase = FindProgramReference(referenceContainers, node);
 			if (programReferenceBase?.Metadata == null)
 			{
 				return Enumerable.Empty<OracleCodeCompletionFunctionOverload>();
@@ -128,16 +159,15 @@ namespace SqlPad.Oracle
 			if (programReferenceBase.ParameterReferences != null)
 			{
 				var lookupNode = node.Type == NodeType.Terminal ? node : node.GetNearestTerminalToPosition(cursorPosition);
-
-				if (lookupNode.Id == Terminals.Comma)
+				if (String.Equals(lookupNode.Id, Terminals.Comma))
 				{
 					lookupNode = cursorPosition == lookupNode.SourcePosition.IndexStart ? lookupNode.PrecedingTerminal : lookupNode.FollowingTerminal;
 				}
-				else if (lookupNode.Id == Terminals.LeftParenthesis && cursorPosition > lookupNode.SourcePosition.IndexStart)
+				else if (String.Equals(lookupNode.Id, Terminals.LeftParenthesis) && cursorPosition > lookupNode.SourcePosition.IndexStart)
 				{
 					lookupNode = lookupNode.FollowingTerminal;
 				}
-				else if (lookupNode.Id == Terminals.RightParenthesis && cursorPosition == lookupNode.SourcePosition.IndexStart)
+				else if (String.Equals(lookupNode.Id, Terminals.RightParenthesis) && cursorPosition == lookupNode.SourcePosition.IndexStart)
 				{
 					lookupNode = lookupNode.PrecedingTerminal;
 				}
@@ -190,6 +220,15 @@ namespace SqlPad.Oracle
 					});
 		}
 
+		private static OracleProgramReferenceBase FindProgramReference(IEnumerable<OracleReferenceContainer> referenceContainers, StatementGrammarNode node)
+		{
+			return referenceContainers
+				.SelectMany(c => ((IEnumerable<OracleProgramReferenceBase>)c.ProgramReferences).Concat(c.TypeReferences))
+				.Where(f => node.HasAncestor(f.ParameterListNode))
+				.OrderByDescending(r => r.RootNode.Level)
+				.FirstOrDefault();
+		}
+
 		private static bool IsMetadataMatched(OracleProgramMetadata metadata, OracleProgramReference programReference, int currentParameterIndex)
 		{
 			var isParameterlessCompatible = currentParameterIndex == 0 && metadata.NamedParameters.Count == 0;
@@ -203,14 +242,14 @@ namespace SqlPad.Oracle
 			       (programReference.AnalyticClauseNode != null && metadata.IsAnalytic);
 		}
 
-		internal ICollection<ICodeCompletionItem> ResolveItems(IDatabaseModel databaseModel, string statementText, int cursorPosition, bool forcedInvokation = true, params string[] categories)
+		internal IReadOnlyCollection<ICodeCompletionItem> ResolveItems(IDatabaseModel databaseModel, string statementText, int cursorPosition, bool forcedInvokation = true, params string[] categories)
 		{
 			var documentStore = new SqlDocumentRepository(OracleSqlParser.Instance, new OracleStatementValidator(), databaseModel, statementText);
 			var sourceItems = ResolveItems(documentStore, databaseModel, cursorPosition, forcedInvokation);
 			return sourceItems.Where(i => categories.Length == 0 || categories.Contains(i.Category)).ToArray();
 		}
 
-		public ICollection<ICodeCompletionItem> ResolveItems(SqlDocumentRepository sqlDocumentRepository, IDatabaseModel databaseModel, int cursorPosition, bool forcedInvokation)
+		public IReadOnlyCollection<ICodeCompletionItem> ResolveItems(SqlDocumentRepository sqlDocumentRepository, IDatabaseModel databaseModel, int cursorPosition, bool forcedInvokation)
 		{
 			if (sqlDocumentRepository?.Statements == null)
 			{

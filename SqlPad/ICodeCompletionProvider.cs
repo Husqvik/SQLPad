@@ -4,16 +4,16 @@ namespace SqlPad
 {
 	public interface ICodeCompletionProvider
 	{
-		ICollection<ProgramOverloadDescription> ResolveProgramOverloads(SqlDocumentRepository documentRepository, int cursorPosition);
+		IReadOnlyCollection<ProgramOverloadDescription> ResolveProgramOverloads(SqlDocumentRepository documentRepository, int cursorPosition);
 
-		ICollection<ICodeCompletionItem> ResolveItems(SqlDocumentRepository sqlDocumentRepository, IDatabaseModel databaseModel, int cursorPosition, bool forcedInvokation);
+		IReadOnlyCollection<ICodeCompletionItem> ResolveItems(SqlDocumentRepository sqlDocumentRepository, IDatabaseModel databaseModel, int cursorPosition, bool forcedInvokation);
 	}
 
 	public class ProgramOverloadDescription
 	{
 		public string Name { get; set; }
 
-		public IList<string> Parameters { get; set; }
+		public IReadOnlyList<string> Parameters { get; set; }
 
 		public int CurrentParameterIndex { get; set; }
 		

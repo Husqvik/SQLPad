@@ -786,7 +786,7 @@ namespace SqlPad
 
 		private void ShowFunctionOverloads(object sender, ExecutedRoutedEventArgs args)
 		{
-			ICollection<ProgramOverloadDescription> programOverloads;
+			IReadOnlyCollection<ProgramOverloadDescription> programOverloads;
 
 			try
 			{

@@ -13,7 +13,7 @@ namespace SqlPad
 			InitializeComponent();
 		}
 
-		public ICollection<ProgramOverloadDescription> FunctionOverloads
+		public IReadOnlyCollection<ProgramOverloadDescription> FunctionOverloads
 		{
 			set
 			{
