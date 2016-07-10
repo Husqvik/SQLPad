@@ -24,7 +24,7 @@ namespace SqlPad.Test
 		public static void Wait(double seconds)
 		{
 			var frame = new DispatcherFrame();
-			Task.Factory.StartNew(
+			Task.Run(
 				() =>
 				{
 					Thread.Sleep(TimeSpan.FromSeconds(seconds));

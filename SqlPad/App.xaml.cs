@@ -57,7 +57,7 @@ namespace SqlPad
 
 			ThreadPool.SetMinThreads(minSize, 8);
 
-			Trace.WriteLine($"Minimum of {requiredThreads} threads required to handle active documents. Thread pool minimum size adjusted to {minSize}. ");
+			Trace.WriteLine($"{DateTime.Now} - Minimum of {requiredThreads} threads required to handle active documents. Thread pool minimum size adjusted to {minSize}. ");
 		}
 
 		public static void DataGridBeginningEditCancelTextInputHandlerImplementation(object sender, DataGridBeginningEditEventArgs e)

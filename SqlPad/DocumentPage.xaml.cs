@@ -513,7 +513,9 @@ namespace SqlPad
 		public bool Save()
 		{
 			if (WorkDocument.File == null)
+			{
 				return SaveAs();
+			}
 
 			App.SafeActionWithUserError(SaveDocument);
 			return true;
@@ -784,11 +786,11 @@ namespace SqlPad
 
 		private void ShowFunctionOverloads(object sender, ExecutedRoutedEventArgs args)
 		{
-			ICollection<ProgramOverloadDescription> functionOverloads;
+			ICollection<ProgramOverloadDescription> programOverloads;
 
 			try
 			{
-				functionOverloads = _codeCompletionProvider.ResolveProgramOverloads(_documentRepository, Editor.CaretOffset);
+				programOverloads = _codeCompletionProvider.ResolveProgramOverloads(_documentRepository, Editor.CaretOffset);
 			}
 			catch (Exception exception)
 			{
@@ -796,12 +798,18 @@ namespace SqlPad
 				return;
 			}
 			
-			if (functionOverloads.Count == 0)
+			if (programOverloads.Count == 0)
 			{
 				return;
 			}
 
-			DynamicPopup.Child = new ProgramOverloadList { FunctionOverloads = functionOverloads, FontFamily = new FontFamily("Segoe UI") }.AsPopupChild();
+			DynamicPopup.Child =
+				new ProgramOverloadList
+				{
+					FunctionOverloads = programOverloads,
+					FontFamily = new FontFamily("Segoe UI")
+				}.AsPopupChild();
+
 			_isToolTipOpenByShortCut = true;
 
 			var rectangle = Editor.TextArea.Caret.CalculateCaretRectangle();
@@ -1038,18 +1046,20 @@ namespace SqlPad
 
 		private void NavigateToPreviousHighlightedUsage(object sender, ExecutedRoutedEventArgs args)
 		{
-			var nextSegments = _backgroundRenderer.HighlightSegments
-						.Where(s => s.IndextStart < Editor.CaretOffset)
-						.OrderByDescending(s => s.IndextStart);
+			var nextSegments =
+				_backgroundRenderer.HighlightSegments
+					.Where(s => s.IndextStart < Editor.CaretOffset)
+					.OrderByDescending(s => s.IndextStart);
 
 			NavigateToUsage(nextSegments);
 		}
 
 		private void NavigateToNextHighlightedUsage(object sender, ExecutedRoutedEventArgs args)
 		{
-			var nextSegments = _backgroundRenderer.HighlightSegments
-						.Where(s => s.IndextStart > Editor.CaretOffset)
-						.OrderBy(s => s.IndextStart);
+			var nextSegments =
+				_backgroundRenderer.HighlightSegments
+					.Where(s => s.IndextStart > Editor.CaretOffset)
+					.OrderBy(s => s.IndextStart);
 
 			NavigateToUsage(nextSegments);
 		}

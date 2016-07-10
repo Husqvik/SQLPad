@@ -21,8 +21,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public static Task<OracleStatementSemanticModel> BuildAsync(string statementText, OracleStatement statement, OracleDatabaseModelBase databaseModel, CancellationToken cancellationToken)
 		{
-			return Task.Factory.StartNew(
-				() => BuildInternal(statementText, statement, databaseModel, cancellationToken), cancellationToken);
+			return Task.Run(() => BuildInternal(statementText, statement, databaseModel, cancellationToken), cancellationToken);
 		}
 	}
 }

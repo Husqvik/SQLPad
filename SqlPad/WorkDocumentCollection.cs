@@ -142,12 +142,12 @@ namespace SqlPad
 				{
 					_instance = (WorkDocumentCollection)Serializer.Deserialize(file, _instance, typeof(WorkDocumentCollection));
 
-					Trace.WriteLine($"WorkDocumentCollection ({_instance._workingDocuments.Count} document(s)) successfully loaded from '{fileName}'. ");
+					Trace.WriteLine($"{DateTime.Now} - WorkDocumentCollection ({_instance._workingDocuments.Count} document(s)) successfully loaded from '{fileName}'. ");
 					return true;
 				}
 				catch (Exception e)
 				{
-					Trace.WriteLine($"WorkDocumentCollection deserialization from '{fileName}' failed: {e}");
+					Trace.WriteLine($"{DateTime.Now} - WorkDocumentCollection deserialization from '{fileName}' failed: {e}");
 				}
 			}
 

@@ -180,11 +180,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			var traceMessage = odacVersion == null
 				? $"{OracleDataAccessComponents} registry entry was not found. "
-			    : $"{OracleDataAccessComponents} version {odacVersion} found. ";
+				: $"{OracleDataAccessComponents} version {odacVersion} found. ";
 
-			Trace.WriteLine(traceMessage);
-
-			Trace.WriteLine($"{OracleDataAccessComponents} assembly version {typeof (OracleConnection).Assembly.FullName}");
+			Trace.WriteLine($"{DateTime.Now} - {traceMessage} {OracleDataAccessComponents} assembly version {typeof (OracleConnection).Assembly.FullName}");
 		}
 
 		public static OracleDatabaseModel GetDatabaseModel(ConnectionStringSettings connectionString, string identifier = null)
@@ -207,12 +205,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private void ExecuteActionAsync(Action action)
 		{
-			if (_isRefreshing)
+			if (!_isRefreshing)
 			{
-				return;
+				_backgroundTask = Task.Run(action);
 			}
-
-			_backgroundTask = Task.Factory.StartNew(action);
 		}
 
 		public override ILookup<OracleProgramIdentifier, OracleProgramMetadata> AllProgramMetadata => _allProgramMetadata;

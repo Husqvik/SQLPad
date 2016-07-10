@@ -138,7 +138,7 @@ namespace SqlPad
 
 		public static Task<IReadOnlyList<T>> EnumerateAsync<T>(this IEnumerable<T> source, CancellationToken cancellationToken)
 		{
-			return Task.Factory.StartNew(
+			return Task.Run(
 				() => (IReadOnlyList<T>)source.TakeWhile(i => !cancellationToken.IsCancellationRequested).ToArray(),
 				cancellationToken);
 		}
