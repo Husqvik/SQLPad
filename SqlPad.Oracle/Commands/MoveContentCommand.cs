@@ -12,19 +12,21 @@ namespace SqlPad.Oracle.Commands
 		private readonly Direction _direction;
 		private readonly ActionExecutionContext _executionContext;
 
-		public static readonly CommandExecutionHandler MoveContentUp = new CommandExecutionHandler
-		{
-			Name = "MoveContentUp",
-			DefaultGestures = new InputGestureCollection { new KeyGesture(Key.Up, ModifierKeys.Control | ModifierKeys.Alt | ModifierKeys.Shift) },
-			ExecutionHandler = MoveContentUpHandler
-		};
+		public static readonly CommandExecutionHandler MoveContentUp =
+			new CommandExecutionHandler
+			{
+				Name = "MoveContentUp",
+				DefaultGestures = new InputGestureCollection { new KeyGesture(Key.Up, ModifierKeys.Control | ModifierKeys.Alt | ModifierKeys.Shift) },
+				ExecutionHandler = MoveContentUpHandler
+			};
 
-		public static readonly CommandExecutionHandler MoveContentDown = new CommandExecutionHandler
-		{
-			Name = "MoveContentDown",
-			DefaultGestures = new InputGestureCollection { new KeyGesture(Key.Down, ModifierKeys.Control | ModifierKeys.Alt | ModifierKeys.Shift) },
-			ExecutionHandler = MoveContentDownHandler
-		};
+		public static readonly CommandExecutionHandler MoveContentDown =
+			new CommandExecutionHandler
+			{
+				Name = "MoveContentDown",
+				DefaultGestures = new InputGestureCollection { new KeyGesture(Key.Down, ModifierKeys.Control | ModifierKeys.Alt | ModifierKeys.Shift) },
+				ExecutionHandler = MoveContentDownHandler
+			};
 
 		private static void MoveContentUpHandler(ActionExecutionContext executionContext)
 		{
@@ -42,28 +44,27 @@ namespace SqlPad.Oracle.Commands
 			_direction = direction;
 		}
 
-		private static readonly string[] SupportedNodeIds =
+		private static readonly Func<StatementGrammarNode, StatementGrammarNode>[] SupportedNodeIdsResolvers =
 		{
-			NonTerminals.OptionalParameterExpression,
-			NonTerminals.AliasedExpressionOrAllTableColumns,
-			NonTerminals.OrderExpression,
-			NonTerminals.GroupingClause,
-			NonTerminals.TableReferenceJoinClause,
-			NonTerminals.PlSqlStatementOrInlinePragma,
-			NonTerminals.PlSqlStatementOrPragma
+			n => n.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBlock, NonTerminals.OptionalParameterExpression),
+			n => n.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBlock, NonTerminals.AliasedExpressionOrAllTableColumns),
+			n => n.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBlock, NonTerminals.OrderExpression),
+			n => n.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBlock, NonTerminals.GroupingClause),
+			n => n.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBlock, NonTerminals.TableReferenceJoinClause),
+			n => n.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBlock, NonTerminals.PlSqlStatementOrInlinePragma),
+			n => n.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBlock, NonTerminals.PlSqlStatementOrPragma),
+			n => n.GetPathFilterAncestor(x => x.GetAncestor(NonTerminals.PrefixedIdentifierList) != null, NonTerminals.PrefixedIdentifier)
 		};
 
 		private void MoveContent()
 		{
-			if (_executionContext.DocumentRepository == null)
-				return;
-
-			var currentNode = _executionContext.DocumentRepository.Statements.GetTerminalAtPosition(_executionContext.CaretOffset, t => t.Id != Terminals.Comma);
+			var currentNode = _executionContext.DocumentRepository?.Statements.GetTerminalAtPosition(_executionContext.CaretOffset, t => !String.Equals(t.Id, Terminals.Comma));
 			if (currentNode == null)
+			{
 				return;
+			}
 
-			var movedNode = SupportedNodeIds.Select(id => currentNode.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBlock, id))
-				.FirstOrDefault(n => n != null);
+			var movedNode = SupportedNodeIdsResolvers.Select(resolver => resolver(currentNode)).FirstOrDefault(n => n != null);
 
 			SourcePosition positionToExchange;
 			int movedContextIndexEnd;
@@ -111,23 +112,27 @@ namespace SqlPad.Oracle.Commands
 			}
 
 			if (positionToExchange == SourcePosition.Empty)
+			{
 				return;
+			}
 
 			_executionContext.SegmentsToReplace
-				.Add(new TextSegment
-				     {
-					     IndextStart = movedNode.SourcePosition.IndexStart,
-						 Length = movedContentLength,
-					     Text = _executionContext.StatementText.Substring(positionToExchange.IndexStart, positionToExchange.Length)
-				     });
+				.Add(
+					new TextSegment
+					{
+						IndextStart = movedNode.SourcePosition.IndexStart,
+						Length = movedContentLength,
+						Text = _executionContext.StatementText.Substring(positionToExchange.IndexStart, positionToExchange.Length)
+					});
 
 			_executionContext.SegmentsToReplace
-				.Add(new TextSegment
-				     {
-						 IndextStart = positionToExchange.IndexStart,
-						 Length = positionToExchange.Length,
-						 Text = _executionContext.StatementText.Substring(movedNode.SourcePosition.IndexStart, movedContentLength)
-				     });
+				.Add(
+					new TextSegment
+					{
+						IndextStart = positionToExchange.IndexStart,
+						Length = positionToExchange.Length,
+						Text = _executionContext.StatementText.Substring(movedNode.SourcePosition.IndexStart, movedContentLength)
+					});
 
 			var caretOffset = _direction == Direction.Up
 				? -positionToExchange.Length - movedNode.SourcePosition.IndexStart + positionToExchange.IndexEnd + 1
@@ -143,7 +148,7 @@ namespace SqlPad.Oracle.Commands
 				: FindDescendantPositionToExchange(movedNode);
 		}
 
-		private SourcePosition FindDescendantPositionToExchange(StatementGrammarNode movedNode)
+		private static SourcePosition FindDescendantPositionToExchange(StatementGrammarNode movedNode)
 		{
 			var nodeToExchange = movedNode.ParentNode.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBlock, movedNode.Id)
 				.FirstOrDefault(n => n != movedNode);
@@ -151,20 +156,20 @@ namespace SqlPad.Oracle.Commands
 			return CreateNodePosition(movedNode, nodeToExchange);
 		}
 
-		private SourcePosition FindAncestorPositionToExchange(StatementGrammarNode movedNode)
+		private static SourcePosition FindAncestorPositionToExchange(StatementGrammarNode movedNode)
 		{
 			var parentCandidate = movedNode.ParentNode.ParentNode;
 			StatementGrammarNode nodeToExchange = null;
 			while (parentCandidate != null && nodeToExchange == null)
 			{
-				nodeToExchange = parentCandidate.ChildNodes.FirstOrDefault(n => n.Id == movedNode.Id);
+				nodeToExchange = parentCandidate.ChildNodes.FirstOrDefault(n => String.Equals(n.Id, movedNode.Id));
 				parentCandidate = parentCandidate.ParentNode;
 			}
 
 			return CreateNodePosition(movedNode, nodeToExchange);
 		}
 
-		private SourcePosition CreateNodePosition(StatementGrammarNode movedNode, StatementGrammarNode nodeToExchange)
+		private static SourcePosition CreateNodePosition(StatementNode movedNode, StatementGrammarNode nodeToExchange)
 		{
 			return nodeToExchange == null
 				? SourcePosition.Empty
@@ -176,7 +181,7 @@ namespace SqlPad.Oracle.Commands
 			StatementGrammarNode previousNode = null;
 			foreach (var node in nodeToExchange.ChildNodes)
 			{
-				if (node.Id == chainingNodeId)
+				if (String.Equals(node.Id, chainingNodeId))
 				{
 					return GetLastNodeIndexEnd(previousNode);
 				}

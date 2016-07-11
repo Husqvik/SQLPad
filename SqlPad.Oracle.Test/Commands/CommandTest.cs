@@ -876,6 +876,30 @@ selECT NULL, 'null' FRom selection";
 		}
 
 		[Test, Apartment(ApartmentState.STA)]
+		public void TestMoveContentCommandDownAtInsertColumn()
+		{
+			_editor.Text = @"INSERT INTO selection (selectionname, project_id) VALUES (NULL, NULL)";
+			_editor.CaretOffset = 23;
+
+			ExecuteCommand(MoveContentCommand.MoveContentDown);
+
+			_editor.Text.ShouldBe("INSERT INTO selection (project_id, selectionname) VALUES (NULL, NULL)");
+			_editor.CaretOffset.ShouldBe(35);
+		}
+
+		[Test, Apartment(ApartmentState.STA)]
+		public void TestMoveContentCommandUpAtInsertColumn()
+		{
+			_editor.Text = @"INSERT INTO selection (selectionname, project_id) VALUES (NULL, NULL)";
+			_editor.CaretOffset = 38;
+
+			ExecuteCommand(MoveContentCommand.MoveContentUp);
+
+			_editor.Text.ShouldBe("INSERT INTO selection (project_id, selectionname) VALUES (NULL, NULL)");
+			_editor.CaretOffset.ShouldBe(23);
+		}
+
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestMoveFromClauseDown()
 		{
 			_editor.Text =

@@ -60,7 +60,9 @@ namespace SqlPad
 
 			stream = null;
 			if (!File.Exists(fullName))
+			{
 				return false;
+			}
 
 			stream = File.OpenRead(fullName);
 			return true;
@@ -69,7 +71,9 @@ namespace SqlPad
 		public static void StoreDatabaseModelCache(string cacheKey, Action<Stream> storeAction)
 		{
 			if (DatabaseModelCacheConfiguration == null)
+			{
 				return;
+			}
 
 			lock (DatabaseModelCacheConfiguration)
 			{
@@ -89,7 +93,7 @@ namespace SqlPad
 
 				timer.Stop();
 
-				Trace.WriteLine($"{DateTime.Now} - Cache for '{cacheKey}' stored to '{fileName}' in {timer.Elapsed}");
+				Trace.WriteLine($"{DateTime.Now} - Cache for '{cacheKey}' stored to '{fileName}' ({DataSpaceConverter.PrettyPrint(new FileInfo(fileName).Length)}) in {timer.Elapsed}");
 
 				using (var stream = File.Create(CacheConfigrationFileName))
 				{
@@ -110,7 +114,9 @@ namespace SqlPad
 
 			var fullCacheFileName = GetFullFileName(cacheFile.FileName);
 			if (!File.Exists(fullCacheFileName))
+			{
 				return false;
+			}
 
 			stream = File.OpenRead(fullCacheFileName);
 			return true;
