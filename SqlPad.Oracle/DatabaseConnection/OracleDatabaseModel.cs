@@ -649,28 +649,13 @@ namespace SqlPad.Oracle.DatabaseConnection
 					connection.ModuleName = $"{_moduleName}/MetadataMapper";
 					connection.ActionName = "Fetch data dictionary metadata";
 
-					using (var task = command.ExecuteReaderAsynchronous(CommandBehavior.CloseConnection, _backgroundTaskCancellationTokenSource.Token))
+					using (var reader = command.ExecuteReader())
 					{
-						try
+						while (reader.Read())
 						{
-							task.Wait(_backgroundTaskCancellationTokenSource.Token);
-						}
-						catch (AggregateException)
-						{
-							if (task.IsCanceled)
-							{
-								yield break;
-							}
-							
-							throw;
-						}
+							_backgroundTaskCancellationTokenSource.Token.ThrowIfCancellationRequested();
 
-						using (var reader = task.Result)
-						{
-							while (reader.Read())
-							{
-								yield return formatFunction(reader);
-							}
+							yield return formatFunction(reader);
 						}
 					}
 				}
