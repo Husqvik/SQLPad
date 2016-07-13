@@ -2389,6 +2389,16 @@ ON (EVENTS.ID = SRC.ID)";
 			items[0].Text.ShouldBe("HUSQVIK");
 		}
 
+		[Test]
+		public void TestParenthesisNotSuggestedWhenAlreadyInPlace()
+		{
+			const string statement = @"BEGIN dbms_output.put_lin(); END;";
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 25).ToList();
+			items.Count.ShouldBe(1);
+			items[0].Name.ShouldBe("PUT_LINE");
+			items[0].Text.ShouldBe("PUT_LINE");
+		}
+
 		[Test, Ignore("not solved yet; looks like somethings goes really wrong when building grammar tree although it requires document repository to replicate this issue. ")]
 		public void TestSpecialCrashingCaseWithinTerminalCandidates()
 		{
@@ -2673,6 +2683,15 @@ ON (EVENTS.ID = SRC.ID)";
 END;";
 
 				Should.NotThrow(() => InitializeCodeCompletionType(statement, 0));
+			}
+
+			[Test]
+			public void TestCodeCompletionTypeAtOpeningParenthesis()
+			{
+				const string statement = @"BEGIN dbms_output.put_lin(); END;";
+
+				var completionType = InitializeCodeCompletionType(statement, 25);
+				completionType.PackageFunction.ShouldBe(true);
 			}
 
 			public class ReferenceIdentifierTest

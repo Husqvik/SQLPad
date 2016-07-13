@@ -41,7 +41,7 @@
             <TabItem Header="Find" Name="tabFind"  ContentTemplate="{StaticResource FindPageTemplate}" Visibility="{Binding AllowReplace, Converter={StaticResource boolToVis}}">
                 <StackPanel>
                     <TextBox Margin="3" Name="txtFind" AcceptsReturn="{Binding AcceptsReturn}" Text="{Binding TextToFind, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                    <Button Margin="3" IsDefault="True" HorizontalAlignment="Right" Width="65" Click="FindNextClick">Find next</Button>
+                    <Button Margin="3" IsDefault="True" HorizontalAlignment="Right" Width="65" Click="FindNextClick">_Find next</Button>
                 </StackPanel>
             </TabItem>
             <TabItem Header="Replace" Name="tabReplace"  ContentTemplate="{StaticResource FindPageTemplate}" Visibility="{Binding AllowReplace, Converter={StaticResource boolToVis}}">
@@ -50,9 +50,9 @@
                     <TextBlock Margin="3">Replace with:</TextBlock>
                     <TextBox Margin="3" Name="txtReplace" AcceptsReturn="{Binding AcceptsReturn}" Text="{Binding ReplacementText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBox>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button IsDefault="True" Margin="3" HorizontalAlignment="Right" Width="65" Click="FindNextClick">Find next</Button>
-                        <Button Margin="3" HorizontalAlignment="Right" Width="65" Click="ReplaceClick">Replace</Button>
-                        <Button Margin="3" HorizontalAlignment="Right" Width="65" Click="ReplaceAllClick">Replace all</Button>
+                        <Button IsDefault="True" Margin="3" HorizontalAlignment="Right" Width="65" Click="FindNextClick">_Find next</Button>
+                        <Button Margin="3" HorizontalAlignment="Right" Width="65" Click="ReplaceClick">_Replace</Button>
+                        <Button Margin="3" HorizontalAlignment="Right" Width="65" Click="ReplaceAllClick">Replace _all</Button>
                     </StackPanel>
                 </StackPanel>
             </TabItem>

@@ -144,9 +144,15 @@ namespace SqlPad.Oracle
 			return parameterLabel;
 		}
 
-		private static ICollection<OracleReferenceContainer> GetReferenceContainers(OracleReferenceContainer mainContainer, OracleQueryBlock currentQueryBlock)
+		private static ICollection<OracleReferenceContainer> GetReferenceContainers(OracleStatementSemanticModel semanticModel, OracleQueryBlock currentQueryBlock)
 		{
-			var referenceContainers = new List<OracleReferenceContainer> { mainContainer };
+			var referenceContainers = new List<OracleReferenceContainer> { semanticModel.MainObjectReferenceContainer };
+			var plSqlModel = semanticModel as OraclePlSqlStatementSemanticModel;
+			if (plSqlModel != null)
+			{
+				referenceContainers.AddRange(plSqlModel.AllPrograms);
+			}
+
 			if (currentQueryBlock != null)
 			{
 				referenceContainers.Add(currentQueryBlock);
@@ -326,7 +332,7 @@ namespace SqlPad.Oracle
 			var cursorAtLastTerminal = cursorPosition <= currentTerminal.SourcePosition.IndexEnd + 1;
 			var terminalToReplace = completionType.ReferenceIdentifier.IdentifierUnderCursor;
 
-			var referenceContainers = GetReferenceContainers(semanticModel.MainObjectReferenceContainer, completionType.CurrentQueryBlock);
+			var referenceContainers = GetReferenceContainers(semanticModel, completionType.CurrentQueryBlock);
 
 			var extraOffset = currentTerminal.SourcePosition.ContainsIndex(cursorPosition) && !currentTerminal.Id.In(Terminals.LeftParenthesis, Terminals.Dot) ? 1 : 0;
 
