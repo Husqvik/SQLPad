@@ -557,7 +557,9 @@ namespace SqlPad.Oracle.Test
 			var testFunction = (OracleFunction)AllObjectsInternal.Single(o => String.Equals(o.Name, "\"TESTFUNC\"") && String.Equals(o.Owner, InitialSchema));
 			testFunction.Metadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(InitialSchema.ToSimpleIdentifier(), null, "TESTFUNC"), false, false, false, false, false, false, null, null, AuthId.Definer, OracleProgramMetadata.DisplayTypeNormal, false);
 			testFunction.Metadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
-			testFunction.Metadata.AddParameter(new OracleProgramParameterMetadata("\"PARAM\"", 1, 1, 0, ParameterDirection.ReturnValue, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
+			testFunction.Metadata.AddParameter(new OracleProgramParameterMetadata("\"PARAM1\"", 1, 1, 0, ParameterDirection.Input, TerminalValues.Number, OracleObjectIdentifier.Empty, false));
+			testFunction.Metadata.AddParameter(new OracleProgramParameterMetadata("\"PARAM2\"", 1, 1, 0, ParameterDirection.InputOutput, TerminalValues.Raw, OracleObjectIdentifier.Empty, false));
+			testFunction.Metadata.AddParameter(new OracleProgramParameterMetadata("\"PARAM3\"", 1, 1, 0, ParameterDirection.Output, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
 			testFunction.Metadata.Owner = testFunction;
 
 			var sqlPadPackage = (OraclePackage)AllObjectsInternal.Single(o => String.Equals(o.Name, "\"SQLPAD\"") && String.Equals(o.Owner, InitialSchema));
@@ -665,12 +667,13 @@ namespace SqlPad.Oracle.Test
 		private static void AddConstraints()
 		{
 			var projectTable = (OracleDataObject)AllObjectDictionary[OracleObjectIdentifier.Create(InitialSchema, "\"PROJECT\"")];
-			var projectPrimaryKey = new OraclePrimaryKeyConstraint
-			                                 {
-				                                 FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"PK_PROJECT\""),
-				                                 Columns = new[] { "\"PROJECT_ID\"" },
-				                                 OwnerObject = projectTable
-			                                 };
+			var projectPrimaryKey =
+				new OraclePrimaryKeyConstraint
+				{
+					FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"PK_PROJECT\""),
+					Columns = new[] { "\"PROJECT_ID\"" },
+					OwnerObject = projectTable
+				};
 			
 			projectTable.Constraints = new List<OracleConstraint>{ projectPrimaryKey }.AsReadOnly();
 

@@ -569,7 +569,6 @@ namespace SqlPad
 			Application.Current.Deactivated -= ApplicationDeactivatedHandler;
 			_timerExecutionMonitor.Tick -= TimerExecutionMonitorTickHandler;
 			_timerExecutionMonitor.Stop();
-			ConnectionAdapter.Dispose();
 		}
 
 		private async void ButtonCommitTransactionClickHandler(object sender, RoutedEventArgs e)

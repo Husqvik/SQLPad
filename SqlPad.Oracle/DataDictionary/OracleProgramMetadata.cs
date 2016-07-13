@@ -198,7 +198,7 @@ namespace SqlPad.Oracle.DataDictionary
 		Input,
 		Output,
 		InputOutput,
-		ReturnValue,
+		ReturnValue
 	}
 
 	public enum AuthId

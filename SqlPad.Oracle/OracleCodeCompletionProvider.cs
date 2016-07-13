@@ -50,9 +50,10 @@ namespace SqlPad.Oracle
 					{
 						var metadata = o.ProgramMetadata;
 						var returnParameter = metadata.ReturnParameter;
+						var displayParameterDirection = !metadata.IsBuiltIn || !String.IsNullOrEmpty(metadata.Identifier.Package);
 						var parameters = metadata.Parameters
 							.Where(p => p.Direction != ParameterDirection.ReturnValue && p.DataLevel == 0)
-							.Select(BuildParameterLabel)
+							.Select(p => BuildParameterLabel(p, displayParameterDirection))
 							.ToArray();
 
 						return
@@ -93,12 +94,12 @@ namespace SqlPad.Oracle
 
 		private static string BuildInsertColumnLabel(string name, OracleColumn column)
 		{
-			var columnLabel = BuildNameDataTypeLabel(name, column?.FullTypeName);
+			var columnLabel = BuildNameDataTypeLabel(name, null, column?.FullTypeName);
 			var nullability = column == null || column.Nullable ? "NULL" : "NOT NULL";
 			return $"{columnLabel} {nullability}";
 		}
 
-		private static string BuildNameDataTypeLabel(string name, string dataTypeLabel)
+		private static string BuildNameDataTypeLabel(string name, ParameterDirection? parameterDirection, string dataTypeLabel)
 		{
 			string parameterName;
 			string dataType;
@@ -114,14 +115,27 @@ namespace SqlPad.Oracle
 			}
 
 			var isPartialMetadata = String.IsNullOrEmpty(dataTypeLabel) || dataType == null;
-			var parameterLabel = $"{parameterName}{(isPartialMetadata ? null : ": ")}{dataType}";
+			var parameterLabel = $"{parameterName}{GetParameterDirectionPostfix(parameterDirection)}{(isPartialMetadata ? null : ": ")}{dataType}";
 
 			return parameterLabel;
 		}
 
-		private static string BuildParameterLabel(OracleProgramParameterMetadata parameterMetadata)
+		private static string GetParameterDirectionPostfix(ParameterDirection? parameterDirection)
 		{
-			var parameterLabel = BuildNameDataTypeLabel(parameterMetadata.Name, parameterMetadata.FullDataTypeName);
+			switch (parameterDirection)
+			{
+				case ParameterDirection.Output:
+					return " (OUT)";
+				case ParameterDirection.InputOutput:
+					return " (IN/OUT)";
+				default:
+					return null;
+			}
+		}
+
+		private static string BuildParameterLabel(OracleProgramParameterMetadata parameterMetadata, bool displayParameterDirection)
+		{
+			var parameterLabel = BuildNameDataTypeLabel(parameterMetadata.Name, displayParameterDirection ? parameterMetadata.Direction : (ParameterDirection?)null, parameterMetadata.FullDataTypeName);
 			if (parameterMetadata.IsOptional)
 			{
 				parameterLabel = $"[{parameterLabel}]";

@@ -656,6 +656,21 @@ SELECT * FROM CTE";
 		}
 
 		[Test, Apartment(ApartmentState.STA)]
+		public void TestFunctionOverloadWithFunctionWithDifferentParameterTypes()
+		{
+			const string query = "SELECT TESTFUNC() FROM DUAL";
+			_documentRepository.UpdateStatements(query);
+
+			var functionOverloads = _codeCompletionProvider.ResolveProgramOverloads(_documentRepository, 16);
+			var functionOverloadList = new ProgramOverloadList { FunctionOverloads = functionOverloads };
+			functionOverloadList.ViewOverloads.Items.Count.ShouldBe(1);
+			functionOverloadList.ViewOverloads.Items[0].ShouldBeAssignableTo(typeof(TextBlock));
+
+			var itemText = GetTextFromTextBlock((TextBlock)functionOverloadList.ViewOverloads.Items[0]);
+			itemText.ShouldBe("HUSQVIK.TESTFUNC(PARAM1: NUMBER, PARAM2 (IN/OUT): RAW, PARAM3 (OUT): VARCHAR2) RETURN: NUMBER");
+		}
+
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestNoParenthesisFunctionWithParentheses()
 		{
 			const string query = "SELECT SESSIONTIMEZONE() FROM DUAL";
