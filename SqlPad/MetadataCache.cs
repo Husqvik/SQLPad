@@ -93,7 +93,7 @@ namespace SqlPad
 
 				timer.Stop();
 
-				Trace.WriteLine($"{DateTime.Now} - Cache for '{cacheKey}' stored to '{fileName}' ({DataSpaceConverter.PrettyPrint(new FileInfo(fileName).Length)}) in {timer.Elapsed}");
+				Trace.WriteLine($"{DateTime.Now} - Cache for '{cacheKey}' stored to '{fileName}' ({DataSpaceConverter.PrettyPrint(new FileInfo(fileName).Length, CultureInfo.InvariantCulture)}) in {timer.Elapsed}. ");
 
 				using (var stream = File.Create(CacheConfigrationFileName))
 				{

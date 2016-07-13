@@ -2664,6 +2664,17 @@ ON (EVENTS.ID = SRC.ID)";
 				completionType.Schema.ShouldBe(true);
 			}
 
+			[Test]
+			public void TestCodeCompletionTypeAtBeginningOfCreatePackage()
+			{
+				const string statement =
+					@"CREATE OR REPLACE PACKAGE test_package IS
+    PROCEDURE test_procedure;
+END;";
+
+				Should.NotThrow(() => InitializeCodeCompletionType(statement, 0));
+			}
+
 			public class ReferenceIdentifierTest
 			{
 				public class SelectList

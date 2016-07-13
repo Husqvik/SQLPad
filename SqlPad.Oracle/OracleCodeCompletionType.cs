@@ -423,7 +423,7 @@ namespace SqlPad.Oracle
 				plSqlIdentifiers.PushMany(GetPlSqlIdentifiers(plSqlAssignmentTargetNode[Terminals.PlSqlIdentifier]));
 				plSqlCompletion = PlSqlCompletion.Function | PlSqlCompletion.Procedure;
 			}
-			else if (String.Equals(parentNode.ParentNode.Id, NonTerminals.PlSqlProcedureCall))
+			else if (String.Equals(parentNode.ParentNode?.Id, NonTerminals.PlSqlProcedureCall))
 			{
 				var prefixNode = parentNode[NonTerminals.Prefix];
 				if (prefixNode != null)

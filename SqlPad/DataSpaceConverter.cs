@@ -16,27 +16,37 @@ namespace SqlPad
 
 		public static string PrettyPrint(decimal bytes)
 		{
+			return PrettyPrint(bytes, CultureInfo.CurrentCulture);
+		}
+
+		public static string PrettyPrint(decimal bytes, CultureInfo culture)
+		{
 			if (bytes < 1024)
 			{
-				return $"{bytes} B";
+				return $"{bytes.ToString(culture)} B";
 			}
 			
 			if (bytes < 1048576)
 			{
-				return $"{Math.Round(bytes / 1024)} kB";
+				return $"{Math.Round(bytes / 1024).ToString(culture)} kB";
 			}
 
 			if (bytes < 1073741824)
 			{
-				return $"{Math.Round(bytes / 1048576, 1)} MB";
+				return $"{Math.Round(bytes / 1048576, 1).ToString(culture)} MB";
 			}
 
 			if (bytes < 1099511627776)
 			{
-				return $"{Math.Round(bytes / 1073741824, 2)} GB";
+				return $"{Math.Round(bytes / 1073741824, 2).ToString(culture)} GB";
 			}
 
-			return $"{Math.Round(bytes / 1099511627776, 2)} TB";
+			if (bytes < 1125899906842624)
+			{
+				return $"{Math.Round(bytes / 1099511627776, 2).ToString(culture)} TB";
+			}
+
+			return $"{Math.Round(bytes / 1125899906842624, 2).ToString(culture)} PB";
 		}
 	}
 }

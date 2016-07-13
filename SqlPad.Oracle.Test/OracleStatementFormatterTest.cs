@@ -454,5 +454,30 @@ WHERE
 
 			AssertFormattedResult(executionContext, expectedFormat);
 		}
+
+		[Test]
+		public void TestSelectedTextNormalization()
+		{
+			var formatOptions = OracleConfiguration.Configuration.Formatter.FormatOptions;
+			formatOptions.Identifier = FormatOption.Upper;
+			formatOptions.Alias = FormatOption.Upper;
+			formatOptions.ReservedWord = FormatOption.InitialCapital;
+
+			const string sourceFormat = "SELECT dummy alias FROM dual";
+			_documentRepository.UpdateStatements(sourceFormat);
+			var executionContext = new ActionExecutionContext(sourceFormat, 9, 9, 15, _documentRepository);
+			Formatter.NormalizeHandler.ExecutionHandler(executionContext);
+
+			executionContext.SegmentsToReplace.Count.ShouldBe(3);
+			executionContext.SegmentsToReplace[0].IndextStart.ShouldBe(7);
+			executionContext.SegmentsToReplace[0].Length.ShouldBe(5);
+			executionContext.SegmentsToReplace[0].Text.ShouldBe("DUMMY");
+			executionContext.SegmentsToReplace[1].IndextStart.ShouldBe(13);
+			executionContext.SegmentsToReplace[1].Length.ShouldBe(5);
+			executionContext.SegmentsToReplace[1].Text.ShouldBe("ALIAS");
+			executionContext.SegmentsToReplace[2].IndextStart.ShouldBe(19);
+			executionContext.SegmentsToReplace[2].Length.ShouldBe(4);
+			executionContext.SegmentsToReplace[2].Text.ShouldBe("From");
+		}
 	}
 }

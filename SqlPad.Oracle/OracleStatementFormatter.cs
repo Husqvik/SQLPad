@@ -368,7 +368,11 @@ namespace SqlPad.Oracle
 
 			private void Normalize(StatementBase statement)
 			{
-				foreach (var terminal in statement.AllTerminals)
+				var selectionStart = ExecutionContext.SelectionLength > 0 ? ExecutionContext.SelectionStart : 0;
+				selectionStart = Math.Max(selectionStart, statement.RootNode.SourcePosition.IndexStart);
+				var selectionEnd = ExecutionContext.SelectionLength > 0 ? Math.Min(ExecutionContext.SelectionEnd, statement.LastSourceIndex) : statement.LastSourceIndex;
+
+				foreach (var terminal in statement.AllTerminals.Where(t => t.SourcePosition.IndexStart < selectionEnd && t.SourcePosition.IndexEnd >= selectionStart))
 				{
 					var segment =
 						new TextSegment
