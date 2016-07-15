@@ -334,7 +334,7 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public override string TypeCode => TypeCodeCollection;
 
-	    public OracleCollectionType CollectionType { get; set; }
+		public OracleCollectionType CollectionType { get; set; }
 
 		public int? UpperBound { get; set; }
 
@@ -377,6 +377,14 @@ namespace SqlPad.Oracle.DataDictionary
 		public bool IsCommon { get; set; }
 	}
 
+	[DebuggerDisplay("OracleDirectory (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
+	public class OracleDirectory : OracleSchemaObject
+	{
+		public override string Type { get; } = OracleObjectType.Directory;
+
+		public string Path { get; set; }
+	}
+
 	public enum OracleCollectionType
 	{
 		Table,
@@ -406,5 +414,6 @@ namespace SqlPad.Oracle.DataDictionary
 		public const string SubPartition = "SUBPARTITION";
 		public const string DatabaseLink = "DB_LINK";
 		public const string Constraint = "CONSTRAINT";
+		public const string Directory = "DIRECTORY";
 	}
 }

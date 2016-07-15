@@ -238,6 +238,7 @@ namespace SqlPad.Oracle
 				Terminals.JsonQuery,
 				Terminals.JsonExists,
 				Terminals.JsonValue,
+				Terminals.XmlAggregate,
 				Terminals.XmlCast,
 				Terminals.XmlElement,
 				Terminals.XmlSerialize,

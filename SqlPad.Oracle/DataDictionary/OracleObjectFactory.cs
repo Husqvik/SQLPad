@@ -63,6 +63,8 @@ namespace SqlPad.Oracle.DataDictionary
 					return new OracleSequence();
 				case OracleObjectType.Package:
 					return new OraclePackage();
+				case OracleObjectType.Directory:
+					return new OracleDirectory();
 				default:
 					throw new InvalidOperationException($"Object type '{objectType}' not supported. ");
 			}

@@ -196,10 +196,10 @@ ORDER BY
     SEQUENCE";
 
 		public static readonly string SelectTypesCommandText =
-		    $"SELECT OWNER, TYPE_NAME, TYPECODE, PREDEFINED, INCOMPLETE, FINAL, INSTANTIABLE, SUPERTYPE_OWNER, SUPERTYPE_NAME FROM SYS.ALL_TYPES WHERE TYPECODE IN ({ToInValueList(OracleTypeBase.TypeCodeObject, OracleTypeBase.TypeCodeCollection, OracleTypeBase.TypeCodeXml, OracleTypeBase.TypeCodeAnyData)})";
+			$"SELECT OWNER, TYPE_NAME, TYPECODE, PREDEFINED, INCOMPLETE, FINAL, INSTANTIABLE, SUPERTYPE_OWNER, SUPERTYPE_NAME FROM SYS.ALL_TYPES WHERE TYPECODE IN ({ToInValueList(OracleTypeBase.TypeCodeObject, OracleTypeBase.TypeCodeCollection, OracleTypeBase.TypeCodeXml, OracleTypeBase.TypeCodeAnyData)})";
 
 		public static readonly string SelectAllObjectsCommandText =
-		    $"SELECT OWNER, OBJECT_NAME, SUBOBJECT_NAME, OBJECT_ID, DATA_OBJECT_ID, OBJECT_TYPE, CREATED, LAST_DDL_TIME, STATUS, TEMPORARY/*, EDITIONABLE, EDITION_NAME*/ FROM SYS.ALL_OBJECTS WHERE OBJECT_TYPE IN ({ToInValueList(OracleObjectType.Synonym, OracleObjectType.View, OracleObjectType.Table, OracleObjectType.Sequence, OracleObjectType.Function, OracleObjectType.Package, OracleObjectType.Type, OracleObjectType.Procedure)})";
+			$"SELECT OWNER, OBJECT_NAME, SUBOBJECT_NAME, OBJECT_ID, DATA_OBJECT_ID, OBJECT_TYPE, CREATED, LAST_DDL_TIME, STATUS, TEMPORARY/*, EDITIONABLE, EDITION_NAME*/ FROM SYS.ALL_OBJECTS WHERE OBJECT_TYPE IN ({ToInValueList(OracleObjectType.Synonym, OracleObjectType.View, OracleObjectType.Table, OracleObjectType.Sequence, OracleObjectType.Function, OracleObjectType.Package, OracleObjectType.Type, OracleObjectType.Procedure, OracleObjectType.Directory)})";
 
 		public const string SelectTablesCommandText =
 @"SELECT OWNER, TABLE_NAME, TABLESPACE_NAME, CLUSTER_NAME, STATUS, LOGGING, NUM_ROWS, BLOCKS, AVG_ROW_LEN, DEGREE, CACHE, SAMPLE_SIZE, LAST_ANALYZED, TEMPORARY, NESTED, ROW_MOVEMENT, COMPRESS_FOR,
@@ -213,6 +213,8 @@ FROM SYS.ALL_TABLES";
 		public const string SelectAllSchemasCommandTextBase = "SELECT USERNAME, CREATED{0} FROM SYS.ALL_USERS";
 
 		public const string SelectSynonymTargetsCommandText = "SELECT OWNER, SYNONYM_NAME, TABLE_OWNER, TABLE_NAME FROM SYS.ALL_SYNONYMS";
+
+		public const string SelectDirectoryCommandText = "SELECT owner, directory_name, directory_path FROM sys.all_directories";
 
 		public const string SelectTableColumnsCommandTextBase = "SELECT OWNER, TABLE_NAME, COLUMN_NAME, DATA_TYPE, DATA_TYPE_OWNER, DATA_LENGTH, CHAR_LENGTH, DATA_PRECISION, DATA_SCALE, CHAR_USED, VIRTUAL_COLUMN, DATA_DEFAULT, NULLABLE, COLUMN_ID, NUM_DISTINCT, LOW_VALUE, HIGH_VALUE, NUM_NULLS, NUM_BUCKETS, LAST_ANALYZED, SAMPLE_SIZE, AVG_COL_LEN, HISTOGRAM{0} FROM SYS.ALL_TAB_COLS ORDER BY OWNER, TABLE_NAME, COLUMN_ID";
 

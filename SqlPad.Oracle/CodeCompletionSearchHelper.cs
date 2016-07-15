@@ -33,6 +33,7 @@ namespace SqlPad.Oracle
 				OracleProgramIdentifier.IdentifierBuiltInProgramNextDay,
 				OracleProgramIdentifier.IdentifierBuiltInProgramNumberToYearToMonthInterval,
 				OracleProgramIdentifier.IdentifierBuiltInProgramNumberToDayToSecondInterval,
+				OracleProgramIdentifier.IdentifierBuiltInProgramBFileName,
 				OracleProgramIdentifier.IdentifierDbmsRandomString,
 				OracleProgramIdentifier.IdentifierDbmsCryptoHash
 			};
@@ -173,6 +174,13 @@ namespace SqlPad.Oracle
 				task.Wait();
 				var namespaceItems = task.Result.Select(n => BuildParameterCompletionItem(currentNode, n, n));
 				completionItems.AddRange(namespaceItems);
+			}
+
+			var bFileNameFunction = specificFunctionOverloads.FirstOrDefault(o => o.ProgramMetadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramBFileName);
+			if (bFileNameFunction != null && bFileNameFunction.CurrentParameterIndex == 0)
+			{
+				var directoryItems = databaseModel.AllObjects.Values.OfType<OracleDirectory>().Select(d => BuildDirectoryParameterCompletionItem(currentNode, d));
+				completionItems.AddRange(directoryItems);
 			}
 
 			var sysContextFunctionOverload = specificFunctionOverloads.FirstOrDefault(o => o.ProgramMetadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramSysContext);
@@ -368,6 +376,12 @@ namespace SqlPad.Oracle
 			return completionItems;
 		}
 
+		private static OracleCodeCompletionItem BuildDirectoryParameterCompletionItem(StatementGrammarNode currentNode, OracleDirectory directory)
+		{
+			var directoryNameLabel = $"{directory.Owner.Trim('"')}.{directory.Name.Trim('"')}";
+			return BuildParameterCompletionItem(currentNode, directoryNameLabel, directoryNameLabel, description: directory.Path);
+		}
+
 		private static bool IsAtDbmsMetadataObjectTypeParameter(IEnumerable<OracleCodeCompletionFunctionOverload> functionOverloads)
 		{
 			return functionOverloads.Any(o => IsDbmsMetadata(o.ProgramMetadata) && o.ProgramMetadata.Parameters.Count >= o.CurrentParameterIndex + 1 && String.Equals(o.ProgramMetadata.Parameters[o.CurrentParameterIndex + 1].Name, "\"OBJECT_TYPE\""));
@@ -438,7 +452,7 @@ namespace SqlPad.Oracle
 			return metadata.Owner.GetTargetSchemaObject()?.FullyQualifiedName == OracleObjectIdentifier.IdentifierDbmsMetadata;
 		}
 
-		private static OracleCodeCompletionItem BuildParameterCompletionItem(StatementGrammarNode node, string parameterValue, string description, bool addApostrophes = true)
+		private static OracleCodeCompletionItem BuildParameterCompletionItem(StatementGrammarNode node, string parameterValue, string label, bool addApostrophes = true, string description = null)
 		{
 			var value = parameterValue.ToOracleString();
 			var text = addApostrophes ? $"'{value}'" : value;
@@ -447,9 +461,10 @@ namespace SqlPad.Oracle
 				new OracleCodeCompletionItem
 				{
 					Category = OracleCodeCompletionCategory.FunctionParameter,
-					Name = description,
-					StatementNode = node.Id == Terminals.StringLiteral ? node : null,
-					Text = text
+					Name = label,
+					StatementNode = String.Equals(node.Id, Terminals.StringLiteral) ? node : null,
+					Text = text,
+					Description = description
 				};
 		}
 

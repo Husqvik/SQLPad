@@ -98,6 +98,14 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			WriteTrace($"Fetch synonyms metadata finished in {stopwatch.Elapsed}. ");
 
+			NotifyStatus("Directory metadata... ");
+
+			stopwatch.Restart();
+
+			_databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectDirectoryCommandText, r => MapDirectory(r, allObjects)).Count();
+
+			WriteTrace($"Fetch directory metadata finished in {stopwatch.Elapsed}. ");
+
 			NotifyStatus("Table column metadata... ");
 
 			stopwatch.Restart();
@@ -615,6 +623,20 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return synonymObject;
 		}
 
+		private static OracleDirectory MapDirectory(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
+		{
+			var directoryFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["DIRECTORY_NAME"]));
+			OracleSchemaObject schemaObject;
+			if (!allObjects.TryGetValue(directoryFullyQualifiedName, out schemaObject))
+			{
+				return null;
+			}
+
+			var directory = (OracleDirectory)schemaObject;
+			directory.Path =(string)reader["DIRECTORY_PATH"];
+			return directory;
+		}
+
 		private static OracleTable MapTable(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
 		{
 			var tableFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["TABLE_NAME"]));
@@ -671,7 +693,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				: null;
 		}
 
-		private OracleSubPartition MapSubPartitions(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
+		private static OracleSubPartition MapSubPartitions(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
 		{
 			var ownerTable = GetTableForPartition(reader, allObjects);
 			if (ownerTable == null)

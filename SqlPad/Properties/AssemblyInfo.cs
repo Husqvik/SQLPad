@@ -54,6 +54,6 @@ using SqlPad;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.4.0.389")]
-[assembly: AssemblyFileVersion("0.4.0.389")]
-[assembly: AssemblyBuildInfo("3709677", "2016-07-14 00:25:41")]
+[assembly: AssemblyVersion("0.4.0.390")]
+[assembly: AssemblyFileVersion("0.4.0.390")]
+[assembly: AssemblyBuildInfo("b87073f", "2016-07-15 21:35:57")]

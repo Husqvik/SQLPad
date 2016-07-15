@@ -92,7 +92,7 @@ namespace SqlPad.Oracle.Test
 				{ SystemParameterNameMaxStringSize, "STANDARD" }
 			};
 
-	    private static readonly HashSet<OracleDatabaseLink> DatabaseLinksInternal =
+		private static readonly HashSet<OracleDatabaseLink> DatabaseLinksInternal =
 			new HashSet<OracleDatabaseLink>
 			{
 				new OracleDatabaseLink
@@ -111,7 +111,7 @@ namespace SqlPad.Oracle.Test
 				}
 			};
 
-	    internal Version TestDatabaseVersion = InitialTestDatabaseVersion;
+		internal Version TestDatabaseVersion = InitialTestDatabaseVersion;
 
 		static OracleTestDatabaseModel()
 		{
@@ -349,6 +349,13 @@ namespace SqlPad.Oracle.Test
 			truncFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"RIGHT\"", 2, 2, 0, ParameterDirection.Input, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
 			truncFunctionMetadata.Owner = builtInFunctionPackage;
 			builtInFunctionPackage.Programs.Add(truncFunctionMetadata);
+
+			var bFileNameFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.IdentifierBuiltInProgramBFileName, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
+			bFileNameFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, "BFILE", OracleObjectIdentifier.Empty, false));
+			bFileNameFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"DIRECTORY\"", 1, 1, 0, ParameterDirection.Input, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
+			bFileNameFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"FILENAME\"", 2, 2, 0, ParameterDirection.Input, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
+			bFileNameFunctionMetadata.Owner = builtInFunctionPackage;
+			builtInFunctionPackage.Programs.Add(bFileNameFunctionMetadata);
 
 			var toCharFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.IdentifierBuiltInProgramToChar, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
 			toCharFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 0, 0, ParameterDirection.ReturnValue, TerminalValues.Varchar2, OracleObjectIdentifier.Empty, false));
@@ -1130,6 +1137,18 @@ namespace SqlPad.Oracle.Test
 			new OracleSynonym
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"SYNONYM_TO_INACESSIBLE_OBJECT\""),
+				IsValid = true
+			},
+			new OracleDirectory
+			{
+				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"TEST_DIRECTORY_1\""),
+				Path = @"C:\Oracle\product\12.1.0\dbhome_1",
+				IsValid = true
+			},
+			new OracleDirectory
+			{
+				FullyQualifiedName = OracleObjectIdentifier.Create(InitialSchema, "\"TEST_DIRECTORY_2\""),
+				Path = @"E:\Oracle\ExternalData",
 				IsValid = true
 			}
 		};

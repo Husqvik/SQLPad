@@ -142,6 +142,7 @@ namespace SqlPad.Oracle.DataDictionary
 			oracleSchemaObjectType.AddSubType(104, typeof(OracleSequence));
 			oracleSchemaObjectType.AddSubType(105, typeof(OraclePackage));
 			oracleSchemaObjectType.AddSubType(106, typeof(OracleSchemaProgram));
+			oracleSchemaObjectType.AddSubType(107, typeof(OracleDirectory));
 
 			var oracleTypeBaseType = Serializer.Add(typeof(OracleTypeBase), true);
 			oracleTypeBaseType.AsReferenceDefault = true;
@@ -165,6 +166,10 @@ namespace SqlPad.Oracle.DataDictionary
 			var oracleSchemaProgramType = Serializer.Add(typeof(OracleSchemaProgram), false);
 			oracleSchemaProgramType.AsReferenceDefault = true;
 			oracleSchemaProgramType.Add(nameof(OracleSchemaProgram.Metadata));
+
+			var oracleDirectoryType = Serializer.Add(typeof(OracleDirectory), false);
+			oracleDirectoryType.AsReferenceDefault = true;
+			oracleDirectoryType.Add(nameof(OracleDirectory.Path));
 
 			oracleSchemaProgramType.AddSubType(101, typeof(OracleFunction));
 			oracleSchemaProgramType.AddSubType(102, typeof(OracleProcedure));

@@ -1244,6 +1244,22 @@ se";
 		}
 
 		[Test]
+		public void TestBFileNameSpecialParameterCompletion()
+		{
+			const string statement = @"SELECT bfilename('', 'filename.ext') FROM dual";
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 18).ToList();
+			items.Count.ShouldBe(2);
+			items[0].Name.ShouldBe("HUSQVIK.TEST_DIRECTORY_1");
+			items[0].Text.ShouldBe("'HUSQVIK.TEST_DIRECTORY_1'");
+			items[0].Description.ShouldBe(@"C:\Oracle\product\12.1.0\dbhome_1");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+			items[1].Name.ShouldBe("HUSQVIK.TEST_DIRECTORY_2");
+			items[1].Text.ShouldBe("'HUSQVIK.TEST_DIRECTORY_2'");
+			items[1].Description.ShouldBe(@"E:\Oracle\ExternalData");
+			items[1].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+		}
+
+		[Test]
 		public void TestCryptoHashSpecialParameterCompletion()
 		{
 			const string statement = @"SELECT DBMS_CRYPTO.HASH(HEXTORAW ('FF'), ) FROM DUAL";
