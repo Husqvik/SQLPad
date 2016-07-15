@@ -23,7 +23,7 @@ namespace SqlPad
 
 		public CompletionData(ICodeCompletionItem codeCompletion)
 		{
-			Text = codeCompletion.Name;
+			Text = codeCompletion.Label;
 			_completionText = codeCompletion.Text;
 			Node = codeCompletion.StatementNode;
 			_insertOffset = codeCompletion.InsertOffset;

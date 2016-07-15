@@ -461,7 +461,7 @@ namespace SqlPad.Oracle
 				new OracleCodeCompletionItem
 				{
 					Category = OracleCodeCompletionCategory.FunctionParameter,
-					Name = label,
+					Label = label,
 					StatementNode = String.Equals(node.Id, Terminals.StringLiteral) ? node : null,
 					Text = text,
 					Description = description

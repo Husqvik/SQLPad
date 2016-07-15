@@ -24,7 +24,7 @@ namespace SqlPad
 	{
 		string Category { get; }
 		
-		string Name { get; }
+		string Label { get; }
 
 		StatementGrammarNode StatementNode { get; }
 

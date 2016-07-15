@@ -24,11 +24,11 @@ namespace SqlPad.Oracle
 
 		private static readonly OracleCodeCompletionItem[] JoinClauseTemplates =
 		{
-			new OracleCodeCompletionItem { Name = JoinTypeJoin, Priority = 0 },
-			new OracleCodeCompletionItem { Name = JoinTypeLeftJoin, Priority = 1 },
-			new OracleCodeCompletionItem { Name = JoinTypeRightJoin, Priority = 2 },
-			new OracleCodeCompletionItem { Name = JoinTypeFullJoin, Priority = 3 },
-			new OracleCodeCompletionItem { Name = JoinTypeCrossJoin, Priority = 4 }
+			new OracleCodeCompletionItem { Label = JoinTypeJoin, Priority = 0 },
+			new OracleCodeCompletionItem { Label = JoinTypeLeftJoin, Priority = 1 },
+			new OracleCodeCompletionItem { Label = JoinTypeRightJoin, Priority = 2 },
+			new OracleCodeCompletionItem { Label = JoinTypeFullJoin, Priority = 3 },
+			new OracleCodeCompletionItem { Label = JoinTypeCrossJoin, Priority = 4 }
 		};
 
 		private static OracleConfigurationFormatterFormatOptions FormatOptions => OracleConfiguration.Configuration.Formatter.FormatOptions;
@@ -433,7 +433,7 @@ namespace SqlPad.Oracle
 						l =>
 							new OracleCodeCompletionItem
 							{
-								Name = l.FullyQualifiedName.Name.ToSimpleIdentifier(),
+								Label = l.FullyQualifiedName.Name.ToSimpleIdentifier(),
 								Text = l.FullyQualifiedName.Name.ToSimpleIdentifier(),
 								Category = OracleCodeCompletionCategory.DatabaseLink,
 								StatementNode = completionType.CurrentTerminal
@@ -473,7 +473,7 @@ namespace SqlPad.Oracle
 							bv =>
 								new OracleCodeCompletionItem
 								{
-									Name = bv.Name,
+									Label = bv.Name,
 									Text = bv.Name,
 									Category = OracleCodeCompletionCategory.BindVariable,
 									StatementNode = completionType.ReferenceIdentifier.IdentifierUnderCursor
@@ -531,7 +531,7 @@ namespace SqlPad.Oracle
 					return
 						new OracleCodeCompletionItem
 						{
-							Name = text,
+							Label = text,
 							Text = addSizeParentheses ? $"{text}()" : text,
 							Category = OracleCodeCompletionCategory.DataType,
 							StatementNode = completionType.ReferenceIdentifier.IdentifierUnderCursor,
@@ -559,7 +559,7 @@ namespace SqlPad.Oracle
 				.Select(l =>
 					new OracleCodeCompletionItem
 					{
-						Name = l.Name.ToSimpleIdentifier(),
+						Label = l.Name.ToSimpleIdentifier(),
 						Text = l.Name.ToSimpleIdentifier(),
 						Category = subPartitions ? OracleCodeCompletionCategory.Subpartition : OracleCodeCompletionCategory.Partition,
 						StatementNode = completionType.ReferenceIdentifier.IdentifierUnderCursor
@@ -580,7 +580,7 @@ namespace SqlPad.Oracle
 				.Select(t =>
 					new OracleCodeCompletionItem
 					{
-						Name = t.Text,
+						Label = t.Text,
 						Text = t.Text,
 						Category = OracleCodeCompletionCategory.Keyword,
 						StatementNode = completionType.ReferenceIdentifier.IdentifierUnderCursor ?? alternativeTerminalToReplace,
@@ -599,7 +599,7 @@ namespace SqlPad.Oracle
 					return
 						new OracleCodeCompletionItem
 						{
-							Name = identifier,
+							Label = identifier,
 							Text = identifier,
 							Category = OracleCodeCompletionCategory.Column,
 							StatementNode = currentTerminal
@@ -614,7 +614,7 @@ namespace SqlPad.Oracle
 				.Select(c =>
 					new OracleCodeCompletionItem
 					{
-						Name = c.Name.ToSimpleIdentifier(),
+						Label = c.Name.ToSimpleIdentifier(),
 						Text = c.Name.ToSimpleIdentifier(),
 						Category = OracleCodeCompletionCategory.Column,
 						StatementNode = completionType.ReferenceIdentifier.IdentifierUnderCursor
@@ -885,14 +885,14 @@ namespace SqlPad.Oracle
 			var formatOption = FormatOptions.Keyword;
 
 			return JoinClauseTemplates
-				.Where(c => !completionType.ExistsTerminalValue || c.Name.StartsWith(completionType.TerminalValueUnderCursor.ToUpperInvariant()))
+				.Where(c => !completionType.ExistsTerminalValue || c.Label.StartsWith(completionType.TerminalValueUnderCursor.ToUpperInvariant()))
 				.Select(j =>
 				{
-					var joinType = OracleStatementFormatter.FormatTerminalValue(j.Name, formatOption);
+					var joinType = OracleStatementFormatter.FormatTerminalValue(j.Label, formatOption);
 					return
 						new OracleCodeCompletionItem
 						{
-							Name = joinType,
+							Label = joinType,
 							Text = joinType,
 							Priority = j.Priority,
 							Category = OracleCodeCompletionCategory.JoinMethod,
@@ -952,7 +952,7 @@ namespace SqlPad.Oracle
 				yield return
 					new OracleCodeCompletionItem
 					{
-						Name = (skipFirstObjectIdentifier || String.IsNullOrEmpty(table.FullyQualifiedObjectName.Name) ? String.Empty : $"{rowSourceFullName}.") + "*",
+						Label = (skipFirstObjectIdentifier || String.IsNullOrEmpty(table.FullyQualifiedObjectName.Name) ? String.Empty : $"{rowSourceFullName}.") + "*",
 						Text = builder.ToString(),
 						StatementNode = nodeToReplace,
 						CategoryPriority = -2,
@@ -972,7 +972,7 @@ namespace SqlPad.Oracle
 			return
 				new OracleCodeCompletionItem
 				{
-					Name = text,
+					Label = text,
 					Text = text,
 					StatementNode = nodeToReplace,
 					Category = category,
@@ -997,7 +997,7 @@ namespace SqlPad.Oracle
 						var schemaItem = OracleStatementFormatter.FormatTerminalValue(s.Name.ToSimpleIdentifier(), formatOption); 
 						return new OracleCodeCompletionItem
 						{
-							Name = schemaItem,
+							Label = schemaItem,
 							Text = schemaItem,
 							StatementNode = node,
 							Category = OracleCodeCompletionCategory.DatabaseSchema,
@@ -1073,7 +1073,7 @@ namespace SqlPad.Oracle
 					return
 						new OracleCodeCompletionItem
 						{
-							Name = programName,
+							Label = programName,
 							Text = $"{programName}{postFix}{analyticClause}",
 							StatementNode = node,
 							Category = category,
@@ -1150,7 +1150,7 @@ namespace SqlPad.Oracle
 					return
 						new OracleCodeCompletionItem
 						{
-							Name = completionText,
+							Label = completionText,
 							Text = $"{completionText}{o.TextPostFix}",
 							Priority = String.IsNullOrEmpty(objectNamePart) || completionText.TrimStart('"').ToUpperInvariant().StartsWith(objectNamePartUpperInvariant) ? 0 : 1,
 							StatementNode = node,
@@ -1221,7 +1221,7 @@ namespace SqlPad.Oracle
 					var alias = OracleStatementFormatter.FormatTerminalValue(qb.Alias, formatOption);
 					return new OracleCodeCompletionItem
 					{
-						Name = alias,
+						Label = alias,
 						Text = alias,
 						StatementNode = node,
 						Category = OracleCodeCompletionCategory.CommonTableExpression,
@@ -1308,7 +1308,7 @@ namespace SqlPad.Oracle
 			return
 				new OracleCodeCompletionItem
 				{
-					Name = builder.ToString(),
+					Label = builder.ToString(),
 					Text = builder.ToString(),
 					InsertOffset = insertOffset,
 					Category = itemCategory,

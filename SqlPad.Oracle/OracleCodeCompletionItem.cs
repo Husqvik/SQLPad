@@ -3,12 +3,12 @@ using System.Diagnostics;
 
 namespace SqlPad.Oracle
 {
-	[DebuggerDisplay("OracleCodeCompletionItem (Name={Name}; Category={Category}; Priority={Priority})")]
+	[DebuggerDisplay("OracleCodeCompletionItem (Name={Label}; Category={Category}; Priority={Priority})")]
 	public class OracleCodeCompletionItem : ICodeCompletionItem
 	{
 		public string Category { get; set; }
 		
-		public string Name { get; set; }
+		public string Label { get; set; }
 		
 		public StatementGrammarNode StatementNode { get; set; }
 
@@ -27,7 +27,7 @@ namespace SqlPad.Oracle
 		protected bool Equals(OracleCodeCompletionItem other)
 		{
 			return String.Equals(Category, other.Category) &&
-			       String.Equals(Name, other.Name) &&
+			       String.Equals(Label, other.Label) &&
 			       Equals(StatementNode, other.StatementNode) &&
 			       Priority == other.Priority &&
 			       CategoryPriority == other.CategoryPriority &&
@@ -57,7 +57,7 @@ namespace SqlPad.Oracle
 			unchecked
 			{
 				var hashCode = Category?.GetHashCode() ?? 0;
-				hashCode = (hashCode * 397) ^ (Name?.GetHashCode() ?? 0);
+				hashCode = (hashCode * 397) ^ (Label?.GetHashCode() ?? 0);
 				hashCode = (hashCode * 397) ^ (StatementNode?.GetHashCode() ?? 0);
 				hashCode = (hashCode * 397) ^ Priority;
 				hashCode = (hashCode * 397) ^ CategoryPriority;
