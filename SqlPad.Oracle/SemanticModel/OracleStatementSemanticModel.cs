@@ -2698,7 +2698,7 @@ namespace SqlPad.Oracle.SemanticModel
 			columnReference.ColumnNodeObjectReferences.Add(rowSourceReference);
 		}
 
-		private IEnumerable<T> GetColumnReferenceMatchingColumns<T>(OracleDataObjectReference rowSourceReference, OracleColumnReference columnReference, IEnumerable<T> matchedColumns)
+		private static IEnumerable<T> GetColumnReferenceMatchingColumns<T>(OracleDataObjectReference rowSourceReference, OracleColumnReference columnReference, IEnumerable<T> matchedColumns)
 		{
 			return columnReference.ObjectNode == null || IsTableReferenceValid(columnReference, rowSourceReference) ? matchedColumns : Enumerable.Empty<T>();
 		}
@@ -3458,7 +3458,7 @@ namespace SqlPad.Oracle.SemanticModel
 			return childDataSources;
 		}
 
-		private bool SelectColumnMatchesUniqueConstraintColumns(OracleSelectListColumn selectColumn, OracleUniqueConstraint constraint)
+		private static bool SelectColumnMatchesUniqueConstraintColumns(OracleSelectListColumn selectColumn, OracleUniqueConstraint constraint)
 		{
 			string originalColumnName;
 			var sourceObject = GetSourceObject(selectColumn, out originalColumnName);
@@ -3590,80 +3590,5 @@ namespace SqlPad.Oracle.SemanticModel
 			public StatementGrammarNode CteNode;
 			public string CteAlias;
 		}
-	}
-
-	public class OracleJoinDescription
-	{
-		public OracleDataObjectReference MasterObjectReference { get; set; }
-
-		public StatementGrammarNode MasterPartitionClause { get; set; }
-
-		public OracleDataObjectReference SlaveObjectReference { get; set; }
-
-		public StatementGrammarNode SlavePartitionClause { get; set; }
-
-		public ICollection<string> Columns { get; set; }
-
-		public JoinType Type { get; set; }
-
-		public JoinDefinition Definition { get; set; }
-	}
-
-	public enum JoinDefinition
-	{
-		Explicit,
-		Natural
-	}
-
-	public enum JoinType
-	{
-		Inner,
-		Left,
-		Right,
-		Full
-	}
-
-	public enum ReferenceType
-	{
-		SchemaObject,
-		CommonTableExpression,
-		InlineView,
-		TableCollection,
-		XmlTable,
-		JsonTable,
-		SqlModel,
-		PivotTable,
-		HierarchicalClause
-	}
-
-	public enum QueryBlockType
-	{
-		Normal,
-		CursorParameter,
-		CommonTableExpression,
-		ScalarSubquery
-	}
-
-	public class OracleInsertTarget : OracleReferenceContainer
-	{
-		public OracleInsertTarget(OracleStatementSemanticModel semanticModel) : base(semanticModel)
-		{
-		}
-
-		public StatementGrammarNode RootNode { get; set; }
-
-		public StatementGrammarNode TargetNode { get; set; }
-
-		public StatementGrammarNode ColumnListNode { get; set; }
-
-		public StatementGrammarNode ValueList { get; set; }
-
-		public IReadOnlyList<StatementGrammarNode> ValueExpressions { get; set; }
-
-		public IReadOnlyDictionary<StatementGrammarNode, string> Columns { get; set; }
-
-		public OracleQueryBlock RowSource { get; set; }
-
-		public OracleDataObjectReference DataObjectReference => ObjectReferences.Count == 1 ? ObjectReferences.First() : null;
 	}
 }
