@@ -2,7 +2,11 @@
 <OracleConfiguration xmlns="http://husqvik.com/SqlPad/2014/08/Oracle">
   <StartupScript>
     ALTER SESSION SET optimizer_dynamic_sampling = 0 plsql_debug = true;
-    BEGIN UTL_HTTP.SET_BODY_CHARSET('UTF8'); END;
+    
+    BEGIN
+      utl_http.set_body_charset('UTF8'); END;
+      utl_http.set_wallet(path => 'file:C:/oracle/wallet');
+    END;
   </StartupScript>
   <TKProfPath>C:\Oracle\product\12.1.0\dbhome_1\BIN\tkprof.exe</TKProfPath>
   <Connections>

@@ -377,7 +377,7 @@ namespace SqlPad.Oracle.DataDictionary
 		public bool IsCommon { get; set; }
 	}
 
-	[DebuggerDisplay("OracleDirectory (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName})")]
+	[DebuggerDisplay("OracleDirectory (Owner={FullyQualifiedName.NormalizedOwner}; Name={FullyQualifiedName.NormalizedName}; Path={Path})")]
 	public class OracleDirectory : OracleSchemaObject
 	{
 		public override string Type { get; } = OracleObjectType.Directory;

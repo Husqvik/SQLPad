@@ -227,13 +227,16 @@ FROM
 			const string query1 = @"SELECT * FROM SYS.";
 
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 18).ToArray();
-			items.Length.ShouldBe(2);
-			items[0].Label.ShouldBe("DUAL");
-			items[0].Text.ShouldBe("DUAL");
+			items.Length.ShouldBe(3);
+			items[0].Label.ShouldBe("ALL_TABLES");
+			items[0].Text.ShouldBe("ALL_TABLES");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
-			items[1].Label.ShouldBe("V_$SESSION");
-			items[1].Text.ShouldBe("V_$SESSION");
+			items[1].Label.ShouldBe("DUAL");
+			items[1].Text.ShouldBe("DUAL");
 			items[1].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
+			items[2].Label.ShouldBe("V_$SESSION");
+			items[2].Text.ShouldBe("V_$SESSION");
+			items[2].Category.ShouldBe(OracleCodeCompletionCategory.SchemaObject);
 		}
 
 		[Test]
@@ -945,7 +948,7 @@ se";
 			const string query1 = @"SELECT * FROM ""CaseUnknownTable""";
 
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 15).ToList();
-			items.Count.ShouldBe(17);
+			items.Count.ShouldBe(18);
 			items[0].Text.ShouldBe("\"CaseSensitiveTable\"");
 		}
 
@@ -2082,9 +2085,11 @@ SELECT * FROM CTE";
 SELECT * FROM ALL";
 
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, testQuery, 61).ToArray();
-			items.Length.ShouldBe(1);
+			items.Length.ShouldBe(2);
 			items[0].Label.ShouldBe("ALL_DATA");
 			items[0].StatementNode.ShouldNotBe(null);
+			items[1].Label.ShouldBe("ALL_TABLES");
+			items[1].StatementNode.ShouldNotBe(null);
 		}
 
 		[Test, Ignore("difficult to implement")]
@@ -2435,6 +2440,16 @@ ON (EVENTS.ID = SRC.ID)";
 			items[4].Label.ShouldBe("x - ignores whitespace characters. By default, whitespace characters match themselves. ");
 		}
 
+		[Test]
+		public void TestCodeCompletionWithPublicSynonymHavingSameNameAsCurrentSchemaObject()
+		{
+			const string statement = @"SELECT * FROM all_table";
+
+			var databaseModel = new OracleTestDatabaseModel { CurrentSchema = OracleObjectIdentifier.SchemaSys };
+			var items = CodeCompletionProvider.ResolveItems(databaseModel, statement, 23);
+			items.Count.ShouldBe(1);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)
@@ -2708,6 +2723,15 @@ END;";
 
 				var completionType = InitializeCodeCompletionType(statement, 25);
 				completionType.PackageFunction.ShouldBe(true);
+			}
+
+			[Test, Ignore("Invalid grammar sucks! ")]
+			public void TestCodeCompletionTypeAtEmptyInsertColumnList()
+			{
+				const string statement = @"INSERT INTO selection ()";
+
+				var completionType = InitializeCodeCompletionType(statement, 23);
+				completionType.InsertIntoColumn.ShouldBe(true);
 			}
 
 			public class ReferenceIdentifierTest

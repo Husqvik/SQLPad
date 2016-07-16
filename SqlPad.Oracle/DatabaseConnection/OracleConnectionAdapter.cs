@@ -915,20 +915,33 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private async Task<int?> GetSyntaxErrorIndex(string sqlText, CancellationToken cancellationToken)
 		{
-			using (var connection = new OracleConnection(_databaseModel.BackgroundConnectionString))
+			if (cancellationToken.IsCancellationRequested)
 			{
-				using (var command = connection.CreateCommand())
-				{
-					command.CommandText = OracleDatabaseCommands.GetSyntaxErrorIndex;
-					command.AddSimpleParameter("SQL_TEXT", sqlText);
-					var errorPositionParameter = command.AddSimpleParameter("ERROR_POSITION", null, TerminalValues.Number);
+				return null;
+			}
 
-					await connection.OpenAsynchronous(cancellationToken);
-					await command.ExecuteNonQueryAsynchronous(cancellationToken);
-					await connection.CloseAsynchronous(cancellationToken);
-					var result = (OracleDecimal)errorPositionParameter.Value;
-					return result.IsNull ? null : (int?)result.Value;
+			try
+			{
+				using (var connection = new OracleConnection(_databaseModel.BackgroundConnectionString))
+				{
+					using (var command = connection.CreateCommand())
+					{
+						command.CommandText = OracleDatabaseCommands.GetSyntaxErrorIndex;
+						command.AddSimpleParameter("SQL_TEXT", sqlText);
+						var errorPositionParameter = command.AddSimpleParameter("ERROR_POSITION", null, TerminalValues.Number);
+
+						await connection.OpenAsynchronous(cancellationToken);
+						await command.ExecuteNonQueryAsynchronous(cancellationToken);
+						await connection.CloseAsynchronous(cancellationToken);
+						var result = (OracleDecimal)errorPositionParameter.Value;
+						return result.IsNull ? null : (int?)result.Value;
+					}
 				}
+			}
+			catch (Exception exception)
+			{
+				Trace.WriteLine($"Syntax error index retrieval failed: {exception}");
+				return null;
 			}
 		}
 
@@ -1212,10 +1225,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 						return null;
 					}
-					catch (OracleException e)
+					catch (OracleException exception)
 					{
-						Trace.WriteLine($"Execution plan identifers and transaction status could not been fetched: {e}");
-						return e;
+						Trace.WriteLine($"Execution plan identifers and transaction status could not been fetched: {exception}");
+						return exception;
 					}
 					finally
 					{

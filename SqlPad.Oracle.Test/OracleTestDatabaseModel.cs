@@ -153,6 +153,18 @@ namespace SqlPad.Oracle.Test
 			synonym =
 				new OracleSynonym
 				{
+					FullyQualifiedName = OracleObjectIdentifier.Create(OracleObjectIdentifier.SchemaPublic, "ALL_TABLES"),
+					SchemaObject = AllObjectsInternal.Single(o => String.Equals(o.Name, "\"ALL_TABLES\"") && String.Equals(o.Owner, OracleObjectIdentifier.SchemaSys)),
+					IsValid = true
+				};
+			
+			synonym.SchemaObject.Synonyms.Add(synonym);
+
+			AllObjectsInternal.Add(synonym);
+
+			synonym =
+				new OracleSynonym
+				{
 					FullyQualifiedName = OracleObjectIdentifier.Create(OracleObjectIdentifier.SchemaPublic, "XMLTYPE"),
 					SchemaObject = AllObjectsInternal.Single(o => String.Equals(o.Name, "\"XMLTYPE\"") && String.Equals(o.Owner, OracleObjectIdentifier.SchemaSys)),
 					IsValid = true
@@ -810,6 +822,11 @@ namespace SqlPad.Oracle.Test
 			new OracleView
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(OracleObjectIdentifier.SchemaSys, "\"V_$SESSION\""),
+				Organization = OrganizationType.NotApplicable,
+			},
+			new OracleView
+			{
+				FullyQualifiedName = OracleObjectIdentifier.Create(OracleObjectIdentifier.SchemaSys, "\"ALL_TABLES\""),
 				Organization = OrganizationType.NotApplicable,
 			},
 			new OracleTable

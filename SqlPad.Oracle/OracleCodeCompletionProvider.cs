@@ -342,11 +342,11 @@ namespace SqlPad.Oracle
 					? currentTerminal.ParentNode.FirstTerminalNode.Token.Value
 					: databaseModel.CurrentSchema.ToQuotedIdentifier();
 
-				completionItems = completionItems.Concat(GenerateSchemaDataObjectItems(oracleDatabaseModel, schemaName, completionType.TerminalValuePartUntilCaret, terminalToReplace, insertOffset: extraOffset));
+				completionItems = completionItems.Concat(GenerateSchemaObjectItems(oracleDatabaseModel, schemaName, completionType.TerminalValuePartUntilCaret, terminalToReplace, IsDataObject, insertOffset: extraOffset));
 
 				if (!completionType.ReferenceIdentifier.HasSchemaIdentifier)
 				{
-					completionItems = completionItems.Concat(GenerateSchemaDataObjectItems(oracleDatabaseModel, OracleObjectIdentifier.SchemaPublic, completionType.TerminalValuePartUntilCaret, terminalToReplace, insertOffset: extraOffset));
+					completionItems = completionItems.Concat(GenerateSchemaObjectItems(oracleDatabaseModel, OracleObjectIdentifier.SchemaPublic, completionType.TerminalValuePartUntilCaret, terminalToReplace, o => IsDataObjectNotInSchema(o, schemaName), insertOffset: extraOffset));
 				}
 
 				completionItems = completionItems.Concat(GenerateCommonTableExpressionReferenceItems(semanticModel, completionType.TerminalValuePartUntilCaret, terminalToReplace, extraOffset));
@@ -384,8 +384,9 @@ namespace SqlPad.Oracle
 			if (String.Equals(currentTerminal.Id, Terminals.Join) ||
 				(String.Equals(currentTerminal.Id, Terminals.ObjectAlias) && String.Equals(((OracleToken)currentTerminal.Token).UpperInvariantValue, TerminalValues.Join)))
 			{
-				completionItems = completionItems.Concat(GenerateSchemaDataObjectItems(oracleDatabaseModel, databaseModel.CurrentSchema.ToQuotedIdentifier(), null, null, insertOffset: extraOffset));
-				completionItems = completionItems.Concat(GenerateSchemaDataObjectItems(oracleDatabaseModel, OracleObjectIdentifier.SchemaPublic, null, null, insertOffset: extraOffset));
+				var currentSchema = databaseModel.CurrentSchema.ToQuotedIdentifier();
+				completionItems = completionItems.Concat(GenerateSchemaObjectItems(oracleDatabaseModel, currentSchema, null, null, IsDataObject, insertOffset: extraOffset));
+				completionItems = completionItems.Concat(GenerateSchemaObjectItems(oracleDatabaseModel, OracleObjectIdentifier.SchemaPublic, null, null, o => IsDataObjectNotInSchema(o, currentSchema), insertOffset: extraOffset));
 				completionItems = completionItems.Concat(GenerateCommonTableExpressionReferenceItems(semanticModel, null, null, extraOffset));
 			}
 
@@ -1129,11 +1130,6 @@ namespace SqlPad.Oracle
 			return String.Empty;
 		}
 
-		private IEnumerable<ICodeCompletionItem> GenerateSchemaDataObjectItems(OracleDatabaseModelBase databaseModel, string schemaName, string objectNamePart, StatementGrammarNode node, int categoryOffset = 0, int insertOffset = 0)
-		{
-			return GenerateSchemaObjectItems(databaseModel, schemaName, objectNamePart, node, IsDataObject, categoryOffset, insertOffset);
-		}
-
 		private IEnumerable<ICodeCompletionItem> GenerateSchemaObjectItems(OracleDatabaseModelBase databaseModel, string schemaName, string objectNamePart, StatementGrammarNode node, Func<OracleSchemaObject, bool> filter, int categoryOffset = 0, int insertOffset = 0)
 		{
 			var activeSchema = databaseModel.CurrentSchema.ToQuotedIdentifier();
@@ -1144,7 +1140,7 @@ namespace SqlPad.Oracle
 			return CreateObjectItems(dataObjects, objectNamePart, node, categoryOffset, insertOffset);
 		}
 
-		private bool FilterSchema(OracleSchemaObject schemaObject, string activeSchema, string schemaName)
+		private static bool FilterSchema(OracleSchemaObject schemaObject, string activeSchema, string schemaName)
 		{
 			return String.IsNullOrEmpty(schemaName)
 				? String.Equals(schemaObject.Owner, activeSchema) || String.Equals(schemaObject.Owner, OracleObjectIdentifier.SchemaPublic)
@@ -1157,8 +1153,9 @@ namespace SqlPad.Oracle
 			var safeTokenValueQuotedIdentifier = node == null ? null : MakeSaveQuotedIdentifier(node.Token.Value);
 			var objectNamePartUpperInvariant = objectNamePart?.ToUpperInvariant() ?? String.Empty;
 			return objects
-				.Where(o => !String.Equals(safeObjectPartQuotedIdentifier, o.Identifier2) &&
-				            (node == null || !String.Equals(safeTokenValueQuotedIdentifier, o.Identifier2)) && CodeCompletionSearchHelper.IsMatch(o.Identifier2, objectNamePart))
+				.Where(o =>
+					!String.Equals(safeObjectPartQuotedIdentifier, o.Identifier2) &&
+					(node == null || !String.Equals(safeTokenValueQuotedIdentifier, o.Identifier2)) && CodeCompletionSearchHelper.IsMatch(o.Identifier2, objectNamePart))
 				.Select(o =>
 				{
 					var schemaObject = o.SchemaObject.GetTargetSchemaObject();
@@ -1225,6 +1222,17 @@ namespace SqlPad.Oracle
 			var preFix = identifierPart[0] != '"' && identifierPart[identifierPart.Length - 1] == '"' ? "\"" : null;
 			var postFix = identifierPart[0] == '"' && identifierPart[identifierPart.Length - 1] != '"' ? "\"" : null;
 			return $"{preFix}{identifierPart}{postFix}".ToQuotedIdentifier();
+		}
+
+		private static bool IsDataObjectNotInSchema(OracleSchemaObject schemaObject, string schemaName)
+		{
+			var dataObject = schemaObject.GetTargetSchemaObject() as OracleDataObject;
+			if (dataObject == null)
+			{
+				return false;
+			}
+
+			return !String.Equals(dataObject.Name, schemaObject.Name) || !String.Equals(dataObject.Owner, schemaName);
 		}
 
 		private static bool IsDataObject(OracleSchemaObject schemaObject)
