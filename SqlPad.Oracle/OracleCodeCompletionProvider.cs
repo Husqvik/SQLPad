@@ -417,6 +417,28 @@ namespace SqlPad.Oracle
 				var insertTarget = semanticModel.InsertTargets.SingleOrDefault(t => t.ColumnListNode == columnList && t.DataObjectReference != null);
 				if (insertTarget != null)
 				{
+					var enteredOneColumnOnly = !insertTarget.ColumnListNode.GetDescendants(NonTerminals.PrefixedIdentifierListChained).Any();
+					if (enteredOneColumnOnly)
+					{
+						var insertableColumns = insertTarget.DataObjectReference.Columns.Where(c => !c.Virtual && !c.Hidden).ToArray();
+
+						if (insertableColumns.Length > 1)
+						{
+							var label = String.Join(", ", insertableColumns.Select(c => c.Name.ToSimpleIdentifier()));
+							var allColumns =
+								new OracleCodeCompletionItem
+								{
+									Label = label,
+									Text = label,
+									Category = OracleCodeCompletionCategory.AllColumns,
+									StatementNode = completionType.ReferenceIdentifier.IdentifierUnderCursor,
+									CategoryPriority = -1
+								};
+
+							completionItems = completionItems.Concat(Enumerable.Repeat(allColumns, 1));
+						}
+					}
+
 					completionItems = completionItems.Concat(GenerateSimpleColumnItems(insertTarget.DataObjectReference, completionType));
 				}
 			}

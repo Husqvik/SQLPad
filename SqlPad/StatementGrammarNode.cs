@@ -88,8 +88,8 @@ namespace SqlPad
 		{
 			get
 			{
-				var previousNode = GetPrecedingNode(this);
-				return previousNode?.LastTerminalNode;
+				var precedingNode = GetPrecedingNode(this);
+				return precedingNode?.LastTerminalNode;
 			}
 		}
 
