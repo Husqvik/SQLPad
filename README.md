@@ -1,9 +1,11 @@
-#SQLPad 0.4.0.392
+#SQLPad 0.4.0.393
 
 |Builds|Oracle.DataAccess|Oracle.ManagedDataAccess|
 |:--:|:--:|:--:|
 |**master**|[![Oracle.DataAccess](https://ci.appveyor.com/api/projects/status/t4iti5bn5ubs2k3k?svg=true&pendingText=pending&passingText=passed&failingText=failed)](https://ci.appveyor.com/project/Husqvik/sqlpad-j6chv)|[![Oracle.ManagedDataAccess](https://ci.appveyor.com/api/projects/status/m0pnyw7gp73tg59c?svg=true&pendingText=pending&passingText=passed&failingText=failed)](https://ci.appveyor.com/project/Husqvik/sqlpad)|
 
+Summary
+-------
 SQLPad is an experimental SQL editor focused to quick and comfortable work.
 The primary reason for it was to find out why there are not any SQL editors with advanced features
 like programming IDEs with their intellisense and semantic analysis. To disprove it's not/hardly possible.
@@ -18,7 +20,8 @@ SQLPad provides:
 * Smart code completion - schemas, objects, columns, functions, packages, sequences, types, etc;
 * Semantic analysis - validating references to various database objects, immediately notifying about errors or problems;
 * Fast overview over database object properties;
-* Data export to various formats.
+* Data export to various formats;
+* Execution monitor.
 
 SQLPad consists of a generic core application providing the user experience and a vendor specific module implementing
 the parser, analyzer, validator and other vendor specific components. As of now the only supported vendor is Oracle (11g, 12c).

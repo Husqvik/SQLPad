@@ -22,6 +22,8 @@ namespace SqlPad.Oracle.Commands
 		{
 		}
 
+		protected override Func<StatementGrammarNode, bool> CurrentNodeFilterFunction { get; } = n => !String.Equals(n.Id, Terminals.Dot);
+
 		protected override CommandCanExecuteResult CanExecute()
 		{
 			if (CurrentNode == null || !CurrentNode.Id.In(Terminals.ObjectIdentifier, Terminals.Identifier))

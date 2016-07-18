@@ -648,9 +648,15 @@ namespace SqlPad.Oracle.DatabaseConnection
 				return;
 			}
 
+			var statements = await OracleSqlParser.Instance.ParseAsync(startupScript, cancellationToken);
+			var hasInvalidStatements = statements.Any(s => s.ParseStatus == ParseStatus.SequenceNotFound);
+			if (hasInvalidStatements)
+			{
+				throw new InvalidOperationException("Startup script has syntax errors. ");
+			}
+
 			_userConnection.ActionName = "Execute startup script";
 
-			var statements = await OracleSqlParser.Instance.ParseAsync(startupScript, cancellationToken);
 			foreach (var statement in statements)
 			{
 				command.CommandText = statement.RootNode.GetText(startupScript);

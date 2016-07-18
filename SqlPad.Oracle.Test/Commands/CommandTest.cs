@@ -1982,6 +1982,21 @@ MODEL
 		}
 
 		[Test, Apartment(ApartmentState.STA)]
+		public void TestConfigureNamedParametersCommandWithSomeValues()
+		{
+			const string statementText = @"SELECT sys.odciargdesc('<argtype>', '<tablename>') FROM dual";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 11;
+
+			CanExecuteCommand(OracleCommands.ConfigureNamedParameters).ShouldBe(true);
+			ExecuteCommand(OracleCommands.ConfigureNamedParameters);
+
+			const string expectedResult = @"SELECT sys.odciargdesc(ARGTYPE => '<argtype>', TABLENAME => '<tablename>', TABLESCHEMA => NULL, COLNAME => NULL, TABLEPARTITIONLOWER => NULL, TABLEPARTITIONUPPER => NULL, CARDINALITY => NULL) FROM dual";
+
+			_editor.Text.ShouldBe(expectedResult);
+		}
+
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestConfigureNamedParametersCommandWithExistingNamedPrefixes()
 		{
 			const string statementText = @"SELECT SYS.ODCIARGDESC(NULL, NULL, NULL, NULL, TABLEPARTITIONLOWER => NULL, TABLEPARTITIONUPPER => NULL, CARDINALITY => NULL) FROM DUAL";

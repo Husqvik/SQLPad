@@ -4,7 +4,7 @@
     ALTER SESSION SET optimizer_dynamic_sampling = 0 plsql_debug = true;
     
     BEGIN
-      utl_http.set_body_charset('UTF8'); END;
+      utl_http.set_body_charset('UTF8');
       utl_http.set_wallet(path => 'file:C:/oracle/wallet');
     END;
   </StartupScript>

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using SqlPad.Oracle.DataDictionary;
 
 namespace SqlPad.Oracle.ToolTips
@@ -14,7 +16,15 @@ namespace SqlPad.Oracle.ToolTips
 				? "Schema"
 				: "User/schema";
 
+			IsExtractDdlVisible = !dataModel.Schema.Name.In(OracleObjectIdentifier.SchemaPublic, OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.SchemaSystem);
+
 			LabelTitle.Text = $"{dataModel.Schema.Name.ToSimpleIdentifier()} ({objectType})";
+		}
+
+		protected override Task<string> ExtractDdlAsync(CancellationToken cancellationToken)
+		{
+			var dataModel = (OracleSchemaModel)DataContext;
+			return ScriptExtractor.ExtractNonSchemaObjectScriptAsync(dataModel.Schema.Name.Trim('"'), "USER", cancellationToken);
 		}
 	}
 

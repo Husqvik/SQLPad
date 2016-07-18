@@ -58,6 +58,7 @@ namespace SqlPad.Oracle.Commands
 
 			var parameterIndexStart = _programReference.ParameterListNode.FirstTerminalNode.SourcePosition.IndexEnd + 1;
 			var segmentTextBuilder = new StringBuilder();
+			var addCommaBeforeMissingParameters = false;
 			for (var i = 0; i < parameterNameMetadata.Length; i++)
 			{
 				var parameterReference = i < parameterReferences.Count ? parameterReferences[i] : (ProgramParameterReference?)null;
@@ -67,7 +68,8 @@ namespace SqlPad.Oracle.Commands
 				}
 
 				var parameterMetadata = parameterNameMetadata[i];
-				var namedParameterPrefix = $"{OracleStatementFormatter.FormatTerminalValue(parameterMetadata.Key.ToSimpleIdentifier(), formatOption)} => ";
+				var parameterName = OracleStatementFormatter.FormatTerminalValue(parameterMetadata.Key.ToSimpleIdentifier(), formatOption);
+				var namedParameterPrefix = $"{parameterName} => ";
 
 				if (parameterReference.HasValue)
 				{
@@ -81,16 +83,18 @@ namespace SqlPad.Oracle.Commands
 						};
 
 					parameterIndexStart += namedParameterPrefix.Length;
+
+					addCommaBeforeMissingParameters = true;
 				}
 				else
 				{
-					segmentTextBuilder.Append(namedParameterPrefix);
-					segmentTextBuilder.Append("NULL");
-
-					if (i < parameterNameMetadata.Length - 1)
+					if (addCommaBeforeMissingParameters || i > 0)
 					{
 						segmentTextBuilder.Append(", ");
 					}
+
+					segmentTextBuilder.Append(namedParameterPrefix);
+					segmentTextBuilder.Append("NULL");
 				}
 			}
 
