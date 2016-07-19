@@ -574,6 +574,7 @@ namespace SqlPad.Oracle
 
 			var workingTerminalCount = 0;
 			var bestCandidateTerminalCount = 0;
+			var totalTokenCount = context.TokenBuffer.Count;
 
 			var isPlSqlStatement = String.Equals(nonTerminalId, OracleGrammarDescription.NonTerminals.PlSqlStatementType);
 			if (isPlSqlStatement)
@@ -596,7 +597,7 @@ namespace SqlPad.Oracle
 				{
 					var tokenOffset = tokenStartOffset + workingTerminalCount;
 					var isNodeRequired = item.IsRequired;
-					if (tokenOffset >= context.TokenBuffer.Count && !isNodeRequired)
+					if (tokenOffset >= totalTokenCount && !isNodeRequired)
 					{
 						continue;
 					}
@@ -641,21 +642,7 @@ namespace SqlPad.Oracle
 							((currentTerminalCount = workingTerminalCount + nestedResult.BestCandidateTerminalCount) > bestCandidateTerminalCount ||
 							 (currentTerminalCount == bestCandidateTerminalCount && isNestedNodeValid)))
 						{
-							var bestCandidatePosition = new Dictionary<int, StatementGrammarNode>();
-
-							// Candidate nodes can be multiplied or terminals can be spread among different nonterminals,
-							// therefore we fetch the node with most terminals or the later (when nodes contain same terminals).
-							foreach (var candidate in nestedResult.BestCandidates)
-							{
-								StatementGrammarNode storedNode;
-								if (!bestCandidatePosition.TryGetValue(candidate.SourcePosition.IndexStart, out storedNode) ||
-									storedNode.SourcePosition.IndexEnd <= candidate.SourcePosition.IndexEnd)
-								{
-									bestCandidatePosition[candidate.SourcePosition.IndexStart] = candidate;
-								}
-							}
-
-							alternativeNode.AddChildNodes(bestCandidatePosition.Values);
+							alternativeNode.AddChildNodes(ResolveAlternativeNodes(nestedResult));
 
 							if (optionalTokenReverted > 0 || !isNestedNodeValid || workingNodes.Count != bestCandidateNodes.Count)
 							{
@@ -745,6 +732,39 @@ namespace SqlPad.Oracle
 			result.BestCandidateTerminalCount = bestCandidateTerminalCount;
 
 			return result;
+		}
+
+		/// <summary>
+		/// Candidate nodes can be multiplied or terminals can be spread among different nonterminals,
+		/// therefore we fetch the node with most terminals or the later (when nodes contain same terminals).
+		/// </summary>
+		private static IEnumerable<StatementGrammarNode> ResolveAlternativeNodes(ParseResult nestedResult)
+		{
+			var usedCandidates = new List<StatementGrammarNode>();
+			foreach (var candidate in nestedResult.BestCandidates)
+			{
+				var addNewCandidate = true;
+				for (var i = 0; i < usedCandidates.Count; i++)
+				{
+					var usedCandidate = usedCandidates[i];
+					if (usedCandidate.SourcePosition.IndexStart == candidate.SourcePosition.IndexStart || usedCandidate.SourcePosition.IndexEnd == candidate.SourcePosition.IndexEnd)
+					{
+						addNewCandidate = false;
+						if (usedCandidate.SourcePosition.Length <= candidate.SourcePosition.Length)
+						{
+							usedCandidates[i] = candidate;
+							break;
+						}
+					}
+				}
+
+				if (addNewCandidate)
+				{
+					usedCandidates.Add(candidate);
+				}
+			}
+
+			return usedCandidates;
 		}
 
 		private static int CreateNewNodeList(IEnumerable<StatementGrammarNode> nodeSource, ICollection<StatementGrammarNode> targetList)

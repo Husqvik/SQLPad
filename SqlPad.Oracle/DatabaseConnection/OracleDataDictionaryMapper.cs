@@ -40,71 +40,71 @@ namespace SqlPad.Oracle.DatabaseConnection
 				AddObjectToDictionary(allObjects, schemaObject, schemaObject.Type);
 			}
 
-			WriteTrace($"Fetch types and materialized views metadata finished in {stopwatch.Elapsed}. ");
+			WriteTrace($"Fetch types and materialized views metadata ({allObjects.Count} object(s)) finished in {stopwatch.Elapsed}. ");
 
 			NotifyStatus("Other schema objects... ");
 
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectAllObjectsCommandText, r => MapSchemaObject(r, allObjects)).Count();
+			var rowCount = _databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectAllObjectsCommandText, r => MapSchemaObject(r, allObjects)).Count();
 
-			WriteTrace($"Fetch all objects metadata finished in {stopwatch.Elapsed}. ");
+			WriteTrace($"Fetch all objects metadata ({rowCount} items(s)) finished in {stopwatch.Elapsed}. ");
 
 			NotifyStatus("Table metadata... ");
 
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectTablesCommandText, r => MapTable(r, allObjects)).Count();
+			rowCount = _databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectTablesCommandText, r => MapTable(r, allObjects)).Count();
 
-			WriteTrace($"Fetch table metadata finished in {stopwatch.Elapsed}. ");
+			WriteTrace($"Fetch table metadata ({rowCount} items(s)) finished in {stopwatch.Elapsed}. ");
 
 			NotifyStatus("Partition metadata... ");
 
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectPartitionsCommandText, r => MapPartitions(r, allObjects)).Count();
+			rowCount = _databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectPartitionsCommandText, r => MapPartitions(r, allObjects)).Count();
 
-			WriteTrace($"Fetch partition metadata finished in {stopwatch.Elapsed}. ");
+			WriteTrace($"Fetch partition metadata ({rowCount} items(s)) finished in {stopwatch.Elapsed}. ");
 
 			NotifyStatus("Sub-partition metadata... ");
 
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectSubPartitionsCommandText, r => MapSubPartitions(r, allObjects)).Count();
+			rowCount = _databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectSubPartitionsCommandText, r => MapSubPartitions(r, allObjects)).Count();
 
-			WriteTrace($"Fetch sub-partition metadata finished in {stopwatch.Elapsed}. ");
+			WriteTrace($"Fetch sub-partition metadata ({rowCount} items(s)) finished in {stopwatch.Elapsed}. ");
 
 			NotifyStatus("Partition key metadata... ");
 
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectTablePartitionKeysCommandText, r => MapPartitionKeys(r, allObjects, t => t.PartitionKeyColumns)).Count();
+			rowCount = _databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectTablePartitionKeysCommandText, r => MapPartitionKeys(r, allObjects, t => t.PartitionKeyColumns)).Count();
 
-			WriteTrace($"Fetch partition key metadata finished in {stopwatch.Elapsed}. ");
+			WriteTrace($"Fetch partition key metadata ({rowCount} items(s)) finished in {stopwatch.Elapsed}. ");
 
 			NotifyStatus("Sub-partition key metadata... ");
 
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectTableSubPartitionKeysCommandText, r => MapPartitionKeys(r, allObjects, t => t.SubPartitionKeyColumns)).Count();
+			rowCount = _databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectTableSubPartitionKeysCommandText, r => MapPartitionKeys(r, allObjects, t => t.SubPartitionKeyColumns)).Count();
 
-			WriteTrace($"Fetch sub-partition key metadata finished in {stopwatch.Elapsed}. ");
+			WriteTrace($"Fetch sub-partition key metadata ({rowCount} items(s)) finished in {stopwatch.Elapsed}. ");
 
 			NotifyStatus("Synonym metadata... ");
 
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectSynonymTargetsCommandText, r => MapSynonymTarget(r, allObjects)).Count();
+			rowCount = _databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectSynonymTargetsCommandText, r => MapSynonymTarget(r, allObjects)).Count();
 
-			WriteTrace($"Fetch synonyms metadata finished in {stopwatch.Elapsed}. ");
+			WriteTrace($"Fetch synonym metadata ({rowCount} items(s)) finished in {stopwatch.Elapsed}. ");
 
 			NotifyStatus("Directory metadata... ");
 
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectDirectoryCommandText, r => MapDirectory(r, allObjects)).Count();
+			rowCount = _databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectDirectoryCommandText, r => MapDirectory(r, allObjects)).Count();
 
-			WriteTrace($"Fetch directory metadata finished in {stopwatch.Elapsed}. ");
+			WriteTrace($"Fetch directory metadata ({rowCount} items(s)) finished in {stopwatch.Elapsed}. ");
 
 			NotifyStatus("Table column metadata... ");
 
@@ -112,6 +112,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			var columnMetadataSource = _databaseModel.ExecuteReader(() => String.Format(OracleDatabaseCommands.SelectTableColumnsCommandTextBase, databaseVersion.Major >= 12 ? ", HIDDEN_COLUMN, USER_GENERATED" : null), r => MapTableColumn(r, databaseVersion));
 
+			rowCount = 0;
 			foreach (var columnMetadata in columnMetadataSource)
 			{
 				OracleSchemaObject schemaObject;
@@ -120,9 +121,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 				var dataObject = (OracleDataObject)schemaObject;
 				dataObject.Columns.Add(columnMetadata.Value.Name, columnMetadata.Value);
+				rowCount++;
 			}
 
-			WriteTrace($"Fetch table column metadata in {stopwatch.Elapsed}. ");
+			WriteTrace($"Fetch table column metadata ({rowCount} items(s)) in {stopwatch.Elapsed}. ");
 
 			NotifyStatus("Constraint metadata... ");
 
@@ -138,7 +140,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				AddObjectToDictionary(constraints, constraintPair.Key, "CONSTRAINT");
 			}
 
-			WriteTrace($"Fetch constraint metadata finished in {stopwatch.Elapsed}. ");
+			WriteTrace($"Fetch constraint metadata ({constraints.Count} items(s)) finished in {stopwatch.Elapsed}. ");
 
 			NotifyStatus("Constraint column metadata... ");
 
@@ -150,6 +152,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					g => g.Key,
 					g => g.Select(kvp => kvp.Value).ToList());
 
+			rowCount = 0;
 			foreach (var constraintPair in constraintSource)
 			{
 				OracleConstraint constraint;
@@ -162,6 +165,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				if (constraintColumns.TryGetValue(constraintPair.Key.FullyQualifiedName, out columns))
 				{
 					constraint.Columns = columns.AsReadOnly();
+					rowCount += columns.Count;
 				}
 
 				var referenceConstraint = constraintPair.Key as OracleReferenceConstraint;
@@ -175,31 +179,31 @@ namespace SqlPad.Oracle.DatabaseConnection
 				referenceConstraint.ReferenceConstraint = referencedUniqueConstraint;
 			}
 
-			WriteTrace($"Fetch column constraint metadata finished in {stopwatch.Elapsed}. ");
+			WriteTrace($"Fetch column constraint metadata ({rowCount} items(s)) finished in {stopwatch.Elapsed}. ");
 
 			NotifyStatus("Sequence metadata... ");
 
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectSequencesCommandText, r => MapSequence(r, allObjects)).Count();
+			rowCount = _databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectSequencesCommandText, r => MapSequence(r, allObjects)).Count();
 
-			WriteTrace($"Fetch sequence metadata finished in {stopwatch.Elapsed}. ");
+			WriteTrace($"Fetch sequence metadata ({rowCount} items(s)) finished in {stopwatch.Elapsed}. ");
 
 			NotifyStatus("Object type attribute metadata... ");
 
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectTypeAttributesCommandText, r => MapTypeAttributes(r, allObjects)).Count();
+			rowCount = _databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectTypeAttributesCommandText, r => MapTypeAttributes(r, allObjects)).Count();
 
-			WriteTrace($"Fetch object type attribute metadata finished in {stopwatch.Elapsed}. ");
+			WriteTrace($"Fetch object type attribute metadata ({rowCount} items(s)) finished in {stopwatch.Elapsed}. ");
 
 			NotifyStatus("Collection type attribute metadata... ");
 
 			stopwatch.Restart();
 
-			_databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectCollectionTypeAttributesCommandText, r => MapCollectionTypeAttributes(r, allObjects)).Count();
+			rowCount = _databaseModel.ExecuteReader(() => OracleDatabaseCommands.SelectCollectionTypeAttributesCommandText, r => MapCollectionTypeAttributes(r, allObjects)).Count();
 
-			WriteTrace($"Fetch collection type attribute metadata finished in {stopwatch.Elapsed}. ");
+			WriteTrace($"Fetch collection type attribute metadata ({rowCount} items(s)) finished in {stopwatch.Elapsed}. ");
 
 			return new ReadOnlyDictionary<OracleObjectIdentifier, OracleSchemaObject>(allObjects);
 		}
@@ -214,7 +218,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			NotifyStatus("User function metadata... ");
 			var stopwatch = Stopwatch.StartNew();
 			var metadata = GetFunctionMetadataCollection(OracleDatabaseCommands.SelectUserFunctionMetadataCommandText, OracleDatabaseCommands.SelectUserFunctionParameterMetadataCommandText, false);
-			WriteTrace($"GetUserFunctionMetadata finished in {stopwatch.Elapsed}. ");
+			WriteTrace($"GetUserFunctionMetadata finished ({metadata.Count} items(s)) in {stopwatch.Elapsed}. ");
 			return metadata;
 		}
 
@@ -223,7 +227,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			NotifyStatus("Built-in function metadata... ");
 			var stopwatch = Stopwatch.StartNew();
 			var metadata = GetFunctionMetadataCollection(OracleDatabaseCommands.SelectBuiltInProgramMetadataCommandText, OracleDatabaseCommands.SelectBuiltInFunctionParameterMetadataCommandText, true);
-			WriteTrace($"GetBuiltInFunctionMetadata finished in {stopwatch.Elapsed}. ");
+			WriteTrace($"GetBuiltInFunctionMetadata finished ({metadata.Count} items(s)) in {stopwatch.Elapsed}. ");
 			return metadata;
 		}
 

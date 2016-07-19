@@ -2725,7 +2725,7 @@ END;";
 				completionType.PackageFunction.ShouldBe(true);
 			}
 
-			[Test, Ignore("Invalid grammar sucks! ")]
+			[Test]
 			public void TestCodeCompletionTypeAtEmptyInsertColumnList()
 			{
 				const string statement = @"INSERT INTO selection ()";
