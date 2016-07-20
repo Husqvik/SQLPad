@@ -2937,6 +2937,23 @@ END;";
 				items[0].Label.ShouldBe("PUT_LINE");
 				items[0].StatementNode.ShouldNotBe(null);
 			}
+
+			[Test]
+			public void TestFromObjectCompletionInPlSqlBeforeCommandTerminator()
+			{
+				const string statement =
+@"CREATE PROCEDURE test_procedure (p OUT SYS_REFCURSOR)
+IS
+BEGIN
+  OPEN p FOR SELECT * FROM selectio;
+END;";
+
+				var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 101).ToList();
+				items.Count.ShouldBe(3);
+				items[0].Label.ShouldBe("SELECTION");
+				items[0].StatementNode.ShouldNotBe(null);
+				items[0].StatementNode.Token.Value.ShouldBe("selectio");
+			}
 		}
 	}
 }

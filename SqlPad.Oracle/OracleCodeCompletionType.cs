@@ -236,7 +236,7 @@ namespace SqlPad.Oracle
 			}
 
 			var terminalCandidateSourceToken = isCursorAfterToken || isColon ? nearestTerminal : precedingTerminal;
-			if (nearestTerminal.Id.In(Terminals.RightParenthesis, Terminals.Comma, Terminals.Dot) && isCursorTouchingTwoTerminals && precedingTerminal.Id.IsIdentifier())
+			if (nearestTerminal.Id.In(Terminals.RightParenthesis, Terminals.Comma, Terminals.Dot, Terminals.Semicolon) && isCursorTouchingTwoTerminals && precedingTerminal.Id.IsIdentifier())
 			{
 				terminalCandidateSourceToken = precedingTerminal.PrecedingTerminal;
 				ResolveCurrentTerminalValue(precedingTerminal);
