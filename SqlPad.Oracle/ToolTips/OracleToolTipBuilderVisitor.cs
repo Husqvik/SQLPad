@@ -133,12 +133,23 @@ namespace SqlPad.Oracle.ToolTips
 
 		public void VisitTypeReference(OracleTypeReference typeReference)
 		{
-			if (TryBuildSchemaTooltip(typeReference))
+			if (TryBuildSchemaTooltip(typeReference) || typeReference.SchemaObject == null)
 			{
 				return;
 			}
 
-			BuildSimpleToolTip(typeReference.SchemaObject);
+			ToolTip =
+				new ToolTipView
+				{
+					IsExtractDdlVisible = true,
+					ScriptExtractor = typeReference.Container.SemanticModel.DatabaseModel.ObjectScriptExtractor,
+					DataContext =
+						new ObjectDetailsModel
+						{
+							Title = GetFullSchemaObjectToolTip(typeReference.SchemaObject),
+							Object = typeReference.SchemaObject.GetTargetSchemaObject()
+						}
+				};
 		}
 
 		public void VisitSequenceReference(OracleSequenceReference sequenceReference)

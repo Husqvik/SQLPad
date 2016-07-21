@@ -437,8 +437,10 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 10);
 
-			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
-			toolTip.Control.DataContext.ShouldBe("\"PUBLIC\".XMLTYPE (Synonym) => SYS.XMLTYPE (Object Type)");
+			toolTip.Control.ShouldBeAssignableTo<ToolTipView>();
+			var dataModel = (ObjectDetailsModel)toolTip.Control.DataContext;
+			dataModel.Title.ShouldBe("\"PUBLIC\".XMLTYPE (Synonym) => SYS.XMLTYPE (Object Type)");
+			dataModel.Object.ShouldNotBe(null);
 		}
 
 		[Test, Apartment(ApartmentState.STA)]
@@ -755,8 +757,10 @@ SELECT * FROM CTE";
 			metadata.Identifier.FullyQualifiedIdentifier.ShouldBe("HUSQVIK.SQLPAD_FUNCTION");
 
 			var toolTipType = _toolTipProvider.GetToolTip(_documentRepository, 101);
-			toolTipType.Control.ShouldBeAssignableTo<ToolTipObject>();
-			toolTipType.Control.DataContext.ShouldBe("\"PUBLIC\".XMLTYPE (Synonym) => SYS.XMLTYPE (Object Type)");
+			toolTipType.Control.ShouldBeAssignableTo<ToolTipView>();
+			var dataModel = (ObjectDetailsModel)toolTipType.Control.DataContext;
+			dataModel.Title.ShouldBe("\"PUBLIC\".XMLTYPE (Synonym) => SYS.XMLTYPE (Object Type)");
+			dataModel.Object.ShouldNotBe(null);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 112);
 			toolTip.Control.ShouldBeAssignableTo<ToolTipSequence>();
@@ -771,8 +775,10 @@ SELECT * FROM CTE";
 			_documentRepository.UpdateStatements(query);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 30);
-			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
-			toolTip.Control.DataContext.ShouldBe("SYS.ODCIRAWLIST (Object Varrying Array)");
+			toolTip.Control.ShouldBeAssignableTo<ToolTipView>();
+			var dataModel = (ObjectDetailsModel)toolTip.Control.DataContext;
+			dataModel.Title.ShouldBe("SYS.ODCIRAWLIST (Object Varrying Array)");
+			dataModel.Object.ShouldNotBe(null);
 		}
 
 		[Test, Apartment(ApartmentState.STA)]
@@ -782,8 +788,10 @@ SELECT * FROM CTE";
 			_documentRepository.UpdateStatements(query);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 30);
-			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
-			toolTip.Control.DataContext.ShouldBe("SYS.DBMS_XPLAN_TYPE_TABLE (Object Table)");
+			toolTip.Control.ShouldBeAssignableTo<ToolTipView>();
+			var dataModel = (ObjectDetailsModel)toolTip.Control.DataContext;
+			dataModel.Title.ShouldBe("SYS.DBMS_XPLAN_TYPE_TABLE (Object Table)");
+			dataModel.Object.ShouldNotBe(null);
 		}
 
 		[Test, Apartment(ApartmentState.STA)]
@@ -1113,8 +1121,10 @@ SELECT * FROM sampleData";
 			_documentRepository.UpdateStatements(query);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 33);
-			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
-			toolTip.Control.DataContext.ShouldBe("\"PUBLIC\".XMLTYPE (Synonym) => SYS.XMLTYPE (Object Type)");
+			toolTip.Control.ShouldBeAssignableTo<ToolTipView>();
+			var dataModel = (ObjectDetailsModel)toolTip.Control.DataContext;
+			dataModel.Title.ShouldBe("\"PUBLIC\".XMLTYPE (Synonym) => SYS.XMLTYPE (Object Type)");
+			dataModel.Object.ShouldNotBe(null);
 		}
 
 		[Test, Apartment(ApartmentState.STA)]

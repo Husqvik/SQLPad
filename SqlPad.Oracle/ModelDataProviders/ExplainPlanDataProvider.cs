@@ -103,16 +103,19 @@ namespace SqlPad.Oracle.ModelDataProviders
 		{
 			var planItemCollection = InitializePlanItemCollection();
 			var inactiveMap = new HashSet<int>();
+			var items = new List<TItem>();
 
 			while (await reader.ReadAsynchronous(cancellationToken))
 			{
 				var item = await CreatePlanItem(reader, inactiveMap, cancellationToken);
-				planItemCollection.Add(item);
+				items.Add(item);
 			}
 
-			foreach (var item in planItemCollection)
+			items.ForEach(i => i.IsInactive = inactiveMap.Contains(i.Id));
+
+			foreach (var item in items)
 			{
-				item.IsInactive = inactiveMap.Contains(item.Id);
+				planItemCollection.Add(item);
 			}
 
 			planItemCollection.Freeze();
