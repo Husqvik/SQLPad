@@ -26,7 +26,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public ExecutionPlanItemCollection ItemCollection => _dataMmodel.ItemCollection;
 
-	    public ExplainPlanDataProvider(string statementText, string planKey, OracleObjectIdentifier targetTableIdentifier)
+		public ExplainPlanDataProvider(string statementText, string planKey, OracleObjectIdentifier targetTableIdentifier)
 		{
 			_dataMmodel = new ExplainPlanModelInternal(statementText, planKey, targetTableIdentifier);
 			CreateExplainPlanUpdater = new CreateExplainPlanDataProviderInternal(_dataMmodel);
@@ -107,9 +107,6 @@ namespace SqlPad.Oracle.ModelDataProviders
 			while (await reader.ReadAsynchronous(cancellationToken))
 			{
 				var item = await CreatePlanItem(reader, inactiveMap, cancellationToken);
-
-				FillData(reader, item);
-
 				planItemCollection.Add(item);
 			}
 
@@ -127,7 +124,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		protected virtual void FillData(IDataRecord reader, TItem item) { }
 
-		private static async Task<TItem> CreatePlanItem(OracleDataReader reader, ICollection<int> inactiveMap, CancellationToken cancellationToken)
+		private async Task<TItem> CreatePlanItem(OracleDataReader reader, ICollection<int> inactiveMap, CancellationToken cancellationToken)
 		{
 			var time = OracleReaderValueConvert.ToInt32(reader["TIME"]);
 			var otherData = OracleReaderValueConvert.ToString(await reader.GetValueAsynchronous(reader.GetOrdinal("OTHER_XML"), cancellationToken));
@@ -166,6 +163,8 @@ namespace SqlPad.Oracle.ModelDataProviders
 				};
 
 			ResolveInactiveNodes(item, inactiveMap);
+
+			FillData(reader, item);
 
 			return item;
 		}
