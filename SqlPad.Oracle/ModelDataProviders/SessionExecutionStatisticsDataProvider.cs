@@ -21,7 +21,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public ICollection<SessionExecutionStatisticsRecord> ExecutionStatistics => _statisticsModel.StatisticsRecords.Values;
 
-	    public SessionExecutionStatisticsDataProvider(IDictionary<int, string> statisticsKeys, int sessionId)
+		public SessionExecutionStatisticsDataProvider(IDictionary<int, string> statisticsKeys, int sessionId)
 		{
 			_statisticsModel = new SessionExecutionStatisticsModel(statisticsKeys, sessionId);
 			SessionBeginExecutionStatisticsDataProvider = new SessionExecutionStatisticsDataProviderInternal(_statisticsModel, true);
@@ -48,7 +48,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 			public override bool IsValid => _executionStart || DataModel.StatisticsKeys.Count > 0;
 
-		    public override async Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
+			public override async Task MapReaderData(OracleDataReader reader, CancellationToken cancellationToken)
 			{
 				if (DataModel.StatisticsKeys.Count == 0)
 				{
