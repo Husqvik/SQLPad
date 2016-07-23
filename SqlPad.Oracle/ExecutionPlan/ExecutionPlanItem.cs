@@ -1,17 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Xml.Linq;
 
 namespace SqlPad.Oracle.ExecutionPlan
 {
-	[DebuggerDisplay("ExecutionPlanItem (Id={Id}; Operation={Operation}; Depth={Depth}; IsLeaf={IsLeaf}; ExecutionOrder={ExecutionOrder})")]
+	[DebuggerDisplay("ExecutionPlanItem (Id={Id}; Operation={Operation}; Depth={Depth}; IsLeaf={IsLeaf}; ExecutionOrder={ExecutionOrder}; IsInactive={IsInactive})")]
 	public class ExecutionPlanItem : ModelBase
 	{
-		private readonly List<ExecutionPlanItem> _childItems = new List<ExecutionPlanItem>();
+		private readonly ObservableCollection<ExecutionPlanItem> _childItems = new ObservableCollection<ExecutionPlanItem>();
 
-		public int ExecutionOrder { get; set; }
-		
+		private int _executionOrder;
+
+		public int ExecutionOrder
+		{
+			get { return _executionOrder; }
+			set { UpdateValueAndRaisePropertyChanged(ref _executionOrder, value); }
+		}
+
 		public decimal? CostRatio { get; set; }
 
 		public int Id { get; set; }
@@ -68,12 +75,23 @@ namespace SqlPad.Oracle.ExecutionPlan
 
 		public bool IsInactive { get; set; }
 
-		public IReadOnlyList<ExecutionPlanItem> ChildItems => _childItems.AsReadOnly();
+		public IReadOnlyList<ExecutionPlanItem> ChildItems => _childItems;
 
 		public void AddChildItem(ExecutionPlanItem childItem)
 		{
 			_childItems.Add(childItem);
 			childItem.Parent = this;
+		}
+
+		public void ClearAllChildItems()
+		{
+			foreach (var item in _childItems)
+			{
+				item.Parent = null;
+				item.ClearAllChildItems();
+			}
+
+			_childItems.Clear();
 		}
 
 		public bool IsChildFrom(ExecutionPlanItem parent)

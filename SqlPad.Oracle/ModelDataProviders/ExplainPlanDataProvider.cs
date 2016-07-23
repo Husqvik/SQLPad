@@ -112,13 +112,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 			}
 
 			items.ForEach(i => i.IsInactive = inactiveMap.Contains(i.Id));
+			items.ForEach(planItemCollection.Add);
 
-			foreach (var item in items)
-			{
-				planItemCollection.Add(item);
-			}
-
-			planItemCollection.Freeze();
+			planItemCollection.SetAllItems();
 
 			return planItemCollection;
 		}

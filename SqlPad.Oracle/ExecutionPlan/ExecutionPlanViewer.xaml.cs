@@ -11,6 +11,8 @@ namespace SqlPad.Oracle.ExecutionPlan
 	{
 		public static readonly DependencyProperty TotalExecutionsProperty = DependencyProperty.Register(nameof(TotalExecutions), typeof(int?), typeof(ExecutionPlanViewer), new FrameworkPropertyMetadata());
 		public static readonly DependencyProperty TextExecutionPlanProperty = DependencyProperty.Register(nameof(TextExecutionPlan), typeof(string), typeof(ExecutionPlanViewer), new FrameworkPropertyMetadata());
+		public static readonly DependencyProperty HasInactiveItemsProperty = DependencyProperty.Register(nameof(HasInactiveItems), typeof(bool), typeof(ExecutionPlanViewer), new FrameworkPropertyMetadata());
+		public static readonly DependencyProperty ShowAllItemsProperty = DependencyProperty.Register(nameof(ShowAllItems), typeof(bool), typeof(ExecutionPlanViewer), new UIPropertyMetadata(true, ShowAllItemsChangedHandler));
 
 		public int? TotalExecutions
 		{
@@ -24,7 +26,26 @@ namespace SqlPad.Oracle.ExecutionPlan
 			private set { SetValue(TextExecutionPlanProperty, value); }
 		}
 
+		public bool HasInactiveItems
+		{
+			get { return (bool)GetValue(HasInactiveItemsProperty); }
+			private set { SetValue(HasInactiveItemsProperty, value); }
+		}
+
+		public bool ShowAllItems
+		{
+			get { return (bool)GetValue(ShowAllItemsProperty); }
+			set { SetValue(ShowAllItemsProperty, value); }
+		}
+
+		private static void ShowAllItemsChangedHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
+		{
+			var executionPlanView = (ExecutionPlanViewer)dependencyObject;
+			executionPlanView.ConfigureExecutionPlanItemVisibility();
+		}
+
 		private readonly OutputViewer _outputViewer;
+		private IExecutionPlanItemCollection _planItemCollection;
 
 		public Control Control => this;
 
@@ -45,7 +66,7 @@ namespace SqlPad.Oracle.ExecutionPlan
 			
 			try
 			{
-				itemCollection = await ((OracleConnectionAdapterBase)connectionAdapter).GetCursorExecutionStatisticsAsync(cancellationToken);
+				_planItemCollection = itemCollection = await ((OracleConnectionAdapterBase)connectionAdapter).GetCursorExecutionStatisticsAsync(cancellationToken);
 			}
 			catch (Exception exception)
 			{
@@ -58,7 +79,9 @@ namespace SqlPad.Oracle.ExecutionPlan
 			{
 				return;
 			}
-			
+
+			ConfigureExecutionPlanItemVisibility();
+
 			SetRootItem(itemCollection.RootItem);
 			TextExecutionPlan = itemCollection.PlanText;
 
@@ -76,9 +99,11 @@ namespace SqlPad.Oracle.ExecutionPlan
 		{
 			ResetView();
 
-			var itemCollection = await ((OracleConnectionAdapterBase)_outputViewer.ConnectionAdapter).ExplainPlanAsync(executionModel, cancellationToken);
+			ExecutionPlanItemCollection itemCollection;
+			_planItemCollection = itemCollection = await ((OracleConnectionAdapterBase)_outputViewer.ConnectionAdapter).ExplainPlanAsync(executionModel, cancellationToken);
 			if (itemCollection != null)
 			{
+				ConfigureExecutionPlanItemVisibility();
 				SetRootItem(itemCollection.RootItem);
 				TabTreeView.IsSelected = true;
 			}
@@ -96,6 +121,20 @@ namespace SqlPad.Oracle.ExecutionPlan
 			if (rootItem != null)
 			{
 				ExecutionPlanTreeView.RootItem = rootItem;
+			}
+		}
+
+		private void ConfigureExecutionPlanItemVisibility()
+		{
+			HasInactiveItems = _planItemCollection.HasInactiveItems;
+
+			if (ShowAllItems)
+			{
+				_planItemCollection.SetAllItems();
+			}
+			else
+			{
+				_planItemCollection.SetActiveItems();
 			}
 		}
 

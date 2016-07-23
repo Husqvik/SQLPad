@@ -138,8 +138,9 @@ namespace SqlPad.Oracle.Test
 			var rootItem = new ExecutionPlanItem();
 			SetBasePlanItemData(rootItem);
 
-			var planItemCollection = new ExecutionPlanItemCollection { rootItem };
-			planItemCollection.Freeze();
+			var planItemCollection = new ExecutionPlanItemCollection();
+			planItemCollection.Add(rootItem);
+			planItemCollection.SetAllItems();
 
 			return Task.FromResult(planItemCollection);
 		}
@@ -149,9 +150,10 @@ namespace SqlPad.Oracle.Test
 			var rootItem = new ExecutionStatisticsPlanItem();
 			SetBasePlanItemData(rootItem);
 
-			var planItemCollection = new ExecutionStatisticsPlanItemCollection { rootItem };
+			var planItemCollection = new ExecutionStatisticsPlanItemCollection();
+			planItemCollection.Add(rootItem);
 			planItemCollection.PlanText = DummyPlanText;
-			planItemCollection.Freeze();
+			planItemCollection.SetAllItems();
 
 			return Task.FromResult(planItemCollection);
 		}

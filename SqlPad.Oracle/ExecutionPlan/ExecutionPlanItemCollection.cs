@@ -1,22 +1,38 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace SqlPad.Oracle.ExecutionPlan
 {
+	[DebuggerDisplay("ExecutionPlanItemCollection (Items={AllItems.Count}; HasInactiveItems={HasInactiveItems})")]
 	public class ExecutionPlanItemCollection : ExecutionPlanItemCollectionBase<ExecutionPlanItem> { }
 
-	public abstract class ExecutionPlanItemCollectionBase<T> : ModelBase, IEnumerable<T> where T : ExecutionPlanItem
+	public interface IExecutionPlanItemCollection
+	{
+		ExecutionPlanItem RootItem { get; }
+
+		bool HasInactiveItems { get; }
+
+		void SetAllItems();
+
+		void SetActiveItems();
+	}
+
+	public abstract class ExecutionPlanItemCollectionBase<T> : ModelBase, IExecutionPlanItemCollection where T : ExecutionPlanItem
 	{
 		private readonly Dictionary<int, T> _allItems = new Dictionary<int, T>();
-		private readonly List<ExecutionPlanItem> _leafItems = new List<ExecutionPlanItem>();
 
 		private int _currentExecutionStep;
+		private DisplayFilter _filter = DisplayFilter.NotSet;
 
 		public T RootItem { get; private set; }
 
+		public bool HasInactiveItems { get; private set; }
+
 		public IReadOnlyDictionary<int, T> AllItems => _allItems;
+
+		ExecutionPlanItem IExecutionPlanItemCollection.RootItem => RootItem;
 
 		public void Add(T item)
 		{
@@ -25,11 +41,7 @@ namespace SqlPad.Oracle.ExecutionPlan
 				throw new InvalidOperationException("Item cannot be added because the collection is frozen. ");
 			}
 
-			if (item.ParentId.HasValue)
-			{
-				_allItems[item.ParentId.Value].AddChildItem(item);
-			}
-			else
+			if (item.ParentId == null)
 			{
 				if (_allItems.Count > 0)
 				{
@@ -39,37 +51,87 @@ namespace SqlPad.Oracle.ExecutionPlan
 				RootItem = item;
 			}
 
+			HasInactiveItems |= item.IsInactive;
+
+			var costRatio = item.Cost.HasValue && RootItem.Cost > 0
+				? Math.Round(item.Cost.Value / (decimal)RootItem.Cost, 2)
+				: (decimal?)null;
+
+			item.CostRatio = costRatio;
+
 			_allItems.Add(item.Id, item);
 		}
 
-		public void Freeze()
+		public void SetAllItems()
 		{
-			if (_allItems.Count == 0)
+			SetItems(DisplayFilter.None);
+		}
+
+		public void SetActiveItems()
+		{
+			SetItems(DisplayFilter.ActiveNodesOnly);
+		}
+
+		private ExecutionPlanItem FindParentItem(int parentId, DisplayFilter filter)
+		{
+			do
+			{
+				var item = _allItems[parentId];
+				if (filter == DisplayFilter.None || !item.IsInactive)
+				{
+					return item;
+				}
+
+				parentId = item.ParentId.Value;
+			}
+			while (true);
+		}
+
+		private void SetItems(DisplayFilter filter)
+		{
+			if (filter == _filter || _allItems.Count == 0)
 			{
 				return;
 			}
 
+			RootItem.ClearAllChildItems();
+
 			foreach (var item in _allItems.Values)
 			{
-				if (item.IsLeaf)
+				item.ExecutionOrder = 0;
+
+				if (item.ParentId.HasValue)
 				{
-					_leafItems.Add(item);
+					var parentItem = FindParentItem(item.ParentId.Value, filter);
+					if (filter == DisplayFilter.None || !item.IsInactive)
+					{
+						parentItem.AddChildItem(item);
+					}
 				}
-
-				var costRatio = item.Cost.HasValue && RootItem.Cost > 0
-					? Math.Round(item.Cost.Value / (decimal)RootItem.Cost, 2)
-					: (decimal?)null;
-
-				item.CostRatio = costRatio;
 			}
 
-			var startNode = _leafItems[0];
-			_leafItems.RemoveAt(0);
+			var leafItemSource = _allItems.Values.Where(i => i.IsLeaf);
+			if (filter == DisplayFilter.ActiveNodesOnly)
+			{
+				leafItemSource = leafItemSource.Where(i => !i.IsInactive);
+			}
 
-			ResolveExecutionOrder(startNode, null);
+			ResolveExecutionOrder(leafItemSource.ToList());
+
+			_filter = filter;
 		}
 
-		private void ResolveExecutionOrder(ExecutionPlanItem nextItem, ExecutionPlanItem breakAtItem)
+		private void ResolveExecutionOrder(List<T> leafItems)
+		{
+			_currentExecutionStep = 0;
+
+			var startNode = leafItems[0];
+			leafItems.RemoveAt(0);
+
+			ResolveExecutionOrder(startNode, null, leafItems);
+		}
+
+		private void ResolveExecutionOrder(ExecutionPlanItem nextItem, ExecutionPlanItem breakAtItem, List<T> remainingLeafItems)
 		{
 			do
 			{
@@ -91,27 +153,24 @@ namespace SqlPad.Oracle.ExecutionPlan
 					continue;
 				}
 
-				var otherBranchItemIndex = _leafItems.FindIndex(i => i.IsChildFrom(nextItem));
+				var otherBranchItemIndex = remainingLeafItems.FindIndex(i => i.IsChildFrom(nextItem));
 				if (otherBranchItemIndex == -1)
 				{
 					return;
 				}
 
-				var otherBranchLeafItem = _leafItems[otherBranchItemIndex];
-				_leafItems.RemoveAt(otherBranchItemIndex);
+				var otherBranchLeafItem = remainingLeafItems[otherBranchItemIndex];
+				remainingLeafItems.RemoveAt(otherBranchItemIndex);
 
-				ResolveExecutionOrder(otherBranchLeafItem, nextItem);
+				ResolveExecutionOrder(otherBranchLeafItem, nextItem, remainingLeafItems);
 			} while (true);
 		}
 
-		IEnumerator IEnumerable.GetEnumerator()
+		private enum DisplayFilter
 		{
-			return GetEnumerator();
-		}
-
-		public IEnumerator<T> GetEnumerator()
-		{
-			return _allItems.Values.GetEnumerator();
+			NotSet,
+			None,
+			ActiveNodesOnly
 		}
 	}
 }

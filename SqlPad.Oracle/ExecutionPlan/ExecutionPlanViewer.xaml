@@ -9,8 +9,8 @@
              d:DesignHeight="160" d:DesignWidth="300"
              DataContext="{Binding RelativeSource={RelativeSource Self}}">
 	<UserControl.Resources>
-        <sqlPad:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
-    </UserControl.Resources>
+		<sqlPad:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
+	</UserControl.Resources>
 	
 	<TabControl>
 		<TabItem Header="Tree" x:Name="TabTreeView">
@@ -46,6 +46,7 @@
 						</RadioButton>
 					</StackPanel>
 				</GroupBox>
+				<CheckBox DockPanel.Dock="Top" Content="Show adaptive/inactive operations" IsChecked="{Binding ShowAllItems}" Visibility="{Binding HasInactiveItems, Converter={StaticResource ObjectToVisibilityConverter}}" />
 				<executionPlan:ExecutionPlanTreeView x:Name="ExecutionPlanTreeView" IsDeferredScrollingEnabled="False" />
 			</DockPanel>
 		</TabItem>
