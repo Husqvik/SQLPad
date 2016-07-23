@@ -353,6 +353,44 @@ namespace SqlPad.Oracle.Test
 			AllObjectsInternal.Add(synonym);
 			#endregion
 
+			#region SYS.DBMS_STATS
+			var dbmsStats = (OraclePackage)AllObjectsInternal.Single(o => String.Equals(o.Name, OracleObjectIdentifier.PackageDbmsStats) && String.Equals(o.Owner, OracleObjectIdentifier.SchemaSys));
+			var gatherTableStatsProcedureMetadata = new OracleProgramMetadata(ProgramType.Procedure, OracleProgramIdentifier.IdentifierGatherTableStats, false, false, false, false, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, false);
+			gatherTableStatsProcedureMetadata.AddParameter(new OracleProgramParameterMetadata("\"OWNNAME\"", 1, 1, 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			gatherTableStatsProcedureMetadata.AddParameter(new OracleProgramParameterMetadata(null, 1, 17, 1, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, true));
+			gatherTableStatsProcedureMetadata.AddParameter(new OracleProgramParameterMetadata("\"TABNAME\"", 2, 2, 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			gatherTableStatsProcedureMetadata.AddParameter(new OracleProgramParameterMetadata("\"PARTNAME\"", 3, 3, 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, true));
+			gatherTableStatsProcedureMetadata.AddParameter(new OracleProgramParameterMetadata("\"ESTIMATE_PERCENT\"", 4, 4, 0, ParameterDirection.Input, "NUMBER", OracleObjectIdentifier.Empty, true));
+			gatherTableStatsProcedureMetadata.AddParameter(new OracleProgramParameterMetadata("\"BLOCK_SAMPLE\"", 5, 5, 0, ParameterDirection.Input, "PL/SQL BOOLEAN", OracleObjectIdentifier.Empty, true));
+			gatherTableStatsProcedureMetadata.AddParameter(new OracleProgramParameterMetadata("\"METHOD_OPT\"", 6, 6, 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, true));
+			gatherTableStatsProcedureMetadata.AddParameter(new OracleProgramParameterMetadata("\"DEGREE\"", 7, 7, 0, ParameterDirection.Input, "NUMBER", OracleObjectIdentifier.Empty, true));
+			gatherTableStatsProcedureMetadata.AddParameter(new OracleProgramParameterMetadata("\"GRANULARITY\"", 8, 8, 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, true));
+			gatherTableStatsProcedureMetadata.AddParameter(new OracleProgramParameterMetadata("\"CASCADE\"", 9, 9, 0, ParameterDirection.Input, "PL/SQL BOOLEAN", OracleObjectIdentifier.Empty, true));
+			gatherTableStatsProcedureMetadata.AddParameter(new OracleProgramParameterMetadata("\"STATTAB\"", 10, 10, 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, true));
+			gatherTableStatsProcedureMetadata.AddParameter(new OracleProgramParameterMetadata("\"STATID\"", 11, 11, 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, true));
+			gatherTableStatsProcedureMetadata.AddParameter(new OracleProgramParameterMetadata("\"STATOWN\"", 12, 12, 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, true));
+			gatherTableStatsProcedureMetadata.AddParameter(new OracleProgramParameterMetadata("\"NO_INVALIDATE\"", 13, 13, 0, ParameterDirection.Input, "PL/SQL BOOLEAN", OracleObjectIdentifier.Empty, true));
+			gatherTableStatsProcedureMetadata.AddParameter(new OracleProgramParameterMetadata("\"STATTYPE\"", 14, 14, 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, true));
+			gatherTableStatsProcedureMetadata.AddParameter(new OracleProgramParameterMetadata("\"FORCE\"", 15, 15, 0, ParameterDirection.Input, "PL/SQL BOOLEAN", OracleObjectIdentifier.Empty, true));
+			gatherTableStatsProcedureMetadata.AddParameter(new OracleProgramParameterMetadata("\"CONTEXT\"", 16, 16, 0, ParameterDirection.Input, "VARRAY", OracleObjectIdentifier.Empty, true));
+			gatherTableStatsProcedureMetadata.AddParameter(new OracleProgramParameterMetadata("\"OPTIONS\"", 17, 18, 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, true));
+			gatherTableStatsProcedureMetadata.Owner = dbmsStats;
+
+			dbmsStats.Programs.Add(gatherTableStatsProcedureMetadata);
+
+			synonym =
+				new OracleSynonym
+				{
+					FullyQualifiedName = OracleObjectIdentifier.Create(OracleObjectIdentifier.SchemaPublic, "DBMS_STATS"),
+					SchemaObject = dbmsStats,
+					IsValid = true
+				};
+
+			synonym.SchemaObject.Synonyms.Add(synonym);
+
+			AllObjectsInternal.Add(synonym);
+			#endregion
+
 			#region SYS.STANDARD
 			var builtInFunctionPackage = (OraclePackage)AllObjectsInternal.Single(o => o.FullyQualifiedName == OracleObjectIdentifier.IdentifierBuiltInFunctionPackage);
 			var truncFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.IdentifierBuiltInProgramTrunc, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
@@ -1077,6 +1115,11 @@ namespace SqlPad.Oracle.Test
 			new OraclePackage
 			{
 				FullyQualifiedName = OracleObjectIdentifier.Create(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageUtlHttp),
+				IsValid = true
+			},
+			new OraclePackage
+			{
+				FullyQualifiedName = OracleObjectIdentifier.Create(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageDbmsStats),
 				IsValid = true
 			},
 			new OracleTypeObject

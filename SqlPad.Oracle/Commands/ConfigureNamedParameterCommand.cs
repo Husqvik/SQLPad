@@ -39,10 +39,10 @@ namespace SqlPad.Oracle.Commands
 
 		protected override void Execute()
 		{
-			/*var settingsModel = ConfigureSettings();
+			var settingsModel = ConfigureSettings();
 			var useDefaultSettings = settingsModel.UseDefaultSettings == null || settingsModel.UseDefaultSettings();
 
-			if (!useDefaultSettings && !ExecutionContext.SettingsProvider.GetSettings())
+			/*if (!useDefaultSettings && !ExecutionContext.SettingsProvider.GetSettings())
 			{
 				return;
 			}*/

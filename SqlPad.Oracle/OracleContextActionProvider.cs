@@ -159,7 +159,7 @@ namespace SqlPad.Oracle
 
 			if (OracleCommands.ConfigureNamedParameters.CanExecuteHandler(executionContext))
 			{
-				actionList.Add(new ContextAction(ConfigureNamedParameterCommand.Title, OracleCommands.ConfigureNamedParameters, executionContext));
+				actionList.Add(new ContextAction(ConfigureNamedParameterCommand.Title, OracleCommands.ConfigureNamedParameters, CloneContextWithUseDefaultSettingsOption(executionContext)));
 			}
 
 			var actions =

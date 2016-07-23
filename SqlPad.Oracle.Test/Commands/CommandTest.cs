@@ -1959,7 +1959,7 @@ MODEL
 			_editor.CaretOffset = 11;
 
 			CanExecuteCommand(OracleCommands.ConfigureNamedParameters).ShouldBe(true);
-			ExecuteCommand(OracleCommands.ConfigureNamedParameters);
+			ExecuteCommand(OracleCommands.ConfigureNamedParameters, new TestCommandSettings(new CommandSettingsModel()));
 
 			const string expectedResult = @"SELECT SYS.ODCIARGDESC(ARGTYPE => NULL, TABLENAME => NULL, TABLESCHEMA => NULL, COLNAME => NULL, TABLEPARTITIONLOWER => NULL, TABLEPARTITIONUPPER => NULL, CARDINALITY => NULL) FROM DUAL";
 
@@ -1974,7 +1974,7 @@ MODEL
 			_editor.CaretOffset = 11;
 
 			CanExecuteCommand(OracleCommands.ConfigureNamedParameters).ShouldBe(true);
-			ExecuteCommand(OracleCommands.ConfigureNamedParameters);
+			ExecuteCommand(OracleCommands.ConfigureNamedParameters, new TestCommandSettings(new CommandSettingsModel()));
 
 			const string expectedResult = @"SELECT SYS.ODCIARGDESC(ARGTYPE => NULL, TABLENAME => NULL, TABLESCHEMA => NULL, COLNAME => NULL, TABLEPARTITIONLOWER => NULL, TABLEPARTITIONUPPER => NULL, CARDINALITY => NULL) FROM DUAL";
 
@@ -1989,7 +1989,7 @@ MODEL
 			_editor.CaretOffset = 11;
 
 			CanExecuteCommand(OracleCommands.ConfigureNamedParameters).ShouldBe(true);
-			ExecuteCommand(OracleCommands.ConfigureNamedParameters);
+			ExecuteCommand(OracleCommands.ConfigureNamedParameters, new TestCommandSettings(new CommandSettingsModel()));
 
 			const string expectedResult = @"SELECT sys.odciargdesc(ARGTYPE => '<argtype>', TABLENAME => '<tablename>', TABLESCHEMA => NULL, COLNAME => NULL, TABLEPARTITIONLOWER => NULL, TABLEPARTITIONUPPER => NULL, CARDINALITY => NULL) FROM dual";
 
@@ -2004,7 +2004,7 @@ MODEL
 			_editor.CaretOffset = 11;
 
 			CanExecuteCommand(OracleCommands.ConfigureNamedParameters).ShouldBe(true);
-			ExecuteCommand(OracleCommands.ConfigureNamedParameters);
+			ExecuteCommand(OracleCommands.ConfigureNamedParameters, new TestCommandSettings(new CommandSettingsModel()));
 
 			const string expectedResult = @"SELECT SYS.ODCIARGDESC(ARGTYPE => NULL, TABLENAME => NULL, TABLESCHEMA => NULL, COLNAME => NULL, TABLEPARTITIONLOWER => NULL, TABLEPARTITIONUPPER => NULL, CARDINALITY => NULL) FROM DUAL";
 

@@ -192,7 +192,7 @@ namespace SqlPad.Oracle.SemanticModel
 					goto default;
 
 				default:
-					var identifiers = node.GetPathFilterDescendants(NodeFilters.BreakAtPlSqlSubProgramOrSqlCommand, Terminals.Identifier, Terminals.PlSqlIdentifier, Terminals.RowIdPseudocolumn, Terminals.Level, Terminals.RowNumberPseudocolumn)
+					var identifiers = node.GetPathFilterDescendants(NodeFilters.BreakAtPlSqlSubProgramOrSqlCommand, Terminals.Identifier, Terminals.PlSqlIdentifier, Terminals.RowIdPseudocolumn, Terminals.Level, Terminals.RowNumberPseudocolumn, Terminals.User)
 						.Where(i => !excludedIdentifiers.Contains(i));
 
 					ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(null, program, identifiers, StatementPlacement.None, null, null, GetFunctionCallNodes);
