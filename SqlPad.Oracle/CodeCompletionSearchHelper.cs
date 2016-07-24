@@ -127,7 +127,7 @@ namespace SqlPad.Oracle
 			}
 
 			var randomStringFunctionOverload = specificFunctionOverloads
-				.FirstOrDefault(o => o.CurrentParameterIndex == 0 && o.ProgramMetadata.Identifier.In(OracleProgramIdentifier.IdentifierDbmsRandomString));
+				.FirstOrDefault(o => IsParameterSupported(o, 0, "\"OPT\"") && o.ProgramMetadata.Identifier.In(OracleProgramIdentifier.IdentifierDbmsRandomString));
 			if (randomStringFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(randomStringFunctionOverload))
 			{
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "U", "U (u) - uppercase alpha characters"));
@@ -138,7 +138,7 @@ namespace SqlPad.Oracle
 			}
 
 			var dbmsCrptoHashFunctionOverload = specificFunctionOverloads
-				.FirstOrDefault(o => o.CurrentParameterIndex == 1 && o.ProgramMetadata.Identifier.In(OracleProgramIdentifier.IdentifierDbmsCryptoHash));
+				.FirstOrDefault(o => IsParameterSupported(o, 1, "\"TYP\"") && o.ProgramMetadata.Identifier.In(OracleProgramIdentifier.IdentifierDbmsCryptoHash));
 			if (dbmsCrptoHashFunctionOverload != null && HasSingleNumberLiteralParameterOrNoParameterToken(dbmsCrptoHashFunctionOverload))
 			{
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "1", "1 - DBMS_CRYPTO.HASH_MD4 - MD4", false));
@@ -171,7 +171,6 @@ namespace SqlPad.Oracle
 			if (nextDayFunctionOverload != null && nextDayFunctionOverload.CurrentParameterIndex == 1)
 			{
 				var task = databaseModel.GetWeekdayNames(CancellationToken.None);
-				task.Wait();
 				var namespaceItems = task.Result.Select(n => BuildParameterCompletionItem(currentNode, n, n));
 				completionItems.AddRange(namespaceItems);
 			}
@@ -190,7 +189,6 @@ namespace SqlPad.Oracle
 				    HasSingleStringLiteralParameterOrNoParameterToken(sysContextFunctionOverload))
 				{
 					var task = databaseModel.GetContextData(CancellationToken.None);
-					task.Wait();
 					var namespaces = task.Result.Select(d => d.Key).Concat(Enumerable.Repeat(ContextNamespaceUserEnvironment, 1)).Distinct();
 					var namespaceItems = namespaces.Select(n => BuildParameterCompletionItem(currentNode, n, n));
 					completionItems.AddRange(namespaceItems);
@@ -374,6 +372,28 @@ namespace SqlPad.Oracle
 			}
 
 			return completionItems;
+		}
+
+		private static bool IsParameterSupported(OracleCodeCompletionFunctionOverload programOverload, int parameterIndex, string parameterName)
+		{
+			var namedParameterExists = false;
+			for (var i = 0; i < programOverload.ProgramReference.ParameterReferences.Count; i++)
+			{
+				var parameterReference = programOverload.ProgramReference.ParameterReferences[i];
+				if (parameterReference.OptionalIdentifierTerminal == null)
+				{
+					continue;
+				}
+
+				namedParameterExists = true;
+
+				if (String.Equals(parameterName, parameterReference.OptionalIdentifierTerminal.Token.Value.ToQuotedIdentifier()))
+				{
+					return programOverload.CurrentParameterIndex == i;
+				}
+			}
+
+			return programOverload.CurrentParameterIndex == parameterIndex && !namedParameterExists;
 		}
 
 		private static OracleCodeCompletionItem BuildDirectoryParameterCompletionItem(StatementGrammarNode currentNode, OracleDirectory directory)

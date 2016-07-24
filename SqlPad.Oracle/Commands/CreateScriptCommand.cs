@@ -91,7 +91,7 @@ namespace SqlPad.Oracle.Commands
 
 			builder.AppendLine();
 			builder.AppendLine();
-			builder.Append(script.Trim());
+			builder.Append(script);
 
 			if (builder[builder.Length - 1] != ';')
 			{

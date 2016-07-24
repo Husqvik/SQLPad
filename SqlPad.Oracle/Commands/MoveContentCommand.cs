@@ -150,8 +150,9 @@ namespace SqlPad.Oracle.Commands
 
 		private static SourcePosition FindDescendantPositionToExchange(StatementGrammarNode movedNode)
 		{
-			var nodeToExchange = movedNode.ParentNode.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBlock, movedNode.Id)
-				.FirstOrDefault(n => n != movedNode);
+			var nodeToExchange = movedNode.ParentNode
+				.GetPathFilterDescendants(n => n != movedNode && NodeFilters.BreakAtNestedQueryBlock(n), movedNode.Id)
+				.FirstOrDefault();
 
 			return CreateNodePosition(movedNode, nodeToExchange);
 		}

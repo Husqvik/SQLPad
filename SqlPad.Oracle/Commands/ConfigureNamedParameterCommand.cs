@@ -34,7 +34,7 @@ namespace SqlPad.Oracle.Commands
 				.SelectMany(c => ((IEnumerable<OracleProgramReferenceBase>)c.ProgramReferences).Concat(c.TypeReferences))
 				.SingleOrDefault(r => r.Metadata != null && r.AllIdentifierTerminals.Any(t => t == CurrentNode));
 
-			return _programReference?.ParameterListNode != null && _programReference.Metadata.NamedParameters.Count > 0 && GetNamePrefixSegments().Any();
+			return _programReference?.ParameterListNode != null && _programReference.Metadata.NamedParameters.Count > 0 && GetNamePrefixSegments(false).Any();
 		}
 
 		protected override void Execute()
@@ -47,13 +47,13 @@ namespace SqlPad.Oracle.Commands
 				return;
 			}*/
 
-			ExecutionContext.SegmentsToReplace.AddRange(GetNamePrefixSegments());
+			ExecutionContext.SegmentsToReplace.AddRange(GetNamePrefixSegments(!useDefaultSettings));
 		}
 
-		private IEnumerable<TextSegment> GetNamePrefixSegments()
+		private IEnumerable<TextSegment> GetNamePrefixSegments(bool includeOptionalParameters)
 		{
 			var formatOption = OracleConfiguration.Configuration.Formatter.FormatOptions.Identifier;
-			var parameterNameMetadata = _programReference.Metadata.NamedParameters.ToArray();
+			var parameterNameMetadata = _programReference.Metadata.NamedParameters.Where(p => includeOptionalParameters || !p.Value.IsOptional).ToArray();
 			var parameterReferences = _programReference.ParameterReferences;
 
 			var parameterIndexStart = _programReference.ParameterListNode.FirstTerminalNode.SourcePosition.IndexEnd + 1;
@@ -73,7 +73,8 @@ namespace SqlPad.Oracle.Commands
 
 				if (parameterReference.HasValue)
 				{
-					parameterIndexStart = parameterReference.Value.ParameterNode.SourcePosition.IndexStart;
+					var parameterSourcePosition = parameterReference.Value.ParameterNode.SourcePosition;
+					parameterIndexStart = parameterSourcePosition.IndexStart;
 
 					yield return
 						new TextSegment
@@ -82,7 +83,7 @@ namespace SqlPad.Oracle.Commands
 							Text = namedParameterPrefix
 						};
 
-					parameterIndexStart += namedParameterPrefix.Length;
+					parameterIndexStart = parameterSourcePosition.IndexEnd + 1;
 
 					addCommaBeforeMissingParameters = true;
 				}

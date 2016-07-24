@@ -864,6 +864,18 @@ selECT NULL, 'null' FRom selection";
 		}
 
 		[Test, Apartment(ApartmentState.STA)]
+		public void TestMoveContentCommandDownAtNestedFunctionParameter()
+		{
+			_editor.Text = @"SELECT dbms_crypto.hash(src => hextoraw('FF'), typ => 1) FROM dual";
+			_editor.CaretOffset = 31;
+
+			ExecuteCommand(MoveContentCommand.MoveContentDown);
+
+			_editor.Text.ShouldBe("SELECT dbms_crypto.hash(typ => 1, src => hextoraw('FF')) FROM dual");
+			_editor.CaretOffset.ShouldBe(41);
+		}
+
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestMoveContentCommandDownAtLastColumn()
 		{
 			_editor.Text = @"SELECT 'NamePrefix' || NAME || 'NamePostfix', 'IdPrefix' || PROJECT_ID || 'IdPostfix' FROM PROJECT";
@@ -2007,6 +2019,36 @@ MODEL
 			ExecuteCommand(OracleCommands.ConfigureNamedParameters, new TestCommandSettings(new CommandSettingsModel()));
 
 			const string expectedResult = @"SELECT SYS.ODCIARGDESC(ARGTYPE => NULL, TABLENAME => NULL, TABLESCHEMA => NULL, COLNAME => NULL, TABLEPARTITIONLOWER => NULL, TABLEPARTITIONUPPER => NULL, CARDINALITY => NULL) FROM DUAL";
+
+			_editor.Text.ShouldBe(expectedResult);
+		}
+
+		[Test, Apartment(ApartmentState.STA)]
+		public void TestConfigureNamedParametersCommandWithoutForcedOptionalParameters()
+		{
+			const string statementText = @"BEGIN dbms_stats.gather_table_stats(USER, 'TAB1'); END;";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 17;
+
+			CanExecuteCommand(OracleCommands.ConfigureNamedParameters).ShouldBe(true);
+			ExecuteCommand(OracleCommands.ConfigureNamedParameters, new TestCommandSettings(new CommandSettingsModel()));
+
+			const string expectedResult = @"BEGIN dbms_stats.gather_table_stats(OWNNAME => USER, TABNAME => 'TAB1'); END;";
+
+			_editor.Text.ShouldBe(expectedResult);
+		}
+
+		[Test, Apartment(ApartmentState.STA)]
+		public void TestConfigureNamedParametersCommandWithForcedOptionalParameters()
+		{
+			const string statementText = @"BEGIN dbms_stats.gather_table_stats(USER, 'TAB1'); END;";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 17;
+
+			CanExecuteCommand(OracleCommands.ConfigureNamedParameters).ShouldBe(true);
+			ExecuteCommand(OracleCommands.ConfigureNamedParameters, new TestCommandSettings(new CommandSettingsModel { UseDefaultSettings = () => false }));
+
+			const string expectedResult = @"BEGIN dbms_stats.gather_table_stats(OWNNAME => USER, TABNAME => 'TAB1', PARTNAME => NULL, ESTIMATE_PERCENT => NULL, BLOCK_SAMPLE => NULL, METHOD_OPT => NULL, DEGREE => NULL, GRANULARITY => NULL, CASCADE => NULL, STATTAB => NULL, STATID => NULL, STATOWN => NULL, NO_INVALIDATE => NULL, STATTYPE => NULL, FORCE => NULL, CONTEXT => NULL, OPTIONS => NULL); END;";
 
 			_editor.Text.ShouldBe(expectedResult);
 		}

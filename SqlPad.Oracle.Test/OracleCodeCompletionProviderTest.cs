@@ -1799,6 +1799,20 @@ se";
 		}
 
 		[Test]
+		public void TestDbmsRandomStringSpecialParameterCompletionWithNamedParameter()
+		{
+			const string statement = @"SELECT dbms_random.string(len => 16, opt => 'X') FROM dual";
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 45, true, OracleCodeCompletionCategory.FunctionParameter).ToList();
+			items.Count.ShouldBe(5);
+			items[0].Label.ShouldBe("A (a) - mixed case alpha characters");
+			items[0].Text.ShouldBe("'A'");
+			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+			items[4].Label.ShouldBe("X (x) - uppercase alpha-numeric characters");
+			items[4].Text.ShouldBe("'X'");
+			items[4].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
+		}
+
+		[Test]
 		public void TestSysDateFunctionAsReservedWord()
 		{
 			const string statement = @"SELECT ROWNU FROM DUAL";

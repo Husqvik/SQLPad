@@ -792,7 +792,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public override void MapScalarValue(object value)
 		{
-			ScriptText = ((string)value).Trim();
+			ScriptText = ((string)value).Replace("  ", " ").Trim();
 		}
 
 		public override bool HasScalarResult { get; } = true;
