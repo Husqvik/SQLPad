@@ -455,7 +455,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 									{
 										using (var setSchemaCommand = connection.CreateCommand())
 										{
-											await setSchemaCommand.SetSchema(currentSchema, cancellationToken);
+											await setSchemaCommand.SetCurrentSchema(currentSchema, cancellationToken);
 										}
 									}
 

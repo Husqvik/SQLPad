@@ -620,7 +620,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			using (var command = _userConnection.CreateCommand())
 			{
-				await command.SetSchema(_currentSchema, cancellationToken);
+				await command.SetCurrentSchema(_currentSchema, cancellationToken);
 
 				command.CommandText = OracleDatabaseCommands.SelectCurrentSessionIdentifierCommandText;
 				_userConnection.ActionName = "Get session identifier";

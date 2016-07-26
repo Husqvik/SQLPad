@@ -224,10 +224,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return true;
 		}
 
-		public static async Task SetSchema(this OracleCommand command, string schema, CancellationToken cancellationToken)
+		public static async Task SetCurrentSchema(this OracleCommand command, string schema, CancellationToken cancellationToken)
 		{
 			command.CommandText = $"ALTER SESSION SET CURRENT_SCHEMA = \"{schema}\"";
 			await command.ExecuteNonQueryAsynchronous(cancellationToken);
+			Trace.WriteLine($"{DateTime.Now} - Set current schema command '{command.CommandText}' executed successfully. ");
 		}
 	}
 
