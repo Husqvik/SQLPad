@@ -35,7 +35,9 @@ namespace SqlPad.Oracle
 				OracleProgramIdentifier.IdentifierBuiltInProgramNumberToDayToSecondInterval,
 				OracleProgramIdentifier.IdentifierBuiltInProgramBFileName,
 				OracleProgramIdentifier.IdentifierDbmsRandomString,
-				OracleProgramIdentifier.IdentifierDbmsCryptoHash
+				OracleProgramIdentifier.IdentifierDbmsCryptoHash,
+				OracleProgramIdentifier.IdentifierGatherSchemaStats,
+				OracleProgramIdentifier.IdentifierGatherTableStats
 			};
 
 		public static IEnumerable<ICodeCompletionItem> ResolveSpecificFunctionParameterCodeCompletionItems(StatementGrammarNode currentNode, IEnumerable<OracleCodeCompletionFunctionOverload> functionOverloads, OracleDatabaseModelBase databaseModel)
@@ -135,6 +137,14 @@ namespace SqlPad.Oracle
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "A", "A (a) - mixed case alpha characters"));
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "X", "X (x) - uppercase alpha-numeric characters"));
 				completionItems.Add(BuildParameterCompletionItem(currentNode, "P", "P (p) - printable characters"));
+			}
+
+			var gatherTableStatsFunctionOverload = specificFunctionOverloads
+				.FirstOrDefault(o => IsParameterSupported(o, 0, "\"OWNNAME\"") && o.ProgramMetadata.Identifier.In(OracleProgramIdentifier.IdentifierGatherTableStats, OracleProgramIdentifier.IdentifierGatherSchemaStats));
+			if (gatherTableStatsFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(gatherTableStatsFunctionOverload))
+			{
+				var tableItems = databaseModel.Schemas.Select(s => BuildParameterCompletionItem(currentNode, s, s));
+				completionItems.AddRange(tableItems);
 			}
 
 			var dbmsCrptoHashFunctionOverload = specificFunctionOverloads

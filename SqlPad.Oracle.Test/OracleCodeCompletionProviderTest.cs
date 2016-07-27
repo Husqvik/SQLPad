@@ -2464,6 +2464,15 @@ ON (EVENTS.ID = SRC.ID)";
 			items.Count.ShouldBe(1);
 		}
 
+		[Test]
+		public void TestCodeCompletionGatherTableStatsOwnerName()
+		{
+			const string statement = @"BEGIN dbms_stats.gather_table_stats(ownname => '', tabname => ''); END;";
+
+			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 48);
+			items.Count.ShouldBe(TestFixture.DatabaseModel.Schemas.Count);
+		}
+
 		public class OracleCodeCompletionTypeTest
 		{
 			private static OracleCodeCompletionType InitializeCodeCompletionType(string statementText, int cursorPosition)
