@@ -3243,7 +3243,15 @@ namespace SqlPad.Oracle.SemanticModel
 						Container = container,
 						AnalyticClauseNode = analyticClauseNode,
 						ParameterListNode = parameterList,
-						ParameterReferences = parameterNodes.Select(n => new ProgramParameterReference { ParameterNode = n }).ToArray(),
+						ParameterReferences =
+							parameterNodes
+								.Select(n =>
+									new ProgramParameterReference
+									{
+										ParameterNode = n,
+										ValueNode = n
+									})
+								.ToArray(),
 						SelectListColumn = selectListColumn,
 						Placement = placement
 					};
@@ -3274,6 +3282,7 @@ namespace SqlPad.Oracle.SemanticModel
 						new ProgramParameterReference
 						{
 							ParameterNode = n,
+							ValueNode = n[NonTerminals.Expression],
 							OptionalIdentifierTerminal = n.FirstTerminalNode != null && String.Equals(n.FirstTerminalNode.Id, Terminals.ParameterIdentifier)
 								? n.FirstTerminalNode
 								: null

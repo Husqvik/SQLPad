@@ -195,7 +195,7 @@ namespace SqlPad.Oracle
 				if (lookupNode != null)
 				{
 					var parameterReference = programReferenceBase.ParameterReferences.FirstOrDefault(f => lookupNode.HasAncestor(f.ParameterNode, true));
-					currentParameterIndex = parameterReference.ParameterNode == null
+					currentParameterIndex = parameterReference == null
 						? programReferenceBase.ParameterReferences.Count
 						: programReferenceBase.ParameterReferences.ToList().IndexOf(parameterReference);
 				}

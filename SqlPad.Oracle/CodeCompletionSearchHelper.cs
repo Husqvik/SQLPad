@@ -147,6 +147,43 @@ namespace SqlPad.Oracle
 				completionItems.AddRange(tableItems);
 			}
 
+			gatherTableStatsFunctionOverload = specificFunctionOverloads
+				.FirstOrDefault(o => IsParameterSupported(o, 1, "\"TABNAME\"") && o.ProgramMetadata.Identifier.In(OracleProgramIdentifier.IdentifierGatherTableStats));
+			if (gatherTableStatsFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(gatherTableStatsFunctionOverload))
+			{
+				int parameterIndex;
+				var namedParameterExists = GetNamedParameterIndex(gatherTableStatsFunctionOverload, "\"OWNNAME\"", out parameterIndex);
+				if (!namedParameterExists)
+				{
+					parameterIndex = 0;
+				}
+
+				var ownerParameterReference =
+					parameterIndex != -1 && gatherTableStatsFunctionOverload.ProgramReference.ParameterReferences.Count > parameterIndex
+						? gatherTableStatsFunctionOverload.ProgramReference.ParameterReferences[parameterIndex]
+						: null;
+
+				var parameterValueNode = ownerParameterReference?.ValueNode;
+				var schemaName =
+					String.Equals(parameterValueNode?.FirstTerminalNode.Id, Terminals.StringLiteral) && ownerParameterReference.ValueNode?.TerminalCount == 1
+						? ownerParameterReference.ValueNode?.FirstTerminalNode.Token.Value.ToPlainString()
+						: databaseModel.CurrentSchema;
+
+				schemaName = schemaName.ToQuotedIdentifier();
+
+				var tableItems =
+					databaseModel.AllObjects.Values
+						.OfType<OracleTable>()
+						.Where(o => String.Equals(o.Owner, schemaName))
+						.Select(o =>
+						{
+							var name = o.Name.Trim('"');
+							return BuildParameterCompletionItem(currentNode, name, name);
+						});
+
+				completionItems.AddRange(tableItems);
+			}
+
 			var dbmsCrptoHashFunctionOverload = specificFunctionOverloads
 				.FirstOrDefault(o => IsParameterSupported(o, 1, "\"TYP\"") && o.ProgramMetadata.Identifier.In(OracleProgramIdentifier.IdentifierDbmsCryptoHash));
 			if (dbmsCrptoHashFunctionOverload != null && HasSingleNumberLiteralParameterOrNoParameterToken(dbmsCrptoHashFunctionOverload))
@@ -386,6 +423,18 @@ namespace SqlPad.Oracle
 
 		private static bool IsParameterSupported(OracleCodeCompletionFunctionOverload programOverload, int parameterIndex, string parameterName)
 		{
+			int namedParameterIndex;
+			var namedParameterExists = GetNamedParameterIndex(programOverload, parameterName, out namedParameterIndex);
+			if (programOverload.CurrentParameterIndex == namedParameterIndex)
+			{
+				return true;
+			}
+
+			return programOverload.CurrentParameterIndex == parameterIndex && !namedParameterExists;
+		}
+
+		private static bool GetNamedParameterIndex(OracleCodeCompletionFunctionOverload programOverload, string parameterName, out int parameterIndex)
+		{
 			var namedParameterExists = false;
 			for (var i = 0; i < programOverload.ProgramReference.ParameterReferences.Count; i++)
 			{
@@ -399,11 +448,13 @@ namespace SqlPad.Oracle
 
 				if (String.Equals(parameterName, parameterReference.OptionalIdentifierTerminal.Token.Value.ToQuotedIdentifier()))
 				{
-					return programOverload.CurrentParameterIndex == i;
+					parameterIndex = i;
+					return true;
 				}
 			}
 
-			return programOverload.CurrentParameterIndex == parameterIndex && !namedParameterExists;
+			parameterIndex = -1;
+			return namedParameterExists;
 		}
 
 		private static OracleCodeCompletionItem BuildDirectoryParameterCompletionItem(StatementGrammarNode currentNode, OracleDirectory directory)

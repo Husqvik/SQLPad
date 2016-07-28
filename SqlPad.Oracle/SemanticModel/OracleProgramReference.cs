@@ -56,12 +56,14 @@ namespace SqlPad.Oracle.SemanticModel
 		public abstract OracleProgramMetadata Metadata { get; set; }
 	}
 
-	public struct ProgramParameterReference
+	public class ProgramParameterReference
 	{
 		public static readonly ProgramParameterReference[] EmptyArray = new ProgramParameterReference[0];
 
-		public StatementGrammarNode OptionalIdentifierTerminal { get; set; }
-
 		public StatementGrammarNode ParameterNode { get; set; }
+
+		public StatementGrammarNode ValueNode { get; set; }
+
+		public StatementGrammarNode OptionalIdentifierTerminal { get; set; }
 	}
 }

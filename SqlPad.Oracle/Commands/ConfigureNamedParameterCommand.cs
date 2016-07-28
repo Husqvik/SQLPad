@@ -61,7 +61,7 @@ namespace SqlPad.Oracle.Commands
 			var addCommaBeforeMissingParameters = false;
 			for (var i = 0; i < parameterNameMetadata.Length; i++)
 			{
-				var parameterReference = i < parameterReferences.Count ? parameterReferences[i] : (ProgramParameterReference?)null;
+				var parameterReference = i < parameterReferences.Count ? parameterReferences[i] : null;
 				if (parameterReference?.OptionalIdentifierTerminal != null)
 				{
 					break;
@@ -71,9 +71,9 @@ namespace SqlPad.Oracle.Commands
 				var parameterName = OracleStatementFormatter.FormatTerminalValue(parameterMetadata.Key.ToSimpleIdentifier(), formatOption);
 				var namedParameterPrefix = $"{parameterName} => ";
 
-				if (parameterReference.HasValue)
+				if (parameterReference != null)
 				{
-					var parameterSourcePosition = parameterReference.Value.ParameterNode.SourcePosition;
+					var parameterSourcePosition = parameterReference.ParameterNode.SourcePosition;
 					parameterIndexStart = parameterSourcePosition.IndexStart;
 
 					yield return
