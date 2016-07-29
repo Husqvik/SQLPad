@@ -216,6 +216,8 @@ namespace SqlPad.Oracle
 				}
 			}
 
+			ValidateForUpdateClause(validationModel);
+
 			ValidatePriorOperators(validationModel, validationModel.SemanticModel.NonQueryBlockTerminals);
 
 			ValidateQueryBlocks(validationModel);
@@ -227,6 +229,25 @@ namespace SqlPad.Oracle
 			ValidatePlSqlPrograms(validationModel);
 			
 			return validationModel;
+		}
+
+		private static void ValidateForUpdateClause(OracleValidationModel validationModel)
+		{
+			var plSqlSemanticModel = validationModel.SemanticModel as OraclePlSqlStatementSemanticModel;
+			var sqlStatementNodes =
+				plSqlSemanticModel?.AllPrograms.SelectMany(p => p.SqlModels).Select(m => m.Statement.RootNode)
+				?? Enumerable.Repeat(validationModel.Statement.RootNode[0, 0], 1);
+
+			foreach (var sqlStatementNode in sqlStatementNodes)
+			{
+				var forUpdateClause = sqlStatementNode?[NonTerminals.ForUpdateClause];
+				var queryBlock = forUpdateClause?.ParentNode.GetDescendants(NonTerminals.QueryBlock).FirstOrDefault();
+				if (queryBlock?[NonTerminals.GroupByClause] != null)
+				{
+					validationModel.InvalidNonTerminals[forUpdateClause] =
+						new InvalidNodeValidationData(OracleSemanticErrorType.ForUpdateNotAllowed) { Node = forUpdateClause };
+				}
+			}
 		}
 
 		private static void ValidatePlSqlPrograms(OracleValidationModel validationModel)

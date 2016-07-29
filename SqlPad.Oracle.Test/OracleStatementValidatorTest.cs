@@ -3634,5 +3634,21 @@ END;";
 
 			validationModel.ProgramNodeValidity.Keys.Count(n => n.Id == Terminals.Identifier).ShouldBe(1);
 		}
+
+		[Test]
+		public void TestForUpdateWithGroupBy()
+		{
+			const string sqlText = "SELECT * FROM dual GROUP BY dummy FOR UPDATE";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			validationModel.InvalidNonTerminals.Count.ShouldBe(1);
+			var node = validationModel.InvalidNonTerminals.Values.First();
+			node.SemanticErrorType.ShouldBe(OracleSemanticErrorType.ForUpdateNotAllowed);
+		}
 	}
 }

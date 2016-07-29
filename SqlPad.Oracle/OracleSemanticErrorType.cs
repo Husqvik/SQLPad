@@ -51,6 +51,7 @@ namespace SqlPad.Oracle
 		public const string DuplicateNameFoundInColumnAliasListForWithClause = "Duplicate name found in column alias list for WITH clause";
 		public const string OldStyleOuterJoinCannotBeUsedWithAnsiJoins = "Old style outer join cannot be used with ANSI joins";
 		public const string InvalidDataTypeForJsonTableColumn = "Invalid data type for JSON_TABLE column";
+		public const string ForUpdateNotAllowed = "FOR UPDATE of this query expression is not allowed";
 
 		public static class PlSql
 		{

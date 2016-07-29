@@ -163,5 +163,24 @@ END;";
 			var validationModel = OracleStatementValidatorTest.BuildValidationModel(plsqlText, statement);
 			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
 		}
+
+		[Test]
+		public void TestForUpdateWithGroupByWithinPlSql()
+		{
+			const string plsqlText =
+@"DECLARE
+	dummy VARCHAR2(1);
+BEGIN
+	SELECT dummy INTO dummy FROM dual GROUP BY dummy FOR UPDATE;
+END;";
+			var statement = Parser.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = OracleStatementValidatorTest.BuildValidationModel(plsqlText, statement);
+
+			validationModel.InvalidNonTerminals.Count.ShouldBe(1);
+			var node = validationModel.InvalidNonTerminals.Values.First();
+			node.SemanticErrorType.ShouldBe(OracleSemanticErrorType.ForUpdateNotAllowed);
+		}
 	}
 }
