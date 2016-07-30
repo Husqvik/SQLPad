@@ -234,18 +234,42 @@ namespace SqlPad.Oracle
 		private static void ValidateForUpdateClause(OracleValidationModel validationModel)
 		{
 			var plSqlSemanticModel = validationModel.SemanticModel as OraclePlSqlStatementSemanticModel;
-			var sqlStatementNodes =
-				plSqlSemanticModel?.AllPrograms.SelectMany(p => p.SqlModels).Select(m => m.Statement.RootNode)
-				?? Enumerable.Repeat(validationModel.Statement.RootNode[0, 0], 1);
+			var sqlSemanticModels =
+				plSqlSemanticModel?.AllPrograms.SelectMany(p => p.SqlModels)
+				?? Enumerable.Repeat(validationModel.SemanticModel, 1);
 
-			foreach (var sqlStatementNode in sqlStatementNodes)
+			foreach (var semanticModel in sqlSemanticModels)
 			{
+				var sqlStatementNode = semanticModel.Statement.RootNode;
+				if (validationModel.SemanticModel == semanticModel)
+				{
+					sqlStatementNode = sqlStatementNode[0, 0];
+				}
+
 				var forUpdateClause = sqlStatementNode?[NonTerminals.ForUpdateClause];
-				var queryBlock = forUpdateClause?.ParentNode.GetDescendants(NonTerminals.QueryBlock).FirstOrDefault();
-				if (queryBlock?[NonTerminals.GroupByClause] != null)
+				if (forUpdateClause == null)
+				{
+					return;
+				}
+
+				var queryBlockNode = forUpdateClause.ParentNode.GetDescendants(NonTerminals.QueryBlock).FirstOrDefault();
+				if (queryBlockNode?[NonTerminals.GroupByClause] != null)
 				{
 					validationModel.InvalidNonTerminals[forUpdateClause] =
 						new InvalidNodeValidationData(OracleSemanticErrorType.ForUpdateNotAllowed) { Node = forUpdateClause };
+				}
+				else
+				{
+					foreach (var queryBlock in semanticModel.QueryBlocks)
+					{
+						if (queryBlock.RootNode != queryBlockNode && queryBlock.GroupByClause != null)
+						{
+							validationModel.InvalidNonTerminals[forUpdateClause] =
+								new InvalidNodeValidationData(OracleSemanticErrorType.CannotSelectForUpdateFromViewWithDistinctOrGroupBy) { Node = forUpdateClause };
+
+							break;
+						}
+					}
 				}
 			}
 		}

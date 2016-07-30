@@ -52,6 +52,7 @@ namespace SqlPad.Oracle
 		public const string OldStyleOuterJoinCannotBeUsedWithAnsiJoins = "Old style outer join cannot be used with ANSI joins";
 		public const string InvalidDataTypeForJsonTableColumn = "Invalid data type for JSON_TABLE column";
 		public const string ForUpdateNotAllowed = "FOR UPDATE of this query expression is not allowed";
+		public const string CannotSelectForUpdateFromViewWithDistinctOrGroupBy = "Cannot select FOR UPDATE from view with DISTINCT, GROUP BY, etc. ";
 
 		public static class PlSql
 		{
