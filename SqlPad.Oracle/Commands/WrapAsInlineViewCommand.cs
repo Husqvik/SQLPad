@@ -16,9 +16,11 @@ namespace SqlPad.Oracle.Commands
 		{
 		}
 
+		protected override Func<StatementGrammarNode, bool> CurrentNodeFilterFunction { get; } = n => !String.Equals(n.Id, Terminals.RightParenthesis);
+
 		protected override CommandCanExecuteResult CanExecute()
 		{
-			return CurrentNode != null && CurrentQueryBlock != null &&
+			return CurrentNode != null &&
 				   (CanWrapSubquery() || CanWrapSchemaObjectReference());
 		}
 
@@ -29,11 +31,12 @@ namespace SqlPad.Oracle.Commands
 				return false;
 			}
 
-			var dataObjectReference = CurrentQueryBlock.ObjectReferences
-				.SelectMany(o => o.IncludeInnerReferences)
-				.SingleOrDefault(r => (r.ObjectNode == CurrentNode || r.AliasNode == CurrentNode ||
-				                       (r.RootNode.FirstTerminalNode == CurrentNode && r.RootNode.FirstTerminalNode.Id.In(Terminals.XmlTable, Terminals.JsonTable, Terminals.Table))) &&
-				                      r.Columns.Count > 0);
+			var dataObjectReference = SemanticModel.AllReferenceContainers
+				.SelectMany(c => c.ObjectReferences)
+				.SingleOrDefault(
+					r => (r.ObjectNode == CurrentNode || r.AliasNode == CurrentNode ||
+					      (r.RootNode.FirstTerminalNode == CurrentNode && r.RootNode.FirstTerminalNode.Id.In(Terminals.XmlTable, Terminals.JsonTable, Terminals.Table))) &&
+					     r.Columns.Count > 0);
 
 			if (dataObjectReference != null &&
 			    (dataObjectReference.Type.In(ReferenceType.TableCollection, ReferenceType.XmlTable, ReferenceType.JsonTable, ReferenceType.CommonTableExpression) || dataObjectReference.SchemaObject != null))
@@ -46,8 +49,10 @@ namespace SqlPad.Oracle.Commands
 
 		private bool CanWrapSubquery()
 		{
-			return String.Equals(CurrentNode.Id, Terminals.Select) &&
-			       CurrentQueryBlock.Columns.Any(c => !String.IsNullOrEmpty(c.NormalizedName));
+			return
+				String.Equals(CurrentNode.Id, Terminals.Select) &&
+				CurrentQueryBlock != null &&
+				CurrentQueryBlock.Columns.Any(c => !String.IsNullOrEmpty(c.NormalizedName));
 		}
 
 		private CommandSettingsModel ConfigureSettings()

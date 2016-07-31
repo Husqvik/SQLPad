@@ -26,10 +26,7 @@ namespace SqlPad.Oracle.Commands
 		{
 		}
 
-		protected override Func<StatementGrammarNode, bool> CurrentNodeFilterFunction
-		{
-			get { return n => !n.Id.In(Terminals.Comma, Terminals.From, Terminals.Bulk, Terminals.Into); }
-		}
+		protected override Func<StatementGrammarNode, bool> CurrentNodeFilterFunction { get; } = n => !n.Id.In(Terminals.Comma, Terminals.From, Terminals.Bulk, Terminals.Into);
 
 		protected override CommandCanExecuteResult CanExecute()
 		{

@@ -18,10 +18,7 @@ namespace SqlPad.Oracle.Commands
 		{
 		}
 
-		protected override Func<StatementGrammarNode, bool> CurrentNodeFilterFunction
-		{
-			get { return n => n.Id == Terminals.Select; }
-		}
+		protected override Func<StatementGrammarNode, bool> CurrentNodeFilterFunction { get; } = n => String.Equals(n.Id, Terminals.Select);
 
 		protected override CommandCanExecuteResult CanExecute()
 		{

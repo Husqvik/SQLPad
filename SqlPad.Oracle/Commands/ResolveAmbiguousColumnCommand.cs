@@ -28,13 +28,15 @@ namespace SqlPad.Oracle.Commands
 			var identifiers = OracleObjectIdentifier.GetUniqueReferences(columnReference.ColumnNodeObjectReferences.Select(r => r.FullyQualifiedObjectName).ToArray());
 			var actions = columnReference.ColumnNodeObjectReferences
 				.Where(r => identifiers.Contains(r.FullyQualifiedObjectName))
-				.Select(r => new CommandExecutionHandler
-				             {
-					             Name = r.FullyQualifiedObjectName + "." + columnReference.Name,
-					             ExecutionHandler = c => new ResolveAmbiguousColumnCommand(c, r.FullyQualifiedObjectName + "." + columnReference.Name)
-						             .Execute(),
-					             CanExecuteHandler = c => true
-				             });
+				.Select(
+					r =>
+						new CommandExecutionHandler
+						{
+							Name = r.FullyQualifiedObjectName + "." + columnReference.Name,
+							ExecutionHandler = c => new ResolveAmbiguousColumnCommand(c, r.FullyQualifiedObjectName + "." + columnReference.Name)
+								.Execute(),
+							CanExecuteHandler = c => true
+						});
 
 			commands.AddRange(actions);
 
@@ -56,12 +58,13 @@ namespace SqlPad.Oracle.Commands
 		{
 			var prefixedColumnReference = CurrentNode.GetPathFilterAncestor(n => n.Id != NonTerminals.Expression, NonTerminals.PrefixedColumnReference);
 
-			var textSegment = new TextSegment
-			                  {
-				                  IndextStart = prefixedColumnReference.SourcePosition.IndexStart,
-								  Length = prefixedColumnReference.SourcePosition.Length,
-								  Text = _resolvedName
-			                  };
+			var textSegment =
+				new TextSegment
+				{
+					IndextStart = prefixedColumnReference.SourcePosition.IndexStart,
+					Length = prefixedColumnReference.SourcePosition.Length,
+					Text = _resolvedName
+				};
 			
 			ExecutionContext.SegmentsToReplace.Add(textSegment);
 		}

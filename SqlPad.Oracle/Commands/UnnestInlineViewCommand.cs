@@ -25,7 +25,7 @@ namespace SqlPad.Oracle.Commands
 
 		protected override CommandCanExecuteResult CanExecute()
 		{
-			var canExecute = CurrentNode != null && CurrentNode.Id == Terminals.Select && _parentQueryBlock != null &&
+			var canExecute = CurrentNode != null && String.Equals(CurrentNode.Id, Terminals.Select) && _parentQueryBlock != null &&
 				!CurrentQueryBlock.HasDistinctResultSet && CurrentQueryBlock.GroupByClause == null && !ContainConflictingAnalyticFunctions();
 
 			// TODO: Add other rules preventing unnesting
@@ -111,9 +111,10 @@ namespace SqlPad.Oracle.Commands
 			ExecutionContext.SegmentsToReplace.Add(segmentToRemove);
 
 			var objectPrefixAsteriskColumns = _parentQueryBlock.AsteriskColumns
-				.Where(c => c.ColumnReferences.Count == 1 && c.ColumnReferences[0].ObjectNode != null &&
-				            c.ColumnReferences[0].ObjectNodeObjectReferences.Count == 1 && c.ColumnReferences[0].ObjectNodeObjectReferences.First().QueryBlocks.Count == 1 &&
-				            c.ColumnReferences[0].ObjectNodeObjectReferences.First().QueryBlocks.First() == CurrentQueryBlock);
+				.Where(c =>
+					c.ColumnReferences.Count == 1 && c.ColumnReferences[0].ObjectNode != null &&
+					c.ColumnReferences[0].ObjectNodeObjectReferences.Count == 1 && c.ColumnReferences[0].ObjectNodeObjectReferences.First().QueryBlocks.Count == 1 &&
+					c.ColumnReferences[0].ObjectNodeObjectReferences.First().QueryBlocks.First() == CurrentQueryBlock);
 
 			foreach (var objectPrefixAsteriskColumn in objectPrefixAsteriskColumns)
 			{

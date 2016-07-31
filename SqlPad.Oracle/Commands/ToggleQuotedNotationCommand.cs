@@ -24,7 +24,7 @@ namespace SqlPad.Oracle.Commands
 				return false;
 			}
 
-			_sourceNode = CurrentQueryBlock != null && CurrentNode.Id == Terminals.Select
+			_sourceNode = CurrentQueryBlock != null && String.Equals(CurrentNode.Id, Terminals.Select)
 				? CurrentQueryBlock.RootNode
 				: CurrentNode.Statement.RootNode;
 

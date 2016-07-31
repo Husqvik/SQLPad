@@ -23,7 +23,7 @@ namespace SqlPad.Oracle.Commands
 
 		protected override CommandCanExecuteResult CanExecute()
 		{
-			if (CurrentNode == null || CurrentQueryBlock == null || CurrentQueryBlock.FromClause == null || !CurrentQueryBlock.FromClause.IsGrammarValid)
+			if (CurrentNode == null || CurrentQueryBlock?.FromClause == null || !CurrentQueryBlock.FromClause.IsGrammarValid)
 			{
 				return false;
 			}
@@ -110,11 +110,12 @@ namespace SqlPad.Oracle.Commands
 			var groupByClause = CurrentQueryBlock.RootNode[NonTerminals.GroupByClause];
 			if (groupByClause == null)
 			{
-				var targetNode = CurrentQueryBlock.RootNode[NonTerminals.HierarchicalQueryClause]
-				                 ?? CurrentQueryBlock.RootNode[NonTerminals.WhereClause]
-				                 ?? CurrentQueryBlock.FromClause;
+				var targetNode =
+					CurrentQueryBlock.RootNode[NonTerminals.HierarchicalQueryClause]
+					?? CurrentQueryBlock.RootNode[NonTerminals.WhereClause]
+					?? CurrentQueryBlock.FromClause;
 
-				if (targetNode != null && targetNode.LastTerminalNode != null)
+				if (targetNode?.LastTerminalNode != null)
 				{
 					_addedTextSegment =
 						new TextSegment

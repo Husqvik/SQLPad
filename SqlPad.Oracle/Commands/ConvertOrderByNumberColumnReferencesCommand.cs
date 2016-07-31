@@ -15,10 +15,7 @@ namespace SqlPad.Oracle.Commands
 		{
 		}
 
-		protected override Func<StatementGrammarNode, bool> CurrentNodeFilterFunction
-		{
-			get { return n => n.Id != Terminals.Comma; }
-		}
+		protected override Func<StatementGrammarNode, bool> CurrentNodeFilterFunction { get; } = n => !String.Equals(n.Id, Terminals.Comma);
 
 		protected override CommandCanExecuteResult CanExecute()
 		{
@@ -55,7 +52,7 @@ namespace SqlPad.Oracle.Commands
 				var columnIndex = Convert.ToInt32(node.FirstTerminalNode.Token.Value) - 1;
 				var column = columns[columnIndex];
 				var columnReference = column.ColumnReferences.FirstOrDefault();
-				var prefix = columnReference == null || columnReference.ValidObjectReference == null || column.HasExplicitAlias
+				var prefix = columnReference?.ValidObjectReference == null || column.HasExplicitAlias
 					? null
 					: $"{columnReference.ValidObjectReference.FullyQualifiedObjectName}.";
 				
