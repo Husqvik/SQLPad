@@ -942,12 +942,17 @@ namespace SqlPad.Oracle
 
 		private static void ValidateSelectIntoClause(OracleQueryBlock queryBlock, OracleValidationModel validationModel)
 		{
-			var supportsIntoClause = queryBlock.Type == QueryBlockType.Normal && queryBlock.Statement.IsPlSql && queryBlock.RootNode.GetAncestor(NonTerminals.QueryBlock) == null;
+			var requiresIntoClause = queryBlock.Type == QueryBlockType.Normal && queryBlock.Statement.IsPlSql && queryBlock.RootNode.GetAncestor(NonTerminals.QueryBlock) == null;
 			var selectIntoClause = queryBlock.RootNode[NonTerminals.IntoVariableClause];
-			if (!supportsIntoClause && selectIntoClause != null)
+			if (!requiresIntoClause && selectIntoClause != null)
 			{
 				validationModel.InvalidNonTerminals[selectIntoClause] =
 					new InvalidNodeValidationData(OracleSemanticErrorType.SelectIntoClauseAllowedOnlyInMainQueryBlockWithinPlSqlScope) { Node = selectIntoClause };
+			}
+			else if (requiresIntoClause && selectIntoClause == null && queryBlock.SelectList != null)
+			{
+				validationModel.InvalidNonTerminals[queryBlock.SelectList] =
+					new InvalidNodeValidationData(OracleSemanticErrorType.IntoClauseExpected) { Node = queryBlock.SelectList };
 			}
 		}
 

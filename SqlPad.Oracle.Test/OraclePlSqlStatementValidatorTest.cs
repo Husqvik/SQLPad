@@ -2,6 +2,8 @@
 using NUnit.Framework;
 using Shouldly;
 
+using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
+
 namespace SqlPad.Oracle.Test
 {
 	[TestFixture]
@@ -179,8 +181,24 @@ END;";
 			var validationModel = OracleStatementValidatorTest.BuildValidationModel(plsqlText, statement);
 
 			validationModel.InvalidNonTerminals.Count.ShouldBe(1);
-			var node = validationModel.InvalidNonTerminals.Values.First();
-			node.SemanticErrorType.ShouldBe(OracleSemanticErrorType.ForUpdateNotAllowed);
+			var validationData = validationModel.InvalidNonTerminals.Values.First();
+			validationData.SemanticErrorType.ShouldBe(OracleSemanticErrorType.ForUpdateNotAllowed);
+			validationData.Node.Id.ShouldBe(NonTerminals.ForUpdateClause);
+		}
+
+		[Test]
+		public void TestMissingSelectIntoClause()
+		{
+			const string plsqlText = @"BEGIN SELECT dummy FROM dual; END;";
+			var statement = Parser.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = OracleStatementValidatorTest.BuildValidationModel(plsqlText, statement);
+
+			validationModel.InvalidNonTerminals.Count.ShouldBe(1);
+			var validationData = validationModel.InvalidNonTerminals.Values.First();
+			validationData.SemanticErrorType.ShouldBe(OracleSemanticErrorType.IntoClauseExpected);
+			validationData.Node.Id.ShouldBe(NonTerminals.SelectList);
 		}
 	}
 }

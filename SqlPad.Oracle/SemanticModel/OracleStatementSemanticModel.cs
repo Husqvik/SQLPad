@@ -1109,10 +1109,14 @@ namespace SqlPad.Oracle.SemanticModel
 					}
 				}
 
-				new OracleSpecialTableReference(queryBlock.ModelReference.DimensionReferenceContainer, ReferenceType.SqlModel, dimensionColumns, null);
+				new OracleSpecialTableReference(queryBlock.ModelReference.DimensionReferenceContainer, ReferenceType.SqlModel, dimensionColumns, null)
+				{
+					RootNode = modelClause[NonTerminals.MainModel]
+				};
+
 				ResolveSqlModelReferences(queryBlock, queryBlock.ModelReference.DimensionReferenceContainer, ruleDimensionIdentifiers);
 
-				queryBlock.ModelReference.MeasuresReferenceContainer.ObjectReferences.Add(queryBlock.ModelReference);
+				queryBlock.ModelReference.MeasuresReferenceContainer.ObjectReferences.Add(queryBlock.ModelReference); // makes duplicate object reference
 				ResolveSqlModelReferences(queryBlock, queryBlock.ModelReference.MeasuresReferenceContainer, ruleMeasureIdentifiers);
 
 				queryBlock.ObjectReferences.Clear();
