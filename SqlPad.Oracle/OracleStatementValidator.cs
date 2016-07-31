@@ -253,22 +253,19 @@ namespace SqlPad.Oracle
 				}
 
 				var queryBlockNode = forUpdateClause.ParentNode.GetDescendants(NonTerminals.QueryBlock).FirstOrDefault();
-				if (queryBlockNode?[NonTerminals.GroupByClause] != null)
-				{
-					validationModel.InvalidNonTerminals[forUpdateClause] =
-						new InvalidNodeValidationData(OracleSemanticErrorType.ForUpdateNotAllowed) { Node = forUpdateClause };
-				}
-				else
-				{
-					foreach (var queryBlock in semanticModel.QueryBlocks)
-					{
-						if (queryBlock.RootNode != queryBlockNode && queryBlock.GroupByClause != null)
-						{
-							validationModel.InvalidNonTerminals[forUpdateClause] =
-								new InvalidNodeValidationData(OracleSemanticErrorType.CannotSelectForUpdateFromViewWithDistinctOrGroupBy) { Node = forUpdateClause };
 
-							break;
-						}
+				foreach (var queryBlock in semanticModel.QueryBlocks.Reverse())
+				{
+					if (queryBlock.GroupByClause != null || queryBlock.HasDistinctResultSet)
+					{
+						var errorMessage = queryBlock.RootNode == queryBlockNode
+							? OracleSemanticErrorType.ForUpdateNotAllowed
+							: OracleSemanticErrorType.CannotSelectForUpdateFromViewWithDistinctOrGroupBy;
+
+						validationModel.InvalidNonTerminals[forUpdateClause] =
+							new InvalidNodeValidationData(errorMessage) { Node = forUpdateClause };
+
+						break;
 					}
 				}
 			}
