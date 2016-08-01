@@ -632,15 +632,21 @@ namespace SqlPad.Oracle
 
 		private static IEnumerable<ICodeCompletionItem> GenerateSimpleColumnItems(OracleObjectWithColumnsReference targetDataObject, OracleCodeCompletionType completionType)
 		{
+			var formatOption = FormatOptions.Identifier;
 			return targetDataObject.Columns
 				.Where(c => !String.Equals(completionType.TerminalValueUnderCursor.ToQuotedIdentifier(), c.Name) && CodeCompletionSearchHelper.IsMatch(c.Name, completionType.TerminalValuePartUntilCaret))
-				.Select(c =>
-					new OracleCodeCompletionItem
+				.Select(
+					c =>
 					{
-						Label = c.Name.ToSimpleIdentifier(),
-						Text = c.Name.ToSimpleIdentifier(),
-						Category = OracleCodeCompletionCategory.Column,
-						StatementNode = completionType.ReferenceIdentifier.IdentifierUnderCursor
+						var text = OracleStatementFormatter.FormatTerminalValue(c.Name.ToSimpleIdentifier(), formatOption);
+						return
+							new OracleCodeCompletionItem
+							{
+								Label = text,
+								Text = text,
+								Category = OracleCodeCompletionCategory.Column,
+								StatementNode = completionType.ReferenceIdentifier.IdentifierUnderCursor
+							};
 					});
 		}
 
