@@ -4950,10 +4950,10 @@
       </Sequences>
     </Rule>
 
-    <Rule StartingNonTerminal="MergeTarget">
+    <Rule StartingNonTerminal="MergeTarget" Comment="Same as DmlTableExpressionClause">
       <Sequences>
         <Sequence>
-          <NonTerminal Id="SchemaObject" />
+          <NonTerminal Id="QueryTableExpression" />
           <Terminal Id="ObjectAlias" IsOptional="true" />
         </Sequence>
       </Sequences>

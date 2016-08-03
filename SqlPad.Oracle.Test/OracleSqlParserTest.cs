@@ -2710,6 +2710,16 @@ MATCH_RECOGNIZE(
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
+		[Test]
+		public void TestMergeIntoInlineView()
+		{
+			const string statement1 = @"MERGE INTO (SELECT dummy FROM dual) target USING dual source ON (1 = 0) WHEN MATCHED THEN UPDATE SET dummy = NULL";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+		}
+
 		[Test, Ignore("not solved yet")]
 		public void TestParenthesisEnclosedObjectMember()
 		{

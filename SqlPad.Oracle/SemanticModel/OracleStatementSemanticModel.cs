@@ -1600,34 +1600,15 @@ namespace SqlPad.Oracle.SemanticModel
 		private void ResolveMainObjectReferenceMerge()
 		{
 			var rootNode = DmlRootNode;
-			var mergeTarget = rootNode?[NonTerminals.MergeTarget];
-			var objectIdentifier = mergeTarget?[NonTerminals.SchemaObject, Terminals.ObjectIdentifier];
-			if (objectIdentifier == null)
+			if (rootNode == null)
 			{
 				return;
 			}
 
-			var objectReferenceAlias = mergeTarget[Terminals.ObjectAlias];
-			MainObjectReferenceContainer.MainObjectReference = CreateDataObjectReference(MainObjectReferenceContainer, mergeTarget, objectIdentifier, objectReferenceAlias);
-
-			var mergeSource = rootNode[NonTerminals.UsingMergeSource, NonTerminals.MergeSource];
-			if (mergeSource == null)
+			var mergeTarget = rootNode[NonTerminals.MergeTarget];
+			if (mergeTarget != null)
 			{
-				return;
-			}
-
-			objectIdentifier = mergeSource[NonTerminals.QueryTableExpression, NonTerminals.SchemaObject, Terminals.ObjectIdentifier];
-			OracleDataObjectReference mergeSourceReference = null;
-			if (objectIdentifier != null)
-			{
-				objectReferenceAlias = objectIdentifier.ParentNode.ParentNode.ParentNode[Terminals.ObjectAlias];
-				mergeSourceReference = CreateDataObjectReference(MainObjectReferenceContainer, mergeSource, objectIdentifier, objectReferenceAlias);
-			}
-			else if (MainQueryBlock != null)
-			{
-				mergeSourceReference = MainQueryBlock.SelfObjectReference;
-				mergeSourceReference.RootNode = mergeSource;
-				mergeSourceReference.AliasNode = mergeSource[Terminals.ObjectAlias];
+				MainObjectReferenceContainer.MainObjectReference = CreateMergeDataObjectReference(mergeTarget);
 			}
 
 			var mergeCondition = rootNode[NonTerminals.Condition];
@@ -1646,6 +1627,13 @@ namespace SqlPad.Oracle.SemanticModel
 				ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(null, MainObjectReferenceContainer, updateInsertClauseIdentifiers, StatementPlacement.None, null);
 			}
 
+			var mergeSource = rootNode[NonTerminals.UsingMergeSource, NonTerminals.MergeSource];
+			if (mergeSource == null)
+			{
+				return;
+			}
+
+			var mergeSourceReference = CreateMergeDataObjectReference(mergeSource);
 			if (mergeSourceReference == null)
 			{
 				return;
@@ -1657,6 +1645,32 @@ namespace SqlPad.Oracle.SemanticModel
 				.Where(c => c.ColumnNode.GetPathFilterAncestor(null, n => n.Id.In(NonTerminals.PrefixedIdentifier, NonTerminals.ParenthesisEnclosedPrefixedIdentifierList)) == null);
 
 			ResolveColumnObjectReferences(mergeSourceAccessibleReferences, new[] { mergeSourceReference }, OracleDataObjectReference.EmptyArray);
+		}
+
+		private OracleDataObjectReference CreateMergeDataObjectReference(StatementGrammarNode mergeDataObjectReferenceRootNode)
+		{
+			var mergeSourceNestedQuery = mergeDataObjectReferenceRootNode[NonTerminals.QueryTableExpression, NonTerminals.NestedQuery];
+			var sourceObjectIdentifier = mergeDataObjectReferenceRootNode[NonTerminals.QueryTableExpression, NonTerminals.SchemaObject, Terminals.ObjectIdentifier];
+			var sourceObjectReferenceAlias = mergeDataObjectReferenceRootNode[Terminals.ObjectAlias];
+			OracleDataObjectReference mergeSourceReference = null;
+			if (sourceObjectIdentifier != null)
+			{
+				mergeSourceReference = CreateDataObjectReference(MainObjectReferenceContainer, mergeDataObjectReferenceRootNode, sourceObjectIdentifier, sourceObjectReferenceAlias);
+			}
+			else
+			{
+				var queryBlockRoot = mergeSourceNestedQuery?.GetDescendants(NonTerminals.QueryBlock).FirstOrDefault();
+				if (queryBlockRoot != null)
+				{
+					var queryBlock = QueryBlockNodes[queryBlockRoot];
+
+					mergeSourceReference = queryBlock.SelfObjectReference;
+					mergeSourceReference.RootNode = mergeDataObjectReferenceRootNode;
+					mergeSourceReference.AliasNode = sourceObjectReferenceAlias;
+				}
+			}
+
+			return mergeSourceReference;
 		}
 
 		private void ResolveMainObjectReferenceUpdateOrDelete()
