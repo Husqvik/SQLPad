@@ -1369,7 +1369,14 @@ namespace SqlPad.Oracle.SemanticModel
 					}
 				}
 
-				if (queryBlock == MainQueryBlock || queryBlock.HasDistinctResultSet || queryBlock.Type == QueryBlockType.CursorParameter)
+				if (queryBlock.HasDistinctResultSet || queryBlock.Type == QueryBlockType.CursorParameter)
+				{
+					continue;
+				}
+
+				var hasParentQueryBlock = nestedQuery.GetAncestor(NonTerminals.QueryBlock) != null;
+				var isMainQueryBlock = !hasParentQueryBlock && nestedQuery.GetAncestor(NonTerminals.SelectStatement) != null;
+				if (isMainQueryBlock)
 				{
 					continue;
 				}
@@ -1666,7 +1673,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 					mergeSourceReference = queryBlock.SelfObjectReference;
 					mergeSourceReference.RootNode = mergeDataObjectReferenceRootNode;
-					mergeSourceReference.AliasNode = sourceObjectReferenceAlias;
+					mergeSourceReference.AliasNode = queryBlock.AliasNode = sourceObjectReferenceAlias;
 				}
 			}
 

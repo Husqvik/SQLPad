@@ -2393,6 +2393,25 @@ LOG ERRORS INTO ERRORLOG ('Statement identifier') REJECT LIMIT UNLIMITED";
 		}
 
 		[Test]
+		public void TestMergeSemanticsWithInlineViews()
+		{
+			const string sqlText = @"MERGE INTO (SELECT 1 t1, 2 t2 FROM dual) target USING (SELECT 1 s1, 2 s2 FROM dual) source ON (1 = 0) WHEN MATCHED THEN UPDATE SET t2 = NULL";
+
+			var statement = (OracleStatement)Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = OracleStatementSemanticModelFactory.Build(sqlText, statement, TestFixture.DatabaseModel);
+			semanticModel.QueryBlocks.Count.ShouldBe(2);
+			var redundantSymbolGroups = semanticModel.RedundantSymbolGroups.OrderBy(g => g[0].SourcePosition.IndexStart).ToArray();
+			redundantSymbolGroups.Length.ShouldBe(2);
+			redundantSymbolGroups[0].Count.ShouldBe(3);
+			redundantSymbolGroups[0][1].Token.Value.ShouldBe("t1");
+			redundantSymbolGroups[1].Count.ShouldBe(3);
+			redundantSymbolGroups[1][1].Token.Value.ShouldBe("s1");
+		}
+
+		[Test]
 		public void TestErrorLogTableReferencesInMultiTableInsert()
 		{
 			const string sqlText =
