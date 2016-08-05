@@ -1374,9 +1374,7 @@ namespace SqlPad.Oracle.SemanticModel
 					continue;
 				}
 
-				var hasParentQueryBlock = nestedQuery.GetAncestor(NonTerminals.QueryBlock) != null;
-				var isMainQueryBlock = !hasParentQueryBlock && nestedQuery.GetAncestor(NonTerminals.SelectStatement) != null;
-				if (isMainQueryBlock)
+				if (queryBlock.IsMainQueryBlock)
 				{
 					continue;
 				}

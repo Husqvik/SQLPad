@@ -180,6 +180,15 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public bool ContainsAnsiJoin { get; set; }
 
+		public bool IsMainQueryBlock
+		{
+			get
+			{
+				var hasParentQueryBlock = RootNode.GetAncestor(NonTerminals.QueryBlock) != null;
+				return !hasParentQueryBlock && RootNode.GetAncestor(NonTerminals.SelectStatement) != null;
+			}
+		}
+
 		public IEnumerable<OracleQueryBlock> AllPrecedingConcatenatedQueryBlocks
 		{
 			get { return GetAllConcatenatedQueryBlocks(qb => qb.PrecedingConcatenatedQueryBlock); }

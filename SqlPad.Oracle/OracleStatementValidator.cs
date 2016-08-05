@@ -942,7 +942,7 @@ namespace SqlPad.Oracle
 
 		private static void ValidateSelectIntoClause(OracleQueryBlock queryBlock, OracleValidationModel validationModel)
 		{
-			var requiresIntoClause = queryBlock.Type == QueryBlockType.Normal && queryBlock.Statement.IsPlSql && queryBlock.RootNode.GetAncestor(NonTerminals.QueryBlock) == null;
+			var requiresIntoClause = queryBlock.Statement.IsPlSql && queryBlock.IsMainQueryBlock;
 			var selectIntoClause = queryBlock.RootNode[NonTerminals.IntoVariableClause];
 			if (!requiresIntoClause && selectIntoClause != null)
 			{

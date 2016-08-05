@@ -200,5 +200,17 @@ END;";
 			validationData.SemanticErrorType.ShouldBe(OracleSemanticErrorType.IntoClauseExpected);
 			validationData.Node.Id.ShouldBe(NonTerminals.SelectList);
 		}
+
+		[Test]
+		public void TestMissingSelectIntoClauseWithinInlineView()
+		{
+			const string plsqlText = @"BEGIN UPDATE (SELECT 1 c1, 2 c2 FROM dual) SET c2 = NULL; END;";
+			var statement = Parser.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = OracleStatementValidatorTest.BuildValidationModel(plsqlText, statement);
+
+			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
+		}
 	}
 }
