@@ -91,7 +91,7 @@
 			</ProgressBar>
 		</StackPanel>
 
-		<Popup x:Name="ResultViewTabHeaderPopup" Placement="Top" MouseLeave="DataGridTabHeaderPopupMouseLeaveHandler">
+		<Popup x:Name="ResultViewTabHeaderPopup" Placement="Top" MouseLeave="PopupMouseLeaveHandler">
 			<Popup.Style>
 				<Style>
 					<Style.Triggers>
@@ -102,13 +102,13 @@
 				</Style>
 			</Popup.Style>
 			<ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-				<TextBox x:Name="DataGridTabHeaderPopupTextBox"
-						 Text="{Binding StatementText, Mode=OneTime}"
-						 IsReadOnly="True"
-						 IsReadOnlyCaretVisible="True"
+				<TextBox IsReadOnly="True" IsReadOnlyCaretVisible="True"
 						 Background="{StaticResource PopupBackgroundBrush}"
 						 BorderBrush="{StaticResource PopupBorderBrush}"
-						 BorderThickness="1" />
+						 BorderThickness="1"
+						 FontFamily="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=sqlPad:DocumentPage}, Path=EditorAdapter.Control.FontFamily}"
+						 FontSize="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=sqlPad:DocumentPage}, Path=EditorAdapter.Control.FontSize}"
+						 Text="{Binding StatementText, Mode=OneTime}" />
 			</ScrollViewer>
 		</Popup>
 
@@ -213,6 +213,13 @@
 				<CommandBinding Command="{StaticResource RefreshCommand}" Executed="RefreshTimerTickHandler"
 				                CanExecute="CanRefreshHandler" />
 			</DataGrid.CommandBindings>
+
+			<DataGrid.CellStyle>
+				<Style TargetType="DataGridCell">
+					<EventSetter Event="MouseEnter" Handler="CellMouseEnterHandler"/>
+				</Style>
+			</DataGrid.CellStyle>
+
 			<DataGrid.ContextMenu>
 				<ContextMenu>
 					<MenuItem Header="_Fetch all" Command="{StaticResource FetchAllRowsCommand}" />

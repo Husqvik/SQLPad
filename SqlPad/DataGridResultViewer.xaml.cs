@@ -314,8 +314,6 @@ namespace SqlPad
 
 		private void DataGridTabHeaderMouseEnterHandler(object sender, MouseEventArgs args)
 		{
-			DataGridTabHeaderPopupTextBox.FontFamily = _outputViewer.DocumentPage.Editor.FontFamily;
-			DataGridTabHeaderPopupTextBox.FontSize = _outputViewer.DocumentPage.Editor.FontSize;
 			ResultViewTabHeaderPopup.IsOpen = true;
 		}
 
@@ -667,13 +665,14 @@ namespace SqlPad
 			IsSelectedCellInfoVisible = true;
 		}
 
-		private void DataGridTabHeaderPopupMouseLeaveHandler(object sender, MouseEventArgs args)
+		private void PopupMouseLeaveHandler(object sender, MouseEventArgs args)
 		{
-			var child = (FrameworkElement)ResultViewTabHeaderPopup.Child;
+			var popup = (Popup)sender;
+			var child = (FrameworkElement)popup.Child;
 			var position = Mouse.GetPosition(child);
 			if (position.X < 0 || position.Y < 0 || position.X > child.ActualWidth || position.Y > child.ActualHeight)
 			{
-				ResultViewTabHeaderPopup.IsOpen = false;
+				popup.IsOpen = false;
 			}
 		}
 
@@ -793,6 +792,30 @@ namespace SqlPad
 			}
 		}
 
+		private void CellMouseEnterHandler(object sender, MouseEventArgs e)
+		{
+			var cell = (DataGridCell)sender;
+			var columnHeader = cell?.Column.Header as ColumnHeader;
+			if (columnHeader == null)
+			{
+				return;
+			}
+
+			var largeTextValue = ((object[])cell.DataContext)[columnHeader.ColumnIndex] as ILargeTextValue;
+			if (largeTextValue == null)
+			{
+				return;
+			}
+
+			if (largeTextValue?.Length <= 96 && !largeTextValue.Value.Contains("\n"))
+			{
+				return;
+			}
+
+			ToolTipService.SetShowDuration(cell, 60000);
+			cell.ToolTip = largeTextValue.Value;
+		}
+
 		private struct LastSearchedCell
 		{
 			public static readonly LastSearchedCell Empty = new LastSearchedCell(-1, -1);
@@ -808,14 +831,14 @@ namespace SqlPad
 		}
 	}
 
-	internal class TimeSpanToIntegerSecondConverter : ValueConverterBase
+	internal class TimeSpanToIntegerSecondConverter : IValueConverter
 	{
-		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			return System.Convert.ToInt32(((TimeSpan)value).TotalSeconds);
 		}
 
-		public override object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			return TimeSpan.FromSeconds(System.Convert.ToDouble(value));
 		}

@@ -1,7 +1,7 @@
-﻿using System.Windows.Data;
-using ICSharpCode.AvalonEdit;
+﻿using ICSharpCode.AvalonEdit;
 using System.Globalization;
 using System;
+using System.Windows.Controls;
 
 namespace SqlPad.FindReplace
 {
@@ -9,53 +9,50 @@ namespace SqlPad.FindReplace
 	{
 		public TextEditorAdapter(TextEditor editor)
 		{
-			_textEditor = editor;
+			_editor = editor;
 		}
 
-		private readonly TextEditor _textEditor;
+		public Control Control => _editor;
 
-		public string Text { get { return _textEditor.Text; } }
+		private readonly TextEditor _editor;
 
-		public int SelectionStart { get { return _textEditor.SelectionStart; } }
+		public string Text => _editor.Text;
 
-		public int SelectionLength { get { return _textEditor.SelectionLength; } }
+		public int SelectionStart => _editor.SelectionStart;
 
-		public string SelectedText { get { return _textEditor.SelectedText; } }
+		public int SelectionLength => _editor.SelectionLength;
+
+		public string SelectedText => _editor.SelectedText;
 
 		public void BeginChange() 
 		{
-			_textEditor.BeginChange();
+			_editor.BeginChange();
 		}
 
 		public void EndChange()
 		{
-			_textEditor.EndChange();
+			_editor.EndChange();
 		}
 
 		public void Select(int start, int length)
 		{
-			_textEditor.Select(start, length);
-			var location = _textEditor.Document.GetLocation(start);
-			_textEditor.ScrollTo(location.Line, location.Column);
+			_editor.Select(start, length);
+			var location = _editor.Document.GetLocation(start);
+			_editor.ScrollTo(location.Line, location.Column);
 		}
 
 		public void Replace(int start, int length, string replaceWith)
 		{
-			_textEditor.Document.Replace(start, length, replaceWith);
+			_editor.Document.Replace(start, length, replaceWith);
 		}
 
 	}
 
-	public class EditorConverter : IValueConverter
+	public class EditorConverter : ValueConverterBase
 	{
-		object IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			return new TextEditorAdapter(value as TextEditor);
-		}
-
-		object IValueConverter.ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			throw new NotImplementedException();
+			return new TextEditorAdapter((TextEditor)value);
 		}
 	}
 }
