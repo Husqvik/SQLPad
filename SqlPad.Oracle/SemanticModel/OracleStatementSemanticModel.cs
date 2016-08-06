@@ -96,7 +96,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public ICollection<OracleInsertTarget> InsertTargets => _insertTargets;
 
-		public ICollection<RedundantTerminalGroup> RedundantSymbolGroups => _redundantTerminalGroups.AsReadOnly();
+		public virtual ICollection<RedundantTerminalGroup> RedundantSymbolGroups => _redundantTerminalGroups.AsReadOnly();
 
 		public OracleMainObjectReferenceContainer MainObjectReferenceContainer { get; }
 

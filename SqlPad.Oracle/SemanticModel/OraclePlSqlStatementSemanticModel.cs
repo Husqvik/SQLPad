@@ -14,6 +14,8 @@ namespace SqlPad.Oracle.SemanticModel
 	{
 		private readonly List<OraclePlSqlProgram> _programs = new List<OraclePlSqlProgram>();
 
+		private readonly Lazy<ICollection<RedundantTerminalGroup>> _redundantSymbolGroup;
+
 		public IReadOnlyList<OraclePlSqlProgram> Programs => _programs.AsReadOnly();
 
 		public IEnumerable<OraclePlSqlProgram> AllPrograms => Programs.Concat(Programs.SelectMany(p => p.AllSubPrograms));
@@ -32,6 +34,8 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 		}
 
+		public override ICollection<RedundantTerminalGroup> RedundantSymbolGroups => _redundantSymbolGroup.Value;
+
 		internal OraclePlSqlStatementSemanticModel(string statementText, OracleStatement statement, OracleDatabaseModelBase databaseModel)
 			: base(statementText, statement, databaseModel)
 		{
@@ -39,7 +43,12 @@ namespace SqlPad.Oracle.SemanticModel
 			{
 				throw new ArgumentException("Statement is not PL/SQL statement. ", nameof(statement));
 			}
+
+			_redundantSymbolGroup =
+				new Lazy<ICollection<RedundantTerminalGroup>>(
+					() => AllPrograms.SelectMany(p => p.SqlModels).SelectMany(m => m.RedundantSymbolGroups).ToArray());
 		}
+
 		internal new OraclePlSqlStatementSemanticModel Build(CancellationToken cancellationToken)
 		{
 			return (OraclePlSqlStatementSemanticModel)base.Build(cancellationToken);

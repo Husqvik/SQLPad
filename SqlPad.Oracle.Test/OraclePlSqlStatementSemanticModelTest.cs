@@ -12,6 +12,8 @@ namespace SqlPad.Oracle.Test
 	[TestFixture]
 	public class OraclePlSqlStatementSemanticModelTest
 	{
+		private static readonly OracleSqlParser Parser = OracleSqlParser.Instance;
+
 		[Test]
 		public void TestInitializationNullStatement()
 		{
@@ -22,7 +24,7 @@ namespace SqlPad.Oracle.Test
 		public void TestInitializationWithNonPlSqlStatement()
 		{
 			const string sqlText = @"SELECT * FROM DUAL";
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(sqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(sqlText).Single();
 
 			Should.Throw<ArgumentException>(() => new OraclePlSqlStatementSemanticModel(sqlText, statement, TestFixture.DatabaseModel));
 		}
@@ -67,7 +69,7 @@ END;";
 		public void TestBasicInitialization()
 		{
 			var plsqlText = $"CREATE OR REPLACE FUNCTION TEST_FUNCTION(p1 IN NUMBER DEFAULT 0, p2 IN OUT VARCHAR2, p3 OUT NOCOPY CLOB) RETURN RAW IS {TestPlSqlProgramBase}";
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var expectedObjectIdentifier = OracleObjectIdentifier.Create("HUSQVIK", "TEST_FUNCTION");
@@ -186,7 +188,7 @@ END;";
 		public void TestInitializationWithAnonymousBlock()
 		{
 			var plsqlText = $"DECLARE {TestPlSqlProgramBase}";
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
@@ -212,7 +214,7 @@ END;";
 	END;
 END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
@@ -240,7 +242,7 @@ BEGIN
 	SELECT NULL, NULL INTO c1, c2 FROM DUAL;
 END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
@@ -263,7 +265,7 @@ BEGIN
     test_variable1 := nvl(test_variable1, 'x') || test_parameter1 || test_parameter2;
 END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
@@ -293,7 +295,7 @@ BEGIN
     test_variable1 := test_variable1 || test_parameter1;
 END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
@@ -320,7 +322,7 @@ BEGIN
 	END LOOP;
 END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
@@ -337,7 +339,7 @@ END;";
 	END LOOP;
 END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
@@ -369,7 +371,7 @@ BEGIN
 	END;
 END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
@@ -391,7 +393,7 @@ BEGIN
     SELECT dummy INTO dummy FROM dual WHERE dummy = test_procedure.dummy OR dummy = undefined_scope.dummy;
 END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
@@ -416,7 +418,7 @@ BEGIN
     SELECT dummy INTO dummy FROM dual WHERE dummy = test_plsql_block.dummy OR dummy = undefined_scope.dummy;
 END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
@@ -444,7 +446,7 @@ BEGIN
     	WHEN OTHERS THEN NULL;
 END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
@@ -478,7 +480,7 @@ BEGIN
     NULL;
 END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
@@ -501,7 +503,7 @@ BEGIN
     NULL;
 END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
@@ -526,7 +528,7 @@ BEGIN
 	END;
 END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
@@ -548,7 +550,7 @@ END;";
 	HUSQVIK.SQLPAD_PROCEDURE;
 END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
@@ -570,7 +572,7 @@ EXCEPTION
     	dbms_output.put_line('It''s broken. ');
 END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
@@ -593,7 +595,7 @@ BEGIN
 	END;
 END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
@@ -625,7 +627,7 @@ BEGIN
 	i := 0;
 END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
@@ -652,7 +654,7 @@ BEGIN
 	END LOOP;
 END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
@@ -690,7 +692,7 @@ BEGIN
 	END;
 END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
@@ -720,7 +722,7 @@ END;";
 	END LOPP;
 END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).Single();
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel);
 			Should.NotThrow(() => semanticModel.Build(CancellationToken.None));
 		}
@@ -735,7 +737,7 @@ END;";
 	END LOOP;
 END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).Single();
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
 
 			semanticModel.Programs.Count.ShouldBe(1);
@@ -754,7 +756,7 @@ END;";
     UPDATE DUAL SET DUMMY = NULL;
 END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).Single();
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
 
 			semanticModel.Programs.Count.ShouldBe(1);
@@ -775,7 +777,7 @@ BEGIN
 	NULL;
 END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).Single();
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
 
 			semanticModel.Programs.Count.ShouldBe(1);
@@ -795,7 +797,7 @@ BEGIN
 	NULL;
 END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).First();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).First();
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel);
 
 			Should.NotThrow(() => semanticModel.Build(CancellationToken.None));
@@ -809,7 +811,7 @@ END;";
 	PROCEDURE test_function1(p) IS BEGIN NULL; END;
 END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).First();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).First();
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel);
 
 			Should.NotThrow(() => semanticModel.Build(CancellationToken.None));
@@ -840,7 +842,7 @@ BEGIN
 	test_procedure2(TRUE);
 END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).Single();
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
 
 			semanticModel.Programs.Count.ShouldBe(1);
@@ -871,7 +873,7 @@ END;";
 	PROCEDURE test_procedure2 IS result NUMBER; BEGIN test_procedure1; result := test_function1(0); END;
 END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).Single();
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
 
 			semanticModel.Programs.Count.ShouldBe(1);
@@ -896,7 +898,7 @@ END;";
 	FUNCTION test_function1(p NUMBER) RETURN NUMBER IS BEGIN NULL; END;
 END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).Single();
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
 
 			semanticModel.Programs.Count.ShouldBe(1);
@@ -928,7 +930,7 @@ BEGIN
 	NULL;
 END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).Single();
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
 
 			semanticModel.Programs.Count.ShouldBe(1);
@@ -950,7 +952,7 @@ BEGIN
 	variable := 'A';
 END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
 
@@ -982,7 +984,7 @@ AS
     END;
 END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).First();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).First();
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel);
 
 			Should.NotThrow(() => semanticModel.Build(CancellationToken.None));
@@ -993,7 +995,7 @@ END;";
 		{
 			const string plsqlText = @"CREATE OR REPLACE FUNCTION";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).First();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).First();
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel);
 
 			Should.NotThrow(() => semanticModel.Build(CancellationToken.None));
@@ -1006,13 +1008,28 @@ END;";
 @"DECLARE var VARCHAR2(9) := cast(10 AS NUMBER);
 BEGIN NULL; END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).First();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).First();
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
 
 			var program = semanticModel.Programs.Single();
 			var castReference = semanticModel.AllReferenceContainers.SelectMany(c => c.ProgramReferences).Single();
 			castReference.Name.ShouldBe("cast");
 			castReference.Container.ShouldBe(program);
+		}
+
+		[Test]
+		public void TestUpdateSetColumnReferenceToInlineView()
+		{
+			const string plsqlText =
+@"BEGIN
+	UPDATE (SELECT 1 c1, 2 c2 FROM dual) SET c2 = NULL;
+END;";
+
+			var statement = (OracleStatement)Parser.Parse(plsqlText).Single().Validate();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
+			semanticModel.Programs[0].PlSqlVariableReferences.Count.ShouldBe(0);
 		}
 
 		[Test]
@@ -1047,7 +1064,7 @@ BEGIN
 	SELECT dummy INTO test_global_variable FROM dual WHERE dummy = test_global_variable;
 END;";
 
-			var statement = (OracleStatement)OracleSqlParser.Instance.Parse(plsqlText).Single();
+			var statement = (OracleStatement)Parser.Parse(plsqlText).Single();
 			var semanticModel = new OraclePlSqlStatementSemanticModel(plsqlText, statement, TestFixture.DatabaseModel).Build(CancellationToken.None);
 
 			semanticModel.Programs.Count.ShouldBe(1);

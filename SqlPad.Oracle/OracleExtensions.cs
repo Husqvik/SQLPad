@@ -287,7 +287,7 @@ namespace SqlPad.Oracle
 
 		public static bool BreakAtPlSqlSubProgramOrSqlCommand(StatementGrammarNode node)
 		{
-			return !String.Equals(node.Id, NonTerminals.PlSqlBlock) && !String.Equals(node.Id, NonTerminals.PlSqlSqlStatement) && !String.Equals(node.Id, NonTerminals.SelectStatement);
+			return !String.Equals(node.Id, NonTerminals.PlSqlBlock) && !String.Equals(node.Id, NonTerminals.PlSqlSqlStatementType) && !String.Equals(node.Id, NonTerminals.SelectStatement);
 		}
 	}
 }
