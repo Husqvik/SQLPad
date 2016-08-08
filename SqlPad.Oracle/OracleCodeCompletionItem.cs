@@ -97,5 +97,6 @@ namespace SqlPad.Oracle
 		public const string SqlModel = "Model clause";
 		public const string PivotTable = "Pivot table";
 		public const string BindVariable = "Bind variable";
+		public const string PlSqlVariable = "PL/SQL variable";
 	}
 }

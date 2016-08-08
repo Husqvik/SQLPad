@@ -46,7 +46,7 @@
 						</RadioButton>
 					</StackPanel>
 				</GroupBox>
-				<CheckBox DockPanel.Dock="Top" Content="Show adaptive/inactive operations" IsChecked="{Binding ShowAllItems}" Visibility="{Binding HasInactiveItems, Converter={StaticResource ObjectToVisibilityConverter}}" />
+				<CheckBox DockPanel.Dock="Top" Content="_Show adaptive/inactive operations" IsChecked="{Binding ShowAllItems}" Visibility="{Binding HasInactiveItems, Converter={StaticResource ObjectToVisibilityConverter}}" />
 				<executionPlan:ExecutionPlanTreeView x:Name="ExecutionPlanTreeView" IsDeferredScrollingEnabled="False" />
 			</DockPanel>
 		</TabItem>

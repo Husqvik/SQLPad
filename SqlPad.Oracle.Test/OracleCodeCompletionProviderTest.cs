@@ -2986,6 +2986,24 @@ END;";
 				items[0].StatementNode.ShouldNotBe(null);
 				items[0].StatementNode.Token.Value.ShouldBe("selectio");
 			}
+
+			[Test]
+			public void TestPlSqlVariableIdentifierWithinSqlCommand()
+			{
+				const string statement =
+@"DECLARE
+  variable1 VARCHAR2(30) := 'X';
+  variable2 VARCHAR2(30);
+BEGIN
+  SELECT dummy INTO variable2 FROM dual WHERE dummy = variable;
+END;";
+
+				var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 131, true, OracleCodeCompletionCategory.PlSqlVariable).ToList();
+				items.Count.ShouldBe(2);
+				items[0].Label.ShouldBe("VARIABLE1");
+				items[0].StatementNode.ShouldNotBe(null);
+				items[0].StatementNode.Token.Value.ShouldBe("variable");
+			}
 		}
 	}
 }

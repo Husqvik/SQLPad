@@ -393,6 +393,7 @@ namespace SqlPad.Oracle
 			if (completionType.Column || completionType.PlSqlCompletion != PlSqlCompletion.None)
 			{
 				completionItems = completionItems.Concat(GenerateSelectListItems(referenceContainers, cursorPosition, oracleDatabaseModel, completionType, forcedInvokation));
+				completionItems = completionItems.Concat(GeneratePlSqlVariableItems(completionType));
 			}
 
 			if (completionType.Column || completionType.SpecialFunctionParameter)
@@ -446,11 +447,12 @@ namespace SqlPad.Oracle
 
 			if (completionType.DatabaseLink)
 			{
+				var quotedTerminalValueUnderCursor = completionType.TerminalValueUnderCursor.ToQuotedIdentifier();
 				var databaseLinkItems = oracleDatabaseModel.DatabaseLinks.Values
 					.Where(
 						l =>
 							l.FullyQualifiedName.NormalizedOwner.In(OracleObjectIdentifier.SchemaPublic, oracleDatabaseModel.CurrentSchema.ToQuotedIdentifier()) &&
-							(String.IsNullOrEmpty(completionType.TerminalValueUnderCursor) || !String.Equals(completionType.TerminalValueUnderCursor.ToQuotedIdentifier(), l.FullyQualifiedName.NormalizedName)) &&
+							(String.IsNullOrEmpty(completionType.TerminalValueUnderCursor) || !String.Equals(quotedTerminalValueUnderCursor, l.FullyQualifiedName.NormalizedName)) &&
 							CodeCompletionSearchHelper.IsMatch(l.FullyQualifiedName.Name, completionType.TerminalValuePartUntilCaret))
 					.Select(
 						l =>
@@ -510,6 +512,42 @@ namespace SqlPad.Oracle
 			return completionItems.OrderItems().ToArray();
 
 			// TODO: Add option to search all/current/public schemas
+		}
+
+		private static IEnumerable<ICodeCompletionItem> GeneratePlSqlVariableItems(OracleCodeCompletionType completionType)
+		{
+			var semanticModel = completionType.SemanticModel as OraclePlSqlStatementSemanticModel;
+			var program =
+				semanticModel?.AllPrograms
+					.Where(p => p.RootNode.SourcePosition.ContainsIndex(completionType.CursorPosition))
+					.OrderByDescending(p => p.RootNode.Level)
+					.FirstOrDefault();
+
+			if (program == null)
+			{
+				return EmptyCollection;
+			}
+
+			var formatOption = FormatOptions.Identifier;
+			var quotedTerminalValueUnderCursor = completionType.TerminalValueUnderCursor.ToQuotedIdentifier();
+
+			return program.AccessibleVariables
+				.Where(v =>
+					(String.IsNullOrEmpty(completionType.TerminalValueUnderCursor) || !String.Equals(quotedTerminalValueUnderCursor, v.Name)) &&
+					CodeCompletionSearchHelper.IsMatch(v.Name, completionType.TerminalValuePartUntilCaret))
+				.Select(
+					v =>
+					{
+						var label = OracleStatementFormatter.FormatTerminalValue(v.Name.ToSimpleIdentifier(), formatOption);
+						return
+							new OracleCodeCompletionItem
+							{
+								Label = label,
+								Text = label,
+								Category = OracleCodeCompletionCategory.PlSqlVariable,
+								StatementNode = completionType.ReferenceIdentifier.IdentifierUnderCursor,
+							};
+					});
 		}
 
 		private IEnumerable<ICodeCompletionItem> GenerateDataTypeItems(OracleCodeCompletionType completionType, OracleDatabaseModelBase databaseModel)
@@ -633,8 +671,9 @@ namespace SqlPad.Oracle
 		private static IEnumerable<ICodeCompletionItem> GenerateSimpleColumnItems(OracleObjectWithColumnsReference targetDataObject, OracleCodeCompletionType completionType)
 		{
 			var formatOption = FormatOptions.Identifier;
+			var quotedTerminalValueUnderCursor = completionType.TerminalValueUnderCursor.ToQuotedIdentifier();
 			return targetDataObject.Columns
-				.Where(c => !String.Equals(completionType.TerminalValueUnderCursor.ToQuotedIdentifier(), c.Name) && CodeCompletionSearchHelper.IsMatch(c.Name, completionType.TerminalValuePartUntilCaret))
+				.Where(c => !String.Equals(quotedTerminalValueUnderCursor, c.Name) && CodeCompletionSearchHelper.IsMatch(c.Name, completionType.TerminalValuePartUntilCaret))
 				.Select(
 					c =>
 					{
