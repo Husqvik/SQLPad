@@ -197,7 +197,7 @@ END;";
 
 			validationModel.InvalidNonTerminals.Count.ShouldBe(1);
 			var validationData = validationModel.InvalidNonTerminals.Values.First();
-			validationData.SemanticErrorType.ShouldBe(OracleSemanticErrorType.IntoClauseExpected);
+			validationData.SemanticErrorType.ShouldBe(OracleSemanticErrorType.PlSql.IntoClauseExpected);
 			validationData.Node.Id.ShouldBe(NonTerminals.SelectList);
 		}
 
@@ -211,6 +211,49 @@ END;";
 			var validationModel = OracleStatementValidatorTest.BuildValidationModel(plsqlText, statement);
 
 			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
+		}
+
+		[Test]
+		public void TestTooManyValuesToIntoClause()
+		{
+			const string plsqlText =
+				@"DECLARE
+  variable VARCHAR2(30);
+BEGIN
+  SELECT dummy, dummy INTO variable FROM dual;
+END;";
+
+			var statement = Parser.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = OracleStatementValidatorTest.BuildValidationModel(plsqlText, statement);
+
+			validationModel.InvalidNonTerminals.Count.ShouldBe(1);
+			var validationData = validationModel.InvalidNonTerminals.Values.First();
+			validationData.SemanticErrorType.ShouldBe(OracleSemanticErrorType.PlSql.TooManyValues);
+			validationData.Node.Id.ShouldBe(NonTerminals.BindVariableExpressionOrPlSqlTargetList);
+		}
+
+
+		[Test]
+		public void TestNotEnoughValuesToIntoClause()
+		{
+			const string plsqlText =
+				@"DECLARE
+  variable VARCHAR2(30);
+BEGIN
+  SELECT dummy INTO variable, variable FROM dual;
+END;";
+
+			var statement = Parser.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = OracleStatementValidatorTest.BuildValidationModel(plsqlText, statement);
+
+			validationModel.InvalidNonTerminals.Count.ShouldBe(1);
+			var validationData = validationModel.InvalidNonTerminals.Values.First();
+			validationData.SemanticErrorType.ShouldBe(OracleSemanticErrorType.PlSql.NotEnoughValues);
+			validationData.Node.Id.ShouldBe(NonTerminals.BindVariableExpressionOrPlSqlTargetList);
 		}
 	}
 }

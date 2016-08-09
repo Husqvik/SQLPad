@@ -53,12 +53,14 @@ namespace SqlPad.Oracle
 		public const string InvalidDataTypeForJsonTableColumn = "Invalid data type for JSON_TABLE column";
 		public const string ForUpdateNotAllowed = "FOR UPDATE of this query expression is not allowed";
 		public const string CannotSelectForUpdateFromViewWithDistinctOrGroupBy = "Cannot select FOR UPDATE from view with DISTINCT, GROUP BY, etc. ";
-		public const string IntoClauseExpected = "An INTO clause is expected in this SELECT statement";
 
 		public static class PlSql
 		{
 			public const string NoChoicesMayAppearWithChoiceOthersInExceptionHandler = "No choices may appear with choice OTHERS in an exception handler";
 			public const string UnsupportedTableIndexType = "unsupported table index type";
+			public const string IntoClauseExpected = "An INTO clause is expected in this SELECT statement";
+			public const string TooManyValues = "Too many values";
+			public const string NotEnoughValues = "Not enough values";
 		}
 	}
 

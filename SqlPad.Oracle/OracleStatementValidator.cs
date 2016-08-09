@@ -952,7 +952,25 @@ namespace SqlPad.Oracle
 			else if (requiresIntoClause && selectIntoClause == null && queryBlock.SelectList != null)
 			{
 				validationModel.InvalidNonTerminals[queryBlock.SelectList] =
-					new InvalidNodeValidationData(OracleSemanticErrorType.IntoClauseExpected) { Node = queryBlock.SelectList };
+					new InvalidNodeValidationData(OracleSemanticErrorType.PlSql.IntoClauseExpected) { Node = queryBlock.SelectList };
+			}
+
+			var bindVariableExpressionOrPlSqlTargetList = selectIntoClause?[NonTerminals.BindVariableExpressionOrPlSqlTargetList];
+			if (bindVariableExpressionOrPlSqlTargetList == null)
+			{
+				return;
+			}
+
+			var intoTargetCount = StatementGrammarNode.GetAllChainedClausesByPath(bindVariableExpressionOrPlSqlTargetList, null, NonTerminals.BindVariableExpressionOrPlSqlTargetCommaChainedList, NonTerminals.BindVariableExpressionOrPlSqlTargetList).Count();
+			var selectColumnCount = queryBlock.Columns.Count - queryBlock.AsteriskColumns.Count;
+			if (requiresIntoClause && queryBlock.SelectList != null && selectColumnCount != intoTargetCount)
+			{
+				var error = intoTargetCount > selectColumnCount
+					? OracleSemanticErrorType.PlSql.NotEnoughValues
+					: OracleSemanticErrorType.PlSql.TooManyValues;
+
+				validationModel.InvalidNonTerminals[bindVariableExpressionOrPlSqlTargetList] =
+					new InvalidNodeValidationData(error) { Node = bindVariableExpressionOrPlSqlTargetList };
 			}
 		}
 

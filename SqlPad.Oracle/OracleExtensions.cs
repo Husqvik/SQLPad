@@ -165,7 +165,7 @@ namespace SqlPad.Oracle
 
 			CheckQuotedIdentifier(identifier);
 
-			return identifier.IsQuotedWithoutCheck() ? identifier : String.Format("{0}{1}{0}", QuoteCharacter, identifier.ToUpperInvariant());
+			return identifier.IsQuotedWithoutCheck() ? identifier : $"\"{identifier.ToUpperInvariant()}\"";
 		}
 
 		private static void CheckQuotedIdentifier(string identifier)
