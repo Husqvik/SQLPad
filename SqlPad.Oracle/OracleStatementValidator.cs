@@ -1303,6 +1303,17 @@ namespace SqlPad.Oracle
 					validationModel.ObjectNodeValidity[variableReference.IdentifierNode] =
 						new NodeValidationData { Node = variableReference.IdentifierNode };
 				}
+				else if (variableReference.Variables.Count == 1 &&
+				         String.Equals(variableReference.RootNode.Id, NonTerminals.AssignmentStatementTarget) &&
+				         String.Equals(variableReference.RootNode.ParentNode.ParentNode.Id, NonTerminals.PlSqlAssignmentStatement))
+				{
+					var variable = variableReference.Variables.First() as OraclePlSqlVariable;
+					if (variable != null && variable.IsReadOnly)
+					{
+						validationModel.InvalidNonTerminals[variableReference.RootNode] =
+							new InvalidNodeValidationData(OracleSemanticErrorType.PlSql.ExpressionCannotBeUsedAsAssignmentTarget) { Node = variableReference.RootNode };
+					}
+				}
 			}
 
 			foreach (var exceptionReference in referenceContainer.PlSqlExceptionReferences)

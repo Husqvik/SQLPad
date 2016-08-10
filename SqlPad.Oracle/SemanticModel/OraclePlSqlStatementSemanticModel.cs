@@ -933,6 +933,8 @@ namespace SqlPad.Oracle.SemanticModel
 		public StatementGrammarNode DefaultExpressionNode { get; set; }
 
 		public StatementGrammarNode DataTypeNode { get; set; }
+
+		public virtual bool IsReadOnly => IsConstant;
 	}
 
 	[DebuggerDisplay("OraclePlSqlCursorVariable (Name={Name})")]
@@ -941,6 +943,8 @@ namespace SqlPad.Oracle.SemanticModel
 		public bool IsImplicit { get; set; }
 
 		public OracleStatementSemanticModel SemanticModel { get; set; }
+
+		public override bool IsReadOnly { get; } = true;
 
 		public override void Accept(IOraclePlSqlElementVisitor visitor)
 		{
@@ -953,7 +957,7 @@ namespace SqlPad.Oracle.SemanticModel
 	{
 		public ParameterDirection Direction { get; set; }
 
-		public bool IsReadOnly => Direction == ParameterDirection.Input;
+		public override bool IsReadOnly => Direction == ParameterDirection.Input;
 	}
 
 	[DebuggerDisplay("OraclePlSqlType (Name={Name})")]

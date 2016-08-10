@@ -255,5 +255,26 @@ END;";
 			validationData.SemanticErrorType.ShouldBe(OracleSemanticErrorType.PlSql.NotEnoughValues);
 			validationData.Node.Id.ShouldBe(NonTerminals.BindVariableExpressionOrPlSqlTargetList);
 		}
+
+		[Test]
+		public void TestReadOnlyAssignTarget()
+		{
+			const string plsqlText =
+				@"CREATE PROCEDURE test_procedure (p IN VARCHAR2)
+IS
+BEGIN
+	p := '';
+END;";
+
+			var statement = Parser.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = OracleStatementValidatorTest.BuildValidationModel(plsqlText, statement);
+
+			validationModel.InvalidNonTerminals.Count.ShouldBe(1);
+			var validationData = validationModel.InvalidNonTerminals.Values.First();
+			validationData.SemanticErrorType.ShouldBe(OracleSemanticErrorType.PlSql.ExpressionCannotBeUsedAsAssignmentTarget);
+			validationData.Node.Id.ShouldBe(NonTerminals.AssignmentStatementTarget);
+		}
 	}
 }

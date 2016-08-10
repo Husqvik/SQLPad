@@ -61,6 +61,7 @@ namespace SqlPad.Oracle
 			public const string IntoClauseExpected = "An INTO clause is expected in this SELECT statement";
 			public const string TooManyValues = "Too many values";
 			public const string NotEnoughValues = "Not enough values";
+			public const string ExpressionCannotBeUsedAsAssignmentTarget = "Expression cannot be used as an assignment target";
 		}
 	}
 

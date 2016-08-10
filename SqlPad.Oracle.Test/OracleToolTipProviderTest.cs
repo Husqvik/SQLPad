@@ -1151,13 +1151,14 @@ END;";
 			const string plSqlCode =
 @"DECLARE
     test_constant CONSTANT VARCHAR2(255) NOT NULL := 'This' || ' is ' || 'value';
+	test_variable VARCHAR2(255);
 BEGIN
-    test_constant := NULL;
+    test_variable := test_constant;
 END;";
 
 			_documentRepository.UpdateStatements(plSqlCode);
 
-			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 103);
+			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 151);
 			toolTip.Control.ShouldBeAssignableTo<ToolTipObject>();
 			toolTip.Control.DataContext.ShouldBe("Constant TEST_CONSTANT: VARCHAR2(255) NOT NULL = 'This' || ' is ' || 'value'");
 		}
