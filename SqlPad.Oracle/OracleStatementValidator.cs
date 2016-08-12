@@ -295,6 +295,34 @@ namespace SqlPad.Oracle
 							new InvalidNodeValidationData(OracleSemanticErrorType.PlSql.UnsupportedTableIndexType) { Node = plSqlType.AssociativeArrayIndexDataTypeReference.RootNode };
 					}
 				}
+
+				foreach (var cursorReference in program.PlSqlVariableReferences.Where(r => r.Variables.Count == 1).Select(r => new { Reference = r, Cursor = r.Variables.First() as OraclePlSqlCursorVariable }))
+				{
+					var plSqlStatementNode = cursorReference.Reference.RootNode.ParentNode.ParentNode;
+					if (String.Equals(plSqlStatementNode.Id, NonTerminals.PlSqlFetchStatement))
+					{
+						var queryBlock = cursorReference.Cursor.SemanticModel?.QueryBlocks.SingleOrDefault(qb => qb.IsMainQueryBlock);
+						if (queryBlock == null)
+						{
+							continue;
+						}
+
+						var queryColumnCount = queryBlock.Columns.Count - queryBlock.AsteriskColumns.Count;
+
+						var bindVariableExpressionOrPlSqlTargetListNode = plSqlStatementNode[NonTerminals.PlSqlFetchIntoClause, NonTerminals.BindVariableExpressionOrPlSqlTargetList];
+						if (bindVariableExpressionOrPlSqlTargetListNode == null)
+						{
+							continue;
+						}
+
+						var fetchValueCount = StatementGrammarNode.GetAllChainedClausesByPath(bindVariableExpressionOrPlSqlTargetListNode, null, NonTerminals.BindVariableExpressionOrPlSqlTargetCommaChainedList, NonTerminals.BindVariableExpressionOrPlSqlTargetList).Count();
+						if (queryColumnCount != fetchValueCount)
+						{
+							validationModel.InvalidNonTerminals[bindVariableExpressionOrPlSqlTargetListNode] =
+								new InvalidNodeValidationData(OracleSemanticErrorType.PlSql.WrongNumberOfValuesInIntoListOfFetchStatement) { Node = bindVariableExpressionOrPlSqlTargetListNode };
+						}
+					}
+				}
 			}
 		}
 
@@ -942,7 +970,8 @@ namespace SqlPad.Oracle
 
 		private static void ValidateSelectIntoClause(OracleQueryBlock queryBlock, OracleValidationModel validationModel)
 		{
-			var requiresIntoClause = queryBlock.Statement.IsPlSql && queryBlock.IsMainQueryBlock;
+			var isNotCursorDefinition = queryBlock.RootNode.GetAncestor(NonTerminals.CursorDefinition) == null;
+			var requiresIntoClause = queryBlock.Statement.IsPlSql && queryBlock.IsMainQueryBlock && isNotCursorDefinition;
 			var selectIntoClause = queryBlock.RootNode[NonTerminals.IntoVariableClause];
 			if (!requiresIntoClause && selectIntoClause != null)
 			{

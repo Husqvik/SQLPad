@@ -62,6 +62,7 @@ namespace SqlPad.Oracle
 			public const string TooManyValues = "Too many values";
 			public const string NotEnoughValues = "Not enough values";
 			public const string ExpressionCannotBeUsedAsAssignmentTarget = "Expression cannot be used as an assignment target";
+			public const string WrongNumberOfValuesInIntoListOfFetchStatement = "Wrong number of values in the INTO list of a FETCH statement";
 		}
 	}
 

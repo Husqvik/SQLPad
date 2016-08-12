@@ -276,5 +276,28 @@ END;";
 			validationData.SemanticErrorType.ShouldBe(OracleSemanticErrorType.PlSql.ExpressionCannotBeUsedAsAssignmentTarget);
 			validationData.Node.Id.ShouldBe(NonTerminals.AssignmentStatementTarget);
 		}
+
+		[Test]
+		public void TestWrongNumberOfValuesInIntoListOfFetchStatement()
+		{
+			const string plsqlText =
+				@"DECLARE
+	test_variable VARCHAR2(1);
+	CURSOR test_cursor is SELECT dummy, dummy FROM dual;
+BEGIN
+	OPEN test_cursor;
+	FETCH test_cursor INTO test_variable;
+END;";
+
+			var statement = Parser.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = OracleStatementValidatorTest.BuildValidationModel(plsqlText, statement);
+
+			validationModel.InvalidNonTerminals.Count.ShouldBe(1);
+			var validationData = validationModel.InvalidNonTerminals.Values.First();
+			validationData.SemanticErrorType.ShouldBe(OracleSemanticErrorType.PlSql.WrongNumberOfValuesInIntoListOfFetchStatement);
+			validationData.Node.Id.ShouldBe(NonTerminals.BindVariableExpressionOrPlSqlTargetList);
+		}
 	}
 }
