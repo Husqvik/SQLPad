@@ -1,4 +1,4 @@
-#SQLPad 0.4.0.417
+#SQLPad 0.4.0.418
 
 |Builds|Oracle.DataAccess|Oracle.ManagedDataAccess|
 |:--:|:--:|:--:|
@@ -140,6 +140,8 @@ Wrap current query block as inline view
 Add missing column
 
 Add to GROUP BY
+
+Add to ORDER BY
 
 Clean redundant symbols
 

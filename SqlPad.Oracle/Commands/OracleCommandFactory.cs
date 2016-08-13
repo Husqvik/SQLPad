@@ -26,6 +26,7 @@ namespace SqlPad.Oracle.Commands
 		public static readonly CommandExecutionHandler AddInsertIntoColumnList = OracleCommandBase.CreateStandardExecutionHandler<AddInsertIntoColumnListCommand>("AddInsertIntoColumnList");
 		public static readonly CommandExecutionHandler AddMissingColumn = OracleCommandBase.CreateStandardExecutionHandler<AddMissingColumnCommand>("AddMissingColumn");
 		public static readonly CommandExecutionHandler AddToGroupByClause = OracleCommandBase.CreateStandardExecutionHandler<AddToGroupByCommand>("AddToGroupByClause");
+		public static readonly CommandExecutionHandler AddToOrderByClause = OracleCommandBase.CreateStandardExecutionHandler<AddToOrderByCommand>("AddToOrderByClause");
 		public static readonly CommandExecutionHandler CleanRedundantSymbol = OracleCommandBase.CreateStandardExecutionHandler<CleanRedundantSymbolCommand>("CleanRedundantSymbol");
 		public static readonly CommandExecutionHandler ConfigureNamedParameters = OracleCommandBase.CreateStandardExecutionHandler<ConfigureNamedParameterCommand>("ConfigureNamedParameters");
 		public static readonly CommandExecutionHandler ConvertOrderByNumberColumnReferences = OracleCommandBase.CreateStandardExecutionHandler<ConvertOrderByNumberColumnReferencesCommand>("ConvertOrderByNumberColumnReferences");

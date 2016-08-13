@@ -1020,6 +1020,18 @@ FROM
 		}
 
 		[Test, Apartment(ApartmentState.STA)]
+		public void TestAddToOrderByCommandWithWhereClause()
+		{
+			_editor.Text = @"SELECT PROJECT_ID FROM SELECTION";
+			_editor.SelectionStart = 7;
+
+			CanExecuteCommand(OracleCommands.AddToOrderByClause).ShouldBe(true);
+			ExecuteCommand(OracleCommands.AddToOrderByClause);
+
+			_editor.Text.ShouldBe("SELECT PROJECT_ID FROM SELECTION ORDER BY PROJECT_ID");
+		}
+
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestAddToGroupByCommandAtColumnTableQualifier()
 		{
 			_editor.Text = @"SELECT SELECTION.NAME, COUNT(*) FROM SELECTION JOIN RESPONDENTBUCKET ON SELECTION.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID";

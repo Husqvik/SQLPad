@@ -84,6 +84,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CodeCompletionSearchHelper.cs" />
+    <Compile Include="Commands\AddExpressionToClauseCommandBase.cs" />
+    <Compile Include="Commands\AddToOrderByCommand.cs" />
     <Compile Include="Commands\ConfigureNamedParameterCommand.cs" />
     <Compile Include="Commands\ExpandViewCommand.cs" />
     <Compile Include="Commands\SplitStringCommand.cs" />

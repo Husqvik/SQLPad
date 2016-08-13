@@ -85,6 +85,11 @@ namespace SqlPad.Oracle
 				actionList.Add(new ContextAction(AddToGroupByCommand.Title, OracleCommands.AddToGroupByClause, executionContext));
 			}
 
+			if (OracleCommands.AddToOrderByClause.CanExecuteHandler(executionContext))
+			{
+				actionList.Add(new ContextAction(AddToOrderByCommand.Title, OracleCommands.AddToOrderByClause, executionContext));
+			}
+
 			var canExecuteResult = OracleCommands.ExpandAsterisk.CanExecuteHandler(executionContext);
 			if (canExecuteResult)
 			{

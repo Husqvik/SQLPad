@@ -411,6 +411,15 @@ namespace SqlPad.Oracle.Test
 		}
 
 		[Test]
+		public void TestAddToOrderByAvailable()
+		{
+			const string query1 = @"SELECT DUMMY FROM DUAL";
+
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 12).SingleOrDefault(a => a.Name == AddToOrderByCommand.Title);
+			action.ShouldNotBe(null);
+		}
+
+		[Test]
 		public void TestConvertOrderByNumberColumnReferences()
 		{
 			const string query1 = @"SELECT T.*, '[' || NAME || ']' FROM (SELECT NAME FROM SELECTION) T ORDER BY 1, 2";
