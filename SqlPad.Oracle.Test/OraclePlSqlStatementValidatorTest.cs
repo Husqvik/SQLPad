@@ -278,6 +278,25 @@ END;";
 		}
 
 		[Test]
+		public void TestNotEnoughValuesUsingAsteriskClauseWithUnrecognizedRowSource()
+		{
+			const string plsqlText =
+				@"DECLARE
+  variable VARCHAR2(30);
+BEGIN
+  SELECT * INTO variable FROM non_existing_table;
+  SELECT non_existing_table.* INTO variable FROM non_existing_table;
+END;";
+
+			var statement = Parser.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = OracleStatementValidatorTest.BuildValidationModel(plsqlText, statement);
+
+			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
+		}
+
+		[Test]
 		public void TestWrongNumberOfValuesInIntoListOfFetchStatement()
 		{
 			const string plsqlText =

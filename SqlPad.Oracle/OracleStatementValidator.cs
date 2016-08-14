@@ -992,15 +992,46 @@ namespace SqlPad.Oracle
 
 			var intoTargetCount = StatementGrammarNode.GetAllChainedClausesByPath(bindVariableExpressionOrPlSqlTargetList, null, NonTerminals.BindVariableExpressionOrPlSqlTargetCommaChainedList, NonTerminals.BindVariableExpressionOrPlSqlTargetList).Count();
 			var selectColumnCount = queryBlock.Columns.Count - queryBlock.AsteriskColumns.Count;
-			if (requiresIntoClause && queryBlock.SelectList != null && selectColumnCount != intoTargetCount)
+			if (!requiresIntoClause || queryBlock.SelectList == null || selectColumnCount == intoTargetCount)
 			{
-				var error = intoTargetCount > selectColumnCount
-					? OracleSemanticErrorType.PlSql.NotEnoughValues
-					: OracleSemanticErrorType.PlSql.TooManyValues;
-
-				validationModel.InvalidNonTerminals[bindVariableExpressionOrPlSqlTargetList] =
-					new InvalidNodeValidationData(error) { Node = bindVariableExpressionOrPlSqlTargetList };
+				return;
 			}
+
+			var hasAsteriskWithUnknownRowSources = queryBlock.AsteriskColumns.Any(HasAsteriskColumnUnknownReferences);
+			if (hasAsteriskWithUnknownRowSources && selectColumnCount < intoTargetCount)
+			{
+				return;
+			}
+
+			var error = intoTargetCount > selectColumnCount
+				? OracleSemanticErrorType.PlSql.NotEnoughValues
+				: OracleSemanticErrorType.PlSql.TooManyValues;
+
+			validationModel.InvalidNonTerminals[bindVariableExpressionOrPlSqlTargetList] =
+				new InvalidNodeValidationData(error) { Node = bindVariableExpressionOrPlSqlTargetList };
+		}
+
+		private static bool HasAsteriskColumnUnknownReferences(OracleSelectListColumn asteriskColumn)
+		{
+			var asteriskColumnReference = asteriskColumn.ColumnReferences[0];
+			var objectReferences = asteriskColumnReference.ObjectNode == null
+				? asteriskColumnReference.Owner.ObjectReferences
+				: (IEnumerable<OracleObjectWithColumnsReference>)asteriskColumnReference.ObjectNodeObjectReferences;
+
+			foreach (var objectReference in objectReferences)
+			{
+				if (objectReference.Type == ReferenceType.SchemaObject && objectReference.SchemaObject == null)
+				{
+					return true;
+				}
+
+				if (objectReference.QueryBlocks.Count == 0)
+				{
+					return objectReference.QueryBlocks.Any(qb => qb.AsteriskColumns.Any(HasAsteriskColumnUnknownReferences));
+				}
+			}
+
+			return false;
 		}
 
 		private static void ValidateColumnCount(OracleQueryBlock queryBlock, OracleValidationModel validationModel)
