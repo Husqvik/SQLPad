@@ -1025,7 +1025,7 @@ namespace SqlPad.Oracle
 					return true;
 				}
 
-				if (objectReference.QueryBlocks.Count == 0)
+				if (objectReference.QueryBlocks.Count > 0)
 				{
 					return objectReference.QueryBlocks.Any(qb => qb.AsteriskColumns.Any(HasAsteriskColumnUnknownReferences));
 				}

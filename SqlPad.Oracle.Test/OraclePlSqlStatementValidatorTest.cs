@@ -297,6 +297,25 @@ END;";
 		}
 
 		[Test]
+		public void TestNotEnoughValuesUsingAsteriskClauseWithUnrecognizedNestedRowSource()
+		{
+			const string plsqlText =
+				@"DECLARE
+  variable VARCHAR2(30);
+BEGIN
+  SELECT * INTO variable FROM (SELECT * FROM non_existing_table);
+  SELECT row_source.* INTO variable FROM (SELECT * FROM non_existing_table) row_source;
+END;";
+
+			var statement = Parser.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = OracleStatementValidatorTest.BuildValidationModel(plsqlText, statement);
+
+			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
+		}
+
+		[Test]
 		public void TestWrongNumberOfValuesInIntoListOfFetchStatement()
 		{
 			const string plsqlText =
