@@ -117,11 +117,12 @@ namespace SqlPad.Oracle.SemanticModel
 		{
 			get
 			{
-				return _mainQueryBlock ??
-				       (_mainQueryBlock = QueryBlockNodes.Values
-					       .Where(qb => qb.Type == QueryBlockType.Normal)
-					       .OrderBy(qb => qb.RootNode.Level)
-					       .FirstOrDefault());
+				return
+					_mainQueryBlock ??
+					(_mainQueryBlock = QueryBlockNodes.Values
+						.Where(qb => qb.Type == QueryBlockType.Normal)
+						.OrderBy(qb => qb.RootNode.Level)
+						.FirstOrDefault());
 			}
 		}
 

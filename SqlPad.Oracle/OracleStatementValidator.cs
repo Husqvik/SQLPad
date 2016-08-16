@@ -227,6 +227,8 @@ namespace SqlPad.Oracle
 			ValidateVariousClauseSupport(validationModel);
 
 			ValidatePlSqlPrograms(validationModel);
+
+			ValidateBindVariables(validationModel);
 			
 			return validationModel;
 		}
@@ -822,6 +824,22 @@ namespace SqlPad.Oracle
 			return result;
 		}
 
+		private static void ValidateBindVariables(OracleValidationModel validationModel)
+		{
+			if (validationModel.Statement.IsDataManipulation || String.Equals(validationModel.Statement.RootNode.Id, NonTerminals.PlSqlBlockStatement))
+			{
+				return;
+			}
+
+			foreach (var bindVariable in validationModel.Statement.BindVariables)
+			{
+				foreach (var node in bindVariable.Nodes)
+				{
+					validationModel.AddNonTerminalSemanticError(node.ParentNode, OracleSemanticErrorType.BindVariablesNotAllowedForDataDefinitionOperations);
+				}
+			}
+		}
+
 		private static void ValidateQueryBlocks(OracleValidationModel validationModel)
 		{
 			foreach (var queryBlock in validationModel.SemanticModel.QueryBlocks)
@@ -836,7 +854,7 @@ namespace SqlPad.Oracle
 				if (queryBlock.OrderByClause != null &&
 				    (queryBlock.Type == QueryBlockType.ScalarSubquery || queryBlock.RootNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.QueryBlock), NonTerminals.Condition) != null))
 				{
-					validationModel.InvalidNonTerminals[queryBlock.OrderByClause] = new InvalidNodeValidationData(OracleSemanticErrorType.ClauseNotAllowed) { Node = queryBlock.OrderByClause };
+					validationModel.AddNonTerminalSemanticError(queryBlock.OrderByClause, OracleSemanticErrorType.ClauseNotAllowed);
 				}
 
 				if (queryBlock.AsteriskColumns.Count > 0 && queryBlock.ObjectReferences.Any(r => r.DatabaseLinkNode != null))
@@ -859,20 +877,20 @@ namespace SqlPad.Oracle
 						var explicitColumnCount = queryBlock.ExplicitColumnNames.Count;
 						if (explicitColumnCount > 0 && explicitColumnCount != queryBlock.Columns.Count - queryBlock.AsteriskColumns.Count - queryBlock.AttachedColumns.Count)
 						{
-							validationModel.InvalidNonTerminals[queryBlock.ExplicitColumnNameList] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = queryBlock.ExplicitColumnNameList };
-							validationModel.InvalidNonTerminals[queryBlock.SelectList] = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = queryBlock.SelectList };
+							validationModel.AddNonTerminalSemanticError(queryBlock.ExplicitColumnNameList, OracleSemanticErrorType.InvalidColumnCount);
+							validationModel.AddNonTerminalSemanticError(queryBlock.SelectList, OracleSemanticErrorType.InvalidColumnCount);
 						}
 					}
 					else
 					{
 						if (queryBlock.RecursiveSearchClause != null)
 						{
-							validationModel.InvalidNonTerminals[queryBlock.RecursiveSearchClause] = new InvalidNodeValidationData(OracleSemanticErrorType.MissingWithClauseColumnAliasList) { Node = queryBlock.RecursiveSearchClause };
+							validationModel.AddNonTerminalSemanticError(queryBlock.RecursiveSearchClause, OracleSemanticErrorType.MissingWithClauseColumnAliasList);
 						}
 
 						if (queryBlock.RecursiveCycleClause != null)
 						{
-							validationModel.InvalidNonTerminals[queryBlock.RecursiveCycleClause] = new InvalidNodeValidationData(OracleSemanticErrorType.MissingWithClauseColumnAliasList) { Node = queryBlock.RecursiveCycleClause };
+							validationModel.AddNonTerminalSemanticError(queryBlock.RecursiveCycleClause, OracleSemanticErrorType.MissingWithClauseColumnAliasList);
 						}
 					}
 
@@ -1912,6 +1930,12 @@ namespace SqlPad.Oracle
 		{
 			var validationData = new SemanticErrorNodeValidationData(errorType, tooltipText ?? errorType) { Node = node };
 			IdentifierNodeValidity[node] = validationData;
+		}
+
+		public void AddNonTerminalSemanticError(StatementGrammarNode node, string errorType, string tooltipText = null)
+		{
+			var validationData = new SemanticErrorNodeValidationData(errorType, tooltipText ?? errorType) { Node = node };
+			InvalidNonTerminals[node] = validationData;
 		}
 	}
 
