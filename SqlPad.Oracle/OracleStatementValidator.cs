@@ -519,23 +519,20 @@ namespace SqlPad.Oracle
 				case TerminalValues.Number:
 					if (dataType.Precision > 38 || dataType.Precision < 1)
 					{
-						var error = new InvalidNodeValidationData(OracleSemanticErrorType.NumericPrecisionSpecifierOutOfRange) { Node = dataTypeReference.PrecisionNode };
-						validationModel.InvalidNonTerminals.Add(error.Node, error);
+						validationModel.AddNonTerminalSemanticError(dataTypeReference.PrecisionNode, OracleSemanticErrorType.NumericPrecisionSpecifierOutOfRange);
 					}
 
 					if (dataType.Scale > 127 || dataType.Scale < -84)
 					{
-						var error = new InvalidNodeValidationData(OracleSemanticErrorType.NumericScaleSpecifierOutOfRange) { Node = dataTypeReference.ScaleNode };
-						validationModel.InvalidNonTerminals.Add(error.Node, error);
+						validationModel.AddNonTerminalSemanticError(dataTypeReference.ScaleNode, OracleSemanticErrorType.NumericScaleSpecifierOutOfRange);
 					}
-				
+
 					break;
 
 				case TerminalValues.Char:
 					if (validationModel.SemanticModel.HasDatabaseModel && dataType.Length > validationModel.SemanticModel.DatabaseModel.MaximumRawLength)
 					{
-						var error = new InvalidNodeValidationData(OracleSemanticErrorType.SpecifiedLengthTooLongForDatatype) { Node = dataTypeReference.LengthNode };
-						validationModel.InvalidNonTerminals.Add(error.Node, error);
+						validationModel.AddNonTerminalSemanticError(dataTypeReference.LengthNode, OracleSemanticErrorType.SpecifiedLengthTooLongForDatatype);
 					}
 
 					goto default;
@@ -555,8 +552,7 @@ namespace SqlPad.Oracle
 				case TerminalValues.NChar:
 					if (dataType.Length > 1000)
 					{
-						var error = new InvalidNodeValidationData(OracleSemanticErrorType.SpecifiedLengthTooLongForDatatype) { Node = dataTypeReference.LengthNode };
-						validationModel.InvalidNonTerminals.Add(error.Node, error);
+						validationModel.AddNonTerminalSemanticError(dataTypeReference.LengthNode, OracleSemanticErrorType.SpecifiedLengthTooLongForDatatype);
 					}
 
 					goto default;
@@ -564,8 +560,7 @@ namespace SqlPad.Oracle
 				case TerminalValues.Float:
 					if (dataType.Precision > 126 || dataType.Precision < 1)
 					{
-						var error = new InvalidNodeValidationData(OracleSemanticErrorType.FloatingPointPrecisionOutOfRange) { Node = dataTypeReference.PrecisionNode };
-						validationModel.InvalidNonTerminals.Add(error.Node, error);
+						validationModel.AddNonTerminalSemanticError(dataTypeReference.PrecisionNode, OracleSemanticErrorType.FloatingPointPrecisionOutOfRange);
 					}
 
 					break;
@@ -578,8 +573,7 @@ namespace SqlPad.Oracle
 				case TerminalValues.UniversalRowId:
 					if (dataType.Length > 4000)
 					{
-						var error = new InvalidNodeValidationData(OracleSemanticErrorType.SpecifiedLengthTooLongForDatatype) { Node = dataTypeReference.LengthNode };
-						validationModel.InvalidNonTerminals.Add(error.Node, error);
+						validationModel.AddNonTerminalSemanticError(dataTypeReference.LengthNode, OracleSemanticErrorType.SpecifiedLengthTooLongForDatatype);
 					}
 
 					goto default;
@@ -591,14 +585,12 @@ namespace SqlPad.Oracle
 				case OracleDatabaseModelBase.BuiltInDataTypeIntervalDayToSecond:
 					if (dataType.Precision > 9 || dataType.Precision < 0)
 					{
-						var error = new InvalidNodeValidationData(OracleSemanticErrorType.DatetimeOrIntervalPrecisionIsOutOfRange) { Node = dataTypeReference.PrecisionNode };
-						validationModel.InvalidNonTerminals.Add(error.Node, error);
+						validationModel.AddNonTerminalSemanticError(dataTypeReference.PrecisionNode, OracleSemanticErrorType.DatetimeOrIntervalPrecisionIsOutOfRange);
 					}
 
 					if (dataType.Scale > 9 || dataType.Scale < 0)
 					{
-						var error = new InvalidNodeValidationData(OracleSemanticErrorType.DatetimeOrIntervalPrecisionIsOutOfRange) { Node = dataTypeReference.ScaleNode };
-						validationModel.InvalidNonTerminals.Add(error.Node, error);
+						validationModel.AddNonTerminalSemanticError(dataTypeReference.ScaleNode, OracleSemanticErrorType.DatetimeOrIntervalPrecisionIsOutOfRange);
 					}
 
 					break;
@@ -606,8 +598,7 @@ namespace SqlPad.Oracle
 				default:
 					if (dataType.Length < 1)
 					{
-						var error = new InvalidNodeValidationData(OracleSemanticErrorType.ZeroLengthColumnsNotAllowed) { Node = dataTypeReference.LengthNode };
-						validationModel.InvalidNonTerminals.Add(error.Node, error);
+						validationModel.AddNonTerminalSemanticError(dataTypeReference.LengthNode, OracleSemanticErrorType.ZeroLengthColumnsNotAllowed);
 					}
 
 					break;
@@ -618,8 +609,7 @@ namespace SqlPad.Oracle
 				if (dataTypeReference.FullyQualifiedObjectName.HasOwner ||
 					!dataType.FullyQualifiedName.NormalizedName.Trim('"').In(TerminalValues.Varchar, TerminalValues.Varchar2, TerminalValues.Raw, TerminalValues.Number, TerminalValues.Integer, TerminalValues.Smallint, OracleDatabaseModelBase.BuiltInDataTypeInt))
 				{
-					var error = new InvalidNodeValidationData(OracleSemanticErrorType.InvalidDataTypeForJsonTableColumn) { Node = dataTypeReference.RootNode };
-					validationModel.InvalidNonTerminals.Add(error.Node, error);
+					validationModel.AddNonTerminalSemanticError(dataTypeReference.RootNode, OracleSemanticErrorType.InvalidDataTypeForJsonTableColumn);
 				}
 			}
 		}
