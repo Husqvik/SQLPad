@@ -123,7 +123,7 @@ namespace SqlPad.Oracle
 
 							if (aggregateExpression[NonTerminals.ExpressionMathOperatorChainedList] != null || aggregateExpression[NonTerminals.AggregateFunctionCall] == null)
 							{
-								validationModel.InvalidNonTerminals[aggregateExpression] = new InvalidNodeValidationData(OracleSemanticErrorType.ExpectAggregateFunctionInsidePivotOperation) { Node = aggregateExpression };
+								validationModel.AddNonTerminalSemanticError(aggregateExpression, OracleSemanticErrorType.ExpectAggregateFunctionInsidePivotOperation);
 							}
 						}
 
@@ -140,7 +140,7 @@ namespace SqlPad.Oracle
 
 						foreach (var selectorValue in unmatchedUnpivotDatatypeNodes)
 						{
-							validationModel.InvalidNonTerminals[selectorValue] = new InvalidNodeValidationData(OracleSemanticErrorType.ExpressionMustHaveSameDatatypeAsCorrespondingExpression) { Node = selectorValue };
+							validationModel.AddNonTerminalSemanticError(selectorValue, OracleSemanticErrorType.ExpressionMustHaveSameDatatypeAsCorrespondingExpression);
 						}
 
 						break;
@@ -148,7 +148,7 @@ namespace SqlPad.Oracle
 					case ReferenceType.JsonTable:
 						if (databaseModel != null && databaseModel.Version < MinimumJsonSupportVersion)
 						{
-							validationModel.InvalidNonTerminals[objectReference.RootNode] = new InvalidNodeValidationData(OracleSemanticErrorType.UnsupportedInConnectedDatabaseVersion) { Node = objectReference.RootNode };
+							validationModel.AddNonTerminalSemanticError(objectReference.RootNode, OracleSemanticErrorType.UnsupportedInConnectedDatabaseVersion);
 						}
 
 						break;
@@ -178,8 +178,7 @@ namespace SqlPad.Oracle
 				{
 					if (columnReference.ColumnDescription != null && columnReference.ColumnDescription.Virtual)
 					{
-						validationModel.InvalidNonTerminals[columnReference.RootNode] =
-							new InvalidNodeValidationData(OracleSemanticErrorType.InsertOperationDisallowedOnVirtualColumns) { Node = columnReference.RootNode };
+						validationModel.AddNonTerminalSemanticError(columnReference.RootNode, OracleSemanticErrorType.InsertOperationDisallowedOnVirtualColumns);
 					}
 				}
 
@@ -203,15 +202,13 @@ namespace SqlPad.Oracle
 
 					if (insertTarget.ColumnListNode != null)
 					{
-						validationModel.InvalidNonTerminals[insertTarget.ColumnListNode] =
-							new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = insertTarget.ColumnListNode };
+						validationModel.AddNonTerminalSemanticError(insertTarget.ColumnListNode, OracleSemanticErrorType.InvalidColumnCount);
 					}
 
 					var sourceDataNode = insertTarget.ValueList ?? insertTarget.RowSource.SelectList;
 					if (sourceDataNode != null)
 					{
-						validationModel.InvalidNonTerminals[sourceDataNode] =
-							new InvalidNodeValidationData(OracleSemanticErrorType.InvalidColumnCount) { Node = sourceDataNode };
+						validationModel.AddNonTerminalSemanticError(sourceDataNode, OracleSemanticErrorType.InvalidColumnCount);
 					}
 				}
 			}
@@ -264,8 +261,7 @@ namespace SqlPad.Oracle
 							? OracleSemanticErrorType.ForUpdateNotAllowed
 							: OracleSemanticErrorType.CannotSelectForUpdateFromViewWithDistinctOrGroupBy;
 
-						validationModel.InvalidNonTerminals[forUpdateClause] =
-							new InvalidNodeValidationData(errorMessage) { Node = forUpdateClause };
+						validationModel.AddNonTerminalSemanticError(forUpdateClause, errorMessage);
 
 						break;
 					}
@@ -293,8 +289,7 @@ namespace SqlPad.Oracle
 					if (!validationModel.IdentifierNodeValidity.ContainsKey(plSqlType.AssociativeArrayIndexDataTypeReference.ObjectNode) &&
 					    !plSqlType.AssociativeArrayIndexDataTypeReference.ResolvedDataType.FullyQualifiedName.In(AssociativeArrayIndexTypes))
 					{
-						validationModel.InvalidNonTerminals[plSqlType.AssociativeArrayIndexDataTypeReference.RootNode] =
-							new InvalidNodeValidationData(OracleSemanticErrorType.PlSql.UnsupportedTableIndexType) { Node = plSqlType.AssociativeArrayIndexDataTypeReference.RootNode };
+						validationModel.AddNonTerminalSemanticError(plSqlType.AssociativeArrayIndexDataTypeReference.RootNode, OracleSemanticErrorType.PlSql.UnsupportedTableIndexType);
 					}
 				}
 
@@ -320,8 +315,7 @@ namespace SqlPad.Oracle
 						var fetchValueCount = StatementGrammarNode.GetAllChainedClausesByPath(bindVariableExpressionOrPlSqlTargetListNode, null, NonTerminals.BindVariableExpressionOrPlSqlTargetCommaChainedList, NonTerminals.BindVariableExpressionOrPlSqlTargetList).Count();
 						if (queryColumnCount != fetchValueCount)
 						{
-							validationModel.InvalidNonTerminals[bindVariableExpressionOrPlSqlTargetListNode] =
-								new InvalidNodeValidationData(OracleSemanticErrorType.PlSql.WrongNumberOfValuesInIntoListOfFetchStatement) { Node = bindVariableExpressionOrPlSqlTargetListNode };
+							validationModel.AddNonTerminalSemanticError(bindVariableExpressionOrPlSqlTargetListNode, OracleSemanticErrorType.PlSql.WrongNumberOfValuesInIntoListOfFetchStatement);
 						}
 					}
 				}
@@ -340,13 +334,11 @@ namespace SqlPad.Oracle
 				switch (terminal.Id)
 				{
 					case Terminals.PlSqlCompilationParameter:
-						validationModel.InvalidNonTerminals[terminal] =
-							new InvalidNodeValidationData(OracleSemanticErrorType.PlSqlCompilationParameterAllowedOnlyWithinPlSqlScope) { Node = terminal };
+						validationModel.AddNonTerminalSemanticError(terminal, OracleSemanticErrorType.PlSqlCompilationParameterAllowedOnlyWithinPlSqlScope);
 						break;
 
 					case Terminals.CursorIdentifier:
-						validationModel.InvalidNonTerminals[terminal.ParentNode] =
-							new InvalidNodeValidationData(OracleSemanticErrorType.CurrentOfConditionAllowedOnlyWithinPlSqlScope) { Node = terminal.ParentNode };
+						validationModel.AddNonTerminalSemanticError(terminal.ParentNode, OracleSemanticErrorType.CurrentOfConditionAllowedOnlyWithinPlSqlScope);
 						break;
 				}
 			}
