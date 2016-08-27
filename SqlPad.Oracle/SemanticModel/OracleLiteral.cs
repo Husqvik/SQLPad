@@ -6,7 +6,11 @@ namespace SqlPad.Oracle.SemanticModel
 		Date,
 		IntervalYearToMonth,
 		IntervalDayToSecond,
-		Timestamp
+		Timestamp,
+		Number,
+		SinglePrecision,
+		DoublePrecision,
+		Char
 	}
 
 	public struct OracleLiteral

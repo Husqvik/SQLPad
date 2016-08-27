@@ -3357,7 +3357,8 @@ namespace SqlPad.Oracle.SemanticModel
 				String.Equals(identifierNode.Id, Terminals.RowNumberPseudocolumn) ||
 				String.Equals(identifierNode.Id, Terminals.Level) ||
 				String.Equals(identifierNode.Id, Terminals.User) ||
-				String.Equals(identifierNode.ParentNode.Id, NonTerminals.IdentifierOrParenthesisEnclosedIdentifierList))
+				String.Equals(identifierNode.ParentNode.Id, NonTerminals.IdentifierOrParenthesisEnclosedIdentifierList) ||
+				String.Equals(identifierNode.ParentNode.Id, NonTerminals.CellAssignment))
 			{
 				rootNode = identifierNode;
 			}
@@ -3602,6 +3603,26 @@ namespace SqlPad.Oracle.SemanticModel
 					break;
 				case Terminals.Timestamp:
 					literal.Type = LiteralType.Timestamp;
+					break;
+				case Terminals.StringLiteral:
+					literal.Type = LiteralType.Char;
+					break;
+				case Terminals.NumberLiteral:
+					switch (terminal.Token.Value[terminal.Token.Value.Length - 1])
+					{
+						case 'f':
+						case 'F':
+							literal.Type = LiteralType.SinglePrecision;
+							break;
+						case 'd':
+						case 'D':
+							literal.Type = LiteralType.DoublePrecision;
+							break;
+						default:
+							literal.Type = LiteralType.Number;
+							break;
+					}
+					
 					break;
 				case Terminals.Interval:
 					var intervalTypeNode = terminal.ParentNode[2, 0];

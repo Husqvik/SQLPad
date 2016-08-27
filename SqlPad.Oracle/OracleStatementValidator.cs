@@ -374,7 +374,7 @@ namespace SqlPad.Oracle
 						? OracleSuggestionType.ExpressionIsAlwaysFalse
 						: OracleSuggestionType.ExpressionIsAlwaysTrue;
 
-					validationModel.InvalidNonTerminals[expressionIsNullNaNOrInfiniteNode] = new SuggestionData(suggestionType) { Node = expressionIsNullNaNOrInfiniteNode };
+					validationModel.AddNonTerminalSuggestion(expressionIsNullNaNOrInfiniteNode, suggestionType);
 				}
 			}
 		}
@@ -1815,6 +1815,11 @@ namespace SqlPad.Oracle
 							}
 						}
 					}
+
+					if (!isAsterisk)
+					{
+						OracleConditionValidator.ValidateCondition(validationModel, columnReference);
+					}
 				}
 				else if (databaseLinkReferenceCount > 1)
 				{
@@ -1918,6 +1923,10 @@ namespace SqlPad.Oracle
 		{
 			var validationData = new SemanticErrorNodeValidationData(errorType, tooltipText ?? errorType) { Node = node };
 			InvalidNonTerminals[node] = validationData;
+		}
+		public void AddNonTerminalSuggestion(StatementGrammarNode node, string suggestionType)
+		{
+			InvalidNonTerminals[node] = new SuggestionData(suggestionType) { Node = node };
 		}
 	}
 

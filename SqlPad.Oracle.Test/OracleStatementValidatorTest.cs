@@ -3730,5 +3730,41 @@ END;";
 			var node = validationModel.InvalidNonTerminals.Values.First();
 			node.SemanticErrorType.ShouldBe(OracleSemanticErrorType.BindVariablesNotAllowedForDataDefinitionOperations);
 		}
+
+		[Test]
+		public void TestImplicitConversionWarningFromString()
+		{
+			const string sqlText = "SELECT NULL FROM (SELECT DATE'2016-08-27' value_date, 1 value_number FROM dual) WHERE value_date = '2016-08-27' OR value_number = '1'";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var suggestions = validationModel.Suggestions.ToArray();
+			suggestions.Length.ShouldBe(2);
+
+			suggestions[0].SuggestionType.ShouldBe("Implicit conversion between DATE and CHAR");
+			suggestions[1].SuggestionType.ShouldBe("Implicit conversion between NUMBER and CHAR");
+		}
+
+		[Test]
+		public void TestImplicitConversionWarningToString()
+		{
+			const string sqlText = "SELECT NULL FROM (SELECT '2016-08-27' string_date, '1' string_number FROM dual) WHERE string_date = DATE'2016-08-27' OR string_number = 1";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var suggestions = validationModel.Suggestions.ToArray();
+			suggestions.Length.ShouldBe(2);
+
+			suggestions[0].SuggestionType.ShouldBe("Implicit conversion between CHAR and DATE");
+			suggestions[1].SuggestionType.ShouldBe("Implicit conversion between CHAR and NUMBER");
+		}
 	}
 }

@@ -52,15 +52,17 @@ namespace SqlPad.Oracle
 
 		static OracleConfiguration()
 		{
+			var defaultFormatSettings =
+				new OracleConfigurationFormatter
+				{
+					FormatOptions = new OracleConfigurationFormatterFormatOptions()
+				};
+
 			Configuration =
 				new OracleConfiguration
 				{
 					Connections = new OracleConfigurationConnection[0],
-					Formatter =
-						new OracleConfigurationFormatter
-						{
-							FormatOptions = new OracleConfigurationFormatterFormatOptions()
-						}
+					Formatter = defaultFormatSettings
 				};
 
 			if (!File.Exists(ConfigurationFilePath))
@@ -78,6 +80,11 @@ namespace SqlPad.Oracle
 				if (Configuration.Connections != null)
 				{
 					Configuration._connectionConfigurations = Configuration.Connections.ToDictionary(c => c.ConnectionName);
+				}
+
+				if (Configuration.Formatter == null)
+				{
+					Configuration.Formatter = defaultFormatSettings;
 				}
 			}
 			catch (Exception e)

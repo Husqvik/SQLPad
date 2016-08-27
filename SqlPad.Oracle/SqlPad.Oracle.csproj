@@ -166,6 +166,7 @@
     <Compile Include="OracleDataExportConverter.cs" />
     <Compile Include="DataDictionary\OracleDataType.cs" />
     <Compile Include="DatabaseConnection\OracleDebugger.cs" />
+    <Compile Include="OracleConditionValidator.cs" />
     <Compile Include="OracleFoldingSectionProvider.cs" />
     <Compile Include="OracleProgramMatcher.cs" />
     <Compile Include="OracleGrammarDescription.cs">

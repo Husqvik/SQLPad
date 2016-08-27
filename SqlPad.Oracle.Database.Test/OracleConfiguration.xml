@@ -4,7 +4,7 @@
   <Connections>
     <Connection ConnectionName="*" RemoteTraceDirectory="c:\Oracle\diag\rdbms\hq12c\hq12c\trace\">
       <ExecutionPlan>
-        <TargetTable Name="TOAD_PLAN_TABLE" />
+        <TargetTable Name="EXPLAIN_PLAN" />
       </ExecutionPlan>
     </Connection>
   </Connections>

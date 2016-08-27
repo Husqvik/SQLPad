@@ -15,6 +15,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 		public const string SystemParameterNameMaxStringSize = "max_string_size";
 		public const string BuiltInDataTypeBFile = "BFILE";
 		public const string BuiltInDataTypeInt = "INT";
+		public const string BuiltInDataTypeReal = "REAL";
+		public const string BuiltInDataTypeDoublePrecision = "DOUBLE PRECISION";
 		public const string BuiltInDataTypeIntervalYearToMonth = "INTERVAL YEAR TO MONTH";
 		public const string BuiltInDataTypeIntervalDayToSecond = "INTERVAL DAY TO SECOND";
 		public const string BuiltInDataTypeTimestampWithTimeZone = "TIMESTAMP WITH TIME ZONE";
@@ -42,7 +44,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				"NCLOB",
 				TerminalValues.Date,
 				TerminalValues.Decimal,
-				"DOUBLE PRECISION",
+				BuiltInDataTypeDoublePrecision,
 				TerminalValues.Float,
 				BuiltInDataTypeInt,
 				TerminalValues.Integer,
@@ -50,7 +52,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				BuiltInDataTypeIntervalYearToMonth,
 				TerminalValues.Number,
 				TerminalValues.Raw,
-				"REAL",
+				BuiltInDataTypeReal,
 				TerminalValues.Smallint,
 				TerminalValues.Table,
 				TerminalValues.Timestamp,

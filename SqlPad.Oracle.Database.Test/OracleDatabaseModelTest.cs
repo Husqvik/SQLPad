@@ -106,7 +106,8 @@ WHERE
 			databaseModel.SystemParameters.Count.ShouldBeGreaterThan(0);
 			Trace.WriteLine($"System parameters dictionary has {databaseModel.SystemParameters.Count} members. ");
 
-			var objectForScriptCreation = databaseModel.GetFirstSchemaObject<OracleSchemaObject>(databaseModel.GetPotentialSchemaObjectIdentifiers("SYS", "OBJ$"));
+			var explainPlanTable = OracleConfiguration.Configuration.Connections.First().ExecutionPlan.TargetTable;
+			var objectForScriptCreation = databaseModel.GetFirstSchemaObject<OracleSchemaObject>(databaseModel.GetPotentialSchemaObjectIdentifiers(explainPlanTable.Schema, explainPlanTable.Name));
 			objectForScriptCreation.ShouldNotBe(null);
 			var objectScript = await databaseModel.ObjectScriptExtractor.ExtractSchemaObjectScriptAsync(objectForScriptCreation, CancellationToken.None);
 
@@ -216,7 +217,7 @@ WHERE
 			var executionModel =
 				new StatementExecutionModel
 				{
-					StatementText = $"SELECT NULL FROM {Guid.NewGuid().ToString("n")}",
+					StatementText = $"SELECT NULL FROM {Guid.NewGuid():n}",
 					BindVariables = new BindVariableModel[0]
 				};
 
