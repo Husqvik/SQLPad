@@ -808,7 +808,8 @@ namespace SqlPad.Oracle
 
 		private static void ValidateBindVariables(OracleValidationModel validationModel)
 		{
-			if (validationModel.Statement.IsDataManipulation || String.Equals(validationModel.Statement.RootNode.Id, NonTerminals.PlSqlBlockStatement))
+			var isSelect = validationModel.Statement.RootNode[NonTerminals.Statement, NonTerminals.SelectStatement] != null;
+			if (isSelect || validationModel.Statement.IsDataManipulation || String.Equals(validationModel.Statement.RootNode.Id, NonTerminals.PlSqlBlockStatement))
 			{
 				return;
 			}

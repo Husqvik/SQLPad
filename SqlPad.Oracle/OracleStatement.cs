@@ -30,7 +30,7 @@ namespace SqlPad.Oracle
 			get
 			{
 				var statement = RootNode[NonTerminals.Statement];
-				return statement != null && statement.ChildNodes.Count == 1 && statement[0].Id.In(NonTerminals.InsertStatement, NonTerminals.UpdateStatement, NonTerminals.DeleteStatement, NonTerminals.MergeStatement);
+				return statement != null && statement[0].Id.In(NonTerminals.InsertStatement, NonTerminals.UpdateStatement, NonTerminals.DeleteStatement, NonTerminals.MergeStatement);
 			}
 		}
 

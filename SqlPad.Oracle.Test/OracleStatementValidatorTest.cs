@@ -3766,5 +3766,19 @@ END;";
 			suggestions[0].SuggestionType.ShouldBe("Implicit conversion between CHAR and DATE");
 			suggestions[1].SuggestionType.ShouldBe("Implicit conversion between CHAR and NUMBER");
 		}
+
+		[Test]
+		public void TestBindVariableAsFunctionParameter()
+		{
+			const string sqlText = "SELECT dbms_random.string('X', :length) FROM dual";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
+		}
 	}
 }
