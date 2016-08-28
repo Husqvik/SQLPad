@@ -1,7 +1,8 @@
 ﻿using System;
 using SqlPad.Oracle.DatabaseConnection;
+using SqlPad.Oracle.DataDictionary;
 using SqlPad.Oracle.SemanticModel;
-using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
+
 using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 
@@ -11,8 +12,8 @@ namespace SqlPad.Oracle
 	{
 		public static void ValidateCondition(OracleValidationModel validationModel, OracleColumnReference columnReference)
 		{
-			var dataTypeName = columnReference.ColumnDescription?.DataType.FullyQualifiedName.NormalizedName.Trim('"');
-			if (String.IsNullOrEmpty(dataTypeName) || !columnReference.ColumnDescription.DataType.IsPrimitive)
+			var columnDataTypeName = columnReference.ColumnDescription?.DataType.FullyQualifiedName.NormalizedName.Trim('"');
+			if (String.IsNullOrEmpty(columnDataTypeName) || !columnReference.ColumnDescription.DataType.IsPrimitive)
 			{
 				return;
 			}
@@ -39,24 +40,19 @@ namespace SqlPad.Oracle
 					return;
 				}
 
-				var isString = String.Equals(expressionToCheck.FirstTerminalNode.Id, Terminals.StringLiteral);
-				var isNumber = String.Equals(expressionToCheck.FirstTerminalNode.Id, Terminals.NumberLiteral);
-				var isTime = expressionToCheck.FirstTerminalNode.Id.In(Terminals.Date, Terminals.Timestamp);
-
-				var isTimeOrNumber = IsTime(dataTypeName) || IsNumeric(dataTypeName);
-				if (isTimeOrNumber && isString || IsText(dataTypeName) && (isTime || isNumber))
+				var dummyColumn = new OracleColumn();
+				if (!OracleDataType.TryResolveDataTypeFromExpression(expressionToCheck, dummyColumn))
 				{
-					var literalDataType = expressionToCheck.FirstTerminalNode.Id.ToUpperInvariant();
-					if (isString)
-					{
-						literalDataType = "CHAR";
-					}
-					else if (isNumber)
-					{
-						literalDataType = "NUMBER";
-					}
+					return;
+				}
 
-					validationModel.AddNonTerminalSuggestion(expressionToCheck, String.Format(OracleSuggestionType.ImplicitConversionWarning, dataTypeName, literalDataType));
+				var literalDataTypeName = dummyColumn.DataType.FullyQualifiedName.NormalizedName.Trim('"');
+
+				var isColumnTimeOrNumber = IsTime(columnDataTypeName) || IsNumeric(columnDataTypeName);
+				var isLiteralTimeOrNumber = IsTime(literalDataTypeName) || IsNumeric(literalDataTypeName);
+				if (isColumnTimeOrNumber && IsText(literalDataTypeName) || isLiteralTimeOrNumber && IsText(columnDataTypeName))
+				{
+					validationModel.AddNonTerminalSuggestion(expressionToCheck, String.Format(OracleSuggestionType.ImplicitConversionWarning, columnDataTypeName, literalDataTypeName));
 				}
 			}
 		}

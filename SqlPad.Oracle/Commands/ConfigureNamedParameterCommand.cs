@@ -53,8 +53,10 @@ namespace SqlPad.Oracle.Commands
 		private IEnumerable<TextSegment> GetNamePrefixSegments(bool includeOptionalParameters)
 		{
 			var formatOption = OracleConfiguration.Configuration.Formatter.FormatOptions.Identifier;
-			var parameterNameMetadata = _programReference.Metadata.NamedParameters.Where(p => includeOptionalParameters || !p.Value.IsOptional).ToArray();
 			var parameterReferences = _programReference.ParameterReferences;
+			var parameterNameMetadata =
+				_programReference.Metadata.NamedParameters.Where((p, i) => includeOptionalParameters || !p.Value.IsOptional || i < parameterReferences.Count)
+				.ToArray();
 
 			var parameterIndexStart = _programReference.ParameterListNode.FirstTerminalNode.SourcePosition.IndexEnd + 1;
 			var segmentTextBuilder = new StringBuilder();

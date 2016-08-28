@@ -2021,6 +2021,21 @@ MODEL
 		}
 
 		[Test, Apartment(ApartmentState.STA)]
+		public void TestConfigureNamedParametersCommandWithOptionalValues()
+		{
+			const string statementText = @"SELECT dbms_xplan.display_cursor('<sql_id>', NULL, '<format>') FROM dual";
+			_editor.Text = statementText;
+			_editor.CaretOffset = 18;
+
+			CanExecuteCommand(OracleCommands.ConfigureNamedParameters).ShouldBe(true);
+			ExecuteCommand(OracleCommands.ConfigureNamedParameters, new TestCommandSettings(new CommandSettingsModel()));
+
+			const string expectedResult = @"SELECT dbms_xplan.display_cursor(SQL_ID => '<sql_id>', CURSOR_CHILD_NO => NULL, FORMAT => '<format>') FROM dual";
+
+			_editor.Text.ShouldBe(expectedResult);
+		}
+
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestConfigureNamedParametersCommandWithExistingNamedPrefixes()
 		{
 			const string statementText = @"SELECT SYS.ODCIARGDESC(NULL, NULL, NULL, NULL, TABLEPARTITIONLOWER => NULL, TABLEPARTITIONUPPER => NULL, CARDINALITY => NULL) FROM DUAL";

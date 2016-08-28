@@ -150,5 +150,127 @@ namespace SqlPad.Oracle.DataDictionary
 
 			return name;
 		}
+
+		public static bool TryResolveDataTypeFromExpression(StatementGrammarNode expressionNode, OracleColumn column)
+		{
+			if (expressionNode == null || expressionNode.TerminalCount == 0 || !String.Equals(expressionNode.Id, NonTerminals.Expression))
+			{
+				return false;
+			}
+
+			var isChainedExpression = expressionNode[NonTerminals.ExpressionMathOperatorChainedList] != null;
+			if (isChainedExpression)
+			{
+				return false;
+			}
+
+			var analyzedNode = expressionNode[NonTerminals.ParenthesisEnclosedExpression, NonTerminals.Expression];
+			if (analyzedNode != null)
+			{
+				return TryResolveDataTypeFromExpression(analyzedNode, column);
+			}
+
+			analyzedNode = expressionNode[NonTerminals.CastOrXmlCastFunction, NonTerminals.CastFunctionParameterClause, NonTerminals.AsDataType, NonTerminals.DataType];
+			if (analyzedNode != null)
+			{
+				column.DataType = OracleReferenceBuilder.ResolveDataTypeFromNode(analyzedNode);
+				column.Nullable = true;
+				return true;
+			}
+
+			if (String.Equals(expressionNode.FirstTerminalNode.Id, Terminals.Collect))
+			{
+				column.DataType = OracleDataType.DynamicCollectionType;
+				column.Nullable = true;
+				return true;
+			}
+
+			var tokenValue = expressionNode.FirstTerminalNode.Token.Value;
+			string literalInferredDataTypeName = null;
+			var literalInferredDataType = new OracleDataType();
+			var nullable = false;
+			switch (expressionNode.FirstTerminalNode.Id)
+			{
+				case Terminals.StringLiteral:
+					if (expressionNode.TerminalCount != 1)
+					{
+						break;
+					}
+
+					if (tokenValue[0] == 'n' || tokenValue[0] == 'N')
+					{
+						literalInferredDataTypeName = TerminalValues.NChar;
+					}
+					else
+					{
+						literalInferredDataTypeName = TerminalValues.Char;
+					}
+
+					literalInferredDataType.Length = tokenValue.ToPlainString().Length;
+					nullable = literalInferredDataType.Length == 0;
+
+					break;
+				case Terminals.NumberLiteral:
+					if (expressionNode.TerminalCount != 1)
+					{
+						break;
+					}
+
+					literalInferredDataTypeName = TerminalValues.Number;
+
+					/*if (includeLengthPrecisionAndScale)
+					{
+						literalInferredDataType.Precision = GetNumberPrecision(tokenValue);
+						int? scale = null;
+						if (literalInferredDataType.Precision.HasValue)
+						{
+							var indexDecimalDigit = tokenValue.IndexOf('.');
+							if (indexDecimalDigit != -1)
+							{
+								scale = tokenValue.Length - indexDecimalDigit - 1;
+							}
+						}
+
+						literalInferredDataType.Scale = scale;
+					}*/
+
+					break;
+				case Terminals.Date:
+					if (expressionNode.TerminalCount == 2)
+					{
+						literalInferredDataTypeName = TerminalValues.Date;
+					}
+
+					break;
+				case Terminals.Timestamp:
+					if (expressionNode.TerminalCount == 2)
+					{
+						literalInferredDataTypeName = TerminalValues.Timestamp;
+						literalInferredDataType.Scale = 9;
+					}
+
+					break;
+			}
+
+			if (literalInferredDataTypeName != null)
+			{
+				literalInferredDataType.FullyQualifiedName = OracleObjectIdentifier.Create(null, literalInferredDataTypeName);
+				column.DataType = literalInferredDataType;
+				column.Nullable = nullable;
+				return true;
+			}
+
+			return false;
+		}
+
+		/*private static int? GetNumberPrecision(string value)
+		{
+			if (value.Any(c => c.In('e', 'E')))
+			{
+				return null;
+			}
+
+			return value.Count(Char.IsDigit);
+		}*/
 	}
 }
