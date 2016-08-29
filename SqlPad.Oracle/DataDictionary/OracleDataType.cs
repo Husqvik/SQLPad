@@ -216,7 +216,20 @@ namespace SqlPad.Oracle.DataDictionary
 						break;
 					}
 
-					literalInferredDataTypeName = TerminalValues.Number;
+					switch (tokenValue[tokenValue.Length - 1])
+					{
+						case 'f':
+						case 'F':
+							literalInferredDataTypeName = TerminalValues.BinaryFloat;
+							break;
+						case 'd':
+						case 'D':
+							literalInferredDataTypeName = TerminalValues.BinaryDouble;
+							break;
+						default:
+							literalInferredDataTypeName = TerminalValues.Number;
+							break;
+					}
 
 					/*if (includeLengthPrecisionAndScale)
 					{

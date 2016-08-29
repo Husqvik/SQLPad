@@ -5,6 +5,7 @@ using Shouldly;
 using SqlPad.Oracle.DataDictionary;
 using SqlPad.Oracle.SemanticModel;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
+using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
 namespace SqlPad.Oracle.Test
 {
@@ -3635,6 +3636,21 @@ SELECT test_function(1) FROM dual;";
 			parameter.Direction.ShouldBe(ParameterDirection.Input);
 			parameter.DataType.ShouldBe(String.Empty);
 			parameter.IsOptional.ShouldBe(false);
+		}
+
+		[Test]
+		public void TestBinaryFloatAndDoubleDataTypesDefinedByLiterals()
+		{
+			const string query1 = @"SELECT column1, column2 FROM (SELECT 1f column1, 1d column2 FROM dual)";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single().Validate();
+
+			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
+			var mainQueryBlock = semanticModel.QueryBlocks.Last();
+
+			mainQueryBlock.Columns.Count.ShouldBe(2);
+			mainQueryBlock.Columns[0].ColumnDescription.FullTypeName.ShouldBe(TerminalValues.BinaryFloat);
+			mainQueryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe(TerminalValues.BinaryDouble);
 		}
 	}
 }

@@ -299,7 +299,7 @@ namespace SqlPad.Oracle
 						continue;
 					}
 
-					if (String.Equals(item.Id, parent.ChildNodes[index].Id))
+					if (index < parent.ChildNodes.Count && String.Equals(item.Id, parent.ChildNodes[index].Id))
 					{
 						if (index == childNodeIndex)
 						{

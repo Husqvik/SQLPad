@@ -2434,7 +2434,7 @@ ON (EVENTS.ID = SRC.ID)";
 			items[0].Text.ShouldBe("PUT_LINE");
 		}
 
-		[Test, Ignore("not solved yet; looks like somethings goes really wrong when building grammar tree although it requires document repository to replicate this issue. ")]
+		[Test]
 		public void TestSpecialCrashingCaseWithinTerminalCandidates()
 		{
 			const string statement = "SELECT row_number() OVER (PARTITION BY dummy, d, dummy ORDER BY NULL) FROM dual";
