@@ -125,7 +125,7 @@
 				<Run Text="Trace file: " /><Hyperlink Click="TraceFileNameHyperlinkClickHandler"><Run Text="{Binding TraceFileName}" /></Hyperlink>
 			</TextBlock>
 
-			<Button Content="TKProf" Visibility="{Binding TKProfEnabled, Converter={StaticResource ObjectToVisibilityConverter}}" HorizontalAlignment="Left" Width="60" Click="TKProfClickHandler" />
+			<Button Content="TK_Prof" Visibility="{Binding TKProfEnabled, Converter={StaticResource ObjectToVisibilityConverter}}" HorizontalAlignment="Left" Width="60" Click="TKProfClickHandler" />
 			<TextBlock Visibility="{Binding TKProfFileName, Converter={StaticResource ObjectToVisibilityConverter}}">
 				<Run Text="TKProf file: " /><Hyperlink Click="TKProfFileNameHyperlinkClickHandler"><Run Text="{Binding TKProfFileName}" /></Hyperlink>
 			</TextBlock>

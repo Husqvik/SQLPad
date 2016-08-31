@@ -72,7 +72,7 @@ namespace SqlPad.Oracle
 
 		private static bool IsNumeric(string dataTypeName)
 		{
-			return dataTypeName.In(TerminalValues.Integer, TerminalValues.Number, TerminalValues.Numeric, OracleDatabaseModelBase.BuiltInDataTypeInt, OracleDatabaseModelBase.BuiltInDataTypeReal);
+			return dataTypeName.In(TerminalValues.Integer, TerminalValues.Number, TerminalValues.Numeric, TerminalValues.BinaryFloat, TerminalValues.BinaryDouble, OracleDatabaseModelBase.BuiltInDataTypeInt, OracleDatabaseModelBase.BuiltInDataTypeReal);
 		}
 
 		private static bool IsTime(string dataTypeName)

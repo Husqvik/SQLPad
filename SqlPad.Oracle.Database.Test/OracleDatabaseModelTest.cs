@@ -44,9 +44,11 @@ WHERE
 			var connectionStringName = databaseConfiguration.Infrastructures[0].ConnectionStringName;
 			ConnectionString = ConfigurationManager.ConnectionStrings[connectionStringName];
 
-			var sourceFileName = Path.Combine(new Uri(Path.GetDirectoryName(typeof(OracleDatabaseModel).Assembly.CodeBase)).LocalPath, FileNameOracleConfiguration);
 			var destinationFileName = Path.Combine(ConfigurationProvider.FolderNameApplication, FileNameOracleConfiguration);
-			File.Copy(sourceFileName, destinationFileName);
+			using (var reader = new StreamReader(typeof(OracleDatabaseModelTest).Assembly.GetManifestResourceStream($"SqlPad.Oracle.Database.Test.{FileNameOracleConfiguration}")))
+			{
+				File.WriteAllText(destinationFileName, reader.ReadToEnd());
+			}
 		}
 
 		[Test]
