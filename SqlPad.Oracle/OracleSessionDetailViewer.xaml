@@ -123,7 +123,7 @@
 				</Style>
 			</Expander.Style>
 			
-			<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsDeferredScrollingEnabled="True">
+			<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
 				<StackPanel>
 					<DataGrid x:Name="SessionDataGrid"
 					          Style="{StaticResource BasicDataGridSettings}"
