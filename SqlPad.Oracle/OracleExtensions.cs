@@ -241,6 +241,29 @@ namespace SqlPad.Oracle
 			return node?.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBlock, NonTerminals.Expression);
 		}
 
+		public static bool IsChainedExpression(this StatementGrammarNode expressionNode)
+		{
+			return expressionNode[NonTerminals.ExpressionMathOperatorChainedList] != null;
+
+		}
+
+		public static StatementGrammarNode UnwrapIfWIthinParentheses(this StatementGrammarNode expressionNode)
+		{
+			var unwrappedExpression = expressionNode;
+
+			do
+			{
+				unwrappedExpression = unwrappedExpression[NonTerminals.ParenthesisEnclosedExpression, NonTerminals.Expression];
+				if (unwrappedExpression != null)
+				{
+					expressionNode = unwrappedExpression;
+				}
+
+			} while (unwrappedExpression != null);
+
+			return expressionNode;
+		}
+
 		public static string ToCategoryLabel(this ReferenceType type)
 		{
 			switch (type)

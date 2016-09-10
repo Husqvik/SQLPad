@@ -153,24 +153,14 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public static bool TryResolveDataTypeFromExpression(StatementGrammarNode expressionNode, OracleColumn column)
 		{
-			if (expressionNode == null || expressionNode.TerminalCount == 0 || !String.Equals(expressionNode.Id, NonTerminals.Expression))
+			if (expressionNode == null || expressionNode.TerminalCount == 0 || !String.Equals(expressionNode.Id, NonTerminals.Expression) ||
+				expressionNode.IsChainedExpression())
 			{
 				return false;
 			}
 
-			var isChainedExpression = expressionNode[NonTerminals.ExpressionMathOperatorChainedList] != null;
-			if (isChainedExpression)
-			{
-				return false;
-			}
-
-			var analyzedNode = expressionNode[NonTerminals.ParenthesisEnclosedExpression, NonTerminals.Expression];
-			if (analyzedNode != null)
-			{
-				return TryResolveDataTypeFromExpression(analyzedNode, column);
-			}
-
-			analyzedNode = expressionNode[NonTerminals.CastOrXmlCastFunction, NonTerminals.CastFunctionParameterClause, NonTerminals.AsDataType, NonTerminals.DataType];
+			expressionNode = expressionNode.UnwrapIfWIthinParentheses();
+			var analyzedNode = expressionNode[NonTerminals.CastOrXmlCastFunction, NonTerminals.CastFunctionParameterClause, NonTerminals.AsDataType, NonTerminals.DataType];
 			if (analyzedNode != null)
 			{
 				column.DataType = OracleReferenceBuilder.ResolveDataTypeFromNode(analyzedNode);
