@@ -1918,6 +1918,19 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test]
+		public void TestTimeStampLiteralWithSlashInTimeZoneRegion()
+		{
+			const string sqlText = @"SELECT TIMESTAMP'2016-09-10 20:09:33.123456789 Europe/Stockholm' val4 FROM dual";
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var invalidNodes = validationModel.IdentifierNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
+			invalidNodes.Length.ShouldBe(0);
+		}
+
+		[Test]
 		public void TestInvalidDateAndTimeStampLiteralStartingWithSpace()
 		{
 			const string sqlText = @"SELECT DATE' 2014-12-06', TIMESTAMP' 2014-12-06 17:50:42' FROM DUAL";

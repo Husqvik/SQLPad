@@ -247,12 +247,15 @@ namespace SqlPad.Oracle
 
 		}
 
-		public static StatementGrammarNode UnwrapIfWIthinParentheses(this StatementGrammarNode expressionNode)
+		public static StatementGrammarNode UnwrapIfNonChainedExpressionWithinParentheses(this StatementGrammarNode expressionNode, out bool hasChainedExpression)
 		{
+			hasChainedExpression = false;
 			var unwrappedExpression = expressionNode;
 
 			do
 			{
+				hasChainedExpression |= unwrappedExpression.IsChainedExpression();
+
 				unwrappedExpression = unwrappedExpression[NonTerminals.ParenthesisEnclosedExpression, NonTerminals.Expression];
 				if (unwrappedExpression != null)
 				{

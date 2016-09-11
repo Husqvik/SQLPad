@@ -183,12 +183,12 @@ namespace SqlPad.Oracle.SemanticModel
 						new OracleColumn(true)
 						{
 							Name = "\"VERSIONS_OPERATION\"",
-							DataType = new OracleDataType {FullyQualifiedName = OracleObjectIdentifier.Create(null, TerminalValues.Varchar2), Unit = DataUnit.Byte, Length = 1}
+							DataType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(null, TerminalValues.Varchar2), Unit = DataUnit.Byte, Length = 1 }
 						},
 						new OracleColumn(true)
 						{
 							Name = "\"VERSIONS_XID\"",
-							DataType = new OracleDataType {FullyQualifiedName = OracleObjectIdentifier.Create(null, TerminalValues.Raw), Length = 8}
+							DataType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(null, TerminalValues.Raw), Length = 8 }
 						}
 					};
 

@@ -3652,5 +3652,21 @@ SELECT test_function(1) FROM dual;";
 			mainQueryBlock.Columns[0].ColumnDescription.FullTypeName.ShouldBe(TerminalValues.BinaryFloat);
 			mainQueryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe(TerminalValues.BinaryDouble);
 		}
+
+		[Test]
+		public void TestDataTypeDefinedByToNumber()
+		{
+			const string query1 = @"SELECT val1, val2, val3 FROM (SELECT to_date('2016-09-10') val1, (to_date('2016-09-10')) val2, (to_date('2016-09-10') + 1) val3 FROM dual)";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single().Validate();
+
+			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
+			var mainQueryBlock = semanticModel.QueryBlocks.Last();
+
+			mainQueryBlock.Columns.Count.ShouldBe(3);
+			mainQueryBlock.Columns[0].ColumnDescription.FullTypeName.ShouldBe(TerminalValues.Date);
+			mainQueryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe(TerminalValues.Date);
+			mainQueryBlock.Columns[2].ColumnDescription.FullTypeName.ShouldBe(String.Empty);
+		}
 	}
 }

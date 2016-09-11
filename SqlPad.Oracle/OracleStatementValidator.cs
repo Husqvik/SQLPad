@@ -17,7 +17,7 @@ namespace SqlPad.Oracle
 	public class OracleStatementValidator : IStatementValidator
 	{
 		private static readonly Regex DateValidator = new Regex(@"^(?<Year>([+-]\s*)?[0-9]{1,4})\s*-\s*(?<Month>[0-9]{1,2})\s*-\s*(?<Day>[0-9]{1,2})\s*$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
-		private static readonly Regex TimestampValidator = new Regex(@"^(?<Year>([+-]\s*)?[0-9]{1,4})\s*-\s*(?<Month>[0-9]{1,2})\s*-\s*(?<Day>[0-9]{1,2})\s*(?<Hour>[0-9]{1,2})\s*:\s*(?<Minute>[0-9]{1,2})\s*:\s*(?<Second>[0-9]{1,2})\s*(\.\s*(?<Fraction>[0-9]{1,9}))?\s*(((?<OffsetHour>[+-]\s*[0-9]{1,2})\s*:\s*(?<OffsetMinutes>[0-9]{1,2}))|(?<Timezone>[a-zA-Z]+))?$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+		private static readonly Regex TimestampValidator = new Regex(@"^(?<Year>([+-]\s*)?[0-9]{1,4})\s*-\s*(?<Month>[0-9]{1,2})\s*-\s*(?<Day>[0-9]{1,2})\s*(?<Hour>[0-9]{1,2})\s*:\s*(?<Minute>[0-9]{1,2})\s*:\s*(?<Second>[0-9]{1,2})\s*(\.\s*(?<Fraction>[0-9]{1,9}))?\s*(((?<OffsetHour>[+-]\s*[0-9]{1,2})\s*:\s*(?<OffsetMinutes>[0-9]{1,2}))|(?<Timezone>[a-zA-Z/]+))?$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 		private static readonly Regex IntervalYearToMonthValidator = new Regex(@"^\s*(?<Years>([+-]\s*)?[0-9]{1,9})\s*([-]\s*(?<Months>[0-9]{1,2}))?\s*$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 		private static readonly Regex IntervalDayToSecondValidator = new Regex(@"^\s*(?<Days>([+-]\s*)?[0-9]{1,9})\s*(?<Hours>[0-9]{1,2})?\s*(:\s*(?<Minutes>[0-9]{1,2}))?\s*(:\s*(?<Seconds>[0-9]{1,2}))?\s*(\.\s*(?<Fraction>[0-9]{1,9}))?\s*$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 		private static readonly Version MinimumJsonSupportVersion = new Version(12, 1, 0, 2);

@@ -135,28 +135,99 @@ namespace SqlPad.Oracle.SemanticModel
 					}
 				}
 			}
-			else if (!IsAsterisk && RootNode.TerminalCount > 0)
+			if (IsAsterisk || RootNode.TerminalCount == 0)
 			{
-				var expressionNode = RootNode[0];
-				if (String.Equals(expressionNode.Id, NonTerminals.AliasedExpression))
+				return _columnDescription;
+			}
+
+			var expressionNode = RootNode[0];
+			if (String.Equals(expressionNode.Id, NonTerminals.AliasedExpression))
+			{
+				expressionNode = expressionNode[0];
+			}
+
+			if (OracleDataType.TryResolveDataTypeFromExpression(expressionNode, _columnDescription) && !_columnDescription.DataType.IsDynamicCollection)
+			{
+				if (_columnDescription.DataType.FullyQualifiedName.Name.EndsWith("CHAR"))
 				{
-					expressionNode = expressionNode[0];
+					_columnDescription.CharacterSize = _columnDescription.DataType.Length;
 				}
 
-				if (OracleDataType.TryResolveDataTypeFromExpression(expressionNode, _columnDescription) && !_columnDescription.DataType.IsDynamicCollection)
+				var isBuiltInDataType = _columnDescription.DataType.IsPrimitive && OracleDatabaseModelBase.BuiltInDataTypes.Any(t => String.Equals(t, _columnDescription.DataType.FullyQualifiedName.Name));
+				if (!isBuiltInDataType && SemanticModel.HasDatabaseModel)
 				{
-					if (_columnDescription.DataType.FullyQualifiedName.Name.EndsWith("CHAR"))
+					var oracleType = SemanticModel.DatabaseModel.GetFirstSchemaObject<OracleTypeBase>(_columnDescription.DataType.FullyQualifiedName);
+					if (oracleType == null)
 					{
-						_columnDescription.CharacterSize = _columnDescription.DataType.Length;
+						_columnDescription.DataType = OracleDataType.Empty;
 					}
-
-					var isBuiltInDataType = _columnDescription.DataType.IsPrimitive && OracleDatabaseModelBase.BuiltInDataTypes.Any(t => String.Equals(t, _columnDescription.DataType.FullyQualifiedName.Name));
-					if (!isBuiltInDataType && SemanticModel.HasDatabaseModel)
+				}
+			}
+			else if (columnDescription == null)
+			{
+				bool isChainedExpression;
+				expressionNode = expressionNode.UnwrapIfNonChainedExpressionWithinParentheses(out isChainedExpression);
+				if (!isChainedExpression)
+				{
+					var programReference = ProgramReferences.SingleOrDefault(r => r.RootNode == expressionNode);
+					if (programReference == null)
 					{
-						var oracleType = SemanticModel.DatabaseModel.GetFirstSchemaObject<OracleTypeBase>(_columnDescription.DataType.FullyQualifiedName);
-						if (oracleType == null)
+						var typeReference = TypeReferences.SingleOrDefault(r => r.RootNode == expressionNode);
+					}
+					else if (programReference.Metadata != null)
+					{
+						if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramToNumber ||
+							programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramBinaryToNumber)
 						{
-							_columnDescription.DataType = OracleDataType.Empty;
+							_columnDescription.DataType = OracleDataType.NumberType;
+						}
+						else if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramToChar)
+						{
+							_columnDescription.DataType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(null, TerminalValues.Varchar2), Length = SemanticModel.DatabaseModel.MaximumVarcharLength };
+						}
+						else if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramToDate)
+						{
+							_columnDescription.DataType = OracleDataType.DateType;
+						}
+						else if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramToTimestamp)
+						{
+							_columnDescription.DataType = OracleDataType.CreateTimestampDataType(9);
+						}
+						else if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramToTimestampWithTimeZone)
+						{
+							_columnDescription.DataType = OracleDataType.CreateTimestampWithTimeZoneDataType(9);
+						}
+						else if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramToBlob)
+						{
+							_columnDescription.DataType = OracleDataType.BlobType;
+						}
+						else if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramHexToRaw)
+						{
+							_columnDescription.DataType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(null, TerminalValues.Raw), Length = SemanticModel.DatabaseModel.MaximumRawLength };
+						}
+						else if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramToClob)
+						{
+							_columnDescription.DataType = OracleDataType.ClobType;
+						}
+						else if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramToNClob)
+						{
+							_columnDescription.DataType = OracleDataType.NClobType;
+						}
+						else if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramToBinaryFloat)
+						{
+							_columnDescription.DataType = OracleDataType.BinaryFloatType;
+						}
+						else if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramToBinaryDouble)
+						{
+							_columnDescription.DataType = OracleDataType.BinaryDoubleType;
+						}
+						else if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramBinaryFileName)
+						{
+							_columnDescription.DataType = OracleDataType.BinaryFileType;
+						}
+						else if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramToNChar)
+						{
+							_columnDescription.DataType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(null, TerminalValues.NVarchar2), Length = SemanticModel.DatabaseModel.MaximumNVarcharLength };
 						}
 					}
 				}

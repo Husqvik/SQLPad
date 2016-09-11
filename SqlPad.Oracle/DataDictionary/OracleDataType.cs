@@ -12,7 +12,14 @@ namespace SqlPad.Oracle.DataDictionary
 	{
 		public static readonly OracleDataType Empty = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, String.Empty) };
 		public static readonly OracleDataType NumberType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, TerminalValues.Number) };
+		public static readonly OracleDataType DateType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, TerminalValues.Date) };
+		public static readonly OracleDataType BlobType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, TerminalValues.Blob) };
+		public static readonly OracleDataType ClobType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, TerminalValues.Clob) };
+		public static readonly OracleDataType NClobType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, "NCLOB") };
 		public static readonly OracleDataType BinaryIntegerType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, TerminalValues.BinaryInteger) };
+		public static readonly OracleDataType BinaryFloatType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, TerminalValues.BinaryFloat) };
+		public static readonly OracleDataType BinaryDoubleType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, TerminalValues.BinaryDouble) };
+		public static readonly OracleDataType BinaryFileType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, "BFILE") };
 		public static readonly OracleDataType XmlType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(OracleObjectIdentifier.SchemaSys, OracleTypeBase.TypeCodeXml) };
 		public static readonly OracleDataType DynamicCollectionType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, "DYNAMIC"), IsDynamicCollection = true };
 		public static readonly OracleDataType PlSqlBooleanType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, "PL/SQL BOOLEAN") };
@@ -33,7 +40,12 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public static OracleDataType CreateTimestampDataType(int precision)
 		{
-			return new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, TerminalValues.Timestamp), Precision = precision };
+			return new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, $"{TerminalValues.Timestamp}({precision})"), Precision = precision };
+		}
+
+		public static OracleDataType CreateTimestampWithTimeZoneDataType(int precision)
+		{
+			return new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, $"TIMESTAMP({precision}) WITH TIME ZONE"), Precision = precision };
 		}
 
 		public static IReadOnlyList<OracleDataType> FromUnpivotColumnSelectorValues(IEnumerable<StatementGrammarNode> nodes)
@@ -153,13 +165,18 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public static bool TryResolveDataTypeFromExpression(StatementGrammarNode expressionNode, OracleColumn column)
 		{
-			if (expressionNode == null || expressionNode.TerminalCount == 0 || !String.Equals(expressionNode.Id, NonTerminals.Expression) ||
-				expressionNode.IsChainedExpression())
+			if (expressionNode == null || expressionNode.TerminalCount == 0 || !String.Equals(expressionNode.Id, NonTerminals.Expression))
 			{
 				return false;
 			}
 
-			expressionNode = expressionNode.UnwrapIfWIthinParentheses();
+			bool isChainedExpression;
+			expressionNode = expressionNode.UnwrapIfNonChainedExpressionWithinParentheses(out isChainedExpression);
+			if (isChainedExpression)
+			{
+				return false;
+			}
+
 			var analyzedNode = expressionNode[NonTerminals.CastOrXmlCastFunction, NonTerminals.CastFunctionParameterClause, NonTerminals.AsDataType, NonTerminals.DataType];
 			if (analyzedNode != null)
 			{
