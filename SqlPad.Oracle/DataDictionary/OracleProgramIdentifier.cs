@@ -14,12 +14,14 @@ namespace SqlPad.Oracle.DataDictionary
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramRatioToReport = CreateFromValues(null, null, "RATIO_TO_REPORT");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramSysConnectByPath = CreateFromValues(null, null, "SYS_CONNECT_BY_PATH");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramBinaryToNumber = CreateFromValues(null, null, "BIN_TO_NUM");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramCoalesce = CreateFromValues(null, null, "COALESCE");
 
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramExists = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, TerminalValues.Exists);
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramBFileName = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "BFILENAME");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramRound = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "ROUND");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramLevel = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, TerminalValues.Level);
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramNextDay = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "NEXT_DAY");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramNvl = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "NVL");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramRegularExpressionCount = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "REGEXP_COUNT");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramRegularExpressionInstr = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "REGEXP_INSTR");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramRegularExpressionReplace = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "REGEXP_REPLACE");

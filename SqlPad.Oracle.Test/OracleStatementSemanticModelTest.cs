@@ -642,14 +642,14 @@ SELECT * FROM sampleData";
 		[Test]
 		public void TestLiteralColumnDataTypeResolution()
 		{
-			const string query1 = @"SELECT UNIQUE 123.456, '123.456', N'123.456', 123., 1.2E+1, DATE'2014-10-03', TIMESTAMP'2014-10-03 23:15:43.777' FROM DUAL";
+			const string query1 = @"SELECT UNIQUE 123.456, '123.456', N'123.456', 123., 1.2E+1, DATE'2014-10-03', TIMESTAMP'2014-10-03 23:15:43.777', TIMESTAMP'2014-10-03 23:15:43.777 Europe/Stockholm' FROM DUAL";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 			var queryBlock = semanticModel.QueryBlocks.First();
-			queryBlock.Columns.Count.ShouldBe(7);
+			queryBlock.Columns.Count.ShouldBe(8);
 			queryBlock.HasDistinctResultSet.ShouldBe(true);
 			var columns = queryBlock.Columns.ToList();
 			columns.ForEach(c => c.ColumnDescription.ShouldNotBe(null));
@@ -661,6 +661,7 @@ SELECT * FROM sampleData";
 			columns[4].ColumnDescription.FullTypeName.ShouldBe("NUMBER");
 			columns[5].ColumnDescription.FullTypeName.ShouldBe("DATE");
 			columns[6].ColumnDescription.FullTypeName.ShouldBe("TIMESTAMP(9)");
+			columns[7].ColumnDescription.FullTypeName.ShouldBe("TIMESTAMP(9) WITH TIME ZONE");
 		}
 
 		[Test]
@@ -691,7 +692,7 @@ SELECT C1, C2, C3, C4 FROM tmp";
 			semanticModel.MainQueryBlock.Columns[2].ColumnDescription.Nullable.ShouldBe(true);
 			semanticModel.MainQueryBlock.Columns[3].NormalizedName.ShouldBe("\"C4\"");
 			semanticModel.MainQueryBlock.Columns[3].ColumnDescription.ShouldNotBe(null);
-			semanticModel.MainQueryBlock.Columns[3].ColumnDescription.FullTypeName.ShouldBe(String.Empty);
+			semanticModel.MainQueryBlock.Columns[3].ColumnDescription.FullTypeName.ShouldBe("VARCHAR2(4000)");
 			semanticModel.MainQueryBlock.Columns[3].ColumnDescription.Nullable.ShouldBe(true);
 		}
 

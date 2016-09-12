@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using SqlPad.Oracle.DatabaseConnection;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
 using NonTerminals = SqlPad.Oracle.OracleGrammarDescription.NonTerminals;
 using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
@@ -38,14 +39,14 @@ namespace SqlPad.Oracle.DataDictionary
 
 		public override string Type { get; } = OracleObjectType.Type;
 
-		public static OracleDataType CreateTimestampDataType(int precision)
+		public static OracleDataType CreateTimestampDataType(int scale)
 		{
-			return new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, $"{TerminalValues.Timestamp}({precision})"), Precision = precision };
+			return new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, TerminalValues.Timestamp), Scale = scale };
 		}
 
-		public static OracleDataType CreateTimestampWithTimeZoneDataType(int precision)
+		public static OracleDataType CreateTimestampWithTimeZoneDataType(int scale)
 		{
-			return new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, $"TIMESTAMP({precision}) WITH TIME ZONE"), Precision = precision };
+			return new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(String.Empty, OracleDatabaseModelBase.BuiltInDataTypeTimestampWithTimeZone), Scale = scale };
 		}
 
 		public static IReadOnlyList<OracleDataType> FromUnpivotColumnSelectorValues(IEnumerable<StatementGrammarNode> nodes)
@@ -152,9 +153,10 @@ namespace SqlPad.Oracle.DataDictionary
 					name = $"{name}({dataType.Length})";
 					break;
 				case TerminalValues.Timestamp:
+				case OracleDatabaseModelBase.BuiltInDataTypeTimestampWithTimeZone:
 					if (dataType.Scale.HasValue)
 					{
-						name = $"{name}({dataType.Scale})";
+						name = name.Replace(TerminalValues.Timestamp, $"{TerminalValues.Timestamp}({dataType.Scale})");
 					}
 					
 					break;
@@ -265,7 +267,9 @@ namespace SqlPad.Oracle.DataDictionary
 				case Terminals.Timestamp:
 					if (expressionNode.TerminalCount == 2)
 					{
-						literalInferredDataTypeName = TerminalValues.Timestamp;
+						var timestampStringValue = expressionNode.LastTerminalNode.Token.Value.ToPlainString();
+						var timeZoneElement = OracleStatementValidator.TimestampValidator.Match(timestampStringValue).Groups["Timezone"];
+						literalInferredDataTypeName = timeZoneElement.Success ? OracleDatabaseModelBase.BuiltInDataTypeTimestampWithTimeZone : TerminalValues.Timestamp;
 						literalInferredDataType.Scale = 9;
 					}
 

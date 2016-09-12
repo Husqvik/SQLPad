@@ -167,67 +167,58 @@ namespace SqlPad.Oracle.SemanticModel
 			{
 				bool isChainedExpression;
 				expressionNode = expressionNode.UnwrapIfNonChainedExpressionWithinParentheses(out isChainedExpression);
+
 				if (!isChainedExpression)
 				{
 					var programReference = ProgramReferences.SingleOrDefault(r => r.RootNode == expressionNode);
 					if (programReference == null)
 					{
 						var typeReference = TypeReferences.SingleOrDefault(r => r.RootNode == expressionNode);
+						if (typeReference?.Metadata != null)
+						{
+							var x = typeReference.Metadata.ReturnParameter.CustomDataType;
+						}
 					}
 					else if (programReference.Metadata != null)
 					{
-						if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramToNumber ||
-							programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramBinaryToNumber)
+						if (programReference.Metadata.ReturnParameter == null)
 						{
-							_columnDescription.DataType = OracleDataType.NumberType;
+							if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramCoalesce)
+							{
+								
+							}
+							else if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramBinaryToNumber)
+							{
+								_columnDescription.DataType = OracleDataType.NumberType;
+							}
 						}
-						else if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramToChar)
+						else if (!String.IsNullOrEmpty(programReference.Metadata.ReturnParameter.DataType))
 						{
-							_columnDescription.DataType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(null, TerminalValues.Varchar2), Length = SemanticModel.DatabaseModel.MaximumVarcharLength };
-						}
-						else if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramToDate)
-						{
-							_columnDescription.DataType = OracleDataType.DateType;
-						}
-						else if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramToTimestamp)
-						{
-							_columnDescription.DataType = OracleDataType.CreateTimestampDataType(9);
-						}
-						else if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramToTimestampWithTimeZone)
-						{
-							_columnDescription.DataType = OracleDataType.CreateTimestampWithTimeZoneDataType(9);
-						}
-						else if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramToBlob)
-						{
-							_columnDescription.DataType = OracleDataType.BlobType;
-						}
-						else if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramHexToRaw)
-						{
-							_columnDescription.DataType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(null, TerminalValues.Raw), Length = SemanticModel.DatabaseModel.MaximumRawLength };
-						}
-						else if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramToClob)
-						{
-							_columnDescription.DataType = OracleDataType.ClobType;
-						}
-						else if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramToNClob)
-						{
-							_columnDescription.DataType = OracleDataType.NClobType;
-						}
-						else if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramToBinaryFloat)
-						{
-							_columnDescription.DataType = OracleDataType.BinaryFloatType;
-						}
-						else if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramToBinaryDouble)
-						{
-							_columnDescription.DataType = OracleDataType.BinaryDoubleType;
-						}
-						else if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramBinaryFileName)
-						{
-							_columnDescription.DataType = OracleDataType.BinaryFileType;
-						}
-						else if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramToNChar)
-						{
-							_columnDescription.DataType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(null, TerminalValues.NVarchar2), Length = SemanticModel.DatabaseModel.MaximumNVarcharLength };
+							if (programReference.Metadata.Identifier != OracleProgramIdentifier.IdentifierBuiltInProgramNvl)
+							{
+								_columnDescription.DataType = new OracleDataType { FullyQualifiedName = OracleObjectIdentifier.Create(null, programReference.Metadata.ReturnParameter.DataType) };
+
+								switch (programReference.Metadata.ReturnParameter.DataType)
+								{
+									case TerminalValues.Varchar:
+									case TerminalValues.Varchar2:
+										_columnDescription.CharacterSize = _columnDescription.DataType.Length = SemanticModel.DatabaseModel.MaximumVarcharLength;
+										break;
+									case TerminalValues.Raw:
+										_columnDescription.DataType.Length = SemanticModel.DatabaseModel.MaximumRawLength;
+										break;
+									case TerminalValues.NVarchar:
+									case TerminalValues.NVarchar2:
+										_columnDescription.CharacterSize = _columnDescription.DataType.Length = SemanticModel.DatabaseModel.MaximumNVarcharLength;
+										break;
+									case TerminalValues.Timestamp:
+										_columnDescription.DataType = OracleDataType.CreateTimestampDataType(9);
+										break;
+									case OracleDatabaseModelBase.BuiltInDataTypeTimestampWithTimeZone:
+										_columnDescription.DataType = OracleDataType.CreateTimestampWithTimeZoneDataType(9);
+										break;
+								}
+							}
 						}
 					}
 				}

@@ -467,6 +467,8 @@ namespace SqlPad.Oracle.SemanticModel
 						var outputColumnDescription = outputColumn.ColumnDescription;
 						outputColumnDescription.Nullable |= column.ColumnDescription.Nullable;
 
+						MatchInterchangeableDataTypes(columnDataType, outputColumnDescription.DataType);
+
 						if (columnDataType.FullyQualifiedName == outputColumnDescription.DataType.FullyQualifiedName)
 						{
 							if (columnDataType.Length > outputColumnDescription.DataType.Length)
@@ -511,6 +513,16 @@ namespace SqlPad.Oracle.SemanticModel
 						}
 					}
 				}
+			}
+		}
+
+		private static void MatchInterchangeableDataTypes(OracleDataType columnDataType, OracleDataType outputDataType)
+		{
+			if (String.Equals(outputDataType.FullyQualifiedName.Name, TerminalValues.Char) &&
+			    (String.Equals(columnDataType.FullyQualifiedName.Name, TerminalValues.Varchar) ||
+			     String.Equals(columnDataType.FullyQualifiedName.Name, TerminalValues.Varchar2)))
+			{
+				outputDataType.FullyQualifiedName = OracleObjectIdentifier.Create(null, TerminalValues.Varchar2);
 			}
 		}
 
