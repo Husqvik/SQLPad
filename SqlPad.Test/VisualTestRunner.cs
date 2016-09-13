@@ -42,7 +42,7 @@ namespace SqlPad.Test
 			var tempDirectoryName = TestFixture.SetupTestDirectory();
 			ConfigurationProvider.SetUserDataFolder(tempDirectoryName);
 
-			var sqlPadDirectory = new Uri(Path.GetDirectoryName(typeof(Snippets).Assembly.CodeBase)).LocalPath;
+			var sqlPadDirectory = Path.GetDirectoryName(new Uri(typeof(Snippets).Assembly.CodeBase).LocalPath);
 			ConfigurationProvider.SetSnippetsFolder(Path.Combine(sqlPadDirectory, Snippets.SnippetDirectoryName));
 			ConfigurationProvider.SetCodeGenerationItemFolder(Path.Combine(sqlPadDirectory, Snippets.CodeGenerationItemDirectoryName));
 			DocumentPage.IsParsingSynchronous = true;

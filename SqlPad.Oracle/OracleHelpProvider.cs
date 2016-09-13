@@ -65,7 +65,7 @@ namespace SqlPad.Oracle
 					return;
 				}
 
-				var folder = new Uri(Path.GetDirectoryName(typeof (OracleHelpProvider).Assembly.CodeBase)).LocalPath;
+				var folder = Path.GetDirectoryName(new Uri(typeof(OracleHelpProvider).Assembly.CodeBase).LocalPath);
 				using (var reader = XmlReader.Create(Path.Combine(folder, "OracleDocumentation.xml")))
 				{
 					var documentation = (Documentation)new XmlSerializer(typeof(Documentation)).Deserialize(reader);

@@ -16,7 +16,7 @@ namespace SqlPad.Oracle.Test
 	{
 		private static readonly OracleSqlParser Parser = OracleSqlParser.Instance;
 
-		private static readonly string SqlTestFileName = Path.Combine(new Uri(Path.GetDirectoryName(typeof(OracleSqlParserTest).Assembly.CodeBase)).LocalPath, "TestFiles", "SqlStatements1.sql");
+		private static readonly string SqlTestFileName = Path.Combine(Path.GetDirectoryName(new Uri(typeof(OracleSqlParserTest).Assembly.CodeBase).LocalPath), "TestFiles", "SqlStatements1.sql");
 
 		[Test(Description = @"Test complex statement parsing")]
 		public void TestComplexStatementParsing()

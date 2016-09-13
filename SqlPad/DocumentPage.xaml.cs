@@ -1968,8 +1968,8 @@ namespace SqlPad
 			}
 
 			var position = args.GetPosition(DynamicPopup.Child);
-
-			if (position.Y < -Editor.FontSize || position.Y > DynamicPopup.Child.RenderSize.Height || position.X < 0 || position.X > DynamicPopup.Child.RenderSize.Width)
+			var dpiScale = VisualTreeHelper.GetDpi(Editor);
+			if (position.Y < -Editor.FontSize * dpiScale.DpiScaleY || position.Y > DynamicPopup.Child.RenderSize.Height || position.X < 0 || position.X > DynamicPopup.Child.RenderSize.Width)
 			{
 				CloseToolTipWhenNotOpenByShortCutOrCaretChange();
 			}

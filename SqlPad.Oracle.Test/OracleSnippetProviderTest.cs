@@ -18,7 +18,7 @@ namespace SqlPad.Oracle.Test
 			ConfigurationProvider.SetSnippetsFolder(TempDirectoryName);
 			ConfigurationProvider.SetCodeGenerationItemFolder(TempDirectoryName);
 
-			var sourceDirectoryName = Path.Combine(new Uri(Path.GetDirectoryName(GetType().Assembly.CodeBase)).LocalPath, "TestFiles");
+			var sourceDirectoryName = Path.Combine(Path.GetDirectoryName(new Uri(GetType().Assembly.CodeBase).LocalPath), "TestFiles");
 
 			const string fileNameTestSnippet = "TestSnippet.xml";
 			const string fileNameSelectSnippet = "SnippetSelect.xml";
