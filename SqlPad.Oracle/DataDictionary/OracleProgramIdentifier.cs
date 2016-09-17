@@ -15,6 +15,7 @@ namespace SqlPad.Oracle.DataDictionary
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramSysConnectByPath = CreateFromValues(null, null, "SYS_CONNECT_BY_PATH");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramBinaryToNumber = CreateFromValues(null, null, "BIN_TO_NUM");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramCoalesce = CreateFromValues(null, null, "COALESCE");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramToLob = CreateFromValues(null, null, "TO_LOB");
 
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramExists = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, TerminalValues.Exists);
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramBFileName = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "BFILENAME");

@@ -1,4 +1,4 @@
-#SQLPad 0.4.0.433
+#SQLPad 0.4.0.434
 
 |Builds|Oracle.DataAccess|Oracle.ManagedDataAccess|
 |:--:|:--:|:--:|

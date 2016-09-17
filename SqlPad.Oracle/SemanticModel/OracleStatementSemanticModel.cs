@@ -1387,7 +1387,7 @@ namespace SqlPad.Oracle.SemanticModel
 					continue;
 				}
 
-				if (queryBlock.IsMainQueryBlock)
+				if (queryBlock.IsMainQueryBlock && queryBlock.IsInSelectStatement)
 				{
 					continue;
 				}

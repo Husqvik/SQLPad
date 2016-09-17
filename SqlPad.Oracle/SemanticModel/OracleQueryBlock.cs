@@ -185,9 +185,11 @@ namespace SqlPad.Oracle.SemanticModel
 			get
 			{
 				var hasParentQueryBlock = RootNode.GetAncestor(NonTerminals.QueryBlock) != null;
-				return !hasParentQueryBlock && RootNode.GetAncestor(NonTerminals.SelectStatement) != null;
+				return !hasParentQueryBlock && RootNode.GetAncestor(NonTerminals.SubqueryFactoringClause) == null;
 			}
 		}
+
+		public bool IsInSelectStatement => RootNode.GetAncestor(NonTerminals.SelectStatement) != null;
 
 		public IEnumerable<OracleQueryBlock> AllPrecedingConcatenatedQueryBlocks
 		{

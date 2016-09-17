@@ -972,7 +972,7 @@ namespace SqlPad.Oracle
 		private static void ValidateSelectIntoClause(OracleQueryBlock queryBlock, OracleValidationModel validationModel)
 		{
 			var isNotCursorDefinition = queryBlock.RootNode.GetAncestor(NonTerminals.CursorDefinition) == null;
-			var requiresIntoClause = queryBlock.Statement.IsPlSql && queryBlock.IsMainQueryBlock && isNotCursorDefinition;
+			var requiresIntoClause = validationModel.Statement.IsPlSql && queryBlock.IsInSelectStatement && queryBlock.IsMainQueryBlock && isNotCursorDefinition;
 			var selectIntoClause = queryBlock.RootNode[NonTerminals.IntoVariableClause];
 			if (!requiresIntoClause && selectIntoClause != null)
 			{
@@ -1582,11 +1582,22 @@ namespace SqlPad.Oracle
 							}
 						}
 
-						if (isLevel && ValidateIdentifierNodeOnly(programReference, validationModel)) return;
+						if (isLevel && ValidateIdentifierNodeOnly(programReference, validationModel))
+							return;
 					}
 					else if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramRowNum)
 					{
-						if (ValidateIdentifierNodeOnly(programReference, validationModel)) return;
+						if (ValidateIdentifierNodeOnly(programReference, validationModel))
+							return;
+					}
+					else if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramToLob)
+					{
+						var statement = programReference.Container.SemanticModel.Statement.RootNode[NonTerminals.Statement];
+						var isInsert = statement != null && statement[0].Id.In(NonTerminals.InsertStatement);
+						if (programReference.Owner == null || !programReference.Owner.IsMainQueryBlock || !isInsert)
+						{
+							validationModel.AddSemanticError(programReference.ProgramIdentifierNode, OracleSemanticErrorType.InvalidToLobUsage);
+						}
 					}
 				}
 			}

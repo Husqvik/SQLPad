@@ -3583,9 +3583,9 @@ END;";
 			var validationModel = BuildValidationModel(sqlText, statement);
 
 			validationModel.InvalidNonTerminals.Count.ShouldBe(1);
-			var node = validationModel.InvalidNonTerminals.Values.First();
-			node.SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidDataTypeForJsonTableColumn);
-			node.Node.Id.ShouldBe(NonTerminals.DataType);
+			var nodeValidity = validationModel.InvalidNonTerminals.Values.First();
+			nodeValidity.SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidDataTypeForJsonTableColumn);
+			nodeValidity.Node.Id.ShouldBe(NonTerminals.DataType);
 		}
 
 		[Test]
@@ -3600,9 +3600,9 @@ END;";
 			var validationModel = BuildValidationModel(sqlText, statement);
 
 			validationModel.InvalidNonTerminals.Count.ShouldBe(1);
-			var node = validationModel.InvalidNonTerminals.Values.First();
-			node.SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidDataTypeForJsonTableColumn);
-			node.Node.Id.ShouldBe(NonTerminals.DataType);
+			var nodeValidity = validationModel.InvalidNonTerminals.Values.First();
+			nodeValidity.SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidDataTypeForJsonTableColumn);
+			nodeValidity.Node.Id.ShouldBe(NonTerminals.DataType);
 		}
 
 		[Test]
@@ -3660,8 +3660,8 @@ END;";
 			var validationModel = BuildValidationModel(sqlText, statement);
 
 			validationModel.InvalidNonTerminals.Count.ShouldBe(1);
-			var node = validationModel.InvalidNonTerminals.Values.First();
-			node.SemanticErrorType.ShouldBe(OracleSemanticErrorType.ForUpdateNotAllowed);
+			var nodeValidity = validationModel.InvalidNonTerminals.Values.First();
+			nodeValidity.SemanticErrorType.ShouldBe(OracleSemanticErrorType.ForUpdateNotAllowed);
 		}
 
 		[Test]
@@ -3676,8 +3676,8 @@ END;";
 			var validationModel = BuildValidationModel(sqlText, statement);
 
 			validationModel.InvalidNonTerminals.Count.ShouldBe(1);
-			var node = validationModel.InvalidNonTerminals.Values.First();
-			node.SemanticErrorType.ShouldBe(OracleSemanticErrorType.ForUpdateNotAllowed);
+			var nodeValidity = validationModel.InvalidNonTerminals.Values.First();
+			nodeValidity.SemanticErrorType.ShouldBe(OracleSemanticErrorType.ForUpdateNotAllowed);
 		}
 
 		[Test]
@@ -3692,8 +3692,8 @@ END;";
 			var validationModel = BuildValidationModel(sqlText, statement);
 
 			validationModel.InvalidNonTerminals.Count.ShouldBe(1);
-			var node = validationModel.InvalidNonTerminals.Values.First();
-			node.SemanticErrorType.ShouldBe(OracleSemanticErrorType.CannotSelectForUpdateFromViewWithDistinctOrGroupBy);
+			var nodeValidity = validationModel.InvalidNonTerminals.Values.First();
+			nodeValidity.SemanticErrorType.ShouldBe(OracleSemanticErrorType.CannotSelectForUpdateFromViewWithDistinctOrGroupBy);
 		}
 
 		[Test]
@@ -3708,8 +3708,8 @@ END;";
 			var validationModel = BuildValidationModel(sqlText, statement);
 
 			validationModel.InvalidNonTerminals.Count.ShouldBe(1);
-			var node = validationModel.InvalidNonTerminals.Values.First();
-			node.SemanticErrorType.ShouldBe(OracleSemanticErrorType.CannotSelectForUpdateFromViewWithDistinctOrGroupBy);
+			var nodeValidity = validationModel.InvalidNonTerminals.Values.First();
+			nodeValidity.SemanticErrorType.ShouldBe(OracleSemanticErrorType.CannotSelectForUpdateFromViewWithDistinctOrGroupBy);
 		}
 
 		[Test]
@@ -3724,8 +3724,8 @@ END;";
 			var validationModel = BuildValidationModel(sqlText, statement);
 
 			validationModel.InvalidNonTerminals.Count.ShouldBe(1);
-			var node = validationModel.InvalidNonTerminals.Values.First();
-			node.SemanticErrorType.ShouldBe(OracleSemanticErrorType.ForUpdateNotAllowed);
+			var nodeValidity = validationModel.InvalidNonTerminals.Values.First();
+			nodeValidity.SemanticErrorType.ShouldBe(OracleSemanticErrorType.ForUpdateNotAllowed);
 		}
 
 		[Test]
@@ -3740,8 +3740,8 @@ END;";
 			var validationModel = BuildValidationModel(sqlText, statement);
 
 			validationModel.InvalidNonTerminals.Count.ShouldBe(1);
-			var node = validationModel.InvalidNonTerminals.Values.First();
-			node.SemanticErrorType.ShouldBe(OracleSemanticErrorType.BindVariablesNotAllowedForDataDefinitionOperations);
+			var nodeValidity = validationModel.InvalidNonTerminals.Values.First();
+			nodeValidity.SemanticErrorType.ShouldBe(OracleSemanticErrorType.BindVariablesNotAllowedForDataDefinitionOperations);
 		}
 
 		[Test]
@@ -3792,6 +3792,37 @@ END;";
 			var validationModel = BuildValidationModel(sqlText, statement);
 
 			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
+		}
+
+		[Test]
+		public void TestInvalidToLobUsage()
+		{
+			const string sqlText = "SELECT to_lob(dummy) FROM dual";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			validationModel.IdentifierNodeValidity.Count.ShouldBe(1);
+
+			var nodeValidity = validationModel.IdentifierNodeValidity.Values.First();
+			nodeValidity.SemanticErrorType.ShouldBe(OracleSemanticErrorType.InvalidToLobUsage);
+		}
+
+		[Test]
+		public void TestValidToLobUsage()
+		{
+			const string sqlText = "INSERT INTO selection (name) SELECT to_lob(dummy) FROM dual";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			validationModel.IdentifierNodeValidity.Count.ShouldBe(0);
 		}
 	}
 }

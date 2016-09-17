@@ -661,6 +661,9 @@ namespace SqlPad.Oracle.Test
 
 			#region non-schema built-in functions
 			var allProgramMetadata = AllObjectsInternal.OfType<IProgramCollection>().SelectMany(c => c.Programs).ToList();
+			var toLobFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.IdentifierBuiltInProgramToLob, false, false, false, false, false, false, 1, 1, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
+			toLobFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 1, 1, 0, ParameterDirection.Input, "BINARY", OracleObjectIdentifier.Empty, false));
+			allProgramMetadata.Add(toLobFunctionMetadata);
 
 			var countFunctionAggregateMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(null, null, "COUNT"), false, true, false, false, false, false, 1, 1, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
 			countFunctionAggregateMetadata.AddParameter(new OracleProgramParameterMetadata(null, 1, 1, 0, ParameterDirection.Input, "EXPR", OracleObjectIdentifier.Empty, false));
