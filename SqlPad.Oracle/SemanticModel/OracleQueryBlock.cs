@@ -191,6 +191,8 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public bool IsInSelectStatement => RootNode.GetAncestor(NonTerminals.SelectStatement) != null;
 
+		public bool IsInInsertStatement => RootNode.GetAncestor(NonTerminals.InsertStatement) != null;
+
 		public IEnumerable<OracleQueryBlock> AllPrecedingConcatenatedQueryBlocks
 		{
 			get { return GetAllConcatenatedQueryBlocks(qb => qb.PrecedingConcatenatedQueryBlock); }

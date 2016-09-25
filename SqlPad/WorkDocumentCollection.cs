@@ -350,7 +350,7 @@ namespace SqlPad
 			var providerFactories = ConfigurationProvider.ConnectionStrings.Cast<ConnectionStringSettings>()
 				.Select(css => new { css.ProviderName, ConfigurationProvider.GetConnectionConfiguration(css.Name).InfrastructureFactory });
 
-			foreach (var providerFactory in providerFactories.Distinct(f => f.ProviderName))
+			foreach (var providerFactory in providerFactories.DistinctBy(f => f.ProviderName))
 			{
 				var providerConfiguration = GetProviderConfiguration(providerFactory.ProviderName);
 				foreach (var variable in providerConfiguration.BindVariables.ToArray())

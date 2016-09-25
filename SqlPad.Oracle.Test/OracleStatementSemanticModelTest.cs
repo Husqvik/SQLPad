@@ -3669,5 +3669,17 @@ SELECT test_function(1) FROM dual;";
 			mainQueryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe(TerminalValues.Date);
 			mainQueryBlock.Columns[2].ColumnDescription.FullTypeName.ShouldBe(String.Empty);
 		}
+
+		[Test]
+		public void TestRedundantColumnInInsertSelectCommand()
+		{
+			const string query1 = @"INSERT INTO selection (name, project_id) SELECT 'IT', 2 FROM dual";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single().Validate();
+
+			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
+		}
 	}
 }
