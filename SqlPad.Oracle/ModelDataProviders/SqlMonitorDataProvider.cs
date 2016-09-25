@@ -784,7 +784,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 				var planItem = DataModel.AllItems[planLineId];
 
 				var sqlMonitorPlanItem = sessionId == DataModel.SessionIdentifier
-					? queryCoordinatorSessionItems.GetAndAddIfMissing(planLineId)
+					? queryCoordinatorSessionItems.GetOrAdd(planLineId)
 					: planItem.GetSessionPlanItem(sessionId);
 
 				if (sqlMonitorPlanItem.SessionItem == null)

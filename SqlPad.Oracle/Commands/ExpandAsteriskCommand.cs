@@ -83,7 +83,7 @@ namespace SqlPad.Oracle.Commands
 							}));
 			}
 
-			foreach (var expandedColumn in expandedColumns.Distinct(c => c.ColumnNameLabel))
+			foreach (var expandedColumn in expandedColumns.DistinctBy(c => c.ColumnNameLabel))
 			{
 				_settingsModel.AddBooleanOption(
 					new BooleanOption

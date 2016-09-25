@@ -1380,7 +1380,7 @@ namespace SqlPad
 
 			_currentBindVariables.Clear();
 
-			foreach (var bindVariable in statements.SelectMany(s => s.BindVariables).Distinct(v => v.Name))
+			foreach (var bindVariable in statements.SelectMany(s => s.BindVariables).DistinctBy(v => v.Name))
 			{
 				_currentBindVariables.Add(bindVariable.Name, bindVariable);
 			}

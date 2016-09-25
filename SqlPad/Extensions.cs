@@ -22,12 +22,6 @@ namespace SqlPad
 			return elements.Any(e => Equals(e, o));
 		}
 
-		public static IEnumerable<TItem> Distinct<TItem, TValue>(this IEnumerable<TItem> source, Func<TItem, TValue> selector)
-		{
-			var uniqueFilter = new HashSet<TValue>();
-			return source.Where(i => uniqueFilter.Add(selector(i)));
-		}
-
 		public static IEnumerable<ICodeCompletionItem> OrderItems(this IEnumerable<ICodeCompletionItem> codeCompletionItems)
 		{
 			return codeCompletionItems.OrderBy(i => i.CategoryPriority).ThenBy(i => i.Priority).ThenBy(i => i.Label);
@@ -60,7 +54,7 @@ namespace SqlPad
 			return false;
 		}
 
-		public static TValue GetAndAddIfMissing<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key) where TValue : new()
+		public static TValue GetOrAdd<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key) where TValue : new()
 		{
 			TValue value;
 			if (!dictionary.TryGetValue(key, out value))
@@ -125,7 +119,7 @@ namespace SqlPad
 				: text;
 		}
 
-		public static IEnumerable<T> Distinct<T>(this IEnumerable<T> source, Func<T, object> selector)
+		public static IEnumerable<T> DistinctBy<T>(this IEnumerable<T> source, Func<T, object> selector)
 		{
 			var uniqueObjects = new HashSet<object>();
 			return source.Where(o => uniqueObjects.Add(selector(o)));

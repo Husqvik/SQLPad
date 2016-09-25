@@ -713,7 +713,7 @@ namespace SqlPad.Oracle
 			var tableReferenceSource = (ICollection<OracleObjectWithColumnsReference>)referenceContainers
 				.SelectMany(c => c.ObjectReferences)
 				.Where(o => !completionType.InQueryBlockFromClause || completionType.CursorPosition > o.RootNode.SourcePosition.IndexEnd)
-				.Distinct(r => r.FullyQualifiedObjectName)
+				.DistinctBy(r => r.FullyQualifiedObjectName)
 				.ToArray();
 
 			var suggestedFunctions = Enumerable.Empty<ICodeCompletionItem>();
