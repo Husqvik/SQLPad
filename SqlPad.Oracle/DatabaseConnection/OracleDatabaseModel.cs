@@ -1122,6 +1122,30 @@ namespace SqlPad.Oracle.DatabaseConnection
 		}
 	}
 
+	internal static class OracleErrorHelper
+	{
+		/// <summary>
+		/// defined at https://docs.oracle.com/cd/E18283_01/appdev.112/e10827/appd.htm
+		/// </summary>
+		public static bool IsSyntaxError(int errorCode)
+		{
+			return
+				errorCode == 22 ||
+				errorCode == 251 ||
+				(errorCode >= 900 && errorCode <= 999) ||
+				errorCode == 1031 ||
+				(errorCode >= 1490 && errorCode <= 1493) ||
+				(errorCode >= 1700 && errorCode <= 1799) ||
+				(errorCode >= 1900 && errorCode <= 2099) ||
+				(errorCode >= 2140 && errorCode <= 2289) ||
+				(errorCode >= 2420 && errorCode <= 2424) ||
+				(errorCode >= 2450 && errorCode <= 2499) ||
+				(errorCode >= 3276 && errorCode <= 3299) ||
+				(errorCode >= 4040 && errorCode <= 4059) ||
+				(errorCode >= 4070 && errorCode <= 4099);
+		}
+	}
+
 	internal enum OracleErrorCode
 	{
 		NullPasswordGiven = 1005,

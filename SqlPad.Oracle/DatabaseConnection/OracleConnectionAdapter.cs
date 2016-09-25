@@ -879,7 +879,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					return batchResult;
 				}
 
-				if (currentStatementResult != null)
+				if (currentStatementResult != null && OracleErrorHelper.IsSyntaxError(exception.Number))
 				{
 					currentStatementResult.ErrorPosition = await GetSyntaxErrorIndex(currentStatementResult.StatementModel.StatementText, cancellationToken);
 				}
@@ -940,7 +940,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 						await command.ExecuteNonQueryAsynchronous(cancellationToken);
 						await connection.CloseAsynchronous(cancellationToken);
 						var result = (OracleDecimal)errorPositionParameter.Value;
-						return result.IsNull ? null : (int?)result.Value;
+						var syntaxErrorIndex = result.IsNull ? null : (int?)result.Value;
+						Trace.WriteLine($"Syntax error index retrieved: {syntaxErrorIndex}");
+						return syntaxErrorIndex;
 					}
 				}
 			}
