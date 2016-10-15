@@ -1047,7 +1047,7 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			var expressionListSourceNode = expressionSourceNode.ParentNode[0];
+			var expressionListSourceNode = expressionSourceNode.ParentNode.ParentNode.ParentNode[0];
 			var expressionList =
 				expressionListSourceNode[NonTerminals.ExpressionList]
 				?? expressionListSourceNode[NonTerminals.ParenthesisEnclosedExpressionListWithMandatoryExpressions, NonTerminals.ExpressionList];
@@ -1676,8 +1676,8 @@ namespace SqlPad.Oracle
 				return true;
 			}
 			
-			var parameters = parameterNode[NonTerminals.ExpressionListOrNestedQuery];
-		    var expressionList = parameters?[NonTerminals.ExpressionList];
+			var parameters = parameterNode[NonTerminals.ExpressionOrParenthesisEnclosedExpressionListOrNestedQuery, NonTerminals.ParenthesisEnclosedExpressionListOrNestedQuery, NonTerminals.ExpressionListOrNestedQuery];
+			var expressionList = parameters?[NonTerminals.ExpressionList];
 			return expressionList == null || !expressionList.GetDescendants(NonTerminals.ExpressionCommaChainedList).Any();
 		}
 

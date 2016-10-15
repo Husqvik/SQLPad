@@ -2730,6 +2730,16 @@ MATCH_RECOGNIZE(
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
+		[Test]
+		public void TestInClauseWithSimpleExpression()
+		{
+			const string statement1 = "SELECT * FROM dual WHERE dummy in dummy || ''";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+		}
+
 		public class PlSql
 		{
 			[Test]

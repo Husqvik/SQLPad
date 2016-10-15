@@ -66,7 +66,7 @@ namespace SqlPad.Oracle
 				new LineBreakSettings { NonTerminalId = NonTerminals.SelectStatement, ChildNodeId = Terminals.Semicolon, BreakPosition = n => LineBreakPosition.AfterNode, GetIndentationAfter = n => -1 },
 				new LineBreakSettings { NonTerminalId = NonTerminals.ConcatenatedSubquery, ChildNodeId = NonTerminals.SetOperation, BreakPosition = n => LineBreakPosition.BeforeNode | LineBreakPosition.AfterNode, GetIndentationBefore = n => -1 },
 				new LineBreakSettings { NonTerminalId = NonTerminals.QueryTableExpression, ChildNodeId = Terminals.RightParenthesis, BreakPosition = n => LineBreakPosition.BeforeNode, GetIndentationBefore = n => -1 },
-				new LineBreakSettings { NonTerminalId = NonTerminals.Condition, ChildNodeId = Terminals.RightParenthesis, GetIndentationAfter = GetAfterConditionClosingParenthesisIndentation },
+				new LineBreakSettings { NonTerminalId = NonTerminals.ParenthesisEnclosedExpressionListOrNestedQuery, ChildNodeId = Terminals.RightParenthesis, GetIndentationAfter = GetAfterConditionClosingParenthesisIndentation },
 				new LineBreakSettings { NonTerminalId = NonTerminals.ParenthesisEnclosedNestedQuery, ChildNodeId = Terminals.RightParenthesis, GetIndentationAfter = GetAfterExpressionClosingParenthesisIndentation },
 				
 				// Insert
@@ -103,8 +103,8 @@ namespace SqlPad.Oracle
 
 		private static int GetAfterConditionClosingParenthesisIndentation(StatementGrammarNode node)
 		{
-			var conditionNode = node.ParentNode;
-			return conditionNode[NonTerminals.ExpressionListOrNestedQuery, NonTerminals.NestedQuery] == null ? 0 : -1;
+			var parenthesisEnclosedExpressionListOrNestedQueryNode = node.ParentNode;
+			return parenthesisEnclosedExpressionListOrNestedQueryNode[NonTerminals.ExpressionListOrNestedQuery, NonTerminals.NestedQuery] == null ? 0 : -1;
 		}
 
 		private static int GetAfterExpressionClosingParenthesisIndentation(StatementGrammarNode node)

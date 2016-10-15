@@ -491,6 +491,7 @@ namespace SqlPad.Oracle
 			public const string ExpressionOrMultiset = "ExpressionOrMultiset";
 			public const string ExpressionOrNestedQuery = "ExpressionOrNestedQuery";
 			public const string ExpressionOrNestedQueryOrDefaultValue = "ExpressionOrNestedQueryOrDefaultValue";
+			public const string ExpressionOrParenthesisEnclosedExpressionListOrNestedQuery = "ExpressionOrParenthesisEnclosedExpressionListOrNestedQuery";
 			public const string ExpressionOrParenthesisEnclosedExpressionListWithMandatoryExpressions = "ExpressionOrParenthesisEnclosedExpressionListWithMandatoryExpressions";
 			public const string ExpressionOrUnlimitedOrDefault = "ExpressionOrUnlimitedOrDefault";
 			public const string ExtentManagementClause = "ExtentManagementClause";
@@ -956,6 +957,7 @@ namespace SqlPad.Oracle
 			public const string ParenthesisEnclosedCursorParameterDeclarationList = "ParenthesisEnclosedCursorParameterDeclarationList";
 			public const string ParenthesisEnclosedExpression = "ParenthesisEnclosedExpression";
 			public const string ParenthesisEnclosedExpressionList = "ParenthesisEnclosedExpressionList";
+			public const string ParenthesisEnclosedExpressionListOrNestedQuery = "ParenthesisEnclosedExpressionListOrNestedQuery";
 			public const string ParenthesisEnclosedExpressionListWithIgnoreNulls = "ParenthesisEnclosedExpressionListWithIgnoreNulls";
 			public const string ParenthesisEnclosedExpressionListWithMandatoryExpressions = "ParenthesisEnclosedExpressionListWithMandatoryExpressions";
 			public const string ParenthesisEnclosedExpressionOrDefaultValueListOrAssignmentTarget = "ParenthesisEnclosedExpressionOrDefaultValueListOrAssignmentTarget";

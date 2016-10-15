@@ -6917,9 +6917,7 @@
           <NonTerminal Id="Expression" />
           <NonTerminal Id="RelationalOperator" />
           <NonTerminal Id="SetQualifier" />
-          <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="ExpressionListOrNestedQuery" />
-          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ParenthesisEnclosedExpressionListOrNestedQuery" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -6938,9 +6936,7 @@
           <NonTerminal Id="ExpressionOrParenthesisEnclosedExpressionListWithMandatoryExpressions" />
           <Terminal Id="Not" IsOptional="true" />
           <Terminal Id="In" />
-          <Terminal Id="LeftParenthesis" />
-          <NonTerminal Id="ExpressionListOrNestedQuery" />
-          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="ExpressionOrParenthesisEnclosedExpressionListOrNestedQuery" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -7109,6 +7105,27 @@
         </Sequence>
         <Sequence>
           <Terminal Id="Without" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ExpressionOrParenthesisEnclosedExpressionListOrNestedQuery">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ParenthesisEnclosedExpressionListOrNestedQuery" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="Expression" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ParenthesisEnclosedExpressionListOrNestedQuery">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="ExpressionListOrNestedQuery" />
+          <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
     </Rule>
