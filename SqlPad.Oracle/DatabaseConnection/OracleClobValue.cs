@@ -595,21 +595,21 @@ namespace SqlPad.Oracle.DatabaseConnection
 				timeZone = $" {timeZone.Trim()}";
 			}
 
-			var nanoSecondsExtension = nanoseconds == 0 ? null : $".{nanoseconds.ToString("000000000")}";
+			var nanoSecondsExtension = nanoseconds == 0 ? null : $".{nanoseconds:000000000}";
 
 			return $"TIMESTAMP'{(dateTime.IsBeforeCrist ? "-" : null)}{dateTime.Value.Year}-{dateTime.Value.Month}-{dateTime.Value.Day} {dateTime.Value.Hour}:{dateTime.Value.Minute}:{dateTime.Value.Second}{nanoSecondsExtension}{timeZone}'";
 		}
 
 		internal static string ToXml(OracleDateTime dateTime, int nanoseconds)
 		{
-			var miliSecondsExtension = nanoseconds == 0 ? null : $".{Math.Round(nanoseconds / 1E+6m).ToString("000")}";
-			return $"{dateTime.Value.ToString("yyyy-MM-ddTHH:mm:ss")}{miliSecondsExtension}";
+			var miliSecondsExtension = nanoseconds == 0 ? null : $".{Math.Round(nanoseconds / 1E+6m):000}";
+			return $"{dateTime.Value:yyyy-MM-ddTHH:mm:ss}{miliSecondsExtension}";
 		}
 
 		internal static string ToJson(OracleDateTime dateTime, int nanoseconds, string timeZone)
 		{
-			var miliSecondsExtension = nanoseconds == 0 ? null : $".{Math.Round(nanoseconds / 1E+6m).ToString("000")}";
-			return $"\"{dateTime.Value.ToString("yyyy-MM-ddTHH:mm:ss")}{miliSecondsExtension}{(String.IsNullOrEmpty(timeZone) ? null : timeZone.Trim())}\"";
+			var miliSecondsExtension = nanoseconds == 0 ? null : $".{Math.Round(nanoseconds / 1E+6m):000}";
+			return $"\"{dateTime.Value:yyyy-MM-ddTHH:mm:ss}{miliSecondsExtension}{(String.IsNullOrEmpty(timeZone) ? null : timeZone.Trim())}\"";
 		}
 	}
 
