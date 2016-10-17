@@ -337,5 +337,18 @@ END;";
 			validationData.SemanticErrorType.ShouldBe(OracleSemanticErrorType.PlSql.WrongNumberOfValuesInIntoListOfFetchStatement);
 			validationData.Node.Id.ShouldBe(NonTerminals.BindVariableExpressionOrPlSqlTargetList);
 		}
+
+		[Test]
+		public void TestSelectIntoClauseWithOpenCursor()
+		{
+			const string plsqlText = @"BEGIN OPEN :c1 FOR SELECT * FROM dual; END;";
+
+			var statement = Parser.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = OracleStatementValidatorTest.BuildValidationModel(plsqlText, statement);
+
+			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
+		}
 	}
 }
