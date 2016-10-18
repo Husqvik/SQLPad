@@ -1403,8 +1403,9 @@ namespace SqlPad.Oracle
 
 		private static bool IsBuiltInType(string dataTypeName, bool allowPlSqlTypes)
 		{
-			return OracleDatabaseModelBase.BuiltInDataTypes.Contains(dataTypeName) ||
-			       (allowPlSqlTypes && OracleDatabaseModelBase.BuiltInPlSqlDataTypes.Contains(dataTypeName));
+			return
+				OracleDatabaseModelBase.BuiltInDataTypes.Contains(dataTypeName) ||
+				(allowPlSqlTypes && OracleDatabaseModelBase.BuiltInPlSqlDataTypes.Contains(dataTypeName));
 		}
 
 		private static void ValidatePriorOperators(OracleValidationModel validationModel, IEnumerable<StatementGrammarNode> terminals)

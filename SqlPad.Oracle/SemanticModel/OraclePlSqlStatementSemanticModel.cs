@@ -297,7 +297,6 @@ namespace SqlPad.Oracle.SemanticModel
 
 			foreach (var dataTypeReference in program.DataTypeReferences)
 			{
-				//TryResolveLocalReference(dataTypeReference, program.Types, dataTypeReference.PlSqlTypes);
 				OracleReferenceBuilder.ResolveSchemaType(dataTypeReference);
 			}
 

@@ -350,5 +350,24 @@ END;";
 
 			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
 		}
+
+		[Test]
+		public void TestSysRefCursorDataType()
+		{
+			const string plsqlText =
+				@"DECLARE
+	c SYS_REFCURSOR;
+BEGIN
+	OPEN c FOR SELECT * FROM dual;
+	dbms_sql.return_result(c);
+END;";
+
+			var statement = Parser.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = OracleStatementValidatorTest.BuildValidationModel(plsqlText, statement);
+
+			validationModel.IdentifierNodeValidity.Count.ShouldBe(0);
+		}
 	}
 }

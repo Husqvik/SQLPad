@@ -68,7 +68,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 			{
 				TerminalValues.BinaryInteger,
 				TerminalValues.PlsInteger,
-				"BOOLEAN"
+				"BOOLEAN",
+				"SYS_REFCURSOR"
 			};
 
 		public abstract ConnectionStringSettings ConnectionString { get; }
