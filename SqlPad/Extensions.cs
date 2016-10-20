@@ -96,15 +96,11 @@ namespace SqlPad
 
 		public static string ToHexString(this byte[] data)
 		{
-			var length = data.Length;
-			var characters = new char[length * 2];
-			var sourceIndex = 0;
+			var characters = new char[data.Length * 2];
 			var targetIndex = 0;
 
-			byte @byte;
-			while (sourceIndex < length)
+			foreach (var @byte in data)
 			{
-				@byte = data[sourceIndex++];
 				characters[targetIndex++] = HexSymbolLookup[@byte >> 4];
 				characters[targetIndex++] = HexSymbolLookup[@byte & 0xF];
 			}
