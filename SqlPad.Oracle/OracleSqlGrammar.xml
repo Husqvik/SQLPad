@@ -15277,6 +15277,7 @@
           <NonTerminal Id="ParenthesisEnclosedRelationalProperties" IsOptional="true" />
           <NonTerminal Id="TemporaryTableOnCommitClause" IsOptional="true" />
           <NonTerminal Id="PhysicalProperties" IsOptional="true" />
+          <NonTerminal Id="TableProperties" IsOptional="true" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -17755,6 +17756,7 @@
           <NonTerminal Id="ExternalTableAccessDriverType" IsOptional="true" />
           <NonTerminal Id="ExternalTableDataPropeties" />
           <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="TableProperties" IsOptional="true" />
           <NonTerminal Id="ErrorLoggingRejectLimit" IsOptional="true" />
         </Sequence>
       </Sequences>

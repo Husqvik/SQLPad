@@ -5726,7 +5726,7 @@ ORGANIZATION EXTERNAL (
     )
     LOCATION ('SamplingQueueService_2014-10-21_Info.txt')
 )
---PARALLEL
+PARALLEL 4
 REJECT LIMIT UNLIMITED";
 
 					var result = Parser.Parse(statementText);
@@ -5735,6 +5735,35 @@ REJECT LIMIT UNLIMITED";
 					var statement = result.Single();
 					statement.ParseStatus.ShouldBe(ParseStatus.Success);
 				}
+			}
+
+			[Test]
+			public void TestCreateExternalTableWithParallelCaluseAfterRejectLimit()
+			{
+				const string statementText =
+@"CREATE TABLE test_table (
+   data VARCHAR2(255)
+)
+ORGANIZATION EXTERNAL (
+  TYPE ORACLE_LOADER
+  DEFAULT DIRECTORY HQ_EXTERNAL_DATA_DIR
+  ACCESS PARAMETERS (
+    RECORDS DELIMITED BY NEWLINE
+    FIELDS  TERMINATED BY ','
+    (
+      data
+    )
+  )
+  LOCATION ('file.csv')
+)
+REJECT LIMIT UNLIMITED
+PARALLEL 4";
+
+				var result = Parser.Parse(statementText);
+
+				result.Count.ShouldBe(1);
+				var statement = result.Single();
+				statement.ParseStatus.ShouldBe(ParseStatus.Success);
 			}
 
 			public class CreateIndex
