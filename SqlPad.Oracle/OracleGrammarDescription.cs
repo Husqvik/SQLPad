@@ -377,6 +377,7 @@ namespace SqlPad.Oracle
 			public const string DateFormatSpecification = "DateFormatSpecification";
 			public const string DateFormatType = "DateFormatType";
 			public const string DateOrTimestamp = "DateOrTimestamp";
+			public const string DateOrTimestampMask = "DateOrTimestampMask";
 			public const string DateOrTimestampSpecification = "DateOrTimestampSpecification";
 			public const string DayOrHourOrMinute = "DayOrHourOrMinute";
 			public const string DayOrHourOrMinuteOrSecondWithLeadingPrecision = "DayOrHourOrMinuteOrSecondWithLeadingPrecision";

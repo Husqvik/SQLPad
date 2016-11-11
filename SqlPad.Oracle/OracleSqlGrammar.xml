@@ -11927,7 +11927,7 @@
         <Sequence>
           <Terminal Id="Package" />
           <Terminal Id="Body" />
-         <NonTerminal Id="SchemaObject" />
+          <NonTerminal Id="SchemaObject" />
           <NonTerminal Id="PackageBodyDefinition" />
         </Sequence>
       </Sequences>
@@ -18111,6 +18111,10 @@
           <NonTerminal Id="DateFormatSpecification" IsOptional="true" />
         </Sequence>
         <Sequence>
+          <Terminal Id="Date" />
+          <NonTerminal Id="DateOrTimestampMask" IsOptional="true" />
+        </Sequence>
+        <Sequence>
           <NonTerminal Id="VaryingCharacterOrRawDataType" />
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="LengthOfLengthPrefix" IsOptional="true" />
@@ -18137,6 +18141,14 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="DateOrTimestampSpecification" />
+          <NonTerminal Id="DateOrTimestampMask" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DateOrTimestampMask">
+      <Sequences>
+        <Sequence>
           <Terminal Id="Mask" />
           <NonTerminal Id="QuotedStringLiteral" />
         </Sequence>

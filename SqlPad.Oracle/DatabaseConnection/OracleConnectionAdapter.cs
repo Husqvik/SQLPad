@@ -871,7 +871,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					throw executionException;
 				}
 
-				if (exception.Number == (int)OracleErrorCode.UserInvokedCancellation)
+				if (exception.Number == (int)OracleErrorCode.UserInvokedCancellation || IsExceptionOriginUserInvokedCancellation(exception))
 				{
 					return batchResult;
 				}
@@ -901,6 +901,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 
 			return batchResult;
+		}
+
+		private static bool IsExceptionOriginUserInvokedCancellation(OracleException exception)
+		{
+			var exceptions = exception.Message.Split('\n');
+			return exceptions.Length > 1 && exceptions.Last().StartsWith($"ORA-0{(int)OracleErrorCode.UserInvokedCancellation}");
 		}
 
 		internal async Task FinalizeBatchExecution(StatementExecutionBatchResult batchResult, CancellationToken cancellationToken)
