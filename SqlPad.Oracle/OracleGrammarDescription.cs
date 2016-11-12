@@ -203,7 +203,7 @@ namespace SqlPad.Oracle
 			public const string ClusterRangePartitions = "ClusterRangePartitions";
 			public const string CollectionLimitOrElementType = "CollectionLimitOrElementType";
 			public const string CollectionTypeDefinition = "CollectionTypeDefinition";
-			public const string ColonOrMinus = "ColonOrMinus";
+			public const string ColonOrMinusIntegerLiteral = "ColonOrMinusIntegerLiteral";
 			public const string ColumnAsAlias = "ColumnAsAlias";
 			public const string ColumnDefinition = "ColumnDefinition";
 			public const string ColumnDefinitionDefaultClause = "ColumnDefinitionDefaultClause";

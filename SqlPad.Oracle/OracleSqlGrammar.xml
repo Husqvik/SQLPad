@@ -18324,24 +18324,25 @@
           <Terminal Id="Position" IsOptional="true" />
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="StartPositionOrPositionIncrement" />
-          <NonTerminal Id="ColonOrMinus" />
-          <Terminal Id="IntegerLiteral" />
+          <NonTerminal Id="ColonOrMinusIntegerLiteral" IsOptional="true" Comment="Mandatory in documentation: https://docs.oracle.com/cd/B28359_01/server.111/b28319/et_params.htm#i1009541" />
           <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
     </Rule>
-    
-    <Rule StartingNonTerminal="ColonOrMinus">
+
+    <Rule StartingNonTerminal="ColonOrMinusIntegerLiteral">
       <Sequences>
         <Sequence>
           <Terminal Id="Colon" />
+          <Terminal Id="IntegerLiteral" />
         </Sequence>
         <Sequence>
           <Terminal Id="MathMinus" />
+          <Terminal Id="IntegerLiteral" />
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="StartPositionOrPositionIncrement">
       <Sequences>
         <Sequence>
