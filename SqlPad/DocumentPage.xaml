@@ -148,11 +148,11 @@
 					<TextBlock Text="Connecting..." HorizontalAlignment="Center" VerticalAlignment="Center" />
 				</Grid>
 				<TextBlock Text="Connection: " VerticalAlignment="Center" Margin="0,1,4,3" />
-				<ComboBox SelectedItem="{Binding Path=CurrentConnection}" ItemsSource="{Binding Source={x:Static sqlPad:ConfigurationProvider.ConnectionStrings}}" Margin="0,1,0,3">
+				<ComboBox Name="ComboBoxConnections" SelectedItem="{Binding Path=CurrentConnection}" ItemsSource="{Binding Source={x:Static sqlPad:ConfigurationProvider.ConnectionStrings}}" Margin="0,1,0,3">
 					<ComboBox.Style>
 						<Style>
 							<Style.Triggers>
-								<DataTrigger Binding="{Binding Source={x:Static sqlPad:ConfigurationProvider.ConnectionStrings}, Path=Count}" Value="1">
+								<DataTrigger Binding="{Binding ElementName=ComboBoxConnections, Path=Items.Count}" Value="1">
 									<Setter Property="ComboBox.IsEnabled" Value="False" />
 								</DataTrigger>
 							</Style.Triggers>
@@ -202,7 +202,7 @@
 					</Style>
 				</StackPanel.Style>
 				
-				<Button Content="Reconnect" Padding="6,2,6,2" Click="ButtonReconnectClickHandler" />
+				<Button Content="_Reconnect" Padding="6,2,6,2" Click="ButtonReconnectClickHandler" />
 				<TextBlock Foreground="White" Text="{Binding ConnectionErrorMessage}" VerticalAlignment="Center" Padding="0,0,4,0" />
 			</StackPanel>
 		</Grid>

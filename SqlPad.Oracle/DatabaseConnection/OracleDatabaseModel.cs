@@ -419,8 +419,15 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			using (var connection = new OracleConnection { ConnectionString = connectionString })
 			{
-				await UpdateModelAsync(connection, currentSchema, suppressException, cancellationToken, updaters);
-				await connection.CloseAsynchronous(cancellationToken);
+				try
+				{
+					await UpdateModelAsync(connection, currentSchema, suppressException, cancellationToken, updaters);
+					await connection.CloseAsynchronous(cancellationToken);
+				}
+				catch (TaskCanceledException)
+				{
+					Trace.WriteLine($"{DateTime.Now} - Update model cancelled. ");
+				}
 			}
 		}
 
