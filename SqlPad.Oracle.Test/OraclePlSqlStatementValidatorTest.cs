@@ -369,5 +369,23 @@ END;";
 
 			validationModel.IdentifierNodeValidity.Count.ShouldBe(0);
 		}
+
+		[Test]
+		public void TestSelectIntoClauseWithinImplicitCursorDefinition()
+		{
+			const string plsqlText =
+				@"BEGIN
+    FOR c IN (SELECT dummy FROM dual) LOOP
+        NULL;
+    END LOOP;
+END;";
+
+			var statement = Parser.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = OracleStatementValidatorTest.BuildValidationModel(plsqlText, statement);
+
+			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
+		}
 	}
 }

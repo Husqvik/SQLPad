@@ -26,9 +26,9 @@ namespace SqlPad.Oracle
 
 		public IDataExportConverter DataExportConverter => ExportConverter;
 
-	    public ICommandFactory CommandFactory => _commandFactory;
+		public ICommandFactory CommandFactory => _commandFactory;
 
-	    public ITokenReader CreateTokenReader(string sqlText)
+		public ITokenReader CreateTokenReader(string sqlText)
 		{
 			return OracleTokenReader.Create(sqlText);
 		}
