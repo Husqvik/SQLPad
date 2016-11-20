@@ -12,7 +12,7 @@ using SqlPad;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("SQL Pad")]
-[assembly: AssemblyCopyright("Copyright © 2015")]
+[assembly: AssemblyCopyright("Copyright © 2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -54,6 +54,6 @@ using SqlPad;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.4.0.445")]
-[assembly: AssemblyFileVersion("0.4.0.445")]
-[assembly: AssemblyBuildInfo("e2aad75", "2016-11-19 12:27:22")]
+[assembly: AssemblyVersion("0.4.0.446")]
+[assembly: AssemblyFileVersion("0.4.0.446")]
+[assembly: AssemblyBuildInfo("ca5c4b0", "2016-11-21 00:01:45")]
