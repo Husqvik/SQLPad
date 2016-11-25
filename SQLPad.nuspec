@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>SQLPad</id>
+        <version>0.4.0.446</version>
+        <title>SQL Pad</title>
+        <authors>Husqvik</authors>
+        <owners>Husqvik</owners>
+        <projectUrl>https://github.com/Husqvik/SQLPad</projectUrl>
+        <iconUrl>https://raw.githubusercontent.com/Husqvik/SQLPad/master/SqlPad/SqlPad.ico</iconUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>SQLPad is mainly inspired by ReSharper plugin to Visual Studio and LINQPad. Provides lightweight editor but aims at thorough semantic analysis and refactoring features. The main driving factor is to reduce dummy monkey work to minimum while focusing to results or analysis of a problem.</description>
+        <summary>SQLPad is an experimental SQL editor focused to quick and comfortable work.</summary>
+        <releaseNotes>Fix #33 - Invalid SELECT INTO clause expected notification in implicit cursor definition</releaseNotes>
+        <copyright>Husqvik © 2016</copyright>
+        <language />
+        <tags>SQL, Oracle, Productivity tool</tags>
+    </metadata>
+    <files>
+        <file src="Output\Release\x86\CodeGenerationItems\CreateFunction.xml" target="lib\net45\CodeGenerationItems\CreateFunction.xml" />
+        <file src="Output\Release\x86\CodeGenerationItems\CreatePackage.xml" target="lib\net45\CodeGenerationItems\CreatePackage.xml" />
+        <file src="Output\Release\x86\CodeGenerationItems\CreatePackageBody.xml" target="lib\net45\CodeGenerationItems\CreatePackageBody.xml" />
+        <file src="Output\Release\x86\CodeGenerationItems\CreateProcedure.xml" target="lib\net45\CodeGenerationItems\CreateProcedure.xml" />
+        <file src="Output\Release\x86\Snippets\SnippetGatherTableStats.xml" target="lib\net45\Snippets\SnippetGatherTableStats.xml" />
+        <file src="Output\Release\x86\Snippets\SnippetInsert.xml" target="lib\net45\Snippets\SnippetInsert.xml" />
+        <file src="Output\Release\x86\Snippets\SnippetObjects.xml" target="lib\net45\Snippets\SnippetObjects.xml" />
+        <file src="Output\Release\x86\Snippets\SnippetSelect.xml" target="lib\net45\Snippets\SnippetSelect.xml" />
+        <file src="Output\Release\x86\Snippets\SnippetSelectCount.xml" target="lib\net45\Snippets\SnippetSelectCount.xml" />
+        <file src="Output\Release\x86\Snippets\SnippetTables.xml" target="lib\net45\Snippets\SnippetTables.xml" />
+        <file src="Output\Release\x86\Configuration.xml" target="lib\net45\Configuration.xml" />
+        <file src="Output\Release\x86\DeltaCompressionDotNet.dll" target="lib\net45\DeltaCompressionDotNet.dll" />
+        <file src="Output\Release\x86\DeltaCompressionDotNet.MsDelta.dll" target="lib\net45\DeltaCompressionDotNet.MsDelta.dll" />
+        <file src="Output\Release\x86\DeltaCompressionDotNet.PatchApi.dll" target="lib\net45\DeltaCompressionDotNet.PatchApi.dll" />
+        <file src="Output\Release\x86\EPPlus.dll" target="lib\net45\EPPlus.dll" />
+        <file src="Output\Release\x86\ICSharpCode.AvalonEdit.dll" target="lib\net45\ICSharpCode.AvalonEdit.dll" />
+        <file src="Output\Release\x86\ICSharpCode.SharpZipLib.dll" target="lib\net45\ICSharpCode.SharpZipLib.dll" />
+        <file src="Output\Release\x86\libmupdf.dll" target="lib\net45\libmupdf.dll" />
+        <file src="Output\Release\x86\Microsoft.WindowsAPICodePack.dll" target="lib\net45\Microsoft.WindowsAPICodePack.dll" />
+        <file src="Output\Release\x86\Microsoft.WindowsAPICodePack.Shell.dll" target="lib\net45\Microsoft.WindowsAPICodePack.Shell.dll" />
+        <file src="Output\Release\x86\Mono.Cecil.dll" target="lib\net45\Mono.Cecil.dll" />
+        <file src="Output\Release\x86\Mono.Cecil.Mdb.dll" target="lib\net45\Mono.Cecil.Mdb.dll" />
+        <file src="Output\Release\x86\Mono.Cecil.Pdb.dll" target="lib\net45\Mono.Cecil.Pdb.dll" />
+        <file src="Output\Release\x86\Mono.Cecil.Rocks.dll" target="lib\net45\Mono.Cecil.Rocks.dll" />
+        <file src="Output\Release\x86\MoonPdfLib.dll" target="lib\net45\MoonPdfLib.dll" />
+        <file src="Output\Release\x86\MouseKeyboardActivityMonitor.dll" target="lib\net45\MouseKeyboardActivityMonitor.dll" />
+        <file src="Output\Release\x86\Newtonsoft.Json.dll" target="lib\net45\Newtonsoft.Json.dll" />
+        <file src="Output\Release\x86\NuGet.Squirrel.dll" target="lib\net45\NuGet.Squirrel.dll" />
+        <file src="Output\Release\x86\Oracle.DataAccess.dll" target="lib\net45\Oracle.DataAccess.dll" />
+        <file src="Output\Release\x86\OracleConfiguration.xml" target="lib\net45\OracleConfiguration.xml" />
+        <file src="Output\Release\x86\OracleDocumentation.xml" target="lib\net45\OracleDocumentation.xml" />
+        <file src="Output\Release\x86\protobuf-net.dll" target="lib\net45\protobuf-net.dll" />
+        <file src="Output\Release\x86\Splat.dll" target="lib\net45\Splat.dll" />
+        <file src="Output\Release\x86\SqlPad.exe" target="lib\net45\SqlPad.exe" />
+        <file src="Output\Release\x86\SqlPad.exe.config" target="lib\net45\SqlPad.exe.config" />
+        <file src="Output\Release\x86\SqlPad.Oracle.dll" target="lib\net45\SqlPad.Oracle.dll" />
+        <file src="Output\Release\x86\Squirrel.dll" target="lib\net45\Squirrel.dll" />
+        <file src="Output\Release\x86\Xceed.Wpf.Toolkit.dll" target="lib\net45\Xceed.Wpf.Toolkit.dll" />
+    </files>
+</package>

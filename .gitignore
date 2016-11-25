@@ -171,6 +171,7 @@ App_Data/*.ldf
 
 .vscode/
 packages/
+Releases/
 
 #############
 ## Windows detritus
