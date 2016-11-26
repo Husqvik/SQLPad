@@ -87,6 +87,7 @@
     <Compile Include="Commands\AddExpressionToClauseCommandBase.cs" />
     <Compile Include="Commands\AddToOrderByCommand.cs" />
     <Compile Include="Commands\ConfigureNamedParameterCommand.cs" />
+    <Compile Include="Commands\ExtractPackageInterfaceCommand.cs" />
     <Compile Include="Commands\ExpandViewCommand.cs" />
     <Compile Include="Commands\SplitStringCommand.cs" />
     <Compile Include="Commands\PropagateColumnCommand.cs" />

@@ -2081,6 +2081,65 @@ MODEL
 		}
 
 		[Test, Apartment(ApartmentState.STA)]
+		public void TestExtractPackageInterfaceCommand()
+		{
+			const string statementText = @"CREATE PACKAGE BODY test_package AS
+	PROCEDURE p1
+	IS
+	BEGIN
+		NULL;
+	END;
+	
+	PROCEDURE p2(p IN NUMBER)
+	IS
+	BEGIN
+		NULL;
+	END;
+	
+	FUNCTION f1(p IN VARCHAR2) RETURN NUMBER
+	IS
+	BEGIN
+		RETURN 0;
+	END;
+END;";
+
+			_editor.Text = statementText;
+			_editor.CaretOffset = 21;
+
+			CanExecuteCommand(OracleCommands.ExtractPackageInterface).ShouldBe(true);
+			ExecuteCommand(OracleCommands.ExtractPackageInterface, new TestCommandSettings(new CommandSettingsModel()));
+
+			const string expectedResult = @"CREATE PACKAGE BODY test_package AS
+	PROCEDURE p1
+	IS
+	BEGIN
+		NULL;
+	END;
+	
+	PROCEDURE p2(p IN NUMBER)
+	IS
+	BEGIN
+		NULL;
+	END;
+	
+	FUNCTION f1(p IN VARCHAR2) RETURN NUMBER
+	IS
+	BEGIN
+		RETURN 0;
+	END;
+END;
+
+CREATE OR REPLACE PACKAGE HUSQVIK.test_package AS
+	PROCEDURE p1;
+	PROCEDURE p2(p IN NUMBER);
+	FUNCTION f1(p IN VARCHAR2) RETURN NUMBER;
+END HUSQVIK.test_package;
+";
+
+			_editor.Text.ShouldBe(expectedResult);
+		}
+
+		[Test, Apartment(ApartmentState.STA)]
 		public void TestGenerateCustomTypeCSharpWrapperClassCommand()
 		{
 			const string statementText = @"SELECT SYS.ODCIARGDESC() FROM DUAL";

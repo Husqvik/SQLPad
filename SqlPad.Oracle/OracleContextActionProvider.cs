@@ -157,6 +157,11 @@ namespace SqlPad.Oracle
 				actionList.Add(new ContextAction(SplitStringCommand.Title, OracleCommands.SplitString, executionContext));
 			}
 
+			if (OracleCommands.ExtractPackageInterface.CanExecuteHandler(executionContext))
+			{
+				actionList.Add(new ContextAction(ExtractPackageInterfaceCommand.Title, OracleCommands.ExtractPackageInterface, executionContext));
+			}
+
 			if (OracleCommands.ExpandView.CanExecuteHandler(executionContext))
 			{
 				actionList.Add(new ContextAction(ExpandViewCommand.Title, OracleCommands.ExpandView, executionContext, true));

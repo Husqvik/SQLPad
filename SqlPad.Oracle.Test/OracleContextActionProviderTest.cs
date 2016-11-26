@@ -505,5 +505,35 @@ namespace SqlPad.Oracle.Test
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 7).SingleOrDefault(a => a.Name == ConfigureNamedParameterCommand.Title);
 			action.ShouldNotBe(null);
 		}
+
+		[Test]
+		public void TestExtractPackageInterfaceCommandAvailable()
+		{
+			const string query1 = @"CREATE PACKAGE BODY test_package AS
+	PROCEDURE p1
+	IS
+	BEGIN
+		NULL;
+	END;
+END;";
+
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 21).SingleOrDefault(a => a.Name == ExtractPackageInterfaceCommand.Title);
+			action.ShouldNotBe(null);
+		}
+
+		[Test]
+		public void TestExtractPackageInterfaceCommandNotAvailable()
+		{
+			const string query1 = @"CREATE PACKAGE test_package AS
+	PROCEDURE p1
+	IS
+	BEGIN
+		NULL;
+	END;
+END;";
+
+			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 15).SingleOrDefault(a => a.Name == ExtractPackageInterfaceCommand.Title);
+			action.ShouldBe(null);
+		}
 	}
 }
