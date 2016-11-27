@@ -1,4 +1,4 @@
-#SQLPad 0.4.0.448
+#SQLPad 0.4.0.449
 
 |Builds|Oracle.DataAccess|Oracle.ManagedDataAccess|
 |:--:|:--:|:--:|
@@ -156,6 +156,9 @@ Resolve ambiguous column
 Wrap current query block as inline view
 
 Add named parameters
+
+Extract PL/SQL package interface
+
 
 #####@Row source:
 

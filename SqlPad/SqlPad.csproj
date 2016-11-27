@@ -121,6 +121,10 @@
     <Compile Include="ResultInfo.cs" />
     <Compile Include="TextHelper.cs" />
     <Compile Include="SqlPadTextBox.cs" />
+    <Compile Include="TraceLog.cs" />
+    <Compile Include="WindowTraceLog.xaml.cs">
+      <DependentUpon>WindowTraceLog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="WindowClipboardHistory.xaml.cs">
       <DependentUpon>WindowClipboardHistory.xaml</DependentUpon>
     </Compile>
@@ -262,6 +266,10 @@
     <Page Include="FileResultViewer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="WindowTraceLog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="WindowClipboardHistory.xaml">
       <SubType>Designer</SubType>

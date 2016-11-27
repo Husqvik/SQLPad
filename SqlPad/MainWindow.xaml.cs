@@ -86,9 +86,9 @@ namespace SqlPad
 					return false;
 				}
 			}
-			catch (Exception e)
+			catch (Exception exception)
 			{
-				Messages.ShowError(e.ToString());
+				Messages.ShowError(exception.ToString());
 				return false;
 			}
 			
@@ -103,9 +103,9 @@ namespace SqlPad
 				.Select(t => t.Content)
 				.OfType<DocumentPage>();
 
-		private void WindowLoadedHandler(object sender, RoutedEventArgs e)
+		private void WindowLoadedHandler(object sender, RoutedEventArgs args)
 		{
-			_windowDatabaseMonitor.Owner = this;
+			_windowDatabaseMonitor.Owner = WindowTraceLog.Instance.Owner = this;
 
 			CommandBindings.Add(new CommandBinding(GenericCommands.SaveAll, SaveAllCommandExecutedHandler));
 
@@ -139,7 +139,7 @@ namespace SqlPad
 			EditorNavigationService.RegisterClipboardEntry();
 		}
 
-		private void SaveAllCommandExecutedHandler(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
+		private void SaveAllCommandExecutedHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			foreach (var document in AllDocuments)
 			{
@@ -150,14 +150,14 @@ namespace SqlPad
 			}
 		}
 
-		private void DropObjectHandler(object sender, DragEventArgs e)
+		private void DropObjectHandler(object sender, DragEventArgs args)
 		{
-			if (!e.Data.GetDataPresent(DataFormats.FileDrop))
+			if (!args.Data.GetDataPresent(DataFormats.FileDrop))
 			{
 				return;
 			}
 
-			var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+			var files = (string[])args.Data.GetData(DataFormats.FileDrop);
 			foreach (var file in files)
 			{
 				var fileInfo = new FileInfo(file);
@@ -170,9 +170,9 @@ namespace SqlPad
 			}
 		}
 
-		private void TabControlSelectionChangedHandler(object sender, SelectionChangedEventArgs e)
+		private void TabControlSelectionChangedHandler(object sender, SelectionChangedEventArgs args)
 		{
-			var tabItem = e.AddedItems.Count == 0 ? null : e.AddedItems[0] as TabItem;
+			var tabItem = args.AddedItems.Count == 0 ? null : args.AddedItems[0] as TabItem;
 			var document = tabItem?.Content as DocumentPage;
 
 			if (document != null)
@@ -183,7 +183,7 @@ namespace SqlPad
 				EditorNavigationService.RegisterDocumentCursorPosition(document.WorkDocument, document.Editor.CaretOffset);
 			}
 
-			if (!e.AddedItems.Contains(NewTabItem))
+			if (!args.AddedItems.Contains(NewTabItem))
 			{
 				return;
 			}
@@ -215,9 +215,9 @@ namespace SqlPad
 			documentPage.TabItemContextMenu.CommandBindings.Add(new CommandBinding(GenericCommands.CloseAllDocumentsButThis, CloseAllButThisTabExecutedHandler, (sender, args) => args.CanExecute = DocumentTabControl.Items.Count > 2));
 		}
 
-		private void CloseAllButThisTabExecutedHandler(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
+		private void CloseAllButThisTabExecutedHandler(object sender, ExecutedRoutedEventArgs args)
 		{
-			var currentDocument = (DocumentPage)executedRoutedEventArgs.Parameter;
+			var currentDocument = (DocumentPage)args.Parameter;
 			var allDocuments = DocumentTabControl.Items.Cast<TabItem>().Select(ti => ti.Content).OfType<DocumentPage>();
 			var documentsToClose = allDocuments.Where(p => !p.Equals(currentDocument)).ToArray();
 			foreach (var page in documentsToClose)
@@ -230,9 +230,9 @@ namespace SqlPad
 			}
 		}
 
-		private void CloseTabExecutedHandler(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
+		private void CloseTabExecutedHandler(object sender, ExecutedRoutedEventArgs args)
 		{
-			var currentDocument = (executedRoutedEventArgs.Parameter ?? sender) as DocumentPage;
+			var currentDocument = (args.Parameter ?? sender) as DocumentPage;
 			if (currentDocument == null)
 			{
 				return;
@@ -313,12 +313,12 @@ namespace SqlPad
 			}
 		}
 
-		private void WindowClosingHandler(object sender, CancelEventArgs e)
+		private void WindowClosingHandler(object sender, CancelEventArgs args)
 		{
 			var documentBeingExecuted = AllDocuments.FirstOrDefault(d => d.OutputViewers.Any(ov => ov.IsBusy));
 			if (documentBeingExecuted != null)
 			{
-				e.Cancel = true;
+				args.Cancel = true;
 				documentBeingExecuted.TabItem.IsSelected = true;
 				documentBeingExecuted.ShowActiveExecutionWarning();
 				return;
@@ -330,7 +330,7 @@ namespace SqlPad
 				var dialogResult = MessageBox.Show("Some documents have active transaction. Do you want to continue and roll back the changes? ", "Confirmation", MessageBoxButton.OKCancel, MessageBoxImage.Question, MessageBoxResult.Cancel);
 				if (dialogResult == MessageBoxResult.Cancel)
 				{
-					e.Cancel = true;
+					args.Cancel = true;
 					documentWithActiveTransaction.TabItem.IsSelected = true;
 					return;
 				}
@@ -360,12 +360,12 @@ namespace SqlPad
 			Trace.WriteLine($"{DateTime.Now} - Working document collection saved. ");
 		}
 
-		private static void WindowClosedHandler(object sender, EventArgs e)
+		private static void WindowClosedHandler(object sender, EventArgs args)
 		{
 			ConfigurationProvider.Dispose();
 		}
 
-		private void OpenFileHandler(object sender, ExecutedRoutedEventArgs e)
+		private void OpenFileHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			var dialog =
 				new OpenFileDialog
@@ -418,12 +418,12 @@ namespace SqlPad
 			return documentPage;
 		}
 
-		private void GoToNextEditCommandExecutedHandler(object sender, ExecutedRoutedEventArgs e)
+		private void GoToNextEditCommandExecutedHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			GoToEditCommand(EditorNavigationService.GetNextEdit());
 		}
 
-		private void GoToPreviousEditCommandExecutedHandler(object sender, ExecutedRoutedEventArgs e)
+		private void GoToPreviousEditCommandExecutedHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			GoToEditCommand(EditorNavigationService.GetPreviousEdit());
 		}
@@ -465,7 +465,7 @@ namespace SqlPad
 				: TaskbarItemProgressState.None;
 		}
 
-		private void ShowRecentDocumentsHandler(object sender, ExecutedRoutedEventArgs e)
+		private void ShowRecentDocumentsHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			if (WorkDocumentCollection.RecentDocuments.Count == 0)
 			{
@@ -511,30 +511,40 @@ namespace SqlPad
 			}
 		}
 
-		private void AddNewPageHandler(object sender, ExecutedRoutedEventArgs e)
+		private void AddNewPageHandler(object sender, ExecutedRoutedEventArgs args)
 		{
 			AddNewDocumentPage();
 		}
 
-		private void ShowDatabaseMonitorExecutedHandler(object sender, ExecutedRoutedEventArgs e)
+		private void ShowDatabaseMonitorExecutedHandler(object sender, ExecutedRoutedEventArgs args)
+		{
+			HandleSingletonWindowState(_windowDatabaseMonitor);
+
+			_windowDatabaseMonitor.CurrentConnection = ActiveDocument.CurrentConnection;
+		}
+
+		private void ShowTraceLogHandler(object sender, ExecutedRoutedEventArgs args)
+		{
+			HandleSingletonWindowState(WindowTraceLog.Instance);
+		}
+
+		private void HandleSingletonWindowState(Window window)
 		{
 			ActiveDocument.EnsurePopupClosed();
 
-			if (_windowDatabaseMonitor.IsVisible)
+			if (window.IsVisible)
 			{
-				if (_windowDatabaseMonitor.WindowState == WindowState.Minimized)
+				if (window.WindowState == WindowState.Minimized)
 				{
-					SystemCommands.RestoreWindow(_windowDatabaseMonitor);
+					SystemCommands.RestoreWindow(window);
 				}
 
-				_windowDatabaseMonitor.Focus();
+				window.Focus();
 			}
 			else
 			{
-				_windowDatabaseMonitor.Show();
+				window.Show();
 			}
-
-			_windowDatabaseMonitor.CurrentConnection = ActiveDocument.CurrentConnection;
 		}
 
 		private void ShowClipboardHistoryHandler(object sender, ExecutedRoutedEventArgs args)

@@ -1,0 +1,14 @@
+﻿<Window x:Class="SqlPad.WindowTraceLog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:sqlPad="clr-namespace:SqlPad"
+        mc:Ignorable="d"
+        Icon="EmptyIcon.ico"
+        WindowStyle="SingleBorderWindow"
+        WindowStartupLocation="CenterOwner"
+        Title="Trace log" Width="640" Height="480"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}">
+	<sqlPad:ScrollingTextBox Text="{Binding TraceLog, Mode=OneWay}" IsReadOnly="True" IsReadOnlyCaretVisible="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
+</Window>

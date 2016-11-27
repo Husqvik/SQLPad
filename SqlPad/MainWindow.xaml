@@ -59,6 +59,7 @@
 		<CommandBinding Command="commands:GenericCommands.ShowDatabaseMonitor" Executed="ShowDatabaseMonitorExecutedHandler" />
 		<CommandBinding Command="commands:GenericCommands.CreateNewPage" Executed="AddNewPageHandler" />
 		<CommandBinding Command="commands:GenericCommands.ClipboardHistory" Executed="ShowClipboardHistoryHandler" />
+		<CommandBinding Command="commands:GenericCommands.TraceLog" Executed="ShowTraceLogHandler" />
 	</Window.CommandBindings>
 
 	<TabControl x:Name="DocumentTabControl"
