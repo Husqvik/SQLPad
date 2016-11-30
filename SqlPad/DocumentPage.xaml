@@ -226,9 +226,9 @@
 				</TextBlock.LayoutTransform>
 			</TextBlock>
 
-			<DockPanel DockPanel.Dock="Bottom" Background="DarkRed" Visibility="Collapsed">
+			<DockPanel DockPanel.Dock="Bottom" Visibility="Collapsed">
 				<DockPanel.Style>
-					<Style>
+					<Style TargetType="DockPanel">
 						<Style.Triggers>
 							<DataTrigger Binding="{Binding TimedNotificationMessage, Converter={StaticResource ObjectToVisibilityConverter}}" Value="Visible">
 								<DataTrigger.EnterActions>
@@ -250,7 +250,13 @@
 									<StopStoryboard BeginStoryboardName="StoryboardFadeOut" />
 								</DataTrigger.ExitActions>
 							</DataTrigger>
+							
+							<DataTrigger Binding="{Binding TimedNotificationMessage.Severity}" Value="{x:Static sqlPad:Severity.Warning}">
+								<Setter Property="Background" Value="DarkRed" />
+							</DataTrigger>
 						</Style.Triggers>
+
+						<Setter Property="Background" Value="CornflowerBlue" />
 					</Style>
 				</DockPanel.Style>
 

@@ -1,12 +1,15 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace SqlPad
 {
 	public partial class WindowTraceLog
 	{
-		public static readonly DependencyProperty TraceLogProperty = DependencyProperty.Register(nameof(TraceLog), typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(String.Empty));
+		public static readonly DependencyProperty TraceLogProperty = DependencyProperty.Register(nameof(TraceLog), typeof(string), typeof(WindowTraceLog), new FrameworkPropertyMetadata(String.Empty));
 
 		[Bindable(true)]
 		public string TraceLog
@@ -15,11 +18,21 @@ namespace SqlPad
 			private set { SetValue(TraceLogProperty, value); }
 		}
 
-		public static readonly WindowTraceLog Instance;
+		internal static ConcurrentBag<string> Messages = new ConcurrentBag<string>();
 
-		static WindowTraceLog()
+		public static WindowTraceLog Instance { get; private set; }
+
+		public static void Initialize()
 		{
-			Instance = new WindowTraceLog();
+			if (Instance != null)
+			{
+				throw new InvalidOperationException("Trace log window has been already initialized. ");
+			}
+
+			var contents = String.Join(Environment.NewLine, Messages.OrderBy(m => m));
+			Instance = new WindowTraceLog { TraceLog = contents };
+			Messages = new ConcurrentBag<string>();
+			WorkDocumentCollection.RestoreWindowProperties(Instance);
 		}
 
 		public WindowTraceLog()
@@ -27,9 +40,31 @@ namespace SqlPad
 			InitializeComponent();
 		}
 
-		public void Log(string message)
+		private void WriteLineInternal(string message)
 		{
-			TraceLog += $"{message}{Environment.NewLine}";
+			Application.Current.Dispatcher.BeginInvoke(
+				DispatcherPriority.Background,
+				new Action(() => TraceLog += $"{message}{Environment.NewLine}"));
+		}
+
+		public static void WriteLine(string message)
+		{
+			if (Instance == null)
+			{
+				Messages.Add(message);
+			}
+			else
+			{
+				Instance.WriteLineInternal(message);
+			}
+		}
+
+		private void WindowTraceLogClosingHandler(object sender, CancelEventArgs args)
+		{
+			WorkDocumentCollection.StoreWindowProperties(this);
+
+			args.Cancel = true;
+			Hide();
 		}
 	}
 }

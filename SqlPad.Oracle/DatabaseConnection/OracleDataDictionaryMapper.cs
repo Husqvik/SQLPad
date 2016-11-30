@@ -294,7 +294,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		internal static void WriteTrace(string connectionIdentifier, string message)
 		{
-			Trace.WriteLine($"{DateTime.Now} - Metadata refresh for '{connectionIdentifier}': {message}");
+			TraceLog.WriteLine($"Metadata refresh for '{connectionIdentifier}': {message}");
 		}
 
 		public IEnumerable<KeyValuePair<string, string>> GetSystemParameters()
@@ -834,7 +834,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			if (allObjects.ContainsKey(schemaObject.FullyQualifiedName))
 			{
-				Trace.WriteLine($"Object '{schemaObject.FullyQualifiedName}' ({objectType}) is already in the dictionary. ");
+				TraceLog.WriteLine($"Object '{schemaObject.FullyQualifiedName}' ({objectType}) is already in the dictionary. ");
 			}
 			else
 			{

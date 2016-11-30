@@ -73,7 +73,7 @@ namespace SqlPad
 				return;
 			}
 
-			Trace.WriteLine("Action is about to cancel. ");
+			TraceLog.WriteLine("Action is about to cancel. ");
 			cancellationTokenSource.Cancel();
 		}
 

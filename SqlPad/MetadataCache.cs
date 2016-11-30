@@ -43,7 +43,7 @@ namespace SqlPad
 					}
 					catch(Exception e)
 					{
-						Trace.WriteLine("DatabaseModelCacheConfiguration deserialization failed: " + e);
+						TraceLog.WriteLine("DatabaseModelCacheConfiguration deserialization failed: " + e);
 					}
 				}
 			}
@@ -93,7 +93,7 @@ namespace SqlPad
 
 				timer.Stop();
 
-				Trace.WriteLine($"{DateTime.Now} - Cache for '{cacheKey}' stored to '{fileName}' ({DataSpaceConverter.PrettyPrint(new FileInfo(fileName).Length, CultureInfo.InvariantCulture)}) in {timer.Elapsed}. ");
+				TraceLog.WriteLine($"Cache for '{cacheKey}' stored to '{fileName}' ({DataSpaceConverter.PrettyPrint(new FileInfo(fileName).Length, CultureInfo.InvariantCulture)}) in {timer.Elapsed}. ");
 
 				using (var stream = File.Create(CacheConfigrationFileName))
 				{

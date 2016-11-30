@@ -132,7 +132,7 @@ namespace SqlPad
 			}
 			catch (OperationCanceledException)
 			{
-				Trace.WriteLine("User has canceled large data editor load operation. ");
+				TraceLog.WriteLine("User has canceled large data editor load operation. ");
 				Close();
 			}
 			catch (Exception e)

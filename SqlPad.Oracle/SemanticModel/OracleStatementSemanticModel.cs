@@ -3483,7 +3483,7 @@ namespace SqlPad.Oracle.SemanticModel
 							incompatibleDataFound = true;
 							var message = column == null ? $"Column '{constraintColumn}' not found in object '{dataObject.FullyQualifiedName}' metadata. " : $"Column '{dataObject.FullyQualifiedName}.{constraintColumn}' does not have primitive data type. ";
 
-							Trace.WriteLine($"Reference constraint data source cannot be created. {message}");
+							TraceLog.WriteLine($"Reference constraint data source cannot be created. {message}");
 
 							break;
 						}

@@ -177,7 +177,7 @@ namespace SqlPad
 
 		private void TimedNotificationTickHandler(object sender, EventArgs args)
 		{
-			TimedNotificationMessage = String.Empty;
+			TimedNotificationMessage = null;
 			_timerTimedNotification.Stop();
 		}
 
@@ -738,7 +738,7 @@ namespace SqlPad
 
 		private void CancelUserActionHandler(object sender, ExecutedRoutedEventArgs args)
 		{
-			Trace.WriteLine("Action is about to cancel. ");
+			TraceLog.WriteLine("Action is about to cancel. ");
 			HideTimedNotificationMessage();
 			ActiveOutputViewer.CancelUserAction();
 		}
@@ -1579,7 +1579,7 @@ namespace SqlPad
 			}
 			catch (Exception e)
 			{
-				Trace.WriteLine($"Code completion window item generation failed: {e}");
+				TraceLog.WriteLine($"Code completion window item generation failed: {e}");
 				App.CreateErrorLog(e);
 				return;
 			}
@@ -2315,10 +2315,19 @@ namespace SqlPad
 			outputViewer.Dispose();
 		}
 
+		public void ShowTimedMessage(string text, Severity severity)
+		{
+			TimedNotificationMessage =
+				new NotificationMessage
+				{
+					Text = text,
+					Severity = severity
+				};
+		}
+
 		public void ShowActiveExecutionWarning()
 		{
-			TimedNotificationMessage = String.Empty;
-			TimedNotificationMessage = "Database command is being executed. ";
+			ShowTimedMessage("Database command is being executed. ", Severity.Warning);
 		}
 
 		private void ShowExecutionHistoryExecutedHandler(object sender, ExecutedRoutedEventArgs args)
@@ -2359,7 +2368,7 @@ namespace SqlPad
 
 		private void HideTimedNotificationMessage()
 		{
-			TimedNotificationMessage = String.Empty;
+			TimedNotificationMessage = null;
 		}
 
 		private struct StatementExecutionConfiguration

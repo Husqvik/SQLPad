@@ -9,6 +9,7 @@
         WindowStyle="SingleBorderWindow"
         WindowStartupLocation="CenterOwner"
         Title="Trace log" Width="640" Height="480"
+        Closing="WindowTraceLogClosingHandler"
         DataContext="{Binding RelativeSource={RelativeSource Self}}">
 	<sqlPad:ScrollingTextBox Text="{Binding TraceLog, Mode=OneWay}" IsReadOnly="True" IsReadOnlyCaretVisible="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
 </Window>

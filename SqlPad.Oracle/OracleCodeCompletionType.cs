@@ -558,7 +558,7 @@ namespace SqlPad.Oracle
 
 			if (!Any)
 			{
-				Trace.WriteLine("No completions available");
+				TraceLog.WriteLine("No completions available");
 				return;
 			}
 

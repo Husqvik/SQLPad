@@ -348,7 +348,7 @@ namespace SqlPad
 			}
 
 			var timerState = _refreshTimer.IsEnabled ? "enabled" : "disabled";
-			Trace.WriteLine($"Session monitor auto-refresh has been {timerState}. ");
+			TraceLog.WriteLine($"Session monitor auto-refresh has been {timerState}. ");
 		}
 
 		private void SessionGridContextMenuOpeningHandler(object sender, RoutedEventArgs args)

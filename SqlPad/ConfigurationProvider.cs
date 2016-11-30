@@ -82,7 +82,7 @@ namespace SqlPad
 
 			_lastConfigurationFileChange = writeTime;
 
-			Trace.WriteLine("Configuration file has changed. ");
+			TraceLog.WriteLine("Configuration file has changed. ");
 
 			if (Configure())
 			{
@@ -108,7 +108,7 @@ namespace SqlPad
 			}
 			catch (Exception e)
 			{
-				Trace.WriteLine("Configuration loading failed: " + e);
+				TraceLog.WriteLine("Configuration loading failed: " + e);
 				return false;
 			}
 		}

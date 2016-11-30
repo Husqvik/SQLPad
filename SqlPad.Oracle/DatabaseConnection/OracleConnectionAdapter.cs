@@ -102,7 +102,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			try
 			{
 				await ExecuteSimpleCommandUsingUserConnection(commandText, "Activate trace events", cancellationToken);
-				Trace.WriteLine($"Enable trace event command executed successfully: \n{commandText}");
+				TraceLog.WriteLine($"Enable trace event command executed successfully: \n{commandText}");
 
 				await RetrieveTraceFileName(cancellationToken);
 			}
@@ -165,7 +165,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 
 			await ExecuteSimpleCommandUsingUserConnection(commandText, "Stop trace events", cancellationToken);
-			Trace.WriteLine($"Disable trace event command executed successfully: \n{commandText}");
+			TraceLog.WriteLine($"Disable trace event command executed successfully: \n{commandText}");
 		}
 
 		internal void SwitchCurrentSchema()
@@ -208,7 +208,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 			else
 			{
-				Trace.WriteLine(args.ToString());
+				TraceLog.WriteLine(args.ToString());
 			}
 		}
 
@@ -661,11 +661,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 				try
 				{
 					await command.ExecuteNonQueryAsynchronous(cancellationToken);
-					Trace.WriteLine($"{DateTime.Now} - Startup script command '{command.CommandText}' executed successfully. ");
+					TraceLog.WriteLine($"Startup script command '{command.CommandText}' executed successfully. ");
 				}
 				catch (Exception e)
 				{
-					Trace.WriteLine($"{DateTime.Now} - Startup script command '{command.CommandText}' failed: {e}");
+					TraceLog.WriteLine($"Startup script command '{command.CommandText}' failed: {e}");
 				}
 			}
 		}
@@ -679,11 +679,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 				try
 				{
 					_userTraceFileName = (string)await command.ExecuteScalarAsynchronous(cancellationToken);
-					Trace.WriteLine($"{DateTime.Now} - Instance {_userSessionIdentifier.Value.Instance} Session ID {_userSessionIdentifier.Value.SessionId} trace file name is {_userTraceFileName}. ");
+					TraceLog.WriteLine($"Instance {_userSessionIdentifier.Value.Instance} Session ID {_userSessionIdentifier.Value.SessionId} trace file name is {_userTraceFileName}. ");
 				}
 				catch (Exception e)
 				{
-					Trace.WriteLine($"{DateTime.Now} - Trace file name retrieval failed: {e}");
+					TraceLog.WriteLine($"Trace file name retrieval failed: {e}");
 				}
 			}
 		}
@@ -694,7 +694,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var isConnectionStateChanged = await _userConnection.EnsureConnectionOpen(connectionString, cancellationToken);
 			if (isConnectionStateChanged)
 			{
-				Trace.WriteLine($"{DateTime.Now} - User connection has been open. ");
+				TraceLog.WriteLine($"User connection has been open. ");
 			}
 
 			if (isConnectionStateChanged || _userSessionIdentifier == null)
@@ -944,14 +944,14 @@ namespace SqlPad.Oracle.DatabaseConnection
 						await connection.CloseAsynchronous(cancellationToken);
 						var result = (OracleDecimal)errorPositionParameter.Value;
 						var syntaxErrorIndex = result.IsNull ? null : (int?)result.Value;
-						Trace.WriteLine($"Syntax error index retrieved: {syntaxErrorIndex}");
+						TraceLog.WriteLine($"Syntax error index retrieved: {syntaxErrorIndex}");
 						return syntaxErrorIndex;
 					}
 				}
 			}
 			catch (Exception exception)
 			{
-				Trace.WriteLine($"Syntax error index retrieval failed: {exception}");
+				TraceLog.WriteLine($"Syntax error index retrieval failed: {exception}");
 				return null;
 			}
 		}
@@ -1233,7 +1233,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					}
 					catch (OracleException exception)
 					{
-						Trace.WriteLine($"Execution plan identifers and transaction status could not been fetched: {exception}");
+						TraceLog.WriteLine($"Execution plan identifers and transaction status could not been fetched: {exception}");
 						return exception;
 					}
 					finally

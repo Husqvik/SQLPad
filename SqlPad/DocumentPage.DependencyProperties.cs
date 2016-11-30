@@ -19,7 +19,7 @@ namespace SqlPad
 		public static readonly DependencyProperty IsModifiedProperty = DependencyProperty.Register(nameof(IsModified), typeof(bool), typeof(DocumentPage), new FrameworkPropertyMetadata(false));
 		public static readonly DependencyProperty IsRunningProperty = DependencyProperty.Register(nameof(IsRunning), typeof(bool), typeof(DocumentPage), new FrameworkPropertyMetadata(false));
 		public static readonly DependencyProperty ConnectionErrorMessageProperty = DependencyProperty.Register(nameof(ConnectionErrorMessage), typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(String.Empty));
-		public static readonly DependencyProperty TimedNotificationMessageProperty = DependencyProperty.Register(nameof(TimedNotificationMessage), typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(String.Empty));
+		public static readonly DependencyProperty TimedNotificationMessageProperty = DependencyProperty.Register(nameof(TimedNotificationMessage), typeof(NotificationMessage), typeof(DocumentPage), new FrameworkPropertyMetadata());
 		public static readonly DependencyProperty DocumentHeaderBackgroundColorCodeProperty = DependencyProperty.Register(nameof(DocumentHeaderBackgroundColorCode), typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(DocumentHeaderBackgroundColorCodePropertyChangedCallbackHandler) { DefaultValue = DefaultDocumentHeaderBackgroundColorCode });
 		public static readonly DependencyProperty DocumentHeaderTextColorCodeProperty = DependencyProperty.Register(nameof(DocumentHeaderTextColorCode), typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(DocumentHeaderTextColorCodePropertyChangedCallbackHandler) { DefaultValue = DefaultDocumentHeaderTextColorCode });
 		public static readonly DependencyProperty DocumentHeaderProperty = DependencyProperty.Register(nameof(DocumentHeader), typeof(string), typeof(DocumentPage), new FrameworkPropertyMetadata(DocumentHeaderPropertyChangedCallbackHandler));
@@ -76,9 +76,9 @@ namespace SqlPad
 		}
 
 		[Bindable(true)]
-		public string TimedNotificationMessage
+		public NotificationMessage TimedNotificationMessage
 		{
-			get { return (string)GetValue(TimedNotificationMessageProperty); }
+			get { return (NotificationMessage)GetValue(TimedNotificationMessageProperty); }
 			private set { SetValue(TimedNotificationMessageProperty, value); }
 		}
 
@@ -221,5 +221,17 @@ namespace SqlPad
 			private set { SetValue(DatabaseModelRefreshStatusProperty, value); }
 		}
 		#endregion
+	}
+
+	public class NotificationMessage
+	{
+		public string Text { get; set; }
+		public Severity Severity { get; set; }
+	}
+
+	public enum Severity
+	{
+		Information,
+		Warning
 	}
 }

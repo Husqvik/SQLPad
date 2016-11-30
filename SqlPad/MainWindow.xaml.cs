@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -29,6 +28,12 @@ namespace SqlPad
 
 		public MainWindow()
 		{
+			WindowTraceLog.Initialize();
+
+			var applicationTitle = App.Title;
+
+			TraceLog.WriteLine(applicationTitle);
+
 			if (!EnsureValidConfiguration())
 			{
 				Application.Current.Shutdown(Int32.MinValue);
@@ -37,7 +42,6 @@ namespace SqlPad
 
 			InitializeComponent();
 
-			var applicationTitle = $"SQL Pad {App.Version} ALPHA ({App.VersionTimestamp})";
 			if (IsRunningAsAdministrator)
 			{
 				applicationTitle = $"{applicationTitle} (Administrator)";
@@ -357,7 +361,7 @@ namespace SqlPad
 			WorkDocumentCollection.StoreWindowProperties(this);
 			WorkDocumentCollection.Save();
 
-			Trace.WriteLine($"{DateTime.Now} - Working document collection saved. ");
+			TraceLog.WriteLine($"Working document collection saved. ");
 		}
 
 		private static void WindowClosedHandler(object sender, EventArgs args)

@@ -129,7 +129,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_allSchemas = refreshedModel._allSchemas;
 			_schemas = refreshedModel._schemas;
 
-			Trace.WriteLine($"{DateTime.Now} - Metadata for '{_connectionStringName}/{ConnectionIdentifier}' has been retrieved from the cache. ");
+			TraceLog.WriteLine($"Metadata for '{_connectionStringName}/{ConnectionIdentifier}' has been retrieved from the cache. ");
 
 			lock (ActiveDataModelRefresh)
 			{
@@ -166,7 +166,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private void SetRefreshTimerInterval()
 		{
 			_refreshTimer.Interval = ConfigurationProvider.Configuration.DataModel.DataModelRefreshPeriod * 60000;
-			Trace.WriteLine($"{DateTime.Now} - Data model '{_connectionStringName}/{ConnectionIdentifier}' refresh timer set: {ConfigurationProvider.Configuration.DataModel.DataModelRefreshPeriod} minute(s). ");
+			TraceLog.WriteLine($"Data model '{_connectionStringName}/{ConnectionIdentifier}' refresh timer set: {ConfigurationProvider.Configuration.DataModel.DataModelRefreshPeriod} minute(s). ");
 		}
 
 		public static void ValidateConfiguration()
@@ -182,7 +182,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				? $"{OracleDataAccessComponents} registry entry was not found. "
 				: $"{OracleDataAccessComponents} version {odacVersion} found. ";
 
-			Trace.WriteLine($"{DateTime.Now} - {traceMessage} {OracleDataAccessComponents} assembly version {typeof (OracleConnection).Assembly.FullName}");
+			TraceLog.WriteLine($"{traceMessage} {OracleDataAccessComponents} assembly version {typeof (OracleConnection).Assembly.FullName}");
 		}
 
 		public static OracleDatabaseModel GetDatabaseModel(ConnectionStringSettings connectionString, string identifier = null)
@@ -299,7 +299,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					var taskCompletionSource = new TaskCompletionSource<OracleDataDictionary>();
 					WaitingDataModelRefresh[_connectionStringName].Add(new RefreshModel { DatabaseModel = this, TaskCompletionSource = taskCompletionSource });
 
-					Trace.WriteLine($"{DateTime.Now} - Cache for '{_connectionStringName}' is being loaded by other requester. Waiting until operation finishes. ");
+					TraceLog.WriteLine($"Cache for '{_connectionStringName}' is being loaded by other requester. Waiting until operation finishes. ");
 
 					RaiseEvent(RefreshStarted);
 					RaiseRefreshStatusWaitingForModelBeingRefreshed();
@@ -426,7 +426,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				}
 				catch (TaskCanceledException)
 				{
-					Trace.WriteLine($"{DateTime.Now} - Update model cancelled. ");
+					TraceLog.WriteLine($"Update model cancelled. ");
 				}
 			}
 		}
@@ -496,7 +496,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				}
 				catch (Exception e)
 				{
-					Trace.WriteLine($"{DateTime.Now} - Update model failed: {e}");
+					TraceLog.WriteLine($"Update model failed: {e}");
 
 					if (!suppressException)
 					{
@@ -685,7 +685,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var isRefreshDone = !IsRefreshNeeded && !force;
 			if (isRefreshDone)
 			{
-				Trace.WriteLine($"{DateTime.Now} - Cache for '{_connectionStringName}' is valid until {DataDictionaryValidityTimestamp}. ");
+				TraceLog.WriteLine($"Cache for '{_connectionStringName}' is valid until {DataDictionaryValidityTimestamp}. ");
 				RemoveActiveRefreshTask();
 				return;
 			}
@@ -693,7 +693,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			RaiseEvent(InternalRefreshCompleted);
 
 			var reason = force ? "has been forced to refresh" : (_dataDictionary.Timestamp > DateTime.MinValue ? "has expired" : "does not exist or is corrupted");
-			Trace.WriteLine($"{DateTime.Now} - Cache for '{_connectionStringName}' {reason}. Cache refresh started. ");
+			TraceLog.WriteLine($"Cache for '{_connectionStringName}' {reason}. Cache refresh started. ");
 
 			_isRefreshing = true;
 			RaiseEvent(InternalRefreshStarted);
@@ -711,7 +711,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				}
 				catch (Exception e)
 				{
-					Trace.WriteLine($"{DateTime.Now} - Storing metadata cache failed: {e}");
+					TraceLog.WriteLine($"Storing metadata cache failed: {e}");
 				}
 			}
 
@@ -799,7 +799,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			var stopwatch = Stopwatch.StartNew();
 			RefreshSchemas(_dataDictionaryMapper.GetSchemaNames());
-			Trace.WriteLine($"{DateTime.Now} - Fetch schema metadata finished in {stopwatch.Elapsed}. ");
+			TraceLog.WriteLine($"Fetch schema metadata finished in {stopwatch.Elapsed}. ");
 		}
 
 		private static Dictionary<TKey, TValue> SafeFetchDictionary<TKey, TValue>(Func<IEnumerable<KeyValuePair<TKey, TValue>>> fetchKeyValuePairFunction, string traceMessage)
@@ -808,9 +808,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 			{
 				return fetchKeyValuePairFunction().ToDictionary(k => k.Key, k => k.Value);
 			}
-			catch (Exception e)
+			catch (Exception exception)
 			{
-				Trace.WriteLine(traceMessage + e);
+				TraceLog.WriteLine($"{traceMessage}{exception}");
 				return new Dictionary<TKey, TValue>();
 			}
 		}
@@ -835,15 +835,15 @@ namespace SqlPad.Oracle.DatabaseConnection
 				{
 					RaiseEvent(RefreshStarted);
 					RaiseRefreshStatusChanged("Loading data dictionary metadata cache... ");
-					Trace.WriteLine($"{DateTime.Now} - Attempt to load metadata for '{_connectionStringName}/{ConnectionIdentifier}' from cache. ");
+					TraceLog.WriteLine($"Attempt to load metadata for '{_connectionStringName}/{ConnectionIdentifier}' from cache. ");
 					var stopwatch = Stopwatch.StartNew();
 					_dataDictionary = CachedDataDictionaries[_connectionStringName] = OracleDataDictionary.Deserialize(stream);
-					Trace.WriteLine($"{DateTime.Now} - Metadata for '{_connectionStringName}/{ConnectionIdentifier}' loaded from cache in {stopwatch.Elapsed}");
+					TraceLog.WriteLine($"Metadata for '{_connectionStringName}/{ConnectionIdentifier}' loaded from cache in {stopwatch.Elapsed}");
 					BuildSupportLookups();
 				}
 				catch (Exception e)
 				{
-					Trace.WriteLine($"{DateTime.Now} - Oracle data dictionary cache deserialization failed: {e}");
+					TraceLog.WriteLine($"Oracle data dictionary cache deserialization failed: {e}");
 				}
 				finally
 				{
@@ -872,7 +872,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			catch (Exception e)
 			{
 				_dataDictionary = OracleDataDictionary.EmptyDictionary;
-				Trace.WriteLine($"{DateTime.Now} - All function metadata or unique constraint referring reference constraint lookup initialization from cache failed: {e}");
+				TraceLog.WriteLine($"All function metadata or unique constraint referring reference constraint lookup initialization from cache failed: {e}");
 			}
 		}
 
@@ -924,7 +924,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 			catch (Exception e)
 			{
-				Trace.WriteLine($"{DateTime.Now} - Database model for connection '{ConnectionString.Name}' initialization failed: {e}");
+				TraceLog.WriteLine($"Database model for connection '{ConnectionString.Name}' initialization failed: {e}");
 
 				InitializationFailed?.Invoke(this, new DatabaseModelConnectionErrorArgs(e));
 
@@ -1075,7 +1075,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					} while (true);
 
 					_schemas = _databaseModel._dataDictionaryMapper.GetSchemaNames().ToList().AsReadOnly();
-					Trace.WriteLine($"{DateTime.Now} - Connection string '{_databaseModel._connectionStringName}' schema metadata loaded. ");
+					TraceLog.WriteLine($"Connection string '{_databaseModel._connectionStringName}' schema metadata loaded. ");
 				}
 			}
 		}

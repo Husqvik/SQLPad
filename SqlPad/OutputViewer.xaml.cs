@@ -447,7 +447,7 @@ namespace SqlPad
 				}
 				else
 				{
-					Trace.WriteLine($"Executed statement not stored in the execution history. The maximum allowed size is {maximumHistoryEntrySize} characters while the statement has {executionHistoryRecord.StatementText.Length} characters. ");
+					TraceLog.WriteLine($"Executed statement not stored in the execution history. The maximum allowed size is {maximumHistoryEntrySize} characters while the statement has {executionHistoryRecord.StatementText.Length} characters. ");
 				}
 			}
 		}

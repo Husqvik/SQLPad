@@ -111,15 +111,15 @@ namespace SqlPad.Oracle.DatabaseConnection
 			await _debuggedSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
 			_debuggerSessionId = ((OracleString)debuggedSessionIdParameter.Value).Value;
 
-			Trace.WriteLine($"Target debug session initialized. Debug session ID = {_debuggerSessionId}");
+			TraceLog.WriteLine($"Target debug session initialized. Debug session ID = {_debuggerSessionId}");
 
 			await Attach(cancellationToken);
-			Trace.WriteLine("Debugger attached. ");
+			TraceLog.WriteLine("Debugger attached. ");
 
 			var attachTask = Synchronize(cancellationToken).ContinueWith(AfterSynchronized, cancellationToken, TaskContinuationOptions.OnlyOnRanToCompletion);
 
 			_debuggedAction = DebuggedCommand.ExecuteNonQueryAsynchronous(cancellationToken);
-			Trace.WriteLine("Debugged action started. ");
+			TraceLog.WriteLine("Debugged action started. ");
 
 			await attachTask;
 		}
@@ -131,7 +131,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			var result = (ValueInfoStatus)GetValueFromOracleDecimal(_debuggerSessionCommand.Parameters["RESULT"]);
 			var value = GetValueFromOracleString(_debuggerSessionCommand.Parameters["VALUE"]);
-			Trace.WriteLine($"Get value '{watchItem.Name}' result: {result}; value={value}");
+			TraceLog.WriteLine($"Get value '{watchItem.Name}' result: {result}; value={value}");
 
 			if (result != ValueInfoStatus.ErrorIndexedTable)
 			{
@@ -203,7 +203,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			var entries = (OracleDecimal[])entriesParameter.Value;
 
-			Trace.WriteLine($"Get indexes '{variable}' result: {result}; indexes retrieved: {entries.Length}");
+			TraceLog.WriteLine($"Get indexes '{variable}' result: {result}; indexes retrieved: {entries.Length}");
 			return entries;
 		}
 
@@ -218,12 +218,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
 
 			var result = (ValueInfoStatus)GetValueFromOracleDecimal(_debuggerSessionCommand.Parameters["RESULT"]);
-			Trace.WriteLine($"Set value '{statement}' result: {result}");
+			TraceLog.WriteLine($"Set value '{statement}' result: {result}");
 		}
 
 		private async void AfterSynchronized(Task synchronzationTask, object cancellationToken)
 		{
-			Trace.WriteLine("Debugger synchronized. ");
+			TraceLog.WriteLine("Debugger synchronized. ");
 
 			await StepInto((CancellationToken)cancellationToken);
 
@@ -519,7 +519,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var result = (OracleBreakpointFunctionResult)GetValueFromOracleDecimal(resultParameter);
 			var breakpointIdentifier = GetNullableValueFromOracleDecimal(breakpointIdentifierParameter);
 
-			Trace.WriteLine($"Breakpoint '{breakpointIdentifier}' set ({result}). ");
+			TraceLog.WriteLine($"Breakpoint '{breakpointIdentifier}' set ({result}). ");
 			return
 				new BreakpointActionResult
 				{
@@ -556,7 +556,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			var result = (OracleBreakpointFunctionResult)GetValueFromOracleDecimal(resultParameter);
 
-			Trace.WriteLine($"Breakpoint '{breakpointIdentifier}' {option}d ({result}). ");
+			TraceLog.WriteLine($"Breakpoint '{breakpointIdentifier}' {option}d ({result}). ");
 
 			return
 				new BreakpointActionResult
@@ -607,7 +607,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_debuggedSessionCommand.Parameters.Clear();
 			_debuggedSessionCommand.ExecuteNonQuery();
 
-			Trace.WriteLine("Target session debug mode terminated. ");
+			TraceLog.WriteLine("Target session debug mode terminated. ");
 		}
 
 		private async Task Detach(CancellationToken cancellationToken)
@@ -623,7 +623,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_debuggerConnection.ActionName = "Detach";
 			await _debuggerSessionCommand.ExecuteNonQueryAsynchronous(cancellationToken);
 
-			Trace.WriteLine("Debugger detached from target session. ");
+			TraceLog.WriteLine("Debugger detached from target session. ");
 
 			var statementResult = ExecutionResult.StatementResults[0];
 			if (_debuggedAction.Status == TaskStatus.RanToCompletion)
@@ -652,7 +652,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			_debuggerSessionCommand.Dispose();
 			_debuggerConnection.Dispose();
 
-			Trace.WriteLine("Debugger disposed. ");
+			TraceLog.WriteLine("Debugger disposed. ");
 		}
 	}
 
@@ -675,7 +675,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public void Trace()
 		{
-			System.Diagnostics.Trace.WriteLine($"OerException = {OerException}; BreakpointNumber = {BreakpointNumber}; StackDepth = {StackDepth}; InterpreterDepth = {InterpreterDepth}; Reason = {Reason}; IsTerminated = {IsTerminated}");
+			TraceLog.WriteLine($"OerException = {OerException}; BreakpointNumber = {BreakpointNumber}; StackDepth = {StackDepth}; InterpreterDepth = {InterpreterDepth}; Reason = {Reason}; IsTerminated = {IsTerminated}");
 			SourceLocation.Trace();
 		}
 	}
@@ -698,7 +698,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public void Trace()
 		{
-			System.Diagnostics.Trace.WriteLine($"LineNumber = {LineNumber}; DatabaseLink = {DatabaseLink}; EntryPointName = {EntryPointName}; Owner = {Owner}; Name = {Name}; Namespace = {Namespace}; LibraryUnitType = {LibraryUnitType}");
+			TraceLog.WriteLine($"LineNumber = {LineNumber}; DatabaseLink = {DatabaseLink}; EntryPointName = {EntryPointName}; Owner = {Owner}; Name = {Name}; Namespace = {Namespace}; LibraryUnitType = {LibraryUnitType}");
 		}
 	}
 

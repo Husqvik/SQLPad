@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml;
@@ -89,7 +88,7 @@ namespace SqlPad.Oracle
 			}
 			catch (Exception e)
 			{
-				Trace.WriteLine("Configuration loading failed: " + e);
+				TraceLog.WriteLine("Configuration loading failed: " + e);
 			}
 		}
 	}

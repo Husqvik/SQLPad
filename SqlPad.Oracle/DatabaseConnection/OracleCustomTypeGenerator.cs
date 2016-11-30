@@ -44,7 +44,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				//_customTypeHostDomain = AppDomain.CreateDomain(String.Format("{0}.{1}", "CustomTypeHostDomain", connectionStringName));
 				//_customTypeHostDomain.Load(DynamicAssemblyNameBase);
 
-				Trace.WriteLine($"{DateTime.Now} - Custom object and collection types assembly '{customTypeAssemblyFileName}' has been found and loaded. ");
+				TraceLog.WriteLine($"Custom object and collection types assembly '{customTypeAssemblyFileName}' has been found and loaded. ");
 			}
 
 			_customTypeAssemblyFile = new FileInfo(customTypeAssemblyFullFileName);
@@ -72,7 +72,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				return;
 			}
 
-			Trace.WriteLine($"{DateTime.Now} - Custom object and collection types generation started. ");
+			TraceLog.WriteLine($"Custom object and collection types generation started. ");
 
 			var stopwatch = Stopwatch.StartNew();
 
@@ -127,7 +127,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			stopwatch.Stop();
 
 			var collectionTypeCount = customTypes.Count - objectTypeCount;
-			Trace.WriteLine($"{DateTime.Now} - {objectTypeCount} Custom object types and {collectionTypeCount} collection types generated into {_customTypeAssemblyFile.Name} in {stopwatch.Elapsed}. ");
+			TraceLog.WriteLine($"{objectTypeCount} Custom object types and {collectionTypeCount} collection types generated into {_customTypeAssemblyFile.Name} in {stopwatch.Elapsed}. ");
 		}
 
 		private static void CreateOracleObjectType(ModuleBuilder customTypeModuleBuilder, OracleTypeObject objectType, IDictionary<string, Type> customTypes)

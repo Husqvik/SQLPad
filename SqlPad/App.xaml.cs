@@ -11,6 +11,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+//using Squirrel;
 
 namespace SqlPad
 {
@@ -22,6 +23,8 @@ namespace SqlPad
 
 		public new static MainWindow MainWindow => (MainWindow)Current.MainWindow;
 
+		public static readonly string Title;
+
 		static App()
 		{
 			AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionHandler;
@@ -29,6 +32,8 @@ namespace SqlPad
 			Version = assembly.GetName().Version.ToString();
 			var buildInfo = assembly.GetCustomAttribute<AssemblyBuildInfo>();
 			VersionTimestamp = buildInfo.VersionTimestampString;
+			Title = $"SQL Pad {Version} ALPHA ({VersionTimestamp})";
+			TraceLog.WriteLine(Title);
 
 			if (WorkDocumentCollection.WorkingDocuments.Count > 0)
 			{
@@ -57,7 +62,7 @@ namespace SqlPad
 
 			ThreadPool.SetMinThreads(minSize, 8);
 
-			Trace.WriteLine($"{DateTime.Now} - Minimum of {requiredThreads} threads required to handle active documents. Thread pool minimum size adjusted to {minSize}. ");
+			TraceLog.WriteLine($"Minimum of {requiredThreads} threads required to handle active documents. Thread pool minimum size adjusted to {minSize}. ");
 		}
 
 		public static void DataGridBeginningEditCancelTextInputHandlerImplementation(object sender, DataGridBeginningEditEventArgs e)
@@ -241,9 +246,9 @@ namespace SqlPad
 				var mainWindow = (MainWindow)Current.MainWindow;
 				mainWindow.SaveWorkingDocuments();
 			}
-			catch (Exception e)
+			catch (Exception exception)
 			{
-				Trace.WriteLine("Working documents save failed: " + e);
+				TraceLog.WriteLine($"Working documents save failed: {exception}");
 			}
 		}
 
@@ -280,9 +285,30 @@ namespace SqlPad
 		{
 			//var splashScreen = new SplashScreen("ResourceName");
 			//splashScreen.Show(true, true);
+
+			//Task.Run(UpdateApplication);
 		}
 
-		private void ButtonToggleBarChartClickHandler(object sender, RoutedEventArgs e)
+		/*private async Task UpdateApplication()
+		{
+			using (var updateManager = new UpdateManager(@"https://sqlpadinstaller.blob.core.windows.net/releases"))
+			{
+				SquirrelAwareApp.HandleEvents(
+					onAppUpdate: v => OnAppUpdate(updateManager));
+
+				await updateManager.UpdateApp();
+			}
+		}
+
+		private void OnAppUpdate(UpdateManager updateManager)
+		{
+			TraceLog.WriteLine($"SQLPad has been updated. ");
+
+			Dispatcher.Invoke(
+				() => MainWindow?.ActiveDocument.ShowTimedMessage("SQLPad has been updated, please restart. ", Severity.Information));
+		}*/
+
+		private void ButtonToggleBarChartClickHandler(object sender, RoutedEventArgs args)
 		{
 			var toggleButton = (ToggleButton)sender;
 			var columnHeader = toggleButton.FindParentVisual<DataGridColumnHeader>();

@@ -160,7 +160,7 @@ namespace SqlPad
 
 			if (exception != null)
 			{
-				Trace.WriteLine($"Saving result to file failed: {exception}");
+				TraceLog.WriteLine($"Saving result to file failed: {exception}");
 
 				CancelWaitingResults();
 
@@ -228,7 +228,7 @@ namespace SqlPad
 				}
 				catch (OperationCanceledException)
 				{
-					Trace.WriteLine("User has canceled export operation. ");
+					TraceLog.WriteLine("User has canceled export operation. ");
 					return;
 				}
 				finally

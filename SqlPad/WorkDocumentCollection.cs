@@ -93,7 +93,7 @@ namespace SqlPad
 			}
 			catch (Exception e)
 			{
-				Trace.WriteLine("Configuration lock aquire failed: " + e);
+				TraceLog.WriteLine("Configuration lock aquire failed: " + e);
 			}
 
 			if (!ReadConfiguration(_fileName))
@@ -142,12 +142,12 @@ namespace SqlPad
 				{
 					_instance = (WorkDocumentCollection)Serializer.Deserialize(file, _instance, typeof(WorkDocumentCollection));
 
-					Trace.WriteLine($"{DateTime.Now} - WorkDocumentCollection ({_instance._workingDocuments.Count} document(s)) successfully loaded from '{fileName}'. ");
+					TraceLog.WriteLine($"WorkDocumentCollection ({_instance._workingDocuments.Count} document(s)) successfully loaded from '{fileName}'. ");
 					return true;
 				}
 				catch (Exception e)
 				{
-					Trace.WriteLine($"{DateTime.Now} - WorkDocumentCollection deserialization from '{fileName}' failed: {e}");
+					TraceLog.WriteLine($"WorkDocumentCollection deserialization from '{fileName}' failed: {e}");
 				}
 			}
 
@@ -295,7 +295,7 @@ namespace SqlPad
 			}
 			catch (Exception e)
 			{
-				Trace.WriteLine("Close working document failed: " + e);
+				TraceLog.WriteLine("Close working document failed: " + e);
 			}
 		}
 
@@ -319,7 +319,7 @@ namespace SqlPad
 		{
 			if (_lockFile == null)
 			{
-				Trace.WriteLine("Lock file has not been acquired. Work document collection cannot be saved. ");
+				TraceLog.WriteLine("Lock file has not been acquired. Work document collection cannot be saved. ");
 				return;
 			}
 

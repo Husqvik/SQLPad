@@ -60,7 +60,7 @@ namespace SqlPad
 					StatementExecutionHistory.Remove(oldRecord);
 				}
 
-				Trace.WriteLine($"Statement execution history limit of {maximumHistoryEntries} entries has been reached. Oldest entries have been removed. ");
+				TraceLog.WriteLine($"Statement execution history limit of {maximumHistoryEntries} entries has been reached. Oldest entries have been removed. ");
 			}
 
 			StatementExecutionHistory.Add(entry);

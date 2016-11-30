@@ -208,7 +208,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 			catch (Exception e)
 			{
-				Trace.WriteLine($"Command cancellation failed: {e}");
+				TraceLog.WriteLine($"Command cancellation failed: {e}");
 			}
 		}
 
@@ -228,7 +228,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			command.CommandText = $"ALTER SESSION SET CURRENT_SCHEMA = \"{schema}\"";
 			await command.ExecuteNonQueryAsynchronous(cancellationToken);
-			Trace.WriteLine($"{DateTime.Now} - Set current schema command '{command.CommandText}' executed successfully. ");
+			TraceLog.WriteLine($"Set current schema command '{command.CommandText}' executed successfully. ");
 		}
 	}
 
