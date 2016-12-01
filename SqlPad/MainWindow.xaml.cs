@@ -30,10 +30,6 @@ namespace SqlPad
 		{
 			WindowTraceLog.Initialize();
 
-			var applicationTitle = App.Title;
-
-			TraceLog.WriteLine(applicationTitle);
-
 			if (!EnsureValidConfiguration())
 			{
 				Application.Current.Shutdown(Int32.MinValue);
@@ -41,6 +37,8 @@ namespace SqlPad
 			}
 
 			InitializeComponent();
+
+			var applicationTitle = App.Title;
 
 			if (IsRunningAsAdministrator)
 			{

@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Threading;
 
@@ -18,7 +19,7 @@ namespace SqlPad
 			private set { SetValue(TraceLogProperty, value); }
 		}
 
-		internal static ConcurrentBag<string> Messages = new ConcurrentBag<string>();
+		private static ConcurrentBag<string> _messages = new ConcurrentBag<string>();
 
 		public static WindowTraceLog Instance { get; private set; }
 
@@ -29,9 +30,14 @@ namespace SqlPad
 				throw new InvalidOperationException("Trace log window has been already initialized. ");
 			}
 
-			var contents = String.Join(Environment.NewLine, Messages.OrderBy(m => m));
-			Instance = new WindowTraceLog { TraceLog = contents };
-			Messages = new ConcurrentBag<string>();
+			var contentBuilder = new StringBuilder();
+			foreach (var message in _messages.OrderBy(m => m))
+			{
+				contentBuilder.AppendLine(message);
+			}
+
+			Instance = new WindowTraceLog { TraceLog = contentBuilder.ToString() };
+			_messages = new ConcurrentBag<string>();
 			WorkDocumentCollection.RestoreWindowProperties(Instance);
 		}
 
@@ -51,7 +57,7 @@ namespace SqlPad
 		{
 			if (Instance == null)
 			{
-				Messages.Add(message);
+				_messages.Add(message);
 			}
 			else
 			{

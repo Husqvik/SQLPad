@@ -28,10 +28,11 @@ namespace SqlPad.Oracle
 			{
 				columnHeader = columnHeader.Substring(0, 30);
 			}
-			
-			return columnHeader.RequiresQuotes()
-				? $"\"{columnHeader.Replace('"', ' ')}\""
-			    : columnHeader;
+
+			return
+				columnHeader.RequiresQuotes()
+					? $"\"{columnHeader.Replace('"', ' ')}\""
+					: columnHeader;
 		}
 
 		public string ToXml(object value)
