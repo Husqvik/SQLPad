@@ -329,7 +329,7 @@ namespace SqlPad
 			var documentWithActiveTransaction = AllDocuments.FirstOrDefault(d => d.OutputViewers.Any(ov => ov.HasActiveTransaction));
 			if (documentWithActiveTransaction != null)
 			{
-				var dialogResult = MessageBox.Show("Some documents have active transaction. Do you want to continue and roll back the changes? ", "Confirmation", MessageBoxButton.OKCancel, MessageBoxImage.Question, MessageBoxResult.Cancel);
+				var dialogResult = MessageBox.Show("Some documents have active transactions. Do you want to continue and roll back the changes? ", "Confirmation", MessageBoxButton.OKCancel, MessageBoxImage.Question, MessageBoxResult.Cancel);
 				if (dialogResult == MessageBoxResult.Cancel)
 				{
 					args.Cancel = true;

@@ -1465,7 +1465,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private void ValidateLocalProgramReference(OracleProgramReference programReference, OracleValidationModel validationModel)
+		private static void ValidateLocalProgramReference(OracleProgramReference programReference, OracleValidationModel validationModel)
 		{
 			var metadataFound = programReference.Metadata != null;
 			var semanticError = OracleSemanticErrorType.None;
@@ -1602,6 +1602,13 @@ namespace SqlPad.Oracle
 						if (programReference.Owner == null || !programReference.Owner.IsMainQueryBlock || !isInsert)
 						{
 							validationModel.AddSemanticError(programReference.ProgramIdentifierNode, OracleSemanticErrorType.InvalidToLobUsage);
+						}
+					}
+					else if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramDump)
+					{
+						if (programReference.Container.SemanticModel is OraclePlSqlStatementSemanticModel)
+						{
+							validationModel.AddNonTerminalSemanticError(programReference.RootNode, OracleSemanticErrorTooltipText.FunctionOrPseudocolumnMayBeUsedInsideSqlStatementOnly);
 						}
 					}
 				}

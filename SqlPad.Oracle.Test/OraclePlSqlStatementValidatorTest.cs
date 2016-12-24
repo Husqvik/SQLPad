@@ -387,5 +387,26 @@ END;";
 
 			validationModel.InvalidNonTerminals.Count.ShouldBe(0);
 		}
+
+		[Test]
+		public void TestDumpFunctionWithinPlSql()
+		{
+			const string plsqlText = @"BEGIN
+	dbms_output.put_line(dump(0));
+	INSERT INTO xxx VALUES (dump(1.00000000000000000000000000000000000011));
+	SELECT dump(1.00000000000000000000000000000000000011) INTO :x FROM dual;
+END;";
+
+			var statement = Parser.Parse(plsqlText).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = OracleStatementValidatorTest.BuildValidationModel(plsqlText, statement);
+
+			validationModel.InvalidNonTerminals.Count.ShouldBe(1);
+			var validationData = validationModel.InvalidNonTerminals.Values.First();
+			validationData.SemanticErrorType.ShouldBe(OracleSemanticErrorTooltipText.FunctionOrPseudocolumnMayBeUsedInsideSqlStatementOnly);
+			validationData.Node.FirstTerminalNode.SourcePosition.IndexStart.ShouldBe(29);
+			validationData.Node.LastTerminalNode.SourcePosition.IndexEnd.ShouldBe(35);
+		}
 	}
 }
