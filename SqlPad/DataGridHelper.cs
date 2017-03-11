@@ -105,8 +105,7 @@ namespace SqlPad
 			}
 
 			var cellValue = currentRowValues[columnIndex];
-			var largeValue = cellValue as ILargeValue;
-			if (largeValue != null)
+			if (cellValue is ILargeValue largeValue)
 			{
 				new LargeValueEditor(((ColumnHeader)dataGrid.CurrentColumn.Header).Name, largeValue) { Owner = Window.GetWindow(dataGrid) }.ShowDialog();
 			}
@@ -199,8 +198,7 @@ namespace SqlPad
 		{
 			var row = cell.FindParentVisual<DataGridRow>();
 			var dataGrid = row.FindParentVisual<DataGrid>();
-			var dockPanel = dataGrid.Parent as DockPanel;
-			if (dockPanel != null)
+			if (dataGrid.Parent is DockPanel dockPanel)
 			{
 				var headersPresenter = dataGrid.FindChildVisual<DataGridColumnHeadersPresenter>();
 

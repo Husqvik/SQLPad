@@ -30,8 +30,7 @@ namespace SqlPad.Oracle.SemanticModel
 				yield return this;
 
 				var columnSourceReference = _rowSourceReference as OracleColumnReference;
-				var innerObjectReferences = columnSourceReference?.ValidObjectReference as OracleDataObjectReference;
-				if (innerObjectReferences != null)
+				if (columnSourceReference?.ValidObjectReference is OracleDataObjectReference innerObjectReferences)
 				{
 					yield return innerObjectReferences;
 				}

@@ -538,65 +538,55 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public static object ConvertItem(object value, int largeValuePreviewLength)
 		{
-			var oracleBlob = value as OracleBlob;
-			if (oracleBlob != null)
+			if (value is OracleBlob oracleBlob)
 			{
 				return new OracleBlobValue(oracleBlob);
 			}
-			
-			var oracleClob = value as OracleClob;
-			if (oracleClob != null)
+
+			if (value is OracleClob oracleClob)
 			{
 				var typeName = oracleClob.IsNClob ? "NCLOB" : "CLOB";
 				return new OracleClobValue(typeName, oracleClob, largeValuePreviewLength);
 			}
 
-			var oracleBinary = value as OracleBinary?;
-			if (oracleBinary != null)
+			if (value is OracleBinary oracleBinary)
 			{
 				return new OracleRawValue(oracleBinary.Value);
 			}
 
-			var oracleTimestamp = value as OracleTimeStamp?;
-			if (oracleTimestamp != null)
+			if (value is OracleTimeStamp oracleTimestamp)
 			{
 				return new OracleTimestamp(oracleTimestamp.Value);
 			}
-			
-			var oracleTimestampWithTimeZone = value as OracleTimeStampTZ?;
-			if (oracleTimestampWithTimeZone != null)
+
+			if (value is OracleTimeStampTZ oracleTimestampWithTimeZone)
 			{
 				return new OracleTimestampWithTimeZone(oracleTimestampWithTimeZone.Value);
 			}
 
-			var oracleTimestampWithLocalTimeZone = value as OracleTimeStampLTZ?;
-			if (oracleTimestampWithLocalTimeZone != null)
+			if (value is OracleTimeStampLTZ oracleTimestampWithLocalTimeZone)
 			{
 				return new OracleTimestampWithLocalTimeZone(oracleTimestampWithLocalTimeZone.Value);
 			}
 
-			var oracleIntervaYearToMonth = value as OracleIntervalYM?;
-			if (oracleIntervaYearToMonth != null)
+			if (value is OracleIntervalYM oracleIntervaYearToMonth)
 			{
 				return new OracleIntervalYearToMonth(oracleIntervaYearToMonth.Value);
 			}
 
-			var oracleIntervalDayToSecond = value as OracleIntervalDS?;
-			if (oracleIntervalDayToSecond != null)
+			if (value is OracleIntervalDS oracleIntervalDayToSecond)
 			{
 				return new OracleIntervalDayToSecond(oracleIntervalDayToSecond.Value);
 			}
 
-			var oracleDecimal = value as OracleDecimal?;
-			if (oracleDecimal != null)
+			if (value is OracleDecimal oracleDecimal)
 			{
 				return new OracleNumber(oracleDecimal.Value);
 			}
 
-			var oracleXmlType = value as OracleXmlType;
-			if (oracleXmlType != null)
+			if (value is OracleXmlType oracleXmlType)
 			{
-				return new OracleXmlValue((OracleXmlType)value, largeValuePreviewLength);
+				return new OracleXmlValue(oracleXmlType, largeValuePreviewLength);
 			}
 
 			return value;

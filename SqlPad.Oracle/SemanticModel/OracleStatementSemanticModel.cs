@@ -2396,8 +2396,7 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 			else if (programReference.ObjectNode == null)
 			{
-				var plSqlProgram = programReference.Container as OraclePlSqlProgram;
-				if (plSqlProgram != null)
+				if (programReference.Container is OraclePlSqlProgram plSqlProgram)
 				{
 					var accessiblePrograms = (IEnumerable<OraclePlSqlProgram>)plSqlProgram.SubPrograms;
 					if (plSqlProgram.Master.Type == PlSqlProgramType.PackageProgram && plSqlProgram.Owner != null)
@@ -3422,8 +3421,7 @@ namespace SqlPad.Oracle.SemanticModel
 					var parentReferenceDataSources = new List<OracleReferenceDataSource>();
 					foreach (var constraint in sourceObject.Constraints)
 					{
-						var referenceConstraint = constraint as OracleReferenceConstraint;
-						if (referenceConstraint != null && referenceConstraint.Columns.Count == 1 && String.Equals(referenceConstraint.Columns[0], localColumnName))
+						if (constraint is OracleReferenceConstraint referenceConstraint && referenceConstraint.Columns.Count == 1 && String.Equals(referenceConstraint.Columns[0], localColumnName))
 						{
 							var referenceColumnName = referenceConstraint.ReferenceConstraint.Columns[0];
 							var statementText = StatementText = $"SELECT * FROM {referenceConstraint.TargetObject.FullyQualifiedName} WHERE {referenceColumnName} = :KEY0";
@@ -3434,8 +3432,7 @@ namespace SqlPad.Oracle.SemanticModel
 							parentReferenceDataSources.Add(peferenceDataSource);
 						}
 
-						var uniqueConstraint = constraint as OracleUniqueConstraint;
-						if (uniqueConstraint != null)
+						if (constraint is OracleUniqueConstraint uniqueConstraint)
 						{
 							uniqueConstraints.Add(uniqueConstraint);
 						}
@@ -3516,8 +3513,7 @@ namespace SqlPad.Oracle.SemanticModel
 					return null;
 				}
 
-				var dataObject = objectReference.SchemaObject.GetTargetSchemaObject() as OracleDataObject;
-				if (dataObject != null)
+				if (objectReference.SchemaObject.GetTargetSchemaObject() is OracleDataObject dataObject)
 				{
 					physicalColumnName = columnReference.ColumnNodeColumnReferences.First().Name;
 					return dataObject;

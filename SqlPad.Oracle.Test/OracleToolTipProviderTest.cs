@@ -1408,12 +1408,11 @@ PIVOT (
 
 		private static string GetTextFromInline(Inline inline)
 		{
-			var run = inline as Run;
-			if (run != null)
+			if (inline is Run run)
 			{
 				return run.Text;
 			}
-			
+
 			var bold = (Bold)inline;
 			return String.Concat(bold.Inlines.Select(GetTextFromInline));
 		}

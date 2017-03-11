@@ -147,8 +147,7 @@ namespace SqlPad.Oracle
 		private static ICollection<OracleReferenceContainer> GetReferenceContainers(OracleStatementSemanticModel semanticModel, OracleQueryBlock currentQueryBlock)
 		{
 			var referenceContainers = new List<OracleReferenceContainer> { semanticModel.MainObjectReferenceContainer };
-			var plSqlModel = semanticModel as OraclePlSqlStatementSemanticModel;
-			if (plSqlModel != null)
+			if (semanticModel is OraclePlSqlStatementSemanticModel plSqlModel)
 			{
 				referenceContainers.AddRange(plSqlModel.AllPrograms);
 			}
@@ -212,8 +211,7 @@ namespace SqlPad.Oracle
 					metadataSource.AddRange(programReference.Owner.AccessibleAttachedFunctions.Where(m => String.Equals(m.Identifier.Name, programReference.Metadata.Identifier.Name)));
 				}
 
-				var plSqlProgram = programReference.Container as OraclePlSqlProgram;
-				if (plSqlProgram != null)
+				if (programReference.Container is OraclePlSqlProgram plSqlProgram)
 				{
 					metadataSource.AddRange(plSqlProgram.SubPrograms.Where(p => String.Equals(p.Name, programReference.Metadata.Identifier.Name)).Select(p => p.Metadata));
 				}
@@ -223,8 +221,7 @@ namespace SqlPad.Oracle
 			else
 			{
 				matchedMetadata.Add(typeReference.Metadata);
-				var collectionType = typeReference.SchemaObject.GetTargetSchemaObject() as OracleTypeCollection;
-				if (collectionType != null)
+				if (typeReference.SchemaObject.GetTargetSchemaObject() is OracleTypeCollection collectionType)
 				{
 					currentParameterIndex = 0;
 				}
@@ -728,8 +725,7 @@ namespace SqlPad.Oracle
 
 				if (tableReferenceSource.Count == 0 && databaseModel.AllObjects.TryGetFirstValue(out OracleSchemaObject schemaObject, databaseModel.GetPotentialSchemaObjectIdentifiers(fullyQualifiedName)))
 				{
-					var sequence = schemaObject.GetTargetSchemaObject() as OracleSequence;
-					if (sequence != null)
+					if (schemaObject.GetTargetSchemaObject() is OracleSequence sequence)
 					{
 						suggestedItems = sequence.Columns
 							.Where(c => !String.Equals(c.Name, currentName) && CodeCompletionSearchHelper.IsMatch(c.Name, partialName))

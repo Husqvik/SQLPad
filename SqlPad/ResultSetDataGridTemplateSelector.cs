@@ -199,8 +199,7 @@ namespace SqlPad
 			}
 
 			var customTypeValue = (CustomTypeAttributeValue)dataGrid.CurrentItem;
-			var largeValue = customTypeValue.Value as ILargeValue;
-			if (largeValue != null)
+			if (customTypeValue.Value is ILargeValue largeValue)
 			{
 				new LargeValueEditor(customTypeValue.ColumnHeader.Name, largeValue) { Owner = Window.GetWindow(dataGrid) }.ShowDialog();
 			}

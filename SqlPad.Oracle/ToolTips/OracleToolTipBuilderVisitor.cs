@@ -209,8 +209,7 @@ namespace SqlPad.Oracle.ToolTips
 			}
 
 			var databaseModel = partitionReference.Container.SemanticModel.DatabaseModel;
-			var subPartition = partitionReference.Partition as OracleSubPartition;
-			if (subPartition != null)
+			if (partitionReference.Partition is OracleSubPartition subPartition)
 			{
 				var subPartitionDetail = new SubPartitionDetailsModel();
 
@@ -500,8 +499,7 @@ namespace SqlPad.Oracle.ToolTips
 		private static string GetFullSchemaObjectToolTip(OracleSchemaObject schemaObject)
 		{
 			string tip = null;
-			var synonym = schemaObject as OracleSynonym;
-			if (synonym != null)
+			if (schemaObject is OracleSynonym synonym)
 			{
 				tip = $"{GetSchemaObjectToolTip(synonym)} => ";
 				schemaObject = synonym.SchemaObject;

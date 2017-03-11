@@ -1359,8 +1359,7 @@ namespace SqlPad.Oracle
 				         String.Equals(variableReference.RootNode.Id, NonTerminals.AssignmentStatementTarget) &&
 				         String.Equals(variableReference.RootNode.ParentNode.ParentNode.Id, NonTerminals.PlSqlAssignmentStatement))
 				{
-					var variable = variableReference.Variables.First() as OraclePlSqlVariable;
-					if (variable != null && variable.IsReadOnly)
+					if (variableReference.Variables.First() is OraclePlSqlVariable variable && variable.IsReadOnly)
 					{
 						validationModel.InvalidNonTerminals[variableReference.RootNode] =
 							new InvalidNodeValidationData(OracleSemanticErrorType.PlSql.ExpressionCannotBeUsedAsAssignmentTarget) { Node = variableReference.RootNode };

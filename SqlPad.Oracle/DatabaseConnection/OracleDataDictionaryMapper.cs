@@ -530,8 +530,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			constraint.OwnerObject = dataObject;
 			dataObject.Constraints.Add(constraint);
 
-			var referenceConstraint = constraint as OracleReferenceConstraint;
-			if (referenceConstraint != null)
+			if (constraint is OracleReferenceConstraint referenceConstraint)
 			{
 				var cascadeAction = DeleteRule.None;
 				switch ((string)reader["DELETE_RULE"])

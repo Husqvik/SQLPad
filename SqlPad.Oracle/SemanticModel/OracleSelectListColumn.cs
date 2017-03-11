@@ -128,8 +128,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 				if (!_columnDescription.Nullable)
 				{
-					var objectReference = columnReference.ValidObjectReference as OracleDataObjectReference;
-					if (objectReference != null)
+					if (columnReference.ValidObjectReference is OracleDataObjectReference objectReference)
 					{
 						_columnDescription.Nullable = objectReference.IsOuterJoined;
 					}

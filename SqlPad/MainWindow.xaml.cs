@@ -175,9 +175,8 @@ namespace SqlPad
 		private void TabControlSelectionChangedHandler(object sender, SelectionChangedEventArgs args)
 		{
 			var tabItem = args.AddedItems.Count == 0 ? null : args.AddedItems[0] as TabItem;
-			var document = tabItem?.Content as DocumentPage;
 
-			if (document != null)
+			if (tabItem?.Content is DocumentPage document)
 			{
 				document.SaveWorkingDocument();
 				_findReplaceManager.CurrentEditor = document.EditorAdapter;

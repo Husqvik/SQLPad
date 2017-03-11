@@ -314,8 +314,7 @@ namespace SqlPad
 
 			if (!actionResult.IsSuccessful)
 			{
-				var executionException = actionResult.Exception as StatementExecutionException;
-				if (executionException != null)
+				if (actionResult.Exception is StatementExecutionException executionException)
 				{
 					UpdateExecutionLog(executionException.BatchResult.StatementResults);
 					WriteDatabaseOutput(executionException.BatchResult.DatabaseOutput);

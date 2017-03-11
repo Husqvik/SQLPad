@@ -125,8 +125,7 @@ namespace SqlPad.Oracle.ExecutionPlan
 
 		public override DataTemplate SelectTemplate(object item, DependencyObject container)
 		{
-			var executionStatisticsPlanItem = item as ExecutionStatisticsPlanItem;
-			if (executionStatisticsPlanItem != null)
+			if (item is ExecutionStatisticsPlanItem executionStatisticsPlanItem)
 			{
 				return ExecutionStatisticsPlanItemTemplate;
 			}

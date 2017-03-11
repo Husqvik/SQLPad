@@ -254,8 +254,7 @@ namespace SqlPad.FindReplace
 			if (CurrentEditor == null)
 				return null;
 
-			var iEditor = CurrentEditor as IEditor;
-			if (iEditor != null)
+			if (CurrentEditor is IEditor iEditor)
 				return iEditor;
 
 			return InterfaceConverter?.Convert(CurrentEditor, typeof(IEditor), null, CultureInfo.CurrentCulture) as IEditor;

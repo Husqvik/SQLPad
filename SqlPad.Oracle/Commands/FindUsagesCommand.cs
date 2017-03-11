@@ -319,8 +319,7 @@ namespace SqlPad.Oracle.Commands
 				var columnReferences = sourceColumnReferences.Where(c => IsValidReference(c, columnReference, objectReference)).ToArray();
 				usages = columnReferences.Select(c => new TerminalUsage { Terminal = c.ColumnNode, Option = DisplayOptions.Usage });
 
-				var pivotTableReference = objectReference as OraclePivotTableReference;
-				if (pivotTableReference != null)
+				if (objectReference is OraclePivotTableReference pivotTableReference)
 				{
 					var pivotColumnAliases = pivotTableReference.PivotColumns
 						.Where(c => c.AliasNode != null && String.Equals(c.NormalizedName, columnReference.NormalizedName))

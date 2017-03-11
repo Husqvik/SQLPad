@@ -67,8 +67,7 @@ namespace SqlPad
 
 		public static void DataGridBeginningEditCancelTextInputHandlerImplementation(object sender, DataGridBeginningEditEventArgs e)
 		{
-			var textCompositionArgs = e.EditingEventArgs as TextCompositionEventArgs;
-			if (textCompositionArgs != null)
+			if (e.EditingEventArgs is TextCompositionEventArgs textCompositionArgs)
 			{
 				e.Cancel = true;
 			}

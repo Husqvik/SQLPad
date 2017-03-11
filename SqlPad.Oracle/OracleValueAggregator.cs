@@ -117,8 +117,7 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			var oracleValue = value as IValue;
-			if (oracleValue != null && oracleValue.IsNull)
+			if (value is IValue oracleValue && oracleValue.IsNull)
 			{
 				return;
 			}

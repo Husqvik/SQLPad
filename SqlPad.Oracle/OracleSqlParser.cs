@@ -63,8 +63,7 @@ namespace SqlPad.Oracle
 				for (var i = 0; i < sequence.Items.Length; i++)
 				{
 					var item = sequence.Items[i];
-					var nonTerminal = item as SqlGrammarRuleSequenceNonTerminal;
-					if (nonTerminal != null)
+					if (item is SqlGrammarRuleSequenceNonTerminal nonTerminal)
 					{
 						if (NonTerminalRules.TryGetValue(nonTerminal.Id, out SqlGrammarRule rule))
 						{
@@ -383,8 +382,7 @@ namespace SqlPad.Oracle
 
 		private void GatherCandidatesFromGrammarItem(ISqlGrammarRuleSequenceItem item, ICollection<TerminalCandidate> candidates)
 		{
-			var nonTerminal = item as SqlGrammarRuleSequenceNonTerminal;
-			if (nonTerminal != null)
+			if (item is SqlGrammarRuleSequenceNonTerminal nonTerminal)
 			{
 				GatherCandidatesFromNonterminal(nonTerminal, candidates);
 			}
@@ -608,10 +606,9 @@ namespace SqlPad.Oracle
 
 					var bestCandidateOffset = tokenStartOffset + bestCandidateTerminalCount;
 					var tryBestCandidates = bestCandidatesCompatible && !tokenReverted && bestCandidateTerminalCount > workingTerminalCount;
-					var childNonTerminal = item as SqlGrammarRuleSequenceNonTerminal;
-					if (childNonTerminal != null)
+					if (item is SqlGrammarRuleSequenceNonTerminal childNonTerminal)
 					{
-						var nestedResult = ProceedNonTerminal(context, childNonTerminal, level + 1, tokenOffset, false,  scope);
+						var nestedResult = ProceedNonTerminal(context, childNonTerminal, level + 1, tokenOffset, false, scope);
 
 						var optionalTokenReverted = TryRevertOptionalToken(optionalTerminalCount => ProceedNonTerminal(context, childNonTerminal, level + 1, tokenOffset - optionalTerminalCount, true, scope), ref nestedResult, workingNodes);
 						workingTerminalCount -= optionalTokenReverted;
@@ -649,7 +646,7 @@ namespace SqlPad.Oracle
 
 							bestCandidateNodes.Add(alternativeNode);
 							bestCandidateTerminalCount += alternativeNode.TerminalCount;
-							
+
 							bestCandidatesCompatible = true;
 						}
 

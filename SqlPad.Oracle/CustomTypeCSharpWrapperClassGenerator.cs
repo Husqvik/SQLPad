@@ -67,8 +67,7 @@ using {OracleToNetTypeMapper.OracleDataAccessAssemblyName}.Types;
 		{
 			writer.WriteLine(UsingClause);
 
-			var objectType = type as OracleTypeObject;
-			if (objectType != null)
+			if (type is OracleTypeObject objectType)
 			{
 				Generate(objectType, writer);
 			}

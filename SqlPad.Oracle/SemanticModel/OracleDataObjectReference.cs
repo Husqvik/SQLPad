@@ -203,8 +203,7 @@ namespace SqlPad.Oracle.SemanticModel
 			var columns = new List<OracleColumn>();
 			if (Type == ReferenceType.SchemaObject)
 			{
-				var dataObject = SchemaObject.GetTargetSchemaObject() as OracleDataObject;
-				if (dataObject != null)
+				if (SchemaObject.GetTargetSchemaObject() is OracleDataObject dataObject)
 				{
 					columns.AddRange(dataObject.Columns.Values);
 				}

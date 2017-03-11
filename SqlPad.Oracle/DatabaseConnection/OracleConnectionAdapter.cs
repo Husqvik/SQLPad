@@ -1066,21 +1066,18 @@ namespace SqlPad.Oracle.DatabaseConnection
 						value = oracleBinary.IsNull ? null : oracleBinary.Value.ToHexString();
 					}
 
-					var clob = parameter.Value as OracleClob;
-					if (clob != null)
+					if (parameter.Value is OracleClob clob)
 					{
 						value = clob.IsNull ? String.Empty : clob.Value;
 					}
 
-					var blob = parameter.Value as OracleBlob;
-					if (blob != null)
+					if (parameter.Value is OracleBlob blob)
 					{
 						value = blob.IsNull ? null : blob.Value.ToHexString();
 					}
 				}
 
-				var refCursor = parameter.Value as OracleRefCursor;
-				if (refCursor != null)
+				if (parameter.Value is OracleRefCursor refCursor)
 				{
 					if (refCursor.IsNull)
 					{

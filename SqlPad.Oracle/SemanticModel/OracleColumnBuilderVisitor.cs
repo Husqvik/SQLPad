@@ -74,8 +74,7 @@ namespace SqlPad.Oracle.SemanticModel
 			{
 				var dataTypeNode = programReference.ParameterReferences[1].ParameterNode;
 				var dataTypeReference = programReference.Container.DataTypeReferences.SingleOrDefault(dt => dt.RootNode == dataTypeNode);
-				var collectionType = dataTypeReference?.SchemaObject.GetTargetSchemaObject() as OracleTypeCollection;
-				if (collectionType != null)
+				if (dataTypeReference?.SchemaObject.GetTargetSchemaObject() is OracleTypeCollection collectionType)
 				{
 					_columns.Add(OracleColumn.BuildColumnValueColumn(collectionType.ElementDataType));
 				}
@@ -123,8 +122,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		public void VisitTypeReference(OracleTypeReference typeReference)
 		{
-			var collectionType = typeReference.SchemaObject.GetTargetSchemaObject() as OracleTypeCollection;
-			if (collectionType != null)
+			if (typeReference.SchemaObject.GetTargetSchemaObject() is OracleTypeCollection collectionType)
 			{
 				_columns.Add(OracleColumn.BuildColumnValueColumn(collectionType.ElementDataType));
 			}

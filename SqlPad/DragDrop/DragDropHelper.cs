@@ -187,11 +187,9 @@ namespace SqlPad.DragDrop
 
 		private bool CanDrag(object draggedItem)
 		{
-			var tabItem = draggedItem as TabItem;
-			if (tabItem != null)
+			if (draggedItem is TabItem tabItem)
 			{
-				var editableHeader = tabItem.Header as EditableTabHeaderControl;
-				if (editableHeader != null && editableHeader.EditModeEnabled)
+				if (tabItem.Header is EditableTabHeaderControl editableHeader && editableHeader.EditModeEnabled)
 				{
 					return false;
 				}
@@ -462,8 +460,7 @@ namespace SqlPad.DragDrop
 
 		private static void TrySetSelectedIndex(ItemsControl itemsControl, int index)
 		{
-			var selector = itemsControl as Selector;
-			if (selector != null)
+			if (itemsControl is Selector selector)
 			{
 				selector.SelectedIndex = index;
 			}

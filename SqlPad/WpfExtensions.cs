@@ -138,8 +138,7 @@ namespace SqlPad
 
 					foreach (var inline in inlines)
 					{
-						var run = inline as Run;
-						if (run != null)
+						if (inline is Run run)
 						{
 							textBuilder.Append(run.Text);
 						}
