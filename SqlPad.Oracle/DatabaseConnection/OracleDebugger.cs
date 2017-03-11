@@ -373,8 +373,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					? PlSqlBlockTitle
 					: $"{item.Owner}.{item.Name}";
 
-				string programText;
-				if (!_sources.TryGetValue(objectName, out programText))
+				if (!_sources.TryGetValue(objectName, out string programText))
 				//{
 				//	if (isAnonymousBlock && stackTrace.Items[0] != item)
 				//	{

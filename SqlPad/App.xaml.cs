@@ -196,8 +196,7 @@ namespace SqlPad
 
 				var configuration = WorkDocumentCollection.GetProviderConfiguration(providerName);
 
-				StatementExecutionHistory window;
-				if (!ExecutionHistoryWindows.TryGetValue(providerName, out window))
+				if (!ExecutionHistoryWindows.TryGetValue(providerName, out StatementExecutionHistory window))
 				{
 					ExecutionHistoryWindows[providerName] = window = new StatementExecutionHistory(providerName) { Owner = MainWindow };
 				}

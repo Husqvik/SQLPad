@@ -42,8 +42,7 @@ namespace SqlPad.Oracle.DataDictionary
 		private ILookup<OracleProgramIdentifier, OracleProgramMetadata> BuildBuiltInPackageProgramMetadata()
 		{
 			var metadataCollection = new List<OracleProgramMetadata>();
-			OracleSchemaObject package;
-			if (AllObjects.TryGetValue(OracleObjectIdentifier.IdentifierBuiltInFunctionPackage, out package))
+			if (AllObjects.TryGetValue(OracleObjectIdentifier.IdentifierBuiltInFunctionPackage, out OracleSchemaObject package))
 			{
 				metadataCollection.AddRange(((OraclePackage)package).Programs);
 			}

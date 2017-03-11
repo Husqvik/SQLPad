@@ -245,15 +245,13 @@ namespace SqlPad.Oracle.ToolTips
 			var parameter = programReference.ParameterReferences.Single(parameterFilter);
 			var parameterName = parameter.OptionalIdentifierTerminal.Token.Value.ToQuotedIdentifier();
 
-			OracleProgramParameterMetadata parameterMetadata;
-			if (!programReference.Metadata.NamedParameters.TryGetValue(parameterName, out parameterMetadata))
+			if (!programReference.Metadata.NamedParameters.TryGetValue(parameterName, out OracleProgramParameterMetadata parameterMetadata))
 			{
 				return null;
 			}
 
 			var comment = String.Empty;
-			DocumentationPackageSubProgram documentation;
-			if (OracleHelpProvider.PackageProgramDocumentations.TryGetValue(programReference.Metadata.Identifier, out documentation))
+			if (OracleHelpProvider.PackageProgramDocumentations.TryGetValue(programReference.Metadata.Identifier, out DocumentationPackageSubProgram documentation))
 			{
 				comment = documentation.Parameters
 					?.SingleOrDefault(p => String.Equals(p.Name.ToQuotedIdentifier(), parameterName))

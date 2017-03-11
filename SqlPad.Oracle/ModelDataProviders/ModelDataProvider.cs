@@ -636,8 +636,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 				var indexName = (string)reader["INDEX_NAME"];
 				var indexIdentifier = OracleObjectIdentifier.Create(indexOwner, indexName);
 
-				IndexDetailsModel indexModel;
-				if (!_indexes.TryGetValue(indexIdentifier, out indexModel))
+				if (!_indexes.TryGetValue(indexIdentifier, out IndexDetailsModel indexModel))
 				{
 					continue;
 				}
@@ -668,13 +667,12 @@ namespace SqlPad.Oracle.ModelDataProviders
 			: base(null)
 		{
 			_statement = statement;
-			
-			OracleObjectIdentifier objectIdentifier;
-			if (!OracleStatement.TryGetPlSqlUnitName(statement, out objectIdentifier))
+
+			if (!OracleStatement.TryGetPlSqlUnitName(statement, out OracleObjectIdentifier objectIdentifier))
 			{
 				return;
 			}
-			
+
 			if (!objectIdentifier.HasOwner)
 			{
 				objectIdentifier = OracleObjectIdentifier.Create(currentSchema, objectIdentifier.Name);

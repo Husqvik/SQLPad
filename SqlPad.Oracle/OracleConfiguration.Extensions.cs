@@ -20,9 +20,8 @@ namespace SqlPad.Oracle
 
 		public string GetRemoteTraceDirectory(string connectionName)
 		{
-			OracleConfigurationConnection configuration;
 			return
-				(_connectionConfigurations.TryGetValue(connectionName, out configuration) && !String.IsNullOrWhiteSpace(configuration.RemoteTraceDirectory)) ||
+				(_connectionConfigurations.TryGetValue(connectionName, out OracleConfigurationConnection configuration) && !String.IsNullOrWhiteSpace(configuration.RemoteTraceDirectory)) ||
 				_connectionConfigurations.TryGetValue(AllConnections, out configuration)
 					? configuration.RemoteTraceDirectory
 					: String.Empty;
@@ -30,16 +29,14 @@ namespace SqlPad.Oracle
 
 		public string GetConnectionStartupScript(string connectionName)
 		{
-			OracleConfigurationConnection configuration;
-			return _connectionConfigurations.TryGetValue(connectionName, out configuration)
+			return _connectionConfigurations.TryGetValue(connectionName, out OracleConfigurationConnection configuration)
 				? configuration.StartupScript
 				: String.Empty;
 		}
 
 		public OracleObjectIdentifier GetExplainPlanTargetTable(string connectionName)
 		{
-			OracleConfigurationConnection configuration;
-			if ((_connectionConfigurations.TryGetValue(connectionName, out configuration) && configuration.ExecutionPlan?.TargetTable != null) ||
+			if ((_connectionConfigurations.TryGetValue(connectionName, out OracleConfigurationConnection configuration) && configuration.ExecutionPlan?.TargetTable != null) ||
 				_connectionConfigurations.TryGetValue(AllConnections, out configuration) && configuration.ExecutionPlan?.TargetTable != null)
 			{
 				var targetTable = configuration.ExecutionPlan.TargetTable;

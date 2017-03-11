@@ -90,15 +90,13 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public SqlMonitorSessionItem GetSessionItem(SessionIdentifier sessionId)
 		{
-			SqlMonitorSessionItem sessionItem;
-			_sessionItemMapping.TryGetValue(sessionId, out sessionItem);
+			_sessionItemMapping.TryGetValue(sessionId, out SqlMonitorSessionItem sessionItem);
 			return sessionItem;
 		}
 
 		public void MergeSessionItem(SqlMonitorSessionItem newSessionItem)
 		{
-			SqlMonitorSessionItem currentSessionItem;
-			if (_sessionItemMapping.TryGetValue(newSessionItem.SessionIdentifier, out currentSessionItem))
+			if (_sessionItemMapping.TryGetValue(newSessionItem.SessionIdentifier, out SqlMonitorSessionItem currentSessionItem))
 			{
 				currentSessionItem.ApplicationWaitTime = newSessionItem.ApplicationWaitTime;
 				currentSessionItem.BufferGets = newSessionItem.BufferGets;
@@ -136,8 +134,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 				foreach (var itemGroup in historyItems.Where(IsNewer).GroupBy(i => i.SessionIdentifier))
 				{
-					SqlMonitorSessionItem sessionItem;
-					if (_sessionItemMapping.TryGetValue(itemGroup.Key, out sessionItem))
+					if (_sessionItemMapping.TryGetValue(itemGroup.Key, out SqlMonitorSessionItem sessionItem))
 					{
 						sessionItem.AddActiveSessionHistoryItems(itemGroup);
 					}
@@ -149,8 +146,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 							lastSampleTime = historyItem.SampleTime;
 						}
 
-						Dictionary<SessionIdentifier, List<ActiveSessionHistoryItem>> sessionPlanHistoryItems;
-						if (!_planItemActiveSessionHistoryItems.TryGetValue(historyItem.PlanItem, out sessionPlanHistoryItems))
+						if (!_planItemActiveSessionHistoryItems.TryGetValue(historyItem.PlanItem, out Dictionary<SessionIdentifier, List<ActiveSessionHistoryItem>> sessionPlanHistoryItems))
 						{
 							_planItemActiveSessionHistoryItems[historyItem.PlanItem] = sessionPlanHistoryItems = new Dictionary<SessionIdentifier, List<ActiveSessionHistoryItem>>();
 						}
@@ -160,8 +156,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 							planParallelSampleCount[historyItem.PlanItem] = historyItem.PlanItem.ParallelSlaveSessionItems.Sum(i => i.ActiveSessionHistorySampleCount);
 						}
 
-						List<ActiveSessionHistoryItem> planHistoryItems;
-						if (!sessionPlanHistoryItems.TryGetValue(historyItem.SessionIdentifier, out planHistoryItems))
+						if (!sessionPlanHistoryItems.TryGetValue(historyItem.SessionIdentifier, out List<ActiveSessionHistoryItem> planHistoryItems))
 						{
 							sessionPlanHistoryItems[historyItem.SessionIdentifier] = planHistoryItems = new List<ActiveSessionHistoryItem>();
 						}
@@ -204,8 +199,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 							: 0;
 
 						parallelSessionItem.ActiveSessionHistorySampleCount = activeSessionHistorySampleCount;
-						decimal planItemAllParallelSessionActiveSessionHistorySampleCount;
-						if (planParallelSampleCount.TryGetValue(planItemActiveSessionHistoryItems.Key, out planItemAllParallelSessionActiveSessionHistorySampleCount) && planItemAllParallelSessionActiveSessionHistorySampleCount > 0)
+						if (planParallelSampleCount.TryGetValue(planItemActiveSessionHistoryItems.Key, out decimal planItemAllParallelSessionActiveSessionHistorySampleCount) && planItemAllParallelSessionActiveSessionHistorySampleCount > 0)
 						{
 							parallelSessionItem.ActivityRatio = activeSessionHistorySampleCount / planItemAllParallelSessionActiveSessionHistorySampleCount;
 						}
@@ -313,8 +307,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public SqlMonitorSessionPlanItem GetSessionPlanItem(SessionIdentifier sessionIdentifier)
 		{
-			SqlMonitorSessionPlanItem sessionPlanItem;
-			if (!_parallelSlaveSessionItemMapping.TryGetValue(sessionIdentifier, out sessionPlanItem))
+			if (!_parallelSlaveSessionItemMapping.TryGetValue(sessionIdentifier, out SqlMonitorSessionPlanItem sessionPlanItem))
 			{
 				sessionPlanItem =
 					new SqlMonitorSessionPlanItem
@@ -331,8 +324,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		public SessionLongOperationCollection GetSessionLongOperationCollection(SessionIdentifier sessionIdentifier)
 		{
-			SessionLongOperationCollection longOperationCollection;
-			if (!_sessionLongOperationsItemMapping.TryGetValue(sessionIdentifier, out longOperationCollection))
+			if (!_sessionLongOperationsItemMapping.TryGetValue(sessionIdentifier, out SessionLongOperationCollection longOperationCollection))
 			{
 				longOperationCollection =
 					new SessionLongOperationCollection
@@ -816,8 +808,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 				summaryItem.Reset();
 
-				SqlMonitorSessionPlanItem masterSessionPlanItem;
-				if (queryCoordinatorSessionItems.TryGetValue(planItem.Id, out masterSessionPlanItem))
+				if (queryCoordinatorSessionItems.TryGetValue(planItem.Id, out SqlMonitorSessionPlanItem masterSessionPlanItem))
 				{
 					summaryItem.MergeSessionItem(masterSessionPlanItem);
 				}
@@ -895,8 +886,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 				var planItem = DataModel.AllItems[planLineId.Value];
 				var key = new SessionPlanItem { PlanItem = planItem, SessionIdentifier = sessionIdentifier };
-				List<SqlMonitorSessionLongOperationItem> items;
-				if (!sessionPlanItems.TryGetValue(key, out items))
+				if (!sessionPlanItems.TryGetValue(key, out List<SqlMonitorSessionLongOperationItem> items))
 				{
 					sessionPlanItems.Add(key, items = new List<SqlMonitorSessionLongOperationItem>());
 				}

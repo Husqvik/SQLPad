@@ -603,9 +603,8 @@ namespace SqlPad.Oracle
 
 						foreach (var session in sessions.Values)
 						{
-							DatabaseSession ownerSession;
 							var ownerSid = ((OracleSessionValues)session.ProviderValues).OwnerSessionId;
-							if (ownerSid.HasValue && sessions.TryGetValue(ownerSid.Value, out ownerSession))
+							if (ownerSid.HasValue && sessions.TryGetValue(ownerSid.Value, out DatabaseSession ownerSession))
 							{
 								session.Owner = ownerSession;
 								ownerSession.ChildSessions.Add(session);

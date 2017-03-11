@@ -66,8 +66,7 @@ namespace SqlPad.Oracle
 					var nonTerminal = item as SqlGrammarRuleSequenceNonTerminal;
 					if (nonTerminal != null)
 					{
-						SqlGrammarRule rule;
-						if (NonTerminalRules.TryGetValue(nonTerminal.Id, out rule))
+						if (NonTerminalRules.TryGetValue(nonTerminal.Id, out SqlGrammarRule rule))
 						{
 							nonTerminal.TargetRule = rule;
 						}
@@ -83,8 +82,7 @@ namespace SqlPad.Oracle
 					{
 						var terminalReference = (SqlGrammarRuleSequenceTerminal)item;
 
-						SqlGrammarTerminal terminal;
-						if (Terminals.TryGetValue(terminalReference.Id, out terminal))
+						if (Terminals.TryGetValue(terminalReference.Id, out SqlGrammarTerminal terminal))
 						{
 							terminalReference.Terminal = terminal;
 						}
@@ -92,7 +90,7 @@ namespace SqlPad.Oracle
 						{
 							missingTerminals.Add(terminalReference.Id);
 						}
-						
+
 						terminalReference.ParentSequence = sequence;
 						terminalReference.SequenceIndex = i;
 					}

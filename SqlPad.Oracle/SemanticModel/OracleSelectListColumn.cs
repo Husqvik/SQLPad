@@ -165,8 +165,7 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 			else if (columnDescription == null)
 			{
-				bool isChainedExpression;
-				expressionNode = expressionNode.UnwrapIfNonChainedExpressionWithinParentheses(out isChainedExpression);
+				expressionNode = expressionNode.UnwrapIfNonChainedExpressionWithinParentheses(out bool isChainedExpression);
 
 				if (!isChainedExpression)
 				{

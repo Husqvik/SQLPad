@@ -151,8 +151,7 @@ namespace SqlPad.Oracle
 				.FirstOrDefault(o => IsParameterSupported(o, 1, "\"TABNAME\"") && o.ProgramMetadata.Identifier.In(OracleProgramIdentifier.IdentifierGatherTableStats));
 			if (gatherTableStatsFunctionOverload != null && HasSingleStringLiteralParameterOrNoParameterToken(gatherTableStatsFunctionOverload))
 			{
-				int parameterIndex;
-				var namedParameterExists = GetNamedParameterIndex(gatherTableStatsFunctionOverload, "\"OWNNAME\"", out parameterIndex);
+				var namedParameterExists = GetNamedParameterIndex(gatherTableStatsFunctionOverload, "\"OWNNAME\"", out int parameterIndex);
 				if (!namedParameterExists)
 				{
 					parameterIndex = 0;
@@ -423,8 +422,7 @@ namespace SqlPad.Oracle
 
 		private static bool IsParameterSupported(OracleCodeCompletionFunctionOverload programOverload, int parameterIndex, string parameterName)
 		{
-			int namedParameterIndex;
-			var namedParameterExists = GetNamedParameterIndex(programOverload, parameterName, out namedParameterIndex);
+			var namedParameterExists = GetNamedParameterIndex(programOverload, parameterName, out int namedParameterIndex);
 			if (programOverload.CurrentParameterIndex == namedParameterIndex)
 			{
 				return true;

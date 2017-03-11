@@ -180,8 +180,7 @@ namespace SqlPad.Oracle
 
 			private Stack<FoldingSection> GetFoldingStack(string stackKey)
 			{
-				Stack<FoldingSection> foldingSectionStack;
-				if (!_foldingStacks.TryGetValue(stackKey, out foldingSectionStack))
+				if (!_foldingStacks.TryGetValue(stackKey, out Stack<FoldingSection> foldingSectionStack))
 				{
 					_foldingStacks[stackKey] = foldingSectionStack = new Stack<FoldingSection>();
 				}

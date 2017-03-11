@@ -43,8 +43,7 @@ namespace SqlPad
 				return;
 			}
 
-			string text;
-			if (!ClipboardManager.TryGetClipboardText(out text))
+			if (!ClipboardManager.TryGetClipboardText(out string text))
 			{
 				return;
 			}

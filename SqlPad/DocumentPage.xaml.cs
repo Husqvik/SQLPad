@@ -1395,10 +1395,9 @@ namespace SqlPad
 			foreach (var statementVariable in statements.SelectMany(s => s.BindVariables))
 			{
 				bindVariableCount++;
-				
-				BindVariableConfiguration currentVariable;
-				if (_currentBindVariables.TryGetValue(statementVariable.Name, out currentVariable) &&
-				    currentVariable.Nodes.Select(n => n.SourcePosition).SequenceEqual(statementVariable.Nodes.Select(n => n.SourcePosition)))
+
+				if (_currentBindVariables.TryGetValue(statementVariable.Name, out BindVariableConfiguration currentVariable) &&
+					currentVariable.Nodes.Select(n => n.SourcePosition).SequenceEqual(statementVariable.Nodes.Select(n => n.SourcePosition)))
 				{
 					matchedCount++;
 					statementVariable.DataType = currentVariable.DataType;
@@ -2155,8 +2154,7 @@ namespace SqlPad
 			{
 				DisableCodeCompletion();
 
-				string clipboardText;
-				if (_multiNodeEditor != null && args.Key.In(Key.V, Key.Insert) && isControlPressed && ClipboardManager.TryGetClipboardText(out clipboardText))
+				if (_multiNodeEditor != null && args.Key.In(Key.V, Key.Insert) && isControlPressed && ClipboardManager.TryGetClipboardText(out string clipboardText))
 				{
 					_multiNodeEditor.Replace(clipboardText);
 				}

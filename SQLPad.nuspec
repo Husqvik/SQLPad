@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>SQLPad</id>
-        <version>0.4.0.446</version>
+        <version>0.4.0.453</version>
         <title>SQL Pad</title>
         <authors>Husqvik</authors>
         <owners>Husqvik</owners>
@@ -11,7 +11,7 @@
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>SQLPad is mainly inspired by ReSharper plugin to Visual Studio and LINQPad. Provides lightweight editor but aims at thorough semantic analysis and refactoring features. The main driving factor is to reduce dummy monkey work to minimum while focusing to results or analysis of a problem.</description>
         <summary>SQLPad is an experimental SQL editor focused to quick and comfortable work.</summary>
-        <releaseNotes>Fix #33 - Invalid SELECT INTO clause expected notification in implicit cursor definition</releaseNotes>
+        <releaseNotes>#29 - add context action - extract interface from package body</releaseNotes>
         <copyright>Husqvik © 2016</copyright>
         <language />
         <tags>SQL, Oracle, Productivity tool</tags>

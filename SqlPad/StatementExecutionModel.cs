@@ -92,8 +92,7 @@ namespace SqlPad
 		{
 			foreach (var newRecord in records)
 			{
-				SessionExecutionStatisticsRecord existingRecord;
-				if (_statisticsRecordDictionary.TryGetValue(newRecord.Name, out existingRecord))
+				if (_statisticsRecordDictionary.TryGetValue(newRecord.Name, out SessionExecutionStatisticsRecord existingRecord))
 				{
 					existingRecord.Value = newRecord.Value;
 				}

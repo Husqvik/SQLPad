@@ -50,8 +50,7 @@ namespace SqlPad.Oracle.ToolTips
 	{
 		public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
 		{
-			double[] doubles;
-			if (!ObjectValueArrayHelper.TryExtractValues(values.Take(4), out doubles))
+			if (!ObjectValueArrayHelper.TryExtractValues(values.Take(4), out double[] doubles))
 			{
 				return Binding.DoNothing;
 			}
@@ -93,8 +92,7 @@ namespace SqlPad.Oracle.ToolTips
 	{
 		public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
 		{
-			double[] doubles;
-			if (!ObjectValueArrayHelper.TryExtractValues(values.Take(3), out doubles))
+			if (!ObjectValueArrayHelper.TryExtractValues(values.Take(3), out double[] doubles))
 			{
 				return Binding.DoNothing;
 			}
@@ -127,8 +125,7 @@ namespace SqlPad.Oracle.ToolTips
 	{
 		public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
 		{
-			double[] doubles;
-			if (!ObjectValueArrayHelper.TryExtractValues(values, out doubles))
+			if (!ObjectValueArrayHelper.TryExtractValues(values, out double[] doubles))
 			{
 				return Binding.DoNothing;
 			}

@@ -72,9 +72,8 @@ namespace SqlPad.Oracle
 						if (tableCollectionColumnReference != null && databaseModel != null && databaseModel.IsMetadataAvailable && tableCollectionColumnReference.ColumnDescription != null &&
 						    !tableCollectionColumnReference.ColumnDescription.DataType.IsDynamicCollection && !String.IsNullOrEmpty(tableCollectionColumnReference.ColumnDescription.DataType.FullyQualifiedName.Name))
 						{
-							INodeValidationData validationData;
 							var collectionType = databaseModel.GetFirstSchemaObject<OracleTypeCollection>(tableCollectionColumnReference.ColumnDescription.DataType.FullyQualifiedName);
-							if (collectionType == null && validationModel.ColumnNodeValidity.TryGetValue(tableCollectionColumnReference.ColumnNode, out validationData) &&
+							if (collectionType == null && validationModel.ColumnNodeValidity.TryGetValue(tableCollectionColumnReference.ColumnNode, out INodeValidationData validationData) &&
 							    validationData.IsRecognized && String.IsNullOrEmpty(validationData.SemanticErrorType))
 							{
 								validationModel.ColumnNodeValidity[tableCollectionColumnReference.ColumnNode] =
@@ -455,8 +454,7 @@ namespace SqlPad.Oracle
 				return false;
 			}
 
-			int hour;
-			if (!Int32.TryParse(match.Groups["Hour"].Value, out hour) || hour < 0 || hour > 23)
+			if (!Int32.TryParse(match.Groups["Hour"].Value, out int hour) || hour < 0 || hour > 23)
 			{
 				return false;
 			}
@@ -487,8 +485,7 @@ namespace SqlPad.Oracle
 
 		private static bool IsBetweenZeroAndFiftyNine(string stringValue)
 		{
-			int value;
-			return Int32.TryParse(stringValue, out value) && value >= 0 && value < 60;
+			return Int32.TryParse(stringValue, out int value) && value >= 0 && value < 60;
 		}
 
 		private static void ValidateDataType(OracleValidationModel validationModel, OracleDataTypeReference dataTypeReference)
@@ -627,8 +624,7 @@ namespace SqlPad.Oracle
 
 		private static bool IsDateValid(string year, string month, string day, bool allowYearZero)
 		{
-			int yearValue;
-			if (!Int32.TryParse(year.Replace(" ", null), out yearValue) || yearValue < -4712 || yearValue > 9999)
+			if (!Int32.TryParse(year.Replace(" ", null), out int yearValue) || yearValue < -4712 || yearValue > 9999)
 			{
 				return false;
 			}
@@ -638,14 +634,12 @@ namespace SqlPad.Oracle
 				return false;
 			}
 
-			int monthValue;
-			if (!Int32.TryParse(month, out monthValue) || monthValue < 1 || monthValue > 12)
+			if (!Int32.TryParse(month, out int monthValue) || monthValue < 1 || monthValue > 12)
 			{
 				return false;
 			}
 
-			int dayValue;
-			return Int32.TryParse(day, out dayValue) && dayValue >= 1 && dayValue <= (yearValue > 0 ? DateTime.DaysInMonth(yearValue, monthValue) : 31);
+			return Int32.TryParse(day, out int dayValue) && dayValue >= 1 && dayValue <= (yearValue > 0 ? DateTime.DaysInMonth(yearValue, monthValue) : 31);
 		}
 
 		private static bool IsIntervalYearToMonthValid(OracleLiteral literal, string value, OracleValidationModel validationModel)
@@ -656,8 +650,7 @@ namespace SqlPad.Oracle
 			var years = match.Groups["Years"].Value;
 			var months = match.Groups["Months"].Value;
 
-			int yearValue;
-			result &= Int32.TryParse(years.Replace(" ", null), out yearValue) && yearValue >= -999999999 && yearValue <= 999999999;
+			result &= Int32.TryParse(years.Replace(" ", null), out int yearValue) && yearValue >= -999999999 && yearValue <= 999999999;
 
 			var intervalYearToMonthNode = literal.Terminal.ParentNode[2, 0];
 			var yearToMonthNode = intervalYearToMonthNode[2];
@@ -708,8 +701,7 @@ namespace SqlPad.Oracle
 			var seconds = match.Groups["Seconds"].Value;
 			var fraction = match.Groups["Fraction"].Value;
 
-			int dayValue;
-			result &= Int32.TryParse(days.Replace(" ", null), out dayValue) && dayValue >= -999999999 && dayValue <= 999999999;
+			result &= Int32.TryParse(days.Replace(" ", null), out int dayValue) && dayValue >= -999999999 && dayValue <= 999999999;
 
 			var intervalDayToSecond = literal.Terminal.ParentNode[2, 0];
 			var dayOrHourOrMinuteOrSecondNode = intervalDayToSecond[NonTerminals.ToDayOrHourOrMinuteOrSecondWithPrecision, NonTerminals.DayOrHourOrMinuteOrSecondWithPrecision];
@@ -723,16 +715,14 @@ namespace SqlPad.Oracle
 				result = String.IsNullOrEmpty(hours) || Int32.TryParse(hours, out hourValue) && hourValue <= 23;
 				result &= String.IsNullOrEmpty(minutes) || Int32.TryParse(minutes, out minuteValue) && minuteValue <= 59;
 				result &= String.IsNullOrEmpty(seconds) || Int32.TryParse(seconds, out secondValue) && secondValue <= 59;
-				int fractionValue;
-				result &= String.IsNullOrEmpty(fraction) || Int32.TryParse(fraction, out fractionValue) && fractionValue <= 999999999;
+				result &= String.IsNullOrEmpty(fraction) || Int32.TryParse(fraction, out int fractionValue) && fractionValue <= 999999999;
 			}
 
 			var secondPrecisionLiteral = dayOrHourOrMinuteOrSecondNode == null
 				? intervalDayToSecond[NonTerminals.DayOrHourOrMinuteOrSecondWithLeadingPrecision, NonTerminals.DataTypeIntervalPrecisionAndScale, Terminals.IntegerLiteral]
 				: dayOrHourOrMinuteOrSecondNode[NonTerminals.DataTypeSimplePrecision, Terminals.IntegerLiteral];
 
-			int secondPrecision;
-			if (secondPrecisionLiteral != null && (!Int32.TryParse(secondPrecisionLiteral.Token.Value, out secondPrecision) || secondPrecision > 9))
+			if (secondPrecisionLiteral != null && (!Int32.TryParse(secondPrecisionLiteral.Token.Value, out int secondPrecision) || secondPrecision > 9))
 			{
 				validationModel.AddSemanticError(secondPrecisionLiteral, OracleSemanticErrorType.DatetimeOrIntervalPrecisionIsOutOfRange);
 			}
@@ -845,8 +835,7 @@ namespace SqlPad.Oracle
 					foreach (var asteriskColumn in queryBlock.AsteriskColumns)
 					{
 						var columnNode = asteriskColumn.ColumnReferences.Single().ColumnNode;
-						INodeValidationData validationData;
-						if (!validationModel.ColumnNodeValidity.TryGetValue(columnNode, out validationData) || String.Equals(validationData.SemanticErrorType, OracleSemanticErrorType.None))
+						if (!validationModel.ColumnNodeValidity.TryGetValue(columnNode, out INodeValidationData validationData) || String.Equals(validationData.SemanticErrorType, OracleSemanticErrorType.None))
 						{
 							validationModel.ColumnNodeValidity[asteriskColumn.RootNode] = new SuggestionData(OracleSuggestionType.UseExplicitColumnList) { IsRecognized = true, Node = asteriskColumn.RootNode };
 						}
@@ -890,8 +879,7 @@ namespace SqlPad.Oracle
 							}
 							else
 							{
-								decimal value;
-								if (Decimal.TryParse(cycleMarkLiteral.FirstTerminalNode.Token.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out value))
+								if (Decimal.TryParse(cycleMarkLiteral.FirstTerminalNode.Token.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out decimal value))
 								{
 									isValid = value <= 9 && value == Math.Floor(value);
 								}
@@ -938,9 +926,8 @@ namespace SqlPad.Oracle
 			{
 				foreach (var columnReference in queryBlock.AllColumnReferences)
 				{
-					INodeValidationData columnValidity;
 					if (columnReference.ObjectNode != null || columnReference.ValidObjectReference?.Owner != queryBlock.OuterCorrelatedQueryBlock ||
-					    (validationModel.ColumnNodeValidity.TryGetValue(columnReference.ColumnNode, out columnValidity) && !String.IsNullOrEmpty(columnValidity.SemanticErrorType)))
+						(validationModel.ColumnNodeValidity.TryGetValue(columnReference.ColumnNode, out INodeValidationData columnValidity) && !String.IsNullOrEmpty(columnValidity.SemanticErrorType)))
 					{
 						continue;
 					}
@@ -1629,13 +1616,12 @@ namespace SqlPad.Oracle
 				{
 					var parameterName = parameterReference.OptionalIdentifierTerminal.Token.Value.ToQuotedIdentifier();
 
-					OracleProgramParameterMetadata parameterMetadata;
 					if (programReference.Metadata.IsBuiltIn)
 					{
 						validationModel.IdentifierNodeValidity[parameterReference.OptionalIdentifierTerminal] =
 							new InvalidNodeValidationData(OracleSemanticErrorType.NamedParameterNotAllowed) { Node = parameterReference.OptionalIdentifierTerminal };
 					}
-					else if (!programReference.Metadata.NamedParameters.TryGetValue(parameterName, out parameterMetadata))
+					else if (!programReference.Metadata.NamedParameters.TryGetValue(parameterName, out OracleProgramParameterMetadata parameterMetadata))
 					{
 						validationModel.IdentifierNodeValidity[parameterReference.OptionalIdentifierTerminal] =
 							new NodeValidationData { IsRecognized = false, Node = parameterReference.OptionalIdentifierTerminal };
@@ -1740,8 +1726,7 @@ namespace SqlPad.Oracle
 			{
 				result.IsNumericBindVariable = trimmedIdentifier.All(Char.IsDigit);
 
-				int bindVariableNumberIdentifier;
-				if (result.IsNumericBindVariable && Int32.TryParse(trimmedIdentifier.Substring(0, trimmedIdentifier.Length > 5 ? 5 : trimmedIdentifier.Length), out bindVariableNumberIdentifier) && bindVariableNumberIdentifier > 65535)
+				if (result.IsNumericBindVariable && Int32.TryParse(trimmedIdentifier.Substring(0, trimmedIdentifier.Length > 5 ? 5 : trimmedIdentifier.Length), out int bindVariableNumberIdentifier) && bindVariableNumberIdentifier > 65535)
 				{
 					result.ErrorMessage = "Numeric bind variable identifier must be between 0 and 65535. ";
 				}

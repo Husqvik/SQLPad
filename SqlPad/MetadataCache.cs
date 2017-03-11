@@ -77,8 +77,7 @@ namespace SqlPad
 
 			lock (DatabaseModelCacheConfiguration)
 			{
-				CacheFile cacheFile;
-				if (!DatabaseModelCacheConfiguration.Files.TryGetValue(cacheKey, out cacheFile))
+				if (!DatabaseModelCacheConfiguration.Files.TryGetValue(cacheKey, out CacheFile cacheFile))
 				{
 					DatabaseModelCacheConfiguration.Files[cacheKey] =
 						cacheFile = new CacheFile { FileName = Thread.CurrentThread.ManagedThreadId + DateTime.Now.Ticks.ToString(CultureInfo.InvariantCulture) + ".dat" };
@@ -105,9 +104,8 @@ namespace SqlPad
 		public static bool TryLoadDatabaseModelCache(string cacheKey, out Stream stream)
 		{
 			stream = null;
-			CacheFile cacheFile;
 			if (DatabaseModelCacheConfiguration == null ||
-			    !DatabaseModelCacheConfiguration.Files.TryGetValue(cacheKey, out cacheFile))
+				!DatabaseModelCacheConfiguration.Files.TryGetValue(cacheKey, out CacheFile cacheFile))
 			{
 				return false;
 			}

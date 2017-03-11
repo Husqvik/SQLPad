@@ -179,8 +179,7 @@ namespace SqlPad
 
 		public static DatabaseProviderConfiguration GetProviderConfiguration(string providerName)
 		{
-			DatabaseProviderConfiguration configuration;
-			if (!Instance._databaseProviderConfigurations.TryGetValue(providerName, out configuration))
+			if (!Instance._databaseProviderConfigurations.TryGetValue(providerName, out DatabaseProviderConfiguration configuration))
 			{
 				configuration = new DatabaseProviderConfiguration(providerName);
 				Instance._databaseProviderConfigurations.Add(providerName, configuration);
@@ -388,8 +387,7 @@ namespace SqlPad
 		public static IDictionary<string, double> RestoreWindowProperties(Window window)
 		{
 			var properties = Instance._windowConfigurations;
-			WindowProperties windowProperties;
-			if (!properties.TryGetValue(window.GetType(), out windowProperties))
+			if (!properties.TryGetValue(window.GetType(), out WindowProperties windowProperties))
 			{
 				return null;
 			}

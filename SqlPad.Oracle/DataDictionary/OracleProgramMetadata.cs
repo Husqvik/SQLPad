@@ -152,8 +152,7 @@ namespace SqlPad.Oracle.DataDictionary
 				return OracleHelpProvider.GetBuiltInSqlFunctionDocumentation(Identifier.Name);
 			}
 
-			DocumentationPackageSubProgram documentation;
-			return OracleHelpProvider.PackageProgramDocumentations.TryGetValue(Identifier, out documentation)
+			return OracleHelpProvider.PackageProgramDocumentations.TryGetValue(Identifier, out DocumentationPackageSubProgram documentation)
 				? documentation.Description
 				: String.Empty;
 		}

@@ -115,8 +115,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			rowCount = 0;
 			foreach (var columnMetadata in columnMetadataSource)
 			{
-				OracleSchemaObject schemaObject;
-				if (!allObjects.TryGetValue(columnMetadata.Key, out schemaObject))
+				if (!allObjects.TryGetValue(columnMetadata.Key, out OracleSchemaObject schemaObject))
 					continue;
 
 				var dataObject = (OracleDataObject)schemaObject;
@@ -155,14 +154,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 			rowCount = 0;
 			foreach (var constraintPair in constraintSource)
 			{
-				OracleConstraint constraint;
-				if (!constraints.TryGetValue(constraintPair.Key.FullyQualifiedName, out constraint))
+				if (!constraints.TryGetValue(constraintPair.Key.FullyQualifiedName, out OracleConstraint constraint))
 				{
 					continue;
 				}
 
-				List<string> columns;
-				if (constraintColumns.TryGetValue(constraintPair.Key.FullyQualifiedName, out columns))
+				if (constraintColumns.TryGetValue(constraintPair.Key.FullyQualifiedName, out List<string> columns))
 				{
 					constraint.Columns = columns.AsReadOnly();
 					rowCount += columns.Count;
@@ -338,8 +335,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private static OracleProgramParameterMetadata MapSqlParameterMetadata(IDataRecord reader, IReadOnlyDictionary<int, OracleProgramMetadata> metadataDictionary)
 		{
 			var functionId = Convert.ToInt32(reader["FUNCTION_ID"]);
-			OracleProgramMetadata metadata;
-			if (!metadataDictionary.TryGetValue(functionId, out metadata))
+			if (!metadataDictionary.TryGetValue(functionId, out OracleProgramMetadata metadata))
 			{
 				return null;
 			}
@@ -419,8 +415,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private static OracleTypeObject MapTypeAttributes(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
 		{
 			var typeFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["TYPE_NAME"]));
-			OracleSchemaObject typeObject;
-			if (!allObjects.TryGetValue(typeFullyQualifiedName, out typeObject))
+			if (!allObjects.TryGetValue(typeFullyQualifiedName, out OracleSchemaObject typeObject))
 				return null;
 
 			var type = (OracleTypeObject)typeObject;
@@ -453,8 +448,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private static OracleTypeCollection MapCollectionTypeAttributes(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
 		{
 			var typeFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["TYPE_NAME"]));
-			OracleSchemaObject typeObject;
-			if (!allObjects.TryGetValue(typeFullyQualifiedName, out typeObject))
+			if (!allObjects.TryGetValue(typeFullyQualifiedName, out OracleSchemaObject typeObject))
 				return null;
 
 			var collectionType = (OracleTypeCollection)typeObject;
@@ -499,8 +493,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private static OracleSequence MapSequence(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
 		{
 			var sequenceFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["SEQUENCE_OWNER"]), QualifyStringObject(reader["SEQUENCE_NAME"]));
-			OracleSchemaObject sequenceObject;
-			if (!allObjects.TryGetValue(sequenceFullyQualifiedName, out sequenceObject))
+			if (!allObjects.TryGetValue(sequenceFullyQualifiedName, out OracleSchemaObject sequenceObject))
 				return null;
 
 			var sequence = (OracleSequence)sequenceObject;
@@ -526,8 +519,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var remoteConstraintIdentifier = OracleObjectIdentifier.Empty;
 			var owner = QualifyStringObject(reader["OWNER"]);
 			var ownerObjectFullyQualifiedName = OracleObjectIdentifier.Create(owner, QualifyStringObject(reader["TABLE_NAME"]));
-			OracleSchemaObject ownerObject;
-			if (!allObjects.TryGetValue(ownerObjectFullyQualifiedName, out ownerObject))
+			if (!allObjects.TryGetValue(ownerObjectFullyQualifiedName, out OracleSchemaObject ownerObject))
 			{
 				return new KeyValuePair<OracleConstraint, OracleObjectIdentifier>(null, remoteConstraintIdentifier);
 			}
@@ -607,15 +599,13 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private static OracleSchemaObject MapSynonymTarget(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
 		{
 			var synonymFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["SYNONYM_NAME"]));
-			OracleSchemaObject synonymObject;
-			if (!allObjects.TryGetValue(synonymFullyQualifiedName, out synonymObject))
+			if (!allObjects.TryGetValue(synonymFullyQualifiedName, out OracleSchemaObject synonymObject))
 			{
 				return null;
 			}
 
 			var objectFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["TABLE_OWNER"]), QualifyStringObject(reader["TABLE_NAME"]));
-			OracleSchemaObject schemaObject;
-			if (!allObjects.TryGetValue(objectFullyQualifiedName, out schemaObject))
+			if (!allObjects.TryGetValue(objectFullyQualifiedName, out OracleSchemaObject schemaObject))
 			{
 				return null;
 			}
@@ -630,8 +620,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private static OracleDirectory MapDirectory(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
 		{
 			var directoryFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["DIRECTORY_NAME"]));
-			OracleSchemaObject schemaObject;
-			if (!allObjects.TryGetValue(directoryFullyQualifiedName, out schemaObject))
+			if (!allObjects.TryGetValue(directoryFullyQualifiedName, out OracleSchemaObject schemaObject))
 			{
 				return null;
 			}
@@ -644,8 +633,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private static OracleTable MapTable(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
 		{
 			var tableFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["OWNER"]), QualifyStringObject(reader["TABLE_NAME"]));
-			OracleSchemaObject schemaObject;
-			if (!allObjects.TryGetValue(tableFullyQualifiedName, out schemaObject))
+			if (!allObjects.TryGetValue(tableFullyQualifiedName, out OracleSchemaObject schemaObject))
 			{
 				return null;
 			}
@@ -691,8 +679,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		private static OracleTable GetTableForPartition(IDataRecord reader, IDictionary<OracleObjectIdentifier, OracleSchemaObject> allObjects)
 		{
 			var tableFullyQualifiedName = OracleObjectIdentifier.Create(QualifyStringObject(reader["TABLE_OWNER"]), QualifyStringObject(reader["TABLE_NAME"]));
-			OracleSchemaObject schemaObject;
-			return allObjects.TryGetValue(tableFullyQualifiedName, out schemaObject)
+			return allObjects.TryGetValue(tableFullyQualifiedName, out OracleSchemaObject schemaObject)
 				? (OracleTable)schemaObject
 				: null;
 		}

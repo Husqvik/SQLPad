@@ -115,8 +115,7 @@ namespace SqlPad
 
 		public static ConnectionConfiguration GetConnectionConfiguration(string connectionStringName)
 		{
-			ConnectionConfiguration connectionConfiguration;
-			if (InternalInfrastructureFactories.TryGetValue(connectionStringName, out connectionConfiguration))
+			if (InternalInfrastructureFactories.TryGetValue(connectionStringName, out ConnectionConfiguration connectionConfiguration))
 			{
 				return connectionConfiguration;
 			}

@@ -90,8 +90,7 @@ namespace SqlPad.DataExport
 				var stringValue = FormatValue(rowValues[i]);
 				object value;
 
-				decimal number;
-				if (_columns[i].IsNumeric && Decimal.TryParse(stringValue, out number))
+				if (_columns[i].IsNumeric && Decimal.TryParse(stringValue, out decimal number))
 				{
 					value = number;
 				}

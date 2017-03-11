@@ -323,10 +323,9 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private OracleOrderByColumnIndexReference GetColumnIndexReference(StatementGrammarNode orderExpression)
 		{
-			int columnIndex;
 			var expression = orderExpression[NonTerminals.Expression];
 			if (expression == null || expression.TerminalCount != 1 || expression.FirstTerminalNode.Id != OracleGrammarDescription.Terminals.NumberLiteral ||
-				expression.FirstTerminalNode.Token.Value.IndexOf('.') != -1 || !Int32.TryParse(expression.FirstTerminalNode.Token.Value, out columnIndex))
+				expression.FirstTerminalNode.Token.Value.IndexOf('.') != -1 || !Int32.TryParse(expression.FirstTerminalNode.Token.Value, out int columnIndex))
 			{
 				return OracleOrderByColumnIndexReference.None;
 			}

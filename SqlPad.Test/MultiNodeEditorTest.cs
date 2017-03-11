@@ -36,8 +36,7 @@ namespace SqlPad.Test
 
 			var executionContext = ActionExecutionContext.Create(_editor, ConfigureDocumentRepository());
 
-			MultiNodeEditor multiNodeEditor;
-			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out multiNodeEditor).ShouldBe(true);
+			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out MultiNodeEditor multiNodeEditor).ShouldBe(true);
 
 			multiNodeEditor.Replace("__").ShouldBe(true);
 
@@ -55,8 +54,7 @@ namespace SqlPad.Test
 
 			var executionContext = ActionExecutionContext.Create(_editor, ConfigureDocumentRepository());
 
-			MultiNodeEditor multiNodeEditor;
-			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out multiNodeEditor).ShouldBe(true);
+			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out MultiNodeEditor multiNodeEditor).ShouldBe(true);
 
 			_editor.Document.Insert(_editor.CaretOffset, "__");
 
@@ -75,8 +73,7 @@ namespace SqlPad.Test
 
 			var executionContext = ActionExecutionContext.Create(_editor, ConfigureDocumentRepository());
 
-			MultiNodeEditor multiNodeEditor;
-			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out multiNodeEditor).ShouldBe(true);
+			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out MultiNodeEditor multiNodeEditor).ShouldBe(true);
 
 			_editor.SelectionLength = 2;
 			_editor.CaretOffset = 9;
@@ -93,8 +90,7 @@ namespace SqlPad.Test
 
 			var executionContext = ActionExecutionContext.Create(_editor, ConfigureDocumentRepository());
 
-			MultiNodeEditor multiNodeEditor;
-			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out multiNodeEditor).ShouldBe(true);
+			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out MultiNodeEditor multiNodeEditor).ShouldBe(true);
 
 			multiNodeEditor.RemoveCharacter(false).ShouldBe(true);
 
@@ -109,8 +105,7 @@ namespace SqlPad.Test
 
 			var executionContext = ActionExecutionContext.Create(_editor, ConfigureDocumentRepository());
 
-			MultiNodeEditor multiNodeEditor;
-			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out multiNodeEditor).ShouldBe(true);
+			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out MultiNodeEditor multiNodeEditor).ShouldBe(true);
 
 			multiNodeEditor.RemoveCharacter(true).ShouldBe(true);
 
@@ -125,8 +120,7 @@ namespace SqlPad.Test
 
 			var executionContext = ActionExecutionContext.Create(_editor, ConfigureDocumentRepository());
 
-			MultiNodeEditor multiNodeEditor;
-			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out multiNodeEditor).ShouldBe(true);
+			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out MultiNodeEditor multiNodeEditor).ShouldBe(true);
 
 			_editor.SelectionLength = 2;
 			_editor.CaretOffset = 9;
@@ -143,8 +137,7 @@ namespace SqlPad.Test
 
 			var executionContext = ActionExecutionContext.Create(_editor, ConfigureDocumentRepository());
 
-			MultiNodeEditor multiNodeEditor;
-			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out multiNodeEditor).ShouldBe(true);
+			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out MultiNodeEditor multiNodeEditor).ShouldBe(true);
 
 			_editor.SelectionLength = 2;
 			multiNodeEditor.RemoveCharacter(true).ShouldBe(true);
@@ -160,8 +153,7 @@ namespace SqlPad.Test
 
 			var executionContext = ActionExecutionContext.Create(_editor, ConfigureDocumentRepository());
 
-			MultiNodeEditor multiNodeEditor;
-			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out multiNodeEditor).ShouldBe(true);
+			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out MultiNodeEditor multiNodeEditor).ShouldBe(true);
 
 			multiNodeEditor.Replace("__").ShouldBe(true);
 
@@ -176,8 +168,7 @@ namespace SqlPad.Test
 
 			var executionContext = ActionExecutionContext.Create(_editor, ConfigureDocumentRepository());
 
-			MultiNodeEditor multiNodeEditor;
-			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out multiNodeEditor).ShouldBe(true);
+			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out MultiNodeEditor multiNodeEditor).ShouldBe(true);
 
 			multiNodeEditor.Replace("__").ShouldBe(true);
 
@@ -192,8 +183,7 @@ namespace SqlPad.Test
 
 			var executionContext = ActionExecutionContext.Create(_editor, ConfigureDocumentRepository());
 
-			MultiNodeEditor multiNodeEditor;
-			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out multiNodeEditor).ShouldBe(true);
+			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out MultiNodeEditor multiNodeEditor).ShouldBe(true);
 
 			multiNodeEditor.Replace("__").ShouldBe(true);
 

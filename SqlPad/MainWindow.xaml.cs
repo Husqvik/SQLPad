@@ -405,8 +405,7 @@ namespace SqlPad
 		private DocumentPage OpenExistingWorkDocument(WorkDocument document)
 		{
 			DocumentPage documentPage;
-			WorkDocument workDocument;
-			if (WorkDocumentCollection.TryGetWorkingDocumentFor(document.DocumentFileName, out workDocument))
+			if (WorkDocumentCollection.TryGetWorkingDocumentFor(document.DocumentFileName, out WorkDocument workDocument))
 			{
 				documentPage = AllDocuments.Single(d => d.WorkDocument == workDocument);
 				DocumentTabControl.SelectedItem = documentPage.TabItem;

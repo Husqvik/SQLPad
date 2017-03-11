@@ -77,10 +77,8 @@ namespace SqlPad.Oracle
 				yield break;
 			}
 
-			bool isQuotedString;
-			char? quoteInitializer;
 			var value = terminal.Token.Value;
-			var trimIndex = OracleExtensions.GetTrimIndex(value, out isQuotedString, out quoteInitializer);
+			var trimIndex = OracleExtensions.GetTrimIndex(value, out bool isQuotedString, out char? quoteInitializer);
 
 			if (!isQuotedString)
 			{
@@ -190,8 +188,7 @@ namespace SqlPad.Oracle
 		{
 			while (queryBlock != null)
 			{
-				int? columnIndex;
-				var selectColumn = FindItemAndIndexIndex(queryBlock.Columns.Where(ExplicitColumnFilter), c => c.RootNode.SourcePosition.Contains(terminal.SourcePosition), out columnIndex);
+				var selectColumn = FindItemAndIndexIndex(queryBlock.Columns.Where(ExplicitColumnFilter), c => c.RootNode.SourcePosition.Contains(terminal.SourcePosition), out int? columnIndex);
 				if (selectColumn != null)
 				{
 					return columnIndex;

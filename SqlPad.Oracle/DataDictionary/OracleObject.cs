@@ -41,9 +41,8 @@ namespace SqlPad.Oracle.DataDictionary
 
 		protected string BuildDocumentation()
 		{
-			DocumentationDataDictionaryObject documentation;
 			if (String.Equals(FullyQualifiedName.NormalizedOwner, OracleObjectIdentifier.SchemaSys) &&
-				OracleHelpProvider.DataDictionaryObjectDocumentation.TryGetValue(FullyQualifiedName, out documentation))
+				OracleHelpProvider.DataDictionaryObjectDocumentation.TryGetValue(FullyQualifiedName, out DocumentationDataDictionaryObject documentation))
 			{
 				return documentation.Value;
 			}

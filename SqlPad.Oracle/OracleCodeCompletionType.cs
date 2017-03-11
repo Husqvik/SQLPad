@@ -141,8 +141,7 @@ namespace SqlPad.Oracle
 
 			InComment = Statement.Comments.Any(c => c.SourcePosition.ContainsIndex(cursorPosition));
 
-			IValidationModel validationModel;
-			if (!documentRepository.ValidationModels.TryGetValue(Statement, out validationModel))
+			if (!documentRepository.ValidationModels.TryGetValue(Statement, out IValidationModel validationModel))
 			{
 				return;
 			}

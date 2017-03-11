@@ -187,8 +187,7 @@ namespace SqlPad.Oracle
 				}
 			}
 
-			DocumentationPackageSubProgram programDocumentation;
-			var packageProgramDocumentationExists = _packageProgramDocumentations.TryGetValue(identifier, out programDocumentation);
+			var packageProgramDocumentationExists = _packageProgramDocumentations.TryGetValue(identifier, out DocumentationPackageSubProgram programDocumentation);
 			if (packageProgramDocumentationExists)
 			{
 				Process.Start($"{programDocumentation.PackageDocumentation.Url}{programDocumentation.ElementId}");

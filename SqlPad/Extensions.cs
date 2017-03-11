@@ -56,8 +56,7 @@ namespace SqlPad
 
 		public static TValue GetOrAdd<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key) where TValue : new()
 		{
-			TValue value;
-			if (!dictionary.TryGetValue(key, out value))
+			if (!dictionary.TryGetValue(key, out TValue value))
 			{
 				dictionary[key] = value = new TValue();
 			}
@@ -140,8 +139,7 @@ namespace SqlPad
 
 		public static void AddToValues<TKey, TCollection, TValue>(this IDictionary<TKey, TCollection> dictionary, TKey key, TValue value) where TCollection : ICollection<TValue>, new()
 		{
-			TCollection values;
-			if (!dictionary.TryGetValue(key, out values))
+			if (!dictionary.TryGetValue(key, out TCollection values))
 			{
 				dictionary.Add(key, values = new TCollection());
 			}

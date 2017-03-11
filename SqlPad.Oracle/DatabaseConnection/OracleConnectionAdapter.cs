@@ -233,8 +233,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override bool CanFetch(ResultInfo resultInfo)
 		{
-			CommandReader commandReader;
-			return !_isExecuting && _commandReaders.TryGetValue(resultInfo, out commandReader) && CanFetchFromReader(commandReader.Reader);
+			return !_isExecuting && _commandReaders.TryGetValue(resultInfo, out CommandReader commandReader) && CanFetchFromReader(commandReader.Reader);
 		}
 
 		public override bool IsExecuting => _isExecuting;
@@ -249,8 +248,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override Task<IReadOnlyList<object[]>> FetchRecordsAsync(ResultInfo resultInfo, int rowCount, CancellationToken cancellationToken)
 		{
-			CommandReader commandReader;
-			if (_commandReaders.TryGetValue(resultInfo, out commandReader))
+			if (_commandReaders.TryGetValue(resultInfo, out CommandReader commandReader))
 			{
 				return FetchRecordsFromReader(commandReader.Reader, rowCount, false).EnumerateAsync(cancellationToken);
 			}

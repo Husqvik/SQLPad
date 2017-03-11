@@ -133,8 +133,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			lock (ActiveDataModelRefresh)
 			{
-				List<RefreshModel> refreshModels;
-				if (WaitingDataModelRefresh.TryGetValue(_connectionStringName, out refreshModels))
+				if (WaitingDataModelRefresh.TryGetValue(_connectionStringName, out List<RefreshModel> refreshModels))
 				{
 					var modelIndex = refreshModels.FindIndex(m => m.DatabaseModel == this);
 					if (modelIndex != -1)
@@ -582,8 +581,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			lock (ActiveDataModelRefresh)
 			{
-				List<RefreshModel> refreshModels;
-				if (WaitingDataModelRefresh.TryGetValue(_connectionStringName, out refreshModels))
+				if (WaitingDataModelRefresh.TryGetValue(_connectionStringName, out List<RefreshModel> refreshModels))
 				{
 					refreshModels.RemoveAll(m => m.DatabaseModel == this);
 				}
@@ -620,8 +618,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private void EnsureDatabaseProperties()
 		{
-			DatabaseProperty property;
-			if (DatabaseProperties.TryGetValue(_connectionString.ConnectionString, out property))
+			if (DatabaseProperties.TryGetValue(_connectionString.ConnectionString, out DatabaseProperty property))
 			{
 				return;
 			}
@@ -747,9 +744,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 						continue;
 					}
 
-					OracleSchemaObject schemaObject;
 					var packageIdentifier = OracleObjectIdentifier.Create(programMetadata.Identifier.Owner, programMetadata.Identifier.Package);
-					if (allObjects.TryGetFirstValue(out schemaObject, packageIdentifier))
+					if (allObjects.TryGetFirstValue(out OracleSchemaObject schemaObject, packageIdentifier))
 					{
 						((OraclePackage)schemaObject).Programs.Add(programMetadata);
 						programMetadata.Owner = schemaObject;
@@ -822,14 +818,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 				return;
 			}
 
-			Stream stream;
-			OracleDataDictionary dataDictionary;
-			if (CachedDataDictionaries.TryGetValue(_connectionStringName, out dataDictionary))
+			if (CachedDataDictionaries.TryGetValue(_connectionStringName, out OracleDataDictionary dataDictionary))
 			{
 				_dataDictionary = dataDictionary;
 				BuildSupportLookups();
 			}
-			else if (MetadataCache.TryLoadDatabaseModelCache(_connectionStringName, out stream))
+			else if (MetadataCache.TryLoadDatabaseModelCache(_connectionStringName, out Stream stream))
 			{
 				try
 				{
@@ -1005,8 +999,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					var activeModels = GetActiveModels(connectionString);
 					activeModels.Remove(databaseModel);
 
-					OracleSchemaResolver resolver;
-					if (activeModels.Count == 0 && ActiveResolvers.TryGetValue(connectionString, out resolver))
+					if (activeModels.Count == 0 && ActiveResolvers.TryGetValue(connectionString, out OracleSchemaResolver resolver))
 					{
 						resolver._enablePasswordRetrieval = true;
 					}
@@ -1035,8 +1028,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			private static HashSet<OracleDatabaseModel> GetActiveModels(string connectionString)
 			{
-				HashSet<OracleDatabaseModel> activeModels;
-				if (!ActiveDatabaseModels.TryGetValue(connectionString, out activeModels))
+				if (!ActiveDatabaseModels.TryGetValue(connectionString, out HashSet<OracleDatabaseModel> activeModels))
 				{
 					ActiveDatabaseModels.Add(connectionString, activeModels = new HashSet<OracleDatabaseModel>());
 				}
@@ -1118,8 +1110,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			lock (ConnectionStringBuilders)
 			{
-				OracleConnectionStringBuilder connectionStringBuilder;
-				if (!ConnectionStringBuilders.TryGetValue(connectionString, out connectionStringBuilder))
+				if (!ConnectionStringBuilders.TryGetValue(connectionString, out OracleConnectionStringBuilder connectionStringBuilder))
 				{
 					ConnectionStringBuilders[connectionString] = connectionStringBuilder = new OracleConnectionStringBuilder(connectionString);
 				}

@@ -172,8 +172,7 @@ namespace SqlPad.Oracle.DataDictionary
 				return false;
 			}
 
-			bool isChainedExpression;
-			expressionNode = expressionNode.UnwrapIfNonChainedExpressionWithinParentheses(out isChainedExpression);
+			expressionNode = expressionNode.UnwrapIfNonChainedExpressionWithinParentheses(out bool isChainedExpression);
 			if (isChainedExpression)
 			{
 				return false;

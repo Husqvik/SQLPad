@@ -726,8 +726,7 @@ namespace SqlPad.Oracle
 					.Where(t => t.FullyQualifiedObjectName == fullyQualifiedName || (String.IsNullOrEmpty(fullyQualifiedName.Owner) && fullyQualifiedName.NormalizedName == t.FullyQualifiedObjectName.NormalizedName))
 					.ToArray();
 
-				OracleSchemaObject schemaObject;
-				if (tableReferenceSource.Count == 0 && databaseModel.AllObjects.TryGetFirstValue(out schemaObject, databaseModel.GetPotentialSchemaObjectIdentifiers(fullyQualifiedName)))
+				if (tableReferenceSource.Count == 0 && databaseModel.AllObjects.TryGetFirstValue(out OracleSchemaObject schemaObject, databaseModel.GetPotentialSchemaObjectIdentifiers(fullyQualifiedName)))
 				{
 					var sequence = schemaObject.GetTargetSchemaObject() as OracleSequence;
 					if (sequence != null)

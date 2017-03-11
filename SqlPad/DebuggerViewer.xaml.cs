@@ -70,8 +70,7 @@ namespace SqlPad
 		{
 			foreach (var breakpoint in _outputViewer.DocumentPage.WorkDocument.Breakpoints)
 			{
-				object breakpointIdentifier;
-				if (_breakpointIdentifiers.TryGetValue(breakpoint, out breakpointIdentifier))
+				if (_breakpointIdentifiers.TryGetValue(breakpoint, out object breakpointIdentifier))
 				{
 					continue;
 				}
