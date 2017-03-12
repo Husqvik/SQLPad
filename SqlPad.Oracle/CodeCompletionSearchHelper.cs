@@ -15,7 +15,7 @@ namespace SqlPad.Oracle
 		private const string ContextNamespaceUserEnvironment = "USERENV";
 
 		private static readonly HashSet<OracleProgramIdentifier> SpecificCodeCompletionFunctionIdentifiers =
-				new HashSet<OracleProgramIdentifier>
+			new HashSet<OracleProgramIdentifier>
 			{
 				OracleProgramIdentifier.IdentifierBuiltInProgramConvert,
 				OracleProgramIdentifier.IdentifierBuiltInProgramRegularExpressionReplace,
