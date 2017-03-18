@@ -1782,6 +1782,45 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test]
+		public void TestOracle121LongIdentifier()
+		{
+			const string sqlText =
+				@"SELECT
+	1 VeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongAlia
+FROM DUAL";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+			var nodeValidityDictionary = validationModel.IdentifierNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			nodeValidityDictionary.Count.ShouldBe(1);
+			var node = nodeValidityDictionary.Values.First().Node;
+			node.Token.Value.ShouldBe("VeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongAlia");
+		}
+
+		[Test]
+		public void TestOracle122LongIdentifier()
+		{
+			const string sqlText =
+				@"SELECT
+	1 VeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongAlia,
+	1 VeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongAlias
+FROM DUAL";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement, new OracleTestDatabaseModel { TestDatabaseVersion = new Version(12, 2, 0, 1) });
+			var nodeValidityDictionary = validationModel.IdentifierNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			nodeValidityDictionary.Count.ShouldBe(1);
+		    var node = nodeValidityDictionary.Values.First().Node;
+			node.Token.Value.ShouldBe("VeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongAlias");
+		}
+
+		[Test]
 		public void TestEmptyXmlAlias()
 		{
 			const string sqlText = "SELECT XMLELEMENT(NAME \"\", NULL) VAL FROM DUAL";

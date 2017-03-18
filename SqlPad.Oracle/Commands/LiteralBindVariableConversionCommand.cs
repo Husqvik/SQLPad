@@ -162,7 +162,7 @@ namespace SqlPad.Oracle.Commands
 			ExecutionContext.EnsureSettingsProviderAvailable();
 
 			var settingsModel = ExecutionContext.SettingsProvider.Settings;
-			settingsModel.ValidationRule = new OracleBindVariableIdentifierValidationRule();
+			settingsModel.ValidationRule = new OracleBindVariableIdentifierValidationRule(SemanticModel.DatabaseModel.Version);
 
 			settingsModel.Title = "Bind variable";
 			settingsModel.Heading = settingsModel.Title;

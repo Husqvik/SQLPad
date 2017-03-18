@@ -19,7 +19,6 @@ namespace SqlPad.Oracle
 		private static readonly Assembly LocalAssembly = typeof(OracleSqlParser).Assembly;
 		private static readonly XmlSerializer XmlSerializer = new XmlSerializer(typeof(SqlGrammar));
 		private static readonly Dictionary<string, SqlGrammarRule> NonTerminalRules;
-		private static readonly Dictionary<string, SqlGrammarTerminal> Terminals;
 		private static readonly HashSet<string> TerminatorIds;
 		private static readonly HashSet<string> TerminatorValues;
 		private static readonly SqlGrammarRuleSequenceNonTerminal[] AvailableNonTerminals;
@@ -43,17 +42,17 @@ namespace SqlPad.Oracle
 				NonTerminalRules.Add(rule.StartingNonTerminal, rule);
 			}
 
-			Terminals = new Dictionary<string, SqlGrammarTerminal>();
+			var terminals = new Dictionary<string, SqlGrammarTerminal>();
 			foreach (var terminal in oracleGrammar.Terminals)
 			{
-				if (Terminals.ContainsKey(terminal.Id))
+				if (terminals.ContainsKey(terminal.Id))
 					throw new InvalidOperationException($"Terminal '{terminal.Id}' has been already defined. ");
 
 				terminal.Initialize();
-				Terminals.Add(terminal.Id, terminal);
+				terminals.Add(terminal.Id, terminal);
 			}
 
-			IdentifierMatcher = Terminals[OracleGrammarDescription.Terminals.Identifier].RegexMatcher;
+			IdentifierMatcher = terminals[OracleGrammarDescription.Terminals.Identifier].RegexMatcher;
 
 			var missingTerminals = new HashSet<string>();
 			var missingNonTerminals = new HashSet<string>();
@@ -81,7 +80,7 @@ namespace SqlPad.Oracle
 					{
 						var terminalReference = (SqlGrammarRuleSequenceTerminal)item;
 
-						if (Terminals.TryGetValue(terminalReference.Id, out SqlGrammarTerminal terminal))
+						if (terminals.TryGetValue(terminalReference.Id, out SqlGrammarTerminal terminal))
 						{
 							terminalReference.Terminal = terminal;
 						}
@@ -117,7 +116,7 @@ namespace SqlPad.Oracle
 			AvailableNonTerminals = oracleGrammar.StartSymbols.Select(s => CreateInitialNonTerminal(s.Id)).ToArray();
 
 			TerminatorIds = oracleGrammar.Terminators.Select(t => t.Id).ToHashSet();
-			TerminatorValues = TerminatorIds.Select(id => Terminals[id].Value).ToHashSet();
+			TerminatorValues = TerminatorIds.Select(id => terminals[id].Value).ToHashSet();
 		}
 
 		private OracleSqlParser() { }

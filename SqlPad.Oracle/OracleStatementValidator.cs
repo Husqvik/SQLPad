@@ -20,6 +20,7 @@ namespace SqlPad.Oracle
 		internal static readonly Regex TimestampValidator = new Regex(@"^(?<Year>([+-]\s*)?[0-9]{1,4})\s*-\s*(?<Month>[0-9]{1,2})\s*-\s*(?<Day>[0-9]{1,2})\s*(?<Hour>[0-9]{1,2})\s*:\s*(?<Minute>[0-9]{1,2})\s*:\s*(?<Second>[0-9]{1,2})\s*(\.\s*(?<Fraction>[0-9]{1,9}))?\s*(((?<OffsetHour>[+-]\s*[0-9]{1,2})\s*:\s*(?<OffsetMinutes>[0-9]{1,2}))|(?<Timezone>[a-zA-Z/]+))?$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 		private static readonly Regex IntervalYearToMonthValidator = new Regex(@"^\s*(?<Years>([+-]\s*)?[0-9]{1,9})\s*([-]\s*(?<Months>[0-9]{1,2}))?\s*$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 		private static readonly Regex IntervalDayToSecondValidator = new Regex(@"^\s*(?<Days>([+-]\s*)?[0-9]{1,9})\s*(?<Hours>[0-9]{1,2})?\s*(:\s*(?<Minutes>[0-9]{1,2}))?\s*(:\s*(?<Seconds>[0-9]{1,2}))?\s*(\.\s*(?<Fraction>[0-9]{1,9}))?\s*$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+		private static readonly Version BaseVersion = new Version(11, 1, 0, 1);
 		private static readonly Version MinimumJsonSupportVersion = new Version(12, 1, 0, 2);
 		private static readonly OracleObjectIdentifier[] AssociativeArrayIndexTypes = { OracleDataType.BinaryIntegerType.FullyQualifiedName, OracleObjectIdentifier.Create(null, TerminalValues.Varchar), OracleObjectIdentifier.Create(null, TerminalValues.Varchar2) };
 
@@ -70,11 +71,11 @@ namespace SqlPad.Oracle
 
 						var tableCollectionColumnReference = tableCollectionReference.RowSourceReference as OracleColumnReference;
 						if (tableCollectionColumnReference != null && databaseModel != null && databaseModel.IsMetadataAvailable && tableCollectionColumnReference.ColumnDescription != null &&
-						    !tableCollectionColumnReference.ColumnDescription.DataType.IsDynamicCollection && !String.IsNullOrEmpty(tableCollectionColumnReference.ColumnDescription.DataType.FullyQualifiedName.Name))
+							!tableCollectionColumnReference.ColumnDescription.DataType.IsDynamicCollection && !String.IsNullOrEmpty(tableCollectionColumnReference.ColumnDescription.DataType.FullyQualifiedName.Name))
 						{
 							var collectionType = databaseModel.GetFirstSchemaObject<OracleTypeCollection>(tableCollectionColumnReference.ColumnDescription.DataType.FullyQualifiedName);
 							if (collectionType == null && validationModel.ColumnNodeValidity.TryGetValue(tableCollectionColumnReference.ColumnNode, out INodeValidationData validationData) &&
-							    validationData.IsRecognized && String.IsNullOrEmpty(validationData.SemanticErrorType))
+								validationData.IsRecognized && String.IsNullOrEmpty(validationData.SemanticErrorType))
 							{
 								validationModel.ColumnNodeValidity[tableCollectionColumnReference.ColumnNode] =
 									new InvalidNodeValidationData(OracleSemanticErrorType.CannotAccessRowsFromNonNestedTableItem)
@@ -161,8 +162,9 @@ namespace SqlPad.Oracle
 
 			ResolveSuspiciousConditions(validationModel);
 
+			var databaseVersion = databaseModel?.Version ?? BaseVersion;
 			var invalidIdentifiers = oracleSemanticModel.Statement.AllTerminals
-				.Select(GetInvalidIdentifierValidationData)
+				.Select(t => GetInvalidIdentifierValidationData(t, databaseVersion))
 				.Where(nv => nv != null);
 
 			foreach (var nodeValidity in invalidIdentifiers)
@@ -183,8 +185,8 @@ namespace SqlPad.Oracle
 
 				var dataSourceSpecified = insertTarget.RowSource != null || insertTarget.ValueList != null;
 				if (dataObjectReference != null && dataSourceSpecified &&
-				    (dataObjectReference.Type == ReferenceType.InlineView ||
-				     validationModel.ObjectNodeValidity[dataObjectReference.ObjectNode].IsRecognized))
+					(dataObjectReference.Type == ReferenceType.InlineView ||
+					 validationModel.ObjectNodeValidity[dataObjectReference.ObjectNode].IsRecognized))
 				{
 					var insertColumnCount = insertTarget.Columns == null
 						? dataObjectReference.Columns.Count(c => !c.Hidden)
@@ -286,7 +288,7 @@ namespace SqlPad.Oracle
 					}
 
 					if (!validationModel.IdentifierNodeValidity.ContainsKey(plSqlType.AssociativeArrayIndexDataTypeReference.ObjectNode) &&
-					    !plSqlType.AssociativeArrayIndexDataTypeReference.ResolvedDataType.FullyQualifiedName.In(AssociativeArrayIndexTypes))
+						!plSqlType.AssociativeArrayIndexDataTypeReference.ResolvedDataType.FullyQualifiedName.In(AssociativeArrayIndexTypes))
 					{
 						validationModel.AddNonTerminalSemanticError(plSqlType.AssociativeArrayIndexDataTypeReference.RootNode, OracleSemanticErrorType.PlSql.UnsupportedTableIndexType);
 					}
@@ -351,7 +353,7 @@ namespace SqlPad.Oracle
 				{
 					StatementGrammarNode expressionIsNullNaNOrInfiniteNode;
 					if (!column.HasExplicitDefinition || column.ReferencesAllColumns || column.ColumnDescription == null || column.ColumnDescription.Nullable || column.RootNode == null ||
-					    !String.Equals((expressionIsNullNaNOrInfiniteNode = column.RootNode.ParentNode.ParentNode).Id, NonTerminals.ExpressionIsNullNaNOrInfinite) ||
+						!String.Equals((expressionIsNullNaNOrInfiniteNode = column.RootNode.ParentNode.ParentNode).Id, NonTerminals.ExpressionIsNullNaNOrInfinite) ||
 						expressionIsNullNaNOrInfiniteNode[NonTerminals.Expression, NonTerminals.ExpressionMathOperatorChainedList] != null)
 					{
 						continue;
@@ -825,7 +827,7 @@ namespace SqlPad.Oracle
 				ValidateConcatenatedQueryBlocks(validationModel, queryBlock);
 
 				if (queryBlock.OrderByClause != null &&
-				    (queryBlock.Type == QueryBlockType.ScalarSubquery || queryBlock.RootNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.QueryBlock), NonTerminals.Condition) != null))
+					(queryBlock.Type == QueryBlockType.ScalarSubquery || queryBlock.RootNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.QueryBlock), NonTerminals.Condition) != null))
 				{
 					validationModel.AddNonTerminalSemanticError(queryBlock.OrderByClause, OracleSemanticErrorType.ClauseNotAllowed);
 				}
@@ -1175,8 +1177,9 @@ namespace SqlPad.Oracle
 
 		internal static StatementGrammarNode GetParentAggregateOrAnalyticFunctionRootNode(StatementGrammarNode programRootNode)
 		{
-			return programRootNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.AliasedExpression), NonTerminals.AnalyticFunctionCall)
-			       ?? programRootNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.AliasedExpression), NonTerminals.AggregateFunctionCall);
+			return
+				programRootNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.AliasedExpression), NonTerminals.AnalyticFunctionCall)
+				?? programRootNode.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.AliasedExpression), NonTerminals.AggregateFunctionCall);
 		}
 
 		private static void ValidateConcatenatedQueryBlocks(OracleValidationModel validationModel, OracleQueryBlock queryBlock)
@@ -1301,7 +1304,7 @@ namespace SqlPad.Oracle
 					var isInQueryBlockWithUnsupportedClause = (sequenceReference.Owner?.HavingClause ?? sequenceReference.Owner?.GroupByClause) != null;
 					var isWithinMainQueryBlockWithOrderByClause = mainQueryBlockOrderByClause != null;
 					if (isWithinMainQueryBlockWithOrderByClause || isInQueryBlockWithUnsupportedClause || !sequenceReference.Placement.In(StatementPlacement.None, StatementPlacement.ValuesClause, StatementPlacement.SelectList) ||
-					    IsNotWithinMainQueryBlock(sequenceReference) || sequenceReference.Owner?.HasDistinctResultSet == true)
+						IsNotWithinMainQueryBlock(sequenceReference) || sequenceReference.Owner?.HasDistinctResultSet == true)
 					{
 						validationModel.InvalidNonTerminals[sequenceReference.RootNode] =
 							new InvalidNodeValidationData(OracleSemanticErrorType.SequenceNumberNotAllowedHere) { Node = sequenceReference.RootNode };
@@ -1331,7 +1334,7 @@ namespace SqlPad.Oracle
 							new NodeValidationData { Node = dataTypeReference.ObjectNode, IsRecognized = false };
 
 						if (dataTypeReference.OwnerNode != null &&
-						    !validationModel.SemanticModel.DatabaseModel.ExistsSchema(dataTypeReference.FullyQualifiedObjectName.NormalizedOwner))
+							!validationModel.SemanticModel.DatabaseModel.ExistsSchema(dataTypeReference.FullyQualifiedObjectName.NormalizedOwner))
 						{
 							validationModel.IdentifierNodeValidity[dataTypeReference.OwnerNode] =
 								new NodeValidationData { Node = dataTypeReference.OwnerNode, IsRecognized = false };
@@ -1356,8 +1359,8 @@ namespace SqlPad.Oracle
 						new NodeValidationData { Node = variableReference.IdentifierNode };
 				}
 				else if (variableReference.Variables.Count == 1 &&
-				         String.Equals(variableReference.RootNode.Id, NonTerminals.AssignmentStatementTarget) &&
-				         String.Equals(variableReference.RootNode.ParentNode.ParentNode.Id, NonTerminals.PlSqlAssignmentStatement))
+						 String.Equals(variableReference.RootNode.Id, NonTerminals.AssignmentStatementTarget) &&
+						 String.Equals(variableReference.RootNode.ParentNode.ParentNode.Id, NonTerminals.PlSqlAssignmentStatement))
 				{
 					if (variableReference.Variables.First() is OraclePlSqlVariable variable && variable.IsReadOnly)
 					{
@@ -1470,7 +1473,7 @@ namespace SqlPad.Oracle
 
 						var parameterListSemanticError = OracleSemanticErrorType.None;
 						if ((programReference.ParameterReferences.Count < programReference.Metadata.MinimumArguments) ||
-						    (programReference.ParameterReferences.Count > maximumParameterCount))
+							(programReference.ParameterReferences.Count > maximumParameterCount))
 						{
 							parameterListSemanticError = OracleSemanticErrorType.InvalidParameterCount;
 						}
@@ -1495,9 +1498,9 @@ namespace SqlPad.Oracle
 						{
 							var parameterNode = programReference.ParameterReferences[0].ParameterNode;
 							if (parameterNode[NonTerminals.ChainedCondition] != null ||
-							    parameterNode[Terminals.Between] != null ||
+								parameterNode[Terminals.Between] != null ||
 								!IsInClauseValidWithLnNvl(parameterNode) ||
-							    (parameterNode[0] != null && String.Equals(parameterNode[0].Id, Terminals.LeftParenthesis)))
+								(parameterNode[0] != null && String.Equals(parameterNode[0].Id, Terminals.LeftParenthesis)))
 							{
 								validationModel.InvalidNonTerminals[parameterNode] =
 									new InvalidNodeValidationData(OracleSemanticErrorType.IncorrectUseOfLnNvlOperator) { Node = parameterNode };
@@ -1557,7 +1560,7 @@ namespace SqlPad.Oracle
 				{
 					var isLevel = programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramLevel;
 					if (isLevel ||
-					    programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramSysConnectByPath)
+						programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramSysConnectByPath)
 					{
 						if (programReference.Owner?.HierarchicalQueryClause?[NonTerminals.HierarchicalQueryConnectByClause] == null)
 						{
@@ -1685,14 +1688,14 @@ namespace SqlPad.Oracle
 				: OracleSemanticErrorType.ObjectStatusInvalid;
 		}
 
-		private static INodeValidationData GetInvalidIdentifierValidationData(StatementGrammarNode node)
+		private static INodeValidationData GetInvalidIdentifierValidationData(StatementGrammarNode node, Version databaseVersion)
 		{
 			if (!node.Id.IsIdentifierOrAlias() || String.Equals(node.Id, Terminals.DatabaseLinkIdentifier))
 			{
 				return null;
 			}
 
-			var validationResult = ValidateIdentifier(node.Token.Value, String.Equals(node.Id, Terminals.BindVariableIdentifier));
+			var validationResult = ValidateIdentifier(node.Token.Value, String.Equals(node.Id, Terminals.BindVariableIdentifier), databaseVersion);
 			string errorMessage;
 			if (String.Equals(node.Id, Terminals.XmlAlias))
 			{
@@ -1710,13 +1713,13 @@ namespace SqlPad.Oracle
 				: new SemanticErrorNodeValidationData(OracleSemanticErrorType.InvalidIdentifier, errorMessage) { Node = node };
 		}
 
-		public static bool IsValidBindVariableIdentifier(string identifier)
+		public static bool IsValidBindVariableIdentifier(string identifier, Version databaseVersion)
 		{
-			var validationResult = ValidateIdentifier(identifier, true);
+			var validationResult = ValidateIdentifier(identifier, true, databaseVersion);
 			return validationResult.IsValid && (validationResult.IsNumericBindVariable || OracleSqlParser.IsValidIdentifier(identifier)) && !identifier.IsReservedWord();
 		}
 
-		private static IdentifierValidationResult ValidateIdentifier(string identifier, bool validateNumericBindVariable)
+		private static IdentifierValidationResult ValidateIdentifier(string identifier, bool validateNumericBindVariable, Version databaseVersion)
 		{
 			var trimmedIdentifier = identifier.Trim('"');
 			var result = new IdentifierValidationResult();
@@ -1732,9 +1735,14 @@ namespace SqlPad.Oracle
 			}
 
 			result.IsEmptyQuotedIdentifier = trimmedIdentifier.Length == 0;
-			if (String.IsNullOrEmpty(result.ErrorMessage) && result.IsEmptyQuotedIdentifier || trimmedIdentifier.Length > 30)
+			var maxIdentifierLength =
+				databaseVersion.Major > 12 || (databaseVersion.Major == 12 && databaseVersion.Minor >= 2)
+					? 128
+					: 30;
+
+			if (String.IsNullOrEmpty(result.ErrorMessage) && result.IsEmptyQuotedIdentifier || trimmedIdentifier.Length > maxIdentifierLength)
 			{
-				result.ErrorMessage = "Identifier length must be between one and 30 characters excluding quotes. ";
+				result.ErrorMessage = $"Identifier length must be between one and {maxIdentifierLength} characters excluding quotes. ";
 			}
 
 			return result;
@@ -1998,7 +2006,7 @@ namespace SqlPad.Oracle
 
 		public override string SemanticErrorType => _semanticError;
 
-	    public override string ToolTipText => _semanticError;
+		public override string ToolTipText => _semanticError;
 	}
 
 	public class SuggestionData : NodeValidationData
@@ -2058,17 +2066,17 @@ namespace SqlPad.Oracle
 
 		public ICollection<OracleColumn> ColumnNodeColumnReferences => _columnReference.ColumnNodeColumnReferences;
 
-	    public override string SemanticErrorType => _ambiguousColumnNames.Length > 0 || ColumnNodeColumnReferences.Count >= 2
-		    ? OracleSemanticErrorType.AmbiguousReference
-		    : base.SemanticErrorType;
+		public override string SemanticErrorType => _ambiguousColumnNames.Length > 0 || ColumnNodeColumnReferences.Count >= 2
+			? OracleSemanticErrorType.AmbiguousReference
+			: base.SemanticErrorType;
 
-	    public override string ToolTipText
+		public override string ToolTipText
 		{
 			get
 			{
 				var additionalInformation = _ambiguousColumnNames.Length > 0
 					? $" ({String.Join(", ", _ambiguousColumnNames)})"
-				    : String.Empty;
+					: String.Empty;
 
 				return _ambiguousColumnNames.Length > 0 && ObjectReferences.Count <= 1
 					? OracleSemanticErrorType.AmbiguousReference + additionalInformation

@@ -670,9 +670,10 @@ WHERE
 				remoteTableColumns = await databaseModel.GetRemoteTableColumnsAsync(LoopbackDatabaseLinkName, new OracleObjectIdentifier(null, "\"USER_TABLES\""), CancellationToken.None);
 			}
 
-			remoteTableColumns.Count.ShouldBe(64);
+			remoteTableColumns.Count.ShouldBe(76);
 			remoteTableColumns[0].ShouldBe("\"TABLE_NAME\"");
-			remoteTableColumns[63].ShouldBe("\"INMEMORY_DUPLICATE\"");
+			remoteTableColumns[63].ShouldBe("\"INMEMORY_DUPLICATE\""); // last  12.1.0.2 column
+			remoteTableColumns[75].ShouldBe("\"CONTAINER_MAP_OBJECT\"");
 		}
 
 		[Test]

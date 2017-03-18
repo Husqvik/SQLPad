@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace SqlPad.Oracle
 {
-	[DebuggerDisplay("SqlGrammarStartSymbol (Id={Id})")]
+	[DebuggerDisplay("SqlGrammarStartSymbol (Id={" + nameof(Id) + "})")]
 	public partial class SqlGrammarStartSymbol
 	{
 

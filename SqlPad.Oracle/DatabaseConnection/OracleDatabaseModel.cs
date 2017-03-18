@@ -425,7 +425,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				}
 				catch (TaskCanceledException)
 				{
-					TraceLog.WriteLine($"Update model cancelled. ");
+					TraceLog.WriteLine("Update model cancelled. ");
 				}
 			}
 		}
@@ -750,7 +750,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 						((OraclePackage)schemaObject).Programs.Add(programMetadata);
 						programMetadata.Owner = schemaObject;
 					}
-					else
+					else if (String.IsNullOrEmpty(programMetadata.Identifier.Package))
 					{
 						var programIdentifier = OracleObjectIdentifier.Create(programMetadata.Identifier.Owner, programMetadata.Identifier.Name);
 						if (allObjects.TryGetFirstValue(out schemaObject, programIdentifier))

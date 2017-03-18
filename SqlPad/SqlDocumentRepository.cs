@@ -22,14 +22,9 @@ namespace SqlPad
 
 	    public SqlDocumentRepository(ISqlParser parser, IStatementValidator validator, IDatabaseModel databaseModel, string statementText = null)
 		{
-			if (parser == null)
-				throw new ArgumentNullException(nameof(parser));
+			_parser = parser ?? throw new ArgumentNullException(nameof(parser));
+			_validator = validator ?? throw new ArgumentNullException(nameof(validator));
 
-			if (validator == null)
-				throw new ArgumentNullException(nameof(validator));
-
-			_parser = parser;
-			_validator = validator;
 			_databaseModel = databaseModel;
 
 			if (!String.IsNullOrEmpty(statementText))

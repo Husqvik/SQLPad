@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -130,19 +129,9 @@ namespace SqlPad.Oracle.SemanticModel
 
 		protected internal OracleStatementSemanticModel(string statementText, OracleStatement statement, OracleDatabaseModelBase databaseModel)
 		{
-			if (statement == null)
-			{
-				throw new ArgumentNullException(nameof(statement));
-			}
-
-			if (databaseModel == null)
-			{
-				throw new ArgumentNullException(nameof(databaseModel));
-			}
-
 			StatementText = statementText;
-			Statement = statement;
-			_databaseModel = databaseModel;
+			Statement = statement ?? throw new ArgumentNullException(nameof(statement));
+			_databaseModel = databaseModel ?? throw new ArgumentNullException(nameof(databaseModel));
 
 			MainObjectReferenceContainer = new OracleMainObjectReferenceContainer(this);
 
