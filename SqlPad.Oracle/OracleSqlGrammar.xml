@@ -9021,13 +9021,60 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="WithinGroupAggregationFunction" />
-          <NonTerminal Id="ParenthesisEnclosedExpressionListWithMandatoryExpressions" />
+          <NonTerminal Id="ParenthesisEnclosedAggregationFunctionParameters" />
           <Terminal Id="Within" />
           <Terminal Id="Group" />
           <Terminal Id="LeftParenthesis" />
           <NonTerminal Id="OrderByClause" />
           <Terminal Id="RightParenthesis" />
           <NonTerminal Id="OverQueryPartitionClause" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="ListAggregation" />
+          <NonTerminal Id="ListAggregationParameters" />
+          <Terminal Id="Within" />
+          <Terminal Id="Group" />
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="OrderByClause" />
+          <Terminal Id="RightParenthesis" />
+          <NonTerminal Id="OverQueryPartitionClause" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ListAggregationParameters">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="AggregationFunctionParameters" />
+          <NonTerminal Id="ListAggregationOverflowClause" IsOptional="true" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ListAggregationOverflowClause">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="On" />
+          <Terminal Id="Overflow" />
+          <Terminal Id="Error" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="On" />
+          <Terminal Id="Overflow" />
+          <Terminal Id="Truncate" />
+          <Terminal Id="StringLiteral" IsOptional="true" />
+          <NonTerminal Id="WithOrWithoutCount" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="WithOrWithoutCount">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="WithOrWithout" />
+          <Terminal Id="CountKeyword" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -9090,9 +9137,6 @@
 
     <Rule StartingNonTerminal="WithinGroupAggregationFunction">
       <Sequences>
-        <Sequence>
-          <Terminal Id="ListAggregation" />
-        </Sequence>
         <Sequence>
           <Terminal Id="CumulativeDistribution" />
         </Sequence>
@@ -20209,6 +20253,7 @@
     <Terminal Id="Avg" Value="AVG" AllowQuotedNotation ="true" />
     <Terminal Id="Variance" Value="VARIANCE" AllowQuotedNotation ="true" />
     <Terminal Id="StandardDeviation" Value="STDDEV" AllowQuotedNotation ="true" />
+    <Terminal Id="CountKeyword" Value="COUNT" />
 
     <!-- Analytic clause -->
     <Terminal Id="FirstValue" Value="FIRST_VALUE" AllowQuotedNotation ="true" />

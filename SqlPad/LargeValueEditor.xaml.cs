@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -84,6 +83,7 @@ namespace SqlPad
 					}
 
 					_isJson = true;
+
 					try
 					{
 						JToken.Parse(largeTextValue.Value);

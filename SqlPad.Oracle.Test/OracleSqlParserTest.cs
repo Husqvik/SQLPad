@@ -1286,6 +1286,16 @@ FROM SELECTION";
 			// TODO: Precise assertions
 		}
 
+		[Test(Description = @"Tests LISTAGG overflow clause. ")]
+		public void TestListaggOverflowClause()
+		{
+			const string query1 = @"SELECT listagg(ALL dummy, ', ' ON OVERFLOW TRUNCATE '... ' WITH COUNT) WITHIN GROUP (ORDER BY dummy) FROM dual";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
+		}
+
 		[Test(Description = @"Tests XMLELEMENT function. ")]
 		public void TestXmlElementFunction()
 		{

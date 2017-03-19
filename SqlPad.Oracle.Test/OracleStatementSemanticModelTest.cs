@@ -172,7 +172,7 @@ FROM
 		}
 
 		[Test]
-		public void TestGrammarSpecifiAnalyticFunctionRecognize()
+		public void TestGrammarSpecificAnalyticFunctionRecognize()
 		{
 			const string query1 = @"SELECT LAG(DUMMY, 1, 'Replace') IGNORE NULLS OVER (ORDER BY NULL) FROM DUAL";
 
