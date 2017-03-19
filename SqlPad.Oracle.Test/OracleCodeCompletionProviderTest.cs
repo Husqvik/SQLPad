@@ -968,10 +968,10 @@ se";
 		{
 			const string statement = @"SELECT SQLPAD.SQLPAD_FUNCTION(D) FROM DUAL";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 31).ToList();
-			items.Count.ShouldBe(9);
+			items.Count.ShouldBe(10);
 			items[0].Text.ShouldBe("DUAL.DUMMY");
-			items[8].Label.ShouldBe("DUMP");
-			items[8].Text.ShouldBe("DUMP()");
+			items[9].Label.ShouldBe("DUMP");
+			items[9].Text.ShouldBe("DUMP()");
 		}
 
 		[Test]

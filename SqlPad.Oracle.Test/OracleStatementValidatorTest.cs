@@ -708,6 +708,22 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test]
+		public void TestDistinctWithinWithinGroupAggregationFunction()
+		{
+			const string sqlText = "SELECT dense_rank (DISTINCT 0.5) WITHIN GROUP (ORDER BY dummy) FROM dual";
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var nodeValidityDictionary = validationModel.InvalidNonTerminals.OrderBy(nv => nv.Key.SourcePosition.IndexStart).ToDictionary(nv => nv.Key, nv => nv.Value);
+			var invalidNonTerminals = nodeValidityDictionary.Values.ToArray();
+			invalidNonTerminals.Length.ShouldBe(1);
+			invalidNonTerminals[0].SemanticErrorType.ShouldBe(OracleSemanticErrorType.DistinctOptionNotAllowedForThisFunction);
+		}
+
+		[Test]
 		public void TestTableNodeValidityWhenOneCommonTableExpressionReferencesAnotherDefinedLater()
 		{
 			const string sqlText = "WITH T1 AS (SELECT 1 A FROM T2), T2 AS (SELECT 1 B FROM T1) SELECT B FROM T2";

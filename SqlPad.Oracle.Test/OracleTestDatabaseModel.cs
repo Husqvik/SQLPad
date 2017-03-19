@@ -701,6 +701,10 @@ namespace SqlPad.Oracle.Test
 			var sysConnectByPathFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.IdentifierBuiltInProgramSysConnectByPath, false, false, false, false, false, false, 2, 2, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
 			allProgramMetadata.Add(sysConnectByPathFunctionMetadata);
 
+			var denseRankFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(null, null, "DENSE_RANK"), false, true, false, false, false, false, 1, 0, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
+			denseRankFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 1, 1, 0, ParameterDirection.Input, "EXPR", OracleObjectIdentifier.Empty, false));
+			allProgramMetadata.Add(denseRankFunctionMetadata);
+
 			AllProgramMetadataInternal = allProgramMetadata.ToLookup(m => m.Identifier);
 			NonSchemaBuiltInFunctionMetadataInternal = allProgramMetadata
 				.Where(m => String.IsNullOrEmpty(m.Identifier.Owner))

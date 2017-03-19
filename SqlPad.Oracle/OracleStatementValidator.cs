@@ -1241,7 +1241,7 @@ namespace SqlPad.Oracle
 			}
 		}
 
-		private void ResolveContainerValidities(OracleValidationModel validationModel, OracleReferenceContainer referenceContainer)
+		private static void ResolveContainerValidities(OracleValidationModel validationModel, OracleReferenceContainer referenceContainer)
 		{
 			ResolveColumnNodeValidities(validationModel, referenceContainer);
 
@@ -1472,8 +1472,8 @@ namespace SqlPad.Oracle
 							: programReference.Metadata.MaximumArguments;
 
 						var parameterListSemanticError = OracleSemanticErrorType.None;
-						if ((programReference.ParameterReferences.Count < programReference.Metadata.MinimumArguments) ||
-							(programReference.ParameterReferences.Count > maximumParameterCount))
+						if (programReference.ParameterReferences.Count < programReference.Metadata.MinimumArguments ||
+							programReference.ParameterReferences.Count > maximumParameterCount)
 						{
 							parameterListSemanticError = OracleSemanticErrorType.InvalidParameterCount;
 						}
@@ -1487,7 +1487,8 @@ namespace SqlPad.Oracle
 							validationModel.ProgramNodeValidity[programReference.ParameterListNode] = new InvalidNodeValidationData(parameterListSemanticError) { Node = programReference.ParameterListNode };
 						}
 
-						if (programReference.Placement.In(StatementPlacement.GroupBy, StatementPlacement.Where, StatementPlacement.Join, StatementPlacement.ValuesClause, StatementPlacement.None) && (programReference.Metadata.IsAggregate || programReference.Metadata.IsAnalytic))
+						if (programReference.Placement.In(StatementPlacement.GroupBy, StatementPlacement.Where, StatementPlacement.Join, StatementPlacement.ValuesClause, StatementPlacement.None) &&
+							(programReference.Metadata.IsAggregate || programReference.Metadata.IsAnalytic))
 						{
 							semanticError = OracleSemanticErrorType.GroupFunctionNotAllowed;
 						}
@@ -1517,6 +1518,21 @@ namespace SqlPad.Oracle
 									new InvalidNodeValidationData(OracleSemanticErrorType.NotEnoughArgumentsForFunction) { Node = parameterNode };
 							}
 						}
+
+						if (String.Equals(programReference.RootNode.Id, NonTerminals.AggregateFunctionCall) &&
+							programReference.ParameterListNode.Id.In(NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.ListAggregationParameters))
+						{
+							var distinctModifierNode = programReference.ParameterListNode[NonTerminals.AggregationFunctionParameters, NonTerminals.DistinctModifier];
+							if (distinctModifierNode != null)
+							{
+								var distinctTerminal = distinctModifierNode[NonTerminals.AllOrDistinct, Terminals.Distinct] ?? distinctModifierNode[Terminals.Unique];
+								if (distinctTerminal != null)
+								{
+									validationModel.InvalidNonTerminals[distinctTerminal] =
+										new InvalidNodeValidationData(OracleSemanticErrorType.DistinctOptionNotAllowedForThisFunction) { Node = distinctTerminal };
+								}
+							}
+						}
 					}
 				}
 				else if (programReference.Metadata.MinimumArguments > 0)
@@ -1532,13 +1548,15 @@ namespace SqlPad.Oracle
 				{
 					if (!programReference.Metadata.IsAnalytic)
 					{
-						validationModel.ProgramNodeValidity[programReference.AnalyticClauseNode] = new InvalidNodeValidationData(OracleSemanticErrorType.AnalyticClauseNotSupported) { Node = programReference.AnalyticClauseNode };
+						validationModel.ProgramNodeValidity[programReference.AnalyticClauseNode] =
+							new InvalidNodeValidationData(OracleSemanticErrorType.AnalyticClauseNotSupported) { Node = programReference.AnalyticClauseNode };
 					}
 
 					var orderByClause = programReference.AnalyticClauseNode[NonTerminals.OrderByClause];
 					if (programReference.Metadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramRatioToReport && orderByClause != null)
 					{
-						validationModel.ProgramNodeValidity[orderByClause] = new InvalidNodeValidationData(OracleSemanticErrorType.OrderByNotAllowedHere) { Node = orderByClause };
+						validationModel.ProgramNodeValidity[orderByClause] =
+							new InvalidNodeValidationData(OracleSemanticErrorType.OrderByNotAllowedHere) { Node = orderByClause };
 					}
 				}
 			}
@@ -1546,7 +1564,8 @@ namespace SqlPad.Oracle
 			if (programReference.ObjectNode != null)
 			{
 				var packageSemanticError = GetCompilationError(programReference);
-				validationModel.ProgramNodeValidity[programReference.ObjectNode] = new InvalidNodeValidationData(packageSemanticError) { IsRecognized = programReference.SchemaObject != null, Node = programReference.ObjectNode };
+				validationModel.ProgramNodeValidity[programReference.ObjectNode] =
+					new InvalidNodeValidationData(packageSemanticError) { IsRecognized = programReference.SchemaObject != null, Node = programReference.ObjectNode };
 			}
 
 			var isRecognizedWithoutError = String.Equals(semanticError, OracleSemanticErrorType.None) && isRecognized;
