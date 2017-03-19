@@ -11,14 +11,9 @@ namespace SqlPad
 	{
 		public EditDialog(CommandSettingsModel settings)
 		{
-			if (settings == null)
-			{
-				throw new ArgumentNullException(nameof(settings));
-			}
-
 			InitializeComponent();
 
-			Settings = settings;
+			Settings = settings ?? throw new ArgumentNullException(nameof(settings));
 		}
 
 		private void CloseClickHandler(object sender, RoutedEventArgs e)

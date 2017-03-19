@@ -9,12 +9,7 @@ namespace SqlPad.Oracle.SemanticModel
 	{
 		public OracleReferenceContainer(OracleStatementSemanticModel semanticModel)
 		{
-			if (semanticModel == null)
-			{
-				throw new ArgumentNullException(nameof(semanticModel));
-			}
-
-			SemanticModel = semanticModel;
+			SemanticModel = semanticModel ?? throw new ArgumentNullException(nameof(semanticModel));
 		}
 
 		public OracleStatementSemanticModel SemanticModel { get; private set; }

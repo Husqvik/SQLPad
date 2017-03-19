@@ -12,12 +12,7 @@ namespace SqlPad.Commands
 
 		public ContextActionCommand(ContextAction contextAction)
 		{
-			if (contextAction == null)
-			{
-				throw new ArgumentNullException(nameof(contextAction));
-			}
-
-			ContextAction = contextAction;
+			ContextAction = contextAction ?? throw new ArgumentNullException(nameof(contextAction));
 		}
 
 		public event EventHandler CanExecuteChanged = delegate { };
@@ -100,12 +95,7 @@ namespace SqlPad.Commands
 		public ContextActionTextEditorCommand(SqlTextEditor textEditor, ContextAction contextAction)
 			: base(contextAction)
 		{
-			if (textEditor == null)
-			{
-				throw new ArgumentNullException(nameof(textEditor));
-			}
-
-			_textEditor = textEditor;
+			_textEditor = textEditor ?? throw new ArgumentNullException(nameof(textEditor));
 		}
 
 		protected override void OnBeforeExecute()

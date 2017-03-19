@@ -2033,12 +2033,7 @@ namespace SqlPad.Oracle
 		public ColumnNodeValidationData(OracleColumnReference columnReference)
 			: base(columnReference.ColumnNodeObjectReferences)
 		{
-			if (columnReference == null)
-			{
-				throw new ArgumentNullException(nameof(columnReference));
-			}
-			
-			_columnReference = columnReference;
+			_columnReference = columnReference ?? throw new ArgumentNullException(nameof(columnReference));
 
 			if (_columnReference.SelectListColumn != null && _columnReference.SelectListColumn.IsAsterisk)
 			{

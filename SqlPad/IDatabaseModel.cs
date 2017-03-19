@@ -96,12 +96,7 @@ namespace SqlPad
 
 		public DatabaseModelConnectionErrorArgs(Exception exception)
 		{
-			if (exception == null)
-			{
-				throw new ArgumentNullException(nameof(exception));
-			}
-			
-			Exception = exception;
+			Exception = exception ?? throw new ArgumentNullException(nameof(exception));
 		}
 	}
 

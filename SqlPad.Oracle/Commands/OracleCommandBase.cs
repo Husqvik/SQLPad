@@ -24,12 +24,7 @@ namespace SqlPad.Oracle.Commands
 
 		protected OracleCommandBase(ActionExecutionContext executionContext)
 		{
-			if (executionContext == null)
-			{
-				throw new ArgumentNullException(nameof(executionContext));
-			}
-
-			ExecutionContext = executionContext;
+			ExecutionContext = executionContext ?? throw new ArgumentNullException(nameof(executionContext));
 
 			CurrentNode = executionContext.DocumentRepository.Statements.GetNodeAtPosition(executionContext.CaretOffset, CurrentNodeFilterFunction);
 

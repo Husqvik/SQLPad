@@ -8,12 +8,7 @@ namespace SqlPad
 
 		public CompilationErrorArgs(CompilationError compilationError)
 		{
-			if (compilationError == null)
-			{
-				throw new ArgumentNullException(nameof(compilationError));
-			}
-			
-			CompilationError = compilationError;
+			CompilationError = compilationError ?? throw new ArgumentNullException(nameof(compilationError));
 		}
 	}
 }
