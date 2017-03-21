@@ -1099,7 +1099,7 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			var analyticFunctionExpressions = analyticFunctionReferences.Select(r => r.RootNode).ToHashSet();
+			var analyticFunctionExpressions = analyticFunctionReferences.Select(r => r.RootNode[0]).ToHashSet();
 
 			foreach (var programReference in analyticFunctionReferences)
 			{
@@ -1170,7 +1170,7 @@ namespace SqlPad.Oracle
 				if (semanticError != null)
 				{
 					validationModel.InvalidNonTerminals[aggregateFunctionCallNode] =
-					   new InvalidNodeValidationData(semanticError) { Node = aggregateFunctionCallNode };
+						new InvalidNodeValidationData(semanticError) { Node = aggregateFunctionCallNode };
 				}
 			}
 		}
@@ -1519,7 +1519,7 @@ namespace SqlPad.Oracle
 							}
 						}
 
-						if (String.Equals(programReference.RootNode.Id, NonTerminals.AggregateFunctionCall) &&
+						if (String.Equals(programReference.RootNode[0].Id, NonTerminals.AggregateFunctionCall) &&
 							programReference.ParameterListNode.Id.In(NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.ListAggregationParameters))
 						{
 							var distinctModifierNode = programReference.ParameterListNode[NonTerminals.AggregationFunctionParameters, NonTerminals.DistinctModifier];

@@ -1296,6 +1296,16 @@ FROM SELECTION";
 			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
+		[Test(Description = @"Tests TO_NUMBER ON CONVERSION ERROR clause. ")]
+		public void TestToNumberOnConversionErrorClause()
+		{
+			const string query1 = @"SELECT TO_NUMBER('2,00' DEFAULT 0 ON CONVERSION ERROR) + 1 FROM DUAL";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
+		}
+
 		[Test(Description = @"Tests XMLELEMENT function. ")]
 		public void TestXmlElementFunction()
 		{
@@ -3883,6 +3893,12 @@ END;";
 						Terminals.SystemDate,
 						Terminals.Time,
 						Terminals.Timestamp,
+						Terminals.ToBinaryDouble,
+						Terminals.ToBinaryFloat,
+						Terminals.ToDate,
+						Terminals.ToNumber,
+						Terminals.ToTimestamp,
+						Terminals.ToTimestampWithTimeZone,
 						Terminals.Treat,
 						Terminals.Trim,
 						Terminals.Unique,

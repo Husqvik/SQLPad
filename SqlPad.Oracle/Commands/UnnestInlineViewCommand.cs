@@ -39,7 +39,7 @@ namespace SqlPad.Oracle.Commands
 				.Where(c => c.HasExplicitDefinition)
 				.SelectMany(c => c.ProgramReferences)
 				.Where(p => p.AnalyticClauseNode != null)
-				.Select(p => p.RootNode)
+				.Select(p => p.RootNode[0])
 				.ToHashSet();
 
 			var namedParentColumnReferences = _parentQueryBlock.Columns

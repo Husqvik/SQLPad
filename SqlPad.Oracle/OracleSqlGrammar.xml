@@ -5943,6 +5943,11 @@
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
+          <NonTerminal Id="ConversionFunctionCall" />
+          <NonTerminal Id="TimestampAtTimeZone" IsOptional="true" />
+          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
           <NonTerminal Id="PrefixedColumnReference" />
           <NonTerminal Id="MultisetOperatorClauseOrTimestampAtTimeZone" IsOptional="true" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
@@ -5961,7 +5966,63 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
+    <Rule StartingNonTerminal="ConversionFunctionCall">
+      <Sequences>
+        <Sequence>
+          <NonTerminal Id="ConversionFunction" />
+          <NonTerminal Id="ConversionFunctionParameters" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ConversionFunction">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="ToNumber" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="ToBinaryFloat" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="ToBinaryDouble" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="ToDate" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="ToTimestamp" />
+        </Sequence>
+        <Sequence>
+          <Terminal Id="ToTimestampWithTimeZone" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ConversionFunctionParameters">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="OptionalParameterExpression" />
+          <NonTerminal Id="DefaultValueOnConversionError" IsOptional="true" />
+          <NonTerminal Id="OptionalParameterExpressionCommaChainedList" IsOptional="true" />
+          <Terminal Id="RightParenthesis" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="DefaultValueOnConversionError">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="Default" />
+          <NonTerminal Id="Expression" />
+          <Terminal Id="On" />
+          <Terminal Id="Conversion" />
+          <Terminal Id="Error" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
     <Rule StartingNonTerminal="UndocumentedSystemDatePostfix">
       <Sequences>
         <Sequence>
@@ -21114,5 +21175,14 @@
     <Terminal Id="Successful" Value="SUCCESSFUL" ReservedWord="Sql" />
     <Terminal Id="UserId" Value="UID" ReservedWord="Sql" />
     <Terminal Id="Whenever" Value="WHENEVER" ReservedWord="Sql" />
+
+    <!-- Oracle 12.2 -->
+    <Terminal Id="ToNumber" Value="TO_NUMBER" />
+    <Terminal Id="ToBinaryFloat" Value="TO_BINARY_FLOAT" />
+    <Terminal Id="ToBinaryDouble" Value="TO_BINARY_DOUBLE" />
+    <Terminal Id="ToDate" Value="TO_DATE" />
+    <Terminal Id="ToTimestamp" Value="TO_TIMESTAMP" />
+    <Terminal Id="ToTimestampWithTimeZone" Value="TO_TIMESTAMP_TZ" />
+    <Terminal Id="Conversion" Value="CONVERSION" />
   </Terminals>
 </SqlGrammar>

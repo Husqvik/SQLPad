@@ -3655,6 +3655,25 @@ SELECT test_function(1) FROM dual;";
 		}
 
 		[Test]
+		public void TestConversionFuctionResolution()
+		{
+			const string query1 = @"SELECT to_date('X' DEFAULT SYSDATE ON CONVERSION ERROR, 'DD-Mon-RR HH24:MI:SS.FF', 'NLS_DATE_LANGUAGE = American') FROM DUAL";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single().Validate();
+
+			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
+			var mainQueryBlock = semanticModel.QueryBlocks.Last();
+
+			mainQueryBlock.Columns.Count.ShouldBe(1);
+			mainQueryBlock.Columns[0].ColumnDescription.FullTypeName.ShouldBe(TerminalValues.Date);
+
+			mainQueryBlock.Columns[0].ProgramReferences.Count.ShouldBe(1);
+			var toDateReference = mainQueryBlock.Columns[0].ProgramReferences.First();
+			toDateReference.ParameterListNode.ShouldNotBe(null);
+			toDateReference.ParameterReferences.Count.ShouldBe(3);
+		}
+
+		[Test]
 		public void TestDataTypeDefinedByToNumber()
 		{
 			const string query1 = @"SELECT val1, val2, val3 FROM (SELECT to_date('2016-09-10') val1, (to_date('2016-09-10')) val2, (to_date('2016-09-10') + 1) val3 FROM dual)";

@@ -127,6 +127,12 @@ namespace SqlPad.Oracle.ToolTips
 					case Terminals.XmlQuery:
 					case Terminals.XmlRoot:
 					case Terminals.XmlForest:
+					case Terminals.ToNumber:
+					case Terminals.ToDate:
+					case Terminals.ToTimestamp:
+					case Terminals.ToTimestampWithTimeZone:
+					case Terminals.ToBinaryFloat:
+					case Terminals.ToBinaryDouble:
 					case Terminals.PlSqlIdentifier:
 					case Terminals.ExceptionIdentifier:
 					case Terminals.CursorIdentifier:
