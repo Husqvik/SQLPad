@@ -1306,6 +1306,16 @@ FROM SELECTION";
 			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
+		[Test(Description = @"Tests VALIDATE_CONVERSION function syntax. ")]
+		public void TestValidateConversionFunction()
+		{
+			const string query1 = @"SELECT VALIDATE_CONVERSION('July 20, 1969, 20:18' AS DATE, 'Month dd, YYYY, HH24:MI', 'NLS_DATE_LANGUAGE = American') FROM DUAL";
+			var result = Parser.Parse(query1);
+
+			result.Count.ShouldBe(1);
+			result.Single().ParseStatus.ShouldBe(ParseStatus.Success);
+		}
+
 		[Test(Description = @"Tests XMLELEMENT function. ")]
 		public void TestXmlElementFunction()
 		{
@@ -3903,6 +3913,7 @@ END;";
 						Terminals.Trim,
 						Terminals.Unique,
 						Terminals.User,
+						Terminals.ValidateConversion,
 						Terminals.Variance,
 						Terminals.XmlAggregate,
 						Terminals.XmlCast,

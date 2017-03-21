@@ -5943,6 +5943,11 @@
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
         </Sequence>
         <Sequence>
+          <NonTerminal Id="ValidateConversionFunctionCall" />
+          <NonTerminal Id="TimestampAtTimeZone" IsOptional="true" />
+          <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+        <Sequence>
           <NonTerminal Id="ConversionFunctionCall" />
           <NonTerminal Id="TimestampAtTimeZone" IsOptional="true" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
@@ -5963,6 +5968,27 @@
         <Sequence>
           <Terminal Id="PlSqlCompilationParameter" />
           <NonTerminal Id="ExpressionMathOperatorChainedList" IsOptional="true" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ValidateConversionFunctionCall">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="ValidateConversion" />
+          <NonTerminal Id="ValidateConversionFunctionParameters" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
+    <Rule StartingNonTerminal="ValidateConversionFunctionParameters">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="LeftParenthesis" />
+          <NonTerminal Id="OptionalParameterExpression" />
+          <NonTerminal Id="AsDataType" />
+          <NonTerminal Id="OptionalParameterExpressionCommaChainedList" IsOptional="true" />
+          <Terminal Id="RightParenthesis" />
         </Sequence>
       </Sequences>
     </Rule>
@@ -21184,5 +21210,6 @@
     <Terminal Id="ToTimestamp" Value="TO_TIMESTAMP" />
     <Terminal Id="ToTimestampWithTimeZone" Value="TO_TIMESTAMP_TZ" />
     <Terminal Id="Conversion" Value="CONVERSION" />
+    <Terminal Id="ValidateConversion" Value="VALIDATE_CONVERSION" />
   </Terminals>
 </SqlGrammar>

@@ -133,6 +133,7 @@ namespace SqlPad.Oracle.ToolTips
 					case Terminals.ToTimestampWithTimeZone:
 					case Terminals.ToBinaryFloat:
 					case Terminals.ToBinaryDouble:
+					case Terminals.ValidateConversion:
 					case Terminals.PlSqlIdentifier:
 					case Terminals.ExceptionIdentifier:
 					case Terminals.CursorIdentifier:
