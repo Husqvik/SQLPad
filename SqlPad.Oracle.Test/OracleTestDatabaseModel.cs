@@ -457,6 +457,14 @@ namespace SqlPad.Oracle.Test
 			convertFunctionMetadata.Owner = builtInFunctionPackage;
 			builtInFunctionPackage.Programs.Add(convertFunctionMetadata);
 
+			var toNumberFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.IdentifierBuiltInProgramToNumber, false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
+			toNumberFunctionMetadata.AddParameter(new OracleProgramParameterMetadata(null, 0, 1, 0, ParameterDirection.ReturnValue, "NUMBER", OracleObjectIdentifier.Empty, false));
+			toNumberFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"LEFT\"", 1, 2, 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			toNumberFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"FORMAT\"", 2, 3, 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			toNumberFunctionMetadata.AddParameter(new OracleProgramParameterMetadata("\"PARMS\"", 3, 4, 0, ParameterDirection.Input, "VARCHAR2", OracleObjectIdentifier.Empty, false));
+			toNumberFunctionMetadata.Owner = builtInFunctionPackage;
+			builtInFunctionPackage.Programs.Add(toNumberFunctionMetadata);
+
 			var dumpFunctionMetadata = new OracleProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("SYS", "STANDARD", "DUMP"), false, false, false, true, false, false, null, null, AuthId.CurrentUser, OracleProgramMetadata.DisplayTypeNormal, true);
 			dumpFunctionMetadata.Owner = builtInFunctionPackage;
 			builtInFunctionPackage.Programs.Add(dumpFunctionMetadata);

@@ -724,6 +724,21 @@ JOIN HUSQVIK.SELECTION S ON P.PROJECT_ID = S.PROJECT_ID";
 		}
 
 		[Test]
+		public void TestUnsupportedNamedParametersNotification()
+		{
+			const string sqlText = "SELECT to_number(right => '2,00', format => '', parms => '') FROM DUAL";
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			var nodeValidities = validationModel.IdentifierNodeValidity.OrderBy(nv => nv.Key.SourcePosition.IndexStart).Select(kvp => kvp.Value).ToArray();
+			nodeValidities.Length.ShouldBe(3);
+			nodeValidities.ShouldAllBe(n => n.SemanticErrorType == OracleSemanticErrorType.NamedParameterNotAllowed);
+		}
+
+		[Test]
 		public void TestTableNodeValidityWhenOneCommonTableExpressionReferencesAnotherDefinedLater()
 		{
 			const string sqlText = "WITH T1 AS (SELECT 1 A FROM T2), T2 AS (SELECT 1 B FROM T1) SELECT B FROM T2";

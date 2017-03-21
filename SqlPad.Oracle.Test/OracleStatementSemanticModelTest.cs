@@ -3657,7 +3657,7 @@ SELECT test_function(1) FROM dual;";
 		[Test]
 		public void TestConversionFuctionResolution()
 		{
-			const string query1 = @"SELECT to_date('X' DEFAULT SYSDATE ON CONVERSION ERROR, 'DD-Mon-RR HH24:MI:SS.FF', 'NLS_DATE_LANGUAGE = American') FROM DUAL";
+			const string query1 = @"SELECT to_date(right => 'X' DEFAULT SYSDATE ON CONVERSION ERROR, format => 'DD-Mon-RR HH24:MI:SS.FF', arms => 'NLS_DATE_LANGUAGE = American') FROM DUAL";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single().Validate();
 
@@ -3671,6 +3671,7 @@ SELECT test_function(1) FROM dual;";
 			var toDateReference = mainQueryBlock.Columns[0].ProgramReferences.First();
 			toDateReference.ParameterListNode.ShouldNotBe(null);
 			toDateReference.ParameterReferences.Count.ShouldBe(3);
+			toDateReference.ParameterReferences.ShouldAllBe(p => p.OptionalIdentifierTerminal != null);
 		}
 
 		[Test]
