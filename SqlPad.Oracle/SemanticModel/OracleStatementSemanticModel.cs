@@ -3237,7 +3237,7 @@ namespace SqlPad.Oracle.SemanticModel
 						case NonTerminals.AggregateFunctionParameter:
 						case NonTerminals.ParenthesisEnclosedExpressionListWithIgnoreNulls:
 							firstParameterExpression = parameterList[NonTerminals.Expression];
-							parameterNodes.Add(firstParameterExpression);
+							parameterNodes.AddIfNotNull(firstParameterExpression);
 							goto default;
 						default:
 							var expressionListNodes = parameterList.GetPathFilterDescendants(n => n != firstParameterExpression && !n.Id.In(NonTerminals.NestedQuery, NonTerminals.ParenthesisEnclosedAggregationFunctionParameters, NonTerminals.Expression), NonTerminals.ExpressionList, NonTerminals.OptionalParameterExpressionList).Select(n => n.ChildNodes.FirstOrDefault());

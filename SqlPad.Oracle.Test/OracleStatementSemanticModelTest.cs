@@ -3719,5 +3719,17 @@ SELECT test_function(1) FROM dual;";
 
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
+
+		[Test]
+		public void TestAggregateFunctionWithMissingParameterAndOperator()
+		{
+			const string query1 = @"SELECT count() amount total FROM data";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single().Validate();
+
+			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
+		}
 	}
 }
