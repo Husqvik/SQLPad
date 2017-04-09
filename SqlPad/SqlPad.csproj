@@ -113,6 +113,7 @@
     <Compile Include="ColumnHeader.cs" />
     <Compile Include="CSharpQueryClassGenerator.cs" />
     <Compile Include="DataExport\DataExportContextBase.cs" />
+    <Compile Include="DataExport\MarkDownDataExporter.cs" />
     <Compile Include="FileResultViewer.xaml.cs">
       <DependentUpon>FileResultViewer.xaml</DependentUpon>
     </Compile>

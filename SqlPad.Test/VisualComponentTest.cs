@@ -390,6 +390,17 @@ WHERE
 		}
 
 		[Test, Apartment(ApartmentState.STA)]
+		public async Task TestMarkdownDataExporter()
+		{
+			var resultViewer = InitializeResultViewer();
+
+			var result = await GetExportContent(resultViewer, new MarkdownDataExporter());
+
+			const string expectedResult = "DUMMY1|DUMMY_WITH_UNDERSCORES\r\n---|---\r\nValue \"1\" '2' <3>|08/16/2014 22:25:34\r\n\"2.\"Value|08/16/2014 00:00:00\r\n";
+			result.ShouldBe(expectedResult);
+		}
+
+		[Test, Apartment(ApartmentState.STA)]
 		public async Task TestExcelDataExporter()
 		{
 			var resultViewer = InitializeResultViewer();

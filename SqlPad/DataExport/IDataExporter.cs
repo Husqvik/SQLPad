@@ -55,12 +55,13 @@ namespace SqlPad.DataExport
 	{
 		public static readonly IDataExporter Csv = new CsvDataExporter();
 		public static readonly IDataExporter Tsv = new TsvDataExporter();
-		public static readonly IDataExporter Xml = new XmlDataExporter();
-		public static readonly IDataExporter Json = new JsonDataExporter();
-		public static readonly IDataExporter Html = new HtmlDataExporter();
 		public static readonly IDataExporter Excel = new ExcelDataExporter();
+		public static readonly IDataExporter Html = new HtmlDataExporter();
+		public static readonly IDataExporter Json = new JsonDataExporter();
+		public static readonly IDataExporter Markdown = new MarkdownDataExporter();
 		public static readonly IDataExporter SqlInsert = new SqlInsertDataExporter();
 		public static readonly IDataExporter SqlUpdate = new SqlUpdateDataExporter();
+		public static readonly IDataExporter Xml = new XmlDataExporter();
 
 		public static readonly IDataExporter[] All =
 		{
@@ -69,6 +70,7 @@ namespace SqlPad.DataExport
 			Excel,
 			Html,
 			Json,
+			Markdown,
 			SqlInsert,
 			SqlUpdate,
 			Xml

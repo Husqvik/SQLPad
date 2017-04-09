@@ -1,4 +1,4 @@
-#SQLPad 0.4.0.463
+# SQLPad 0.4.0.464
 
 |Builds|Oracle.DataAccess|Oracle.ManagedDataAccess|
 |:--:|:--:|:--:|
@@ -116,7 +116,7 @@ CTRL + ALT + M             - Database monitor
 
 Context actions
 ---------------
-#####@SELECT:
+##### @SELECT:
 
 Add CREATE TABLE AS
 
@@ -135,7 +135,7 @@ Wrap current query block as common table expression
 Wrap current query block as inline view
 
 
-#####@Identifier:
+##### @Identifier:
 
 Add missing column
 
@@ -160,40 +160,40 @@ Add named parameters
 Extract PL/SQL package interface
 
 
-#####@Row source:
+##### @Row source:
 
 Add alias
 
 Create script
 
 
-#####@Bind variable:
+##### @Bind variable:
 
 Convert ORDER BY number column reference
 
 Convert to literal
 
-#####@Literal
+##### @Literal
 
 Convert to bind variable
 
 Split string
 
 
-#####@*
+##### @*
 
 Expand asterisk (hold SHIFT to select specific column)
 
 
-#####@INTO
+##### @INTO
 
 Add columns (hold SHIFT to select specific column)
 
-#####@XMLTABLE, JSONTABLE, TABLE
+##### @XMLTABLE, JSONTABLE, TABLE
 
 Wrap current query block as inline view
 
-#####@ORDER, BY:
+##### @ORDER, BY:
 
 Convert ORDER BY number column reference
 
@@ -206,7 +206,7 @@ Microsoft .NET 4.6
 Configuration
 -------------
 
-#####SqlPad.exe.config
+##### SqlPad.exe.config
 
 Connection string must be Oracle ADO.NET compliant, see [http://www.oracle.com/technetwork/topics/dotnet/install121024-2704210.html](http://www.oracle.com/technetwork/topics/dotnet/install121024-2704210.html). Managed driver might require additional configuration, see [https://docs.oracle.com/html/E41125_02/featConfig.htm#BABEGGHD](https://docs.oracle.com/html/E41125_02/featConfig.htm#BABEGGHD);
 
@@ -229,7 +229,7 @@ Each connection string requires an infrastructure factory configuration record:
 
 `IsProduction` - indicates connection to a production system using red label
 
-#####Configuration.xml
+##### Configuration.xml
 
 	<Configuration xmlns="http://husqvik.com/SqlPad/2014/02">
 		<DataModel DataModelRefreshPeriod="60" />
@@ -247,7 +247,7 @@ Each connection string requires an infrastructure factory configuration record:
 
 `IndentationSize` - number of spaces for tab indentation (default 4)
 
-#####OracleConfiguration.xml
+##### OracleConfiguration.xml
 
 	<OracleConfiguration xmlns="http://husqvik.com/SqlPad/2014/08/Oracle">
 		<StartupScript>
@@ -322,26 +322,26 @@ Each connection string requires an infrastructure factory configuration record:
 
 Screenshots
 ------------------
-#####Overview
+##### Overview
 ![SQLPad overview 1](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/Overview1.png)
 ![SQLPad overview 2](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/Overview2.png)
 ![SQLPad overview 3](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/Overview3.png)
 ![SQLPad overview 4](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/Overview4.png)
-#####Tooltips
+##### Tooltips
 ![Table tooltip detail](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/TableTooltip.png)
 ![Column tooltip detail](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/ColumnTooltip.png)
-#####Code completion
+##### Code completion
 ![Code completion 1](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/CodeComplete1.png)
 ![Code completion 2](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/CodeComplete2.png)
 ![Code completion 3](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/CodeComplete3.png)
-#####Miscellaneous
+##### Miscellaneous
 ![Expand asterisk details](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/ExpandAsterisk.png)
 ![Function overload list](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/FunctionOverloads.png)
 ![Execution statistics](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/ExecutionStatistics.png)
 ![Database output](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/DatabaseOutput.png)
 ![Trace events](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/TraceEvents.png)
 ![Statement execution history](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/StatementExecutionHistory.png)
-#####Database Monitor
+##### Database Monitor
 ![Database Monitor overview 1](https://raw.githubusercontent.com/Husqvik/SQLPad/master/Screenshots/DatabaseMonitor1.png)
 
 Known issues
@@ -350,4 +350,3 @@ Known issues
 ANYDATA data type not supported because Oracle Data Access does not support it. Possible use of Devart Oracle provider.
 
 Support for user defined types (UDT) is very cumbersome (and not enabled by default) due to Oracle Data Access implementation. Devart Oracle provider also solves this.
-
