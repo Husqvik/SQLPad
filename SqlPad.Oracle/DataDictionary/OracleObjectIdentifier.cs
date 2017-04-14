@@ -37,7 +37,7 @@ namespace SqlPad.Oracle.DataDictionary
 		{
 			Owner = owner;
 			Name = name;
-			NormalizedOwner = owner.ToQuotedIdentifier();
+			NormalizedOwner = String.Intern(owner.ToQuotedIdentifier());
 			NormalizedName = name.ToQuotedIdentifier();
 		}
 
@@ -67,9 +67,7 @@ namespace SqlPad.Oracle.DataDictionary
 				.GroupBy(i => i.NormalizedName)
 				.ToDictionary(
 					g => g.Key,
-					g =>
-						g.GroupBy(o => o.NormalizedOwner)
-							.ToDictionary(go => go.Key, go => go.Count())
+					g => g.GroupBy(o => o.NormalizedOwner).ToDictionary(go => go.Key, go => go.Count())
 				);
 
 			if (references.Count == 0)

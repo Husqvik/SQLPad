@@ -363,7 +363,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var metadataMinimumArguments = OracleReaderValueConvert.ToInt32(reader["MINARGS"]);
 			var metadataMaximumArguments = OracleReaderValueConvert.ToInt32(reader["MAXARGS"]);
 			var authId = String.Equals((string)reader["AUTHID"], "CURRENT_USER") ? AuthId.CurrentUser : AuthId.Definer;
-			var displayType = (string)reader["DISP_TYPE"];
+			var displayType = String.Intern((string)reader["DISP_TYPE"]);
 
 			var metadata = new OracleProgramMetadata(type, identifier, isAnalytic, isAggregate, isPipelined, isOffloadable, parallelSupport, isDeterministic, metadataMinimumArguments, metadataMaximumArguments, authId, displayType, isBuiltIn);
 			if (functionId.HasValue)
@@ -382,8 +382,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 			var position = Convert.ToInt32(reader["POSITION"]);
 			var sequence = Convert.ToInt32(reader["SEQUENCE"]);
 			var dataLevel = Convert.ToInt32(reader["DATA_LEVEL"]);
-			var dataType = OracleReaderValueConvert.ToString(reader["DATA_TYPE"]);
-			var typeOwner = OracleReaderValueConvert.ToString(reader["TYPE_OWNER"]);
+			var dataType = String.Intern(OracleReaderValueConvert.ToString(reader["DATA_TYPE"]));
+			var typeOwner = String.Intern(OracleReaderValueConvert.ToString(reader["TYPE_OWNER"]));
 			var typeName = OracleReaderValueConvert.ToString(reader["TYPE_NAME"]);
 			var isOptional = String.Equals((string)reader["DEFAULTED"], "Y");
 			var directionRaw = (string)reader["IN_OUT"];
@@ -828,9 +828,9 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 		}
 
-		internal static string QualifyStringObject(object stringValue)
+		private static string QualifyStringObject(object stringValue)
 		{
-			return stringValue == DBNull.Value || Equals(stringValue, String.Empty) ? null : String.Format("{0}{1}{0}", "\"", stringValue);
+			return stringValue == DBNull.Value || Equals(stringValue, String.Empty) ? null : String.Intern($"\"{stringValue}\"");
 		}
 	}
 }
