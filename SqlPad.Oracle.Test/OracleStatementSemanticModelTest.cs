@@ -3731,5 +3731,17 @@ SELECT test_function(1) FROM dual;";
 
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
+
+		[Test]
+		public void TestRedundantSymbolsInCreateTableAsSelect()
+		{
+			const string query1 = @"CREATE TABLE t AS SELECT 1 AS c1, 2 AS c2 FROM dual";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single().Validate();
+
+			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
+
+			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
+		}
 	}
 }

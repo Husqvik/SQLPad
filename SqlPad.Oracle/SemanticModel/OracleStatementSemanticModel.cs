@@ -1328,11 +1328,12 @@ namespace SqlPad.Oracle.SemanticModel
 			foreach (var queryBlock in QueryBlockNodes.Values)
 			{
 				var nestedQuery = queryBlock.RootNode.GetAncestor(NonTerminals.NestedQuery);
-				var groupingExpressionOrNestedQuery =
+				var groupingExpressionOrNestedQueryOrCreateTableAsSelect =
 					nestedQuery.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBlock, NonTerminals.ExpressionListOrNestedQuery)
-					?? nestedQuery.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBlock, NonTerminals.GroupingExpressionListOrNestedQuery);
+					?? nestedQuery.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBlock, NonTerminals.GroupingExpressionListOrNestedQuery)
+					?? nestedQuery.GetPathFilterAncestor(NodeFilters.BreakAtNestedQueryBlock, NonTerminals.CreateTable);
 
-				if (groupingExpressionOrNestedQuery != null)
+				if (groupingExpressionOrNestedQueryOrCreateTableAsSelect != null)
 				{
 					continue;
 				}
