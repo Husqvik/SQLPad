@@ -3894,5 +3894,19 @@ END;";
 
 			validationModel.IdentifierNodeValidity.Count.ShouldBe(0);
 		}
+
+		[Test]
+		public void TestToLobUsageInCreateTableAsSelect()
+		{
+			const string sqlText = "CREATE TABLE test_lob AS SELECT to_lob(val) val FROM test_long";
+
+			var statement = Parser.Parse(sqlText).Single();
+
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var validationModel = BuildValidationModel(sqlText, statement);
+
+			validationModel.IdentifierNodeValidity.Count.ShouldBe(0);
+		}
 	}
 }

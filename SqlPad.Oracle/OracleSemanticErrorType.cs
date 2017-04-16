@@ -54,7 +54,7 @@ namespace SqlPad.Oracle
 		public const string ForUpdateNotAllowed = "FOR UPDATE of this query expression is not allowed";
 		public const string CannotSelectForUpdateFromViewWithDistinctOrGroupBy = "Cannot select FOR UPDATE from view with DISTINCT, GROUP BY, etc. ";
 		public const string BindVariablesNotAllowedForDataDefinitionOperations = "Bind variables not allowed for data definition operations";
-		public const string InvalidToLobUsage = "TO_LOB can be used only with LONG or LONG RAW type in INSERT INTO command";
+		public const string InvalidToLobUsage = "TO_LOB can be used only with LONG or LONG RAW type in CREATE TABLE AS SELECT or INSERT INTO command";
 		public const string DistinctOptionNotAllowedForThisFunction = "DISTINCT option not allowed for this function";
 
 		public static class PlSql

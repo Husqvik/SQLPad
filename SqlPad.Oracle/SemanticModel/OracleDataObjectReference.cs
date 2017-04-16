@@ -106,7 +106,7 @@ namespace SqlPad.Oracle.SemanticModel
 			Type = referenceType;
 		}
 
-		public override string Name { get { throw new NotSupportedException(); } }
+		public override string Name => throw new NotSupportedException();
 
 		public OraclePartitionReference PartitionReference { get; set; }
 

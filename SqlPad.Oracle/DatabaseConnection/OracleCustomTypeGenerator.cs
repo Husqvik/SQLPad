@@ -326,10 +326,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public bool IsNull => Array == null;
 
-		public object RawValue
-		{
-			get { throw new NotImplementedException(); }
-		}
+		public object RawValue => throw new NotImplementedException();
 
 		public string ToSqlLiteral()
 		{
@@ -440,10 +437,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public abstract string DataTypeName { get; }
 
-		public object RawValue
-		{
-			get { throw new NotImplementedException(); }
-		}
+		public object RawValue => throw new NotImplementedException();
 
 		public IOracleCustomType CreateObject()
 		{
@@ -471,8 +465,8 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public bool IsEditable => false;
 
-		public long Length { get { throw new NotSupportedException(); } }
-		
+		public long Length => throw new NotSupportedException();
+
 		public void Prefetch() { }
 
 		public IReadOnlyList<CustomTypeAttributeValue> Attributes => _attributes ?? BuildAttributeCollection();

@@ -33,10 +33,7 @@ namespace SqlPad.DragDrop
 			_left = left - 1;
 			_top = top + 13;
 
-			if (_adornerLayer != null)
-			{
-				_adornerLayer.Update(AdornedElement);
-			}
+			_adornerLayer?.Update(AdornedElement);
 		}
 
 		protected override Size MeasureOverride(Size constraint)
@@ -56,10 +53,7 @@ namespace SqlPad.DragDrop
 			return _contentPresenter;
 		}
 
-		protected override int VisualChildrenCount
-		{
-			get { return 1; }
-		}
+		protected override int VisualChildrenCount { get; } = 1;
 
 		public override GeneralTransform GetDesiredTransform(GeneralTransform transform)
 		{

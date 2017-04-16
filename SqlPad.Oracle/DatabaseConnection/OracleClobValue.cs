@@ -203,10 +203,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				: $"\"{Value.Replace("\"", "\\\"")}\"";
 		}
 
-		public string DataTypeName
-		{
-			get { throw new NotImplementedException(); }
-		}
+		public string DataTypeName => throw new NotImplementedException();
 
 		public long Length => Preview.Length;
 
@@ -387,7 +384,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override string ToString()
 		{
-			return _bfile.IsNull ? String.Empty : $"(BFILE[{Length} B])";
+			return _bfile.IsNull ? String.Empty : $"(BFILE[{Length:N0} B])";
 		}
 
 		protected bool Equals(OracleExternalBinaryFile other)
@@ -472,7 +469,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override string ToString()
 		{
-			return _blob.IsNull ? String.Empty : $"(BLOB[{Length} B])";
+			return _blob.IsNull ? String.Empty : $"(BLOB[{Length:N0} B])";
 		}
 
 		public void Prefetch()
@@ -1277,7 +1274,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override string ToString()
 		{
-			return Value.Length == 0 ? String.Empty : "(LONG RAW)";
+			return Value.Length == 0 ? String.Empty : $"(LONG RAW[{Length:N0} B])";
 		}
 
 		private byte[] FetchValue()

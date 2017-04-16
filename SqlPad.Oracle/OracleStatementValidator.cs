@@ -1607,7 +1607,8 @@ namespace SqlPad.Oracle
 					{
 						var statement = programReference.Container.SemanticModel.Statement.RootNode[NonTerminals.Statement];
 						var isInsert = statement != null && statement[0].Id.In(NonTerminals.InsertStatement);
-						if (programReference.Owner == null || !programReference.Owner.IsMainQueryBlock || !isInsert)
+						if (programReference.Owner == null || !programReference.Owner.IsMainQueryBlock ||
+							!isInsert && programReference.Owner.RootNode.GetAncestor(NonTerminals.CreateTable) == null)
 						{
 							validationModel.AddSemanticError(programReference.ProgramIdentifierNode, OracleSemanticErrorType.InvalidToLobUsage);
 						}

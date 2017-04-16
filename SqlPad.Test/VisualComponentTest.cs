@@ -522,10 +522,7 @@ WHERE
 
 			public bool IsNull { get; } = false;
 
-			public object RawValue
-			{
-				get { throw new NotImplementedException(); }
-			}
+			public object RawValue => throw new NotImplementedException();
 
 			public string ToSqlLiteral()
 			{
@@ -544,7 +541,7 @@ WHERE
 
 			public long Length => TextValue.Length;
 
-			public string Preview { get { throw new NotImplementedException(); } }
+			public string Preview => throw new NotImplementedException();
 
 			public string Value => TextValue;
 
