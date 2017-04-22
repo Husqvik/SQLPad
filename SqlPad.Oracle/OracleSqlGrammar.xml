@@ -11,7 +11,7 @@
     <Terminator Id="Semicolon" />
     <Terminator Id="SqlPlusTerminator" />
   </Terminators>
-    
+
   <Rules>
     <!-- Statement terminators -->
     <Rule StartingNonTerminal="StatementTerminator">
@@ -208,7 +208,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <!-- TRUNCATE -->
     <Rule StartingNonTerminal="TruncateStatement">
       <Sequences>
@@ -222,7 +222,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="TruncateTableMaterializedViewLogOption">
       <Sequences>
         <Sequence>
@@ -237,7 +237,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="TruncateTableStorageOption">
       <Sequences>
         <Sequence>
@@ -348,7 +348,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ColumnSizeSpecificationList">
       <Sequences>
         <Sequence>
@@ -426,7 +426,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="IntoClause">
       <Sequences>
         <Sequence>
@@ -466,7 +466,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ObjectAccessExpression">
       <Sequences>
         <Sequence>
@@ -484,7 +484,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <!-- ALTER statement -->
     <Rule StartingNonTerminal="AlterStatement">
       <Sequences>
@@ -557,7 +557,7 @@
         <!-- TODO: Add other objects -->
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AlterSequence">
       <Sequences>
         <Sequence>
@@ -567,7 +567,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AlterSequenceOptions">
       <Sequences>
         <Sequence>
@@ -576,7 +576,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AlterSequenceOption">
       <Sequences>
         <Sequence>
@@ -1052,7 +1052,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CommaChainedRestrictReferencesPragma">
       <Sequences>
         <Sequence>
@@ -1223,7 +1223,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AlterQueryRewriteClause">
       <Sequences>
         <Sequence>
@@ -1302,7 +1302,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ModifyMaterializedViewColumnClause">
       <Sequences>
         <Sequence>
@@ -1314,7 +1314,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ModifyMaterializedViewEncryptionClause">
       <Sequences>
         <Sequence>
@@ -1325,7 +1325,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="LargeObjectStorageClauseList">
       <Sequences>
         <Sequence>
@@ -1343,7 +1343,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AlterUser">
       <Sequences>
         <Sequence>
@@ -1352,7 +1352,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AlterSingleOrMultipleUsers">
       <Sequences>
         <Sequence>
@@ -1365,7 +1365,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AlterMultipleUsersProxyClause">
       <Sequences>
         <Sequence>
@@ -1382,7 +1382,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AlterMultipleUsersProxyClauseRevokeOption">
       <Sequences>
         <Sequence>
@@ -1394,7 +1394,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AlterMultipleUsersProxyClauseGrantOption">
       <Sequences>
         <Sequence>
@@ -1454,7 +1454,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AlterSingleUserOptionList">
       <Sequences>
         <Sequence>
@@ -1463,7 +1463,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AlterSingleUserOption">
       <Sequences>
         <Sequence>
@@ -1512,7 +1512,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ForObjectTypes">
       <Sequences>
         <Sequence>
@@ -1521,7 +1521,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ContainerDataClause">
       <Sequences>
         <Sequence>
@@ -1547,7 +1547,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ForContainerDataObject">
       <Sequences>
         <Sequence>
@@ -1556,7 +1556,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="SetContainerDataOption">
       <Sequences>
         <Sequence>
@@ -1570,7 +1570,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="DefaultRoleOption">
       <Sequences>
         <Sequence>
@@ -1585,7 +1585,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ExceptRoleList">
       <Sequences>
         <Sequence>
@@ -1594,7 +1594,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-      
+  
     <Rule StartingNonTerminal="AlterSystem">
       <Sequences>
         <Sequence>
@@ -1603,7 +1603,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AlterSystemOption">
       <Sequences>
         <Sequence>
@@ -1818,7 +1818,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="MigrationOrPatch">
       <Sequences>
         <Sequence>
@@ -1829,7 +1829,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="EncryptionKeyOption">
       <Sequences>
         <Sequence>
@@ -1842,7 +1842,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="MigrateUsingQuotedStringLiteral">
       <Sequences>
         <Sequence>
@@ -1852,7 +1852,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="EncryptionWalletOption">
       <Sequences>
         <Sequence>
@@ -1867,7 +1867,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="IdentifiedByDoubleQuotedStringLiteral">
       <Sequences>
         <Sequence>
@@ -1877,7 +1877,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-      
+  
     <Rule StartingNonTerminal="AlterSystemResetClauseList">
       <Sequences>
         <Sequence>
@@ -1886,7 +1886,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AlterSystemResetClause">
       <Sequences>
         <Sequence>
@@ -1895,7 +1895,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AlterSystemResetClauseOptions">
       <Sequences>
         <Sequence>
@@ -1904,7 +1904,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AlterSystemResetClauseOption">
       <Sequences>
         <Sequence>
@@ -1919,7 +1919,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ImmediateOrNoReplay">
       <Sequences>
         <Sequence>
@@ -1930,7 +1930,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AlterSystemFlushOption">
       <Sequences>
         <Sequence>
@@ -1947,7 +1947,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="NoConfirmApply">
       <Sequences>
         <Sequence>
@@ -1957,7 +1957,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ArchiveLogOption">
       <Sequences>
         <Sequence>
@@ -1989,7 +1989,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="UsingBackupControlFile">
       <Sequences>
         <Sequence>
@@ -1999,7 +1999,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ToStringLiteral">
       <Sequences>
         <Sequence>
@@ -2008,7 +2008,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="InstanceName">
       <Sequences>
         <Sequence>
@@ -2017,7 +2017,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AlterResourceCost">
       <Sequences>
         <Sequence>
@@ -2027,7 +2027,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ResourceCostOptionList">
       <Sequences>
         <Sequence>
@@ -2036,7 +2036,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ResourceCostOption">
       <Sequences>
         <Sequence>
@@ -2068,7 +2068,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AlterRollbackSegmentOption">
       <Sequences>
         <Sequence>
@@ -2083,7 +2083,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ToSizeClause">
       <Sequences>
         <Sequence>
@@ -2092,7 +2092,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AlterRole">
       <Sequences>
         <Sequence>
@@ -2144,7 +2144,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="OnlyOrWrite">
       <Sequences>
         <Sequence>
@@ -2230,7 +2230,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RenameToObjectIdentifier">
       <Sequences>
         <Sequence>
@@ -2272,7 +2272,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="OnlineOrOffline">
       <Sequences>
         <Sequence>
@@ -2589,7 +2589,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ModifyOpaqueType">
       <Sequences>
         <Sequence>
@@ -2603,7 +2603,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="MoveTableClause">
       <Sequences>
         <Sequence>
@@ -2612,7 +2612,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="MoveTableOption">
       <Sequences>
         <Sequence>
@@ -2638,7 +2638,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AllowDisallowClustering">
       <Sequences>
         <Sequence>
@@ -2651,7 +2651,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ConstraintClauses">
       <Sequences>
         <Sequence>
@@ -2677,7 +2677,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AddConstraintClause">
       <Sequences>
         <Sequence>
@@ -2686,7 +2686,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ModifyConstraintClause">
       <Sequences>
         <Sequence>
@@ -2703,7 +2703,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="DropConstraintClause">
       <Sequences>
         <Sequence>
@@ -2725,7 +2725,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="OutOfLineConstraintDefinitionListOrOutOfLineReferenceConstraint">
       <Sequences>
         <!--<Sequence>
@@ -2736,7 +2736,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="OutOfLineConstraintDefinitionList">
       <Sequences>
         <Sequence>
@@ -2745,7 +2745,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AlterTableColumnClauses">
       <Sequences>
         <Sequence>
@@ -2765,7 +2765,7 @@
         </Sequence>-->
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ColumnModification">
       <Sequences>
         <Sequence>
@@ -2864,7 +2864,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="InvalidateAndOrCascadeConstraints" Comment="Cyclic definition in documentation">
       <Sequences>
         <Sequence>
@@ -2877,7 +2877,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ModifyColumnClause">
       <Sequences>
         <Sequence>
@@ -2886,7 +2886,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ModifyColumnClauseOption">
       <Sequences>
         <Sequence>
@@ -2902,7 +2902,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ModifyColumnSubstitutable">
       <Sequences>
         <Sequence>
@@ -2917,7 +2917,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ModifyColumnPropertiesOrModifyVirtualColumnPropertiesOrModifyColumnVisibilityList">
       <Sequences>
         <Sequence>
@@ -2926,7 +2926,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ChainedModifyColumnPropertiesOrModifyVirtualColumnPropertiesOrModifyColumnVisibility">
       <Sequences>
         <Sequence>
@@ -2935,7 +2935,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ModifyColumnPropertiesOrModifyVirtualColumnPropertiesOrModifyColumnVisibility">
       <Sequences>
         <Sequence>
@@ -2949,7 +2949,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ModifyColumnVisibility">
       <Sequences>
         <Sequence>
@@ -2958,7 +2958,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ModifyColumnProperties">
       <Sequences>
         <Sequence>
@@ -2972,7 +2972,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ColumnDefinitionEncryptionClauseOrDecrypt">
       <Sequences>
         <Sequence>
@@ -2983,7 +2983,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ColumnDefinitionDefaultClauseOrIdentityClauseOrDropIdentity">
       <Sequences>
         <Sequence>
@@ -2995,7 +2995,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ModifyVirtualColumnProperties">
       <Sequences>
         <Sequence>
@@ -3010,7 +3010,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AddColumnClause">
       <Sequences>
         <Sequence>
@@ -3029,7 +3029,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="VirtualColumnDefinitionOrColumnDefinitionList">
       <Sequences>
         <Sequence>
@@ -3038,7 +3038,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ChainedVirtualColumnDefinitionOrColumnDefinition">
       <Sequences>
         <Sequence>
@@ -3047,7 +3047,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ModifyCollectionRetrieval">
       <Sequences>
         <Sequence>
@@ -3059,7 +3059,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RenameColumnClause">
       <Sequences>
         <Sequence>
@@ -3071,7 +3071,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AlterTableProperties">
       <Sequences>
         <Sequence>
@@ -3124,7 +3124,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AlterTableStandardPropertyList">
       <Sequences>
         <Sequence>
@@ -3133,7 +3133,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AlterTableStandardProperty">
       <Sequences>
         <Sequence>
@@ -3344,7 +3344,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="DeallocateUnusedClause">
       <Sequences>
         <Sequence>
@@ -3354,7 +3354,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="KeepSize">
       <Sequences>
         <Sequence>
@@ -3363,7 +3363,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ShrinkClause">
       <Sequences>
         <Sequence>
@@ -3465,7 +3465,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AlterLibrary">
       <Sequences>
         <Sequence>
@@ -3475,7 +3475,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AlterTrigger">
       <Sequences>
         <Sequence>
@@ -3591,7 +3591,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="TimeoutClause">
       <Sequences>
         <Sequence>
@@ -3600,7 +3600,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AlterSessionSetOptions">
       <Sequences>
         <Sequence>
@@ -3617,7 +3617,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AlterSetOptionList">
       <Sequences>
         <Sequence>
@@ -3628,7 +3628,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="IdentifierOrStringLiteralListOrNumberLiteral">
       <Sequences>
         <Sequence>
@@ -3661,7 +3661,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="DataManipulationLanguageOrDataDefinitionLanguageOrQuery">
       <Sequences>
         <Sequence>
@@ -3675,7 +3675,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ParallelDegree">
       <Sequences>
         <Sequence>
@@ -3763,7 +3763,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <!-- RENAME statement -->
     <Rule StartingNonTerminal="RenameStatement">
       <Sequences>
@@ -3790,7 +3790,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="LockMode">
       <Sequences>
         <Sequence>
@@ -3806,7 +3806,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="UpdateOrRowExclusive">
       <Sequences>
         <Sequence>
@@ -3818,7 +3818,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ShareOrExclusive">
       <Sequences>
         <Sequence>
@@ -3890,7 +3890,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <!-- EXPLAIN PLAN statement -->
     <Rule StartingNonTerminal="ExplainPlanStatement">
       <Sequences>
@@ -3915,7 +3915,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="IntoPlanTable">
       <Sequences>
         <Sequence>
@@ -3948,7 +3948,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <!-- DROP statement -->
     <Rule StartingNonTerminal="DropStatement">
       <Sequences>
@@ -4006,7 +4006,7 @@
         <!-- TODO: Drop other objects -->
       </Sequences>
     </Rule>
-    
+
       <Rule StartingNonTerminal="DropUser">
       <Sequences>
         <Sequence>
@@ -4071,7 +4071,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="DropType">
       <Sequences>
         <Sequence>
@@ -4274,7 +4274,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ForceTransactionIdentifier">
       <Sequences>
         <Sequence>
@@ -4333,7 +4333,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <!-- SAVEPOINT statement -->
     <Rule StartingNonTerminal="SavepointStatement">
       <Sequences>
@@ -4343,7 +4343,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <!-- ROLLBACK statement -->
     <Rule StartingNonTerminal="RollbackStatement">
       <Sequences>
@@ -4354,7 +4354,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ToSavepointOrForceTransactionIdentifier">
       <Sequences>
         <Sequence>
@@ -4367,7 +4367,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <!-- SET CONSTRAINT statement -->
     <Rule StartingNonTerminal="SetConstraintStatement">
       <Sequences>
@@ -4379,7 +4379,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AllOrQualifiedObjectIdentifierList">
       <Sequences>
         <Sequence>
@@ -4390,7 +4390,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="QualifiedObjectIdentifierList">
       <Sequences>
         <Sequence>
@@ -4399,7 +4399,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="QualifiedObjectIdentifier">
       <Sequences>
         <Sequence>
@@ -4408,7 +4408,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="QualifiedObjectIdentifierListChained">
       <Sequences>
         <Sequence>
@@ -4417,7 +4417,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ConstraintOrConstraints">
       <Sequences>
         <Sequence>
@@ -4532,7 +4532,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PrefixedIdentifierList">
       <Sequences>
         <Sequence>
@@ -4692,7 +4692,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ReturningClause">
       <Sequences>
         <Sequence>
@@ -4702,7 +4702,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="IntoVariableClause">
       <Sequences>
         <Sequence>
@@ -4712,7 +4712,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="BulkCollect">
       <Sequences>
         <Sequence>
@@ -4771,7 +4771,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="SchemaObject">
       <Sequences>
         <Sequence>
@@ -4825,7 +4825,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="UpdateSetClause">
       <Sequences>
         <Sequence>
@@ -4867,7 +4867,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="SetColumnListEqualsNestedQuery">
       <Sequences>
         <Sequence>
@@ -4980,7 +4980,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="MergeUpdateClause">
       <Sequences>
         <Sequence>
@@ -5089,7 +5089,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="NestedQuery">
       <Sequences>
         <Sequence>
@@ -5128,7 +5128,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="MainModel">
       <Sequences>
         <Sequence>
@@ -5139,7 +5139,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ModelRulesClause">
       <Sequences>
         <Sequence>
@@ -5150,7 +5150,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ModelRulesClauseAssignmentList">
       <Sequences>
         <Sequence>
@@ -5171,7 +5171,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CellAssignment">
       <Sequences>
         <Sequence>
@@ -5182,7 +5182,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="MultiColumnForLoopOrConditionOrExpressionOrSingleColumnForLoopList">
       <Sequences>
         <Sequence>
@@ -5193,7 +5193,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="MultiColumnForLoop">
       <Sequences>
         <Sequence>
@@ -5206,7 +5206,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ParenthesisEnclosedLiteralListListOrSubquery">
       <Sequences>
         <Sequence>
@@ -5218,7 +5218,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CommaChainedParenthesisEnclosedLiteralList">
       <Sequences>
         <Sequence>
@@ -5227,7 +5227,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ParenthesisEnclosedLiteralList">
       <Sequences>
         <Sequence>
@@ -5237,7 +5237,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ConditionOrExpressionOrSingleColumnForLoopList">
       <Sequences>
         <Sequence Comment="'Dimension identifier IS ANY' is not mentioned in the documentation. It can be also enclosed in parentheses. ">
@@ -5306,7 +5306,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="SingleColumnForLoop">
       <Sequences>
         <Sequence>
@@ -5316,7 +5316,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="InParenthesisEnclosedLiteralListOrSubqueryOrWithinRange">
       <Sequences>
         <Sequence>
@@ -5336,7 +5336,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="IncrementOrDecrement">
       <Sequences>
         <Sequence>
@@ -5347,7 +5347,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="LikePattern">
       <Sequences>
         <Sequence>
@@ -5356,7 +5356,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="LiteralListOrSubquery">
       <Sequences>
         <Sequence>
@@ -5367,7 +5367,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="LiteralList">
       <Sequences>
         <Sequence>
@@ -5376,7 +5376,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="Literal">
       <Sequences>
         <Sequence>
@@ -5387,7 +5387,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CommaChainedLiteralList">
       <Sequences>
         <Sequence>
@@ -5396,7 +5396,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-      
+  
     <Rule StartingNonTerminal="CommaChainedConditionOrExpressionOrSingleColumnForLoopList">
       <Sequences>
         <Sequence>
@@ -5405,7 +5405,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CommaChainedModelRulesClauseAssignmentList">
       <Sequences>
         <Sequence>
@@ -5414,7 +5414,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ModelRulesClauseRulesPart">
       <Sequences>
         <Sequence>
@@ -5425,7 +5425,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ModelIterateClause">
       <Sequences>
         <Sequence>
@@ -5437,7 +5437,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="UntilCondition">
       <Sequences>
         <Sequence>
@@ -5448,7 +5448,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AutomaticOrSequentialOrder">
       <Sequences>
         <Sequence>
@@ -5457,7 +5457,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AutomaticOrSequential">
       <Sequences>
         <Sequence>
@@ -5468,7 +5468,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="UpdateOrUpsertAll">
       <Sequences>
         <Sequence>
@@ -5480,7 +5480,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="MainModelName">
       <Sequences>
         <Sequence>
@@ -5489,7 +5489,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ReferenceModelList">
       <Sequences>
         <Sequence>
@@ -5498,7 +5498,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ReferenceModel">
       <Sequences>
         <Sequence>
@@ -5511,7 +5511,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ModelColumnClauses">
       <Sequences>
         <Sequence>
@@ -5524,7 +5524,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ModelColumnClausesPartitionByExpressionList">
       <Sequences>
         <Sequence>
@@ -5534,7 +5534,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ParenthesisEnclosedAliasedExpressionList">
       <Sequences>
         <Sequence>
@@ -5544,7 +5544,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AliasedExpressionList">
       <Sequences>
         <Sequence>
@@ -5553,7 +5553,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CommaChainedAliasedExpressionList">
       <Sequences>
         <Sequence>
@@ -5562,7 +5562,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ReturnRowsClause">
       <Sequences>
         <Sequence>
@@ -5572,7 +5572,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AllOrUpdated">
       <Sequences>
         <Sequence>
@@ -5592,7 +5592,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="UniqueDimensionOrSingleReference">
       <Sequences>
         <Sequence>
@@ -5606,7 +5606,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="IgnoreOrKeepNonAvailableValues">
       <Sequences>
         <Sequence>
@@ -5648,7 +5648,6 @@
         </Sequence>
       </Sequences>
     </Rule>
-  
     <Rule StartingNonTerminal="SelectList">
       <Sequences>
         <Sequence Comment="All row source columns">
@@ -5660,7 +5659,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AliasedExpressionOrAllTableColumns">
       <Sequences>
         <Sequence Comment="(Schema.)Object.*">
@@ -5690,7 +5689,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ExpressionCommaChainedList">
       <Sequences>
         <Sequence>
@@ -5699,7 +5698,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ExpressionList">
       <Sequences>
         <Sequence>
@@ -5708,7 +5707,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ParenthesisEnclosedExpressionList">
       <Sequences>
         <Sequence>
@@ -5727,7 +5726,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AliasedExpression">
       <Sequences>
         <Sequence>
@@ -5736,7 +5735,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ColumnAsAlias">
       <Sequences>
         <Sequence>
@@ -5759,7 +5758,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="BindVariableExpression">
       <Sequences>
         <Sequence>
@@ -6057,7 +6056,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CharacterCodeFunction">
       <Sequences>
         <Sequence>
@@ -6066,7 +6065,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="TimestampOrTime">
       <Sequences>
         <Sequence>
@@ -6108,7 +6107,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="TrimOption">
       <Sequences>
         <Sequence>
@@ -6153,7 +6152,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CastOrXmlCast">
       <Sequences>
         <Sequence>
@@ -6164,7 +6163,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CastOrXmlCastFunction">
       <Sequences>
         <Sequence>
@@ -6173,7 +6172,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CastFunctionParameterClause">
       <Sequences>
         <Sequence>
@@ -6193,7 +6192,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="TimestampAtTimeZone">
       <Sequences>
         <Sequence>
@@ -6232,7 +6231,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="IntervalExpression">
       <Sequences>
         <Sequence>
@@ -6242,7 +6241,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="YearToMonthOrDayToSecond">
       <Sequences>
         <Sequence>
@@ -6253,7 +6252,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="IntervalYearToMonth">
       <Sequences>
         <Sequence>
@@ -6263,7 +6262,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="IntervalDayToSecond">
       <Sequences>
         <Sequence>
@@ -6272,7 +6271,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ToYearOrMonth">
       <Sequences>
         <Sequence>
@@ -6281,7 +6280,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="YearOrMonth">
       <Sequences>
         <Sequence>
@@ -6292,7 +6291,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="DayOrHourOrMinuteOrSecondWithLeadingPrecision">
       <Sequences>
         <Sequence>
@@ -6305,7 +6304,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="DayOrHourOrMinute">
       <Sequences>
         <Sequence>
@@ -6319,7 +6318,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ToDayOrHourOrMinuteOrSecondWithPrecision">
       <Sequences>
         <Sequence>
@@ -6328,7 +6327,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="DayOrHourOrMinuteOrSecondWithPrecision">
       <Sequences>
         <Sequence>
@@ -6423,7 +6422,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ParenthesisEnclosedNestedQuery">
       <Sequences>
         <Sequence>
@@ -6540,7 +6539,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlDataType">
       <Sequences>
         <Sequence>
@@ -6575,7 +6574,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="SchemaDatatype">
       <Sequences>
         <Sequence>
@@ -6702,7 +6701,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="DataTypeVarcharSimplePrecisionOrVaryingSize">
       <Sequences>
         <Sequence>
@@ -6714,7 +6713,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="DataTypeSimplePrecisionOrVaryingSize">
       <Sequences>
         <Sequence>
@@ -6726,7 +6725,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CharacterOrChar">
       <Sequences>
         <Sequence>
@@ -6791,7 +6790,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="DataTypeIntervalPrecisionAndScale">
       <Sequences>
         <Sequence>
@@ -6822,7 +6821,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="NegativeInteger">
       <Sequences>
         <Sequence>
@@ -6910,7 +6909,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ColumnReference">
       <Sequences>
         <Sequence>
@@ -6982,8 +6981,7 @@
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
         <Sequence>
-          <Terminal Id="NegationOrNull" />
-          <NonTerminal Id="ParenthesisEnclosedCondition" />
+          <NonTerminal Id="NegationOrNullFunction" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -7009,6 +7007,10 @@
         </Sequence>
         <Sequence>
           <NonTerminal Id="ExpressionIsNullNaNOrInfinite" />
+          <NonTerminal Id="ChainedCondition" IsOptional="true" />
+        </Sequence>
+        <Sequence>
+          <NonTerminal Id="ReqularExpressionLikeFunction" />
           <NonTerminal Id="ChainedCondition" IsOptional="true" />
         </Sequence>
         <Sequence>
@@ -7105,7 +7107,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ParenthesisEnclosedCondition">
       <Sequences>
         <Sequence>
@@ -7115,7 +7117,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ExpressionOrParenthesisEnclosedExpressionListWithMandatoryExpressions">
       <Sequences>
         <Sequence>
@@ -7126,7 +7128,25 @@
         </Sequence>
       </Sequences>
     </Rule>
+
+    <Rule StartingNonTerminal="NegationOrNullFunction">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="NegationOrNull" />
+          <NonTerminal Id="ParenthesisEnclosedCondition" />
+        </Sequence>
+      </Sequences>
+    </Rule>
     
+    <Rule StartingNonTerminal="ReqularExpressionLikeFunction">
+      <Sequences>
+        <Sequence>
+          <Terminal Id="ReqularExpressionLike" />
+          <NonTerminal Id="ParenthesisEnclosedExpressionListWithMandatoryExpressions" />
+        </Sequence>
+      </Sequences>
+    </Rule>
+
     <Rule StartingNonTerminal="ExpressionIsNullNaNOrInfinite">
       <Sequences>
         <Sequence>
@@ -7163,7 +7183,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="StrictOrLax">
       <Sequences>
         <Sequence>
@@ -7174,7 +7194,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="WithOrWithoutUniqueKeys">
       <Sequences>
         <Sequence>
@@ -7184,7 +7204,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="WithOrWithout">
       <Sequences>
         <Sequence>
@@ -7270,7 +7290,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="NullNaNOrInfinite">
       <Sequences>
         <Sequence>
@@ -7304,7 +7324,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="LikeOperator">
       <Sequences>
         <Sequence>
@@ -7358,7 +7378,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RelationalNonEquiOperator">
       <Sequences>
         <Sequence>
@@ -7427,7 +7447,6 @@
         </Sequence>
       </Sequences>
     </Rule>
-  
     <Rule StartingNonTerminal="FromClause">
       <Sequences>
         <Sequence>
@@ -7436,7 +7455,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="TableReferenceJoinClause">
       <Sequences>
         <Sequence>
@@ -7454,7 +7473,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="TableReference">
       <Sequences>
         <Sequence>
@@ -7473,7 +7492,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="InnerSpecialTableReference">
       <Sequences>
         <Sequence>
@@ -7493,7 +7512,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ObjectAsAlias">
       <Sequences>
         <Sequence>
@@ -7543,7 +7562,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RowPatternClause">
       <Sequences>
         <Sequence>
@@ -7566,7 +7585,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RowPattern">
       <Sequences>
         <Sequence>
@@ -7575,7 +7594,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RowPatternChained">
       <Sequences>
         <Sequence>
@@ -7584,7 +7603,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RowPatternTerm">
       <Sequences>
         <Sequence>
@@ -7593,7 +7612,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RowPatternFactor">
       <Sequences>
         <Sequence>
@@ -7602,7 +7621,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RowPatternQuantifier">
       <Sequences>
         <Sequence>
@@ -7632,7 +7651,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RowPatternPrimary">
       <Sequences>
         <Sequence>
@@ -7664,7 +7683,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RowPatternList">
       <Sequences>
         <Sequence>
@@ -7673,7 +7692,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RowPatternListChained">
       <Sequences>
         <Sequence>
@@ -7682,7 +7701,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RowPatternSubsetClause">
       <Sequences>
         <Sequence>
@@ -7691,7 +7710,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RowPatternSubsetItemList">
       <Sequences>
         <Sequence>
@@ -7700,7 +7719,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RowPatternSubsetItem">
       <Sequences>
         <Sequence>
@@ -7710,7 +7729,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RowPatternSubsetItemListChained">
       <Sequences>
         <Sequence>
@@ -7719,7 +7738,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RowPatternDefinitionList">
       <Sequences>
         <Sequence>
@@ -7728,7 +7747,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RowPatternDefinition">
       <Sequences>
         <Sequence>
@@ -7738,7 +7757,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RowPatternDefinitionListChained">
       <Sequences>
         <Sequence>
@@ -7747,7 +7766,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RowPatternSkipTo">
       <Sequences>
         <Sequence>
@@ -7758,7 +7777,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RowPatternSkipToOption">
       <Sequences>
         <Sequence>
@@ -7778,7 +7797,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RowPatternRowsPerMatch">
       <Sequences>
         <Sequence>
@@ -7816,7 +7835,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RowPatternPartitionBy">
       <Sequences>
         <Sequence>
@@ -7826,7 +7845,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RowPatternOrderBy">
       <Sequences>
         <Sequence>
@@ -7836,7 +7855,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RowPatternMeasures">
       <Sequences>
         <Sequence>
@@ -7845,7 +7864,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RowPatternMeasureColumnList">
       <Sequences>
         <Sequence>
@@ -7854,7 +7873,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RowPatternMeasureColumn">
       <Sequences>
         <Sequence>
@@ -7893,7 +7912,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RowPatternNavigationLogical">
       <Sequences>
         <Sequence>
@@ -7949,7 +7968,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RowPatternMeasureColumnListChained">
       <Sequences>
         <Sequence>
@@ -7981,7 +8000,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="TheExpression">
       <Sequences>
         <Sequence>
@@ -7993,7 +8012,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="TheInnerExpression">
       <Sequences>
         <Sequence>
@@ -8006,7 +8025,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="TableCollectionExpression">
       <Sequences>
         <Sequence>
@@ -8094,7 +8113,6 @@
         </Sequence>
       </Sequences>
     </Rule>
-  
     <Rule StartingNonTerminal="SchemaPrefix">
       <Sequences>
         <Sequence>
@@ -8112,7 +8130,6 @@
         </Sequence>
       </Sequences>
     </Rule>
-  
     <Rule StartingNonTerminal="PartitionOrDatabaseLink">
       <Sequences>
         <Sequence>
@@ -8187,7 +8204,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <!-- Subqueries -->
     <Rule StartingNonTerminal="SubqueryFactoringClause">
       <Sequences>
@@ -8216,7 +8233,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CommonTableExpressionList">
       <Sequences>
         <Sequence>
@@ -8259,7 +8276,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CommonTableExpressionListChained">
       <Sequences>
         <Sequence>
@@ -8268,7 +8285,6 @@
         </Sequence>
       </Sequences>
     </Rule>
-  
     <Rule StartingNonTerminal="Subquery">
       <Sequences>
         <Sequence>
@@ -8278,7 +8294,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="OptionalParenthesisEnclosedQueryBlock">
       <Sequences>
         <Sequence>
@@ -8291,7 +8307,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="OptionalParenthesisEnclosedConcatenatedQueryBlock">
       <Sequences>
         <Sequence>
@@ -8305,7 +8321,6 @@
         </Sequence>
       </Sequences>
     </Rule>
-  
     <Rule StartingNonTerminal="ConcatenatedSubquery">
       <Sequences>
         <Sequence>
@@ -8315,7 +8330,6 @@
         </Sequence>
       </Sequences>
     </Rule>
-  
     <Rule StartingNonTerminal="SetOperation">
       <Sequences>
         <Sequence>
@@ -8330,7 +8344,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="SetQualifier">
       <Sequences>
         <Sequence>
@@ -8528,7 +8542,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ForUpdateLockingClause">
       <Sequences>
         <Sequence>
@@ -8552,7 +8566,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <!-- Flashback -->
     <Rule StartingNonTerminal="FlashbackQueryClause">
       <Sequences>
@@ -8573,7 +8587,6 @@
         </Sequence>
       </Sequences>
     </Rule>
-  
     <Rule StartingNonTerminal="FlashbackVersionsClause">
       <Sequences>
         <Sequence>
@@ -8594,7 +8607,6 @@
         </Sequence>
       </Sequences>
     </Rule>
-  
     <Rule StartingNonTerminal="SystemChangeNumberOrTimestamp">
       <Sequences>
         <Sequence>
@@ -8605,7 +8617,6 @@
         </Sequence>
       </Sequences>
     </Rule>
-  
     <Rule StartingNonTerminal="FlashbackMinimumValue">
       <Sequences>
         <Sequence>
@@ -8616,7 +8627,6 @@
         </Sequence>
       </Sequences>
     </Rule>
-  
     <Rule StartingNonTerminal="FlashbackMaximumValue">
       <Sequences>
         <Sequence>
@@ -8627,7 +8637,6 @@
         </Sequence>
       </Sequences>
     </Rule>
-  
     <!-- JOIN syntax -->
     <Rule StartingNonTerminal="JoinClause">
       <Sequences>
@@ -8645,7 +8654,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-      
+  
     <Rule StartingNonTerminal="InnerJoinClause">
       <Sequences>
         <Sequence>
@@ -8667,7 +8676,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="JoinColumnsOrCondition">
       <Sequences>
         <Sequence>
@@ -8680,7 +8689,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ColumnIdentifierChainedList">
       <Sequences>
         <Sequence>
@@ -8690,7 +8699,6 @@
         </Sequence>
       </Sequences>
     </Rule>
-  
     <Rule StartingNonTerminal="OuterJoinClause">
       <Sequences>
         <Sequence>
@@ -8715,7 +8723,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="OuterJoinPartitionClause">
       <Sequences>
         <Sequence>
@@ -8769,7 +8777,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="OrderExpression">
       <Sequences>
         <Sequence>
@@ -8800,7 +8808,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="NullsClause">
       <Sequences>
         <Sequence>
@@ -8869,7 +8877,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="SeedClause">
       <Sequences>
         <Sequence>
@@ -9037,7 +9045,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-      
+  
     <Rule StartingNonTerminal="AnalyticFunction">
       <Sequences>
         <Sequence>
@@ -9054,7 +9062,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-      
+  
     <Rule StartingNonTerminal="RespectOrIgnoreNulls">
       <Sequences>
         <Sequence>
@@ -9093,7 +9101,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AggregateFunctionCall">
       <Sequences>
         <Sequence>
@@ -9267,7 +9275,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="OverQueryPartitionClause">
       <Sequences>
         <Sequence>
@@ -9517,7 +9525,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <!-- Oracle 12c specific -->
     <!-- Row limiting clause -->
     <Rule StartingNonTerminal="RowLimitingClause">
@@ -9622,7 +9630,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <!-- Subquery factoring search clause -->
     <Rule StartingNonTerminal="SubqueryFactoringSearchClause">
       <Sequences>
@@ -10075,7 +10083,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="XmlExistsClause">
       <Sequences>
         <Sequence>
@@ -10095,7 +10103,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="JsonValueClause">
       <Sequences>
         <Sequence>
@@ -10119,7 +10127,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="JsonValueReturningClause">
       <Sequences>
         <Sequence>
@@ -10128,7 +10136,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="JsonTableClause">
       <Sequences>
         <Sequence>
@@ -10143,7 +10151,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="JsonColumnsClause">
       <Sequences>
         <Sequence>
@@ -10154,7 +10162,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="JsonColumnDefinitionList">
       <Sequences>
         <Sequence>
@@ -10163,7 +10171,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="JsonColumnDefinition">
       <Sequences>
         <Sequence>
@@ -10226,7 +10234,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CommaChainedJsonColumnDefinitionList">
       <Sequences>
         <Sequence>
@@ -10235,7 +10243,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="JsonValueOnErrorClause">
       <Sequences>
         <Sequence>
@@ -10245,7 +10253,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ErrorNullOrDefaultStringLiteral">
       <Sequences>
         <Sequence>
@@ -10260,7 +10268,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="JsonQueryClause">
       <Sequences>
         <Sequence>
@@ -10287,7 +10295,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="FormatJson">
       <Sequences>
         <Sequence>
@@ -10296,7 +10304,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="JsonQueryOnErrorClause">
       <Sequences>
         <Sequence>
@@ -10306,7 +10314,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ErrorOrNullOrEmpty">
       <Sequences>
         <Sequence>
@@ -10320,7 +10328,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="JsonQueryWrapperClause">
       <Sequences>
         <Sequence>
@@ -10336,7 +10344,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="UnconditionalOrConditional">
       <Sequences>
         <Sequence>
@@ -10347,7 +10355,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="JsonQueryReturningClause">
       <Sequences>
         <Sequence>
@@ -10356,7 +10364,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="JsonExistsClause">
       <Sequences>
         <Sequence>
@@ -10378,7 +10386,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="JsonExistsOnErrorClause">
       <Sequences>
         <Sequence>
@@ -10388,7 +10396,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ErrorOrTrueOrFalse">
       <Sequences>
         <Sequence>
@@ -10674,7 +10682,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CreatePlSqlStatement" Scope="Sql">
       <Sequences>
         <Sequence>
@@ -10686,7 +10694,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CreatePlSqlObjectClause">
       <Sequences>
         <Sequence>
@@ -10843,7 +10851,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <!-- CREATE SPFILE -->
     <Rule StartingNonTerminal="CreateServerParameterFile">
       <Sequences>
@@ -10855,7 +10863,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ServerParameterFileDataSource">
       <Sequences>
         <Sequence>
@@ -10867,7 +10875,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <!-- CREATE PFILE -->
     <Rule StartingNonTerminal="CreateParameterFile">
       <Sequences>
@@ -10879,7 +10887,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="MathEqualsStringLiteral">
       <Sequences>
         <Sequence>
@@ -10888,7 +10896,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ParameterFileDataSource">
       <Sequences>
         <Sequence>
@@ -10912,7 +10920,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="SchemaAuthorizationCreateStatementList">
       <Sequences>
         <Sequence>
@@ -11026,7 +11034,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="GrantSystemPrivileges">
       <Sequences>
         <Sequence>
@@ -11067,7 +11075,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="SystemPrivilegeList">
       <Sequences>
         <Sequence>
@@ -11085,7 +11093,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="SystemPrivilegeOrAllPrivileges">
       <Sequences>
         <Sequence>
@@ -11097,7 +11105,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="WithHierarchyOption">
       <Sequences>
         <Sequence>
@@ -11107,7 +11115,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="WithGrantOption">
       <Sequences>
         <Sequence>
@@ -11117,7 +11125,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="WithAdminOption">
       <Sequences>
         <Sequence>
@@ -11127,7 +11135,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="SchemaAuthorizationCreateObjectType">
       <Sequences>
         <Sequence>
@@ -11138,7 +11146,7 @@
          </Sequence>
       </Sequences>
     </Rule>
-    
+
     <!-- CREATE RESTORE POINT -->
     <Rule StartingNonTerminal="CreateRestorePoint">
       <Sequences>
@@ -11208,7 +11216,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <!-- CREATE ROLE -->
     <Rule StartingNonTerminal="CreateRole">
       <Sequences>
@@ -11220,7 +11228,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CreateRoleIdentificationType">
       <Sequences>
         <Sequence>
@@ -11233,7 +11241,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RoleIdentificationType">
       <Sequences>
         <Sequence>
@@ -11252,7 +11260,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <!-- CREATE USER -->
     <Rule StartingNonTerminal="CreateUser">
       <Sequences>
@@ -11265,7 +11273,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CreateUserOptionList">
       <Sequences>
         <Sequence>
@@ -11274,7 +11282,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CreateUserOption">
       <Sequences>
         <Sequence>
@@ -11309,7 +11317,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="TablespaceQuotaList">
       <Sequences>
         <Sequence>
@@ -11318,7 +11326,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="TablespaceQuota">
       <Sequences>
         <Sequence>
@@ -11329,7 +11337,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="LockOrUnlock">
       <Sequences>
         <Sequence>
@@ -11340,7 +11348,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CreateUserIdentificationType">
       <Sequences>
         <Sequence>
@@ -11357,7 +11365,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AsStringLiteral">
       <Sequences>
         <Sequence>
@@ -11366,7 +11374,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <!-- CREATE TABLESPACE -->
     <Rule StartingNonTerminal="CreateTablespace">
       <Sequences>
@@ -11390,7 +11398,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="UndoTablespaceClause">
       <Sequences>
         <Sequence>
@@ -11402,7 +11410,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="TablespaceRetentionClause">
       <Sequences>
         <Sequence>
@@ -11411,7 +11419,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="GuaranteeOrNoGuarantee">
       <Sequences>
         <Sequence>
@@ -11422,7 +11430,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="TemporaryTablespaceClause">
       <Sequences>
         <Sequence>
@@ -11434,7 +11442,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="TablespaceGroupClause">
       <Sequences>
         <Sequence>
@@ -11444,7 +11452,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="IdentifierOrStringLiteral">
       <Sequences>
         <Sequence>
@@ -11455,7 +11463,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="TempfileSpecificationList">
       <Sequences>
         <Sequence>
@@ -11628,7 +11636,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="FlashbackModeClause">
       <Sequences>
         <Sequence>
@@ -11637,7 +11645,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="SegmentManagementClause">
       <Sequences>
         <Sequence>
@@ -11648,7 +11656,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AutoOrManual">
       <Sequences>
         <Sequence>
@@ -11659,7 +11667,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ExtentManagementClause">
       <Sequences>
         <Sequence>
@@ -11670,7 +11678,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="LocalExtentManagementOption">
       <Sequences>
         <Sequence>
@@ -11715,7 +11723,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <!-- CREATE MATERIALIZED VIEW LOG -->
     <Rule StartingNonTerminal="CreateMaterializedViewLog">
       <Sequences>
@@ -11825,7 +11833,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="IncludingOrExcluding">
       <Sequences>
         <Sequence>
@@ -11862,7 +11870,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="SynchronousOrAsynchronous">
       <Sequences>
         <Sequence>
@@ -11920,7 +11928,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <!-- CREATE CLUSTER -->
     <Rule StartingNonTerminal="CreateCluster">
       <Sequences>
@@ -11938,7 +11946,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ClusterRangePartitions">
       <Sequences>
         <Sequence>
@@ -11952,7 +11960,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ClusterProperties">
       <Sequences>
         <Sequence>
@@ -11961,7 +11969,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ClusterProperty">
       <Sequences>
         <Sequence>
@@ -11985,7 +11993,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="HashIsExpression">
       <Sequences>
         <Sequence>
@@ -11995,7 +12003,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="SingleTable">
       <Sequences>
         <Sequence>
@@ -12004,7 +12012,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ClusterColumnDefinitionList">
       <Sequences>
         <Sequence>
@@ -12015,7 +12023,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CommaChainedClusterColumnDefinition">
       <Sequences>
         <Sequence>
@@ -12024,7 +12032,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <!-- CREATE PROCEDURE -->
     <Rule StartingNonTerminal="CreateProcedure">
       <Sequences>
@@ -12038,7 +12046,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CommonProgramModifier">
       <Sequences>
         <Sequence>
@@ -12051,7 +12059,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <!-- CREATE PACKAGE BODY -->
     <Rule StartingNonTerminal="CreatePackageBody">
       <Sequences>
@@ -12063,7 +12071,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PackageBodyDefinition">
       <Sequences>
         <Sequence>
@@ -12078,7 +12086,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="WrappedCode">
       <Sequences>
         <Sequence>
@@ -12087,7 +12095,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PackageBodyInitializeSection" Scope="PlSqlBody">
       <Sequences>
         <Sequence>
@@ -12098,7 +12106,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlStatementOrPragmaList">
       <Sequences>
         <Sequence>
@@ -12107,7 +12115,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlStatementOrPragma">
       <Sequences>
         <Sequence>
@@ -12309,7 +12317,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <!-- CREATE TYPE -->
     <Rule StartingNonTerminal="CreateType">
       <Sequences>
@@ -12388,7 +12396,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="IsOrAsObjectOrUnderSuperType">
       <Sequences>
         <Sequence>
@@ -12401,7 +12409,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <!-- CREATE TRIGGER -->
     <Rule StartingNonTerminal="CreateTrigger">
       <Sequences>
@@ -12412,7 +12420,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="TriggerTypeDefinition">
       <Sequences>
         <Sequence>
@@ -12429,7 +12437,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="SystemTrigger">
       <Sequences>
         <Sequence>
@@ -12442,7 +12450,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="SystemTriggerDdlOption">
       <Sequences>
         <Sequence>
@@ -12457,7 +12465,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="SchemaOrPluggableDatabase">
       <Sequences>
         <Sequence>
@@ -12470,7 +12478,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="SystemTriggerEventList">
       <Sequences>
         <Sequence>
@@ -12483,7 +12491,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="SystemTriggerEventListChained">
       <Sequences>
         <Sequence>
@@ -12492,7 +12500,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="DataDefinitionLanguageEvent">
       <Sequences>
         <Sequence>
@@ -12541,7 +12549,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="DatabaseEvent">
       <Sequences>
         <Sequence>
@@ -12742,7 +12750,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="SimpleDmlTrigger">
       <Sequences>
         <Sequence>
@@ -12758,7 +12766,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="TriggerBody">
       <Sequences>
         <Sequence>
@@ -12769,7 +12777,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="WhenCondition">
       <Sequences>
         <Sequence>
@@ -12780,7 +12788,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="TriggerOrderingClause">
       <Sequences>
         <Sequence>
@@ -12793,7 +12801,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="SchemaObjectList">
       <Sequences>
         <Sequence>
@@ -12802,7 +12810,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="SchemaObjectListChained">
       <Sequences>
         <Sequence>
@@ -12811,7 +12819,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="TriggerEditionClause">
       <Sequences>
         <Sequence>
@@ -12820,7 +12828,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ForwardOrReverse">
       <Sequences>
         <Sequence>
@@ -12831,7 +12839,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ForEachRow">
       <Sequences>
         <Sequence>
@@ -12841,7 +12849,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ReferencingClause">
       <Sequences>
         <Sequence>
@@ -12850,7 +12858,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="TriggerReferenceList">
       <Sequences>
         <Sequence>
@@ -12859,7 +12867,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="TriggerReference">
       <Sequences>
         <Sequence>
@@ -12879,7 +12887,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="DmlEventClause">
       <Sequences>
         <Sequence>
@@ -12889,7 +12897,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="DmlEventTypeList">
       <Sequences>
         <Sequence>
@@ -12898,7 +12906,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="DmlEventType">
       <Sequences>
         <Sequence>
@@ -12913,7 +12921,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="OfIdentifierList">
       <Sequences>
         <Sequence>
@@ -12922,7 +12930,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="DmlEventTypeListChained">
       <Sequences>
         <Sequence>
@@ -12931,7 +12939,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="BeforeOrAfter">
       <Sequences>
         <Sequence>
@@ -12942,7 +12950,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <!-- CREATE PACKAGE -->
     <Rule StartingNonTerminal="CreatePackage">
       <Sequences>
@@ -12956,7 +12964,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ProgramEnd" Scope="PlSqlBody">
       <Sequences>
         <Sequence>
@@ -12966,7 +12974,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <!-- CREATE FUNCTION -->
     <Rule StartingNonTerminal="CreateFunction">
       <Sequences>
@@ -12976,7 +12984,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlFunctionSource">
       <Sequences>
         <Sequence>
@@ -12989,7 +12997,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ParenthesisEnclosedParameterDeclarationList">
       <Sequences>
         <Sequence>
@@ -12999,7 +13007,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ParameterDeclarationList">
       <Sequences>
         <Sequence>
@@ -13008,7 +13016,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ParameterDeclaration">
       <Sequences>
         <Sequence>
@@ -13043,7 +13051,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ParameterDeclarationListChained">
       <Sequences>
         <Sequence>
@@ -13052,7 +13060,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="FunctionTypeDefinition">
       <Sequences>
         <Sequence>
@@ -13068,7 +13076,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ProgramImplentationDeclaration">
       <Sequences>
         <Sequence>
@@ -13085,7 +13093,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CallSpecification">
       <Sequences>
         <Sequence>
@@ -13100,7 +13108,7 @@
         </Sequence>-->
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ProgramDeclareSection" Scope="PlSqlDeclaration">
       <Sequences>
         <Sequence>
@@ -13130,7 +13138,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="Item2OrPragmaDefinition">
       <Sequences>
         <Sequence>
@@ -13141,7 +13149,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="Item2">
       <Sequences>
         <!-- Invalid documentation - CursorDeclaration and CursorDefinition cannot occur after function or procedure definition. -->
@@ -13165,7 +13173,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ItemList1">
       <Sequences>
         <Sequence>
@@ -13174,7 +13182,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ItemList1Chained">
       <Sequences>
         <Sequence>
@@ -13183,7 +13191,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="Item1OrPragmaDefinition">
       <Sequences>
         <Sequence>
@@ -13194,7 +13202,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="Item1">
       <Sequences>
         <Sequence>
@@ -13217,7 +13225,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="TypeDefinition">
       <Sequences>
         <Sequence>
@@ -13232,7 +13240,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="TypeDefinitionSpecification">
       <Sequences>
         <Sequence>
@@ -13246,7 +13254,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CollectionTypeDefinition">
       <Sequences>
         <Sequence>
@@ -13260,7 +13268,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AssociativeArrayTypeDefinition">
       <Sequences>
         <Sequence>
@@ -13271,7 +13279,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AssociativeArrayIndexType">
       <Sequences>
         <Sequence>
@@ -13292,7 +13300,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="VarcharOrVarchar2OrString">
       <Sequences>
         <Sequence>
@@ -13306,7 +13314,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="VaryingArrayTypeDefinition">
       <Sequences>
         <Sequence>
@@ -13319,7 +13327,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ElementType">
       <Sequences>
         <Sequence>
@@ -13330,7 +13338,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-      
+  
     <Rule StartingNonTerminal="VaryingArray">
       <Sequences>
         <Sequence>
@@ -13342,7 +13350,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="NestedTableTypeDefinition">
       <Sequences>
         <Sequence>
@@ -13354,7 +13362,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RecordTypeDefinition">
       <Sequences>
         <Sequence>
@@ -13365,7 +13373,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ReferenceCursorTypeDefinition">
       <Sequences>
         <Sequence>
@@ -13389,7 +13397,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="SubTypeConstraintOrCharacterSet">
       <Sequences>
         <Sequence>
@@ -13408,7 +13416,7 @@
         </Sequence>-->
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="FieldDefinitionList">
       <Sequences>
         <Sequence>
@@ -13417,7 +13425,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="FieldDefinition">
       <Sequences>
         <Sequence>
@@ -13428,7 +13436,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="FieldDefinitionListChained">
       <Sequences>
         <Sequence>
@@ -13437,7 +13445,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ItemDeclaration">
       <Sequences>
         <!-- CollectionVariableDeclaration covered by other clauses -->
@@ -13453,7 +13461,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ConstantDeclaration">
       <Sequences>
         <Sequence>
@@ -13493,7 +13501,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ReturnRowTypeDefinition">
       <Sequences>
         <Sequence>
@@ -13544,7 +13552,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ObjectRowType">
       <Sequences>
         <Sequence>
@@ -13562,7 +13570,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PercentCharacterTypeOrRowType">
       <Sequences>
         <Sequence>
@@ -13573,7 +13581,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ExceptionDeclaration">
       <Sequences>
         <Sequence>
@@ -13592,7 +13600,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="VariableDeclarationDefaultValue">
       <Sequences>
         <Sequence>
@@ -13601,7 +13609,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="NotNull">
       <Sequences>
         <Sequence>
@@ -13610,7 +13618,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AssignmentOperatorOrDefault">
       <Sequences>
         <Sequence>
@@ -13659,7 +13667,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="FunctionDeclaration">
       <Sequences>
         <Sequence>
@@ -13669,7 +13677,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="FunctionHeading">
       <Sequences>
         <Sequence>
@@ -13681,7 +13689,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="FunctionDeclarationModifiers">
       <Sequences>
         <Sequence>
@@ -13690,7 +13698,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="FunctionDeclarationModifier">
       <Sequences>
         <Sequence>
@@ -13717,7 +13725,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ProcedureDeclaration">
       <Sequences>
         <Sequence>
@@ -13726,7 +13734,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ProcedureHeading">
       <Sequences>
         <Sequence>
@@ -13746,7 +13754,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PragmaType">
       <Sequences>
         <Sequence>
@@ -13811,7 +13819,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="IdentifierOrDefault">
       <Sequences>
         <Sequence>
@@ -13822,7 +13830,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RestrictionList">
       <Sequences>
         <Sequence>
@@ -13831,7 +13839,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="Restriction">
       <Sequences>
         <Sequence>
@@ -13851,7 +13859,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RestrictionListChained">
       <Sequences>
         <Sequence>
@@ -13860,7 +13868,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="IsOrAs">
       <Sequences>
         <Sequence>
@@ -13871,7 +13879,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AggregateOrPipelined">
       <Sequences>
         <Sequence>
@@ -13882,7 +13890,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="FunctionModifiers">
       <Sequences>
         <Sequence>
@@ -13891,7 +13899,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="FunctionModifier">
       <Sequences>
         <Sequence>
@@ -13913,7 +13921,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="InvokerRightsClause">
       <Sequences>
         <Sequence>
@@ -13922,7 +13930,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AccessibleByClause">
       <Sequences>
         <Sequence>
@@ -13934,7 +13942,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AccessorList">
       <Sequences>
         <Sequence>
@@ -13943,7 +13951,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="Accessor">
       <Sequences>
         <Sequence>
@@ -13956,7 +13964,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="UnitKind">
       <Sequences>
         <Sequence>
@@ -13973,7 +13981,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AccessorListChained">
       <Sequences>
         <Sequence>
@@ -13982,7 +13990,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ParallelPartitionDefinition">
       <Sequences>
         <Sequence>
@@ -13995,7 +14003,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ParallelPartitionKey">
       <Sequences>
         <Sequence>
@@ -14014,7 +14022,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="StreamingClause">
       <Sequences>
         <Sequence>
@@ -14025,7 +14033,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="OrderOrCluster">
       <Sequences>
         <Sequence>
@@ -14036,7 +14044,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="HashOrRange">
       <Sequences>
         <Sequence>
@@ -14047,7 +14055,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ReliesOnClause">
       <Sequences>
         <Sequence>
@@ -14085,7 +14093,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <!-- PL/SQL body -->
     <Rule StartingNonTerminal="ProgramBody" Scope="PlSqlBody">
       <Sequences>
@@ -14098,7 +14106,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlStatement">
       <Sequences>
         <Sequence>
@@ -14126,7 +14134,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlStatementType">
       <Sequences>
         <Sequence>
@@ -14458,7 +14466,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlExecuteImmediateInputOutputClause">
       <Sequences>
         <Sequence>
@@ -14474,7 +14482,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="DynamicReturningClause">
       <Sequences>
         <Sequence>
@@ -14483,7 +14491,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="UsingClause">
       <Sequences>
         <Sequence>
@@ -14492,7 +14500,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="BindArgumentList">
       <Sequences>
         <Sequence>
@@ -14503,7 +14511,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="BindArgumentListChained">
       <Sequences>
         <Sequence>
@@ -14512,7 +14520,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlForAllStatement">
       <Sequences>
         <Sequence>
@@ -14526,7 +14534,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="DmlStatement">
       <Sequences>
         <Sequence>
@@ -14543,7 +14551,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-      
+  
     <Rule StartingNonTerminal="SaveExceptions">
       <Sequences>
         <Sequence>
@@ -14552,7 +14560,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ForAllBoundsClause">
       <Sequences>
         <Sequence>
@@ -14573,7 +14581,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ForAllIndicesBoundsBetweenCondition">
       <Sequences>
         <Sequence>
@@ -14584,7 +14592,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlExpression">
       <Sequences>
         <Sequence>
@@ -14632,7 +14640,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlIfStatement">
       <Sequences>
         <Sequence>
@@ -14648,7 +14656,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlElseIfClauseList">
       <Sequences>
         <Sequence>
@@ -14657,7 +14665,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlElseIfClause">
       <Sequences>
         <Sequence>
@@ -14668,7 +14676,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlElseClause">
       <Sequences>
         <Sequence>
@@ -14677,7 +14685,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlPipeRowStatement">
       <Sequences>
         <Sequence>
@@ -14748,7 +14756,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PrefixedIdentifier">
       <Sequences>
         <Sequence>
@@ -14757,7 +14765,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlBooleanExpression">
       <Sequences>
         <!--<Sequence>
@@ -14821,7 +14829,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CursorBooleanFunction">
       <Sequences>
         <Sequence>
@@ -14835,7 +14843,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlConditionalPredicate">
       <Sequences>
         <Sequence>
@@ -14850,7 +14858,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ParenthesisEnclosedStringLiteral">
       <Sequences>
         <Sequence>
@@ -14860,7 +14868,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlBooleanLiteral">
       <Sequences>
         <Sequence>
@@ -14874,7 +14882,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlAssignmentStatement">
       <Sequences>
         <Sequence>
@@ -14885,7 +14893,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AssignmentStatementTarget">
       <Sequences>
         <Sequence>
@@ -14946,7 +14954,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlBlockStatement">
       <Sequences>
         <Sequence>
@@ -14955,7 +14963,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlBlock">
       <Sequences>
         <Sequence>
@@ -14965,7 +14973,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlBlockDeclareSection" Scope="PlSqlDeclaration">
       <Sequences>
         <Sequence>
@@ -14974,7 +14982,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlGoToStatement">
       <Sequences>
         <Sequence>
@@ -14984,7 +14992,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlWhileLoopStatement">
       <Sequences>
         <Sequence>
@@ -14994,7 +15002,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlReturnStatement">
       <Sequences>
         <Sequence>
@@ -15004,7 +15012,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlRaiseStatement">
       <Sequences>
         <Sequence>
@@ -15014,7 +15022,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PrefixedExceptionIdentifier">
       <Sequences>
         <Sequence>
@@ -15023,7 +15031,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlNullStatement">
       <Sequences>
         <Sequence>
@@ -15032,7 +15040,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlContinueStatement">
       <Sequences>
         <Sequence>
@@ -15043,7 +15051,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlExitStatement">
       <Sequences>
         <Sequence>
@@ -15054,7 +15062,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlWhenBooleanExpression">
       <Sequences>
         <Sequence>
@@ -15063,7 +15071,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlCloseStatement">
       <Sequences>
         <Sequence>
@@ -15073,7 +15081,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlForLoopStatement">
       <Sequences>
         <Sequence>
@@ -15101,7 +15109,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlStatementOrInlinePragmaList">
       <Sequences>
         <Sequence>
@@ -15110,7 +15118,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlStatementOrInlinePragma">
       <Sequences>
         <Sequence>
@@ -15121,7 +15129,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlExceptionClause">
       <Sequences>
         <Sequence>
@@ -15130,7 +15138,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlExceptionHandlerList">
       <Sequences>
         <Sequence>
@@ -15139,7 +15147,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlExceptionHandler">
       <Sequences>
         <Sequence>
@@ -15150,7 +15158,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ExceptionIdentifierList">
       <Sequences>
         <Sequence>
@@ -15159,7 +15167,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ExceptionIdentifierListChained">
       <Sequences>
         <Sequence>
@@ -15168,7 +15176,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PlSqlStatementList">
       <Sequences>
         <Sequence>
@@ -15177,7 +15185,6 @@
         </Sequence>
       </Sequences>
     </Rule>
-  
     <!-- CREATE VIEW -->
     <Rule StartingNonTerminal="CreateView">
       <Sequences>
@@ -15240,7 +15247,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ViewInlineConstraintDefinition">
       <Sequences>
         <Sequence>
@@ -15412,7 +15419,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="TableProperties">
       <Sequences>
         <Sequence>
@@ -15536,7 +15543,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ZoneMapClause">
       <Sequences>
         <Sequence>
@@ -15547,7 +15554,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="WithMaterializedZoneMap">
       <Sequences>
         <Sequence>
@@ -15578,7 +15585,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ClusteringWhen">
       <Sequences>
         <Sequence>
@@ -15783,7 +15790,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="IndividualHashPartitionsOrHashPartitionsByQuantity">
       <Sequences>
         <Sequence>
@@ -15800,7 +15807,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="IndividualHashPartitionList">
       <Sequences>
         <Sequence>
@@ -15809,7 +15816,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
      <Rule StartingNonTerminal="IndividualHashPartition">
       <Sequences>
         <Sequence>
@@ -15820,7 +15827,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PartitioningStorageClause">
       <Sequences>
         <Sequence>
@@ -15829,7 +15836,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PartitionStorageProperty">
       <Sequences>
         <Sequence>
@@ -15870,7 +15877,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="TablespaceIdentifier">
       <Sequences>
         <Sequence>
@@ -15879,7 +15886,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="OverflowStoreInTableSpaceList">
       <Sequences>
         <Sequence>
@@ -15900,7 +15907,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ParenthesisEnclosedListPartitionListOrSubpartitionClause">
       <Sequences>
         <Sequence>
@@ -15914,7 +15921,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ParenthesisEnclosedListPartitionDescriptionList">
       <Sequences>
         <Sequence>
@@ -15924,7 +15931,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ListPartitionDescriptionList">
       <Sequences>
         <Sequence>
@@ -15937,7 +15944,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CommaChainedListPartitionDescriptionList">
       <Sequences>
         <Sequence>
@@ -16000,7 +16007,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ParenthesisEnclosedRangePartitionListOrSubpartitionClause">
       <Sequences>
         <Sequence>
@@ -16014,7 +16021,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ParenthesisEnclosedRangePartitionDescriptionList">
       <Sequences>
         <Sequence>
@@ -16024,7 +16031,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RangePartitionDescriptionList">
       <Sequences>
         <Sequence>
@@ -16037,7 +16044,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CommaChainedRangePartitionDescriptionList">
       <Sequences>
         <Sequence>
@@ -16080,7 +16087,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="SubpartitionByList">
       <Sequences>
         <Sequence>
@@ -16092,7 +16099,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="SubpartitionByHash">
       <Sequences>
         <Sequence>
@@ -16102,7 +16109,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="HashSubpartitionQuantityOrSubpartitionTemplate">
       <Sequences>
         <Sequence>
@@ -16163,7 +16170,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CommaChainedIndividualRangeSubpartitionList">
       <Sequences>
         <Sequence>
@@ -16172,7 +16179,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="IndividualListSubpartitionList">
       <Sequences>
         <Sequence>
@@ -16185,7 +16192,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CommaChainedIndividualListSubpartitionList">
       <Sequences>
         <Sequence>
@@ -16194,7 +16201,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="IndividualHashSubpartitionList">
       <Sequences>
         <Sequence>
@@ -16206,7 +16213,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CommaChainedIndividualHashSubpartitionList">
       <Sequences>
         <Sequence>
@@ -16249,7 +16256,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="TablePartitionDescription">
       <Sequences>
         <Sequence>
@@ -16359,7 +16366,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ColumnProperties">
       <Sequences>
         <Sequence>
@@ -16503,7 +16510,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="NestedTableColumnProperties">
       <Sequences>
         <Sequence>
@@ -16520,7 +16527,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ParenthesisEnclosedNestedStorageTableProperties">
       <Sequences>
         <Sequence>
@@ -16530,7 +16537,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-      
+  
     <Rule StartingNonTerminal="NestedStorageTableProperties">
       <Sequences>
         <Sequence>
@@ -16573,7 +16580,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="NestedStorageTableProperty">
       <Sequences>
         <Sequence>
@@ -16587,7 +16594,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="LocalOrGlobal">
       <Sequences>
         <Sequence>
@@ -16598,7 +16605,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="NestedTableReturnType">
       <Sequences>
         <Sequence>
@@ -16608,7 +16615,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="LocatorOrValue">
       <Sequences>
         <Sequence>
@@ -16906,7 +16913,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CacheOrNoCache">
       <Sequences>
         <Sequence>
@@ -16917,7 +16924,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ResultCacheClause">
       <Sequences>
         <Sequence>
@@ -16929,7 +16936,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="DefaultOrForce">
       <Sequences>
         <Sequence>
@@ -16940,7 +16947,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ParallelClause">
       <Sequences>
         <Sequence>
@@ -16963,7 +16970,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RowMovementClause">
       <Sequences>
         <Sequence>
@@ -16973,7 +16980,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="FlashbackArchiveClause">
       <Sequences>
         <Sequence>
@@ -16988,7 +16995,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RowArchival">
       <Sequences>
         <Sequence>
@@ -16997,7 +17004,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AsSubquery">
       <Sequences>
         <Sequence>
@@ -17007,7 +17014,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ParenthesisEnclosedRelationalProperties">
       <Sequences>
         <Sequence>
@@ -17074,7 +17081,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="VirtualColumnDefinitionOrColumnDefinition">
       <Sequences>
         <Sequence>
@@ -17122,7 +17129,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="UnusableEditionClause">
       <Sequences>
         <Sequence>
@@ -17148,7 +17155,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="EvaluationEdition">
       <Sequences>
         <Sequence>
@@ -17160,7 +17167,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CurrentEditionOrSpecificEdition">
       <Sequences>
         <Sequence>
@@ -17173,7 +17180,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ColumnDefinition">
       <Sequences>
         <Sequence>
@@ -17286,7 +17293,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CreateSequenceOption">
       <Sequences>
         <Sequence>
@@ -17472,7 +17479,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PeriodDefinition">
       <Sequences>
         <Sequence>
@@ -17491,7 +17498,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ParenthesisEnclosedPeriodStartEndColumns">
       <Sequences>
         <Sequence>
@@ -17514,7 +17521,7 @@
         </Sequence>-->
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="NamedOutOfLineConstraint">
       <Sequences>
         <Sequence>
@@ -17561,7 +17568,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ReferencesOrReferencing">
       <Sequences>
         <Sequence>
@@ -17594,7 +17601,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ConstraintState">
       <Sequences>
         <Sequence>
@@ -17644,7 +17651,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="InitialDeferrableState">
       <Sequences>
         <Sequence>
@@ -17840,7 +17847,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ClusterPhysicalProperties">
       <Sequences>
         <Sequence>
@@ -17861,7 +17868,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ExplicitPhysicalOrganization">
       <Sequences>
         <Sequence>
@@ -17870,7 +17877,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ExplicitPhysicalOrganizationType">
       <Sequences>
         <Sequence>
@@ -17977,7 +17984,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ExternalTableDataPropeties">
       <Sequences>
         <Sequence>
@@ -17992,7 +17999,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ExternalTableAccessParameters">
       <Sequences>
         <Sequence>
@@ -18002,7 +18009,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="OpaqueFormatSpecificationOrUsingClobSubquery">
       <Sequences>
         <Sequence>
@@ -18030,7 +18037,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ExternalTableColumnTransforms">
       <Sequences>
         <Sequence>
@@ -18042,7 +18049,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ExternalTableColumnTransformList">
       <Sequences>
         <Sequence>
@@ -18051,7 +18058,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ExternalTableColumnTransform">
       <Sequences>
         <Sequence>
@@ -18061,7 +18068,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ExternalTableColumnTransformType">
       <Sequences>
         <Sequence>
@@ -18091,7 +18098,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ExternalTableColumnTransformLargeObjectFileAttributeList">
       <Sequences>
         <Sequence>
@@ -18111,7 +18118,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="FieldIdentifierOrConstantStringList">
       <Sequences>
         <Sequence>
@@ -18125,7 +18132,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="FieldIdentifierOrConstantStringListChained">
       <Sequences>
         <Sequence>
@@ -18134,7 +18141,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ExternalTableColumnTransformListChained">
       <Sequences>
         <Sequence>
@@ -18143,7 +18150,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ExternalTableFieldDefinitions">
       <Sequences>
         <Sequence>
@@ -18161,7 +18168,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ParenthesisEnclosedExternalTableFieldList">
       <Sequences>
         <Sequence>
@@ -18171,7 +18178,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ExternalTableFieldList">
       <Sequences>
         <Sequence>
@@ -18180,7 +18187,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ExternalTableField">
       <Sequences>
         <Sequence>
@@ -18191,7 +18198,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="DataTypeSpecification">
       <Sequences>
         <Sequence>
@@ -18254,7 +18261,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="DateFormatSpecification">
       <Sequences>
         <Sequence>
@@ -18263,7 +18270,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="DateFormatType">
       <Sequences>
         <Sequence>
@@ -18285,7 +18292,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="QuotedStringLiteral">
       <Sequences>
         <Sequence>
@@ -18296,7 +18303,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="DateOrTimestampSpecification">
       <Sequences>
         <Sequence>
@@ -18308,7 +18315,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ExternalTableFieldTypeYearToMonthOrDayToSecond">
       <Sequences>
         <Sequence>
@@ -18319,7 +18326,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ExternalSpecificationOrPrecisionAndScale">
       <Sequences>
         <Sequence>
@@ -18335,7 +18342,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="LengthOfLengthPrefix">
       <Sequences>
         <Sequence>
@@ -18344,7 +18351,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="DecimalOrZoned">
       <Sequences>
         <Sequence>
@@ -18355,7 +18362,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="VaryingCharacterOrRawDataType">
       <Sequences>
         <Sequence>
@@ -18372,7 +18379,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="InitializationSpecification">
       <Sequences>
         <Sequence>
@@ -18385,7 +18392,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ExternalTableCondition">
       <Sequences>
         <Sequence>
@@ -18402,7 +18409,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ExternalTableConditionLogicalOperator">
       <Sequences>
         <Sequence>
@@ -18413,7 +18420,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ExternalTableConditionChained">
       <Sequences>
         <Sequence>
@@ -18422,7 +18429,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="QuotedStringLiteralOrBlanks">
       <Sequences>
         <Sequence>
@@ -18433,7 +18440,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="IdentifierOrPositionRange">
       <Sequences>
         <Sequence>
@@ -18448,7 +18455,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PositionSpecification">
       <Sequences>
         <Sequence>
@@ -18485,7 +18492,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="PositionIncrement">
       <Sequences>
         <Sequence>
@@ -18494,7 +18501,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="MathPlusOrMinus">
       <Sequences>
         <Sequence>
@@ -18505,7 +18512,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ExternalTableFieldListChained">
       <Sequences>
         <Sequence>
@@ -18514,7 +18521,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="DelimiterSpecification">
       <Sequences>
         <Sequence>
@@ -18531,7 +18538,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="EnclosedByClause">
       <Sequences>
         <Sequence>
@@ -18543,7 +18550,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="QuotedStringLiteralOrWhitespace">
       <Sequences>
         <Sequence>
@@ -18554,7 +18561,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AndQuotedStringLiteral">
       <Sequences>
         <Sequence>
@@ -18563,7 +18570,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="TrimSpecification">
       <Sequences>
         <Sequence>
@@ -18583,7 +18590,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="AllFieldsOverrideTheseFields">
       <Sequences>
         <Sequence>
@@ -18595,7 +18602,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="MissingFieldValuesAreNull">
       <Sequences>
         <Sequence>
@@ -18607,7 +18614,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RejectRowsWithAllNullFields">
       <Sequences>
         <Sequence>
@@ -18620,7 +18627,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="DateFormatMask">
       <Sequences>
         <Sequence>
@@ -18631,7 +18638,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="DateOrTimestamp">
       <Sequences>
         <Sequence>
@@ -18642,7 +18649,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-      
+  
     <Rule StartingNonTerminal="NullIfOrNoNullIf">
       <Sequences>
         <Sequence>
@@ -18653,7 +18660,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CommaSeparatedValueOptions">
       <Sequences>
         <Sequence>
@@ -18662,7 +18669,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="WithOrWithoutEmbedded">
       <Sequences>
         <Sequence>
@@ -18772,7 +18779,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="OutputFileSpecifications">
       <Sequences>
         <Sequence>
@@ -18781,7 +18788,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="OutputFileSpecification">
       <Sequences>
         <Sequence>
@@ -18998,7 +19005,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ExternalTableFileLocation">
       <Sequences>
         <Sequence>
@@ -19008,7 +19015,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CommaChainedExternalTableFileLocation">
       <Sequences>
         <Sequence>
@@ -19025,7 +19032,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="InformationLifecycleManagementClause">
       <Sequences>
         <Sequence>
@@ -19159,7 +19166,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="DeleteOrEnableOrDisable">
       <Sequences>
         <Sequence>
@@ -19173,7 +19180,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="InMemoryClause">
       <Sequences>
         <Sequence>
@@ -19379,7 +19386,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="HeapTableSegmentAttributesClause">
       <Sequences>
         <Sequence>
@@ -19388,7 +19395,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="SegmentAttributeOrTableCompressionOrInMemoryTableClauseOrTablePropertiesOrInformationLifecycleManagementClause">
       <Sequences>
         <Sequence>
@@ -19434,7 +19441,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RecoverableOrUnrecoverable">
       <Sequences>
         <Sequence>
@@ -19638,7 +19645,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="TableCompression">
       <Sequences>
         <Sequence>
@@ -19699,7 +19706,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="BasicOrAdvanced">
       <Sequences>
         <Sequence>
@@ -19710,7 +19717,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="ColumnStoreCompressionType">
       <Sequences>
         <Sequence>
@@ -19720,7 +19727,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="QueryOrArchive">
       <Sequences>
         <Sequence>
@@ -19731,7 +19738,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="LowOrHigh">
       <Sequences>
         <Sequence>
@@ -19742,7 +19749,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="RowLevelLocking">
       <Sequences>
         <Sequence>
@@ -19753,7 +19760,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <!-- CREATE SEQUENCE -->
     <Rule StartingNonTerminal="CreateSequence">
       <Sequences>
@@ -19764,7 +19771,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="SequenceOptions">
       <Sequences>
         <Sequence>
@@ -19784,7 +19791,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="OtherSequenceOption">
       <Sequences>
         <Sequence>
@@ -20055,7 +20062,7 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
     <Rule StartingNonTerminal="CommaChainedTableIndexExpressionList">
       <Sequences>
         <Sequence>
@@ -20121,9 +20128,9 @@
         </Sequence>
       </Sequences>
     </Rule>
-    
+
   </Rules>
-      
+  
   <Terminals>
     <Terminal Id="With" Value="WITH" ReservedWord="Sql" />
     <Terminal Id="As" Value="AS" ReservedWord="PlSql" />
@@ -20220,10 +20227,10 @@
     <Terminal Id="Empty" Value="EMPTY" />
     <Terminal Id="Except" Value="EXCEPT" />
     <Terminal Id="SubMultiset" Value="SUBMULTISET" />
-    
+
     <!-- COLLECT function -->
     <Terminal Id="Collect" Value="COLLECT" />
-    
+
     <!-- TRIM function -->
     <Terminal Id="Trim" Value="TRIM" />
     <Terminal Id="Leading" Value="LEADING" />
@@ -20242,7 +20249,7 @@
     <Terminal Id="TimezoneMinute" Value="TIMEZONE_MINUTE" />
     <Terminal Id="TimezoneRegion" Value="TIMEZONE_REGION" />
     <Terminal Id="TimezoneAbbreviation" Value="TIMEZONE_ABBR" />
-    
+
     <!-- Sample clause -->
     <Terminal Id="Sample" Value="SAMPLE" />
     <Terminal Id="Block" Value="BLOCK" />
@@ -20261,6 +20268,7 @@
     <Terminal Id="LikeUcs4" Value="LIKE4" Comment="4 byte Universal Character Set" />
     <Terminal Id="LikeUnicode" Value="LIKEC" Comment="Unicode" />
     <Terminal Id="Escape" Value="ESCAPE" />
+    <Terminal Id="ReqularExpressionLike" Value="REGEXP_LIKE" />
 
     <!-- For update -->
     <Terminal Id="For" Value="FOR" ReservedWord="Sql" />
@@ -20270,7 +20278,7 @@
     <Terminal Id="Skip" Value="SKIP" />
     <Terminal Id="Locked" Value="LOCKED" />
     <Terminal Id="Of" Value="OF" ReservedWord="Sql" />
-    
+
     <!-- Case expression -->
     <Terminal Id="Case" Value="CASE" ReservedWord="PlSql" />
     <Terminal Id="When" Value="WHEN" ReservedWord="PlSql" />
@@ -20286,14 +20294,13 @@
     <Terminal Id="Having" Value="HAVING" ReservedWord="Sql" />
     <Terminal Id="Grouping" Value="GROUPING" />
     <Terminal Id="Sets" Value="SETS" />
-    
+
     <!-- Flashback -->
     <Terminal Id="Versions" Value="VERSIONS" />
     <Terminal Id="SystemChangeNumber" Value="SCN" />
     <Terminal Id="Timestamp" Value="TIMESTAMP" />
     <Terminal Id="MinimumValue" Value="MINVALUE" />
     <Terminal Id="MaximumValue" Value="MAXVALUE" />
-  
     <!-- Join -->
     <Terminal Id="Join" Value="JOIN" />
     <Terminal Id="Left" Value="LEFT" />
@@ -20322,7 +20329,7 @@
     <Terminal Id="Prior" Value="PRIOR" ReservedWord="Sql" />
     <Terminal Id="ConnectByRoot" Value="CONNECT_BY_ROOT" />
     <Terminal Id="NoCycle" Value="NOCYCLE" />
-    
+
     <!-- Within group functions -->
     <Terminal Id="Within" Value="WITHIN" />
     <Terminal Id="ListAggregation" Value="LISTAGG" />
@@ -20331,7 +20338,7 @@
     <Terminal Id="DenseRank" Value="DENSE_RANK" />
     <Terminal Id="PercentileDiscreteDistribution" Value="PERCENTILE_DISC" />
     <Terminal Id="PercentileContinuousDistribution" Value="PERCENTILE_CONT" />
-    
+
     <!-- Aggregate functions -->
     <Terminal Id="Count" Value="COUNT" AllowQuotedNotation ="true" />
     <Terminal Id="Min" Value="MIN" AllowQuotedNotation ="true" />
@@ -20417,7 +20424,7 @@
     <Terminal Id="NonAvailableValues" Value="NAV" />
     <Terminal Id="Decrement" Value="DECREMENT" />
     <Terminal Id="Updated" Value="UPDATED" />
-    
+
     <!-- Row pattern clause -->
     <Terminal Id="MatchRecognize" Value="MATCH_RECOGNIZE" />
     <Terminal Id="Pattern" Value="PATTERN" />
@@ -20457,7 +20464,7 @@
     <Terminal Id="Write" Value="WRITE" />
     <Terminal Id="Immediate" Value="IMMEDIATE" ReservedWord="Sql" />
     <Terminal Id="Batch" Value="BATCH" />
-    
+
     <!-- Rollback -->
     <Terminal Id="Savepoint" Value="SAVEPOINT" ReservedWord="PlSqlBody" />
 
@@ -20488,10 +20495,10 @@
     <!-- Merge -->
     <Terminal Id="Merge" Value="MERGE" />
     <Terminal Id="Matched" Value="MATCHED" />
-    
+
     <!-- Insert -->
     <Terminal Id="Insert" Value="INSERT" ReservedWord="Sql" />
-    
+
     <!-- Drop -->
     <Terminal Id="Cascade" Value="CASCADE" />
     <Terminal Id="Constraints" Value="CONSTRAINTS" />
@@ -20944,7 +20951,7 @@
     <Terminal Id="Enforced" Value="ENFORCED" />
     <Terminal Id="Trusted" Value="TRUSTED" />
     <Terminal Id="Demand" Value="DEMAND" />
-    
+
     <!-- Alter system -->
     <Terminal Id="Datafiles" Value="DATAFILES" />
     <Terminal Id="Distributed" Value="DISTRIBUTED" />
@@ -20980,7 +20987,7 @@
     <Terminal Id="Migrate" Value="MIGRATE" />
     <Terminal Id="Scope" Value="SCOPE" />
     <Terminal Id="SessionId" Value="SID" />
-    
+
     <!-- Alter session -->
     <Terminal Id="Advise" Value="ADVISE" />
     <Terminal Id="Close" Value="CLOSE" ReservedWord="PlSqlBody" />
@@ -20997,7 +21004,7 @@
     <!-- Call -->
     <Terminal Id="Call" Value="CALL" />
     <Terminal Id="Indicator" Value="INDICATOR" />
-    
+
     <!-- JSON -->
     <Terminal Id="Json" Value="JSON" />
     <Terminal Id="Strict" Value="STRICT" />
@@ -21078,7 +21085,7 @@
     <Terminal Id="Standby" Value="STANDBY" />
     <Terminal Id="ResetLogs" Value="RESETLOGS" />
     <Terminal Id="Dump" Value="DUMP" />
-    
+
     <!-- PL/SQL -->
     <Terminal Id="Bulk" Value="BULK" />
     <Terminal Id="Begin" Value="BEGIN" ReservedWord="PlSql" />
@@ -21149,7 +21156,7 @@
     <Terminal Id="TypeIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
     <Terminal Id="PlSqlIdentifier" RegexValue="^((&quot;[^&quot;]*&quot;)|([a-zA-Z][\w\d$#]*))$" />
     <Terminal Id="WrappedToken" RegexValue="^(?!\n/\n).*$" />
-    
+
     <!-- PL/SQL conditional compilation -->
     <Terminal Id="PlSqlCompilationParameter" RegexValue="^\$\$[a-zA-Z][\w\d$#]*$" />
     <Terminal Id="PlSqlConditionalCompilationIf" Value="$IF" />
@@ -21158,7 +21165,7 @@
     <Terminal Id="PlSqlConditionalCompilationElse" Value="$ELSE" />
     <Terminal Id="PlSqlConditionalCompilationEnd" Value="$END" />
     <Terminal Id="PlSqlConditionalCompilationError" Value="$ERROR" />
-    
+
     <!-- Undocumented -->
     <Terminal Id="Overlaps" Value="OVERLAPS" ReservedWord="PlSql" />
 
@@ -21170,7 +21177,7 @@
 
     <!-- Oracle 12c specific -->
     <Terminal Id="Containers" Value="CONTAINERS" />
-    
+
     <!-- Cross/outer apply clause -->
     <Terminal Id="Apply" Value="APPLY" />
 
@@ -21179,7 +21186,7 @@
 
     <!-- Flashback period for -->
     <Terminal Id="Period" Value="PERIOD" />
-    
+
     <!-- Analyze -->
     <Terminal Id="Analyze" Value="ANALYZE" />
     <Terminal Id="Structure" Value="STRUCTURE" />

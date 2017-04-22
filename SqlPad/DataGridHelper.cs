@@ -119,11 +119,11 @@ namespace SqlPad
 			{
 				FrameworkElement element;
 
-				KeyEventHandler keyDownHandler = (sender, args) => cancellationTokenSource.CancelOnEscape(args.Key);
+				void KeyDownHandler(object sender, KeyEventArgs args) => cancellationTokenSource.CancelOnEscape(args.Key);
 
 				try
 				{
-					cell.KeyDown += keyDownHandler;
+					cell.KeyDown += KeyDownHandler;
 					cell.Content = CreateTextBlock("Loading... ");
 					element = await getContentFunction(cancellationTokenSource.Token);
 				}
@@ -140,7 +140,7 @@ namespace SqlPad
 				}
 				finally
 				{
-					cell.KeyDown -= keyDownHandler;
+					cell.KeyDown -= KeyDownHandler;
 				}
 
 				cell.Content = ConfigureAndWrapUsingScrollViewerIfNeeded(cell, originalContent, element);

@@ -112,6 +112,7 @@ namespace SqlPad.Oracle.ToolTips
 					case Terminals.PercentileDiscreteDistribution:
 					case Terminals.PercentileContinuousDistribution:
 					case Terminals.NegationOrNull:
+					case Terminals.ReqularExpressionLike:
 					case Terminals.RowIdPseudocolumn:
 					case Terminals.RowNumberPseudocolumn:
 					case Terminals.User:

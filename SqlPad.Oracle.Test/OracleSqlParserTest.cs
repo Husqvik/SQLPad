@@ -2770,6 +2770,16 @@ MATCH_RECOGNIZE(
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
 		}
 
+		[Test]
+		public void TestRegExpLikeCondition()
+		{
+			const string statement1 = "SELECT * FROM dual WHERE regexp_like ('', '', 'i')";
+
+			var statements = Parser.Parse(statement1).ToArray();
+			var statement = statements.Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+		}
+
 		public class PlSql
 		{
 			[Test]

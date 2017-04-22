@@ -3743,5 +3743,15 @@ SELECT test_function(1) FROM dual;";
 
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
+
+		[Test]
+		public void TestRegexpLike()
+		{
+			const string query1 = "SELECT * FROM dual WHERE regexp_like('', '', 'i')";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single().Validate();
+
+			OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
+		}
 	}
 }

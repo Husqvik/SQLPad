@@ -37,6 +37,7 @@ namespace SqlPad.Oracle.SemanticModel
 			Terminals.JsonValue,
 			Terminals.Count,
 			Terminals.Trim,
+			//Terminals.ReqularExpressionLike,
 			Terminals.CharacterCode,
 			Terminals.RowNumberPseudocolumn,
 			Terminals.ListAggregation,
@@ -1470,8 +1471,8 @@ namespace SqlPad.Oracle.SemanticModel
 					CreateRedundantTerminalGroup(new[] { reference.OwnerNode, reference.OwnerNode.FollowingTerminal }, RedundancyType.Qualifier);
 				}
 
-				Func<OracleColumnReference, bool> objectPrefixedColumnFilter = c => c.ObjectNode != null && c.RootNode != null;
-				foreach (var columnReference in queryBlock.AllColumnReferences.Where(objectPrefixedColumnFilter))
+				bool ObjectPrefixedColumnFilter(OracleColumnReference c) => c.ObjectNode != null && c.RootNode != null;
+				foreach (var columnReference in queryBlock.AllColumnReferences.Where(ObjectPrefixedColumnFilter))
 				{
 					var uniqueObjectReferenceCount = queryBlock.ObjectReferences
 						.Where(o => o.Columns.Concat(o.Pseudocolumns).Any(c => String.Equals(c.Name, columnReference.NormalizedName)))
@@ -1510,7 +1511,7 @@ namespace SqlPad.Oracle.SemanticModel
 				var innerPivotColumnReferences = queryBlock.ObjectReferences
 					.OfType<OraclePivotTableReference>()
 					.SelectMany(pt => pt.SourceReferenceContainer.ColumnReferences)
-					.Where(objectPrefixedColumnFilter);
+					.Where((Func<OracleColumnReference, bool>)ObjectPrefixedColumnFilter);
 
 				foreach (var columnReference in innerPivotColumnReferences)
 				{
@@ -2460,13 +2461,13 @@ namespace SqlPad.Oracle.SemanticModel
 			var queryBlockNode = node.GetAncestor(NonTerminals.QueryBlock);
 			if (queryBlockNode == null)
 			{
-				OracleQueryBlock queryBlock = null;
-				Func<StatementGrammarNode, bool> queryBlockOrderByClausePredicate = n => String.Equals(n.Id, NonTerminals.OrderByClause) && String.Equals(n.ParentNode?.Id, NonTerminals.Subquery);
+				bool QueryBlockOrderByClausePredicate(StatementGrammarNode n) => String.Equals(n.Id, NonTerminals.OrderByClause) && String.Equals(n.ParentNode?.Id, NonTerminals.Subquery);
 
-				var orderByClauseNode = queryBlockOrderByClausePredicate(node)
+				var orderByClauseNode = QueryBlockOrderByClausePredicate(node)
 					? node
-					: node.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.NestedQuery), queryBlockOrderByClausePredicate);
+					: node.GetPathFilterAncestor(n => !String.Equals(n.Id, NonTerminals.NestedQuery), QueryBlockOrderByClausePredicate);
 
+				OracleQueryBlock queryBlock = null;
 				if (orderByClauseNode != null)
 				{
 					queryBlock = QueryBlockNodes.Values.SingleOrDefault(qb => qb.OrderByClause == orderByClauseNode);
@@ -3001,7 +3002,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		protected IEnumerable<StatementGrammarNode> GetGrammarSpecificFunctionNodes(StatementGrammarNode sourceNode)
 		{
-			return sourceNode.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBlock, Terminals.Count, Terminals.Trim, Terminals.CharacterCode, Terminals.Cast, Terminals.Extract, Terminals.XmlRoot, Terminals.XmlElement, Terminals.XmlSerialize, Terminals.XmlForest, Terminals.NegationOrNull, Terminals.JsonExists, Terminals.JsonQuery, Terminals.JsonValue, Terminals.ListAggregation, Terminals.ValidateConversion, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, NonTerminals.WithinGroupAggregationFunction, NonTerminals.ConversionFunction);
+			return sourceNode.GetPathFilterDescendants(NodeFilters.BreakAtNestedQueryBlock, Terminals.Count, Terminals.Trim, Terminals.CharacterCode, Terminals.Cast, Terminals.Extract, Terminals.XmlRoot, Terminals.XmlElement, Terminals.XmlSerialize, Terminals.XmlForest, Terminals.NegationOrNull, Terminals.JsonExists, Terminals.JsonQuery, Terminals.JsonValue, Terminals.ListAggregation, Terminals.ValidateConversion, Terminals.ReqularExpressionLike, NonTerminals.AggregateFunction, NonTerminals.AnalyticFunction, NonTerminals.WithinGroupAggregationFunction, NonTerminals.ConversionFunction);
 		}
 
 		protected void ResolveColumnFunctionOrDataTypeReferencesFromIdentifiers(OracleQueryBlock queryBlock, OracleReferenceContainer referenceContainer, IEnumerable<StatementGrammarNode> identifiers, StatementPlacement placement, OracleSelectListColumn selectListColumn, Func<StatementGrammarNode, StatementGrammarNode> getPrefixNonTerminalFromIdentiferFunction = null, Func<StatementGrammarNode, IEnumerable<StatementGrammarNode>> getFunctionCallNodesFromIdentifierFunction = null)
@@ -3164,16 +3165,15 @@ namespace SqlPad.Oracle.SemanticModel
 			foreach (var identifierNode in grammarSpecificFunctions.Select(n => n.FirstTerminalNode).Distinct())
 			{
 				var isNegationOrNull = String.Equals(identifierNode.Id, Terminals.NegationOrNull);
+				var isRegexpLike = String.Equals(identifierNode.Id, Terminals.ReqularExpressionLike);
 				var rootNode =
-					isNegationOrNull
+					isNegationOrNull || isRegexpLike
 						? identifierNode.GetAncestor(NonTerminals.Condition)
 						: identifierNode.GetAncestor(NonTerminals.Expression);
 
-				StatementGrammarNode analyticClauseNode = null;
-				var functionRootNode = rootNode;
-				if (!isNegationOrNull)
-					functionRootNode = rootNode[0];
+				var functionRootNode = rootNode[0];
 
+				StatementGrammarNode analyticClauseNode = null;
 				switch (functionRootNode.Id)
 				{
 					case NonTerminals.AnalyticFunctionCall:
