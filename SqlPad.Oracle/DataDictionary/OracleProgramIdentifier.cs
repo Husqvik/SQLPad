@@ -47,6 +47,7 @@ namespace SqlPad.Oracle.DataDictionary
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramNumberToYearToMonthInterval = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "NUMTOYMINTERVAL");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramNumberToDayToSecondInterval = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "NUMTODSINTERVAL");
 		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramDump = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "DUMP");
+		internal static readonly OracleProgramIdentifier IdentifierBuiltInProgramRegexpLike = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageBuiltInFunction, "REGEXP_LIKE");
 		internal static readonly OracleProgramIdentifier IdentifierDbmsRandomString = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageDbmsRandom, "STRING");
 		internal static readonly OracleProgramIdentifier IdentifierDbmsCryptoHash = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageDbmsCrypto, "HASH");
 		internal static readonly OracleProgramIdentifier IdentifierGatherTableStats = CreateFromValues(OracleObjectIdentifier.SchemaSys, OracleObjectIdentifier.PackageDbmsStats, "GATHER_TABLE_STATS");

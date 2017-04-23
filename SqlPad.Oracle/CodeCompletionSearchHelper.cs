@@ -34,6 +34,7 @@ namespace SqlPad.Oracle
 				OracleProgramIdentifier.IdentifierBuiltInProgramNumberToYearToMonthInterval,
 				OracleProgramIdentifier.IdentifierBuiltInProgramNumberToDayToSecondInterval,
 				OracleProgramIdentifier.IdentifierBuiltInProgramBFileName,
+				OracleProgramIdentifier.IdentifierBuiltInProgramRegexpLike,
 				OracleProgramIdentifier.IdentifierDbmsRandomString,
 				OracleProgramIdentifier.IdentifierDbmsCryptoHash,
 				OracleProgramIdentifier.IdentifierGatherSchemaStats,
@@ -470,10 +471,11 @@ namespace SqlPad.Oracle
 		{
 			return functionOverloads
 				.Any(o =>
-					(o.ProgramMetadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramRegularExpressionCount && o.CurrentParameterIndex == 3) ||
-					(o.ProgramMetadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramRegularExpressionInstr && o.CurrentParameterIndex == 5) ||
-					(o.ProgramMetadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramRegularExpressionReplace && o.CurrentParameterIndex == 5) ||
-					(o.ProgramMetadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramRegularExpressionSubstring && o.CurrentParameterIndex == 4));
+					o.ProgramMetadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramRegularExpressionCount && o.CurrentParameterIndex == 3 ||
+					o.ProgramMetadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramRegularExpressionInstr && o.CurrentParameterIndex == 5 ||
+					o.ProgramMetadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramRegularExpressionReplace && o.CurrentParameterIndex == 5 ||
+					o.ProgramMetadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramRegularExpressionSubstring && o.CurrentParameterIndex == 4 ||
+					o.ProgramMetadata.Identifier == OracleProgramIdentifier.IdentifierBuiltInProgramRegexpLike && o.CurrentParameterIndex == 2);
 		}
 
 		private static void BuildCommonDateFormatCompletionItems(StatementGrammarNode currentNode, ICollection<ICodeCompletionItem> completionItems)
@@ -481,11 +483,11 @@ namespace SqlPad.Oracle
 			completionItems.Add(BuildParameterCompletionItem(currentNode, "DL", "DL - long date format - NLS dependent"));
 			completionItems.Add(BuildParameterCompletionItem(currentNode, "DS", "DS - short date format - NLS dependent"));
 			completionItems.Add(BuildParameterCompletionItem(currentNode, "TS", "TS - short time format - NLS dependent"));
-			completionItems.Add(BuildParameterCompletionItem(currentNode, "YYYY-MM-DD", $"YYYY-MM-DD - ISO date - {DateTime.Now.ToString("yyyy-MM-dd")}"));
-			completionItems.Add(BuildParameterCompletionItem(currentNode, "YYYY-MM-DD HH24:MI:SS", $"YYYY-MM-DD HH24:MI:SS - ISO date time - {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}"));
-			completionItems.Add(BuildParameterCompletionItem(currentNode, "YYYY-MM-DD\"T\"HH24:MI:SS", $"YYYY-MM-DD\"T\"HH24:MI:SS - XML date time - {DateTime.Now.ToString("yyyy-MM-dd\"T\"HH:mm:ss")}"));
-			completionItems.Add(BuildParameterCompletionItem(currentNode, "YYYY-MM-DD HH24:MI:SS.FF9 TZH:TZM", $"YYYY-MM-DD HH24:MI:SS.FF9 TZH:TZM - {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff000 zzz")}"));
-			completionItems.Add(BuildParameterCompletionItem(currentNode, "DY, DD MON YYYY HH24:MI:SS TZD", $"DY, DD MON YYYY HH24:MI:SS TZD - {DateTime.Now.ToString("r")} - NLS dependent"));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "YYYY-MM-DD", $"YYYY-MM-DD - ISO date - {DateTime.Now:yyyy-MM-dd}"));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "YYYY-MM-DD HH24:MI:SS", $"YYYY-MM-DD HH24:MI:SS - ISO date time - {DateTime.Now:yyyy-MM-dd HH:mm:ss}"));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "YYYY-MM-DD\"T\"HH24:MI:SS", $"YYYY-MM-DD\"T\"HH24:MI:SS - XML date time - {DateTime.Now:yyyy-MM-dd\"T\"HH:mm:ss}"));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "YYYY-MM-DD HH24:MI:SS.FF9 TZH:TZM", $"YYYY-MM-DD HH24:MI:SS.FF9 TZH:TZM - {DateTime.Now:yyyy-MM-dd HH:mm:ss.ffffff000 zzz}"));
+			completionItems.Add(BuildParameterCompletionItem(currentNode, "DY, DD MON YYYY HH24:MI:SS TZD", $"DY, DD MON YYYY HH24:MI:SS TZD - {DateTime.Now:r} - NLS dependent"));
 			completionItems.Add(BuildParameterCompletionItem(currentNode, "DAY", "DAY (NAME OF DAY); Day (Name of day), padded with blanks to display width of the widest name of day in the date language used for this element"));
 			completionItems.Add(BuildParameterCompletionItem(currentNode, "D", "D - Day of week (1-7)"));
 			completionItems.Add(BuildParameterCompletionItem(currentNode, "DD", "DD - Day of month (1-31)"));
