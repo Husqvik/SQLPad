@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using SqlPad.Commands;
 using Terminals = SqlPad.Oracle.OracleGrammarDescription.Terminals;
+using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
 namespace SqlPad.Oracle.Commands
 {
@@ -73,7 +74,10 @@ namespace SqlPad.Oracle.Commands
 			BuildCreateTableColumnDefinitions(builder, false);
 
 			builder.AppendLine();
-			builder.AppendLine("AS");
+
+			var formatOption = OracleConfiguration.Configuration.Formatter.FormatOptions;
+
+			builder.AppendLine(OracleStatementFormatter.FormatTerminalValue(TerminalValues.As, formatOption.Keyword));
 
 			return
 				new TextSegment
@@ -108,7 +112,9 @@ namespace SqlPad.Oracle.Commands
 
 		private void BuildCreateTableColumnDefinitions(StringBuilder builder, bool includeDataTypes)
 		{
-			builder.Append("CREATE TABLE ");
+			var formatOption = OracleConfiguration.Configuration.Formatter.FormatOptions;
+
+			builder.Append(OracleStatementFormatter.FormatTerminalValue("CREATE TABLE ", formatOption.ReservedWord));
 			builder.Append(_settingsModel.Value);
 			builder.AppendLine(" (");
 
@@ -124,7 +130,12 @@ namespace SqlPad.Oracle.Commands
 				columnPosition++;
 				builder.Append("\t");
 				var columnName = column.NormalizedName.ToSimpleIdentifier();
-				builder.Append(String.IsNullOrEmpty(columnName) ? $"COLUMN{columnPosition}" : columnName);
+				if (String.IsNullOrEmpty(columnName))
+				{
+					columnName = $"COLUMN{columnPosition}";
+				}
+
+				builder.Append(OracleStatementFormatter.FormatTerminalValue(columnName, formatOption.Identifier));
 
 				if (!includeDataTypes)
 				{
@@ -133,10 +144,11 @@ namespace SqlPad.Oracle.Commands
 				
 				builder.Append(" ");
 
-				var columnType = column.ColumnDescription == null || column.ColumnDescription == null || String.IsNullOrEmpty(column.ColumnDescription.FullTypeName)
+				var columnType = String.IsNullOrEmpty(column.ColumnDescription?.FullTypeName)
 					? "VARCHAR2(255)"
 					: column.ColumnDescription.FullTypeName;
-				builder.Append(columnType);
+
+				builder.Append(OracleStatementFormatter.FormatTerminalValue(columnType, formatOption.ReservedWord));
 			}
 
 			builder.AppendLine();
