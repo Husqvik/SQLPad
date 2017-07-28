@@ -87,7 +87,7 @@ END;";
 			mainProgram.Parameters[1].Direction.ShouldBe(ParameterDirection.InputOutput);
 			mainProgram.Parameters[2].Name.ShouldBe("\"P3\"");
 			mainProgram.Parameters[2].Direction.ShouldBe(ParameterDirection.Output);
-			mainProgram.ReturnParameter.ShouldNotBe(null);
+			mainProgram.ReturnParameter.ShouldNotBeNull();
 
 			AssertMainProgram(mainProgram, expectedObjectIdentifier);
 		}
@@ -96,23 +96,23 @@ END;";
 		{
 			mainProgram.Variables.Count.ShouldBe(3);
 			mainProgram.Variables[0].Name.ShouldBe("\"TEST_VARIABLE1\"");
-			mainProgram.Variables[0].IsConstant.ShouldBe(false);
-			mainProgram.Variables[0].Nullable.ShouldBe(true);
-			mainProgram.Variables[0].DefaultExpressionNode.ShouldBe(null);
-			mainProgram.Variables[0].DataTypeNode.ShouldNotBe(null);
+			mainProgram.Variables[0].IsConstant.ShouldBeFalse();
+			mainProgram.Variables[0].Nullable.ShouldBeTrue();
+			mainProgram.Variables[0].DefaultExpressionNode.ShouldBeNull();
+			mainProgram.Variables[0].DataTypeNode.ShouldNotBeNull();
 			mainProgram.Variables[0].DataTypeNode.FirstTerminalNode.Id.ShouldBe(Terminals.Number);
 			mainProgram.Variables[0].DataTypeNode.LastTerminalNode.Id.ShouldBe(Terminals.Number);
 			mainProgram.Variables[1].Name.ShouldBe("\"TEST_VARIABLE2\"");
-			mainProgram.Variables[1].IsConstant.ShouldBe(false);
-			mainProgram.Variables[1].Nullable.ShouldBe(true);
-			mainProgram.Variables[1].DefaultExpressionNode.ShouldBe(null);
-			mainProgram.Variables[1].DataTypeNode.ShouldNotBe(null);
+			mainProgram.Variables[1].IsConstant.ShouldBeFalse();
+			mainProgram.Variables[1].Nullable.ShouldBeTrue();
+			mainProgram.Variables[1].DefaultExpressionNode.ShouldBeNull();
+			mainProgram.Variables[1].DataTypeNode.ShouldNotBeNull();
 			mainProgram.Variables[1].DataTypeNode.FirstTerminalNode.Id.ShouldBe(Terminals.Varchar2);
 			mainProgram.Variables[1].DataTypeNode.LastTerminalNode.Id.ShouldBe(Terminals.RightParenthesis);
 			mainProgram.Variables[2].Name.ShouldBe("\"TEST_CONSTANT1\"");
-			mainProgram.Variables[2].IsConstant.ShouldBe(true);
-			mainProgram.Variables[2].Nullable.ShouldBe(false);
-			mainProgram.Variables[2].DefaultExpressionNode.ShouldNotBe(null);
+			mainProgram.Variables[2].IsConstant.ShouldBeTrue();
+			mainProgram.Variables[2].Nullable.ShouldBeFalse();
+			mainProgram.Variables[2].DefaultExpressionNode.ShouldNotBeNull();
 			mainProgram.Exceptions.Count.ShouldBe(0);
 			mainProgram.PlSqlVariableReferences.Count.ShouldBe(1);
 			mainProgram.PlSqlExceptionReferences.Count.ShouldBe(0);
@@ -126,7 +126,7 @@ END;";
 			var programReference = mainProgram.ProgramReferences.First();
 			programReference.Name.ShouldBe("put_line");
 			programReference.ObjectNode.Token.Value.ShouldBe("dbms_output");
-			programReference.ParameterListNode.ShouldNotBe(null);
+			programReference.ParameterListNode.ShouldNotBeNull();
 			programReference.ParameterReferences.Count.ShouldBe(1);
 			programReference.ParameterReferences[0].OptionalIdentifierTerminal.Token.Value.ShouldBe("item");
 			programReference.ParameterReferences[0].ParameterNode.LastTerminalNode.Token.Value.ShouldBe("test_constant1");
@@ -136,12 +136,12 @@ END;";
 			mainProgram.SubPrograms[0].Parameters.Count.ShouldBe(1);
 			mainProgram.SubPrograms[0].Parameters[0].Name.ShouldBe("\"P1\"");
 			mainProgram.SubPrograms[0].Parameters[0].Direction.ShouldBe(ParameterDirection.Input);
-			mainProgram.SubPrograms[0].ReturnParameter.ShouldBe(null);
+			mainProgram.SubPrograms[0].ReturnParameter.ShouldBeNull();
 			mainProgram.SubPrograms[0].Variables.Count.ShouldBe(1);
 			mainProgram.SubPrograms[0].Variables[0].Name.ShouldBe("\"TEST_VARIABLE3\"");
-			mainProgram.SubPrograms[0].Variables[0].IsConstant.ShouldBe(false);
-			mainProgram.SubPrograms[0].Variables[0].Nullable.ShouldBe(false);
-			mainProgram.SubPrograms[0].Variables[0].DefaultExpressionNode.ShouldNotBe(null);
+			mainProgram.SubPrograms[0].Variables[0].IsConstant.ShouldBeFalse();
+			mainProgram.SubPrograms[0].Variables[0].Nullable.ShouldBeFalse();
+			mainProgram.SubPrograms[0].Variables[0].DefaultExpressionNode.ShouldNotBeNull();
 			mainProgram.SubPrograms[0].Exceptions.Count.ShouldBe(0);
 			mainProgram.SubPrograms[0].PlSqlVariableReferences.Count.ShouldBe(1);
 			mainProgram.SubPrograms[0].PlSqlExceptionReferences.Count.ShouldBe(0);
@@ -154,10 +154,10 @@ END;";
 			mainProgram.SubPrograms[1].Parameters.Count.ShouldBe(1);
 			mainProgram.SubPrograms[1].Parameters[0].Name.ShouldBe("\"P1\"");
 			mainProgram.SubPrograms[1].Parameters[0].Direction.ShouldBe(ParameterDirection.Input);
-			mainProgram.SubPrograms[1].ReturnParameter.ShouldNotBe(null);
-			mainProgram.SubPrograms[1].ReturnParameter.DataTypeNode.ShouldNotBe(null);
-			mainProgram.SubPrograms[1].ReturnParameter.DefaultExpressionNode.ShouldBe(null);
-			mainProgram.SubPrograms[1].ReturnParameter.Nullable.ShouldBe(true);
+			mainProgram.SubPrograms[1].ReturnParameter.ShouldNotBeNull();
+			mainProgram.SubPrograms[1].ReturnParameter.DataTypeNode.ShouldNotBeNull();
+			mainProgram.SubPrograms[1].ReturnParameter.DefaultExpressionNode.ShouldBeNull();
+			mainProgram.SubPrograms[1].ReturnParameter.Nullable.ShouldBeTrue();
 			mainProgram.SubPrograms[1].ReturnParameter.Direction.ShouldBe(ParameterDirection.ReturnValue);
 			mainProgram.SubPrograms[1].Variables.Count.ShouldBe(0);
 			mainProgram.SubPrograms[1].Exceptions.Count.ShouldBe(1);
@@ -174,7 +174,7 @@ END;";
 			mainProgram.SubPrograms[1].SubPrograms[0].Parameters.Count.ShouldBe(1);
 			mainProgram.SubPrograms[1].SubPrograms[0].Parameters[0].Name.ShouldBe("\"P1\"");
 			mainProgram.SubPrograms[1].SubPrograms[0].Parameters[0].Direction.ShouldBe(ParameterDirection.Input);
-			mainProgram.SubPrograms[1].SubPrograms[0].ReturnParameter.ShouldBe(null);
+			mainProgram.SubPrograms[1].SubPrograms[0].ReturnParameter.ShouldBeNull();
 			mainProgram.SubPrograms[1].SubPrograms[0].Variables.Count.ShouldBe(0);
 			mainProgram.SubPrograms[1].SubPrograms[0].Exceptions.Count.ShouldBe(0);
 			mainProgram.SubPrograms[1].SubPrograms[0].PlSqlVariableReferences.Count.ShouldBe(0);
@@ -282,7 +282,7 @@ END;";
 
 			mainProgram.ProgramReferences.Count.ShouldBe(1);
 			var programReference = mainProgram.ProgramReferences.First();
-			programReference.Metadata.ShouldNotBe(null);
+			programReference.Metadata.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -348,11 +348,11 @@ END;";
 			var mainProgram = semanticModel.Programs[0];
 			mainProgram.ProgramReferences.Count.ShouldBe(1);
 			var putLineReference = mainProgram.ProgramReferences.First();
-			putLineReference.OwnerNode.ShouldBe(null);
+			putLineReference.OwnerNode.ShouldBeNull();
 			putLineReference.ObjectNode.Token.Value.ShouldBe("dbms_output");
 			putLineReference.ProgramIdentifierNode.Token.Value.ShouldBe("put_line");
-			putLineReference.Metadata.ShouldNotBe(null);
-			putLineReference.ParameterListNode.ShouldNotBe(null);
+			putLineReference.Metadata.ShouldNotBeNull();
+			putLineReference.ParameterListNode.ShouldNotBeNull();
 			putLineReference.ParameterReferences.Count.ShouldBe(1);
 		}
 
@@ -454,7 +454,7 @@ END;";
 			semanticModel.Programs.Count.ShouldBe(1);
 			var mainProgram = semanticModel.Programs[0];
 			mainProgram.Exceptions.Count.ShouldBe(1);
-			mainProgram.Exceptions[0].ErrorCode.ShouldBe(null);
+			mainProgram.Exceptions[0].ErrorCode.ShouldBeNull();
 
 			var plSqlExceptionReferences = mainProgram.PlSqlExceptionReferences.ToArray();
 			plSqlExceptionReferences.Length.ShouldBe(5);
@@ -558,7 +558,7 @@ END;";
 			semanticModel.Programs.Count.ShouldBe(1);
 			semanticModel.Programs[0].ProgramReferences.Count.ShouldBe(1);
 			var sqlPadProcedureReference = semanticModel.Programs[0].ProgramReferences.First();
-			sqlPadProcedureReference.Metadata.ShouldNotBe(null);
+			sqlPadProcedureReference.Metadata.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -580,7 +580,7 @@ END;";
 			semanticModel.Programs.Count.ShouldBe(1);
 			semanticModel.Programs[0].ProgramReferences.Count.ShouldBe(1);
 			var putLineReference = semanticModel.Programs[0].ProgramReferences.First();
-			putLineReference.Metadata.ShouldNotBe(null);
+			putLineReference.Metadata.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -665,7 +665,7 @@ END;";
 			mainProgram.Variables[0].Name.ShouldBe("\"TEST_CURSOR\"");
 			mainProgram.Variables[0].ShouldBeAssignableTo<OraclePlSqlCursorVariable>();
 			var cursorVariable = (OraclePlSqlCursorVariable)mainProgram.Variables[0];
-			cursorVariable.SemanticModel.ShouldNotBe(null);
+			cursorVariable.SemanticModel.ShouldNotBeNull();
 
 			mainProgram.Variables[1].Name.ShouldBe("\"X\"");
 			mainProgram.Variables[2].Name.ShouldBe("\"IMPLICIT_CURSOR\"");
@@ -784,7 +784,7 @@ END;";
 			var program = semanticModel.Programs[0];
 			program.DataTypeReferences.Count.ShouldBe(1);
 			var dataTypeReference = program.DataTypeReferences.First();
-			dataTypeReference.SchemaObject.ShouldNotBe(null);
+			dataTypeReference.SchemaObject.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -850,10 +850,10 @@ END;";
 
 			var programReferences = program.ProgramReferences.ToArray();
 			programReferences.Length.ShouldBe(2);
-			programReferences[0].Metadata.ShouldNotBe(null);
+			programReferences[0].Metadata.ShouldNotBeNull();
 			programReferences[0].Metadata.Parameters.Count.ShouldBe(1);
 			programReferences[0].Metadata.Parameters[0].FullDataTypeName.ShouldBe("BOOLEAN");
-			programReferences[1].Metadata.ShouldNotBe(null);
+			programReferences[1].Metadata.ShouldNotBeNull();
 			programReferences[1].Metadata.Parameters.Count.ShouldBe(0);
 
 			program.PlSqlVariableReferences.Count.ShouldBe(0);
@@ -884,8 +884,8 @@ END;";
 
 			var programReferences = testProcedure2.ProgramReferences.ToArray();
 			programReferences.Length.ShouldBe(2);
-			programReferences[0].Metadata.ShouldNotBe(null);
-			programReferences[1].Metadata.ShouldNotBe(null);
+			programReferences[0].Metadata.ShouldNotBeNull();
+			programReferences[1].Metadata.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -917,7 +917,7 @@ END;";
 			var programReferences = testProcedure2.ProgramReferences.ToArray();
 			programReferences.Length.ShouldBe(1);
 			programReferences[0].Name.ShouldBe("test_function1");
-			programReferences[0].Metadata.ShouldBe(null);
+			programReferences[0].Metadata.ShouldBeNull();
 		}
 
 		[Test]

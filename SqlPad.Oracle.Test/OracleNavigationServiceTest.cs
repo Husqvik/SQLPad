@@ -50,7 +50,7 @@ namespace SqlPad.Oracle.Test
 			const string query = "SELECT P.NAME, P.PROJECT_ID FROM (SELECT PROJECT.NAME, PROJECT.PROJECT_ID FROM PROJECT) P ";
 
 			var targetIndex = _navigationService.NavigateToQueryBlockRoot(CreateExecutionContext(query, 90));
-			targetIndex.ShouldBe(null);
+			targetIndex.ShouldBeNull();
 		}
 
 		[Test]
@@ -84,7 +84,7 @@ namespace SqlPad.Oracle.Test
 			const int caretOffset = 13;
 			var executionContext = new ActionExecutionContext(query, caretOffset, caretOffset, caretOffset, documentRepository);
 			var targetIndex = _navigationService.NavigateToDefinition(executionContext);
-			targetIndex.ShouldBe(null);
+			targetIndex.ShouldBeNull();
 		}
 
 		[Test]
@@ -135,11 +135,11 @@ SELECT CTE.RESPONDENTBUCKET_ID, CTE.SELECTION_ID, CTE.PROJECT_ID, CTE.NAME FROM 
 			context.SegmentsToReplace[0].DisplayOptions.ShouldBe(DisplayOptions.Usage);
 			context.SegmentsToReplace[0].IndextStart.ShouldBe(8);
 			context.SegmentsToReplace[0].Length.ShouldBe(1);
-			context.SegmentsToReplace[0].Text.ShouldBe(null);
+			context.SegmentsToReplace[0].Text.ShouldBeNull();
 			context.SegmentsToReplace[1].DisplayOptions.ShouldBe(DisplayOptions.Usage);
 			context.SegmentsToReplace[1].IndextStart.ShouldBe(29);
 			context.SegmentsToReplace[1].Length.ShouldBe(1);
-			context.SegmentsToReplace[1].Text.ShouldBe(null);
+			context.SegmentsToReplace[1].Text.ShouldBeNull();
 		}
 
 		[Test]

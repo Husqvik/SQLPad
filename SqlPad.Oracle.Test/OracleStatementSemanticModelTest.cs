@@ -34,7 +34,7 @@ namespace SqlPad.Oracle.Test
 		{
 			var statement = (OracleStatement)Parser.Parse("SELECT NULL FROM DUAL").Single();
 			var semanticModel = OracleStatementSemanticModelFactory.Build(null, statement, new OracleTestDatabaseModel(false));
-			semanticModel.HasDatabaseModel.ShouldBe(false);
+			semanticModel.HasDatabaseModel.ShouldBeFalse();
 		}
 
 		[Test]
@@ -54,8 +54,8 @@ FROM
 
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 
-			semanticModel.HasDatabaseModel.ShouldBe(true);
-			semanticModel.QueryBlocks.ShouldNotBe(null);
+			semanticModel.HasDatabaseModel.ShouldBeTrue();
+			semanticModel.QueryBlocks.ShouldNotBeNull();
 			semanticModel.QueryBlocks.Count.ShouldBe(3);
 
 			var queryBlocks = semanticModel.QueryBlocks.ToArray();
@@ -67,11 +67,11 @@ FROM
 			queryBlocks[1].NormalizedAlias.ShouldBe("\"CTE2\"");
 			queryBlocks[1].ObjectReferences.Count.ShouldBe(1);
 			queryBlocks[1].Columns.Count.ShouldBe(3);
-			queryBlocks[2].Alias.ShouldBe(null);
+			queryBlocks[2].Alias.ShouldBeNull();
 			queryBlocks[2].ObjectReferences.Count.ShouldBe(2);
 			queryBlocks[2].Columns.Count.ShouldBe(7);
 			var mainQueryBlockColumns = queryBlocks[2].Columns.ToArray();
-			mainQueryBlockColumns[0].IsAsterisk.ShouldBe(true);
+			mainQueryBlockColumns[0].IsAsterisk.ShouldBeTrue();
 		}
 
 		[Test]
@@ -84,11 +84,11 @@ FROM
 
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 
-			semanticModel.QueryBlocks.ShouldNotBe(null);
+			semanticModel.QueryBlocks.ShouldNotBeNull();
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 
 			var queryBlock = semanticModel.QueryBlocks.Single();
-			queryBlock.Alias.ShouldBe(null);
+			queryBlock.Alias.ShouldBeNull();
 			queryBlock.ObjectReferences.Count.ShouldBe(2);
 			queryBlock.Columns.Count.ShouldBe(5);
 		}
@@ -103,11 +103,11 @@ FROM
 
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 
-			semanticModel.QueryBlocks.ShouldNotBe(null);
+			semanticModel.QueryBlocks.ShouldNotBeNull();
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 
 			var queryBlock = semanticModel.QueryBlocks.Single();
-			queryBlock.Alias.ShouldBe(null);
+			queryBlock.Alias.ShouldBeNull();
 			queryBlock.ObjectReferences.Count.ShouldBe(2);
 			queryBlock.Columns.Count.ShouldBe(5);
 		}
@@ -122,7 +122,7 @@ FROM
 
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 
-			semanticModel.QueryBlocks.ShouldNotBe(null);
+			semanticModel.QueryBlocks.ShouldNotBeNull();
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 
 			var queryBlock = semanticModel.QueryBlocks.Single();
@@ -131,10 +131,10 @@ FROM
 			queryBlock.Columns.Count.ShouldBe(3);
 			var columns = queryBlock.Columns.ToArray();
 			columns[0].ColumnReferences.Count.ShouldBe(1);
-			columns[0].HasExplicitDefinition.ShouldBe(true);
-			columns[0].IsAsterisk.ShouldBe(true);
+			columns[0].HasExplicitDefinition.ShouldBeTrue();
+			columns[0].IsAsterisk.ShouldBeTrue();
 			columns[1].ColumnReferences.Count.ShouldBe(1);
-			columns[1].HasExplicitDefinition.ShouldBe(false);
+			columns[1].HasExplicitDefinition.ShouldBeFalse();
 			columns[1].ColumnReferences.Count.ShouldBe(1);
 			columns[1].ColumnReferences[0].ColumnNodeObjectReferences.Count.ShouldBe(1);
 			columns[1].ColumnReferences[0].ColumnNodeObjectReferences.Single().ShouldBe(objectReference);
@@ -150,25 +150,25 @@ FROM
 
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 
-			semanticModel.QueryBlocks.ShouldNotBe(null);
+			semanticModel.QueryBlocks.ShouldNotBeNull();
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 
 			var functionReferences = semanticModel.QueryBlocks.Single().AllProgramReferences.ToArray();
 			functionReferences.Length.ShouldBe(3);
 			var countFunction = functionReferences[0];
 			countFunction.ProgramIdentifierNode.Id.ShouldBe(Terminals.Count);
-			countFunction.AnalyticClauseNode.ShouldNotBe(null);
-			countFunction.SelectListColumn.ShouldNotBe(null);
+			countFunction.AnalyticClauseNode.ShouldNotBeNull();
+			countFunction.SelectListColumn.ShouldNotBeNull();
 
 			var avgFunction = functionReferences[1];
 			avgFunction.ProgramIdentifierNode.Id.ShouldBe(Terminals.Avg);
-			avgFunction.AnalyticClauseNode.ShouldNotBe(null);
-			avgFunction.SelectListColumn.ShouldNotBe(null);
+			avgFunction.AnalyticClauseNode.ShouldNotBeNull();
+			avgFunction.SelectListColumn.ShouldNotBeNull();
 
 			var lastValueFunction = functionReferences[2];
 			lastValueFunction.ProgramIdentifierNode.Id.ShouldBe(Terminals.LastValue);
-			lastValueFunction.AnalyticClauseNode.ShouldNotBe(null);
-			lastValueFunction.SelectListColumn.ShouldNotBe(null);
+			lastValueFunction.AnalyticClauseNode.ShouldNotBeNull();
+			lastValueFunction.SelectListColumn.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -181,16 +181,16 @@ FROM
 
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 
-			semanticModel.QueryBlocks.ShouldNotBe(null);
+			semanticModel.QueryBlocks.ShouldNotBeNull();
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 
 			var functionReferences = semanticModel.QueryBlocks.Single().AllProgramReferences.ToArray();
 			functionReferences.Length.ShouldBe(1);
 			var lagFunction = functionReferences[0];
 			lagFunction.ProgramIdentifierNode.Id.ShouldBe(Terminals.Lag);
-			lagFunction.AnalyticClauseNode.ShouldNotBe(null);
-			lagFunction.SelectListColumn.ShouldNotBe(null);
-			lagFunction.ParameterListNode.ShouldNotBe(null);
+			lagFunction.AnalyticClauseNode.ShouldNotBeNull();
+			lagFunction.SelectListColumn.ShouldNotBeNull();
+			lagFunction.ParameterListNode.ShouldNotBeNull();
 			lagFunction.ParameterReferences.Count.ShouldBe(3);
 		}
 
@@ -213,16 +213,16 @@ FROM
 			innerBlock.Columns.Count.ShouldBe(3);
 			var columns = innerBlock.Columns.ToArray();
 			columns[0].NormalizedName.ShouldBe("\"RESPONDENTBUCKET_ID\"");
-			columns[0].HasExplicitDefinition.ShouldBe(true);
-			columns[0].IsDirectReference.ShouldBe(true);
+			columns[0].HasExplicitDefinition.ShouldBeTrue();
+			columns[0].IsDirectReference.ShouldBeTrue();
 			columns[0].ColumnDescription.DataType.FullyQualifiedName.Name.ShouldBe("NUMBER");
 			columns[1].NormalizedName.ShouldBe("\"SELECTION_NAME\"");
-			columns[1].HasExplicitDefinition.ShouldBe(true);
-			columns[1].IsDirectReference.ShouldBe(true);
+			columns[1].HasExplicitDefinition.ShouldBeTrue();
+			columns[1].IsDirectReference.ShouldBeTrue();
 			columns[1].ColumnDescription.DataType.FullyQualifiedName.Name.ShouldBe("VARCHAR2");
 			columns[2].NormalizedName.ShouldBe("\"MY_NUMBER_COLUMN\"");
-			columns[2].HasExplicitDefinition.ShouldBe(true);
-			columns[2].IsDirectReference.ShouldBe(false);
+			columns[2].HasExplicitDefinition.ShouldBeTrue();
+			columns[2].IsDirectReference.ShouldBeFalse();
 			columns[2].ColumnDescription.DataType.FullyQualifiedName.Name.ShouldBe("NUMBER");
 			columns[2].ColumnDescription.FullTypeName.ShouldBe("NUMBER");
 
@@ -233,16 +233,16 @@ FROM
 			outerBlock.Columns.Count.ShouldBe(3);
 			columns = outerBlock.Columns.ToArray();
 			columns[0].NormalizedName.ShouldBe("\"RESPONDENTBUCKET_ID\"");
-			columns[0].HasExplicitDefinition.ShouldBe(true);
-			columns[0].IsDirectReference.ShouldBe(true);
+			columns[0].HasExplicitDefinition.ShouldBeTrue();
+			columns[0].IsDirectReference.ShouldBeTrue();
 			columns[0].ColumnDescription.DataType.FullyQualifiedName.Name.ShouldBe("NUMBER");
 			columns[1].NormalizedName.ShouldBe("\"SELECTION_NAME\"");
-			columns[1].HasExplicitDefinition.ShouldBe(true);
-			columns[1].IsDirectReference.ShouldBe(true);
+			columns[1].HasExplicitDefinition.ShouldBeTrue();
+			columns[1].IsDirectReference.ShouldBeTrue();
 			columns[1].ColumnDescription.DataType.FullyQualifiedName.Name.ShouldBe("VARCHAR2");
 			columns[2].NormalizedName.ShouldBe("\"MY_NUMBER_COLUMN\"");
-			columns[2].HasExplicitDefinition.ShouldBe(true);
-			columns[2].IsDirectReference.ShouldBe(true);
+			columns[2].HasExplicitDefinition.ShouldBeTrue();
+			columns[2].IsDirectReference.ShouldBeTrue();
 			columns[2].ColumnDescription.DataType.FullyQualifiedName.Name.ShouldBe("NUMBER");
 			columns[2].ColumnDescription.FullTypeName.ShouldBe("NUMBER");
 		}
@@ -265,10 +265,10 @@ FROM
 			selectionTableReference.Type.ShouldBe(ReferenceType.SchemaObject);
 			innerBlock.Columns.Count.ShouldBe(5);
 			var columns = innerBlock.Columns.ToArray();
-			columns[0].IsAsterisk.ShouldBe(true);
-			columns[0].HasExplicitDefinition.ShouldBe(true);
+			columns[0].IsAsterisk.ShouldBeTrue();
+			columns[0].HasExplicitDefinition.ShouldBeTrue();
 			columns[1].NormalizedName.ShouldBe("\"RESPONDENTBUCKET_ID\"");
-			columns[1].HasExplicitDefinition.ShouldBe(false);
+			columns[1].HasExplicitDefinition.ShouldBeFalse();
 			columns[1].ColumnDescription.DataType.FullyQualifiedName.Name.ShouldBe("NUMBER");
 
 			var outerBlock = queryBlocks[1];
@@ -277,10 +277,10 @@ FROM
 			innerTableReference.Type.ShouldBe(ReferenceType.InlineView);
 			outerBlock.Columns.Count.ShouldBe(5);
 			columns = outerBlock.Columns.ToArray();
-			columns[0].IsAsterisk.ShouldBe(true);
-			columns[0].HasExplicitDefinition.ShouldBe(true);
+			columns[0].IsAsterisk.ShouldBeTrue();
+			columns[0].HasExplicitDefinition.ShouldBeTrue();
 			columns[1].NormalizedName.ShouldBe("\"RESPONDENTBUCKET_ID\"");
-			columns[1].HasExplicitDefinition.ShouldBe(false);
+			columns[1].HasExplicitDefinition.ShouldBeFalse();
 			columns[1].ColumnDescription.DataType.FullyQualifiedName.Name.ShouldBe("NUMBER");
 		}
 
@@ -294,17 +294,17 @@ FROM
 
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 
-			semanticModel.QueryBlocks.ShouldNotBe(null);
+			semanticModel.QueryBlocks.ShouldNotBeNull();
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 
 			var functionReferences = semanticModel.QueryBlocks.Single().AllProgramReferences.ToArray();
 			functionReferences.Length.ShouldBe(1);
 			var maxFunction = functionReferences[0];
 			maxFunction.ProgramIdentifierNode.Id.ShouldBe(Terminals.Max);
-			maxFunction.AnalyticClauseNode.ShouldBe(null);
-			maxFunction.SelectListColumn.ShouldNotBe(null);
-			maxFunction.ParameterListNode.ShouldNotBe(null);
-			maxFunction.ParameterReferences.ShouldNotBe(null);
+			maxFunction.AnalyticClauseNode.ShouldBeNull();
+			maxFunction.SelectListColumn.ShouldNotBeNull();
+			maxFunction.ParameterListNode.ShouldNotBeNull();
+			maxFunction.ParameterReferences.ShouldNotBeNull();
 			maxFunction.ParameterReferences.Count.ShouldBe(1);
 		}
 
@@ -318,7 +318,7 @@ FROM
 
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 
-			semanticModel.QueryBlocks.ShouldNotBe(null);
+			semanticModel.QueryBlocks.ShouldNotBeNull();
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 
 			var columnReferences = semanticModel.QueryBlocks.Single().AllColumnReferences.ToArray();
@@ -338,7 +338,7 @@ FROM
 
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 
-			semanticModel.QueryBlocks.ShouldNotBe(null);
+			semanticModel.QueryBlocks.ShouldNotBeNull();
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 
 			var columnReferences = semanticModel.QueryBlocks.Single().AllColumnReferences.ToArray();
@@ -358,7 +358,7 @@ FROM
 
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 
-			semanticModel.QueryBlocks.ShouldNotBe(null);
+			semanticModel.QueryBlocks.ShouldNotBeNull();
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 
 			var columnReferences = semanticModel.QueryBlocks.Single().AllColumnReferences.OrderBy(r => r.ColumnNode.SourcePosition.IndexStart).ToArray();
@@ -378,14 +378,14 @@ FROM
 
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 
-			semanticModel.QueryBlocks.ShouldNotBe(null);
+			semanticModel.QueryBlocks.ShouldNotBeNull();
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 
 			var objectReferences = semanticModel.QueryBlocks.Single().ObjectReferences.ToArray();
 			objectReferences.Length.ShouldBe(1);
 			var selectionTable = objectReferences[0];
-			selectionTable.DatabaseLinkNode.ShouldNotBe(null);
-			selectionTable.DatabaseLink.ShouldNotBe(null);
+			selectionTable.DatabaseLinkNode.ShouldNotBeNull();
+			selectionTable.DatabaseLink.ShouldNotBeNull();
 			selectionTable.DatabaseLink.FullyQualifiedName.Name.ShouldBe("HQ_PDB_LOOPBACK");
 		}
 
@@ -399,14 +399,14 @@ FROM
 
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 
-			semanticModel.QueryBlocks.ShouldNotBe(null);
+			semanticModel.QueryBlocks.ShouldNotBeNull();
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 
 			var objectReferences = semanticModel.QueryBlocks.Single().ObjectReferences.ToArray();
 			objectReferences.Length.ShouldBe(1);
 			var selectionTable = objectReferences[0];
-			selectionTable.DatabaseLinkNode.ShouldNotBe(null);
-			selectionTable.DatabaseLink.ShouldNotBe(null);
+			selectionTable.DatabaseLinkNode.ShouldNotBeNull();
+			selectionTable.DatabaseLink.ShouldNotBeNull();
 			selectionTable.DatabaseLink.FullyQualifiedName.Name.ShouldBe("TESTHOST.SQLPAD.HUSQVIK.COM@HQINSTANCE");
 		}
 
@@ -479,10 +479,10 @@ SELECT * FROM sampleData";
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.InsertTargets.Count.ShouldBe(1);
-			semanticModel.MainObjectReferenceContainer.MainObjectReference.ShouldBe(null);
+			semanticModel.MainObjectReferenceContainer.MainObjectReference.ShouldBeNull();
 			var insertTarget = semanticModel.InsertTargets.First();
 			insertTarget.ObjectReferences.Count.ShouldBe(1);
-			insertTarget.ObjectReferences.First().SchemaObject.ShouldNotBe(null);
+			insertTarget.ObjectReferences.First().SchemaObject.ShouldNotBeNull();
 			insertTarget.ColumnReferences.Count.ShouldBe(1);
 		}
 
@@ -494,8 +494,8 @@ SELECT * FROM sampleData";
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 
-			semanticModel.MainObjectReferenceContainer.MainObjectReference.ShouldNotBe(null);
-			semanticModel.MainObjectReferenceContainer.MainObjectReference.SchemaObject.ShouldNotBe(null);
+			semanticModel.MainObjectReferenceContainer.MainObjectReference.ShouldNotBeNull();
+			semanticModel.MainObjectReferenceContainer.MainObjectReference.SchemaObject.ShouldNotBeNull();
 			semanticModel.MainObjectReferenceContainer.ColumnReferences.Count.ShouldBe(2);
 		}
 
@@ -507,8 +507,8 @@ SELECT * FROM sampleData";
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 
-			semanticModel.MainObjectReferenceContainer.MainObjectReference.ShouldNotBe(null);
-			semanticModel.MainObjectReferenceContainer.MainObjectReference.SchemaObject.ShouldNotBe(null);
+			semanticModel.MainObjectReferenceContainer.MainObjectReference.ShouldNotBeNull();
+			semanticModel.MainObjectReferenceContainer.MainObjectReference.SchemaObject.ShouldNotBeNull();
 			semanticModel.MainObjectReferenceContainer.ColumnReferences.Count.ShouldBe(1);
 		}
 
@@ -520,8 +520,8 @@ SELECT * FROM sampleData";
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 
-			semanticModel.MainObjectReferenceContainer.MainObjectReference.ShouldNotBe(null);
-			semanticModel.MainObjectReferenceContainer.MainObjectReference.SchemaObject.ShouldBe(null);
+			semanticModel.MainObjectReferenceContainer.MainObjectReference.ShouldNotBeNull();
+			semanticModel.MainObjectReferenceContainer.MainObjectReference.SchemaObject.ShouldBeNull();
 			semanticModel.MainObjectReferenceContainer.MainObjectReference.Type.ShouldBe(ReferenceType.InlineView);
 			semanticModel.MainObjectReferenceContainer.ColumnReferences.Count.ShouldBe(2);
 		}
@@ -534,7 +534,7 @@ SELECT * FROM sampleData";
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 
-			semanticModel.MainObjectReferenceContainer.MainObjectReference.ShouldBe(null);
+			semanticModel.MainObjectReferenceContainer.MainObjectReference.ShouldBeNull();
 		}
 
 		[Test]
@@ -545,11 +545,11 @@ SELECT * FROM sampleData";
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 
-			semanticModel.MainObjectReferenceContainer.MainObjectReference.ShouldBe(null);
+			semanticModel.MainObjectReferenceContainer.MainObjectReference.ShouldBeNull();
 			semanticModel.InsertTargets.Count.ShouldBe(1);
 			var insertTarget = semanticModel.InsertTargets.First();
 			insertTarget.ObjectReferences.Count.ShouldBe(1);
-			insertTarget.ObjectReferences.First().SchemaObject.ShouldNotBe(null);
+			insertTarget.ObjectReferences.First().SchemaObject.ShouldNotBeNull();
 			insertTarget.ProgramReferences.Count.ShouldBe(0);
 		}
 
@@ -565,7 +565,7 @@ SELECT * FROM sampleData";
 			var insertTarget = semanticModel.InsertTargets.First();
 			insertTarget.ObjectReferences.Count.ShouldBe(1);
 			var insertTargetDataObjectReference = insertTarget.ObjectReferences.First();
-			insertTargetDataObjectReference.SchemaObject.ShouldNotBe(null);
+			insertTargetDataObjectReference.SchemaObject.ShouldNotBeNull();
 			insertTarget.ProgramReferences.Count.ShouldBe(1);
 			insertTarget.TypeReferences.Count.ShouldBe(1);
 			insertTarget.SequenceReferences.Count.ShouldBe(1);
@@ -579,7 +579,7 @@ SELECT * FROM sampleData";
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 
-			semanticModel.QueryBlocks.ShouldNotBe(null);
+			semanticModel.QueryBlocks.ShouldNotBeNull();
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 
 			var functionReferences = semanticModel.QueryBlocks.Single().AllProgramReferences.ToArray();
@@ -588,10 +588,10 @@ SELECT * FROM sampleData";
 			functionReference.ProgramIdentifierNode.Token.Value.ShouldBe("VALUE");
 			functionReference.ObjectNode.Token.Value.ShouldBe("DBMS_RANDOM");
 			functionReference.OwnerNode.Token.Value.ShouldBe("SYS");
-			functionReference.AnalyticClauseNode.ShouldBe(null);
-			functionReference.SelectListColumn.ShouldNotBe(null);
-			functionReference.ParameterListNode.ShouldBe(null);
-			functionReference.ParameterReferences.ShouldNotBe(null);
+			functionReference.AnalyticClauseNode.ShouldBeNull();
+			functionReference.SelectListColumn.ShouldNotBeNull();
+			functionReference.ParameterListNode.ShouldBeNull();
+			functionReference.ParameterReferences.ShouldNotBeNull();
 			functionReference.ParameterReferences.Count.ShouldBe(0);
 			functionReference.RootNode.FirstTerminalNode.Token.Value.ShouldBe("SYS");
 			functionReference.RootNode.LastTerminalNode.Token.Value.ShouldBe("VALUE");
@@ -633,10 +633,10 @@ SELECT * FROM sampleData";
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 
-			semanticModel.MainObjectReferenceContainer.MainObjectReference.ShouldNotBe(null);
+			semanticModel.MainObjectReferenceContainer.MainObjectReference.ShouldNotBeNull();
 			semanticModel.MainObjectReferenceContainer.ProgramReferences.Count.ShouldBe(1);
 			var functionReference = semanticModel.MainObjectReferenceContainer.ProgramReferences.Single();
-			functionReference.Metadata.ShouldNotBe(null);
+			functionReference.Metadata.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -650,10 +650,10 @@ SELECT * FROM sampleData";
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 			var queryBlock = semanticModel.QueryBlocks.First();
 			queryBlock.Columns.Count.ShouldBe(8);
-			queryBlock.HasDistinctResultSet.ShouldBe(true);
+			queryBlock.HasDistinctResultSet.ShouldBeTrue();
 			var columns = queryBlock.Columns.ToList();
-			columns.ForEach(c => c.ColumnDescription.ShouldNotBe(null));
-			columns.ForEach(c => c.ColumnDescription.Nullable.ShouldBe(false));
+			columns.ForEach(c => c.ColumnDescription.ShouldNotBeNull());
+			columns.ForEach(c => c.ColumnDescription.Nullable.ShouldBeFalse());
 			columns[0].ColumnDescription.FullTypeName.ShouldBe("NUMBER");
 			columns[1].ColumnDescription.FullTypeName.ShouldBe("CHAR(7)");
 			columns[2].ColumnDescription.FullTypeName.ShouldBe("NCHAR(7)");
@@ -679,21 +679,21 @@ SELECT C1, C2, C3, C4 FROM tmp";
 
 			semanticModel.MainQueryBlock.Columns.Count.ShouldBe(4);
 			semanticModel.MainQueryBlock.Columns[0].NormalizedName.ShouldBe("\"C1\"");
-			semanticModel.MainQueryBlock.Columns[0].ColumnDescription.ShouldNotBe(null);
+			semanticModel.MainQueryBlock.Columns[0].ColumnDescription.ShouldNotBeNull();
 			semanticModel.MainQueryBlock.Columns[0].ColumnDescription.FullTypeName.ShouldBe("CHAR(2)");
-			semanticModel.MainQueryBlock.Columns[0].ColumnDescription.Nullable.ShouldBe(false);
+			semanticModel.MainQueryBlock.Columns[0].ColumnDescription.Nullable.ShouldBeFalse();
 			semanticModel.MainQueryBlock.Columns[1].NormalizedName.ShouldBe("\"C2\"");
-			semanticModel.MainQueryBlock.Columns[1].ColumnDescription.ShouldNotBe(null);
+			semanticModel.MainQueryBlock.Columns[1].ColumnDescription.ShouldNotBeNull();
 			semanticModel.MainQueryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe("NCHAR(1)");
-			semanticModel.MainQueryBlock.Columns[1].ColumnDescription.Nullable.ShouldBe(true);
+			semanticModel.MainQueryBlock.Columns[1].ColumnDescription.Nullable.ShouldBeTrue();
 			semanticModel.MainQueryBlock.Columns[2].NormalizedName.ShouldBe("\"C3\"");
-			semanticModel.MainQueryBlock.Columns[2].ColumnDescription.ShouldNotBe(null);
+			semanticModel.MainQueryBlock.Columns[2].ColumnDescription.ShouldNotBeNull();
 			semanticModel.MainQueryBlock.Columns[2].ColumnDescription.FullTypeName.ShouldBe("VARCHAR2(1 BYTE)");
-			semanticModel.MainQueryBlock.Columns[2].ColumnDescription.Nullable.ShouldBe(true);
+			semanticModel.MainQueryBlock.Columns[2].ColumnDescription.Nullable.ShouldBeTrue();
 			semanticModel.MainQueryBlock.Columns[3].NormalizedName.ShouldBe("\"C4\"");
-			semanticModel.MainQueryBlock.Columns[3].ColumnDescription.ShouldNotBe(null);
+			semanticModel.MainQueryBlock.Columns[3].ColumnDescription.ShouldNotBeNull();
 			semanticModel.MainQueryBlock.Columns[3].ColumnDescription.FullTypeName.ShouldBe("VARCHAR2(4000)");
-			semanticModel.MainQueryBlock.Columns[3].ColumnDescription.Nullable.ShouldBe(true);
+			semanticModel.MainQueryBlock.Columns[3].ColumnDescription.Nullable.ShouldBeTrue();
 		}
 
 		[Test]
@@ -739,12 +739,12 @@ select * from recursion";
 
 			semanticModel.QueryBlocks.Count.ShouldBe(2);
 			var queryBlock = semanticModel.QueryBlocks.First();
-			queryBlock.HasDistinctResultSet.ShouldBe(true);
+			queryBlock.HasDistinctResultSet.ShouldBeTrue();
 			queryBlock.Columns.Count.ShouldBe(2);
-			queryBlock.Columns[0].ColumnDescription.ShouldNotBe(null);
+			queryBlock.Columns[0].ColumnDescription.ShouldNotBeNull();
 			queryBlock.Columns[0].ColumnDescription.Name.ShouldBe("\"CONSTANT1\"");
 			queryBlock.Columns[0].ColumnDescription.FullTypeName.ShouldBe("NUMBER");
-			queryBlock.Columns[1].ColumnDescription.ShouldNotBe(null);
+			queryBlock.Columns[1].ColumnDescription.ShouldNotBeNull();
 			queryBlock.Columns[1].ColumnDescription.Name.ShouldBe("\"CONSTANT2\"");
 			queryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe("NUMBER");
 		}
@@ -759,11 +759,11 @@ select * from recursion";
 
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 			var queryBlock = semanticModel.QueryBlocks.First();
-			queryBlock.HasDistinctResultSet.ShouldBe(false);
+			queryBlock.HasDistinctResultSet.ShouldBeFalse();
 			queryBlock.Columns.Count.ShouldBe(5);
 			var columns = queryBlock.Columns.ToList();
-			columns.ForEach(c => c.ColumnDescription.ShouldNotBe(null));
-			columns.ForEach(c => c.ColumnDescription.Nullable.ShouldBe(true));
+			columns.ForEach(c => c.ColumnDescription.ShouldNotBeNull());
+			columns.ForEach(c => c.ColumnDescription.Nullable.ShouldBeTrue());
 			columns.ForEach(c => c.ColumnDescription.DataType.ShouldBe(OracleDataType.Empty));
 			columns.ForEach(c => c.ColumnDescription.FullTypeName.ShouldBe(String.Empty));
 		}
@@ -899,8 +899,8 @@ SELECT * FROM DUAL";
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var cteQueryBlock = semanticModel.QueryBlocks.First(qb => qb.Type == QueryBlockType.CommonTableExpression);
-			cteQueryBlock.RecursiveSearchClause.ShouldNotBe(null);
-			semanticModel.MainQueryBlock.RecursiveSearchClause.ShouldBe(null);
+			cteQueryBlock.RecursiveSearchClause.ShouldNotBeNull();
+			semanticModel.MainQueryBlock.RecursiveSearchClause.ShouldBeNull();
 
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(1);
 			var terminalGroup = semanticModel.RedundantSymbolGroups.Single();
@@ -942,9 +942,9 @@ SELECT * FROM DUAL";
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var cteQueryBlock = semanticModel.QueryBlocks.First(qb => qb.Type == QueryBlockType.CommonTableExpression);
-			cteQueryBlock.RecursiveSearchClause.ShouldNotBe(null);
-			cteQueryBlock.RecursiveCycleClause.ShouldNotBe(null);
-			semanticModel.MainQueryBlock.RecursiveCycleClause.ShouldBe(null);
+			cteQueryBlock.RecursiveSearchClause.ShouldNotBeNull();
+			cteQueryBlock.RecursiveCycleClause.ShouldNotBeNull();
+			semanticModel.MainQueryBlock.RecursiveCycleClause.ShouldBeNull();
 
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(2);
 			var terminalGroups = semanticModel.RedundantSymbolGroups.ToArray();
@@ -1071,7 +1071,7 @@ SELECT c FROM t2";
 			queryBlock.Columns.Count.ShouldBe(1);
 			queryBlock.Columns[0].ColumnReferences.Count.ShouldBe(1);
 			queryBlock.Columns[0].ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
-			queryBlock.Columns[0].ColumnReferences[0].ValidObjectReference.ShouldNotBe(null);
+			queryBlock.Columns[0].ColumnReferences[0].ValidObjectReference.ShouldNotBeNull();
         }
 
 		[Test]
@@ -1308,7 +1308,7 @@ PIVOT (
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 
-			semanticModel.QueryBlocks.ShouldNotBe(null);
+			semanticModel.QueryBlocks.ShouldNotBeNull();
 			semanticModel.QueryBlocks.Count.ShouldBe(1);
 
 			var functionReferences = semanticModel.QueryBlocks.Single().AllProgramReferences.ToArray();
@@ -1377,8 +1377,8 @@ SELECT * FROM CTE";
 
 			var objectReferences = semanticModel.QueryBlocks.Single().ObjectReferences.ToArray();
 			objectReferences.Length.ShouldBe(1);
-			objectReferences[0].SchemaObject.ShouldBe(null);
-			objectReferences[0].DatabaseLink.ShouldNotBe(null);
+			objectReferences[0].SchemaObject.ShouldBeNull();
+			objectReferences[0].DatabaseLink.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -1492,7 +1492,7 @@ END;";
 
 			var statement = (OracleStatement)Parser.Parse(query1).Single();
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
-			semanticModel.MainQueryBlock.ShouldBe(null);
+			semanticModel.MainQueryBlock.ShouldBeNull();
 		}
 
 		[Test]
@@ -1515,8 +1515,8 @@ END;";
 
 			var programReferences = semanticModel.QueryBlocks.Single().AllProgramReferences.ToArray();
 			programReferences.Length.ShouldBe(1);
-			programReferences[0].Metadata.ShouldBe(null);
-			programReferences[0].SchemaObject.ShouldBe(null);
+			programReferences[0].Metadata.ShouldBeNull();
+			programReferences[0].SchemaObject.ShouldBeNull();
 		}
 
 		[Test]
@@ -1531,12 +1531,12 @@ END;";
 			programReferences.Length.ShouldBe(1);
 			var programReference = programReferences[0];
 			programReference.ProgramIdentifierNode.Id.ShouldBe(Terminals.Count);
-			programReference.ObjectNode.ShouldBe(null);
-			programReference.OwnerNode.ShouldBe(null);
-			programReference.AnalyticClauseNode.ShouldBe(null);
-			programReference.SelectListColumn.ShouldBe(null);
-			programReference.ParameterListNode.ShouldNotBe(null);
-			programReference.ParameterReferences.ShouldNotBe(null);
+			programReference.ObjectNode.ShouldBeNull();
+			programReference.OwnerNode.ShouldBeNull();
+			programReference.AnalyticClauseNode.ShouldBeNull();
+			programReference.SelectListColumn.ShouldBeNull();
+			programReference.ParameterListNode.ShouldNotBeNull();
+			programReference.ParameterReferences.ShouldNotBeNull();
 			programReference.ParameterReferences.Count.ShouldBe(1);
 		}
 
@@ -1552,12 +1552,12 @@ END;";
 			programReferences.Length.ShouldBe(1);
 			var programReference = programReferences[0];
 			programReference.ProgramIdentifierNode.Id.ShouldBe(Terminals.ListAggregation);
-			programReference.ObjectNode.ShouldBe(null);
-			programReference.OwnerNode.ShouldBe(null);
-			programReference.AnalyticClauseNode.ShouldBe(null);
-			programReference.SelectListColumn.ShouldNotBe(null);
-			programReference.ParameterListNode.ShouldNotBe(null);
-			programReference.ParameterReferences.ShouldNotBe(null);
+			programReference.ObjectNode.ShouldBeNull();
+			programReference.OwnerNode.ShouldBeNull();
+			programReference.AnalyticClauseNode.ShouldBeNull();
+			programReference.SelectListColumn.ShouldNotBeNull();
+			programReference.ParameterListNode.ShouldNotBeNull();
+			programReference.ParameterReferences.ShouldNotBeNull();
 			programReference.ParameterReferences.Count.ShouldBe(2);
 		}
 
@@ -1572,14 +1572,14 @@ END;";
 			var queryBlock = semanticModel.QueryBlocks.Single();
 			var objectReferences = queryBlock.ObjectReferences.ToArray();
 			objectReferences.Length.ShouldBe(2);
-			objectReferences[0].RootNode.ShouldNotBe(null);
+			objectReferences[0].RootNode.ShouldNotBeNull();
 			objectReferences[0].RootNode.FirstTerminalNode.Id.ShouldBe(Terminals.Table);
 			objectReferences[0].RootNode.LastTerminalNode.Id.ShouldBe(Terminals.ObjectAlias);
 			objectReferences[0].RootNode.LastTerminalNode.Token.Value.ShouldBe("T1");
 			objectReferences[0].ShouldBeAssignableTo<OracleTableCollectionReference>();
 			var tableCollectionReference = (OracleTableCollectionReference)objectReferences[0];
 			tableCollectionReference.RowSourceReference.ShouldBeAssignableTo<OracleProgramReference>();
-			objectReferences[1].RootNode.ShouldNotBe(null);
+			objectReferences[1].RootNode.ShouldNotBeNull();
 			objectReferences[1].RootNode.FirstTerminalNode.Id.ShouldBe(Terminals.Table);
 			objectReferences[1].RootNode.LastTerminalNode.Id.ShouldBe(Terminals.ObjectAlias);
 			objectReferences[1].RootNode.LastTerminalNode.Token.Value.ShouldBe("T2");
@@ -1589,34 +1589,34 @@ END;";
 
 			var typeReferences = queryBlock.AllTypeReferences.ToArray();
 			typeReferences.Length.ShouldBe(1);
-			typeReferences[0].RootNode.ShouldNotBe(null);
+			typeReferences[0].RootNode.ShouldNotBeNull();
 			var terminals = typeReferences[0].RootNode.Terminals.ToArray();
 			terminals[0].Id.ShouldBe(Terminals.ObjectIdentifier);
 			terminals[0].Token.Value.ShouldBe("SYS");
 			terminals[2].Id.ShouldBe(Terminals.Identifier);
 			terminals[2].Token.Value.ShouldBe("ODCIRAWLIST");
 			typeReferences[0].RootNode.LastTerminalNode.Id.ShouldBe(Terminals.RightParenthesis);
-			typeReferences[0].ParameterListNode.ShouldNotBe(null);
-			typeReferences[0].ParameterReferences.ShouldNotBe(null);
+			typeReferences[0].ParameterListNode.ShouldNotBeNull();
+			typeReferences[0].ParameterReferences.ShouldNotBeNull();
 			typeReferences[0].ParameterReferences.Count.ShouldBe(3);
 
 			var programReferences = queryBlock.AllProgramReferences.ToArray();
 			programReferences.Length.ShouldBe(4);
-			programReferences[0].RootNode.ShouldNotBe(null);
+			programReferences[0].RootNode.ShouldNotBeNull();
 			terminals = programReferences[0].RootNode.Terminals.ToArray();
 			terminals[0].Id.ShouldBe(Terminals.ObjectIdentifier);
 			terminals[0].Token.Value.ShouldBe("DBMS_XPLAN");
 			terminals[2].Id.ShouldBe(Terminals.Identifier);
 			terminals[2].Token.Value.ShouldBe("DISPLAY_CURSOR");
 			programReferences[0].RootNode.LastTerminalNode.Id.ShouldBe(Terminals.RightParenthesis);
-			programReferences[0].ParameterListNode.ShouldNotBe(null);
-			programReferences[0].ParameterReferences.ShouldNotBe(null);
+			programReferences[0].ParameterListNode.ShouldNotBeNull();
+			programReferences[0].ParameterReferences.ShouldNotBeNull();
 			programReferences[0].ParameterReferences.Count.ShouldBe(3);
-			programReferences[1].Metadata.ShouldNotBe(null);
+			programReferences[1].Metadata.ShouldNotBeNull();
 			programReferences[1].Metadata.Identifier.Name.ShouldBe("\"HEXTORAW\"");
-			programReferences[2].Metadata.ShouldNotBe(null);
+			programReferences[2].Metadata.ShouldNotBeNull();
 			programReferences[2].Metadata.Identifier.Name.ShouldBe("\"HEXTORAW\"");
-			programReferences[3].Metadata.ShouldNotBe(null);
+			programReferences[3].Metadata.ShouldNotBeNull();
 			programReferences[3].Metadata.Identifier.Name.ShouldBe("\"HEXTORAW\"");
 
 			queryBlock.Columns.Count.ShouldBe(3);
@@ -1636,10 +1636,10 @@ END;";
 			objectReference.ShouldBeAssignableTo<OracleTableCollectionReference>();
 			var tableCollectionReference = (OracleTableCollectionReference)objectReference;
 			tableCollectionReference.RowSourceReference.ShouldBeAssignableTo<OracleProgramReference>();
-			((OracleProgramReference)tableCollectionReference.RowSourceReference).Metadata.ShouldNotBe(null);
+			((OracleProgramReference)tableCollectionReference.RowSourceReference).Metadata.ShouldNotBeNull();
 
 			queryBlock.ProgramReferences.Count.ShouldBe(1);
-			queryBlock.ProgramReferences.Single().Metadata.ShouldNotBe(null);
+			queryBlock.ProgramReferences.Single().Metadata.ShouldNotBeNull();
 
 			queryBlock.Columns.Count.ShouldBe(1);
 			queryBlock.Columns[0].ColumnReferences.Count.ShouldBe(1);
@@ -1657,7 +1657,7 @@ END;";
 			var queryBlock = semanticModel.QueryBlocks.Single();
 
 			queryBlock.ProgramReferences.Count.ShouldBe(1);
-			queryBlock.ProgramReferences.Single().Metadata.ShouldNotBe(null);
+			queryBlock.ProgramReferences.Single().Metadata.ShouldNotBeNull();
 
 			queryBlock.Columns.Count.ShouldBe(1);
 			queryBlock.Columns[0].ColumnReferences.Count.ShouldBe(1);
@@ -1690,20 +1690,20 @@ END;";
 			var queryBlock = semanticModel.QueryBlocks.Single();
 			var objectReferences = queryBlock.ObjectReferences.ToArray();
 			objectReferences.Length.ShouldBe(1);
-			objectReferences[0].RootNode.ShouldNotBe(null);
+			objectReferences[0].RootNode.ShouldNotBeNull();
 			objectReferences[0].RootNode.FirstTerminalNode.Id.ShouldBe(Terminals.XmlTable);
 			objectReferences[0].RootNode.LastTerminalNode.Id.ShouldBe(Terminals.ObjectAlias);
 			objectReferences[0].RootNode.LastTerminalNode.Token.Value.ShouldBe("T");
 			objectReferences[0].Columns.Count.ShouldBe(3);
 			var columns = objectReferences[0].Columns.ToArray();
 			columns[0].Name.ShouldBe("\"SEQ#\"");
-			columns[0].Nullable.ShouldBe(true);
+			columns[0].Nullable.ShouldBeTrue();
 			columns[0].FullTypeName.ShouldBe("NUMBER");
 			columns[1].Name.ShouldBe("\"TITLE\"");
-			columns[1].Nullable.ShouldBe(true);
+			columns[1].Nullable.ShouldBeTrue();
 			columns[1].FullTypeName.ShouldBe("VARCHAR2(4000)");
 			columns[2].Name.ShouldBe("\"DESCRIPTION\"");
-			columns[2].Nullable.ShouldBe(true);
+			columns[2].Nullable.ShouldBeTrue();
 			columns[2].FullTypeName.ShouldBe("CLOB");
 
 			queryBlock.Columns.Count.ShouldBe(4);
@@ -1724,7 +1724,7 @@ END;";
 			var columns = queryBlock.Columns.ToArray();
 			columns.Length.ShouldBe(1);
 			columns[0].ColumnDescription.Name.ShouldBe("\"DUMMY\"");
-			columns[0].ColumnDescription.Nullable.ShouldBe(true);
+			columns[0].ColumnDescription.Nullable.ShouldBeTrue();
 			columns[0].ColumnDescription.FullTypeName.ShouldBe("VARCHAR2(1 BYTE)");
 		}
 		
@@ -1739,9 +1739,9 @@ END;";
 			var queryBlock = semanticModel.QueryBlocks.Single();
 			var columns = queryBlock.Columns.ToArray();
 			columns.Length.ShouldBe(2);
-			columns[0].IsAsterisk.ShouldBe(true);
+			columns[0].IsAsterisk.ShouldBeTrue();
 			columns[1].ColumnDescription.Name.ShouldBe("\"COLUMN_VALUE\"");
-			columns[1].ColumnDescription.Nullable.ShouldBe(true);
+			columns[1].ColumnDescription.Nullable.ShouldBeTrue();
 			columns[1].ColumnDescription.FullTypeName.ShouldBe("SYS.XMLTYPE");
 		}
 
@@ -1787,7 +1787,7 @@ AS T";
 			var queryBlock = semanticModel.QueryBlocks.Single();
 			var objectReferences = queryBlock.ObjectReferences.ToArray();
 			objectReferences.Length.ShouldBe(1);
-			objectReferences[0].RootNode.ShouldNotBe(null);
+			objectReferences[0].RootNode.ShouldNotBeNull();
 			objectReferences[0].RootNode.FirstTerminalNode.Id.ShouldBe(Terminals.JsonTable);
 			objectReferences[0].RootNode.LastTerminalNode.Id.ShouldBe(Terminals.ObjectAlias);
 			objectReferences[0].RootNode.LastTerminalNode.Token.Value.ShouldBe("T");
@@ -1845,19 +1845,19 @@ MODEL
 			objectReferences[0].Columns.Count.ShouldBe(4);
 			
 			queryBlock.Columns.Count.ShouldBe(5);
-			queryBlock.Columns[0].IsAsterisk.ShouldBe(true);
+			queryBlock.Columns[0].IsAsterisk.ShouldBeTrue();
 			queryBlock.Columns[1].NormalizedName.ShouldBe("\"KEY\"");
-			queryBlock.Columns[1].ColumnDescription.DataType.ShouldNotBe(null);
+			queryBlock.Columns[1].ColumnDescription.DataType.ShouldNotBeNull();
 			queryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe("NUMBER");
 			queryBlock.Columns[2].NormalizedName.ShouldBe("\"C1\"");
-			queryBlock.Columns[2].ColumnDescription.DataType.ShouldNotBe(null);
+			queryBlock.Columns[2].ColumnDescription.DataType.ShouldNotBeNull();
 			queryBlock.Columns[2].ColumnDescription.FullTypeName.ShouldBe("CHAR(13)");
-			queryBlock.Columns[2].IsDirectReference.ShouldBe(true);
+			queryBlock.Columns[2].IsDirectReference.ShouldBeTrue();
 			queryBlock.Columns[3].NormalizedName.ShouldBe("\"C2\"");
-			queryBlock.Columns[3].ColumnDescription.DataType.ShouldNotBe(null);
-			queryBlock.Columns[3].IsDirectReference.ShouldBe(true);
+			queryBlock.Columns[3].ColumnDescription.DataType.ShouldNotBeNull();
+			queryBlock.Columns[3].IsDirectReference.ShouldBeTrue();
 			queryBlock.Columns[4].NormalizedName.ShouldBe("\"C3\"");
-			queryBlock.Columns[4].IsDirectReference.ShouldBe(true);
+			queryBlock.Columns[4].IsDirectReference.ShouldBeTrue();
 
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
@@ -1950,7 +1950,7 @@ MODEL
 			objectReferences[0].ShouldBeAssignableTo<OracleSqlModelReference>();
 			objectReferences[0].Columns.Count.ShouldBe(8);
 
-			outerQueryBlock.ModelReference.ShouldNotBe(null);
+			outerQueryBlock.ModelReference.ShouldNotBeNull();
 			var sourceReferenceContainer = outerQueryBlock.ModelReference.SourceReferenceContainer;
 			sourceReferenceContainer.ColumnReferences.Count.ShouldBe(6);
 			sourceReferenceContainer.ProgramReferences.Count.ShouldBe(1);
@@ -2001,7 +2001,7 @@ MODEL
 			semanticModel.QueryBlocks.Count.ShouldBe(2);
 			var outerQueryBlock = semanticModel.QueryBlocks.OrderBy(qb => qb.RootNode.Level).First();
 			outerQueryBlock.Columns.Count.ShouldBe(6);
-			outerQueryBlock.Columns[0].IsAsterisk.ShouldBe(true);
+			outerQueryBlock.Columns[0].IsAsterisk.ShouldBeTrue();
 			outerQueryBlock.Columns[1].NormalizedName.ShouldBe("\"P1\"");
 			outerQueryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe("NUMBER");
 			outerQueryBlock.Columns[2].NormalizedName.ShouldBe("\"P2\"");
@@ -2078,7 +2078,7 @@ FROM
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var mainObjectReference = semanticModel.MainObjectReferenceContainer.MainObjectReference;
-			mainObjectReference.ShouldNotBe(null);
+			mainObjectReference.ShouldNotBeNull();
 
 			semanticModel.MainObjectReferenceContainer.ColumnReferences.Count.ShouldBe(2);
 			var sourceColumn = semanticModel.MainObjectReferenceContainer.ColumnReferences[1];
@@ -2107,28 +2107,28 @@ SELECT F1(NULL) RESULT1, COUNT(NULL), F2(NULL), T.* FROM (
 			var queryBlocks = semanticModel.QueryBlocks.OrderBy(qb => qb.RootNode.SourcePosition.IndexStart).ToArray();
 
 			queryBlocks[0].Type.ShouldBe(QueryBlockType.Normal);
-			queryBlocks[0].Alias.ShouldBe(null);
+			queryBlocks[0].Alias.ShouldBeNull();
 			var programReferences = queryBlocks[0].AllProgramReferences.ToArray();
 			programReferences.Length.ShouldBe(3);
-			programReferences[0].Metadata.ShouldNotBe(null);
-			programReferences[1].Metadata.ShouldNotBe(null);
+			programReferences[0].Metadata.ShouldNotBeNull();
+			programReferences[1].Metadata.ShouldNotBeNull();
 			programReferences[1].Metadata.Identifier.Name.ShouldBe("\"COUNT\"");
 			programReferences[1].Metadata.Type.ShouldBe(ProgramType.Function);
-			programReferences[1].Metadata.IsAggregate.ShouldBe(true);
-			programReferences[2].Metadata.ShouldBe(null);
+			programReferences[1].Metadata.IsAggregate.ShouldBeTrue();
+			programReferences[2].Metadata.ShouldBeNull();
 
 			queryBlocks[1].Type.ShouldBe(QueryBlockType.Normal);
 			queryBlocks[1].Alias.ShouldBe("T");
 			programReferences = queryBlocks[1].AllProgramReferences.ToArray();
 			programReferences.Length.ShouldBe(2);
-			programReferences[0].Metadata.ShouldNotBe(null);
-			programReferences[1].Metadata.ShouldNotBe(null);
+			programReferences[0].Metadata.ShouldNotBeNull();
+			programReferences[1].Metadata.ShouldNotBeNull();
 
 			queryBlocks[2].Type.ShouldBe(QueryBlockType.ScalarSubquery);
-			queryBlocks[2].Alias.ShouldBe(null);
+			queryBlocks[2].Alias.ShouldBeNull();
 			programReferences = queryBlocks[2].AllProgramReferences.ToArray();
 			programReferences.Length.ShouldBe(1);
-			programReferences[0].Metadata.ShouldNotBe(null);
+			programReferences[0].Metadata.ShouldNotBeNull();
 			programReferences[0].Metadata.Identifier.Name.ShouldBe("\"f 3\"");
 		}
 
@@ -2150,7 +2150,7 @@ FROM
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var queryBlock = semanticModel.MainQueryBlock;
-			queryBlock.ShouldNotBe(null);
+			queryBlock.ShouldNotBeNull();
 
 			var columnReferences = queryBlock.ColumnReferences.Where(c => c.Placement == StatementPlacement.TableReference).ToArray();
 			columnReferences.Length.ShouldBe(2);
@@ -2184,7 +2184,7 @@ FROM
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var queryBlock = semanticModel.MainQueryBlock;
-			queryBlock.ShouldNotBe(null);
+			queryBlock.ShouldNotBeNull();
 
 			var columnReferences = queryBlock.ColumnReferences.Where(c => c.Placement == StatementPlacement.TableReference).ToArray();
 			columnReferences.Length.ShouldBe(2);
@@ -2202,16 +2202,16 @@ FROM
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var queryBlock = semanticModel.MainQueryBlock;
-			queryBlock.ShouldNotBe(null);
+			queryBlock.ShouldNotBeNull();
 
 			var selectionTableIdentifier = OracleObjectIdentifier.Create(null, "SELECTION");
 
 			queryBlock.ColumnReferences.Count.ShouldBe(2);
-			queryBlock.ColumnReferences[0].ValidObjectReference.ShouldNotBe(null);
+			queryBlock.ColumnReferences[0].ValidObjectReference.ShouldNotBeNull();
 			queryBlock.ColumnReferences[0].ValidObjectReference.FullyQualifiedObjectName.ShouldBe(selectionTableIdentifier);
 			queryBlock.ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
 			queryBlock.ColumnReferences[0].ColumnNodeColumnReferences.Single().Name.ShouldBe("\"SELECTION_ID\"");
-			queryBlock.ColumnReferences[1].ValidObjectReference.ShouldNotBe(null);
+			queryBlock.ColumnReferences[1].ValidObjectReference.ShouldNotBeNull();
 			queryBlock.ColumnReferences[1].ValidObjectReference.FullyQualifiedObjectName.ShouldBe(selectionTableIdentifier);
 			queryBlock.ColumnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(1);
 			queryBlock.ColumnReferences[1].ColumnNodeColumnReferences.Single().Name.ShouldBe("\"PROJECT_ID\"");
@@ -2235,10 +2235,10 @@ SELECT * FROM CTE";
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 
 			var queryBlock = semanticModel.MainQueryBlock;
-			queryBlock.ShouldNotBe(null);
+			queryBlock.ShouldNotBeNull();
 
 			queryBlock.Columns.Count.ShouldBe(3);
-			queryBlock.Columns[0].IsAsterisk.ShouldBe(true);
+			queryBlock.Columns[0].IsAsterisk.ShouldBeTrue();
 			queryBlock.Columns[1].NormalizedName.ShouldBe("\"VAL\"");
 			queryBlock.Columns[2].NormalizedName.ShouldBe("\"SEQ#\"");
 			queryBlock.Columns[2].ColumnDescription.FullTypeName.ShouldBe("NUMBER");
@@ -2261,14 +2261,14 @@ SELECT * FROM CTE";
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 
 			var queryBlock = semanticModel.MainQueryBlock;
-			queryBlock.ShouldNotBe(null);
+			queryBlock.ShouldNotBeNull();
 
 			queryBlock.ObjectReferences.Count.ShouldBe(2);
 			var dualTableReference = queryBlock.ObjectReferences.First();
 			var crossApliedTableReference = queryBlock.ObjectReferences.Last();
 			crossApliedTableReference.QueryBlocks.Count.ShouldBe(1);
 			var crossApliedQueryBlock = crossApliedTableReference.QueryBlocks.Single();
-			crossApliedTableReference.IsOuterJoined.ShouldBe(true);
+			crossApliedTableReference.IsOuterJoined.ShouldBeTrue();
 			crossApliedQueryBlock.ColumnReferences.Count.ShouldBe(2);
 			crossApliedQueryBlock.ColumnReferences[1].FullyQualifiedObjectName.ShouldBe(OracleObjectIdentifier.Create(null, "T1"));
 			crossApliedQueryBlock.ColumnReferences[1].ObjectNodeObjectReferences.Count.ShouldBe(1);
@@ -2309,19 +2309,19 @@ SELECT * FROM CTE";
 
 			queryBlock.ObjectReferences.Count.ShouldBe(6);
 			var objectReferences = queryBlock.ObjectReferences.ToList();
-			objectReferences.ForEach(r => r.PartitionReference.ShouldNotBe(null));
+			objectReferences.ForEach(r => r.PartitionReference.ShouldNotBeNull());
 			
-			objectReferences[0].PartitionReference.Partition.ShouldNotBe(null);
-			objectReferences[0].PartitionReference.DataObjectReference.ShouldNotBe(null);
+			objectReferences[0].PartitionReference.Partition.ShouldNotBeNull();
+			objectReferences[0].PartitionReference.DataObjectReference.ShouldNotBeNull();
 			objectReferences[0].PartitionReference.Partition.Name.ShouldBe("\"P2015\"");
-			objectReferences[0].PartitionReference.RootNode.ShouldNotBe(null);
+			objectReferences[0].PartitionReference.RootNode.ShouldNotBeNull();
 			objectReferences[0].PartitionReference.RootNode.FirstTerminalNode.Token.Value.ShouldBe("PARTITION");
 			objectReferences[0].PartitionReference.RootNode.LastTerminalNode.Token.Value.ShouldBe(")");
-			objectReferences[1].PartitionReference.Partition.ShouldBe(null);
-			objectReferences[2].PartitionReference.Partition.ShouldNotBe(null);
-			objectReferences[3].PartitionReference.Partition.ShouldBe(null);
-			objectReferences[4].PartitionReference.Partition.ShouldBe(null);
-			objectReferences[5].PartitionReference.Partition.ShouldBe(null);
+			objectReferences[1].PartitionReference.Partition.ShouldBeNull();
+			objectReferences[2].PartitionReference.Partition.ShouldNotBeNull();
+			objectReferences[3].PartitionReference.Partition.ShouldBeNull();
+			objectReferences[4].PartitionReference.Partition.ShouldBeNull();
+			objectReferences[5].PartitionReference.Partition.ShouldBeNull();
 		}
 
 		[Test]
@@ -2348,9 +2348,9 @@ LOG ERRORS INTO ERRORLOG ('Statement identifier') REJECT LIMIT UNLIMITED";
 			var semanticModel = OracleStatementSemanticModelFactory.Build(sqlText, statement, TestFixture.DatabaseModel);
 			semanticModel.MainObjectReferenceContainer.ObjectReferences.Count.ShouldBe(3);
 			var objectReferences = semanticModel.MainObjectReferenceContainer.ObjectReferences.ToArray();
-			objectReferences[0].SchemaObject.ShouldNotBe(null);
-			objectReferences[1].SchemaObject.ShouldNotBe(null);
-			objectReferences[2].SchemaObject.ShouldBe(null);
+			objectReferences[0].SchemaObject.ShouldNotBeNull();
+			objectReferences[1].SchemaObject.ShouldNotBeNull();
+			objectReferences[2].SchemaObject.ShouldBeNull();
 
 			semanticModel.MainObjectReferenceContainer.ColumnReferences.Count.ShouldBe(24);
 			var columnReferences = semanticModel.MainObjectReferenceContainer.ColumnReferences.ToList();
@@ -2387,11 +2387,11 @@ LOG ERRORS INTO ERRORLOG ('Statement identifier') REJECT LIMIT UNLIMITED";
 
 			semanticModel.MainObjectReferenceContainer.ProgramReferences.Count.ShouldBe(5);
 			var programReferences = semanticModel.MainObjectReferenceContainer.ProgramReferences.ToList();
-			programReferences.ForEach(p => p.Metadata.ShouldNotBe(null));
+			programReferences.ForEach(p => p.Metadata.ShouldNotBeNull());
 
 			semanticModel.MainObjectReferenceContainer.SequenceReferences.Count.ShouldBe(1);
 			var sequenceReferences = semanticModel.MainObjectReferenceContainer.SequenceReferences.ToArray();
-			sequenceReferences[0].SchemaObject.ShouldNotBe(null);
+			sequenceReferences[0].SchemaObject.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -2513,10 +2513,10 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 			var queryBlock = semanticModel.QueryBlocks.Single(qb => qb.Type == QueryBlockType.ScalarSubquery);
 			var columnReferences = queryBlock.AllColumnReferences.ToList();
 			columnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
-			columnReferences[0].ColumnDescription.ShouldNotBe(null);
+			columnReferences[0].ColumnDescription.ShouldNotBeNull();
 			columnReferences[0].ColumnDescription.FullTypeName.ShouldBe("RAW(2000)");
 			columnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(1);
-			columnReferences[1].ColumnDescription.ShouldNotBe(null);
+			columnReferences[1].ColumnDescription.ShouldNotBeNull();
 			columnReferences[1].ColumnDescription.FullTypeName.ShouldBe("SYS.ODCIRAWLIST");
 		}
 		
@@ -2535,10 +2535,10 @@ SELECT LEVEL VAL FROM DUAL CONNECT BY LEVEL <= 10";
 			var queryBlock = semanticModel.QueryBlocks.Single(qb => qb.Type == QueryBlockType.ScalarSubquery);
 			var columnReferences = queryBlock.AllColumnReferences.ToList();
 			columnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
-			columnReferences[0].ColumnDescription.ShouldNotBe(null);
+			columnReferences[0].ColumnDescription.ShouldNotBeNull();
 			columnReferences[0].ColumnDescription.FullTypeName.ShouldBe(String.Empty);
 			columnReferences[1].ColumnNodeColumnReferences.Count.ShouldBe(1);
-			columnReferences[1].ColumnDescription.ShouldNotBe(null);
+			columnReferences[1].ColumnDescription.ShouldNotBeNull();
 			columnReferences[1].ColumnDescription.DataType.ShouldBe(OracleDataType.DynamicCollectionType);
 		}
 		
@@ -2616,7 +2616,7 @@ FROM (
 
 			var unknownColumn = columnReferences[11];
 			unknownColumn.Name.ShouldBe("SUPPLYCHANNEL");
-			unknownColumn.SelectListColumn.ShouldNotBe(null);
+			unknownColumn.SelectListColumn.ShouldNotBeNull();
 			unknownColumn.ColumnNodeColumnReferences.Count.ShouldBe(0);
 			columnReferences.Where(c => c != unknownColumn).ToList().ForEach(c => c.ColumnNodeColumnReferences.Count.ShouldBe(1));
 
@@ -2633,9 +2633,9 @@ FROM (
 			var programReferences = pivotTableReference.SourceReferenceContainer.ProgramReferences.ToArray();
 			programReferences.Length.ShouldBe(2);
 			programReferences[0].Name.ShouldBe("COUNT");
-			programReferences[0].Metadata.ShouldNotBe(null);
+			programReferences[0].Metadata.ShouldNotBeNull();
 			programReferences[1].Name.ShouldBe("MAX");
-			programReferences[1].Metadata.ShouldNotBe(null);
+			programReferences[1].Metadata.ShouldNotBeNull();
 
 			semanticModel.RedundantSymbolGroups.Count.ShouldBe(1);
 		}
@@ -2681,11 +2681,11 @@ FROM (
 
 					if (index < 8)
 					{
-						c.SelectListColumn.ShouldNotBe(null);
+						c.SelectListColumn.ShouldNotBeNull();
 					}
 					else
 					{
-						c.SelectListColumn.ShouldBe(null);
+						c.SelectListColumn.ShouldBeNull();
 					}
 				});
 
@@ -2727,7 +2727,7 @@ WHERE c IS NULL";
 			var unpivotTableReference = (OraclePivotTableReference)semanticModel.MainQueryBlock.ObjectReferences.Single();
 			unpivotTableReference.Columns.Count.ShouldBe(2);
 			unpivotTableReference.Columns[0].Name.ShouldBe("\"C\"");
-			unpivotTableReference.Columns[0].Nullable.ShouldBe(true);
+			unpivotTableReference.Columns[0].Nullable.ShouldBeTrue();
 		}
 
 		[Test]
@@ -2773,7 +2773,7 @@ WHERE c IS NULL";
 			var unpivotTableReference = (OraclePivotTableReference)semanticModel.MainQueryBlock.ObjectReferences.Single();
 			unpivotTableReference.Columns.Count.ShouldBe(2);
 			unpivotTableReference.Columns[1].Name.ShouldBe("\"X\"");
-			unpivotTableReference.Columns[1].Nullable.ShouldBe(true);
+			unpivotTableReference.Columns[1].Nullable.ShouldBeTrue();
 		}
 
 		[Test]
@@ -2811,7 +2811,7 @@ FROM (
 
 			var columns = semanticModel.MainQueryBlock.Columns;
 			columns.Count.ShouldBe(7);
-			columns[0].IsAsterisk.ShouldBe(true);
+			columns[0].IsAsterisk.ShouldBeTrue();
 			columns[1].NormalizedName.ShouldBe("\"RESPONDENTBUCKET_ID\"");
 			columns[1].ColumnReferences[0].ValidObjectReference.FullyQualifiedObjectName.Name.ShouldBe("T1");
 			columns[2].NormalizedName.ShouldBe("\"SELECTION_ID\"");
@@ -2845,7 +2845,7 @@ FROM (
 
 			var columns = semanticModel.MainQueryBlock.Columns;
 			columns.Count.ShouldBe(5);
-			columns[0].IsAsterisk.ShouldBe(true);
+			columns[0].IsAsterisk.ShouldBeTrue();
 			columns[1].NormalizedName.ShouldBe("\"RESPONDENTBUCKET_ID\"");
 			columns[1].ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
 			columns[1].ColumnReferences[0].ValidObjectReference.FullyQualifiedObjectName.Name.ShouldBe("S1");
@@ -2885,7 +2885,7 @@ FROM (
 			columns[2].ColumnReferences[0].ValidObjectReference.FullyQualifiedObjectName.Name.ShouldBe("SELECTION");
 			columns[3].NormalizedName.ShouldBe("\"NAME\"");
 			columns[3].ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(2);
-			columns[3].ColumnReferences[0].ValidObjectReference.ShouldBe(null);
+			columns[3].ColumnReferences[0].ValidObjectReference.ShouldBeNull();
         }
 
 		[Test]
@@ -2911,7 +2911,7 @@ FROM (
 			semanticModel.QueryBlocks.Count.ShouldBe(2);
 
 			semanticModel.MainQueryBlock.Columns.Count.ShouldBe(5);
-			semanticModel.MainQueryBlock.Columns[0].IsAsterisk.ShouldBe(true);
+			semanticModel.MainQueryBlock.Columns[0].IsAsterisk.ShouldBeTrue();
 			semanticModel.MainQueryBlock.Columns[1].NormalizedName.ShouldBe("\"RESPONDENTBUCKET_ID\"");
 			semanticModel.MainQueryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe("NUMBER(9)");
 			semanticModel.MainQueryBlock.Columns[2].NormalizedName.ShouldBe("\"SELECTION_ID\"");
@@ -2945,7 +2945,7 @@ FROM (
 			semanticModel.QueryBlocks.Count.ShouldBe(2);
 
 			semanticModel.MainQueryBlock.Columns.Count.ShouldBe(2);
-			semanticModel.MainQueryBlock.Columns[0].IsAsterisk.ShouldBe(true);
+			semanticModel.MainQueryBlock.Columns[0].IsAsterisk.ShouldBeTrue();
 			semanticModel.MainQueryBlock.Columns[1].NormalizedName.ShouldBe("\"Long test column name STAT_XML\"");
 			semanticModel.MainQueryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe("SYS.XMLTYPE");
 		}
@@ -3048,9 +3048,9 @@ FROM (
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 
 			semanticModel.QueryBlocks.Count.ShouldBe(2);
-			semanticModel.MainQueryBlock.PrecedingConcatenatedQueryBlock.ShouldBe(null);
-			semanticModel.MainQueryBlock.FollowingConcatenatedQueryBlock.ShouldNotBe(null);
-			semanticModel.MainQueryBlock.FollowingConcatenatedQueryBlock.PrecedingConcatenatedQueryBlock.ShouldNotBe(null);
+			semanticModel.MainQueryBlock.PrecedingConcatenatedQueryBlock.ShouldBeNull();
+			semanticModel.MainQueryBlock.FollowingConcatenatedQueryBlock.ShouldNotBeNull();
+			semanticModel.MainQueryBlock.FollowingConcatenatedQueryBlock.PrecedingConcatenatedQueryBlock.ShouldNotBeNull();
             semanticModel.RedundantSymbolGroups.Count.ShouldBe(0);
 		}
 
@@ -3072,7 +3072,7 @@ FROM
 
 			var columnIdentifier = statement.AllTerminals.Single(t => t.Token.Value == "NAME");
 			var columnReference = semanticModel.GetColumnReference(columnIdentifier);
-			columnReference.ShouldNotBe(null);
+			columnReference.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -3108,19 +3108,19 @@ FROM
 			var columns = semanticModel.MainQueryBlock.Columns;
 			columns.Count.ShouldBe(3);
 			columns[0].NormalizedName.ShouldBe("\"COL1\"");
-			columns[0].ColumnDescription.ShouldNotBe(null);
+			columns[0].ColumnDescription.ShouldNotBeNull();
 			columns[0].ColumnDescription.FullTypeName.ShouldBe("RAW(32)");
-			columns[0].ColumnDescription.Nullable.ShouldBe(true);
+			columns[0].ColumnDescription.Nullable.ShouldBeTrue();
 			columns[1].NormalizedName.ShouldBe("\"COL2\"");
-			columns[1].ColumnDescription.ShouldNotBe(null);
+			columns[1].ColumnDescription.ShouldNotBeNull();
 			columns[1].ColumnDescription.FullTypeName.ShouldBe(String.Empty);
-			columns[1].ColumnDescription.Nullable.ShouldBe(true);
+			columns[1].ColumnDescription.Nullable.ShouldBeTrue();
 			columns[2].NormalizedName.ShouldBe("\"COL3\"");
-			columns[2].ColumnDescription.ShouldNotBe(null);
+			columns[2].ColumnDescription.ShouldNotBeNull();
 			columns[2].ColumnDescription.FullTypeName.ShouldBe("SYS.ODCIRAWLIST");
-			columns[2].ColumnDescription.Nullable.ShouldBe(true);
+			columns[2].ColumnDescription.Nullable.ShouldBeTrue();
 			columns[2].DataTypeReferences.Count.ShouldBe(1);
-			columns[2].DataTypeReferences.Single().SchemaObject.ShouldNotBe(null);
+			columns[2].DataTypeReferences.Single().SchemaObject.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -3143,7 +3143,7 @@ FROM
 			var childReferenceDataSources = semanticModel.ApplyReferenceConstraints(columnHeaders);
 
 			var referenceDataSources = columnHeaders[0].ParentReferenceDataSources;
-			referenceDataSources.ShouldNotBe(null);
+			referenceDataSources.ShouldNotBeNull();
 			referenceDataSources.Count.ShouldBe(1);
 			var referenceDataSource = referenceDataSources.First();
 			referenceDataSource.ObjectName.ShouldBe("HUSQVIK.PROJECT");
@@ -3204,7 +3204,7 @@ FROM
 			var childReferenceDataSources = semanticModel.ApplyReferenceConstraints(columnHeaders);
 
 			var referenceDataSources = columnHeaders[0].ParentReferenceDataSources;
-			referenceDataSources.ShouldNotBe(null);
+			referenceDataSources.ShouldNotBeNull();
 			referenceDataSources.Count.ShouldBe(1);
 			var referenceDataSource = referenceDataSources.First();
 			referenceDataSource.ObjectName.ShouldBe("HUSQVIK.PROJECT");
@@ -3282,7 +3282,7 @@ WHEN NOT MATCHED THEN INSERT VALUES (T2.DUMMY)";
 			columnReferences[2].ObjectNodeObjectReferences.Count.ShouldBe(1);
 
 			var programReferences = semanticModel.MainQueryBlock.ProgramReferences.ToList();
-			programReferences.ForEach(p => p.Metadata.ShouldNotBe(null));
+			programReferences.ForEach(p => p.Metadata.ShouldNotBeNull());
 		}
 
 		[Test]
@@ -3297,11 +3297,11 @@ WHEN NOT MATCHED THEN INSERT VALUES (T2.DUMMY)";
 			var dataTypeReferences = semanticModel.MainQueryBlock.DataTypeReferences.ToList();
 			dataTypeReferences.Count.ShouldBe(1);
 			dataTypeReferences[0].ObjectNode.Token.Value.ShouldBe("ODCIDATELIST");
-			dataTypeReferences[0].ResolvedDataType.ShouldNotBe(null);
+			dataTypeReferences[0].ResolvedDataType.ShouldNotBeNull();
 
 			semanticModel.MainQueryBlock.Columns.Count.ShouldBe(2);
 			semanticModel.MainQueryBlock.Columns[1].ColumnReferences.Count.ShouldBe(1);
-			semanticModel.MainQueryBlock.Columns[1].ColumnReferences[0].ValidObjectReference.ShouldNotBe(null);
+			semanticModel.MainQueryBlock.Columns[1].ColumnReferences[0].ValidObjectReference.ShouldNotBeNull();
 			semanticModel.MainQueryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe("DATE");
 		}
 
@@ -3380,8 +3380,8 @@ CONNECT BY NOCYCLE
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 			var mainQueryBlock = semanticModel.QueryBlocks.Single(qb => qb.RootNode.SourcePosition.IndexStart == 0);
 			mainQueryBlock.Columns.Count.ShouldBe(2);
-			mainQueryBlock.Columns[0].IsAsterisk.ShouldBe(true);
-			mainQueryBlock.Columns[1].NormalizedName.ShouldBe(null);
+			mainQueryBlock.Columns[0].IsAsterisk.ShouldBeTrue();
+			mainQueryBlock.Columns[1].NormalizedName.ShouldBeNull();
 		}
 
 		[Test]
@@ -3434,7 +3434,7 @@ SELECT value FROM data";
 			var mainQueryBlock = semanticModel.QueryBlocks.Single(qb => qb.Type == QueryBlockType.Normal);
 			mainQueryBlock.Columns.Count.ShouldBe(1);
 			mainQueryBlock.Columns[0].ColumnDescription.FullTypeName.ShouldBe("CHAR(0)");
-			mainQueryBlock.Columns[0].ColumnDescription.Nullable.ShouldBe(true);
+			mainQueryBlock.Columns[0].ColumnDescription.Nullable.ShouldBeTrue();
 		}
 
 		[Test]
@@ -3448,7 +3448,7 @@ SELECT value FROM data";
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 			var mainQueryBlock = semanticModel.QueryBlocks.Last();
 			mainQueryBlock.Columns.Count.ShouldBe(2);
-			mainQueryBlock.Columns[0].IsAsterisk.ShouldBe(true);
+			mainQueryBlock.Columns[0].IsAsterisk.ShouldBeTrue();
 			mainQueryBlock.Columns[1].ColumnDescription.FullTypeName.ShouldBe("VARCHAR2(1 BYTE)");
 		}
 
@@ -3463,7 +3463,7 @@ SELECT value FROM data";
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 			var mainQueryBlock = semanticModel.QueryBlocks.Last();
 			mainQueryBlock.Columns.Count.ShouldBe(3);
-			mainQueryBlock.Columns[0].IsAsterisk.ShouldBe(true);
+			mainQueryBlock.Columns[0].IsAsterisk.ShouldBeTrue();
 			mainQueryBlock.Columns[1].NormalizedName.ShouldBe("\"CaseSensitiveColumn\"");
 			mainQueryBlock.Columns[2].NormalizedName.ShouldBe("\"VIRTUAL_COLUMN\"");
 		}
@@ -3515,7 +3515,7 @@ SELECT value FROM data";
 			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
 			var mainQueryBlock = semanticModel.QueryBlocks.Single();
 			var castFunctionReference = mainQueryBlock.AllProgramReferences.Single();
-			castFunctionReference.Metadata.ShouldNotBe(null);
+			castFunctionReference.Metadata.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -3570,7 +3570,7 @@ FROM
 			var mainQueryBlock = semanticModel.QueryBlocks.Last();
 			mainQueryBlock.ObjectReferences.Count.ShouldBe(2);
 			var inlineViewReference = mainQueryBlock.ObjectReferences.Single(r => r.Type == ReferenceType.InlineView);
-			inlineViewReference.IsLateral.ShouldBe(true);
+			inlineViewReference.IsLateral.ShouldBeTrue();
 
 			var inlineView = inlineViewReference.QueryBlocks.Single();
 			inlineView.ColumnReferences.Count.ShouldBe(1);
@@ -3599,13 +3599,13 @@ FROM
 			inlineViewReferences.Length.ShouldBe(2);
 
 			var inlineView3Reference = inlineViewReferences[0];
-			inlineView3Reference.IsLateral.ShouldBe(false);
+			inlineView3Reference.IsLateral.ShouldBeFalse();
 			var inlineView3 = inlineView3Reference.QueryBlocks.Single();
 			inlineView3.ColumnReferences.Count.ShouldBe(1);
 			inlineView3.ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
 
 			var inlineView4Reference = inlineViewReferences[0];
-			inlineView4Reference.IsLateral.ShouldBe(false);
+			inlineView4Reference.IsLateral.ShouldBeFalse();
 			var inlineView4 = inlineView4Reference.QueryBlocks.Single();
 			inlineView4.ColumnReferences.Count.ShouldBe(1);
 			inlineView4.ColumnReferences[0].ColumnNodeColumnReferences.Count.ShouldBe(1);
@@ -3636,7 +3636,7 @@ SELECT test_function(1) FROM dual;";
 			parameter.Name.ShouldBe("\"P\"");
 			parameter.Direction.ShouldBe(ParameterDirection.Input);
 			parameter.DataType.ShouldBe(String.Empty);
-			parameter.IsOptional.ShouldBe(false);
+			parameter.IsOptional.ShouldBeFalse();
 		}
 
 		[Test]
@@ -3669,7 +3669,7 @@ SELECT test_function(1) FROM dual;";
 
 			mainQueryBlock.Columns[0].ProgramReferences.Count.ShouldBe(1);
 			var toDateReference = mainQueryBlock.Columns[0].ProgramReferences.First();
-			toDateReference.ParameterListNode.ShouldNotBe(null);
+			toDateReference.ParameterListNode.ShouldNotBeNull();
 			toDateReference.ParameterReferences.Count.ShouldBe(3);
 			toDateReference.ParameterReferences.ShouldAllBe(p => p.OptionalIdentifierTerminal != null);
 		}
@@ -3688,7 +3688,7 @@ SELECT test_function(1) FROM dual;";
 
 			mainQueryBlock.Columns[0].ProgramReferences.Count.ShouldBe(1);
 			var toDateReference = mainQueryBlock.Columns[0].ProgramReferences.First();
-			toDateReference.ParameterListNode.ShouldNotBe(null);
+			toDateReference.ParameterListNode.ShouldNotBeNull();
 			toDateReference.ParameterReferences.Count.ShouldBe(3);
 		}
 

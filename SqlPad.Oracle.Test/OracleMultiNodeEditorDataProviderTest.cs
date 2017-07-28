@@ -33,7 +33,7 @@ FROM
 		{
 			var multiNodeEditorData = GetMultiNodeEditorData(CteSqlText, 5);
 
-			multiNodeEditorData.CurrentNode.ShouldNotBe(null);
+			multiNodeEditorData.CurrentNode.ShouldNotBeNull();
 			multiNodeEditorData.CurrentNode.SourcePosition.IndexStart.ShouldBe(5);
 			multiNodeEditorData.SynchronizedSegments.Count.ShouldBe(4);
 			var segments = multiNodeEditorData.SynchronizedSegments.OrderBy(s => s.IndexStart).ToArray();
@@ -48,7 +48,7 @@ FROM
 		{
 			var multiNodeEditorData = GetMultiNodeEditorData(CteSqlText, 126);
 
-			multiNodeEditorData.CurrentNode.ShouldNotBe(null);
+			multiNodeEditorData.CurrentNode.ShouldNotBeNull();
 			multiNodeEditorData.CurrentNode.SourcePosition.IndexStart.ShouldBe(123);
 			multiNodeEditorData.SynchronizedSegments.Count.ShouldBe(4);
 			var segments = multiNodeEditorData.SynchronizedSegments.OrderBy(s => s.IndexStart).ToArray();
@@ -63,7 +63,7 @@ FROM
 		{
 			var multiNodeEditorData = GetMultiNodeEditorData(CteSqlText, 76);
 
-			multiNodeEditorData.CurrentNode.ShouldNotBe(null);
+			multiNodeEditorData.CurrentNode.ShouldNotBeNull();
 			multiNodeEditorData.CurrentNode.SourcePosition.IndexStart.ShouldBe(76);
 			multiNodeEditorData.SynchronizedSegments.Count.ShouldBe(4);
 			var segments = multiNodeEditorData.SynchronizedSegments.OrderBy(s => s.IndexStart).ToArray();
@@ -78,7 +78,7 @@ FROM
 		{
 			var multiNodeEditorData = GetMultiNodeEditorData(CteSqlText, 107);
 
-			multiNodeEditorData.CurrentNode.ShouldNotBe(null);
+			multiNodeEditorData.CurrentNode.ShouldNotBeNull();
 			multiNodeEditorData.CurrentNode.SourcePosition.IndexStart.ShouldBe(107);
 			multiNodeEditorData.SynchronizedSegments.Count.ShouldBe(4);
 			var segments = multiNodeEditorData.SynchronizedSegments.OrderBy(s => s.IndexStart).ToArray();
@@ -103,7 +103,7 @@ PIVOT (
 
 			var multiNodeEditorData = GetMultiNodeEditorData(sqlText, 113);
 
-			multiNodeEditorData.CurrentNode.ShouldNotBe(null);
+			multiNodeEditorData.CurrentNode.ShouldNotBeNull();
 			multiNodeEditorData.CurrentNode.SourcePosition.IndexStart.ShouldBe(113);
 			multiNodeEditorData.SynchronizedSegments.Count.ShouldBe(1);
 			var segments = multiNodeEditorData.SynchronizedSegments.OrderBy(s => s.IndexStart).ToArray();
@@ -115,7 +115,7 @@ PIVOT (
 		{
 			const string sqlText = @"SELECT ALIAS.DUMMY FROM DUAL ALIAS";
 			var multiNodeEditorData = GetMultiNodeEditorData(sqlText, 29);
-			multiNodeEditorData.CurrentNode.ShouldNotBe(null);
+			multiNodeEditorData.CurrentNode.ShouldNotBeNull();
 			multiNodeEditorData.SynchronizedSegments.Count.ShouldBe(1);
 		}
 
@@ -130,7 +130,7 @@ seq_data (seq, value) AS (
 SELECT t1.value column1, t2.value column2 FROM seq_data t1, seq_data t2";
 
 			var multiNodeEditorData = GetMultiNodeEditorData(sqlText, 10);
-			multiNodeEditorData.CurrentNode.ShouldNotBe(null);
+			multiNodeEditorData.CurrentNode.ShouldNotBeNull();
 			var segments = multiNodeEditorData.SynchronizedSegments.OrderBy(s => s.IndexStart).ToArray();
 			segments.Length.ShouldBe(1);
 			segments[0].IndexStart.ShouldBe(96);
@@ -158,7 +158,7 @@ WHERE
             A.val = B.val
     )";
 			var multiNodeEditorData = GetMultiNodeEditorData(sqlText, 5);
-			multiNodeEditorData.CurrentNode.ShouldNotBe(null);
+			multiNodeEditorData.CurrentNode.ShouldNotBeNull();
 			multiNodeEditorData.SynchronizedSegments.Count.ShouldBe(2);
 			var segments = multiNodeEditorData.SynchronizedSegments.OrderBy(s => s.IndexStart).ToArray();
 			segments[0].IndexStart.ShouldBe(74);
@@ -186,7 +186,7 @@ WHERE
             A.val = B.val
     )";
 			var multiNodeEditorData = GetMultiNodeEditorData(sqlText, 74);
-			multiNodeEditorData.CurrentNode.ShouldNotBe(null);
+			multiNodeEditorData.CurrentNode.ShouldNotBeNull();
 			multiNodeEditorData.SynchronizedSegments.Count.ShouldBe(2);
 			var segments = multiNodeEditorData.SynchronizedSegments.OrderBy(s => s.IndexStart).ToArray();
 			segments[0].IndexStart.ShouldBe(5);
@@ -199,7 +199,7 @@ WHERE
 			const string sqlText = "SELECT (SELECT NULL FROM TABLE(tbl)) FROM (SELECT COLLECT(dummy) tbl FROM dual)";
 
 			var multiNodeEditorData = GetMultiNodeEditorData(sqlText, 65);
-			multiNodeEditorData.CurrentNode.ShouldNotBe(null);
+			multiNodeEditorData.CurrentNode.ShouldNotBeNull();
 			multiNodeEditorData.SynchronizedSegments.Count.ShouldBe(1);
 			var segments = multiNodeEditorData.SynchronizedSegments.ToArray();
 			segments[0].IndexStart.ShouldBe(31);

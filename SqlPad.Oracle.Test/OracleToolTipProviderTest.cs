@@ -32,8 +32,8 @@ namespace SqlPad.Oracle.Test
 			dataModel.Owner.ShouldBe("HUSQVIK.SELECTION");
 			dataModel.Name.ShouldBe("NAME");
 			dataModel.DataType.ShouldBe("VARCHAR2(50 BYTE)");
-			dataModel.Nullable.ShouldBe(false);
-			dataModel.Virtual.ShouldBe(false);
+			dataModel.Nullable.ShouldBeFalse();
+			dataModel.Virtual.ShouldBeFalse();
 			dataModel.DefaultValue.ShouldBe("\"DBMS_RANDOM\".\"STRING\"('X', 50)");
 			dataModel.DistinctValueCount.ShouldBe(567);
 			dataModel.SampleSize.ShouldBe(12346);
@@ -70,7 +70,7 @@ namespace SqlPad.Oracle.Test
 			dataModel.Owner.ShouldBe("HUSQVIK.SELECTION");
 			dataModel.Name.ShouldBe("ROWID");
 			dataModel.DataType.ShouldBe("ROWID");
-			dataModel.Nullable.ShouldBe(false);
+			dataModel.Nullable.ShouldBeFalse();
 			dataModel.LastAnalyzed.ShouldBe(new DateTime(2014, 8, 19, 6, 18, 12));
 		}
 
@@ -88,7 +88,7 @@ namespace SqlPad.Oracle.Test
 			dataModel.Owner.ShouldBe("HUSQVIK.SELECTION");
 			dataModel.Name.ShouldBe("RESPONDENTBUCKET_ID");
 			dataModel.DataType.ShouldBe("NUMBER(9)");
-			dataModel.Nullable.ShouldBe(true);
+			dataModel.Nullable.ShouldBeTrue();
 			dataModel.LastAnalyzed.ShouldBe(new DateTime(2014, 8, 19, 6, 18, 12));
 		}
 
@@ -134,7 +134,7 @@ namespace SqlPad.Oracle.Test
 			dataModel.Owner.ShouldBe("HUSQVIK.INVOICELINES");
 			dataModel.Name.ShouldBe("AMOUNT");
 			dataModel.DataType.ShouldBe("NUMBER(20, 2)");
-			dataModel.Nullable.ShouldBe(false);
+			dataModel.Nullable.ShouldBeFalse();
 		}
 
 		[Test, Apartment(ApartmentState.STA)]
@@ -151,7 +151,7 @@ namespace SqlPad.Oracle.Test
 			dataModel.Owner.ShouldBe("HUSQVIK.INVOICELINES");
 			dataModel.Name.ShouldBe("CORRELATION_VALUE");
 			dataModel.DataType.ShouldBe("NUMBER(*, 5)");
-			dataModel.Nullable.ShouldBe(false);
+			dataModel.Nullable.ShouldBeFalse();
 			dataModel.Comment.ShouldBe("This is a column comment. ");
 		}
 
@@ -209,7 +209,7 @@ SELECT * FROM CTE";
 			dataModel.BlockCount.ShouldBe(544);
 			dataModel.AllocatedBytes.ShouldBe(22546891);
 			dataModel.LargeObjectBytes.ShouldBe(1546891);
-			dataModel.ClusterName.ShouldBe(null);
+			dataModel.ClusterName.ShouldBeNull();
 			dataModel.Compression.ShouldBe("Disabled");
 			dataModel.ParallelDegree.ShouldBe("Default");
 			dataModel.PartitionKeys.ShouldBe("COLUMN1, COLUMN2");
@@ -239,7 +239,7 @@ SELECT * FROM CTE";
 			dataModel.Title.ShouldBe("HUSQVIK.SYNONYM_TO_SELECTION (Synonym) => HUSQVIK.SELECTION (Table)");
 			dataModel.AverageRowSize.ShouldBe(237);
 			dataModel.BlockCount.ShouldBe(544);
-			dataModel.ClusterName.ShouldBe(null);
+			dataModel.ClusterName.ShouldBeNull();
 			dataModel.Compression.ShouldBe("Disabled");
 			dataModel.PartitionKeys.ShouldBe("COLUMN1, COLUMN2");
 			dataModel.SubPartitionKeys.ShouldBe("COLUMN3, COLUMN4");
@@ -565,7 +565,7 @@ SELECT * FROM CTE";
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 12);
 
-			toolTip.ShouldBe(null);
+			toolTip.ShouldBeNull();
 		}
 
 		[Test, Apartment(ApartmentState.STA)]
@@ -579,7 +579,7 @@ SELECT * FROM CTE";
 			var documentStore = new SqlDocumentRepository(OracleSqlParser.Instance, new OracleStatementValidator(), databaseModel, query);
 			var toolTip = _toolTipProvider.GetToolTip(documentStore, 7);
 
-			toolTip.ShouldBe(null);
+			toolTip.ShouldBeNull();
 		}
 
 		[Test, Apartment(ApartmentState.STA)]

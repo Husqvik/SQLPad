@@ -78,14 +78,14 @@ END;";
 			var task = connectionAdapter.ExecuteStatementAsync(batchModel, CancellationToken.None);
 			task.Wait();
 
-			connectionAdapter.DebuggerSession.ShouldNotBe(null);
+			connectionAdapter.DebuggerSession.ShouldNotBeNull();
 
 			connectionAdapter.DebuggerSession.Attached += DebuggerSessionAttachedHandler;
 			connectionAdapter.DebuggerSession.Start(CancellationToken.None);
 
 			_resetEvent.WaitOne();
 
-			connectionAdapter.DebuggerSession.ShouldBe(null);
+			connectionAdapter.DebuggerSession.ShouldBeNull();
 		}
 
 		private void DebuggerSessionAttachedHandler(object sender, EventArgs eventArgs)
@@ -99,7 +99,7 @@ END;";
 				const int breakPointLine = 6;
 				var breakpointTask = debuggerSession.SetBreakpoint(OracleObjectIdentifier.Empty, breakPointLine, CancellationToken.None);
 				breakpointTask.Wait();
-				breakpointTask.Result.IsSuccessful.ShouldBe(true);
+				breakpointTask.Result.IsSuccessful.ShouldBeTrue();
 				var breakpointIdentifier = breakpointTask.Result.BreakpointIdentifier;
 
 				debuggerSession.Continue(CancellationToken.None).Wait();
@@ -126,7 +126,7 @@ END;";
 
 				var watchItemVar3 = new WatchItem { Name = "var3" };
 				debuggerSession.GetValue(watchItemVar3, CancellationToken.None).Wait();
-				watchItemVar3.ChildItems.ShouldNotBe(null);
+				watchItemVar3.ChildItems.ShouldNotBeNull();
 				watchItemVar3.ChildItems.Count.ShouldBe(2);
 				/*watchItemVar3.ChildItems[0].Name.ShouldBe("var3(1)");
 				watchItemVar3.ChildItems[0].Value.ShouldBe("value 1");
@@ -135,11 +135,11 @@ END;";
 
 				breakpointTask = debuggerSession.DisableBreakpoint(breakpointIdentifier, CancellationToken.None);
 				breakpointTask.Wait();
-				breakpointTask.Result.IsSuccessful.ShouldBe(true);
+				breakpointTask.Result.IsSuccessful.ShouldBeTrue();
 
 				breakpointTask = debuggerSession.DeleteBreakpoint(breakpointIdentifier, CancellationToken.None);
 				breakpointTask.Wait();
-				breakpointTask.Result.IsSuccessful.ShouldBe(true);
+				breakpointTask.Result.IsSuccessful.ShouldBeTrue();
 
 				debuggerSession.Continue(CancellationToken.None).Wait();
 			}

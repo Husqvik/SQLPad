@@ -76,7 +76,7 @@ namespace SqlPad.Test
 			WorkDocumentCollection.Save();
 
 			var fileInfo = new FileInfo(Path.Combine(TempDirectoryName, "WorkArea", WorkDocumentCollection.ConfigurationFileName));
-			fileInfo.Exists.ShouldBe(true);
+			fileInfo.Exists.ShouldBeTrue();
 			fileInfo.Length.ShouldBe(482);
 
 			WorkDocumentCollection.Configure();
@@ -117,7 +117,7 @@ namespace SqlPad.Test
 			deserializedBindVariable.DataType.ShouldBe(bindVariableDataType);
 			deserializedBindVariable.Name.ShouldBe(bindVariableName);
 			deserializedBindVariable.Value.ShouldBe(bindVariableValue);
-			deserializedBindVariable.IsFilePath.ShouldBe(true);
+			deserializedBindVariable.IsFilePath.ShouldBeTrue();
 
 			deserializedProviderConfiguration.StatementExecutionHistory.Count.ShouldBe(1);
 			var historyEntry = deserializedProviderConfiguration.StatementExecutionHistory.Single();

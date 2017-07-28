@@ -41,7 +41,7 @@ namespace SqlPad.Oracle.Test
 		{
 			var result = Parser.Parse(CreateTokenReader(String.Empty));
 
-			result.ShouldNotBe(null);
+			result.ShouldNotBeNull();
 			result.Count.ShouldBe(0);
 		}
 
@@ -51,10 +51,10 @@ namespace SqlPad.Oracle.Test
 			const string sqlText = @"SELECT NULL FROM DUAL";
 			var result = Parser.Parse(CreateTokenReader(sqlText));
 			
-			result.ShouldNotBe(null);
+			result.ShouldNotBeNull();
 			result.Count.ShouldBe(1);
 			var statement = (OracleStatement)result.Single();
-			statement.IsPlSql.ShouldBe(false);
+			statement.IsPlSql.ShouldBeFalse();
 			statement.RootNode.AllChildNodes.ToList()
 				.ForEach(n => n.Statement.ShouldBe(statement));
 
@@ -64,22 +64,22 @@ namespace SqlPad.Oracle.Test
 			terminals[0].Id.ShouldBe(Terminals.Select);
 			terminals[0].SourcePosition.IndexStart.ShouldBe(0);
 			terminals[0].SourcePosition.IndexEnd.ShouldBe(5);
-			terminals[0].IsReservedWord.ShouldBe(true);
+			terminals[0].IsReservedWord.ShouldBeTrue();
 			terminals[1].Id.ShouldBe(Terminals.Null);
 			terminals[1].SourcePosition.IndexStart.ShouldBe(7);
 			terminals[1].SourcePosition.IndexEnd.ShouldBe(10);
-			terminals[1].IsReservedWord.ShouldBe(true);
+			terminals[1].IsReservedWord.ShouldBeTrue();
 			terminals[2].Id.ShouldBe(Terminals.From);
 			terminals[2].SourcePosition.IndexStart.ShouldBe(12);
 			terminals[2].SourcePosition.IndexEnd.ShouldBe(15);
-			terminals[2].IsReservedWord.ShouldBe(true);
+			terminals[2].IsReservedWord.ShouldBeTrue();
 			terminals[3].Id.ShouldBe(Terminals.ObjectIdentifier);
 			terminals[3].Token.Value.ShouldBe("DUAL");
 			terminals[3].SourcePosition.IndexStart.ShouldBe(17);
 			terminals[3].SourcePosition.IndexEnd.ShouldBe(20);
-			terminals[3].IsReservedWord.ShouldBe(false);
+			terminals[3].IsReservedWord.ShouldBeFalse();
 
-			statement.TerminatorNode.ShouldBe(null);
+			statement.TerminatorNode.ShouldBeNull();
 		}
 
 		[Test(Description = @"Tests trivial query. ")]
@@ -88,10 +88,10 @@ namespace SqlPad.Oracle.Test
 			const string sqlText = @"SELECT NULL FROM DUAL ;";
 			var result = Parser.Parse(CreateTokenReader(sqlText));
 
-			result.ShouldNotBe(null);
+			result.ShouldNotBeNull();
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
-			statement.TerminatorNode.ShouldNotBe(null);
+			statement.TerminatorNode.ShouldNotBeNull();
 			statement.TerminatorNode.Id.ShouldBe(Terminals.Semicolon);
 			statement.TerminatorNode.Token.Value.ShouldBe(";");
 			statement.TerminatorNode.Token.Index.ShouldBe(22);
@@ -103,7 +103,7 @@ namespace SqlPad.Oracle.Test
 			const string sqlText = @"SELECT NULL AS "">=;+Alias/*--^"", SYS.DUAL.DUMMY FROM SYS.DUAL";
 			var result = Parser.Parse(sqlText);
 
-			result.ShouldNotBe(null);
+			result.ShouldNotBeNull();
 			result.Count.ShouldBe(1);
 			var statement = result.Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
@@ -114,7 +114,7 @@ namespace SqlPad.Oracle.Test
 			terminals[0].Id.ShouldBe(Terminals.Select);
 			terminals[1].Id.ShouldBe(Terminals.Null);
 			terminals[2].Id.ShouldBe(Terminals.As);
-			terminals[2].IsReservedWord.ShouldBe(false);
+			terminals[2].IsReservedWord.ShouldBeFalse();
 			terminals[3].Id.ShouldBe(Terminals.ColumnAlias);
 			terminals[3].Token.Value.ShouldBe("\">=;+Alias/*--^\"");
 			terminals[4].Id.ShouldBe(Terminals.Comma);
@@ -146,13 +146,13 @@ namespace SqlPad.Oracle.Test
 			terminals.Count.ShouldBe(26);
 			terminals[0].Id.ShouldBe(Terminals.Select);
 			terminals[1].Id.ShouldBe(Terminals.Case);
-			terminals[1].IsReservedWord.ShouldBe(false);
+			terminals[1].IsReservedWord.ShouldBeFalse();
 			terminals[2].Id.ShouldBe(Terminals.When);
-			terminals[2].IsReservedWord.ShouldBe(false);
+			terminals[2].IsReservedWord.ShouldBeFalse();
 			terminals[3].Id.ShouldBe(Terminals.NumberLiteral);
 			terminals[3].Token.Value.ShouldBe("1");
 			terminals[16].Id.ShouldBe(Terminals.End);
-			terminals[16].IsReservedWord.ShouldBe(false);
+			terminals[16].IsReservedWord.ShouldBeFalse();
 		}
 
 		[Test(Description = @"Tests complex mathematic expressions. ")]
@@ -1142,7 +1142,7 @@ namespace SqlPad.Oracle.Test
 			result.Count.ShouldBe(1);
 			var statement = (OracleStatement)result.Single();
 			statement.ParseStatus.ShouldBe(ParseStatus.Success);
-			statement.IsDataManipulation.ShouldBe(false);
+			statement.IsDataManipulation.ShouldBeFalse();
 
 			var bindVariableTerminalCount = statement.BindVariables.SelectMany(c => c.Nodes).Count();
 			bindVariableTerminalCount.ShouldBe(5);
@@ -1170,17 +1170,17 @@ SELECT NULL FROM DUAL";
 
 			result.Count.ShouldBe(6);
 			result[0].ParseStatus.ShouldBe(ParseStatus.Success);
-			result[0].IsDataManipulation.ShouldBe(true);
+			result[0].IsDataManipulation.ShouldBeTrue();
 			result[1].ParseStatus.ShouldBe(ParseStatus.Success);
-			result[1].IsDataManipulation.ShouldBe(true);
+			result[1].IsDataManipulation.ShouldBeTrue();
 			result[2].ParseStatus.ShouldBe(ParseStatus.Success);
-			result[2].IsDataManipulation.ShouldBe(true);
+			result[2].IsDataManipulation.ShouldBeTrue();
 			result[3].ParseStatus.ShouldBe(ParseStatus.SequenceNotFound);
-			result[3].IsDataManipulation.ShouldBe(true);
+			result[3].IsDataManipulation.ShouldBeTrue();
 			result[4].ParseStatus.ShouldBe(ParseStatus.Success);
-			result[4].IsDataManipulation.ShouldBe(false);
+			result[4].IsDataManipulation.ShouldBeFalse();
 			result[5].ParseStatus.ShouldBe(ParseStatus.Success);
-			result[5].IsDataManipulation.ShouldBe(false);
+			result[5].IsDataManipulation.ShouldBeFalse();
 		}
 
 		[Test(Description = @"Tests KEEP clause. ")]
@@ -1539,7 +1539,7 @@ FROM DUAL";
 			terminals[6].Id.ShouldBe(Terminals.Dot);
 			terminals[7].Id.ShouldBe(Terminals.ObjectIdentifier);
 			terminals[8].Id.ShouldBe(Terminals.On);
-			terminals[8].IsReservedWord.ShouldBe(true);
+			terminals[8].IsReservedWord.ShouldBeTrue();
 
 			const string query3 = @"SELECT NULL FROM SELECTION MY_SELECTION";
 			result = Parser.Parse(query3);
@@ -1608,15 +1608,15 @@ FROM DUAL";
 			terminals[8].Id.ShouldBe(Terminals.ObjectIdentifier);
 			terminals[8].ParentNode.Id.ShouldBe(NonTerminals.ObjectPrefix);
 			terminals[8].ParentNode.ParentNode.Id.ShouldBe(NonTerminals.Prefix);
-			terminals[8].ParentNode.ParentNode.IsGrammarValid.ShouldBe(true);
+			terminals[8].ParentNode.ParentNode.IsGrammarValid.ShouldBeTrue();
 
 			var selectColumnNodes = rootNode.GetDescendants(NonTerminals.AliasedExpressionOrAllTableColumns).ToArray();
 			selectColumnNodes.Count().ShouldBe(5);
-			selectColumnNodes[0].IsGrammarValid.ShouldBe(true);
-			selectColumnNodes[1].IsGrammarValid.ShouldBe(false);
-			selectColumnNodes[2].IsGrammarValid.ShouldBe(false);
-			selectColumnNodes[3].IsGrammarValid.ShouldBe(false);
-			selectColumnNodes[4].IsGrammarValid.ShouldBe(true);
+			selectColumnNodes[0].IsGrammarValid.ShouldBeTrue();
+			selectColumnNodes[1].IsGrammarValid.ShouldBeFalse();
+			selectColumnNodes[2].IsGrammarValid.ShouldBeFalse();
+			selectColumnNodes[3].IsGrammarValid.ShouldBeFalse();
+			selectColumnNodes[4].IsGrammarValid.ShouldBeTrue();
 
 			var invalidNodes = rootNode.AllChildNodes.Where(n => !n.IsGrammarValid).ToArray();
 			invalidNodes.Length.ShouldBe(4);
@@ -1640,7 +1640,7 @@ FROM DUAL";
 
 			terminals[4].Id.ShouldBe(Terminals.MathPlus);
 			terminals[4].ParentNode.ParentNode.Id.ShouldBe(NonTerminals.ExpressionMathOperatorChainedList);
-			terminals[4].ParentNode.ParentNode.IsGrammarValid.ShouldBe(false);
+			terminals[4].ParentNode.ParentNode.IsGrammarValid.ShouldBeFalse();
 
 			var invalidNodes = rootNode.AllChildNodes.Where(n => !n.IsGrammarValid).ToArray();
 			invalidNodes.Length.ShouldBe(1);
@@ -1648,7 +1648,7 @@ FROM DUAL";
 			var commentNodes = result.Comments.ToArray();
 			commentNodes.Length.ShouldBe(1);
 			commentNodes[0].Token.Value.ShouldBe("/* missing expression */");
-			commentNodes[0].ParentNode.ShouldNotBe(null);
+			commentNodes[0].ParentNode.ShouldNotBeNull();
 		}
 
 		[Test(Description = @"Tests global and statement level comments. ")]
@@ -1660,9 +1660,9 @@ FROM DUAL";
 			var commentNodes = result.Comments.ToArray();
 			commentNodes.Length.ShouldBe(2);
 			commentNodes[0].Token.Value.ShouldBe("-- Statement title\n");
-			commentNodes[0].ParentNode.ShouldBe(null);
+			commentNodes[0].ParentNode.ShouldBeNull();
 			commentNodes[1].Token.Value.ShouldBe("/*+ gather_plan_statistics */");
-			commentNodes[1].ParentNode.ShouldNotBe(null);
+			commentNodes[1].ParentNode.ShouldNotBeNull();
 		}
 
 		[Test(Description = @"Tests quoted notation values. ")]
@@ -1739,9 +1739,9 @@ FROM DUAL";
 			var commentNodes = result.Comments.ToArray();
 			commentNodes.Length.ShouldBe(2);
 			commentNodes[0].Token.Value.ShouldBe("/* missing expression 1 */");
-			commentNodes[0].ParentNode.ShouldNotBe(null);
+			commentNodes[0].ParentNode.ShouldNotBeNull();
 			commentNodes[1].Token.Value.ShouldBe("/* missing expression 2 */");
-			commentNodes[1].ParentNode.ShouldNotBe(null);
+			commentNodes[1].ParentNode.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -2862,7 +2862,7 @@ END;";
 
 				var statement = (OracleStatement)Parser.Parse(statement1).Single().Validate();
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
-				statement.IsPlSql.ShouldBe(true);
+				statement.IsPlSql.ShouldBeTrue();
 			}
 
 			[Test]
@@ -2880,7 +2880,7 @@ BEGIN NULL; END;
 				{
 					s.Validate();
 					s.ParseStatus.ShouldBe(ParseStatus.Success);
-					s.IsPlSql.ShouldBe(true);
+					s.IsPlSql.ShouldBeTrue();
 				});
 			}
 
@@ -2942,7 +2942,7 @@ END;";
 
 				var statement = (OracleStatement)Parser.Parse(statement1).Single().Validate();
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
-				statement.IsPlSql.ShouldBe(true);
+				statement.IsPlSql.ShouldBeTrue();
 			}
 
 			[Test]
@@ -2970,7 +2970,7 @@ END;";
 
 				var statement = (OracleStatement)Parser.Parse(statement1).Single().Validate();
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
-				statement.IsPlSql.ShouldBe(true);
+				statement.IsPlSql.ShouldBeTrue();
 			}
 
 			[Test]
@@ -2994,7 +2994,7 @@ END emp_mgmt;";
 
 				var statement = (OracleStatement)Parser.Parse(statement1).Single().Validate();
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
-				statement.IsPlSql.ShouldBe(true);
+				statement.IsPlSql.ShouldBeTrue();
 			}
 
 			[Test]
@@ -3036,7 +3036,7 @@ END test_package_body;";
 
 				var statement = (OracleStatement)Parser.Parse(statement1).Single().Validate();
 				statement.ParseStatus.ShouldBe(ParseStatus.Success);
-				statement.IsPlSql.ShouldBe(true);
+				statement.IsPlSql.ShouldBeTrue();
 			}
 
 			[Test]
@@ -3087,8 +3087,8 @@ END;";
 
 				var terminals = statement.RootNode.Terminals.ToArray();
 				terminals.Length.ShouldBe(8);
-				terminals[0].IsReservedWord.ShouldBe(true);
-				terminals[6].IsReservedWord.ShouldBe(true);
+				terminals[0].IsReservedWord.ShouldBeTrue();
+				terminals[6].IsReservedWord.ShouldBeTrue();
 			}
 
 			[Test]
@@ -3701,27 +3701,27 @@ END;";
 			public void TestIsRuleValidSuccess()
 			{
 				var isRuleValid = Parser.IsRuleValid(NonTerminals.SelectList, "SELECTION.NAME, SELECTION.RESPONDENTBUCKET_ID, SELECTION.SELECTION_ID");
-				isRuleValid.ShouldBe(true);
+				isRuleValid.ShouldBeTrue();
 			}
 
 			[Test]
 			public void TestIsRuleValidFailure()
 			{
 				var isRuleValid = Parser.IsRuleValid(NonTerminals.SelectList, "SELECTION.NAME, SELECTION./* missing column */, SELECTION.SELECTION_ID");
-				isRuleValid.ShouldBe(false);
+				isRuleValid.ShouldBeFalse();
 
 				isRuleValid = Parser.IsRuleValid(NonTerminals.SelectList, "SELECTION.NAME, SELECTION.RESPONDENTBUCKET_ID, /* missing expression */, SELECTION.SELECTION_ID");
-				isRuleValid.ShouldBe(false);
+				isRuleValid.ShouldBeFalse();
 
 				isRuleValid = Parser.IsRuleValid(NonTerminals.SelectList, "SELECTION.NAME, SELECTION./* missing column */, /* missing expression */, SELECTION.SELECTION_ID");
-				isRuleValid.ShouldBe(false);
+				isRuleValid.ShouldBeFalse();
 			}
 
 			[Test]
 			public void TestInvalidExpressionEndingWithComma()
 			{
 				var isRuleValid = Parser.IsRuleValid(NonTerminals.Expression, "PROJECT_ID,");
-				isRuleValid.ShouldBe(false);
+				isRuleValid.ShouldBeFalse();
 			}
 		}
 
@@ -7961,15 +7961,15 @@ USING 'localhost:1521/hqpdb'";
 			[Test]
 			public void TestCanAddPairCharacter()
 			{
-				Parser.CanAddPairCharacter("n'VODKA", '\'').ShouldBe(false);
-				Parser.CanAddPairCharacter("nq'VODKA", '\'').ShouldBe(false);
-				Parser.CanAddPairCharacter("q'VODKA", '\'').ShouldBe(false);
-				Parser.CanAddPairCharacter("'VODKA", '\'').ShouldBe(false);
-				Parser.CanAddPairCharacter("VODKA", '\'').ShouldBe(true);
-				Parser.CanAddPairCharacter("nqVODKA", '\'').ShouldBe(true);
-				Parser.CanAddPairCharacter("qVODKA", '\'').ShouldBe(true);
-				Parser.CanAddPairCharacter("'", '\'').ShouldBe(false);
-				Parser.CanAddPairCharacter("q", '\'').ShouldBe(true);
+				Parser.CanAddPairCharacter("n'VODKA", '\'').ShouldBeFalse();
+				Parser.CanAddPairCharacter("nq'VODKA", '\'').ShouldBeFalse();
+				Parser.CanAddPairCharacter("q'VODKA", '\'').ShouldBeFalse();
+				Parser.CanAddPairCharacter("'VODKA", '\'').ShouldBeFalse();
+				Parser.CanAddPairCharacter("VODKA", '\'').ShouldBeTrue();
+				Parser.CanAddPairCharacter("nqVODKA", '\'').ShouldBeTrue();
+				Parser.CanAddPairCharacter("qVODKA", '\'').ShouldBeTrue();
+				Parser.CanAddPairCharacter("'", '\'').ShouldBeFalse();
+				Parser.CanAddPairCharacter("q", '\'').ShouldBeTrue();
 			}
 		}
 

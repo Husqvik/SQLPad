@@ -419,14 +419,14 @@ FROM
 			items.Length.ShouldBe(4);
 			items[0].Label.ShouldBe("NAME");
 			items[0].Text.ShouldBe("NAME");
-			items[0].StatementNode.ShouldBe(null);
+			items[0].StatementNode.ShouldBeNull();
 			items[1].Label.ShouldBe("ORA_ROWSCN");
 			items[2].Label.ShouldBe("PROJECT_ID");
 			items[2].Text.ShouldBe("PROJECT_ID");
-			items[2].StatementNode.ShouldBe(null);
+			items[2].StatementNode.ShouldBeNull();
 			items[3].Label.ShouldBe(TerminalValues.RowIdPseudocolumn);
 			items[3].Text.ShouldBe(TerminalValues.RowIdPseudocolumn);
-			items[3].StatementNode.ShouldBe(null);
+			items[3].StatementNode.ShouldBeNull();
 		}
 
 		[Test]
@@ -524,7 +524,7 @@ FROM
 
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 43).ToArray();
 			items.Length.ShouldBeGreaterThan(0);
-			items[0].StatementNode.ShouldBe(null);
+			items[0].StatementNode.ShouldBeNull();
 		}
 
 		[Test]
@@ -548,7 +548,7 @@ FROM
 			items[2].Label.ShouldBe("ORA_ROWSCN");
 			items[5].Label.ShouldBe(TerminalValues.RowIdPseudocolumn);
 			items[6].Label.ShouldBe("SELECTION_ID");
-			items[6].StatementNode.ShouldBe(null);
+			items[6].StatementNode.ShouldBeNull();
 		}
 
 		[Test]
@@ -611,12 +611,12 @@ FROM
 			items[4].Text.ShouldBe("AS_PDF3.");
 			items[4].Category.ShouldBe(OracleCodeCompletionCategory.Package);
 			items[4].CaretOffset.ShouldBe(0);
-			items[4].StatementNode.ShouldBe(null);
+			items[4].StatementNode.ShouldBeNull();
 			items[8].Label.ShouldBe("TESTFUNC");
 			items[8].Text.ShouldBe("TESTFUNC()");
 			items[8].Category.ShouldBe(OracleCodeCompletionCategory.SchemaFunction);
 			items[8].CaretOffset.ShouldBe(-1);
-			items[8].StatementNode.ShouldBe(null);
+			items[8].StatementNode.ShouldBeNull();
 		}
 
 		[Test]
@@ -639,7 +639,7 @@ FROM
 			items[0].Text.ShouldBe("SQLPAD_FUNCTION()");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.SchemaFunction);
 			items[0].CaretOffset.ShouldBe(-1);
-			items[0].StatementNode.ShouldNotBe(null);
+			items[0].StatementNode.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -653,7 +653,7 @@ FROM
 			items[1].Text.ShouldBe("SQLPAD_FUNCTION");
 			items[1].Category.ShouldBe(OracleCodeCompletionCategory.SchemaFunction);
 			items[1].CaretOffset.ShouldBe(0);
-			items[1].StatementNode.ShouldNotBe(null);
+			items[1].StatementNode.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -664,7 +664,7 @@ FROM
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 15, true, OracleCodeCompletionCategory.SchemaFunction).ToArray();
 			items.Length.ShouldBeGreaterThan(0);
 			items[0].CaretOffset.ShouldBe(0);
-			items[0].StatementNode.ShouldNotBe(null);
+			items[0].StatementNode.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -687,17 +687,17 @@ FROM
 			items[0].Text.ShouldBe("CURSOR_FUNCTION()");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.PackageFunction);
 			items[0].CaretOffset.ShouldBe(-1);
-			items[0].StatementNode.ShouldBe(null);
+			items[0].StatementNode.ShouldBeNull();
 			items[1].Label.ShouldBe("PIPELINED_FUNCTION");
 			items[1].Text.ShouldBe("PIPELINED_FUNCTION()");
 			items[1].Category.ShouldBe(OracleCodeCompletionCategory.PackageFunction);
 			items[1].CaretOffset.ShouldBe(-1);
-			items[1].StatementNode.ShouldBe(null);
+			items[1].StatementNode.ShouldBeNull();
 			items[2].Label.ShouldBe("SQLPAD_FUNCTION");
 			items[2].Text.ShouldBe("SQLPAD_FUNCTION()");
 			items[2].Category.ShouldBe(OracleCodeCompletionCategory.PackageFunction);
 			items[2].CaretOffset.ShouldBe(-1);
-			items[2].StatementNode.ShouldBe(null);
+			items[2].StatementNode.ShouldBeNull();
 		}
 
 		[Test]
@@ -781,7 +781,7 @@ FROM
 			items[0].Parameters.Count.ShouldBe(4);
 			items[0].Parameters[3].ShouldBe("PROJECT_ID: NUMBER(9) NOT NULL");
 			items[0].CurrentParameterIndex.ShouldBe(3);
-			items[0].ReturnedDatatype.ShouldBe(null);
+			items[0].ReturnedDatatype.ShouldBeNull();
 		}
 
 		[Test]
@@ -847,7 +847,7 @@ FROM
 			items[0].Parameters.Count.ShouldBe(1);
 			items[0].Parameters[0].ShouldBe("EXPR");
 			items[0].CurrentParameterIndex.ShouldBe(0);
-			items[0].ReturnedDatatype.ShouldBe(null);
+			items[0].ReturnedDatatype.ShouldBeNull();
 		}
 
 		[Test]
@@ -879,7 +879,7 @@ SELECT F1(NULL) FROM DUAL";
 			items[0].Parameters.Count.ShouldBe(1);
 			items[0].Parameters[0].ShouldBe("EXPR");
 			items[0].CurrentParameterIndex.ShouldBe(0);
-			items[0].ReturnedDatatype.ShouldBe(null);
+			items[0].ReturnedDatatype.ShouldBeNull();
 		}
 
 		[Test]
@@ -960,7 +960,7 @@ se";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, query1, 35).ToList();
 			items.Count.ShouldBe(1);
 			items[0].Label.ShouldBe("ORDER BY");
-			items[0].StatementNode.ShouldNotBe(null);
+			items[0].StatementNode.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -1009,12 +1009,12 @@ se";
 			items.Count.ShouldBe(11);
 			items[0].Label.ShouldBe("CC - One greater than the first two digits of a four-digit year");
 			items[0].Text.ShouldBe("'CC'");
-			items[0].StatementNode.ShouldNotBe(null);
+			items[0].StatementNode.ShouldNotBeNull();
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 			items[10].Label.ShouldBe("YYYY (YEAR) - Year");
 			items[10].Text.ShouldBe("'YYYY'");
 			items[10].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
-			items[10].StatementNode.ShouldNotBe(null);
+			items[10].StatementNode.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -1059,12 +1059,12 @@ se";
 			items.Count.ShouldBe(11);
 			items[0].Label.ShouldBe("CC - One greater than the first two digits of a four-digit year");
 			items[0].Text.ShouldBe("'CC'");
-			items[0].StatementNode.ShouldNotBe(null);
+			items[0].StatementNode.ShouldNotBeNull();
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 			items[10].Label.ShouldBe("YYYY (YEAR) - Year (rounds up on July 1)");
 			items[10].Text.ShouldBe("'YYYY'");
 			items[10].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
-			items[10].StatementNode.ShouldNotBe(null);
+			items[10].StatementNode.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -1075,12 +1075,12 @@ se";
 			items.Count.ShouldBe(11);
 			items[0].Label.ShouldBe("CC - One greater than the first two digits of a four-digit year");
 			items[0].Text.ShouldBe("'CC'");
-			items[0].StatementNode.ShouldBe(null);
+			items[0].StatementNode.ShouldBeNull();
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
 			items[10].Label.ShouldBe("YYYY (YEAR) - Year");
 			items[10].Text.ShouldBe("'YYYY'");
 			items[10].Category.ShouldBe(OracleCodeCompletionCategory.FunctionParameter);
-			items[10].StatementNode.ShouldBe(null);
+			items[10].StatementNode.ShouldBeNull();
 		}
 
 		[Test]
@@ -1598,7 +1598,7 @@ se";
 			items[0].Text.ShouldBe("COLUMN_NAME");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.Column);
 			items[0].CaretOffset.ShouldBe(0);
-			items[0].StatementNode.ShouldNotBe(null);
+			items[0].StatementNode.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -1611,12 +1611,12 @@ se";
 			items[0].Text.ShouldBe("DUAL.DUMMY");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.Column);
 			items[0].CaretOffset.ShouldBe(0);
-			items[0].StatementNode.ShouldBe(null);
+			items[0].StatementNode.ShouldBeNull();
 			items[1].Label.ShouldBe("COLUMN_NAME");
 			items[1].Text.ShouldBe("COLUMN_NAME");
 			items[1].Category.ShouldBe(OracleCodeCompletionCategory.Column);
 			items[1].CaretOffset.ShouldBe(0);
-			items[1].StatementNode.ShouldBe(null);
+			items[1].StatementNode.ShouldBeNull();
 		}
 
 		[Test]
@@ -1629,7 +1629,7 @@ se";
 			items[0].Text.ShouldBe("TO_CHAR()");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.PackageFunction);
 			items[0].CaretOffset.ShouldBe(-1);
-			items[0].StatementNode.ShouldNotBe(null);
+			items[0].StatementNode.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -1642,7 +1642,7 @@ se";
 			items[0].Text.ShouldBe("ROUND");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.PackageFunction);
 			items[0].CaretOffset.ShouldBe(0);
-			items[0].StatementNode.ShouldNotBe(null);
+			items[0].StatementNode.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -1683,7 +1683,7 @@ se";
 			const string statement = "SELECT * FROM HUSQVIK.";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 22).ToList();
 			items.Count.ShouldBeGreaterThan(0);
-			items[0].StatementNode.ShouldBe(null);
+			items[0].StatementNode.ShouldBeNull();
 		}
 
 		[Test]
@@ -1708,7 +1708,7 @@ se";
 			const string statement = "SELECT * FROM DUAL";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 7).ToList();
 			items.Count.ShouldBeGreaterThan(0);
-			items[0].StatementNode.ShouldNotBe(null);
+			items[0].StatementNode.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -1717,7 +1717,7 @@ se";
 			const string statement = "SELECT DUMMY FROM DUAL WHERE D";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 30).ToList();
 			items.Count.ShouldBeGreaterThan(0);
-			items[0].StatementNode.ShouldNotBe(null);
+			items[0].StatementNode.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -1730,7 +1730,7 @@ se";
 			items[0].Text.ShouldBe("ON D1.DUMMY = DUAL.DUMMY");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.JoinConditionByName);
 			items[0].CaretOffset.ShouldBe(0);
-			items[0].StatementNode.ShouldBe(null);
+			items[0].StatementNode.ShouldBeNull();
 		}
 
 		[Test]
@@ -1743,7 +1743,7 @@ se";
 			items[0].Text.ShouldBe("ON S.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.JoinConditionByReferenceConstraint);
 			items[0].CaretOffset.ShouldBe(0);
-			items[0].StatementNode.ShouldBe(null);
+			items[0].StatementNode.ShouldBeNull();
 		}
 
 		[Test]
@@ -1756,7 +1756,7 @@ se";
 			items[0].Text.ShouldBe("ON RB.RESPONDENTBUCKET_ID = SELECTION.RESPONDENTBUCKET_ID");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.JoinConditionByReferenceConstraint);
 			items[0].CaretOffset.ShouldBe(0);
-			items[0].StatementNode.ShouldBe(null);
+			items[0].StatementNode.ShouldBeNull();
 		}
 
 		[Test]
@@ -1850,7 +1850,7 @@ se";
 			items[6].Label.ShouldBe("UNION");
 			items[7].Label.ShouldBe("WHERE");
 
-			items.ForEach(i => i.StatementNode.ShouldBe(null));
+			items.ForEach(i => i.StatementNode.ShouldBeNull());
 		}
 
 		[Test]
@@ -1865,7 +1865,7 @@ se";
 			items[3].Label.ShouldBe("ORDER BY");
 			items[4].Label.ShouldBe("UNION");
 
-			items.ForEach(i => i.StatementNode.ShouldBe(null));
+			items.ForEach(i => i.StatementNode.ShouldBeNull());
 		}
 
 		[Test]
@@ -1875,7 +1875,7 @@ se";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 33, false, OracleCodeCompletionCategory.Keyword).ToList();
 			items.Count.ShouldBe(1);
 			items[0].Label.ShouldBe("GROUP BY");
-			items[0].StatementNode.ShouldNotBe(null);
+			items[0].StatementNode.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -1893,7 +1893,7 @@ se";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 23, false, OracleCodeCompletionCategory.Keyword).ToList();
 			items.Count.ShouldBe(1);
 			items[0].Label.ShouldBe("PARTITION BY");
-			items[0].StatementNode.ShouldNotBe(null);
+			items[0].StatementNode.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -1910,7 +1910,7 @@ se";
 			const string statement = @"SELECT SELECTION. FROM SELECTION";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 17, true, OracleCodeCompletionCategory.AllColumns).ToList();
 			items.Count.ShouldBe(1);
-			items[0].StatementNode.ShouldBe(null);
+			items[0].StatementNode.ShouldBeNull();
 		}
 
 		[Test]
@@ -1919,7 +1919,7 @@ se";
 			const string statement = @"SELECT SELECTION. CREATED FROM SELECTION";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 17).ToList();
 			items.Count.ShouldBeGreaterThan(5);
-			items[0].StatementNode.ShouldBe(null);
+			items[0].StatementNode.ShouldBeNull();
 		}
 
 		[Test]
@@ -1930,7 +1930,7 @@ se";
 			items.Count.ShouldBe(1);
 			items[0].Label.ShouldBe("NEXTVAL");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.Pseudocolumn);
-			items[0].StatementNode.ShouldNotBe(null);
+			items[0].StatementNode.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -1941,10 +1941,10 @@ se";
 			items.Count.ShouldBe(2);
 			items[0].Label.ShouldBe("CURRVAL");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.Pseudocolumn);
-			items[0].StatementNode.ShouldBe(null);
+			items[0].StatementNode.ShouldBeNull();
 			items[1].Label.ShouldBe("NEXTVAL");
 			items[1].Category.ShouldBe(OracleCodeCompletionCategory.Pseudocolumn);
-			items[1].StatementNode.ShouldBe(null);
+			items[1].StatementNode.ShouldBeNull();
 		}
 
 		[Test]
@@ -1961,7 +1961,7 @@ se";
 			const string statement = @"UPDATE HUSQVIK.SELECTION SET ";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 29).ToList();
 			items.Count.ShouldBeGreaterThan(0);
-			items[0].StatementNode.ShouldBe(null);
+			items[0].StatementNode.ShouldBeNull();
 		}
 
 		[Test]
@@ -1988,7 +1988,7 @@ FROM
 			items.Length.ShouldBe(1);
 			items[0].Label.ShouldBe("\"CaseSensitiveTable\"");
 			items[0].Text.ShouldBe("\"CaseSensitiveTable\"");
-			items[0].StatementNode.ShouldNotBe(null);
+			items[0].StatementNode.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -2000,7 +2000,7 @@ FROM
 			items.Length.ShouldBe(1);
 			items[0].Label.ShouldBe("\"CaseSensitiveTable\"");
 			items[0].Text.ShouldBe("\"CaseSensitiveTable\"");
-			items[0].StatementNode.ShouldNotBe(null);
+			items[0].StatementNode.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -2012,7 +2012,7 @@ FROM
 			items.Length.ShouldBe(1);
 			items[0].Label.ShouldBe("\"CaseSensitiveTable\".\"CaseSensitiveColumn\"");
 			items[0].Text.ShouldBe("\"CaseSensitiveTable\".\"CaseSensitiveColumn\"");
-			items[0].StatementNode.ShouldNotBe(null);
+			items[0].StatementNode.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -2022,7 +2022,7 @@ FROM
 
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, testQuery, 14, false, OracleCodeCompletionCategory.Keyword).ToArray();
 			items.Length.ShouldBeGreaterThan(0);
-			items[0].StatementNode.ShouldNotBe(null);
+			items[0].StatementNode.ShouldNotBeNull();
 			items[0].StatementNode.Token.Value.ShouldBe("D");
 		}
 
@@ -2034,7 +2034,7 @@ FROM
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, testQuery, 36, true, OracleCodeCompletionCategory.Keyword).ToArray();
 			items.Length.ShouldBe(1);
 			items[0].Text.ShouldBe("WHERE");
-			items[0].StatementNode.ShouldNotBe(null);
+			items[0].StatementNode.ShouldNotBeNull();
 			items[0].StatementNode.Token.Value.ShouldBe("WH");
 		}
 
@@ -2101,9 +2101,9 @@ SELECT * FROM ALL";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, testQuery, 61).ToArray();
 			items.Length.ShouldBe(2);
 			items[0].Label.ShouldBe("ALL_DATA");
-			items[0].StatementNode.ShouldNotBe(null);
+			items[0].StatementNode.ShouldNotBeNull();
 			items[1].Label.ShouldBe("ALL_TABLES");
-			items[1].StatementNode.ShouldNotBe(null);
+			items[1].StatementNode.ShouldNotBeNull();
 		}
 
 		[Test, Ignore("difficult to implement")]
@@ -2114,7 +2114,7 @@ SELECT * FROM ALL";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, testQuery, 29).ToArray();
 			items.Length.ShouldBe(1);
 			items[0].Label.ShouldBe("HEXTORAW");
-			items[0].StatementNode.ShouldNotBe(null);
+			items[0].StatementNode.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -2133,10 +2133,10 @@ SELECT * FROM ALL";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 35).ToArray();
 			items.Length.ShouldBe(2);
 			items[0].Label.ShouldBe("P2014");
-			items[0].StatementNode.ShouldNotBe(null);
+			items[0].StatementNode.ShouldNotBeNull();
 			items[0].StatementNode.Token.Value.ShouldBe("P");
 			items[1].Label.ShouldBe("P2015");
-			items[1].StatementNode.ShouldNotBe(null);
+			items[1].StatementNode.ShouldNotBeNull();
 			items[1].StatementNode.Token.Value.ShouldBe("P");
 		}
 
@@ -2147,13 +2147,13 @@ SELECT * FROM ALL";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 37).ToArray();
 			items.Length.ShouldBe(4);
 			items[0].Label.ShouldBe("P2014_ENTERPRISE");
-			items[0].StatementNode.ShouldBe(null);
+			items[0].StatementNode.ShouldBeNull();
 			items[1].Label.ShouldBe("P2014_PRIVATE");
-			items[1].StatementNode.ShouldBe(null);
+			items[1].StatementNode.ShouldBeNull();
 			items[2].Label.ShouldBe("P2015_ENTERPRISE");
-			items[2].StatementNode.ShouldBe(null);
+			items[2].StatementNode.ShouldBeNull();
 			items[3].Label.ShouldBe("P2015_PRIVATE");
-			items[3].StatementNode.ShouldBe(null);
+			items[3].StatementNode.ShouldBeNull();
 		}
 
 		[Test]
@@ -2162,7 +2162,7 @@ SELECT * FROM ALL";
 			const string statement = @"SELECT * FROM HUSQVIK.";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 22).ToArray();
 			items.Length.ShouldBeGreaterThan(0);
-			items[0].StatementNode.ShouldBe(null);
+			items[0].StatementNode.ShouldBeNull();
 			items[0].InsertOffset.ShouldBe(0);
 		}
 
@@ -2172,16 +2172,16 @@ SELECT * FROM ALL";
 			const string statement = @"SELECT CAST(NULL AS V) FROM DUAL";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 21).ToArray();
 			items.Length.ShouldBe(6);
-			items[0].StatementNode.ShouldNotBe(null);
+			items[0].StatementNode.ShouldNotBeNull();
 			items[0].Text.ShouldBe("HUSQVIK.INVALID_OBJECT_TYPE");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.DataType);
 			items[0].InsertOffset.ShouldBe(0);
-			items[4].StatementNode.ShouldNotBe(null);
+			items[4].StatementNode.ShouldNotBeNull();
 			items[4].Label.ShouldBe("VARCHAR2");
 			items[4].Text.ShouldBe("VARCHAR2()");
 			items[4].Category.ShouldBe(OracleCodeCompletionCategory.DataType);
 			items[4].InsertOffset.ShouldBe(0);
-			items[5].StatementNode.ShouldNotBe(null);
+			items[5].StatementNode.ShouldNotBeNull();
 			items[5].Text.ShouldBe("HUSQVIK");
 			items[5].Category.ShouldBe(OracleCodeCompletionCategory.DatabaseSchema);
 		}
@@ -2192,10 +2192,10 @@ SELECT * FROM ALL";
 			const string statement = @"SELECT EXTRACT( FROM SYSDATE) FROM DUAL";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 15).ToArray();
 			items.Length.ShouldBe(10);
-			items[0].StatementNode.ShouldBe(null);
+			items[0].StatementNode.ShouldBeNull();
 			items[0].Text.ShouldBe("DAY");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.Keyword);
-			items[9].StatementNode.ShouldBe(null);
+			items[9].StatementNode.ShouldBeNull();
 			items[9].Text.ShouldBe("YEAR");
 			items[9].Category.ShouldBe(OracleCodeCompletionCategory.Keyword);
 		}
@@ -2206,10 +2206,10 @@ SELECT * FROM ALL";
 			const string statement = @"SELECT EXTRACT(DAY FROM SYSDATE) FROM DUAL";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 15).ToArray();
 			items.Length.ShouldBe(9);
-			items[0].StatementNode.ShouldNotBe(null);
+			items[0].StatementNode.ShouldNotBeNull();
 			items[0].Text.ShouldBe("HOUR");
 			items[0].Category.ShouldBe(OracleCodeCompletionCategory.Keyword);
-			items[8].StatementNode.ShouldNotBe(null);
+			items[8].StatementNode.ShouldNotBeNull();
 			items[8].Text.ShouldBe("YEAR");
 			items[8].Category.ShouldBe(OracleCodeCompletionCategory.Keyword);
 		}
@@ -2220,7 +2220,7 @@ SELECT * FROM ALL";
 			const string statement = @"SELECT EXTRAC FROM DUAL";
 			var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 13).ToArray();
 			items.Length.ShouldBe(1);
-			items[0].StatementNode.ShouldNotBe(null);
+			items[0].StatementNode.ShouldNotBeNull();
 			items[0].Label.ShouldBe("EXTRACT");
 			items[0].Text.ShouldBe("EXTRACT(DAY FROM )");
 			items[0].CaretOffset.ShouldBe(-1);
@@ -2243,7 +2243,7 @@ SELECT * FROM ALL";
 			items.Length.ShouldBeGreaterThan(0);
 			items[0].Label.ShouldBe("DAY");
 			items[0].CaretOffset.ShouldBe(0);
-			items[0].StatementNode.ShouldBe(null);
+			items[0].StatementNode.ShouldBeNull();
 		}
 
 		[Test]
@@ -2255,7 +2255,7 @@ SELECT * FROM ALL";
 			items[0].Label.ShouldBe("MAX");
 			items[0].Text.ShouldBe("MAX()");
 			items[0].CaretOffset.ShouldBe(-1);
-			items[0].StatementNode.ShouldNotBe(null);
+			items[0].StatementNode.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -2496,11 +2496,11 @@ ON (EVENTS.ID = SRC.ID)";
 			{
 				const string statement = @"SELECT CUSTOMER. FROM CUSTOMER JOIN COMPANY ON ";
 				var completionType = InitializeCodeCompletionType(statement, statement.Length);
-				completionType.JoinCondition.ShouldBe(true);
-				completionType.SchemaDataObject.ShouldBe(false);
-				completionType.ColumnAlias.ShouldBe(false);
-				completionType.SpecialFunctionParameter.ShouldBe(false);
-				completionType.DataType.ShouldBe(false);
+				completionType.JoinCondition.ShouldBeTrue();
+				completionType.SchemaDataObject.ShouldBeFalse();
+				completionType.ColumnAlias.ShouldBeFalse();
+				completionType.SpecialFunctionParameter.ShouldBeFalse();
+				completionType.DataType.ShouldBeFalse();
 			}
 
 			[Test, Ignore("not solved yet")]
@@ -2508,10 +2508,10 @@ ON (EVENTS.ID = SRC.ID)";
 			{
 				const string statement = @"SELECT * FROM SELECTION JOIN RESPONDENTBUCKET ON SELECTION.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET AND ";
 				var completionType = InitializeCodeCompletionType(statement, statement.Length);
-				completionType.JoinCondition.ShouldBe(true);
-				completionType.SchemaDataObject.ShouldBe(false);
-				completionType.ColumnAlias.ShouldBe(false);
-				completionType.SpecialFunctionParameter.ShouldBe(false);
+				completionType.JoinCondition.ShouldBeTrue();
+				completionType.SchemaDataObject.ShouldBeFalse();
+				completionType.ColumnAlias.ShouldBeFalse();
+				completionType.SpecialFunctionParameter.ShouldBeFalse();
 			}
 
 			[Test]
@@ -2519,10 +2519,10 @@ ON (EVENTS.ID = SRC.ID)";
 			{
 				const string statement = @"SELECT CUSTOMER. FROM CUSTOMER JOIN COMPANY ON ";
 				var completionType = InitializeCodeCompletionType(statement, statement.Length - 1);
-				completionType.JoinCondition.ShouldBe(false);
-				completionType.ColumnAlias.ShouldBe(false);
-				completionType.SpecialFunctionParameter.ShouldBe(false);
-				completionType.DataType.ShouldBe(false);
+				completionType.JoinCondition.ShouldBeFalse();
+				completionType.ColumnAlias.ShouldBeFalse();
+				completionType.SpecialFunctionParameter.ShouldBeFalse();
+				completionType.DataType.ShouldBeFalse();
 			}
 
 			[Test]
@@ -2530,15 +2530,15 @@ ON (EVENTS.ID = SRC.ID)";
 			{
 				const string statement = @"SELECT SQLPAD.SQLPAD_FUNCTION(D) FROM DUAL";
 				var completionType = InitializeCodeCompletionType(statement, 31);
-				completionType.SchemaDataObjectReference.ShouldBe(true);
-				completionType.Schema.ShouldBe(true);
-				completionType.SchemaProgram.ShouldBe(true);
-				completionType.PackageFunction.ShouldBe(false);
-				completionType.Column.ShouldBe(true);
-				completionType.AllColumns.ShouldBe(false);
-				completionType.ColumnAlias.ShouldBe(false);
-				completionType.SpecialFunctionParameter.ShouldBe(true);
-				completionType.DataType.ShouldBe(false);
+				completionType.SchemaDataObjectReference.ShouldBeTrue();
+				completionType.Schema.ShouldBeTrue();
+				completionType.SchemaProgram.ShouldBeTrue();
+				completionType.PackageFunction.ShouldBeFalse();
+				completionType.Column.ShouldBeTrue();
+				completionType.AllColumns.ShouldBeFalse();
+				completionType.ColumnAlias.ShouldBeFalse();
+				completionType.SpecialFunctionParameter.ShouldBeTrue();
+				completionType.DataType.ShouldBeFalse();
 			}
 
 			[Test]
@@ -2546,15 +2546,15 @@ ON (EVENTS.ID = SRC.ID)";
 			{
 				const string statement = @"SELECT LENGTH(SELECTION.NAME) + LENGTH(N) FROM SELECTION";
 				var completionType = InitializeCodeCompletionType(statement, 40);
-				completionType.SchemaDataObjectReference.ShouldBe(true);
-				completionType.Schema.ShouldBe(true);
-				completionType.SchemaProgram.ShouldBe(true);
-				completionType.PackageFunction.ShouldBe(false);
-				completionType.Column.ShouldBe(true);
-				completionType.AllColumns.ShouldBe(false);
-				completionType.ColumnAlias.ShouldBe(false);
-				completionType.SpecialFunctionParameter.ShouldBe(true);
-				completionType.DataType.ShouldBe(false);
+				completionType.SchemaDataObjectReference.ShouldBeTrue();
+				completionType.Schema.ShouldBeTrue();
+				completionType.SchemaProgram.ShouldBeTrue();
+				completionType.PackageFunction.ShouldBeFalse();
+				completionType.Column.ShouldBeTrue();
+				completionType.AllColumns.ShouldBeFalse();
+				completionType.ColumnAlias.ShouldBeFalse();
+				completionType.SpecialFunctionParameter.ShouldBeTrue();
+				completionType.DataType.ShouldBeFalse();
 			}
 
 			[Test]
@@ -2562,16 +2562,16 @@ ON (EVENTS.ID = SRC.ID)";
 			{
 				const string statement = @"SELECT CUSTOMER. FROM CUSTOMER JOIN COMPANY ON ";
 				var completionType = InitializeCodeCompletionType(statement, 16);
-				completionType.Schema.ShouldBe(false);
-				completionType.Column.ShouldBe(true);
-				completionType.AllColumns.ShouldBe(true);
-				completionType.SchemaProgram.ShouldBe(true);
-				completionType.PackageFunction.ShouldBe(true);
-				completionType.SchemaDataObject.ShouldBe(false);
-				//completionType.SchemaDataObjectReference.ShouldBe(true);
-				completionType.ColumnAlias.ShouldBe(false);
-				completionType.SpecialFunctionParameter.ShouldBe(false);
-				completionType.DataType.ShouldBe(false);
+				completionType.Schema.ShouldBeFalse();
+				completionType.Column.ShouldBeTrue();
+				completionType.AllColumns.ShouldBeTrue();
+				completionType.SchemaProgram.ShouldBeTrue();
+				completionType.PackageFunction.ShouldBeTrue();
+				completionType.SchemaDataObject.ShouldBeFalse();
+				//completionType.SchemaDataObjectReference.ShouldBeTrue();
+				completionType.ColumnAlias.ShouldBeFalse();
+				completionType.SpecialFunctionParameter.ShouldBeFalse();
+				completionType.DataType.ShouldBeFalse();
 			}
 			
 			[Test]
@@ -2579,17 +2579,17 @@ ON (EVENTS.ID = SRC.ID)";
 			{
 				const string statement = @"SELECT I.*, INVOICES.ID FROM HUSQVIK.INVOICELINES I JOIN HUSQVIK.INVOICES;";
 				var completionType = InitializeCodeCompletionType(statement, statement.Length);
-				completionType.Schema.ShouldBe(false);
-				completionType.JoinType.ShouldBe(false);
-				completionType.JoinCondition.ShouldBe(false);
-				completionType.Column.ShouldBe(false);
-				completionType.AllColumns.ShouldBe(false);
-				completionType.SchemaProgram.ShouldBe(false);
-				completionType.PackageFunction.ShouldBe(false);
-				completionType.SchemaDataObject.ShouldBe(false);
-				completionType.ColumnAlias.ShouldBe(false);
-				completionType.SpecialFunctionParameter.ShouldBe(false);
-				completionType.DataType.ShouldBe(false);
+				completionType.Schema.ShouldBeFalse();
+				completionType.JoinType.ShouldBeFalse();
+				completionType.JoinCondition.ShouldBeFalse();
+				completionType.Column.ShouldBeFalse();
+				completionType.AllColumns.ShouldBeFalse();
+				completionType.SchemaProgram.ShouldBeFalse();
+				completionType.PackageFunction.ShouldBeFalse();
+				completionType.SchemaDataObject.ShouldBeFalse();
+				completionType.ColumnAlias.ShouldBeFalse();
+				completionType.SpecialFunctionParameter.ShouldBeFalse();
+				completionType.DataType.ShouldBeFalse();
 			}
 
 			[Test]
@@ -2597,17 +2597,17 @@ ON (EVENTS.ID = SRC.ID)";
 			{
 				const string statement = @"SELECT * FROM CUSTOMER@H";
 				var completionType = InitializeCodeCompletionType(statement, 24);
-				completionType.Schema.ShouldBe(false);
-				completionType.Column.ShouldBe(false);
-				completionType.AllColumns.ShouldBe(false);
-				completionType.SchemaProgram.ShouldBe(false);
-				completionType.PackageFunction.ShouldBe(false);
-				completionType.SchemaDataObject.ShouldBe(false);
-				completionType.SchemaDataObjectReference.ShouldBe(false);
-				completionType.DatabaseLink.ShouldBe(true);
-				completionType.ColumnAlias.ShouldBe(false);
-				completionType.SpecialFunctionParameter.ShouldBe(false);
-				completionType.DataType.ShouldBe(false);
+				completionType.Schema.ShouldBeFalse();
+				completionType.Column.ShouldBeFalse();
+				completionType.AllColumns.ShouldBeFalse();
+				completionType.SchemaProgram.ShouldBeFalse();
+				completionType.PackageFunction.ShouldBeFalse();
+				completionType.SchemaDataObject.ShouldBeFalse();
+				completionType.SchemaDataObjectReference.ShouldBeFalse();
+				completionType.DatabaseLink.ShouldBeTrue();
+				completionType.ColumnAlias.ShouldBeFalse();
+				completionType.SpecialFunctionParameter.ShouldBeFalse();
+				completionType.DataType.ShouldBeFalse();
 			}
 
 			[Test]
@@ -2615,9 +2615,9 @@ ON (EVENTS.ID = SRC.ID)";
 			{
 				const string statement = @"SELECT LENGTH(DUMMY) COLUMN_NAME FROM DUAL ORDER BY C";
 				var completionType = InitializeCodeCompletionType(statement, 53);
-				completionType.ColumnAlias.ShouldBe(true);
-				completionType.SpecialFunctionParameter.ShouldBe(false);
-				completionType.DataType.ShouldBe(false);
+				completionType.ColumnAlias.ShouldBeTrue();
+				completionType.SpecialFunctionParameter.ShouldBeFalse();
+				completionType.DataType.ShouldBeFalse();
 			}
 
 			[Test]
@@ -2625,9 +2625,9 @@ ON (EVENTS.ID = SRC.ID)";
 			{
 				const string statement = @"SELECT * FROM SELECTION WHERE SELECTIONNAME IN (SELECT * FROM SELE)";
 				var completionType = InitializeCodeCompletionType(statement, 66);
-				completionType.SchemaDataObject.ShouldBe(true);
-				completionType.SpecialFunctionParameter.ShouldBe(false);
-				completionType.DataType.ShouldBe(false);
+				completionType.SchemaDataObject.ShouldBeTrue();
+				completionType.SpecialFunctionParameter.ShouldBeFalse();
+				completionType.DataType.ShouldBeFalse();
 			}
 
 			[Test]
@@ -2635,9 +2635,9 @@ ON (EVENTS.ID = SRC.ID)";
 			{
 				const string statement = @"SELECT * FROM SELECTION JOIN RESPONDENTBUCKET ON SELECTION.RESPONDENTBUCKET_ID = RESPONDENTBUCKET.RESPONDENTBUCKET_ID J";
 				var completionType = InitializeCodeCompletionType(statement, 119);
-				completionType.JoinType.ShouldBe(true);
-				completionType.SpecialFunctionParameter.ShouldBe(false);
-				completionType.DataType.ShouldBe(false);
+				completionType.JoinType.ShouldBeTrue();
+				completionType.SpecialFunctionParameter.ShouldBeFalse();
+				completionType.DataType.ShouldBeFalse();
 			}
 
 			[Test]
@@ -2652,8 +2652,8 @@ ON (EVENTS.ID = SRC.ID)";
 			{
 				const string statement = @"INSERT INTO S";
 				var completionType = InitializeCodeCompletionType(statement, 13);
-				completionType.SchemaDataObject.ShouldBe(true);
-				completionType.DataType.ShouldBe(false);
+				completionType.SchemaDataObject.ShouldBeTrue();
+				completionType.DataType.ShouldBeFalse();
 			}
 
 			[Test]
@@ -2661,8 +2661,8 @@ ON (EVENTS.ID = SRC.ID)";
 			{
 				const string statement = @"INSERT INTO ";
 				var completionType = InitializeCodeCompletionType(statement, 12);
-				completionType.SchemaDataObject.ShouldBe(true);
-				completionType.DataType.ShouldBe(false);
+				completionType.SchemaDataObject.ShouldBeTrue();
+				completionType.DataType.ShouldBeFalse();
 			}
 
 			[Test]
@@ -2671,7 +2671,7 @@ ON (EVENTS.ID = SRC.ID)";
 				const string statement = @"SELECT NVL() FROM DUAL";
 				var completionType = InitializeCodeCompletionType(statement, 11);
 				completionType.KeywordsClauses.Count.ShouldBe(0);
-				completionType.DataType.ShouldBe(false);
+				completionType.DataType.ShouldBeFalse();
 			}
 
 			[Test]
@@ -2680,7 +2680,7 @@ ON (EVENTS.ID = SRC.ID)";
 				const string statement = @"SELECT DIS";
 				var completionType = InitializeCodeCompletionType(statement, 10);
 				completionType.KeywordsClauses.Count.ShouldBe(2);
-				completionType.DataType.ShouldBe(false);
+				completionType.DataType.ShouldBeFalse();
 			}
 
 			[Test]
@@ -2688,9 +2688,9 @@ ON (EVENTS.ID = SRC.ID)";
 			{
 				const string statement = @"SELECT * FROM INVOICES PARTITION (P)";
 				var completionType = InitializeCodeCompletionType(statement, 35);
-				completionType.ExplicitPartition.ShouldBe(true);
-				completionType.ExplicitSubPartition.ShouldBe(false);
-				completionType.DataType.ShouldBe(false);
+				completionType.ExplicitPartition.ShouldBeTrue();
+				completionType.ExplicitSubPartition.ShouldBeFalse();
+				completionType.DataType.ShouldBeFalse();
 			}
 
 			[Test]
@@ -2698,11 +2698,11 @@ ON (EVENTS.ID = SRC.ID)";
 			{
 				const string statement = @"SELECT * FROM INVOICES SUBPARTITION ()";
 				var completionType = InitializeCodeCompletionType(statement, 37);
-				completionType.ExplicitPartition.ShouldBe(false);
-				completionType.ExplicitSubPartition.ShouldBe(true);
-				completionType.SchemaDataObject.ShouldBe(false);
-				completionType.JoinType.ShouldBe(false);
-				completionType.DataType.ShouldBe(false);
+				completionType.ExplicitPartition.ShouldBeFalse();
+				completionType.ExplicitSubPartition.ShouldBeTrue();
+				completionType.SchemaDataObject.ShouldBeFalse();
+				completionType.JoinType.ShouldBeFalse();
+				completionType.DataType.ShouldBeFalse();
 			}
 
 			[Test]
@@ -2710,7 +2710,7 @@ ON (EVENTS.ID = SRC.ID)";
 			{
 				const string statement = @"SELECT CAST(NULL AS ) FROM DUAL";
 				var completionType = InitializeCodeCompletionType(statement, 20);
-				completionType.DataType.ShouldBe(true);
+				completionType.DataType.ShouldBeTrue();
 			}
 
 			[Test]
@@ -2718,7 +2718,7 @@ ON (EVENTS.ID = SRC.ID)";
 			{
 				const string statement = @"SELECT CAST(NULL AS NUMBER) FROM DUAL";
 				var completionType = InitializeCodeCompletionType(statement, 23);
-				completionType.DataType.ShouldBe(true);
+				completionType.DataType.ShouldBeTrue();
 			}
 
 			[Test]
@@ -2726,7 +2726,7 @@ ON (EVENTS.ID = SRC.ID)";
 			{
 				const string statement = @"SELECT NULL FROM SELECTION S1 JOIN SELECTION S2 ON S1.SELECTION_ID = S2.SELECTION_ID AND S2.PROJECT_ID >= (SELECT MIN(PROJECT_ID) FROM )";
 				var completionType = InitializeCodeCompletionType(statement, 135);
-				completionType.SchemaDataObject.ShouldBe(true);
+				completionType.SchemaDataObject.ShouldBeTrue();
 			}
 
 			[Test]
@@ -2734,7 +2734,7 @@ ON (EVENTS.ID = SRC.ID)";
 			{
 				const string statement = @"SELECT NULL FROM husqvi.selection";
 				var completionType = InitializeCodeCompletionType(statement, 23);
-				completionType.Schema.ShouldBe(true);
+				completionType.Schema.ShouldBeTrue();
 			}
 
 			[Test]
@@ -2754,7 +2754,7 @@ END;";
 				const string statement = @"BEGIN dbms_output.put_lin(); END;";
 
 				var completionType = InitializeCodeCompletionType(statement, 25);
-				completionType.PackageFunction.ShouldBe(true);
+				completionType.PackageFunction.ShouldBeTrue();
 			}
 
 			[Test]
@@ -2763,7 +2763,7 @@ END;";
 				const string statement = @"INSERT INTO selection ()";
 
 				var completionType = InitializeCodeCompletionType(statement, 23);
-				completionType.InsertIntoColumn.ShouldBe(true);
+				completionType.InsertIntoColumn.ShouldBeTrue();
 			}
 
 			public class ReferenceIdentifierTest
@@ -2804,10 +2804,10 @@ END;";
 						const string statement = @"SELECT HUSQVIK.SQLPAD_FUNCTION() FROM DUAL";
 						var referenceIdentifier = InitializeCodeCompletionType(statement, 18).ReferenceIdentifier;
 						referenceIdentifier.CursorPosition.ShouldBe(18);
-						referenceIdentifier.SchemaIdentifierOriginalValue.ShouldBe(null);
+						referenceIdentifier.SchemaIdentifierOriginalValue.ShouldBeNull();
 						referenceIdentifier.ObjectIdentifierOriginalValue.ShouldBe("HUSQVIK");
 						referenceIdentifier.IdentifierOriginalValue.ShouldBe("SQLPAD_FUNCTION");
-						referenceIdentifier.SchemaIdentifierEffectiveValue.ShouldBe(null);
+						referenceIdentifier.SchemaIdentifierEffectiveValue.ShouldBeNull();
 						referenceIdentifier.ObjectIdentifierEffectiveValue.ShouldBe("HUSQVIK");
 						referenceIdentifier.IdentifierEffectiveValue.ShouldBe("SQL");
 					}
@@ -2823,7 +2823,7 @@ END;";
 						referenceIdentifier.IdentifierOriginalValue.ShouldBe("SELECTION_ID");
 						referenceIdentifier.SchemaIdentifierEffectiveValue.ShouldBe("HUSQVIK");
 						referenceIdentifier.ObjectIdentifierEffectiveValue.ShouldBe("SELE");
-						referenceIdentifier.IdentifierEffectiveValue.ShouldBe(null);
+						referenceIdentifier.IdentifierEffectiveValue.ShouldBeNull();
 					}
 
 					[Test]
@@ -2836,8 +2836,8 @@ END;";
 						referenceIdentifier.ObjectIdentifierOriginalValue.ShouldBe("SELECTION");
 						referenceIdentifier.IdentifierOriginalValue.ShouldBe("SELECTION_ID");
 						referenceIdentifier.SchemaIdentifierEffectiveValue.ShouldBe("HUS");
-						referenceIdentifier.ObjectIdentifierEffectiveValue.ShouldBe(null);
-						referenceIdentifier.IdentifierEffectiveValue.ShouldBe(null);
+						referenceIdentifier.ObjectIdentifierEffectiveValue.ShouldBeNull();
+						referenceIdentifier.IdentifierEffectiveValue.ShouldBeNull();
 					}
 
 					[Test]
@@ -2846,11 +2846,11 @@ END;";
 						const string statement = @"SELECT NAM FROM SELECTION";
 						var referenceIdentifier = InitializeCodeCompletionType(statement, 10).ReferenceIdentifier;
 						referenceIdentifier.CursorPosition.ShouldBe(10);
-						referenceIdentifier.SchemaIdentifierOriginalValue.ShouldBe(null);
-						referenceIdentifier.ObjectIdentifierOriginalValue.ShouldBe(null);
+						referenceIdentifier.SchemaIdentifierOriginalValue.ShouldBeNull();
+						referenceIdentifier.ObjectIdentifierOriginalValue.ShouldBeNull();
 						referenceIdentifier.IdentifierOriginalValue.ShouldBe("NAM");
-						referenceIdentifier.SchemaIdentifierEffectiveValue.ShouldBe(null);
-						referenceIdentifier.ObjectIdentifierEffectiveValue.ShouldBe(null);
+						referenceIdentifier.SchemaIdentifierEffectiveValue.ShouldBeNull();
+						referenceIdentifier.ObjectIdentifierEffectiveValue.ShouldBeNull();
 						referenceIdentifier.IdentifierEffectiveValue.ShouldBe("NAM");
 					}
 
@@ -2860,10 +2860,10 @@ END;";
 						const string statement = @"SELECT SELECTION.NAM FROM SELECTION";
 						var referenceIdentifier = InitializeCodeCompletionType(statement, 20).ReferenceIdentifier;
 						referenceIdentifier.CursorPosition.ShouldBe(20);
-						referenceIdentifier.SchemaIdentifierOriginalValue.ShouldBe(null);
+						referenceIdentifier.SchemaIdentifierOriginalValue.ShouldBeNull();
 						referenceIdentifier.ObjectIdentifierOriginalValue.ShouldBe("SELECTION");
 						referenceIdentifier.IdentifierOriginalValue.ShouldBe("NAM");
-						referenceIdentifier.SchemaIdentifierEffectiveValue.ShouldBe(null);
+						referenceIdentifier.SchemaIdentifierEffectiveValue.ShouldBeNull();
 						referenceIdentifier.ObjectIdentifierEffectiveValue.ShouldBe("SELECTION");
 						referenceIdentifier.IdentifierEffectiveValue.ShouldBe("NAM");
 					}
@@ -2879,10 +2879,10 @@ END;";
 						referenceIdentifier.CursorPosition.ShouldBe(26);
 						referenceIdentifier.SchemaIdentifierOriginalValue.ShouldBe("HUSQVIK");
 						referenceIdentifier.ObjectIdentifierOriginalValue.ShouldBe("SELE");
-						referenceIdentifier.IdentifierOriginalValue.ShouldBe(null);
+						referenceIdentifier.IdentifierOriginalValue.ShouldBeNull();
 						referenceIdentifier.SchemaIdentifierEffectiveValue.ShouldBe("HUSQVIK");
 						referenceIdentifier.ObjectIdentifierEffectiveValue.ShouldBe("SELE");
-						referenceIdentifier.IdentifierEffectiveValue.ShouldBe(null);
+						referenceIdentifier.IdentifierEffectiveValue.ShouldBeNull();
 					}
 
 					[Test]
@@ -2891,12 +2891,12 @@ END;";
 						const string statement = @"SELECT * FROM SELE";
 						var referenceIdentifier = InitializeCodeCompletionType(statement, 18).ReferenceIdentifier;
 						referenceIdentifier.CursorPosition.ShouldBe(18);
-						referenceIdentifier.SchemaIdentifierOriginalValue.ShouldBe(null);
+						referenceIdentifier.SchemaIdentifierOriginalValue.ShouldBeNull();
 						referenceIdentifier.ObjectIdentifierOriginalValue.ShouldBe("SELE");
-						referenceIdentifier.IdentifierOriginalValue.ShouldBe(null);
-						referenceIdentifier.SchemaIdentifierEffectiveValue.ShouldBe(null);
+						referenceIdentifier.IdentifierOriginalValue.ShouldBeNull();
+						referenceIdentifier.SchemaIdentifierEffectiveValue.ShouldBeNull();
 						referenceIdentifier.ObjectIdentifierEffectiveValue.ShouldBe("SELE");
-						referenceIdentifier.IdentifierEffectiveValue.ShouldBe(null);
+						referenceIdentifier.IdentifierEffectiveValue.ShouldBeNull();
 					}
 
 					[Test]
@@ -2907,10 +2907,10 @@ END;";
 						referenceIdentifier.CursorPosition.ShouldBe(26);
 						referenceIdentifier.SchemaIdentifierOriginalValue.ShouldBe("HUSQVIK");
 						referenceIdentifier.ObjectIdentifierOriginalValue.ShouldBe("SELECTION");
-						referenceIdentifier.IdentifierOriginalValue.ShouldBe(null);
+						referenceIdentifier.IdentifierOriginalValue.ShouldBeNull();
 						referenceIdentifier.SchemaIdentifierEffectiveValue.ShouldBe("HUSQVIK");
 						referenceIdentifier.ObjectIdentifierEffectiveValue.ShouldBe("SELE");
-						referenceIdentifier.IdentifierEffectiveValue.ShouldBe(null);
+						referenceIdentifier.IdentifierEffectiveValue.ShouldBeNull();
 					}
 
 					[Test]
@@ -2919,10 +2919,10 @@ END;";
 						const string statement = @"SELECT column_value FROM TABLE (SYS.ODCI)";
 						var referenceIdentifier = InitializeCodeCompletionType(statement, 39).ReferenceIdentifier;
 						referenceIdentifier.CursorPosition.ShouldBe(39);
-						referenceIdentifier.SchemaIdentifierOriginalValue.ShouldBe(null);
+						referenceIdentifier.SchemaIdentifierOriginalValue.ShouldBeNull();
 						referenceIdentifier.ObjectIdentifierOriginalValue.ShouldBe("SYS");
 						referenceIdentifier.IdentifierOriginalValue.ShouldBe("ODCI");
-						referenceIdentifier.SchemaIdentifierEffectiveValue.ShouldBe(null);
+						referenceIdentifier.SchemaIdentifierEffectiveValue.ShouldBeNull();
 						referenceIdentifier.ObjectIdentifierEffectiveValue.ShouldBe("SYS");
 						referenceIdentifier.IdentifierEffectiveValue.ShouldBe("ODC");
 					}
@@ -2947,7 +2947,7 @@ END;";
 				var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 12, false).ToList();
 				items.Count.ShouldBe(1);
 				items[0].Label.ShouldBe("DBMS_OUTPUT");
-				items[0].StatementNode.ShouldNotBe(null);
+				items[0].StatementNode.ShouldNotBeNull();
 			}
 
 			[Test]
@@ -2957,7 +2957,7 @@ END;";
 				var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 12, false).ToList();
 				items.Count.ShouldBe(1);
 				items[0].Label.ShouldBe("DBMS_OUTPUT");
-				items[0].StatementNode.ShouldNotBe(null);
+				items[0].StatementNode.ShouldNotBeNull();
 			}
 
 			[Test]
@@ -2967,7 +2967,7 @@ END;";
 				var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 27, false).ToList();
 				items.Count.ShouldBe(1);
 				items[0].Label.ShouldBe("PUT_LINE");
-				items[0].StatementNode.ShouldNotBe(null);
+				items[0].StatementNode.ShouldNotBeNull();
 			}
 
 			[Test]
@@ -2983,7 +2983,7 @@ END;";
 				var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 101).ToList();
 				items.Count.ShouldBe(3);
 				items[0].Label.ShouldBe("SELECTION");
-				items[0].StatementNode.ShouldNotBe(null);
+				items[0].StatementNode.ShouldNotBeNull();
 				items[0].StatementNode.Token.Value.ShouldBe("selectio");
 			}
 
@@ -3001,7 +3001,7 @@ END;";
 				var items = CodeCompletionProvider.ResolveItems(TestFixture.DatabaseModel, statement, 131, true, OracleCodeCompletionCategory.PlSqlVariable).ToList();
 				items.Count.ShouldBe(2);
 				items[0].Label.ShouldBe("VARIABLE1");
-				items[0].StatementNode.ShouldNotBe(null);
+				items[0].StatementNode.ShouldNotBeNull();
 				items[0].StatementNode.Token.Value.ShouldBe("variable");
 			}
 		}

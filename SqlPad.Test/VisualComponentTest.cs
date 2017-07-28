@@ -127,10 +127,10 @@ WHERE
 
 			DocumentPage.BindVariables.Count.ShouldBe(1);
 			DocumentPage.Schemas.Count.ShouldBeGreaterThan(0);
-			DocumentPage.IsDirty.ShouldBe(true);
-			DocumentPage.DatabaseModel.ShouldNotBe(null);
+			DocumentPage.IsDirty.ShouldBeTrue();
+			DocumentPage.DatabaseModel.ShouldNotBeNull();
 			DocumentPage.ConnectionStatus.ShouldBe(ConnectionStatus.Connected);
-			DocumentPage.CurrentConnection.ShouldNotBe(null);
+			DocumentPage.CurrentConnection.ShouldNotBeNull();
 			DocumentPage.ConnectionErrorMessage.ShouldBe(String.Empty);
 			//DocumentPage.CurrentSchema.Length.ShouldBeGreaterThan(0);
 
@@ -140,11 +140,11 @@ WHERE
 			outputViewer.CompilationErrors.Count.ShouldBe(1);
 			outputViewer.ExecutionLog.Length.ShouldBe(65);
 			outputViewer.ExecutionLog.ShouldContain("Command executed successfully. (");
-			outputViewer.IsBusy.ShouldBe(false);
-			outputViewer.HasActiveTransaction.ShouldBe(true);
+			outputViewer.IsBusy.ShouldBeFalse();
+			outputViewer.HasActiveTransaction.ShouldBeTrue();
 			outputViewer.TransactionIdentifier.ShouldBe("1.2.3456 (read committed)");
 			outputViewer.SessionExecutionStatistics.Count.ShouldBeGreaterThan(0);
-			outputViewer.ActiveResultViewer.ShouldNotBe(null);
+			outputViewer.ActiveResultViewer.ShouldNotBeNull();
 
 			outputViewer.ActiveResultViewer.ResultGrid.SelectAllCells();
 
@@ -154,7 +154,7 @@ WHERE
 			outputViewer.TabControlResult.SelectedContent.ShouldBe(outputViewer.FileResultViewer);
 
 			var statusInfo = outputViewer.StatusInfo;
-			statusInfo.ResultGridAvailable.ShouldBe(true);
+			statusInfo.ResultGridAvailable.ShouldBeTrue();
 
 			TestPairCharacterInsertion();
 

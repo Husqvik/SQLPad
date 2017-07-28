@@ -63,12 +63,12 @@ WHERE
 				databaseModel.StatisticsKeys.Count.ShouldBe(0);
 				databaseModel.SystemParameters.Count.ShouldBe(0);
 
-				databaseModel.IsInitialized.ShouldBe(false);
+				databaseModel.IsInitialized.ShouldBeFalse();
 				var refreshFinishedResetEvent = new ManualResetEvent(false);
 				databaseModel.RefreshCompleted += delegate { refreshFinishedResetEvent.Set(); };
 				await databaseModel.Initialize();
 
-				databaseModel.IsInitialized.ShouldBe(true);
+				databaseModel.IsInitialized.ShouldBeTrue();
 				databaseModel.Schemas.Count.ShouldBeGreaterThan(0);
 
 				if (!databaseModel.IsFresh)
@@ -133,14 +133,14 @@ WHERE
 			statementExecutionBatchResult.ExecutionModel.ShouldBe(batchExecutionModel);
 			var result = statementExecutionBatchResult.StatementResults[0];
 			result.StatementModel.ShouldBe(executionModel);
-			result.ExecutedSuccessfully.ShouldBe(true);
+			result.ExecutedSuccessfully.ShouldBeTrue();
 			result.AffectedRowCount.ShouldBe(-1);
 			result.ExecutedAt.ShouldNotBe(null);
 			result.Duration.ShouldNotBe(null);
             result.ResultInfoColumnHeaders.Count.ShouldBe(1);
 			var resultInfo = result.ResultInfoColumnHeaders.Keys.First();
 
-			connectionAdapter.CanFetch(resultInfo).ShouldBe(true);
+			connectionAdapter.CanFetch(resultInfo).ShouldBeTrue();
 
 			var columnHeaders = result.ResultInfoColumnHeaders[resultInfo];
 			columnHeaders.Count.ShouldBe(1);
@@ -150,14 +150,14 @@ WHERE
 
 			var rows = await connectionAdapter.FetchRecordsAsync(resultInfo, Int32.MaxValue, CancellationToken.None);
 
-			connectionAdapter.CanFetch(resultInfo).ShouldBe(false);
+			connectionAdapter.CanFetch(resultInfo).ShouldBeFalse();
 
 			rows.Count.ShouldBe(1);
 			rows[0].Length.ShouldBe(1);
 			rows[0][0].ToString().ShouldBe("X");
 
 			rows = await connectionAdapter.FetchRecordsAsync(resultInfo, 1, CancellationToken.None);
-			rows.Any().ShouldBe(false);
+			rows.Any().ShouldBeFalse();
 
 			var planItemCollection = await connectionAdapter.GetCursorExecutionStatisticsAsync(CancellationToken.None);
 			planItemCollection.PlanText.ShouldNotBe(null);
@@ -197,7 +197,7 @@ WHERE
 				statementBatchResult.StatementResults.Count.ShouldBe(1);
 				var result = statementBatchResult.StatementResults[0];
 
-				result.ExecutedSuccessfully.ShouldBe(true);
+				result.ExecutedSuccessfully.ShouldBeTrue();
 				var resultInfo = result.ResultInfoColumnHeaders.Keys.First();
 
 				var resultSet = await connectionAdapter.FetchRecordsAsync(resultInfo, Int32.MaxValue, CancellationToken.None);
@@ -236,13 +236,13 @@ WHERE
 				executionException.BatchResult.StatementResults.Count.ShouldBe(1);
 				var result = executionException.BatchResult.StatementResults[0];
 
-				result.ExecutedSuccessfully.ShouldBe(false);
+				result.ExecutedSuccessfully.ShouldBeFalse();
 				result.ExecutedAt.ShouldNotBe(null);
 				result.Duration.ShouldNotBe(null);
 				result.Exception.ShouldNotBe(null);
-				result.ResultInfoColumnHeaders.ShouldBe(null);
-				result.AffectedRowCount.ShouldBe(null);
-				result.CompilationErrors.ShouldBe(null);
+				result.ResultInfoColumnHeaders.ShouldBeNull();
+				result.AffectedRowCount.ShouldBeNull();
+				result.CompilationErrors.ShouldBeNull();
 				result.StatementModel.ShouldBe(executionModel);
 				result.ErrorPosition.ShouldBe(17);
 			}
@@ -269,7 +269,7 @@ WHERE
 				statementBatchResult.StatementResults.Count.ShouldBe(1);
 				var result = statementBatchResult.StatementResults[0];
 
-				result.ExecutedSuccessfully.ShouldBe(true);
+				result.ExecutedSuccessfully.ShouldBeTrue();
 				var resultInfo = result.ResultInfoColumnHeaders.Keys.First();
 
 				var columnHeaders = result.ResultInfoColumnHeaders[resultInfo];
@@ -372,7 +372,7 @@ WHERE
 				statementBatchResult.StatementResults.Count.ShouldBe(1);
 				var result = statementBatchResult.StatementResults[0];
 
-				result.ExecutedSuccessfully.ShouldBe(true);
+				result.ExecutedSuccessfully.ShouldBeTrue();
 				var resultInfo = result.ResultInfoColumnHeaders.Keys.First();
 
 				var columnHeaders = result.ResultInfoColumnHeaders[resultInfo];
@@ -437,7 +437,7 @@ WHERE
 				statementBatchResult.StatementResults.Count.ShouldBe(1);
 				var result = statementBatchResult.StatementResults[0];
 
-				result.ExecutedSuccessfully.ShouldBe(true);
+				result.ExecutedSuccessfully.ShouldBeTrue();
 				result.ResultInfoColumnHeaders.Count.ShouldBe(0);
 				result.AffectedRowCount.ShouldBe(0);
 				result.CompilationErrors.Count.ShouldBe(0);
@@ -467,7 +467,7 @@ END;",
 				statementBatchResult.StatementResults.Count.ShouldBe(1);
 				var result = statementBatchResult.StatementResults[0];
 
-				result.ExecutedSuccessfully.ShouldBe(true);
+				result.ExecutedSuccessfully.ShouldBeTrue();
 				var resultInfo = result.ResultInfoColumnHeaders.Keys.First();
 
 				var columnHeaders = result.ResultInfoColumnHeaders[resultInfo];
@@ -640,9 +640,9 @@ WHERE
 			var constraintDetails = model.ConstraintDetails.ToList();
 			
 			constraintDetails[0].DeleteRule.ShouldBe("No Action");
-			constraintDetails[0].IsDeferrable.ShouldBe(false);
-			constraintDetails[0].IsDeferred.ShouldBe(false);
-			constraintDetails[0].IsEnabled.ShouldBe(true);
+			constraintDetails[0].IsDeferrable.ShouldBeFalse();
+			constraintDetails[0].IsDeferred.ShouldBeFalse();
+			constraintDetails[0].IsEnabled.ShouldBeTrue();
 			constraintDetails[0].Owner.ShouldBe("SYS");
 			constraintDetails[0].Name.ShouldNotBe(null);
 			constraintDetails[0].LastChange.ShouldBeGreaterThan(DateTime.MinValue);
@@ -650,9 +650,9 @@ WHERE
 			constraintDetails[0].Type.ShouldBe("Referential integrity");
 
 			constraintDetails[1].DeleteRule.ShouldBe(String.Empty);
-			constraintDetails[1].IsDeferrable.ShouldBe(false);
-			constraintDetails[1].IsDeferred.ShouldBe(false);
-			constraintDetails[1].IsEnabled.ShouldBe(true);
+			constraintDetails[1].IsDeferrable.ShouldBeFalse();
+			constraintDetails[1].IsDeferred.ShouldBeFalse();
+			constraintDetails[1].IsEnabled.ShouldBeTrue();
 			constraintDetails[1].Owner.ShouldBe("SYS");
 			constraintDetails[1].Name.ShouldNotBe(null);
 			constraintDetails[1].LastChange.ShouldBeGreaterThan(DateTime.MinValue);
@@ -685,7 +685,7 @@ WHERE
 			await ExecuteDataProvider(tableSpaceAllocationDataProvider);
 
 			model.AllocatedBytes.ShouldBe(65536);
-			model.LargeObjectBytes.ShouldBe(null);
+			model.LargeObjectBytes.ShouldBeNull();
 		}
 
 		[Test]
@@ -745,12 +745,12 @@ SELECT /*+ parallel(g1 2) parallel(g2 2) monitor */ avg(g1.val * 10000 + g2.val)
 				var statementBatchResult = executionTask.Result;
 				statementBatchResult.StatementResults.Count.ShouldBe(1);
 				var result = statementBatchResult.StatementResults[0];
-				result.ExecutedSuccessfully.ShouldBe(true);
+				result.ExecutedSuccessfully.ShouldBeTrue();
 
 				planItemCollection.RootItem.ShouldNotBe(null);
 				planItemCollection.SessionItems.Count.ShouldBeGreaterThan(0);
-				planItemCollection.AllItems.Values.Any(pi => pi.ParallelSlaveSessionItems.Count > 0).ShouldBe(true);
-				planItemCollection.SessionItems.Any(pi => pi.ActiveSessionHistoryItems.Count > 0).ShouldBe(true);
+				planItemCollection.AllItems.Values.Any(pi => pi.ParallelSlaveSessionItems.Count > 0).ShouldBeTrue();
+				planItemCollection.SessionItems.Any(pi => pi.ActiveSessionHistoryItems.Count > 0).ShouldBeTrue();
 			}
 		}
 
@@ -771,12 +771,12 @@ SELECT /*+ parallel(g1 2) parallel(g2 2) monitor */ avg(g1.val * 10000 + g2.val)
 			constraint.Type.ShouldBe("With read only");
 			constraint.DeleteRule.ShouldBeEmpty();
 			constraint.SearchCondition.ShouldBeEmpty();
-			constraint.IsDeferrable.ShouldBe(false);
-			constraint.IsDeferred.ShouldBe(false);
-			constraint.IsValidated.ShouldBe(false);
-			constraint.IsEnabled.ShouldBe(true);
+			constraint.IsDeferrable.ShouldBeFalse();
+			constraint.IsDeferred.ShouldBeFalse();
+			constraint.IsValidated.ShouldBeFalse();
+			constraint.IsEnabled.ShouldBeTrue();
 			constraint.LastChange.ShouldBeGreaterThan(DateTime.MinValue);
-			model.Comment.ShouldBe(null);
+			model.Comment.ShouldBeNull();
 		}
 
 		[Test]
@@ -814,7 +814,7 @@ SELECT /*+ parallel(g1 2) parallel(g2 2) monitor */ avg(g1.val * 10000 + g2.val)
 				await connectionAdapter.ExecuteStatementAsync(new StatementBatchExecutionModel { Statements = new[] { executionModel } }, CancellationToken.None);
 
 				databaseModel.CurrentSchema.ShouldBe("SYS");
-				changedEventCalled.ShouldBe(true);
+				changedEventCalled.ShouldBeTrue();
 			}
 		}
 

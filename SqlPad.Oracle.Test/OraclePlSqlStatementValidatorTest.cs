@@ -47,9 +47,9 @@ END;";
 			var validationModel = OracleStatementValidatorTest.BuildValidationModel(plsqlText, statement);
 			var nodeValidities = validationModel.IdentifierNodeValidity.Values.ToArray();
 			nodeValidities.Length.ShouldBe(2);
-			nodeValidities[0].IsRecognized.ShouldBe(false);
+			nodeValidities[0].IsRecognized.ShouldBeFalse();
 			nodeValidities[0].Node.Token.Value.ShouldBe("undefined_exception");
-			nodeValidities[1].IsRecognized.ShouldBe(false);
+			nodeValidities[1].IsRecognized.ShouldBeFalse();
 			nodeValidities[1].Node.Token.Value.ShouldBe("undefined_exception");
 		}
 
@@ -129,8 +129,8 @@ END;";
 			var validationModel = OracleStatementValidatorTest.BuildValidationModel(plsqlText, statement);
 			validationModel.ProgramNodeValidity.Count.ShouldBe(1);
 			var validationData = validationModel.ProgramNodeValidity.Values.First();
-			validationData.IsRecognized.ShouldBe(true);
-			validationData.SemanticErrorType.ShouldBe(null);
+			validationData.IsRecognized.ShouldBeTrue();
+			validationData.SemanticErrorType.ShouldBeNull();
 		}
 
 		[Test]

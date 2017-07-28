@@ -16,8 +16,8 @@ namespace SqlPad.Test
 		[Test, STAThread]
 		public void TestInitializedEditorNavigationService()
 		{
-			EditorNavigationService.IsEnabled.ShouldBe(true);
-			EditorNavigationService.GetNextEdit().ShouldBe(null);
+			EditorNavigationService.IsEnabled.ShouldBeTrue();
+			EditorNavigationService.GetNextEdit().ShouldBeNull();
 			Should.Throw<ArgumentOutOfRangeException>(() => EditorNavigationService.GetPreviousEdit());
 		}
 
@@ -31,29 +31,29 @@ namespace SqlPad.Test
 			EditorNavigationService.RegisterDocumentCursorPosition(workingDocument, originalPosition);
 			EditorNavigationService.RegisterDocumentCursorPosition(workingDocument, position2);
 			EditorNavigationService.RegisterDocumentCursorPosition(workingDocument, lastPosition);
-			EditorNavigationService.GetNextEdit().ShouldBe(null);
+			EditorNavigationService.GetNextEdit().ShouldBeNull();
 			var previousEdit = EditorNavigationService.GetPreviousEdit();
-			previousEdit.ShouldNotBe(null);
+			previousEdit.ShouldNotBeNull();
 			previousEdit.Document.ShouldBe(workingDocument);
 			previousEdit.CursorPosition.ShouldBe(position2);
 			previousEdit = EditorNavigationService.GetPreviousEdit();
-			previousEdit.ShouldNotBe(null);
+			previousEdit.ShouldNotBeNull();
 			previousEdit.Document.ShouldBe(workingDocument);
 			previousEdit.CursorPosition.ShouldBe(originalPosition);
 			previousEdit = EditorNavigationService.GetPreviousEdit();
-			previousEdit.ShouldNotBe(null);
+			previousEdit.ShouldNotBeNull();
 			previousEdit.Document.ShouldBe(workingDocument);
 			previousEdit.CursorPosition.ShouldBe(originalPosition);
 
 			var nextEdit = EditorNavigationService.GetNextEdit();
-			nextEdit.ShouldNotBe(null);
+			nextEdit.ShouldNotBeNull();
 			nextEdit.Document.ShouldBe(workingDocument);
 			nextEdit.CursorPosition.ShouldBe(position2);
 			nextEdit = EditorNavigationService.GetNextEdit();
-			nextEdit.ShouldNotBe(null);
+			nextEdit.ShouldNotBeNull();
 			nextEdit.Document.ShouldBe(workingDocument);
 			nextEdit.CursorPosition.ShouldBe(lastPosition);
-			EditorNavigationService.GetNextEdit().ShouldBe(null);
+			EditorNavigationService.GetNextEdit().ShouldBeNull();
 		}
 	}
 }

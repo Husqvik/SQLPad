@@ -75,7 +75,7 @@ namespace SqlPad.Oracle.Test
 			{
 				var statement = Parser.Parse("CREATE PROCEDURE TEST_SCHEMA.TEST_PROCEDURE")[0];
 
-				OracleStatement.TryGetPlSqlUnitName(statement, out OracleObjectIdentifier identifier).ShouldBe(true);
+				OracleStatement.TryGetPlSqlUnitName(statement, out OracleObjectIdentifier identifier).ShouldBeTrue();
 				identifier.Owner.ShouldBe("TEST_SCHEMA");
 				identifier.Name.ShouldBe("TEST_PROCEDURE");
 			}
@@ -85,7 +85,7 @@ namespace SqlPad.Oracle.Test
 			{
 				var statement = Parser.Parse("CREATE FUNCTION TEST_SCHEMA.TEST_FUNCTION")[0];
 
-				OracleStatement.TryGetPlSqlUnitName(statement, out OracleObjectIdentifier identifier).ShouldBe(true);
+				OracleStatement.TryGetPlSqlUnitName(statement, out OracleObjectIdentifier identifier).ShouldBeTrue();
 				identifier.Owner.ShouldBe("TEST_SCHEMA");
 				identifier.Name.ShouldBe("TEST_FUNCTION");
 			}
@@ -95,7 +95,7 @@ namespace SqlPad.Oracle.Test
 			{
 				var statement = Parser.Parse("CREATE TABLE TEST_SCHEMA.TEST_TABLE")[0];
 
-				OracleStatement.TryGetPlSqlUnitName(statement, out OracleObjectIdentifier identifier).ShouldBe(false);
+				OracleStatement.TryGetPlSqlUnitName(statement, out OracleObjectIdentifier _).ShouldBeFalse();
 			}
 
 			[Test]
@@ -127,14 +127,14 @@ namespace SqlPad.Oracle.Test
 				aggregator.AddValue(1);
 				aggregator.AddValue(2);
 
-				aggregator.AggregatedValuesAvailable.ShouldBe(true);
-				aggregator.LimitValuesAvailable.ShouldBe(true);
+				aggregator.AggregatedValuesAvailable.ShouldBeTrue();
+				aggregator.LimitValuesAvailable.ShouldBeTrue();
 				aggregator.Average.ShouldBe(new OracleNumber(new OracleDecimal(1.5m)));
 				aggregator.Sum.ShouldBe(new OracleNumber(new OracleDecimal(3m)));
 				aggregator.Minimum.ShouldBe(new OracleNumber(new OracleDecimal(1m)));
 				aggregator.Maximum.ShouldBe(new OracleNumber(new OracleDecimal(2m)));
-				aggregator.Mode.Value.ShouldBe(null);
-				aggregator.Mode.Count.ShouldBe(null);
+				aggregator.Mode.Value.ShouldBeNull();
+				aggregator.Mode.Count.ShouldBeNull();
 				aggregator.Median.ShouldBe(new OracleNumber(new OracleDecimal(1.5m)));
 				aggregator.Count.ShouldBe(2);
 				aggregator.DistinctCount.ShouldBe(2);
@@ -147,15 +147,15 @@ namespace SqlPad.Oracle.Test
 				aggregator.AddValue(new DateTime(2016, 6, 11));
 				aggregator.AddValue(new DateTime(2016, 6, 12));
 
-				aggregator.AggregatedValuesAvailable.ShouldBe(false);
-				aggregator.LimitValuesAvailable.ShouldBe(true);
-				aggregator.Average.ShouldBe(null);
-				aggregator.Sum.ShouldBe(null);
+				aggregator.AggregatedValuesAvailable.ShouldBeFalse();
+				aggregator.LimitValuesAvailable.ShouldBeTrue();
+				aggregator.Average.ShouldBeNull();
+				aggregator.Sum.ShouldBeNull();
 				aggregator.Minimum.ShouldBe(new OracleDateTime(2016, 6, 11, 0, 0, 0));
 				aggregator.Maximum.ShouldBe(new OracleDateTime(2016, 6, 12, 0, 0, 0));
-				aggregator.Mode.Value.ShouldBe(null);
-				aggregator.Mode.Count.ShouldBe(null);
-				aggregator.Median.ShouldBe(null);
+				aggregator.Mode.Value.ShouldBeNull();
+				aggregator.Mode.Count.ShouldBeNull();
+				aggregator.Median.ShouldBeNull();
 				aggregator.Count.ShouldBe(2);
 				aggregator.DistinctCount.ShouldBe(2);
 			}
@@ -171,14 +171,14 @@ namespace SqlPad.Oracle.Test
 				aggregator.AddValue(twoYear);
 				aggregator.AddValue(twoYear);
 
-				aggregator.AggregatedValuesAvailable.ShouldBe(true);
-				aggregator.LimitValuesAvailable.ShouldBe(true);
+				aggregator.AggregatedValuesAvailable.ShouldBeTrue();
+				aggregator.LimitValuesAvailable.ShouldBeTrue();
 				aggregator.Average.ShouldBe(new OracleIntervalYearToMonth(new OracleIntervalYM(1, 6)));
 				aggregator.Sum.ShouldBe(new OracleIntervalYearToMonth(new OracleIntervalYM(6, 0)));
 				aggregator.Minimum.ShouldBe(oneYear);
 				aggregator.Maximum.ShouldBe(twoYear);
-				aggregator.Mode.Value.ShouldBe(null);
-				aggregator.Mode.Count.ShouldBe(null);
+				aggregator.Mode.Value.ShouldBeNull();
+				aggregator.Mode.Count.ShouldBeNull();
 				aggregator.Median.ShouldBe(new OracleIntervalYearToMonth(new OracleIntervalYM(1, 6)));
 				aggregator.Count.ShouldBe(4);
 				aggregator.DistinctCount.ShouldBe(2);
@@ -194,17 +194,17 @@ namespace SqlPad.Oracle.Test
 				aggregator.AddValue("string");
 				aggregator.AddValue(null);
 
-				aggregator.AggregatedValuesAvailable.ShouldBe(false);
-				aggregator.LimitValuesAvailable.ShouldBe(false);
-				aggregator.Average.ShouldBe(null);
-				aggregator.Sum.ShouldBe(null);
-				aggregator.Minimum.ShouldBe(null);
-				aggregator.Maximum.ShouldBe(null);
-				aggregator.Mode.Value.ShouldBe(null);
-				aggregator.Mode.Count.ShouldBe(null);
-				aggregator.Median.ShouldBe(null);
+				aggregator.AggregatedValuesAvailable.ShouldBeFalse();
+				aggregator.LimitValuesAvailable.ShouldBeFalse();
+				aggregator.Average.ShouldBeNull();
+				aggregator.Sum.ShouldBeNull();
+				aggregator.Minimum.ShouldBeNull();
+				aggregator.Maximum.ShouldBeNull();
+				aggregator.Mode.Value.ShouldBeNull();
+				aggregator.Mode.Count.ShouldBeNull();
+				aggregator.Median.ShouldBeNull();
 				aggregator.Count.ShouldBe(4);
-				aggregator.DistinctCount.ShouldBe(null);
+				aggregator.DistinctCount.ShouldBeNull();
 			}
 
 			[Test]
@@ -215,15 +215,15 @@ namespace SqlPad.Oracle.Test
 				aggregator.AddValue("value2");
 				aggregator.AddValue("value1");
 
-				aggregator.AggregatedValuesAvailable.ShouldBe(false);
-				aggregator.LimitValuesAvailable.ShouldBe(false);
-				aggregator.Average.ShouldBe(null);
-				aggregator.Sum.ShouldBe(null);
-				aggregator.Minimum.ShouldBe(null);
-				aggregator.Maximum.ShouldBe(null);
-				aggregator.Mode.Value.ShouldBe(null);
-				aggregator.Mode.Count.ShouldBe(null);
-				aggregator.Median.ShouldBe(null);
+				aggregator.AggregatedValuesAvailable.ShouldBeFalse();
+				aggregator.LimitValuesAvailable.ShouldBeFalse();
+				aggregator.Average.ShouldBeNull();
+				aggregator.Sum.ShouldBeNull();
+				aggregator.Minimum.ShouldBeNull();
+				aggregator.Maximum.ShouldBeNull();
+				aggregator.Mode.Value.ShouldBeNull();
+				aggregator.Mode.Count.ShouldBeNull();
+				aggregator.Median.ShouldBeNull();
 				aggregator.Count.ShouldBe(3);
 				aggregator.DistinctCount.ShouldBe(2);
 			}

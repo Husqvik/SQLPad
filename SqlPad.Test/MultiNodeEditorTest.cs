@@ -36,9 +36,9 @@ namespace SqlPad.Test
 
 			var executionContext = ActionExecutionContext.Create(_editor, ConfigureDocumentRepository());
 
-			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out MultiNodeEditor multiNodeEditor).ShouldBe(true);
+			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out MultiNodeEditor multiNodeEditor).ShouldBeTrue();
 
-			multiNodeEditor.Replace("__").ShouldBe(true);
+			multiNodeEditor.Replace("__").ShouldBeTrue();
 
 			_editor.Text.ShouldBe("SELECT DUAL.DUMMY C1, DU__AL.DUMMY C2 FROM DUAL DU__AL");
 		}
@@ -54,11 +54,11 @@ namespace SqlPad.Test
 
 			var executionContext = ActionExecutionContext.Create(_editor, ConfigureDocumentRepository());
 
-			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out MultiNodeEditor multiNodeEditor).ShouldBe(true);
+			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out MultiNodeEditor multiNodeEditor).ShouldBeTrue();
 
 			_editor.Document.Insert(_editor.CaretOffset, "__");
 
-			multiNodeEditor.Replace("__").ShouldBe(true);
+			multiNodeEditor.Replace("__").ShouldBeTrue();
 			multiNodeEditor.Cancel();
 
 			_editor.Text.ShouldBe(originalText);
@@ -73,11 +73,11 @@ namespace SqlPad.Test
 
 			var executionContext = ActionExecutionContext.Create(_editor, ConfigureDocumentRepository());
 
-			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out MultiNodeEditor multiNodeEditor).ShouldBe(true);
+			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out MultiNodeEditor multiNodeEditor).ShouldBeTrue();
 
 			_editor.SelectionLength = 2;
 			_editor.CaretOffset = 9;
-			multiNodeEditor.Replace("xx").ShouldBe(true);
+			multiNodeEditor.Replace("xx").ShouldBeTrue();
 
 			_editor.Text.ShouldBe("SELECT DU__AL.DUMMY C1, DUxxAL.DUMMY C2 FROM DUAL DUxxAL");
 		}
@@ -90,9 +90,9 @@ namespace SqlPad.Test
 
 			var executionContext = ActionExecutionContext.Create(_editor, ConfigureDocumentRepository());
 
-			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out MultiNodeEditor multiNodeEditor).ShouldBe(true);
+			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out MultiNodeEditor multiNodeEditor).ShouldBeTrue();
 
-			multiNodeEditor.RemoveCharacter(false).ShouldBe(true);
+			multiNodeEditor.RemoveCharacter(false).ShouldBeTrue();
 
 			_editor.Text.ShouldBe("SELECT DU_AL.DUMMY C1, DUAL.DUMMY C2 FROM DUAL DUAL");
 		}
@@ -105,9 +105,9 @@ namespace SqlPad.Test
 
 			var executionContext = ActionExecutionContext.Create(_editor, ConfigureDocumentRepository());
 
-			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out MultiNodeEditor multiNodeEditor).ShouldBe(true);
+			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out MultiNodeEditor multiNodeEditor).ShouldBeTrue();
 
-			multiNodeEditor.RemoveCharacter(true).ShouldBe(true);
+			multiNodeEditor.RemoveCharacter(true).ShouldBeTrue();
 
 			_editor.Text.ShouldBe("SELECT DU_AL.DUMMY C1, DUAL.DUMMY C2 FROM DUAL DUAL");
 		}
@@ -120,11 +120,11 @@ namespace SqlPad.Test
 
 			var executionContext = ActionExecutionContext.Create(_editor, ConfigureDocumentRepository());
 
-			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out MultiNodeEditor multiNodeEditor).ShouldBe(true);
+			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out MultiNodeEditor multiNodeEditor).ShouldBeTrue();
 
 			_editor.SelectionLength = 2;
 			_editor.CaretOffset = 9;
-			multiNodeEditor.RemoveCharacter(false).ShouldBe(true);
+			multiNodeEditor.RemoveCharacter(false).ShouldBeTrue();
 
 			_editor.Text.ShouldBe("SELECT DU__AL.DUMMY C1, DUAL.DUMMY C2 FROM DUAL DUAL");
 		}
@@ -137,10 +137,10 @@ namespace SqlPad.Test
 
 			var executionContext = ActionExecutionContext.Create(_editor, ConfigureDocumentRepository());
 
-			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out MultiNodeEditor multiNodeEditor).ShouldBe(true);
+			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out MultiNodeEditor multiNodeEditor).ShouldBeTrue();
 
 			_editor.SelectionLength = 2;
-			multiNodeEditor.RemoveCharacter(true).ShouldBe(true);
+			multiNodeEditor.RemoveCharacter(true).ShouldBeTrue();
 
 			_editor.Text.ShouldBe("SELECT DU__AL.DUMMY C1, DUAL.DUMMY C2 FROM DUAL DUAL");
 		}
@@ -153,9 +153,9 @@ namespace SqlPad.Test
 
 			var executionContext = ActionExecutionContext.Create(_editor, ConfigureDocumentRepository());
 
-			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out MultiNodeEditor multiNodeEditor).ShouldBe(true);
+			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out MultiNodeEditor multiNodeEditor).ShouldBeTrue();
 
-			multiNodeEditor.Replace("__").ShouldBe(true);
+			multiNodeEditor.Replace("__").ShouldBeTrue();
 
 			_editor.Text.ShouldBe("SELECT ALIAS1 ALIAS1 FROM (SELECT A__LIAS1 A__LIAS1 FROM (SELECT DUMMY A__LIAS1 FROM DUAL))");
 		}
@@ -168,9 +168,9 @@ namespace SqlPad.Test
 
 			var executionContext = ActionExecutionContext.Create(_editor, ConfigureDocumentRepository());
 
-			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out MultiNodeEditor multiNodeEditor).ShouldBe(true);
+			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out MultiNodeEditor multiNodeEditor).ShouldBeTrue();
 
-			multiNodeEditor.Replace("__").ShouldBe(true);
+			multiNodeEditor.Replace("__").ShouldBeTrue();
 
 			_editor.Text.ShouldBe("SELECT ALIAS2 ALIAS3 FROM (SELECT ALIAS1 A__LIAS2 FROM (SELECT DUMMY ALIAS1 FROM DUAL))");
 		}
@@ -183,9 +183,9 @@ namespace SqlPad.Test
 
 			var executionContext = ActionExecutionContext.Create(_editor, ConfigureDocumentRepository());
 
-			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out MultiNodeEditor multiNodeEditor).ShouldBe(true);
+			MultiNodeEditor.TryCreateMultiNodeEditor(_editor, executionContext, _infrastructureFactory.CreateMultiNodeEditorDataProvider(), out MultiNodeEditor multiNodeEditor).ShouldBeTrue();
 
-			multiNodeEditor.Replace("__").ShouldBe(true);
+			multiNodeEditor.Replace("__").ShouldBeTrue();
 
 			_editor.Text.ShouldBe("SELECT ALIAS2 ALIAS3 FROM (SELECT ALIAS1 ALIAS2 FROM (SELECT DUMMY A__LIAS1 FROM DUAL))");
 		}

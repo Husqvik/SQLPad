@@ -28,17 +28,17 @@ FROM
 			foldingSections.Length.ShouldBe(3);
 			foldingSections[0].FoldingStart.ShouldBe(0);
 			foldingSections[0].FoldingEnd.ShouldBe(251);
-			foldingSections[0].IsNested.ShouldBe(false);
+			foldingSections[0].IsNested.ShouldBeFalse();
 			foldingSections[0].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderSubquery);
 
 			foldingSections[1].FoldingStart.ShouldBe(20);
 			foldingSections[1].FoldingEnd.ShouldBe(80);
-			foldingSections[1].IsNested.ShouldBe(true);
+			foldingSections[1].IsNested.ShouldBeTrue();
 			foldingSections[1].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderSubquery);
 
 			foldingSections[2].FoldingStart.ShouldBe(189);
 			foldingSections[2].FoldingEnd.ShouldBe(249);
-			foldingSections[2].IsNested.ShouldBe(true);
+			foldingSections[2].IsNested.ShouldBeTrue();
 			foldingSections[2].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderSubquery);
 		}
 
@@ -76,27 +76,27 @@ END;";
 			foldingSections.Length.ShouldBe(5);
 			foldingSections[0].FoldingStart.ShouldBe(75);
 			foldingSections[0].FoldingEnd.ShouldBe(134);
-			foldingSections[0].IsNested.ShouldBe(false);
+			foldingSections[0].IsNested.ShouldBeFalse();
 			foldingSections[0].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderPlSqlBlock);
 
 			foldingSections[1].FoldingStart.ShouldBe(84);
 			foldingSections[1].FoldingEnd.ShouldBe(107);
-			foldingSections[1].IsNested.ShouldBe(true);
+			foldingSections[1].IsNested.ShouldBeTrue();
 			foldingSections[1].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderPlSqlBlock);
 
 			foldingSections[2].FoldingStart.ShouldBe(178);
 			foldingSections[2].FoldingEnd.ShouldBe(250);
-			foldingSections[2].IsNested.ShouldBe(false);
+			foldingSections[2].IsNested.ShouldBeFalse();
 			foldingSections[2].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderPlSqlBlock);
 
 			foldingSections[3].FoldingStart.ShouldBe(187);
 			foldingSections[3].FoldingEnd.ShouldBe(210);
-			foldingSections[3].IsNested.ShouldBe(true);
+			foldingSections[3].IsNested.ShouldBeTrue();
 			foldingSections[3].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderPlSqlBlock);
 
 			foldingSections[4].FoldingStart.ShouldBe(254);
 			foldingSections[4].FoldingEnd.ShouldBe(329);
-			foldingSections[4].IsNested.ShouldBe(false);
+			foldingSections[4].IsNested.ShouldBeFalse();
 			foldingSections[4].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderPlSqlBlock);
 		}
 
@@ -120,12 +120,12 @@ END;";
 			foldingSections.Length.ShouldBe(2);
 			foldingSections[0].FoldingStart.ShouldBe(0);
 			foldingSections[0].FoldingEnd.ShouldBe(227);
-			foldingSections[0].IsNested.ShouldBe(false);
+			foldingSections[0].IsNested.ShouldBeFalse();
 			foldingSections[0].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderPlSqlBlock);
 
 			foldingSections[1].FoldingStart.ShouldBe(52);
 			foldingSections[1].FoldingEnd.ShouldBe(221);
-			foldingSections[1].IsNested.ShouldBe(true);
+			foldingSections[1].IsNested.ShouldBeTrue();
 			foldingSections[1].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderException);
 		}
 
@@ -147,17 +147,17 @@ END L3;";
 			foldingSections.Length.ShouldBe(3);
 			foldingSections[0].FoldingStart.ShouldBe(0);
 			foldingSections[0].FoldingEnd.ShouldBe(62);
-			foldingSections[0].IsNested.ShouldBe(false);
+			foldingSections[0].IsNested.ShouldBeFalse();
 			foldingSections[0].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderPlSqlBlock);
 
 			foldingSections[1].FoldingStart.ShouldBe(8);
 			foldingSections[1].FoldingEnd.ShouldBe(53);
-			foldingSections[1].IsNested.ShouldBe(true);
+			foldingSections[1].IsNested.ShouldBeTrue();
 			foldingSections[1].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderPlSqlBlock);
 
 			foldingSections[2].FoldingStart.ShouldBe(17);
 			foldingSections[2].FoldingEnd.ShouldBe(43);
-			foldingSections[2].IsNested.ShouldBe(true);
+			foldingSections[2].IsNested.ShouldBeTrue();
 			foldingSections[2].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderPlSqlBlock);
 		}
 
@@ -187,13 +187,13 @@ END;";
 			foldingSections.Length.ShouldBe(2);
 			foldingSections[0].FoldingStart.ShouldBe(0);
 			foldingSections[0].FoldingEnd.ShouldBe(143);
-			foldingSections[0].IsNested.ShouldBe(false);
+			foldingSections[0].IsNested.ShouldBeFalse();
 			foldingSections[0].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderPlSqlBlock);
 
 			foldingSections.Length.ShouldBe(2);
 			foldingSections[1].FoldingStart.ShouldBe(45);
 			foldingSections[1].FoldingEnd.ShouldBe(137);
-			foldingSections[1].IsNested.ShouldBe(true);
+			foldingSections[1].IsNested.ShouldBeTrue();
 			foldingSections[1].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderPlSqlBlock);
 		}
 
@@ -211,7 +211,7 @@ END:";
 			foldingSections.Length.ShouldBe(1);
 			foldingSections[0].FoldingStart.ShouldBe(9);
 			foldingSections[0].FoldingEnd.ShouldBe(19);
-			foldingSections[0].IsNested.ShouldBe(false);
+			foldingSections[0].IsNested.ShouldBeFalse();
 			foldingSections[0].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderPlSqlBlock);
 		}
 
@@ -240,11 +240,11 @@ END;";
 			foldingSections.Length.ShouldBe(2);
 			foldingSections[0].FoldingStart.ShouldBe(116);
 			foldingSections[0].FoldingEnd.ShouldBe(139);
-			foldingSections[0].IsNested.ShouldBe(false);
+			foldingSections[0].IsNested.ShouldBeFalse();
 			foldingSections[0].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderPlSqlBlock);
 			foldingSections[1].FoldingStart.ShouldBe(183);
 			foldingSections[1].FoldingEnd.ShouldBe(206);
-			foldingSections[1].IsNested.ShouldBe(false);
+			foldingSections[1].IsNested.ShouldBeFalse();
 			foldingSections[1].Placeholder.ShouldBe(OracleFoldingSectionProvider.FoldingSectionPlaceholderPlSqlBlock);
 		}
 	}

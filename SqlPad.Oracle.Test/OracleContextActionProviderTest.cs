@@ -122,7 +122,7 @@ namespace SqlPad.Oracle.Test
 			const string query1 = @"SELECT IV.TEST_COLUMN || ' ADDED' FROM (SELECT SELECTION.NAME || ' FROM CTE ' TEST_COLUMN FROM SELECTION) IV";
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 41).SingleOrDefault(a => a.Name == UnnestInlineViewCommand.Title);
-			action.ShouldNotBe(null);
+			action.ShouldNotBeNull();
 			action.Name.ShouldBe(UnnestInlineViewCommand.Title);
 		}
 
@@ -178,7 +178,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query1 = "SELECT SELECTION.*, 1 FROM SELECTION";
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 18).SingleOrDefault(a => a.Name == ExpandAsteriskCommand.Title);
-			action.ShouldNotBe(null);
+			action.ShouldNotBeNull();
 			action.Name.ShouldBe("Expand");
 		}
 		
@@ -187,7 +187,7 @@ namespace SqlPad.Oracle.Test
 		{
 			const string query1 = "SELECT*FROM DUAL";
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 7).SingleOrDefault(a => a.Name == ExpandAsteriskCommand.Title);
-			action.ShouldNotBe(null);
+			action.ShouldNotBeNull();
 			action.Name.ShouldBe(ExpandAsteriskCommand.Title);
 		}
 
@@ -197,7 +197,7 @@ namespace SqlPad.Oracle.Test
 			const string query1 = @"SELECT DUMMY FROM DUAL";
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 0).SingleOrDefault(a => a.Name == ToggleFullyQualifiedReferencesCommand.Title);
-			action.ShouldNotBe(null);
+			action.ShouldNotBeNull();
 			action.Name.ShouldBe(ToggleFullyQualifiedReferencesCommand.Title);
 		}
 
@@ -207,7 +207,7 @@ namespace SqlPad.Oracle.Test
 			const string query1 = @"SELECT NOT_EXISTING_COLUMN FROM SELECTION";
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 7).SingleOrDefault(a => a.Name == AddMissingColumnCommand.Title);
-			action.ShouldNotBe(null);
+			action.ShouldNotBeNull();
 			action.Name.ShouldBe(AddMissingColumnCommand.Title);
 		}
 
@@ -217,7 +217,7 @@ namespace SqlPad.Oracle.Test
 			const string query1 = @"SELECT DUMMY FROM DUAL";
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 7).SingleOrDefault(a => a.Name == AddMissingColumnCommand.Title);
-			action.ShouldBe(null);
+			action.ShouldBeNull();
 		}
 
 		[Test]
@@ -226,7 +226,7 @@ namespace SqlPad.Oracle.Test
 			const string query1 = @"SELECT ""Balance"" FROM ""Accounts""";
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 0).SingleOrDefault(a => a.Name == ToggleQuotedNotationCommand.Title);
-			action.ShouldBe(null);
+			action.ShouldBeNull();
 		}
 
 		[Test]
@@ -235,7 +235,7 @@ namespace SqlPad.Oracle.Test
 			const string query1 = @"SELECT DUMMY FROM DUAL";
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 10).SingleOrDefault(a => a.Name == AddAliasCommand.Title);
-			action.ShouldNotBe(null);
+			action.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -244,7 +244,7 @@ namespace SqlPad.Oracle.Test
 			const string query1 = @"SELECT DUMMY NOT_DUMMY FROM DUAL";
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 10).SingleOrDefault(a => a.Name == AddAliasCommand.Title);
-			action.ShouldBe(null);
+			action.ShouldBeNull();
 		}
 
 		[Test]
@@ -253,7 +253,7 @@ namespace SqlPad.Oracle.Test
 			const string query1 = @"SELECT DUMMY + 1 FROM DUAL";
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 10).SingleOrDefault(a => a.Name == AddAliasCommand.Title);
-			action.ShouldBe(null);
+			action.ShouldBeNull();
 		}
 
 		[Test]
@@ -262,7 +262,7 @@ namespace SqlPad.Oracle.Test
 			const string query1 = @"SELECT S.* FROM SELECTION S";
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 7).SingleOrDefault(a => a.Name == CreateScriptCommand.Title);
-			action.ShouldNotBe(null);
+			action.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -290,7 +290,7 @@ namespace SqlPad.Oracle.Test
 			const string query1 = @"SELECT SELECTION.NAME FROM HUSQVIK.SELECTION";
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 0).SingleOrDefault(a => a.Name == CleanRedundantSymbolCommand.Title);
-			action.ShouldNotBe(null);
+			action.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -299,7 +299,7 @@ namespace SqlPad.Oracle.Test
 			const string query1 = @"SELECT SELECTION.NAME, RESPONDENTBUCKET.NAME FROM SELECTION, RESPONDENTBUCKET";
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 0).SingleOrDefault(a => a.Name == CleanRedundantSymbolCommand.Title);
-			action.ShouldBe(null);
+			action.ShouldBeNull();
 		}
 
 		[Test]
@@ -308,7 +308,7 @@ namespace SqlPad.Oracle.Test
 			const string query1 = @"SELECT SELECTION.NAME, RESPONDENTBUCKET.NAME FROM SELECTION, RESPONDENTBUCKET";
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 0).SingleOrDefault(a => a.Name == AddCreateTableAsCommand.Title);
-			action.ShouldNotBe(null);
+			action.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -317,7 +317,7 @@ namespace SqlPad.Oracle.Test
 			const string query1 = @"SELECT * FROM";
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 0).SingleOrDefault(a => a.Name == AddCreateTableAsCommand.Title);
-			action.ShouldBe(null);
+			action.ShouldBeNull();
 		}
 
 		[Test]
@@ -326,7 +326,7 @@ namespace SqlPad.Oracle.Test
 			const string query1 = @"SELECT ""CaseSensitiveColumn"" FROM INVOICELINES";
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 0).SingleOrDefault(a => a.Name == UnquoteCommand.Title);
-			action.ShouldNotBe(null);
+			action.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -389,7 +389,7 @@ namespace SqlPad.Oracle.Test
 			const string query1 = @"SELECT 1 C1 FROM (SELECT 2 C2 FROM DUAL)";
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 28).SingleOrDefault(a => a.Name == PropagateColumnCommand.Title);
-			action.ShouldNotBe(null);
+			action.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -398,7 +398,7 @@ namespace SqlPad.Oracle.Test
 			const string query1 = @"SELECT C2 C1 FROM (SELECT 2 C2 FROM DUAL)";
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 28).SingleOrDefault(a => a.Name == PropagateColumnCommand.Title);
-			action.ShouldBe(null);
+			action.ShouldBeNull();
 		}
 
 		[Test]
@@ -407,7 +407,7 @@ namespace SqlPad.Oracle.Test
 			const string query1 = @"SELECT DUMMY FROM DUAL";
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 12).SingleOrDefault(a => a.Name == AddToGroupByCommand.Title);
-			action.ShouldNotBe(null);
+			action.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -416,7 +416,7 @@ namespace SqlPad.Oracle.Test
 			const string query1 = @"SELECT DUMMY FROM DUAL";
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 12).SingleOrDefault(a => a.Name == AddToOrderByCommand.Title);
-			action.ShouldNotBe(null);
+			action.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -425,7 +425,7 @@ namespace SqlPad.Oracle.Test
 			const string query1 = @"SELECT T.*, '[' || NAME || ']' FROM (SELECT NAME FROM SELECTION) T ORDER BY 1, 2";
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 77).SingleOrDefault(a => a.Name == ConvertOrderByNumberColumnReferencesCommand.Title);
-			action.ShouldNotBe(null);
+			action.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -434,7 +434,7 @@ namespace SqlPad.Oracle.Test
 			const string query1 = @"SELECT T.*, '[' || NAME || ']' FROM (SELECT NAME FROM SELECTION) T ORDER BY 1, 2.0";
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 79).SingleOrDefault(a => a.Name == ConvertOrderByNumberColumnReferencesCommand.Title);
-			action.ShouldBe(null);
+			action.ShouldBeNull();
 		}
 
 		[Test]
@@ -443,7 +443,7 @@ namespace SqlPad.Oracle.Test
 			const string query1 = @"SELECT XMLTYPE() FROM DUAL";
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 7).SingleOrDefault(a => a.Name == GenerateCustomTypeCSharpWrapperClassCommand.Title);
-			action.ShouldBe(null);
+			action.ShouldBeNull();
 		}
 
 		[Test]
@@ -452,7 +452,7 @@ namespace SqlPad.Oracle.Test
 			const string query1 = @"SELECT DUMMY FROM DUAL";
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 7).SingleOrDefault(a => a.Name == GenerateCustomTypeCSharpWrapperClassCommand.Title);
-			action.ShouldBe(null);
+			action.ShouldBeNull();
 		}
 
 		[Test]
@@ -461,7 +461,7 @@ namespace SqlPad.Oracle.Test
 			const string query1 = @"SELECT 'sometext' FROM DUAL";
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 12).SingleOrDefault(a => a.Name == SplitStringCommand.Title);
-			action.ShouldNotBe(null);
+			action.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -470,10 +470,10 @@ namespace SqlPad.Oracle.Test
 			const string query1 = @"SELECT nq'|sometext|' FROM DUAL";
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 10).SingleOrDefault(a => a.Name == SplitStringCommand.Title);
-			action.ShouldBe(null);
+			action.ShouldBeNull();
 
 			action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 11).SingleOrDefault(a => a.Name == SplitStringCommand.Title);
-			action.ShouldNotBe(null);
+			action.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -482,10 +482,10 @@ namespace SqlPad.Oracle.Test
 			const string query1 = @"SELECT nq'|sometext|' FROM DUAL";
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 20).SingleOrDefault(a => a.Name == SplitStringCommand.Title);
-			action.ShouldBe(null);
+			action.ShouldBeNull();
 
 			action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 19).SingleOrDefault(a => a.Name == SplitStringCommand.Title);
-			action.ShouldNotBe(null);
+			action.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -494,7 +494,7 @@ namespace SqlPad.Oracle.Test
 			const string query1 = @"SELECT * FROM v$session";
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 14).SingleOrDefault(a => a.Name == ExpandViewCommand.Title);
-			action.ShouldNotBe(null);
+			action.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -503,7 +503,7 @@ namespace SqlPad.Oracle.Test
 			const string query1 = @"SELECT to_char(10) FROM dual";
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 7).SingleOrDefault(a => a.Name == ConfigureNamedParameterCommand.Title);
-			action.ShouldNotBe(null);
+			action.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -518,7 +518,7 @@ namespace SqlPad.Oracle.Test
 END;";
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 21).SingleOrDefault(a => a.Name == ExtractPackageInterfaceCommand.Title);
-			action.ShouldNotBe(null);
+			action.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -533,7 +533,7 @@ END;";
 END;";
 
 			var action = _actionProvider.GetContextActions(TestFixture.DatabaseModel, query1, 15).SingleOrDefault(a => a.Name == ExtractPackageInterfaceCommand.Title);
-			action.ShouldBe(null);
+			action.ShouldBeNull();
 		}
 	}
 }
