@@ -865,6 +865,7 @@ namespace SqlPad.Oracle
 			public const string NamedInlineConstraintDefinition = "NamedInlineConstraintDefinition";
 			public const string NamedOutOfLineConstraint = "NamedOutOfLineConstraint";
 			public const string NaturalOrOuterJoinType = "NaturalOrOuterJoinType";
+			public const string NegationOrNullFunction = "NegationOrNullFunction";
 			public const string NegativeInteger = "NegativeInteger";
 			public const string NestedQuery = "NestedQuery";
 			public const string NestedStorageTableProperties = "NestedStorageTableProperties";
