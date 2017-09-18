@@ -1,8 +1,9 @@
-# SQLPad 0.4.0.476
+# SQLPad 0.4.0.477
 
 |Builds|Oracle.DataAccess|Oracle.ManagedDataAccess|
 |:--:|:--:|:--:|
 |**master**|[![Oracle.DataAccess](https://ci.appveyor.com/api/projects/status/t4iti5bn5ubs2k3k?svg=true&pendingText=pending&passingText=passed&failingText=failed)](https://ci.appveyor.com/project/Husqvik/sqlpad-j6chv)|[![Oracle.ManagedDataAccess](https://ci.appveyor.com/api/projects/status/m0pnyw7gp73tg59c?svg=true&pendingText=pending&passingText=passed&failingText=failed)](https://ci.appveyor.com/project/Husqvik/sqlpad)|
+|**history**|[![Oracle.DataAccess build history](https://buildstats.info/appveyor/chart/Husqvik/sqlpad-j6chv)](https://ci.appveyor.com/project/Husqvik/sqlpad-j6chv/history)|[![Oracle.ManagedDataAccess build history](https://buildstats.info/appveyor/chart/Husqvik/sqlpad)](https://ci.appveyor.com/project/Husqvik/sqlpad/history)|
 
 Summary
 -------
