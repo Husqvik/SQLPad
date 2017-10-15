@@ -580,6 +580,10 @@
             Creates a new TextEditorAutomationPeer instance.
             </summary>
     </member>
+    <member name="M:ICSharpCode.AvalonEdit.TextEditorAutomationPeer.GetAutomationControlTypeCore">
+      <summary>Gets the control type for the <see cref="T:System.Windows.UIElement" /> that is associated with this <see cref="T:System.Windows.Automation.Peers.UIElementAutomationPeer" />. This method is called by <see cref="M:System.Windows.Automation.Peers.AutomationPeer.GetAutomationControlType" />.</summary>
+      <returns>The <see cref="F:System.Windows.Automation.Peers.AutomationControlType.Custom" /> enumeration value.</returns>
+    </member>
     <member name="M:ICSharpCode.AvalonEdit.TextEditorAutomationPeer.GetPattern(System.Windows.Automation.Peers.PatternInterface)">
       <summary>Gets the control pattern for the <see cref="T:System.Windows.UIElement" /> that is associated with this <see cref="T:System.Windows.Automation.Peers.UIElementAutomationPeer" />.</summary>
       <param name="patternInterface">A value from the enumeration.</param>
@@ -3986,6 +3990,47 @@
             This field is calculated in MeasureOverride() based on the FontFamily etc. properties.
             </summary>
     </member>
+    <member name="T:ICSharpCode.AvalonEdit.Editing.MouseSelectionMode">
+      <summary>
+            Enumeration of possible states of mouse selection.
+            </summary>
+    </member>
+    <member name="F:ICSharpCode.AvalonEdit.Editing.MouseSelectionMode.None">
+      <summary>
+            no selection (no mouse button down)
+            </summary>
+    </member>
+    <member name="F:ICSharpCode.AvalonEdit.Editing.MouseSelectionMode.PossibleDragStart">
+      <summary>
+            left mouse button down on selection, might be normal click
+            or might be drag'n'drop
+            </summary>
+    </member>
+    <member name="F:ICSharpCode.AvalonEdit.Editing.MouseSelectionMode.Drag">
+      <summary>
+            dragging text
+            </summary>
+    </member>
+    <member name="F:ICSharpCode.AvalonEdit.Editing.MouseSelectionMode.Normal">
+      <summary>
+            normal selection (click+drag)
+            </summary>
+    </member>
+    <member name="F:ICSharpCode.AvalonEdit.Editing.MouseSelectionMode.WholeWord">
+      <summary>
+            whole-word selection (double click+drag or ctrl+click+drag)
+            </summary>
+    </member>
+    <member name="F:ICSharpCode.AvalonEdit.Editing.MouseSelectionMode.WholeLine">
+      <summary>
+            whole-line selection (triple click+drag)
+            </summary>
+    </member>
+    <member name="F:ICSharpCode.AvalonEdit.Editing.MouseSelectionMode.Rectangular">
+      <summary>
+            rectangular selection (alt+click+drag)
+            </summary>
+    </member>
     <member name="T:ICSharpCode.AvalonEdit.Editing.RectangleSelection">
       <summary>
             Rectangular selection ("box selection").
@@ -4377,8 +4422,27 @@
             Gets the collection of margins displayed to the left of the text view.
             </summary>
     </member>
+    <member name="P:ICSharpCode.AvalonEdit.Editing.TextArea.MouseSelectionMode">
+      <summary>
+            Gets/Sets the active mouse selection mode.
+            
+            Setting this property to MouseSelectionMode.None will cancel mouse selection
+            and release mouse capture.
+            
+            Setting this property to another value will acquire mouse capture and
+            activate the mouse selection mode.
+            If mouse capture cannot be acquired, MouseSelectionMode will stay unchanged.
+            
+            Currently, the setter only supports the values <c>None</c>, <c>Normal</c>
+            and <c>Rectangular</c>.
+            </summary>
+    </member>
     <member name="M:ICSharpCode.AvalonEdit.Editing.TextArea.OnApplyTemplate">
       <summary>When overridden in a derived class, is invoked whenever application code or internal processes call <see cref="M:System.Windows.FrameworkElement.ApplyTemplate" />.</summary>
+    </member>
+    <member name="M:ICSharpCode.AvalonEdit.Editing.TextArea.OnCreateAutomationPeer">
+      <summary>Returns class-specific <see cref="T:System.Windows.Automation.Peers.AutomationPeer" /> implementations for the Windows Presentation Foundation (WPF) infrastructure.</summary>
+      <returns>The type-specific <see cref="T:System.Windows.Automation.Peers.AutomationPeer" /> implementation.</returns>
     </member>
     <member name="M:ICSharpCode.AvalonEdit.Editing.TextArea.OnGotKeyboardFocus(System.Windows.Input.KeyboardFocusChangedEventArgs)">
       <summary>Invoked when an unhandled <see cref="E:System.Windows.Input.Keyboard.GotKeyboardFocus" /> attached event reaches an element in its route that is derived from this class. Implement this method to add class handling for this event. </summary>

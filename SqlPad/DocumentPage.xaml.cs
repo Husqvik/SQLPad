@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Configuration;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -396,9 +395,9 @@ namespace SqlPad
 
 		private void DocumentChangingHandler(object sender, DocumentChangeEventArgs args)
 		{
-			if ((args.InsertionLength > 0 && args.RemovalLength > 0) ||
+			if (args.InsertionLength > 0 && args.RemovalLength > 0 ||
 				args.InsertedText.IndexOfAny(TextSegment.Separators, 0, args.InsertionLength) != -1 ||
-			    args.RemovedText.IndexOfAny(TextSegment.Separators, 0, args.RemovalLength) != -1)
+				args.RemovedText.IndexOfAny(TextSegment.Separators, 0, args.RemovalLength) != -1)
 			{
 				DisableCodeCompletion();
 			}
@@ -1687,10 +1686,7 @@ namespace SqlPad
 			var firstItem = (CompletionData)_completionWindow.CompletionList.CompletionData[0];
 			if (firstItem.Snippet != null || firstItem.Node != null)
 			{
-				var startOffset = firstItem.Snippet == null
-					? firstItem.Node.SourcePosition.IndexStart
-					: firstItem.Snippet.SourceToReplace.IndexStart;
-
+				var startOffset = firstItem.Snippet?.SourceToReplace.IndexStart ?? firstItem.Node.SourcePosition.IndexStart;
 				if (startOffset > _completionWindow.EndOffset)
 				{
 					_completionWindow.Close();

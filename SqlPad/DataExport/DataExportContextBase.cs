@@ -18,7 +18,7 @@ namespace SqlPad.DataExport
 
 		protected readonly MemoryStream ClipboardData;
 
-		private string TypeName => GetType().Name;
+		private string TypeName { get; }
 
 		protected ExportOptions ExportOptions { get; }
 
@@ -26,6 +26,8 @@ namespace SqlPad.DataExport
 
 		protected DataExportContextBase(ExportOptions exportOptions)
 		{
+			TypeName = GetType().Name;
+
 			ExportOptions = exportOptions;
 
 			if (ExportOptions.IntoClipboard)
@@ -140,8 +142,7 @@ namespace SqlPad.DataExport
 				return true;
 			}
 
-			var nullable = value as IValue;
-			return nullable != null && nullable.IsNull;
+			return value is IValue nullable && nullable.IsNull;
 		}
 
 		protected abstract void ExportRow(object[] rowValues);
