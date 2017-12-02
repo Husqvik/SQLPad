@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.Configuration;
 using System.Data;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -133,7 +132,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			lock (ActiveDataModelRefresh)
 			{
-				if (WaitingDataModelRefresh.TryGetValue(_connectionStringName, out List<RefreshModel> refreshModels))
+				if (WaitingDataModelRefresh.TryGetValue(_connectionStringName, out var refreshModels))
 				{
 					var modelIndex = refreshModels.FindIndex(m => m.DatabaseModel == this);
 					if (modelIndex != -1)
@@ -230,12 +229,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override string CurrentSchema
 		{
-			get
-			{
-				return _schemas.Contains(_currentSchema)
-					? _currentSchema
-					: _initialSchema;
-			}
+			get => _schemas.Contains(_currentSchema) ? _currentSchema : _initialSchema;
 			set
 			{
 				_currentSchema = value;
@@ -581,26 +575,21 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			lock (ActiveDataModelRefresh)
 			{
-				if (WaitingDataModelRefresh.TryGetValue(_connectionStringName, out List<RefreshModel> refreshModels))
+				if (WaitingDataModelRefresh.TryGetValue(_connectionStringName, out var refreshModels))
 				{
 					refreshModels.RemoveAll(m => m.DatabaseModel == this);
 				}
 			}
 		}
 
-		private OracleDatabaseModel Clone(string modulePrefix)
-		{
-			var clone =
-				new OracleDatabaseModel(ConnectionString, modulePrefix)
-				{
-					_currentSchema = _currentSchema,
-					_dataDictionary = _dataDictionary,
-					_allProgramMetadata = _allProgramMetadata,
-					_uniqueConstraintReferringReferenceConstraints = _uniqueConstraintReferringReferenceConstraints
-				};
-
-			return clone;
-		}
+		private OracleDatabaseModel Clone(string modulePrefix) =>
+			new OracleDatabaseModel(ConnectionString, modulePrefix)
+			{
+				_currentSchema = _currentSchema,
+				_dataDictionary = _dataDictionary,
+				_allProgramMetadata = _allProgramMetadata,
+				_uniqueConstraintReferringReferenceConstraints = _uniqueConstraintReferringReferenceConstraints
+			};
 
 		internal void Disconnect(OracleException exception)
 		{
@@ -618,7 +607,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		private void EnsureDatabaseProperties()
 		{
-			if (DatabaseProperties.TryGetValue(_connectionString.ConnectionString, out DatabaseProperty property))
+			if (DatabaseProperties.TryGetValue(_connectionString.ConnectionString, out var _))
 			{
 				return;
 			}
@@ -745,7 +734,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					}
 
 					var packageIdentifier = OracleObjectIdentifier.Create(programMetadata.Identifier.Owner, programMetadata.Identifier.Package);
-					if (allObjects.TryGetFirstValue(out OracleSchemaObject schemaObject, packageIdentifier))
+					if (allObjects.TryGetFirstValue(out var schemaObject, packageIdentifier))
 					{
 						((OraclePackage)schemaObject).Programs.Add(programMetadata);
 						programMetadata.Owner = schemaObject;
@@ -818,12 +807,12 @@ namespace SqlPad.Oracle.DatabaseConnection
 				return;
 			}
 
-			if (CachedDataDictionaries.TryGetValue(_connectionStringName, out OracleDataDictionary dataDictionary))
+			if (CachedDataDictionaries.TryGetValue(_connectionStringName, out var dataDictionary))
 			{
 				_dataDictionary = dataDictionary;
 				BuildSupportLookups();
 			}
-			else if (MetadataCache.TryLoadDatabaseModelCache(_connectionStringName, out Stream stream))
+			else if (MetadataCache.TryLoadDatabaseModelCache(_connectionStringName, out var stream))
 			{
 				try
 				{
@@ -870,20 +859,13 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 		}
 
-		private static IEnumerable<OracleProgramMetadata> FilterFunctionsWithUnavailableMetadata(IEnumerable<OracleProgramMetadata> functions)
-		{
-			return functions.Where(m => m != null);
-		}
+		private static IEnumerable<OracleProgramMetadata> FilterFunctionsWithUnavailableMetadata(IEnumerable<OracleProgramMetadata> functions) =>
+			functions.Where(m => m != null);
 
-		private void RaiseRefreshStatusChanged(string message)
-		{
+		private void RaiseRefreshStatusChanged(string message) =>
 			RefreshStatusChanged?.Invoke(this, new DatabaseModelRefreshStatusChangedArgs(message));
-		}
 
-		private void RaiseEvent(EventHandler eventHandler)
-		{
-			eventHandler?.Invoke(this, EventArgs.Empty);
-		}
+		private void RaiseEvent(EventHandler eventHandler) => eventHandler?.Invoke(this, EventArgs.Empty);
 
 		private bool TryGetPassword()
 		{
@@ -905,10 +887,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return true;
 		}
 
-		public override Task Initialize()
-		{
-			return Task.Run((Action)InitializeInternal);
-		}
+		public override Task Initialize() => Task.Run((Action)InitializeInternal);
 
 		private void InitializeInternal()
 		{
@@ -999,7 +978,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 					var activeModels = GetActiveModels(connectionString);
 					activeModels.Remove(databaseModel);
 
-					if (activeModels.Count == 0 && ActiveResolvers.TryGetValue(connectionString, out OracleSchemaResolver resolver))
+					if (activeModels.Count == 0 && ActiveResolvers.TryGetValue(connectionString, out var resolver))
 					{
 						resolver._enablePasswordRetrieval = true;
 					}
@@ -1028,7 +1007,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 			private static HashSet<OracleDatabaseModel> GetActiveModels(string connectionString)
 			{
-				if (!ActiveDatabaseModels.TryGetValue(connectionString, out HashSet<OracleDatabaseModel> activeModels))
+				if (!ActiveDatabaseModels.TryGetValue(connectionString, out var activeModels))
 				{
 					ActiveDatabaseModels.Add(connectionString, activeModels = new HashSet<OracleDatabaseModel>());
 				}
@@ -1085,32 +1064,26 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 		}
 
-		public static string GetUserConnectionString(string connectionString)
-		{
-			return
-				new OracleConnectionStringBuilder(GetEntry(connectionString).ConnectionString)
-				{
-					Pooling = false,
-					SelfTuning = false
-				}.ToString();
-		}
+		public static string GetUserConnectionString(string connectionString) =>
+			new OracleConnectionStringBuilder(GetEntry(connectionString).ConnectionString)
+			{
+				Pooling = false,
+				SelfTuning = false
+			}.ToString();
 
-		public static string GetBackgroundConnectionString(string connectionString)
-		{
-			return
-				new OracleConnectionStringBuilder(GetEntry(connectionString).ConnectionString)
-				{
-					SelfTuning = false,
-					MinPoolSize = 1,
-					IncrPoolSize = 1
-				}.ToString();
-		}
+		public static string GetBackgroundConnectionString(string connectionString) =>
+			new OracleConnectionStringBuilder(GetEntry(connectionString).ConnectionString)
+			{
+				SelfTuning = false,
+				MinPoolSize = 1,
+				IncrPoolSize = 1
+			}.ToString();
 
 		private static OracleConnectionStringBuilder GetEntry(string connectionString)
 		{
 			lock (ConnectionStringBuilders)
 			{
-				if (!ConnectionStringBuilders.TryGetValue(connectionString, out OracleConnectionStringBuilder connectionStringBuilder))
+				if (!ConnectionStringBuilders.TryGetValue(connectionString, out var connectionStringBuilder))
 				{
 					ConnectionStringBuilders[connectionString] = connectionStringBuilder = new OracleConnectionStringBuilder(connectionString);
 				}
@@ -1125,23 +1098,20 @@ namespace SqlPad.Oracle.DatabaseConnection
 		/// <summary>
 		/// defined at https://docs.oracle.com/cd/E18283_01/appdev.112/e10827/appd.htm
 		/// </summary>
-		public static bool IsSyntaxError(int errorCode)
-		{
-			return
-				errorCode == 22 ||
-				errorCode == 251 ||
-				(errorCode >= 900 && errorCode <= 999) ||
-				errorCode == 1031 ||
-				(errorCode >= 1490 && errorCode <= 1493) ||
-				(errorCode >= 1700 && errorCode <= 1799) ||
-				(errorCode >= 1900 && errorCode <= 2099) ||
-				(errorCode >= 2140 && errorCode <= 2289) ||
-				(errorCode >= 2420 && errorCode <= 2424) ||
-				(errorCode >= 2450 && errorCode <= 2499) ||
-				(errorCode >= 3276 && errorCode <= 3299) ||
-				(errorCode >= 4040 && errorCode <= 4059) ||
-				(errorCode >= 4070 && errorCode <= 4099);
-		}
+		public static bool IsSyntaxError(int errorCode) =>
+			errorCode == 22 ||
+			errorCode == 251 ||
+			errorCode >= 900 && errorCode <= 999 ||
+			errorCode == 1031 ||
+			errorCode >= 1490 && errorCode <= 1493 ||
+			errorCode >= 1700 && errorCode <= 1799 ||
+			errorCode >= 1900 && errorCode <= 2099 ||
+			errorCode >= 2140 && errorCode <= 2289 ||
+			errorCode >= 2420 && errorCode <= 2424 ||
+			errorCode >= 2450 && errorCode <= 2499 ||
+			errorCode >= 3276 && errorCode <= 3299 ||
+			errorCode >= 4040 && errorCode <= 4059 ||
+			errorCode >= 4070 && errorCode <= 4099;
 	}
 
 	internal enum OracleErrorCode

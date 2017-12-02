@@ -201,8 +201,15 @@ namespace SqlPad.Oracle
 			}
 
 			var matchedMetadata = new List<OracleProgramMetadata>();
-			var typeReference = programReferenceBase as OracleTypeReference;
-			if (typeReference == null)
+			if (programReferenceBase is OracleTypeReference typeReference)
+			{
+				matchedMetadata.Add(typeReference.Metadata);
+				if (typeReference.SchemaObject.GetTargetSchemaObject() is OracleTypeCollection)
+				{
+					currentParameterIndex = 0;
+				}
+			}
+			else
 			{
 				var programReference = (OracleProgramReference)programReferenceBase;
 				var metadataSource = programReference.Container.SemanticModel.DatabaseModel.AllProgramMetadata[programReference.Metadata.Identifier].ToList();
@@ -218,14 +225,6 @@ namespace SqlPad.Oracle
 
 				matchedMetadata.AddRange(metadataSource.Where(m => IsMetadataMatched(m, programReference, currentParameterIndex)).OrderBy(m => m.Parameters.Count));
 			}
-			else
-			{
-				matchedMetadata.Add(typeReference.Metadata);
-				if (typeReference.SchemaObject.GetTargetSchemaObject() is OracleTypeCollection collectionType)
-				{
-					currentParameterIndex = 0;
-				}
-			}
 
 			return matchedMetadata
 				.Select(m =>
@@ -237,14 +236,12 @@ namespace SqlPad.Oracle
 					});
 		}
 
-		private static OracleProgramReferenceBase FindProgramReference(IEnumerable<OracleReferenceContainer> referenceContainers, StatementGrammarNode node)
-		{
-			return referenceContainers
+		private static OracleProgramReferenceBase FindProgramReference(IEnumerable<OracleReferenceContainer> referenceContainers, StatementGrammarNode node) =>
+			referenceContainers
 				.SelectMany(c => ((IEnumerable<OracleProgramReferenceBase>)c.ProgramReferences).Concat(c.TypeReferences))
 				.Where(f => node.HasAncestor(f.ParameterListNode))
 				.OrderByDescending(r => r.RootNode.Level)
 				.FirstOrDefault();
-		}
 
 		private static bool IsMetadataMatched(OracleProgramMetadata metadata, OracleProgramReference programReference, int currentParameterIndex)
 		{
@@ -598,7 +595,7 @@ namespace SqlPad.Oracle
 				});
 		}
 
-		private static IEnumerable<OracleCodeCompletionItem> GenerateTablePartitionItems(OracleDataObjectReference tableReference, OracleCodeCompletionType completionType, bool subPartitions)
+		private static IEnumerable<OracleCodeCompletionItem> GenerateTablePartitionItems(OracleReference tableReference, OracleCodeCompletionType completionType, bool subPartitions)
 		{
 			var table = tableReference.SchemaObject.GetTargetSchemaObject() as OracleTable;
 			if (table == null)
@@ -612,8 +609,9 @@ namespace SqlPad.Oracle
 
 			var quotedTerminalValueUnderCursor = completionType.TerminalValueUnderCursor.ToQuotedIdentifier();
 			var partitions = sourcePartitions
-				.Where(p => (String.IsNullOrEmpty(completionType.TerminalValueUnderCursor) || !String.Equals(quotedTerminalValueUnderCursor, p.Name)) &&
-				            CodeCompletionSearchHelper.IsMatch(p.Name, completionType.TerminalValuePartUntilCaret))
+				.Where(p =>
+					(String.IsNullOrEmpty(completionType.TerminalValueUnderCursor) || !String.Equals(quotedTerminalValueUnderCursor, p.Name)) &&
+					CodeCompletionSearchHelper.IsMatch(p.Name, completionType.TerminalValuePartUntilCaret))
 				.Select(l =>
 					new OracleCodeCompletionItem
 					{

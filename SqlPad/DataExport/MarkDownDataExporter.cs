@@ -47,10 +47,7 @@ namespace SqlPad.DataExport
 			WriteHeader();
 		}
 
-		protected override Task FinalizeExport()
-		{
-			return _writer.FlushAsync();
-		}
+		protected override Task FinalizeExport() => _writer.FlushAsync();
 
 		protected override void Dispose(bool disposing)
 		{
@@ -84,9 +81,6 @@ namespace SqlPad.DataExport
 			return EscapeIfNeeded(stringValue);
 		}
 
-		private static string EscapeIfNeeded(string value)
-		{
-			return value.Replace("|", "&#124;");
-		}
+		private static string EscapeIfNeeded(string value) => value.Replace("|", "&#124;");
 	}
 }

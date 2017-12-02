@@ -9,7 +9,7 @@ using TerminalValues = SqlPad.Oracle.OracleGrammarDescription.TerminalValues;
 
 namespace SqlPad.Oracle
 {
-	[DebuggerDisplay("OracleStatement (ParseStatus={ParseStatus}; ChildNodes={RootNode == null ? 0 : RootNode.ChildNodes.Count})")]
+	[DebuggerDisplay("OracleStatement (ParseStatus={" + nameof(ParseStatus) + "}; ChildNodes={RootNode == null ? 0 : RootNode.ChildNodes.Count})")]
 	public class OracleStatement : StatementBase
 	{
 		public const string DefaultMessageCommandExecutedSuccessfully = "Command executed successfully. ";
