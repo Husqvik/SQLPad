@@ -134,6 +134,11 @@
             Provides a simple buffer-based implementation of an <see cref="T:ProtoBuf.IExtension">extension</see> object.
             </summary>
         </member>
+        <member name="F:ProtoBuf.BufferPool.MaxByteArraySize">
+            <remarks>
+            https://docs.microsoft.com/en-us/dotnet/framework/configure-apps/file-schema/runtime/gcallowverylargeobjects-element
+            </remarks>
+        </member>
         <member name="T:ProtoBuf.ProtoBeforeSerializationAttribute">
             <summary>Specifies a method on the root-contract in an hierarchy to be invoked before serialization.</summary>
         </member>
