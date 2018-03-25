@@ -261,6 +261,7 @@ WHERE
 				};
 
 			CultureInfo.CurrentUICulture = CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+			ConfigurationProvider.Configuration.ResultGrid.DateFormat = null;
 
 			using (var databaseModel = DataModelInitializer.GetInitializedDataModel(ConnectionString))
 			{

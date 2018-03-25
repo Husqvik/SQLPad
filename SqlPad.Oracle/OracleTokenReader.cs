@@ -16,32 +16,19 @@ namespace SqlPad.Oracle
 
 		private readonly TextReader _sqlReader;
 
-		private OracleTokenReader(TextReader sqlReader)
-		{
+		private OracleTokenReader(TextReader sqlReader) =>
 			_sqlReader = sqlReader ?? throw new ArgumentNullException(nameof(sqlReader));
-		}
 
-		public static OracleTokenReader Create(string sqlText)
-		{
-			return new OracleTokenReader(new StringReader(sqlText));
-		}
+		public static OracleTokenReader Create(string sqlText) => new OracleTokenReader(new StringReader(sqlText));
 
-		public static OracleTokenReader Create(TextReader sqlReader)
-		{
-			return new OracleTokenReader(sqlReader);
-		}
+		public static OracleTokenReader Create(TextReader sqlReader) => new OracleTokenReader(sqlReader);
 
 		#region Implementation of IDisposable
-		public void Dispose()
-		{
-			_sqlReader.Dispose();
-		}
+		public void Dispose() => _sqlReader.Dispose();
+
 		#endregion
 
-		IEnumerable<IToken> ITokenReader.GetTokens(bool includeCommentBlocks)
-		{
-			return GetTokens(includeCommentBlocks).Cast<IToken>();
-		}
+		IEnumerable<IToken> ITokenReader.GetTokens(bool includeCommentBlocks) => GetTokens(includeCommentBlocks).Cast<IToken>();
 
 		public IEnumerable<OracleToken> GetTokens(bool includeCommentBlocks = false)
 		{
@@ -529,10 +516,7 @@ namespace SqlPad.Oracle
 			candidateCharacterCode = EmptyCharacterCode;
 		}
 
-		private static OracleToken BuildToken(char character, int index)
-		{
-			return new OracleToken(character.ToString(CultureInfo.InvariantCulture), index - 1);	
-		}
+		private static OracleToken BuildToken(char character, int index) => new OracleToken(character.ToString(CultureInfo.InvariantCulture), index - 1);
 
 		private static OracleToken BuildToken(StringBuilder builder, int index, CommentType commentType = CommentType.None)
 		{
@@ -703,7 +687,7 @@ namespace SqlPad.Oracle
 
 			public bool InNumber
 			{
-				get { return _inNumber; }
+				get => _inNumber;
 				set
 				{
 					_inNumber = value;
@@ -724,7 +708,7 @@ namespace SqlPad.Oracle
 			InLineComment = 1,
 			InBlockComment = 2,
 			InString = 4,
-			InQuotedIdentifier = 8,
+			InQuotedIdentifier = 8
 		}
 	}
 }

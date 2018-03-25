@@ -330,7 +330,7 @@
             <summary>The value typed as Guid</summary>
         </member>
         <member name="F:ProtoBuf.DiscriminatedUnion128Object.Object">
-            <summary>The value typed as Double</summary>
+            <summary>The value typed as Object</summary>
         </member>
         <member name="M:ProtoBuf.DiscriminatedUnion128Object.Is(System.Int32)">
             <summary>Indicates whether the specified discriminator is assigned</summary>
@@ -473,7 +473,7 @@
             <summary>The value typed as TimeSpan</summary>
         </member>
         <member name="F:ProtoBuf.DiscriminatedUnion64Object.Object">
-            <summary>The value typed as Double</summary>
+            <summary>The value typed as Object</summary>
         </member>
         <member name="M:ProtoBuf.DiscriminatedUnion64Object.Is(System.Int32)">
             <summary>Indicates whether the specified discriminator is assigned</summary>
@@ -562,7 +562,7 @@
             <summary>The value typed as Single</summary>
         </member>
         <member name="F:ProtoBuf.DiscriminatedUnion32Object.Object">
-            <summary>The value typed as Double</summary>
+            <summary>The value typed as Object</summary>
         </member>
         <member name="M:ProtoBuf.DiscriminatedUnion32Object.Is(System.Int32)">
             <summary>Indicates whether the specified discriminator is assigned</summary>
@@ -1198,6 +1198,12 @@
             <summary>
             Global switch that determines whether DateTime serialization should include the <c>Kind</c> of the date/time.
             </summary>
+        </member>
+        <member name="P:ProtoBuf.Meta.RuntimeTypeModel.InternStrings">
+            <summary>
+            Global switch that determines whether a single instance of the same string should be used during deserialization.
+            </summary>
+            <remarks>Note this does not use the global .NET string interner</remarks>
         </member>
         <member name="M:ProtoBuf.Meta.RuntimeTypeModel.SerializeDateTimeKind">
             <summary>

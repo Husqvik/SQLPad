@@ -35,17 +35,12 @@ namespace SqlPad
 			}
 		}
 
-		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			return value;
-		}
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => value;
 
-		public static string FormatDateTime(DateTime value)
-		{
-			return String.IsNullOrEmpty(ConfigurationProvider.Configuration.ResultGrid.DateFormat)
-					? value.ToString(CultureInfo.CurrentUICulture)
-					: value.ToString(ConfigurationProvider.Configuration.ResultGrid.DateFormat);
-		}
+		public static string FormatDateTime(DateTime value) =>
+			String.IsNullOrEmpty(ConfigurationProvider.Configuration.ResultGrid.DateFormat)
+				? value.ToString(CultureInfo.CurrentUICulture)
+				: value.ToString(ConfigurationProvider.Configuration.ResultGrid.DateFormat);
 	}
 
 	public class ObjectToVisibilityConverter : ValueConverterBase
@@ -73,10 +68,8 @@ namespace SqlPad
 
 	public class VisibilityCollapseIfZeroConverter : ValueConverterBase
 	{
-		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			return (int)value == 0 ? Visibility.Collapsed : Visibility.Visible;
-		}
+		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
+			(int)value == 0 ? Visibility.Collapsed : Visibility.Visible;
 	}
 
 	public class DateTimeLabelConverter : ValueConverterBase
@@ -87,23 +80,18 @@ namespace SqlPad
 		{
 		}
 
-		public DateTimeLabelConverter(string valueNotAvailablePlaceholder)
-		{
-			_valueNotAvailablePlaceholder = valueNotAvailablePlaceholder;
-		}
+		public DateTimeLabelConverter(string valueNotAvailablePlaceholder) => _valueNotAvailablePlaceholder = valueNotAvailablePlaceholder;
 
-		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			return value == null || (DateTime)value == DateTime.MinValue ? _valueNotAvailablePlaceholder : CellValueConverter.FormatDateTime((DateTime)value);
-		}
+		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
+			value == null || (DateTime)value == DateTime.MinValue
+				? _valueNotAvailablePlaceholder
+				: CellValueConverter.FormatDateTime((DateTime)value);
 	}
 
 	public class NumericConverter : ValueConverterBase
 	{
-		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			return value == null ? ValueNotAvailable : System.Convert.ToString(value);
-		}
+		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
+			value == null ? ValueNotAvailable : System.Convert.ToString(value);
 	}
 
 	public class TimeSpanConverter : ValueConverterBase
@@ -131,18 +119,14 @@ namespace SqlPad
 
 	public class StringConverter : ValueConverterBase
 	{
-		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			return String.IsNullOrEmpty((string)value) ? ValueNotAvailable : value;
-		}
+		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
+			String.IsNullOrEmpty((string)value) ? ValueNotAvailable : value;
 	}
 
 	public class BooleanLabelConverter : ValueConverterBase
 	{
-		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			return value == null ? ValueNotAvailable : (bool)value ? "Yes" : "No";
-		}
+		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
+			value == null ? ValueNotAvailable : (bool)value ? "Yes" : "No";
 	}
 
 	public class ColorCodeToBrushConverter : IValueConverter
@@ -157,10 +141,7 @@ namespace SqlPad
 				: new SolidColorBrush((Color)ColorConverter.ConvertFromString(colorCode));
 		}
 
-		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			throw new NotSupportedException();
-		}
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotSupportedException();
 	}
 
 	public class ColorCodeToColorConverter : IValueConverter
@@ -173,18 +154,13 @@ namespace SqlPad
 				: (Color)ColorConverter.ConvertFromString(colorCode);
 		}
 
-		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			return value.ToString();
-		}
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => value.ToString();
 	}
 
 	public class PrettyPrintIntegerConverter : ValueConverterBase
 	{
-		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			return value == null ? ValueNotAvailable : System.Convert.ToDecimal(value).ToString("N0");
-		}
+		public override object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
+			value == null ? ValueNotAvailable : System.Convert.ToDecimal(value).ToString("N0");
 	}
 
 	public class ListAggregationConverter : ValueConverterBase
@@ -209,23 +185,14 @@ namespace SqlPad
 
 		public abstract object Convert(object value, Type targetType, object parameter, CultureInfo culture);
 
-		public virtual object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			throw new NotImplementedException();
-		}
+		public virtual object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
 	}
 
 	public class EqualValueToBooleanConverter : IValueConverter
 	{
-		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			return value.Equals(parameter);
-		}
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture) => value.Equals(parameter);
 
-		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			return value.Equals(true) ? parameter : Binding.DoNothing;
-		}
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => value.Equals(true) ? parameter : Binding.DoNothing;
 	}
 
 	public class PluralConverter : ValueConverterBase

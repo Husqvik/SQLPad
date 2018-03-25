@@ -35,12 +35,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public string ToXml() => $"<![CDATA[{Value.ToXmlCompliant()}]]>";
 
-		public string ToJson()
-		{
-			return IsNull
-				? "null"
-				: $"\"{Value.Replace("\"", "\\\"")}\"";
-		}
+		public string ToJson() => IsNull ? "null" : $"\"{Value.Replace("\"", "\\\"")}\"";
 
 		public abstract long Length { get; }
 
@@ -104,7 +99,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override bool Equals(object obj)
 		{
-			if (ReferenceEquals(null, obj)) return false;
+			if (obj is null) return false;
 			if (ReferenceEquals(this, obj)) return true;
 			return obj.GetType() == GetType() && Equals((OracleLargeTextValue)obj);
 		}
@@ -123,12 +118,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override bool IsNull => _xmlType.IsNull;
 
-		public override string ToSqlLiteral()
-		{
-			return IsNull
+		public override string ToSqlLiteral() =>
+			IsNull
 				? TerminalValues.Null
 				: $"{TerminalValues.XmlType}('{Value.Replace("'", "''")}')";
-		}
 
 		public override int PreviewLength { get; }
 
@@ -166,21 +159,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public bool IsNull { get; }
 
-		public string ToSqlLiteral()
-		{
-			return IsNull
-				? TerminalValues.Null
-				: $"'{Preview.Replace("'", "''")}'";
-		}
+		public string ToSqlLiteral() => IsNull ? TerminalValues.Null : $"'{Preview.Replace("'", "''")}'";
 
 		public string ToXml() => Preview.ToXmlCompliant();
 
-		public string ToJson()
-		{
-			return IsNull
-				? "null"
-				: $"\"{Value.Replace("\"", "\\\"")}\"";
-		}
+		public string ToJson() => IsNull ? "null" : $"\"{Value.Replace("\"", "\\\"")}\"";
 
 		public string DataTypeName => throw new NotImplementedException();
 
@@ -204,7 +187,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override bool Equals(object obj)
 		{
-			if (ReferenceEquals(null, obj)) return false;
+			if (obj is null) return false;
 			if (ReferenceEquals(this, obj)) return true;
 			return obj.GetType() == GetType() && Equals((OracleSimpleValue)obj);
 		}
@@ -226,12 +209,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override bool IsNull => _clob.IsNull || _clob.IsEmpty;
 
-	    public override string ToSqlLiteral()
-		{
-			return IsNull
+		public override string ToSqlLiteral() =>
+			IsNull
 				? TerminalValues.Null
 				: $"TO_{(_clob.IsNClob ? "N" : null)}CLOB('{Value.Replace("'", "''")}')";
-		}
 
 		public override int PreviewLength { get; }
 
@@ -301,13 +282,13 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public void Prefetch()
 		{
-			if (_value == null)
-			{
-				_value =
-					_bfile.IsNull || _bfile.IsEmpty
-						? new byte[0]
-						: _bfile.Value;
-			}
+			if (_value != null)
+				return;
+
+			_value =
+				_bfile.IsNull || _bfile.IsEmpty
+					? new byte[0]
+					: _bfile.Value;
 		}
 
 		public byte[] Value
@@ -337,7 +318,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override bool Equals(object obj)
 		{
-			if (ReferenceEquals(null, obj)) return false;
+			if (obj is null) return false;
 			if (ReferenceEquals(this, obj)) return true;
 			return obj.GetType() == GetType() && Equals((OracleExternalBinaryFile)obj);
 		}
@@ -358,12 +339,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public object RawValue => _blob;
 
-		public string ToSqlLiteral()
-		{
-			return IsNull
+		public string ToSqlLiteral() =>
+			IsNull
 				? TerminalValues.Null
 				: $"TO_BLOB('{Value.ToHexString()}')";
-		}
 
 		public string ToXml() => OracleRawValue.ToXml(Value);
 
@@ -415,7 +394,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override bool Equals(object obj)
 		{
-			if (ReferenceEquals(null, obj)) return false;
+			if (obj is null) return false;
 			if (ReferenceEquals(this, obj)) return true;
 			return obj.GetType() == GetType() && Equals((OracleBlobValue)obj);
 		}
@@ -451,37 +430,26 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public bool IsNull => _value.IsNull;
 
-		public string ToSqlLiteral()
-		{
-			return IsNull
+		public string ToSqlLiteral() =>
+			IsNull
 				? TerminalValues.Null
 				: ToLiteral(_dateTime, _value.Nanosecond, null);
-		}
 
-		public string ToXml()
-		{
-			return IsNull
-				? null
-				: ToXml(_dateTime, _value.Nanosecond);
-		}
+		public string ToXml() => IsNull ? null : ToXml(_dateTime, _value.Nanosecond);
 
-		public string ToJson()
-		{
-			return IsNull
+		public string ToJson() =>
+			IsNull
 				? "null"
 				: ToJson(_dateTime, _value.Nanosecond, null);
-		}
 
-		public override string ToString()
-		{
-			return _value.IsNull
+		public override string ToString() =>
+			_value.IsNull
 				? String.Empty
 				: FormatValue(_dateTime, _value.Nanosecond, GetFractionPrecision(_value));
-		}
 
 		public override bool Equals(object obj)
 		{
-			if (ReferenceEquals(null, obj)) return false;
+			if (obj is null) return false;
 			if (ReferenceEquals(this, obj)) return true;
 			return obj.GetType() == GetType() && Equals((OracleTimestamp)obj);
 		}
@@ -536,21 +504,11 @@ namespace SqlPad.Oracle.DatabaseConnection
 			IsNull = oracleString.IsNull;
 		}
 
-		public string ToSqlLiteral()
-		{
-			return IsNull
-				? TerminalValues.Null
-				: $"'{RawValue}'";
-		}
+		public string ToSqlLiteral() => IsNull ? TerminalValues.Null : $"'{RawValue}'";
 
 		public string ToXml() => RawValue.ToString();
 
-		public string ToJson()
-		{
-			return IsNull
-				? "null"
-				: $"\"{RawValue}\"";
-		}
+		public string ToJson() => IsNull ? "null" : $"\"{RawValue}\"";
 
 		public object RawValue { get; }
 
@@ -594,7 +552,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override bool Equals(object obj)
 		{
-			if (ReferenceEquals(null, obj)) return false;
+			if (obj is null) return false;
 			if (ReferenceEquals(this, obj)) return true;
 			return obj.GetType() == GetType() && Equals((OracleRowId)obj);
 		}
@@ -617,21 +575,14 @@ namespace SqlPad.Oracle.DatabaseConnection
 			IsNull = intervalDayToSecond.IsNull;
 		}
 
-		public string ToSqlLiteral()
-		{
-			return IsNull
+		public string ToSqlLiteral() =>
+			IsNull
 				? TerminalValues.Null
 				: $"INTERVAL '{_value}' DAY({FieldDayPrecision.GetValue(_value)}) TO SECOND({FieldSecondPrecision.GetValue(_value)})";
-		}
 
 		public string ToXml() => _value.ToString();
 
-		public string ToJson()
-		{
-			return IsNull
-				? "null"
-				: $"\"{_value}\"";
-		}
+		public string ToJson() => IsNull ? "null" : $"\"{_value}\"";
 
 		public object RawValue => _value;
 
@@ -641,7 +592,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override bool Equals(object obj)
 		{
-			if (ReferenceEquals(null, obj)) return false;
+			if (obj is null) return false;
 			if (ReferenceEquals(this, obj)) return true;
 			return obj.GetType() == GetType() && Equals((OracleIntervalDayToSecond)obj);
 		}
@@ -663,21 +614,17 @@ namespace SqlPad.Oracle.DatabaseConnection
 			IsNull = intervalYearToMonth.IsNull;
 		}
 
-		public string ToSqlLiteral()
-		{
-			return IsNull
+		public string ToSqlLiteral() =>
+			IsNull
 				? TerminalValues.Null
 				: $"INTERVAL '{_value}' YEAR({FieldYearPrecision.GetValue(_value)}) TO MONTH";
-		}
 
 		public string ToXml() => _value.ToString();
 
-		public string ToJson()
-		{
-			return IsNull
+		public string ToJson() =>
+			IsNull
 				? "null"
 				: $"\"{_value}\"";
-		}
 
 		public object RawValue => _value;
 
@@ -687,7 +634,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override bool Equals(object obj)
 		{
-			if (ReferenceEquals(null, obj)) return false;
+			if (obj is null) return false;
 			if (ReferenceEquals(this, obj)) return true;
 			return obj.GetType() == GetType() && Equals((OracleIntervalYearToMonth)obj);
 		}
@@ -717,28 +664,21 @@ namespace SqlPad.Oracle.DatabaseConnection
 				: $"TO_DATE('{beforeChristPrefix}{Value.ToString(IsoDateTimeDotNetFormatMask)}', 'SYYYY-MM-DD HH24:MI:SS')";
 		}
 
-		public string ToXml()
-		{
-			return IsNull
+		public string ToXml() =>
+			IsNull
 				? null
 				: OracleTimestamp.ToXml(this, 0);
-		}
 
-		public string ToJson()
-		{
-			return IsNull
+		public string ToJson() =>
+			IsNull
 				? "null"
 				: OracleTimestamp.ToJson(this, 0, null);
-		}
 
 		public bool IsBeforeCrist { get; }
 
 		public object RawValue { get; }
 
-		public OracleDateTime()
-		{
-			IsNull = true;
-		}
+		public OracleDateTime() => IsNull = true;
 
 		public OracleDateTime(OracleDate oracleDate) : this(oracleDate.Year, oracleDate.Month, oracleDate.Day, oracleDate.Hour, oracleDate.Minute, oracleDate.Second)
 		{
@@ -752,18 +692,16 @@ namespace SqlPad.Oracle.DatabaseConnection
 			RawValue = new OracleDate(year, month, day, hour, minute, second);
 		}
 
-		public override string ToString()
-		{
-			return IsNull
+		public override string ToString() =>
+			IsNull
 				? String.Empty
 				: $"{(IsBeforeCrist ? "BC " : null)}{CellValueConverter.FormatDateTime(Value)}";
-		}
 
 		protected bool Equals(OracleDateTime other) => Equals(RawValue, other.RawValue);
 
 		public override bool Equals(object obj)
 		{
-			if (ReferenceEquals(null, obj)) return false;
+			if (obj is null) return false;
 			if (ReferenceEquals(this, obj)) return true;
 			return obj.GetType() == GetType() && Equals((OracleDateTime)obj);
 		}
@@ -790,47 +728,36 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public bool IsNull => _value.IsNull;
 
-		public string ToSqlLiteral()
-		{
-			return IsNull
+		public string ToSqlLiteral() =>
+			IsNull
 				? TerminalValues.Null
 				: OracleTimestamp.ToLiteral(_dateTime, _value.Nanosecond, _value.TimeZone);
-		}
 
-		public string ToXml()
-		{
-			return IsNull
+		public string ToXml() =>
+			IsNull
 				? null
 				: OracleTimestamp.ToXml(_dateTime, _value.Nanosecond);
-		}
 
-		public string ToJson()
-		{
-			return IsNull
+		public string ToJson() =>
+			IsNull
 				? "null"
 				: OracleTimestamp.ToJson(_dateTime, _value.Nanosecond, _value.TimeZone);
-		}
 
-		public override string ToString()
-		{
-			return _value.IsNull
+		public override string ToString() =>
+			_value.IsNull
 				? String.Empty
 				: $"{OracleTimestamp.FormatValue(_dateTime, _value.Nanosecond, OracleTimestamp.GetFractionPrecision(_value))} {_value.TimeZone}";
-		}
 
 		protected bool Equals(OracleTimestampWithTimeZone other) => _value.Equals(other._value);
 
 		public override bool Equals(object obj)
 		{
-			if (ReferenceEquals(null, obj)) return false;
+			if (obj is null) return false;
 			if (ReferenceEquals(this, obj)) return true;
 			return obj.GetType() == GetType() && Equals((OracleTimestampWithTimeZone)obj);
 		}
 
-		public override int GetHashCode()
-		{
-			return IsNull ? 0 : ((OracleTimeStampTZ)RawValue).BinData.GetContentHashCode();
-		}
+		public override int GetHashCode() => IsNull ? 0 : ((OracleTimeStampTZ)RawValue).BinData.GetContentHashCode();
 	}
 
 	public class OracleTimestampWithLocalTimeZone : IValue
@@ -852,26 +779,20 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public bool IsNull => _value.IsNull;
 
-		public string ToSqlLiteral()
-		{
-			return IsNull
+		public string ToSqlLiteral() =>
+			IsNull
 				? TerminalValues.Null
 				: OracleTimestamp.ToLiteral(_dateTime, _value.Nanosecond, null);
-		}
 
-		public string ToXml()
-		{
-			return IsNull
+		public string ToXml() =>
+			IsNull
 				? null
 				: OracleTimestamp.ToXml(_dateTime, _value.Nanosecond);
-		}
 
-		public string ToJson()
-		{
-			return IsNull
+		public string ToJson() =>
+			IsNull
 				? "null"
 				: OracleTimestamp.ToJson(_dateTime, _value.Nanosecond, null);
-		}
 
 		public override string ToString()
 		{
@@ -884,7 +805,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override bool Equals(object obj)
 		{
-			if (ReferenceEquals(null, obj)) return false;
+			if (obj is null) return false;
 			if (ReferenceEquals(this, obj)) return true;
 			return obj.GetType() == GetType() && Equals((OracleTimestampWithLocalTimeZone)obj);
 		}
@@ -921,12 +842,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public bool IsNull => _oracleBinary.IsNull;
 
-		public string ToSqlLiteral()
-		{
-			return IsNull
+		public string ToSqlLiteral() =>
+			IsNull
 				? TerminalValues.Null
 				: ToSqlLiteral(Value);
-		}
 
 		public string ToXml() => ToXml(Value);
 
@@ -944,30 +863,23 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override string ToString() => _preview;
 
-		internal static string ToSqlLiteral(byte[] value)
-		{
-			return $"'{value.ToHexString()}'";
-		}
+		internal static string ToSqlLiteral(byte[] value) => $"'{value.ToHexString()}'";
 
-		internal static string ToXml(byte[] value)
-		{
-			return value.Length == 0
+		internal static string ToXml(byte[] value) =>
+			value.Length == 0
 				? null
 				: $"<![CDATA[{Convert.ToBase64String(value)}]]>";
-		}
 
-		internal static string ToJson(byte[] value)
-		{
-			return value.Length == 0
-					? "null"
-					: $"\"{Convert.ToBase64String(value)}\"";
-		}
+		internal static string ToJson(byte[] value) =>
+			value.Length == 0
+				? "null"
+				: $"\"{Convert.ToBase64String(value)}\"";
 
 		protected bool Equals(OracleRawValue other) => _oracleBinary.Equals(other._oracleBinary);
 
 		public override bool Equals(object obj)
 		{
-			if (ReferenceEquals(null, obj)) return false;
+			if (obj is null) return false;
 			if (ReferenceEquals(this, obj)) return true;
 			return obj.GetType() == GetType() && Equals((OracleRawValue)obj);
 		}
@@ -979,10 +891,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 	{
 		private readonly OracleDecimal _oracleDecimal;
 
-		public OracleNumber(OracleDecimal value)
-		{
-			_oracleDecimal = SetOutputFormat(value);
-		}
+		public OracleNumber(OracleDecimal value) => _oracleDecimal = SetOutputFormat(value);
 
 		internal static OracleDecimal SetOutputFormat(OracleDecimal value)
 		{
@@ -1033,32 +942,26 @@ namespace SqlPad.Oracle.DatabaseConnection
 			return literalValue;
 		}
 
-		public string ToXml()
-		{
-			return IsNull
+		public string ToXml() =>
+			IsNull
 				? null
 				: ToSqlLiteral();
-		}
 
-		public string ToJson()
-		{
-			return IsNull
+		public string ToJson() =>
+			IsNull
 				? "null"
 				: ToSqlLiteral();
-		}
 
-		public override string ToString()
-		{
-			return _oracleDecimal.IsNull
+		public override string ToString() =>
+			_oracleDecimal.IsNull
 				? String.Empty
 				: _oracleDecimal.ToString();
-		}
 
 		protected bool Equals(OracleNumber other) => _oracleDecimal.Equals(other._oracleDecimal);
 
 		public override bool Equals(object obj)
 		{
-			if (ReferenceEquals(null, obj)) return false;
+			if (obj is null) return false;
 			if (ReferenceEquals(this, obj)) return true;
 			return obj.GetType() == GetType() && Equals((OracleNumber)obj);
 		}
@@ -1078,12 +981,10 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public bool IsNull { get; }
 
-		public string ToSqlLiteral()
-		{
-			return IsNull
+		public string ToSqlLiteral() =>
+			IsNull
 				? TerminalValues.Null
 				: OracleRawValue.ToSqlLiteral(Value);
-		}
 
 		public string ToXml() => OracleRawValue.ToXml(Value);
 
@@ -1143,7 +1044,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public override bool Equals(object obj)
 		{
-			if (ReferenceEquals(null, obj)) return false;
+			if (obj is null) return false;
 			if (ReferenceEquals(this, obj)) return true;
 			return obj.GetType() == GetType() && Equals((OracleLongRawValue)obj);
 		}
