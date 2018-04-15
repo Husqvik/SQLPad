@@ -43,11 +43,11 @@ namespace SqlPad.Oracle.ExecutionPlan
 
 		public string ObjectType { get; set; }
 
-		public long? Cost { get; set; }
+		public decimal? Cost { get; set; }
 		
-		public long? Cardinality { get; set; }
+		public decimal? Cardinality { get; set; }
 
-		public long? Bytes { get; set; }
+		public decimal? Bytes { get; set; }
 
 		public string PartitionStart { get; set; }
 
@@ -55,11 +55,11 @@ namespace SqlPad.Oracle.ExecutionPlan
 
 		public string Distribution { get; set; }
 
-		public long? CpuCost { get; set; }
+		public decimal? CpuCost { get; set; }
 
-		public long? IoCost { get; set; }
+		public decimal? IoCost { get; set; }
 
-		public long? TempSpace { get; set; }
+		public decimal? TempSpace { get; set; }
 
 		public string AccessPredicates { get; set; }
 

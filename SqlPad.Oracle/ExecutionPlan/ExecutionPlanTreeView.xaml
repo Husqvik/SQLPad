@@ -226,7 +226,7 @@
 					</TextBlock>
 					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding LastElapsedTime, Converter={StaticResource ObjectToVisibilityConverter}}">
 						<Run Text="Elapsed: " />
-						<Run Text="{Binding LastElapsedTime}" />
+						<Run Text="{Binding LastElapsedTime, Converter={StaticResource TimeSpanConverter}}" />
 						<Run Text=" " />
 					</TextBlock>
 					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding LastMemoryUsedBytes, Converter={StaticResource ObjectToVisibilityConverter}}">
@@ -291,7 +291,7 @@
 					</TextBlock>
 					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding TotalElapsedTime, Converter={StaticResource ObjectToVisibilityConverter}}">
 						<Run Text="Elapsed: " />
-						<Run Text="{Binding TotalElapsedTime}" />
+						<Run Text="{Binding TotalElapsedTime, Converter={StaticResource TimeSpanConverter}}" />
 						<Run Text=" " />
 					</TextBlock>
 					<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding TotalWorkAreaExecutions, Converter={StaticResource ObjectToVisibilityConverter}}">
@@ -366,7 +366,7 @@
 						</TextBlock>
 						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Time, Converter={StaticResource ObjectToVisibilityConverter}}">
 							<Run Text="Time: " />
-							<Run Text="{Binding Time}" />
+							<Run Text="{Binding Time, Converter={StaticResource TimeSpanConverter}}" />
 							<Run Text=" " />
 						</TextBlock>
 						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding CpuCost, Converter={StaticResource ObjectToVisibilityConverter}}">
@@ -462,7 +462,7 @@
 						</TextBlock>
 						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Time, Converter={StaticResource ObjectToVisibilityConverter}}">
 							<Run Text="Time: " />
-							<Run Text="{Binding Time}" />
+							<Run Text="{Binding Time, Converter={StaticResource TimeSpanConverter}}" />
 							<Run Text=" " />
 						</TextBlock>
 						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding CpuCost, Converter={StaticResource ObjectToVisibilityConverter}}">
@@ -796,7 +796,7 @@
 						</TextBlock>
 						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding Time, Converter={StaticResource ObjectToVisibilityConverter}}">
 							<Run Text="Time: " />
-							<Run Text="{Binding Time}" />
+							<Run Text="{Binding Time, Converter={StaticResource TimeSpanConverter}}" />
 							<Run Text=" " />
 						</TextBlock>
 						<TextBlock Style="{StaticResource PlanStatisticValueStyle}" Visibility="{Binding CpuCost, Converter={StaticResource ObjectToVisibilityConverter}}">

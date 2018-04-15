@@ -16,26 +16,26 @@ namespace SqlPad.Oracle.ExecutionPlan
 
 		public int? TotalExecutions
 		{
-			get { return (int?)GetValue(TotalExecutionsProperty); }
-			private set { SetValue(TotalExecutionsProperty, value); }
+			get => (int?)GetValue(TotalExecutionsProperty);
+			private set => SetValue(TotalExecutionsProperty, value);
 		}
 
 		public string TextExecutionPlan
 		{
-			get { return (string)GetValue(TextExecutionPlanProperty); }
-			private set { SetValue(TextExecutionPlanProperty, value); }
+			get => (string)GetValue(TextExecutionPlanProperty);
+			private set => SetValue(TextExecutionPlanProperty, value);
 		}
 
 		public bool HasInactiveItems
 		{
-			get { return (bool)GetValue(HasInactiveItemsProperty); }
-			private set { SetValue(HasInactiveItemsProperty, value); }
+			get => (bool)GetValue(HasInactiveItemsProperty);
+			private set => SetValue(HasInactiveItemsProperty, value);
 		}
 
 		public bool ShowAllItems
 		{
-			get { return (bool)GetValue(ShowAllItemsProperty); }
-			set { SetValue(ShowAllItemsProperty, value); }
+			get => (bool)GetValue(ShowAllItemsProperty);
+			set => SetValue(ShowAllItemsProperty, value);
 		}
 
 		private static void ShowAllItemsChangedHandler(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)

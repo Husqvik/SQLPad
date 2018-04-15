@@ -234,44 +234,22 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 	public static class OracleReaderValueConvert
 	{
-		public static int? ToInt32(object value)
-		{
-			return value.IsNull() ? null : (int?)Convert.ToInt32(value);
-		}
+		public static int? ToInt32(object value) => value.IsNull() ? null : (int?)Convert.ToInt32(value);
 
-		public static long? ToInt64(object value)
-		{
-			return value.IsNull() ? null : (long?)Convert.ToInt64(value);
-		}
+		public static long? ToInt64(object value) => value.IsNull() ? null : (long?)Convert.ToInt64(value);
 
-		public static decimal? ToDecimal(object value)
-		{
-			return value.IsNull() ? null : (decimal?)Convert.ToDecimal(value);
-		}
+		public static double? ToDouble(object value) => value.IsNull() ? null : (double?)Convert.ToDouble(value);
 
-		public static DateTime? ToDateTime(object value)
-		{
-			return value.IsNull() ? null : (DateTime?)Convert.ToDateTime(value);
-		}
+		public static decimal? ToDecimal(object value) => value.IsNull() ? null : (decimal?)Convert.ToDecimal(value);
 
-		public static TimeSpan? ToTimeSpanFromMicroseconds(object value)
-		{
-			return value.IsNull() ? null : (TimeSpan?)TimeSpan.FromTicks(Convert.ToInt64(value) * 10);
-		}
+		public static DateTime? ToDateTime(object value) => value.IsNull() ? null : (DateTime?)Convert.ToDateTime(value);
 
-		public static string ToString(object value)
-		{
-			return value.IsNull() ? String.Empty : (string)value;
-		}
+		public static TimeSpan? ToTimeSpanFromMicroseconds(object value) => value.IsNull() ? null : (TimeSpan?)TimeSpan.FromTicks(Convert.ToInt64(value) * 10);
 
-		public static bool? ToBoolean(object value)
-		{
-			return value.IsNull() ? null : (bool?)value;
-		}
+		public static string ToString(object value) => value.IsNull() ? String.Empty : (string)value;
 
-		private static bool IsNull(this object value)
-		{
-			return value == DBNull.Value;
-		}
+		public static bool? ToBoolean(object value) => value.IsNull() ? null : (bool?)value;
+
+		private static bool IsNull(this object value) => value == DBNull.Value;
 	}
 }

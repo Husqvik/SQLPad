@@ -20,9 +20,9 @@ namespace SqlPad.Oracle.ModelDataProviders
 	{
 		private readonly ExplainPlanModelInternal _dataMmodel;
 		
-		public IModelDataProvider CreateExplainPlanUpdater { get; private set; }
+		public IModelDataProvider CreateExplainPlanUpdater { get; }
 		
-		public IModelDataProvider LoadExplainPlanUpdater { get; private set; }
+		public IModelDataProvider LoadExplainPlanUpdater { get; }
 
 		public ExecutionPlanItemCollection ItemCollection => _dataMmodel.ItemCollection;
 
@@ -125,7 +125,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 
 		private async Task<TItem> CreatePlanItem(OracleDataReader reader, ICollection<int> inactiveMap, CancellationToken cancellationToken)
 		{
-			var time = OracleReaderValueConvert.ToInt32(reader["TIME"]);
+			var time = OracleReaderValueConvert.ToDouble(reader["TIME"]);
 			var otherData = OracleReaderValueConvert.ToString(await reader.GetValueAsynchronous(reader.GetOrdinal("OTHER_XML"), cancellationToken));
 			var objectName = OracleReaderValueConvert.ToString(reader["OBJECT_NAME"]);
 
@@ -140,23 +140,28 @@ namespace SqlPad.Oracle.ModelDataProviders
 					Optimizer = OracleReaderValueConvert.ToString(reader["OPTIMIZER"]),
 					ObjectOwner =
 						objectName.StartsWith(":TQ")
-						? String.Empty
-						: OracleReaderValueConvert.ToString(reader["OBJECT_OWNER"]),
+							? String.Empty
+							: OracleReaderValueConvert.ToString(reader["OBJECT_OWNER"]),
 					ObjectName = objectName,
 					ObjectAlias = OracleReaderValueConvert.ToString(reader["OBJECT_ALIAS"]),
 					ObjectType = OracleReaderValueConvert.ToString(reader["OBJECT_TYPE"]),
-					Cost = OracleReaderValueConvert.ToInt64(reader["COST"]),
-					Cardinality = OracleReaderValueConvert.ToInt64(reader["CARDINALITY"]),
-					Bytes = OracleReaderValueConvert.ToInt64(reader["BYTES"]),
+					Cost = OracleReaderValueConvert.ToDecimal(reader["COST"]),
+					Cardinality = OracleReaderValueConvert.ToDecimal(reader["CARDINALITY"]),
+					Bytes = OracleReaderValueConvert.ToDecimal(reader["BYTES"]),
 					PartitionStart = OracleReaderValueConvert.ToString(reader["PARTITION_START"]),
 					PartitionStop = OracleReaderValueConvert.ToString(reader["PARTITION_STOP"]),
 					Distribution = OracleReaderValueConvert.ToString(reader["DISTRIBUTION"]),
-					CpuCost = OracleReaderValueConvert.ToInt64(reader["CPU_COST"]),
-					IoCost = OracleReaderValueConvert.ToInt64(reader["IO_COST"]),
-					TempSpace = OracleReaderValueConvert.ToInt64(reader["TEMP_SPACE"]),
+					CpuCost = OracleReaderValueConvert.ToDecimal(reader["CPU_COST"]),
+					IoCost = OracleReaderValueConvert.ToDecimal(reader["IO_COST"]),
+					TempSpace = OracleReaderValueConvert.ToDecimal(reader["TEMP_SPACE"]),
 					AccessPredicates = OracleReaderValueConvert.ToString(reader["ACCESS_PREDICATES"]),
 					FilterPredicates = OracleReaderValueConvert.ToString(reader["FILTER_PREDICATES"]),
-					Time = time.HasValue ? TimeSpan.FromSeconds(time.Value) : (TimeSpan?)null,
+					Time =
+						time.HasValue
+							? time.Value > TimeSpan.MaxValue.TotalSeconds
+								? TimeSpan.MaxValue
+								: TimeSpan.FromSeconds(time.Value)
+							: (TimeSpan?)null,
 					QueryBlockName = OracleReaderValueConvert.ToString(reader["QBLOCK_NAME"]),
 					Other = String.IsNullOrEmpty(otherData) ? null : XElement.Parse(otherData)
 				};

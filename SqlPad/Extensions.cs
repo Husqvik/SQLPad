@@ -17,15 +17,10 @@ namespace SqlPad
 {
 	public static class Extensions
 	{
-		public static bool In<T>(this T o, params T[] elements)
-		{
-			return elements.Any(e => Equals(e, o));
-		}
+		public static bool In<T>(this T o, params T[] elements) => elements.Any(e => Equals(e, o));
 
-		public static IEnumerable<ICodeCompletionItem> OrderItems(this IEnumerable<ICodeCompletionItem> codeCompletionItems)
-		{
-			return codeCompletionItems.OrderBy(i => i.CategoryPriority).ThenBy(i => i.Priority).ThenBy(i => i.Label);
-		}
+		public static IEnumerable<ICodeCompletionItem> OrderItems(this IEnumerable<ICodeCompletionItem> codeCompletionItems) =>
+			codeCompletionItems.OrderBy(i => i.CategoryPriority).ThenBy(i => i.Priority).ThenBy(i => i.Label);
 
 		public static IEnumerable<T> TakeWhileInclusive<T>(this IEnumerable<T> source, Func<T, bool> predicate)
 		{
@@ -120,26 +115,18 @@ namespace SqlPad
 			return source.Where(o => uniqueObjects.Add(selector(o)));
 		}
 
-		public static HashSet<T> ToHashSet<T>(this IEnumerable<T> source)
-		{
-			return new HashSet<T>(source);
-		}
+		public static HashSet<T> ToHashSet<T>(this IEnumerable<T> source) => new HashSet<T>(source);
 
-		public static Task<IReadOnlyList<T>> EnumerateAsync<T>(this IEnumerable<T> source, CancellationToken cancellationToken)
-		{
-			return Task.Run(
+		public static Task<IReadOnlyList<T>> EnumerateAsync<T>(this IEnumerable<T> source, CancellationToken cancellationToken) =>
+			Task.Run(
 				() => (IReadOnlyList<T>)source.TakeWhile(i => !cancellationToken.IsCancellationRequested).ToArray(),
 				cancellationToken);
-		}
 
-		public static IReadOnlyDictionary<TKey, TValue> AsReadOnly<TKey, TValue>(this IDictionary<TKey, TValue> dictionary)
-		{
-			return new ReadOnlyDictionary<TKey, TValue>(dictionary);
-		}
+		public static IReadOnlyDictionary<TKey, TValue> AsReadOnly<TKey, TValue>(this IDictionary<TKey, TValue> dictionary) => new ReadOnlyDictionary<TKey, TValue>(dictionary);
 
 		public static void AddToValues<TKey, TCollection, TValue>(this IDictionary<TKey, TCollection> dictionary, TKey key, TValue value) where TCollection : ICollection<TValue>, new()
 		{
-			if (!dictionary.TryGetValue(key, out TCollection values))
+			if (!dictionary.TryGetValue(key, out var values))
 			{
 				dictionary.Add(key, values = new TCollection());
 			}
@@ -169,9 +156,14 @@ namespace SqlPad
 				return $"{timeSpan.Hours}:{timeSpan.Minutes:00}:{timeSpan.Seconds:00}";
 			}
 
+			if (timeSpan == TimeSpan.MaxValue)
+			{
+				return "infinity";
+			}
+
 			var pluralPostfix = timeSpan.TotalDays >= 2 ? "s" : null;
 
-			return $"{(int)timeSpan.TotalDays} day{pluralPostfix} {timeSpan.Hours}:{timeSpan.Minutes:00}:{timeSpan.Seconds:00}";
+			return $"{(int)timeSpan.TotalDays:N0} day{pluralPostfix} {timeSpan.Hours}:{timeSpan.Minutes:00}:{timeSpan.Seconds:00}";
 		}
 
 		public static async Task<byte[]> ReadAllBytesAsync(this FileStream file, CancellationToken cancellationToken)
@@ -189,10 +181,8 @@ namespace SqlPad
 			}
 		}
 
-		public static string GetPlainText(this SecureString secureString)
-		{
-			return Marshal.PtrToStringUni(Marshal.SecureStringToGlobalAllocUnicode(secureString));
-		}
+		public static string GetPlainText(this SecureString secureString) =>
+			Marshal.PtrToStringUni(Marshal.SecureStringToGlobalAllocUnicode(secureString));
 
 		public static string ToPrettyString(this Enum enumValue, string separator = " | ", Func<Enum, string> formatFunction = null)
 		{
@@ -229,10 +219,8 @@ namespace SqlPad
 			return builder.ToString();
 		}
 
-		public static string SplitCamelCase(this string value, string separator = " ")
-		{
-			return Regex.Replace(value, @"(\p{Lu})", $"{separator}$1").Remove(0, separator.Length);
-		}
+		public static string SplitCamelCase(this string value, string separator = " ") =>
+			Regex.Replace(value, @"(\p{Lu})", $"{separator}$1").Remove(0, separator.Length);
 
 		public static string ToString(this Boolean? value, string @true, string @false, string @null)
 		{
@@ -244,17 +232,12 @@ namespace SqlPad
 			return value.Value ? @true : @false;
 		}
 
-		public static string ToXmlCompliant(this string text)
-		{
-			return new String(text.Where(XmlConvert.IsXmlChar).ToArray());
-		}
+		public static string ToXmlCompliant(this string text) => new String(text.Where(XmlConvert.IsXmlChar).ToArray());
 
-		public static T PopIfNotEmpty<T>(this Stack<T> stack)
-		{
-			return stack.Count == 0
+		public static T PopIfNotEmpty<T>(this Stack<T> stack) =>
+			stack.Count == 0
 				? default(T)
 				: stack.Pop();
-		}
 
 		public static void PushIfNotNull<T>(this Stack<T> stack, T item)
 		{
@@ -280,7 +263,7 @@ namespace SqlPad
 		public override object ProvideValue(IServiceProvider serviceProvider)
 		{
 			var value = base.ProvideValue(serviceProvider);
-			return (Path == null ? value : PathEvaluator.Eval(value, Path));
+			return Path == null ? value : PathEvaluator.Eval(value, Path);
 		}
 
 		private class PathEvaluator : DependencyObject
