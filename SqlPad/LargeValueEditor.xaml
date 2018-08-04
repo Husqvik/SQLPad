@@ -70,7 +70,7 @@
 					</sqlPad:SqlTextEditor>
 				</DockPanel>
 			</TabItem>
-			<TabItem x:Name="TabRaw" Header="Raw" Visibility="Collapsed">
+			<TabItem x:Name="TabRaw" Visibility="Collapsed">
 				<DockPanel>
 					<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" sqlPad:MarginSetter.Margin="8,0,0,8">
 						<Button x:Name="ButtonSaveRawAs" Content="Save as..." Padding="6,0,6,0" Click="SaveRawAsClickHandler" Visibility="Collapsed" />

@@ -111,6 +111,7 @@ namespace SqlPad
 				{
 					TabRaw.Visibility = Visibility.Visible;
 					TabRaw.IsSelected = true;
+					TabRaw.Header = $"Raw ({_largeBinaryValue.Length:N0} bytes)";
 
 					await DisplayRawData(_largeBinaryValue.Value);
 					ButtonSaveRawAs.Visibility = Visibility.Visible;
