@@ -210,12 +210,12 @@ namespace SqlPad
 						VerticalScrollBarVisibility = ScrollBarVisibility.Auto
 					};
 
-				var scrollview = dataGrid.FindChildVisual<ScrollViewer>();
+				var scrollViewer = dataGrid.FindChildVisual<ScrollViewer>();
 
 				var binding = new MultiBinding { Converter = ChildContainerHeightConverter.Instance };
 				binding.Bindings.Add(new Binding(nameof(dockPanel.ActualHeight)) { Source = dockPanel });
 				binding.Bindings.Add(new Binding(nameof(headersPresenter.ActualHeight)) { Source = headersPresenter });
-				binding.Bindings.Add(new Binding(nameof(scrollview.ComputedHorizontalScrollBarVisibility)) { Source = scrollview });
+				binding.Bindings.Add(new Binding(nameof(scrollViewer.ComputedHorizontalScrollBarVisibility)) { Source = scrollViewer });
 
 				contentContainer.SetBinding(FrameworkElement.MaxHeightProperty, binding);
 

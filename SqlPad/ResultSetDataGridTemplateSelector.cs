@@ -65,7 +65,8 @@ namespace SqlPad
 			}
 
 			var rowValues = (object[])item;
-			return rowValues[_columnIndex] == DBNull.Value || !_hasReferenceConstraint
+			var cellValue = rowValues[_columnIndex];
+			return cellValue == DBNull.Value || !_hasReferenceConstraint || cellValue is IValue sqlPadValue && sqlPadValue.IsNull
 				? TextDataTemplate
 				: HyperlinkDataTemplate;
 		}
