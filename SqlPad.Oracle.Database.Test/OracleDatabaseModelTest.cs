@@ -110,12 +110,12 @@ WHERE
 
 			var explainPlanTable = OracleConfiguration.Configuration.Connections.First().ExecutionPlan.TargetTable;
 			var objectForScriptCreation = databaseModel.GetFirstSchemaObject<OracleSchemaObject>(databaseModel.GetPotentialSchemaObjectIdentifiers(explainPlanTable.Schema, explainPlanTable.Name));
-			objectForScriptCreation.ShouldNotBe(null);
+			objectForScriptCreation.ShouldNotBeNull();
 			var objectScript = await databaseModel.ObjectScriptExtractor.ExtractSchemaObjectScriptAsync(objectForScriptCreation, CancellationToken.None);
 
 			Trace.WriteLine("Object script output: " + Environment.NewLine + objectScript + Environment.NewLine);
 
-			objectScript.ShouldNotBe(null);
+			objectScript.ShouldNotBeNull();
 			objectScript.Length.ShouldBeGreaterThan(100);
 
 			var executionModel =
@@ -135,8 +135,8 @@ WHERE
 			result.StatementModel.ShouldBe(executionModel);
 			result.ExecutedSuccessfully.ShouldBeTrue();
 			result.AffectedRowCount.ShouldBe(-1);
-			result.ExecutedAt.ShouldNotBe(null);
-			result.Duration.ShouldNotBe(null);
+			result.ExecutedAt.ShouldNotBeNull();
+			result.Duration.ShouldNotBeNull();
             result.ResultInfoColumnHeaders.Count.ShouldBe(1);
 			var resultInfo = result.ResultInfoColumnHeaders.Keys.First();
 
@@ -160,7 +160,7 @@ WHERE
 			rows.Any().ShouldBeFalse();
 
 			var planItemCollection = await connectionAdapter.GetCursorExecutionStatisticsAsync(CancellationToken.None);
-			planItemCollection.PlanText.ShouldNotBe(null);
+			planItemCollection.PlanText.ShouldNotBeNull();
 			planItemCollection.PlanText.ShouldNotBe(String.Empty);
 
 			Trace.WriteLine($"Display cursor output: {Environment.NewLine}{planItemCollection.PlanText}{Environment.NewLine}");
@@ -175,9 +175,9 @@ WHERE
 			var statistics = String.Join(Environment.NewLine, statisticsRecords.Select(r => $"{r.Name.PadRight(40)}: {r.Value}"));
 			Trace.WriteLine($"Execution statistics output: {Environment.NewLine}{statistics}{Environment.NewLine}");
 
-			connectionAdapter.TraceFileName.ShouldNotBe(null);
+			connectionAdapter.TraceFileName.ShouldNotBeNull();
 			connectionAdapter.TraceFileName.ShouldNotBe(String.Empty);
-			connectionAdapter.SessionIdentifier.ShouldNotBe(null);
+			connectionAdapter.SessionIdentifier.ShouldNotBeNull();
 		}
 
 		[Test]
@@ -237,9 +237,9 @@ WHERE
 				var result = executionException.BatchResult.StatementResults[0];
 
 				result.ExecutedSuccessfully.ShouldBeFalse();
-				result.ExecutedAt.ShouldNotBe(null);
-				result.Duration.ShouldNotBe(null);
-				result.Exception.ShouldNotBe(null);
+				result.ExecutedAt.ShouldNotBeNull();
+				result.Duration.ShouldNotBeNull();
+				result.Exception.ShouldNotBeNull();
 				result.ResultInfoColumnHeaders.ShouldBeNull();
 				result.AffectedRowCount.ShouldBeNull();
 				result.CompilationErrors.ShouldBeNull();
@@ -581,7 +581,7 @@ WHERE
 			model.ClusterName.ShouldBe(String.Empty);
 			model.Compression.ShouldBe("Disabled");
 			model.IsTemporary.ShouldBe(false);
-			model.LastAnalyzed.ShouldNotBe(null);
+			model.LastAnalyzed.ShouldNotBeNull();
 			model.LastAnalyzed.ShouldNotBe(DateTime.MinValue);
 			model.Organization.ShouldBe("Heap");
 			model.ParallelDegree.ShouldBe("1");
@@ -603,19 +603,19 @@ WHERE
 			indexDetails.ForEach(
 				i =>
 				{
-					i.Blocks.ShouldNotBe(null);
+					i.Blocks.ShouldNotBeNull();
 					i.Blocks.ShouldNotBe(0);
-					i.Bytes.ShouldNotBe(null);
+					i.Bytes.ShouldNotBeNull();
 					i.Bytes.ShouldNotBe(0);
-					i.ClusteringFactor.ShouldNotBe(null);
+					i.ClusteringFactor.ShouldNotBeNull();
 					i.ClusteringFactor.ShouldNotBe(0);
-					i.LastAnalyzed.ShouldNotBe(null);
+					i.LastAnalyzed.ShouldNotBeNull();
 					i.LastAnalyzed.ShouldNotBe(DateTime.MinValue);
-					i.Owner.ShouldNotBe(null);
-					i.Name.ShouldNotBe(null);
-					i.Rows.ShouldNotBe(null);
+					i.Owner.ShouldNotBeNull();
+					i.Name.ShouldNotBeNull();
+					i.Rows.ShouldNotBeNull();
 					i.Rows.ShouldNotBe(0);
-					i.SampleRows.ShouldNotBe(null);
+					i.SampleRows.ShouldNotBeNull();
 					i.SampleRows.ShouldNotBe(0);
 					i.Status.ShouldBe("Valid");
 					i.Compression.ShouldBe("Disabled");
@@ -645,7 +645,7 @@ WHERE
 			constraintDetails[0].IsDeferred.ShouldBeFalse();
 			constraintDetails[0].IsEnabled.ShouldBeTrue();
 			constraintDetails[0].Owner.ShouldBe("SYS");
-			constraintDetails[0].Name.ShouldNotBe(null);
+			constraintDetails[0].Name.ShouldNotBeNull();
 			constraintDetails[0].LastChange.ShouldBeGreaterThan(DateTime.MinValue);
 			constraintDetails[0].SearchCondition.ShouldBe(String.Empty);
 			constraintDetails[0].Type.ShouldBe("Referential integrity");
@@ -655,7 +655,7 @@ WHERE
 			constraintDetails[1].IsDeferred.ShouldBeFalse();
 			constraintDetails[1].IsEnabled.ShouldBeTrue();
 			constraintDetails[1].Owner.ShouldBe("SYS");
-			constraintDetails[1].Name.ShouldNotBe(null);
+			constraintDetails[1].Name.ShouldNotBeNull();
 			constraintDetails[1].LastChange.ShouldBeGreaterThan(DateTime.MinValue);
 			constraintDetails[1].SearchCondition.ShouldBe(String.Empty);
 			constraintDetails[1].Type.ShouldBe("Unique key");
@@ -695,7 +695,7 @@ WHERE
 			var displayCursorDataProvider = DisplayCursorDataProvider.CreateDisplayLastCursorDataProvider(new Version(12, 1));
 			await ExecuteDataProvider(displayCursorDataProvider);
 
-			displayCursorDataProvider.PlanText.ShouldNotBe(null);
+			displayCursorDataProvider.PlanText.ShouldNotBeNull();
 			Trace.WriteLine(displayCursorDataProvider.PlanText);
 		}
 
@@ -748,7 +748,7 @@ SELECT /*+ parallel(g1 2) parallel(g2 2) monitor */ avg(g1.val * 10000 + g2.val)
 				var result = statementBatchResult.StatementResults[0];
 				result.ExecutedSuccessfully.ShouldBeTrue();
 
-				planItemCollection.RootItem.ShouldNotBe(null);
+				planItemCollection.RootItem.ShouldNotBeNull();
 				planItemCollection.SessionItems.Count.ShouldBeGreaterThan(0);
 				planItemCollection.AllItems.Values.Any(pi => pi.ParallelSlaveSessionItems.Count > 0).ShouldBeTrue();
 				planItemCollection.SessionItems.Any(pi => pi.ActiveSessionHistoryItems.Count > 0).ShouldBeTrue();
@@ -838,7 +838,7 @@ SELECT /*+ parallel(g1 2) parallel(g2 2) monitor */ avg(g1.val * 10000 + g2.val)
 
 			var rootItem = planItemCollection.RootItem;
 			planItemCollection.AllItems.Count.ShouldBe(12);
-			rootItem.ShouldNotBe(null);
+			rootItem.ShouldNotBeNull();
 			rootItem.Operation.ShouldBe("SELECT STATEMENT");
 			rootItem.ExecutionOrder.ShouldBe(12);
 			rootItem.ChildItems.Count.ShouldBe(1);
@@ -903,31 +903,31 @@ SELECT /*+ parallel(g1 2) parallel(g2 2) monitor */ avg(g1.val * 10000 + g2.val)
 			var hashJoin = allItems[1];
 			hashJoin.Operation.ShouldBe("HASH JOIN");
 			hashJoin.Executions.ShouldBeGreaterThan(0);
-			hashJoin.LastStarts.ShouldNotBe(null);
-			hashJoin.TotalStarts.ShouldNotBe(null);
-			hashJoin.LastOutputRows.ShouldNotBe(null);
-			hashJoin.TotalOutputRows.ShouldNotBe(null);
-			hashJoin.LastConsistentReadBufferGets.ShouldNotBe(null);
-			hashJoin.TotalConsistentReadBufferGets.ShouldNotBe(null);
-			hashJoin.LastCurrentReadBufferGets.ShouldNotBe(null);
-			hashJoin.TotalCurrentReadBufferGets.ShouldNotBe(null);
-			hashJoin.LastDiskReads.ShouldNotBe(null);
-			hashJoin.TotalDiskReads.ShouldNotBe(null);
-			hashJoin.LastDiskWrites.ShouldNotBe(null);
-			hashJoin.TotalDiskWrites.ShouldNotBe(null);
-			hashJoin.LastElapsedTime.ShouldNotBe(null);
-			hashJoin.TotalElapsedTime.ShouldNotBe(null);
-			hashJoin.WorkAreaSizingPolicy.ShouldNotBe(null);
-			hashJoin.EstimatedOptimalSizeBytes.ShouldNotBe(null);
-			hashJoin.EstimatedOnePassSizeBytes.ShouldNotBe(null);
-			hashJoin.LastMemoryUsedBytes.ShouldNotBe(null);
-			hashJoin.LastExecutionMethod.ShouldNotBe(null);
-			hashJoin.LastParallelDegree.ShouldNotBe(null);
-			hashJoin.TotalWorkAreaExecutions.ShouldNotBe(null);
-			hashJoin.OptimalWorkAreaExecutions.ShouldNotBe(null);
-			hashJoin.OnePassWorkAreaExecutions.ShouldNotBe(null);
-			hashJoin.MultiPassWorkAreaExecutions.ShouldNotBe(null);
-			hashJoin.ActiveWorkAreaTime.ShouldNotBe(null);
+			hashJoin.LastStarts.ShouldNotBeNull();
+			hashJoin.TotalStarts.ShouldNotBeNull();
+			hashJoin.LastOutputRows.ShouldNotBeNull();
+			hashJoin.TotalOutputRows.ShouldNotBeNull();
+			hashJoin.LastConsistentReadBufferGets.ShouldNotBeNull();
+			hashJoin.TotalConsistentReadBufferGets.ShouldNotBeNull();
+			hashJoin.LastCurrentReadBufferGets.ShouldNotBeNull();
+			hashJoin.TotalCurrentReadBufferGets.ShouldNotBeNull();
+			hashJoin.LastDiskReads.ShouldNotBeNull();
+			hashJoin.TotalDiskReads.ShouldNotBeNull();
+			hashJoin.LastDiskWrites.ShouldNotBeNull();
+			hashJoin.TotalDiskWrites.ShouldNotBeNull();
+			hashJoin.LastElapsedTime.ShouldNotBeNull();
+			hashJoin.TotalElapsedTime.ShouldNotBeNull();
+			hashJoin.WorkAreaSizingPolicy.ShouldNotBeNull();
+			hashJoin.EstimatedOptimalSizeBytes.ShouldNotBeNull();
+			hashJoin.EstimatedOnePassSizeBytes.ShouldNotBeNull();
+			hashJoin.LastMemoryUsedBytes.ShouldNotBeNull();
+			hashJoin.LastExecutionMethod.ShouldNotBeNull();
+			hashJoin.LastParallelDegree.ShouldNotBeNull();
+			hashJoin.TotalWorkAreaExecutions.ShouldNotBeNull();
+			hashJoin.OptimalWorkAreaExecutions.ShouldNotBeNull();
+			hashJoin.OnePassWorkAreaExecutions.ShouldNotBeNull();
+			hashJoin.MultiPassWorkAreaExecutions.ShouldNotBeNull();
+			hashJoin.ActiveWorkAreaTime.ShouldNotBeNull();
 		}
 
 		[Test]

@@ -440,7 +440,7 @@ SELECT * FROM CTE";
 			toolTip.Control.ShouldBeAssignableTo<ToolTipView>();
 			var dataModel = (ObjectDetailsModel)toolTip.Control.DataContext;
 			dataModel.Title.ShouldBe("\"PUBLIC\".XMLTYPE (Synonym) => SYS.XMLTYPE (Object Type)");
-			dataModel.Object.ShouldNotBe(null);
+			dataModel.Object.ShouldNotBeNull();
 		}
 
 		[Test, Apartment(ApartmentState.STA)]
@@ -760,7 +760,7 @@ SELECT * FROM CTE";
 			toolTipType.Control.ShouldBeAssignableTo<ToolTipView>();
 			var dataModel = (ObjectDetailsModel)toolTipType.Control.DataContext;
 			dataModel.Title.ShouldBe("\"PUBLIC\".XMLTYPE (Synonym) => SYS.XMLTYPE (Object Type)");
-			dataModel.Object.ShouldNotBe(null);
+			dataModel.Object.ShouldNotBeNull();
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 112);
 			toolTip.Control.ShouldBeAssignableTo<ToolTipSequence>();
@@ -778,7 +778,7 @@ SELECT * FROM CTE";
 			toolTip.Control.ShouldBeAssignableTo<ToolTipView>();
 			var dataModel = (ObjectDetailsModel)toolTip.Control.DataContext;
 			dataModel.Title.ShouldBe("SYS.ODCIRAWLIST (Object Varrying Array)");
-			dataModel.Object.ShouldNotBe(null);
+			dataModel.Object.ShouldNotBeNull();
 		}
 
 		[Test, Apartment(ApartmentState.STA)]
@@ -791,7 +791,7 @@ SELECT * FROM CTE";
 			toolTip.Control.ShouldBeAssignableTo<ToolTipView>();
 			var dataModel = (ObjectDetailsModel)toolTip.Control.DataContext;
 			dataModel.Title.ShouldBe("SYS.DBMS_XPLAN_TYPE_TABLE (Object Table)");
-			dataModel.Object.ShouldNotBe(null);
+			dataModel.Object.ShouldNotBeNull();
 		}
 
 		[Test, Apartment(ApartmentState.STA)]
@@ -827,13 +827,13 @@ SELECT * FROM CTE";
 			}
 
 			[Test]
-			public void TestSqlFunctiom()
+			public void TestSqlFunction()
 			{
 				Convert(BuildProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues(null, null, "COUNT"), true)).ShouldBe("SQL function");
 			}
 
 			[Test]
-			public void TestBuiltInPackageFunctiom()
+			public void TestBuiltInPackageFunction()
 			{
 				Convert(BuildProgramMetadata(ProgramType.Function, OracleProgramIdentifier.CreateFromValues("SYS", "STANDARD", "TRUNC"), true)).ShouldBe("Built-in package function");
 			}
@@ -1124,7 +1124,7 @@ SELECT * FROM sampleData";
 			toolTip.Control.ShouldBeAssignableTo<ToolTipView>();
 			var dataModel = (ObjectDetailsModel)toolTip.Control.DataContext;
 			dataModel.Title.ShouldBe("\"PUBLIC\".XMLTYPE (Synonym) => SYS.XMLTYPE (Object Type)");
-			dataModel.Object.ShouldNotBe(null);
+			dataModel.Object.ShouldNotBeNull();
 		}
 
 		[Test, Apartment(ApartmentState.STA)]
@@ -1232,7 +1232,7 @@ END;";
 			_documentRepository.UpdateStatements(plSqlCode);
 
 			var toolTip = _toolTipProvider.GetToolTip(_documentRepository, 59);
-			toolTip.ShouldNotBe(null);
+			toolTip.ShouldNotBeNull();
 		}
 
 
