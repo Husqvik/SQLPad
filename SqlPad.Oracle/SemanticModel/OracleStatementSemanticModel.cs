@@ -3403,41 +3403,42 @@ namespace SqlPad.Oracle.SemanticModel
 				return childDataSources;
 			}
 
+			var namedColumns = MainQueryBlock.Columns.Where(c => !c.IsAsterisk).ToArray();
 			var uniqueConstraints = new HashSet<OracleUniqueConstraint>();
-			foreach (var columnHeader in columnHeaders)
+			for (var i = 0; i < columnHeaders.Count; i++)
 			{
-				var selectedColumns = MainQueryBlock.NamedColumns[$"\"{columnHeader.Name}\""].Where(c => c.ColumnDescription.DataType.IsPrimitive);
+				var columnHeader = columnHeaders[i];
+				var selectedColumn = namedColumns[i];
+				if (!selectedColumn.IsDirectReference || !selectedColumn.ColumnDescription.DataType.IsPrimitive)
+					continue;
 
-				foreach (var selectedColumn in selectedColumns)
+				var sourceObject = GetSourceObject(selectedColumn, out var localColumnName);
+				if (sourceObject == null)
 				{
-					var sourceObject = GetSourceObject(selectedColumn, out var localColumnName);
-					if (sourceObject == null)
-					{
-						continue;
-					}
-
-					var parentReferenceDataSources = new List<OracleReferenceDataSource>();
-					foreach (var constraint in sourceObject.Constraints)
-					{
-						if (constraint is OracleReferenceConstraint referenceConstraint && referenceConstraint.Columns.Count == 1 && String.Equals(referenceConstraint.Columns[0], localColumnName))
-						{
-							var referenceColumnName = referenceConstraint.ReferenceConstraint.Columns[0];
-							var statementText = StatementText = $"SELECT * FROM {referenceConstraint.TargetObject.FullyQualifiedName} WHERE {referenceColumnName} = :KEY0";
-							var objectName = referenceConstraint.TargetObject.FullyQualifiedName.ToString();
-							var constraintName = referenceConstraint.FullyQualifiedName.ToString();
-							var keyDataType = selectedColumn.ColumnDescription.DataType.FullyQualifiedName.Name.Trim('"');
-							var preferenceDataSource = new OracleReferenceDataSource(objectName, constraintName, statementText, new[] { columnHeader }, new[] { keyDataType });
-							parentReferenceDataSources.Add(preferenceDataSource);
-						}
-
-						if (constraint is OracleUniqueConstraint uniqueConstraint)
-						{
-							uniqueConstraints.Add(uniqueConstraint);
-						}
-					}
-
-					columnHeader.ParentReferenceDataSources = parentReferenceDataSources.AsReadOnly();
+					continue;
 				}
+
+				var parentReferenceDataSources = new List<OracleReferenceDataSource>();
+				foreach (var constraint in sourceObject.Constraints)
+				{
+					if (constraint is OracleReferenceConstraint referenceConstraint && referenceConstraint.Columns.Count == 1 && String.Equals(referenceConstraint.Columns[0], localColumnName))
+					{
+						var referenceColumnName = referenceConstraint.ReferenceConstraint.Columns[0];
+						var statementText = StatementText = $"SELECT * FROM {referenceConstraint.TargetObject.FullyQualifiedName} WHERE {referenceColumnName} = :KEY0";
+						var objectName = referenceConstraint.TargetObject.FullyQualifiedName.ToString();
+						var constraintName = referenceConstraint.FullyQualifiedName.ToString();
+						var keyDataType = selectedColumn.ColumnDescription.DataType.FullyQualifiedName.Name.Trim('"');
+						var preferenceDataSource = new OracleReferenceDataSource(objectName, constraintName, statementText, new[] { columnHeader }, new[] { keyDataType });
+						parentReferenceDataSources.Add(preferenceDataSource);
+					}
+
+					if (constraint is OracleUniqueConstraint uniqueConstraint)
+					{
+						uniqueConstraints.Add(uniqueConstraint);
+					}
+				}
+
+				columnHeader.ParentReferenceDataSources = parentReferenceDataSources.AsReadOnly();
 			}
 
 			foreach (var uniqueConstraint in uniqueConstraints)

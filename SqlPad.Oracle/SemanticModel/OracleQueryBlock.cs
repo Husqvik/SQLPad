@@ -21,7 +21,7 @@ namespace SqlPad.Oracle.SemanticModel
 		private bool? _hasRemoteAsteriskReferences;
 		private ILookup<string, OracleSelectListColumn> _namedColumns;
 
-		internal static readonly Func<OracleSelectListColumn, bool> PredicateContainsAnalyticFuction = c => c.ProgramReferences.Any(p => p.AnalyticClauseNode != null);
+		internal static readonly Func<OracleSelectListColumn, bool> PredicateContainsAnalyticFunction = c => c.ProgramReferences.Any(p => p.AnalyticClauseNode != null);
 
 		public OracleQueryBlock(OracleStatement statement, StatementGrammarNode rootNode, OracleStatementSemanticModel semanticModel) : base(semanticModel)
 		{
@@ -226,10 +226,7 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 		}
 
-		public bool ContainsAnalyticFunction()
-		{
-			return Columns.Any(PredicateContainsAnalyticFuction);
-		}
+		public bool ContainsAnalyticFunction() => Columns.Any(PredicateContainsAnalyticFunction);
 
 		public void AddAttachedColumn(OracleSelectListColumn column)
 		{
@@ -296,10 +293,7 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 		}
 
-		public int IndexOf(OracleSelectListColumn column)
-		{
-			return _columns.IndexOf(column);
-		}
+		public int IndexOf(OracleSelectListColumn column) => _columns.IndexOf(column);
 
 		private static bool HasRemoteAsteriskReferencesInternal(OracleQueryBlock queryBlock)
 		{

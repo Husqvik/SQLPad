@@ -3136,13 +3136,14 @@ FROM
 			var columnHeaders =
 				new[]
 				{
+					new ColumnHeader { Name = "TARGETGROUP_ID" },
 					new ColumnHeader { Name = "PROJECT_ID" },
-					new ColumnHeader { Name = "TARGETGROUP_ID" }
+					new ColumnHeader { Name = "NAME" }
 				};
 
 			var childReferenceDataSources = semanticModel.ApplyReferenceConstraints(columnHeaders);
 
-			var referenceDataSources = columnHeaders[0].ParentReferenceDataSources;
+			var referenceDataSources = columnHeaders[1].ParentReferenceDataSources;
 			referenceDataSources.ShouldNotBeNull();
 			referenceDataSources.Count.ShouldBe(1);
 			var referenceDataSource = referenceDataSources.First();

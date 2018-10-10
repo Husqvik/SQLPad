@@ -48,7 +48,7 @@ namespace SqlPad.Oracle.Commands
 				.Where(c => c.ValidObjectReference?.QueryBlocks.FirstOrDefault() == CurrentQueryBlock)
 				.ToLookup(c => c.NormalizedName);
 
-			foreach (var columnWithAnalyticFunction in CurrentQueryBlock.Columns.Where(OracleQueryBlock.PredicateContainsAnalyticFuction))
+			foreach (var columnWithAnalyticFunction in CurrentQueryBlock.Columns.Where(OracleQueryBlock.PredicateContainsAnalyticFunction))
 			{
 				foreach (var parentColumnReference in namedParentColumnReferences[columnWithAnalyticFunction.NormalizedName])
 				{
