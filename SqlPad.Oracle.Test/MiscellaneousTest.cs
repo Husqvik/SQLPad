@@ -75,7 +75,7 @@ namespace SqlPad.Oracle.Test
 			{
 				var statement = Parser.Parse("CREATE PROCEDURE TEST_SCHEMA.TEST_PROCEDURE")[0];
 
-				OracleStatement.TryGetPlSqlUnitName(statement, out OracleObjectIdentifier identifier).ShouldBeTrue();
+				OracleStatement.TryGetPlSqlUnitName(statement, out var identifier).ShouldBeTrue();
 				identifier.Owner.ShouldBe("TEST_SCHEMA");
 				identifier.Name.ShouldBe("TEST_PROCEDURE");
 			}
@@ -85,7 +85,7 @@ namespace SqlPad.Oracle.Test
 			{
 				var statement = Parser.Parse("CREATE FUNCTION TEST_SCHEMA.TEST_FUNCTION")[0];
 
-				OracleStatement.TryGetPlSqlUnitName(statement, out OracleObjectIdentifier identifier).ShouldBeTrue();
+				OracleStatement.TryGetPlSqlUnitName(statement, out var identifier).ShouldBeTrue();
 				identifier.Owner.ShouldBe("TEST_SCHEMA");
 				identifier.Name.ShouldBe("TEST_FUNCTION");
 			}
@@ -95,7 +95,7 @@ namespace SqlPad.Oracle.Test
 			{
 				var statement = Parser.Parse("CREATE TABLE TEST_SCHEMA.TEST_TABLE")[0];
 
-				OracleStatement.TryGetPlSqlUnitName(statement, out OracleObjectIdentifier _).ShouldBeFalse();
+				OracleStatement.TryGetPlSqlUnitName(statement, out var _).ShouldBeFalse();
 			}
 
 			[Test]

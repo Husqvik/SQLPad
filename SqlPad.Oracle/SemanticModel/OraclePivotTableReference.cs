@@ -88,7 +88,7 @@ namespace SqlPad.Oracle.SemanticModel
 				var typeIndex = 0;
 				foreach (var identifier in identifiers)
 				{
-					if (!columnNodeReferences.TryGetValue(identifier, out OracleColumnReference columnReference) || columnReference.ColumnDescription == null)
+					if (!columnNodeReferences.TryGetValue(identifier, out var columnReference) || columnReference.ColumnDescription == null)
 					{
 						return null;
 					}

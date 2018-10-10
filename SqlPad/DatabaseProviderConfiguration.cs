@@ -32,7 +32,7 @@ namespace SqlPad
 
 		public BindVariableConfiguration GetBindVariable(string variableName)
 		{
-			return BindVariablesInternal.TryGetValue(variableName, out BindVariableConfiguration bindVariable)
+			return BindVariablesInternal.TryGetValue(variableName, out var bindVariable)
 				? bindVariable
 				: null;
 		}

@@ -240,7 +240,7 @@ namespace SqlPad
 				return;
 			}
 
-			if (_lineTerminals.TryGetValue(line, out ICollection<StatementGrammarNode> lineTerminals))
+			if (_lineTerminals.TryGetValue(line, out var lineTerminals))
 			{
 				foreach (var terminal in lineTerminals)
 				{
@@ -343,7 +343,7 @@ namespace SqlPad
 
 		private void ProcessNodeCollectionAtLine<TNode>(DocumentLine line, IReadOnlyDictionary<DocumentLine, ICollection<TNode>> lineNodeDictionary, Action<VisualLineElement> visualElementAction) where TNode : StatementNode
 		{
-			if (!lineNodeDictionary.TryGetValue(line, out ICollection<TNode> nodes))
+			if (!lineNodeDictionary.TryGetValue(line, out var nodes))
 			{
 				return;
 			}

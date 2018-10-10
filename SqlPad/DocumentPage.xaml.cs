@@ -1395,7 +1395,7 @@ namespace SqlPad
 			{
 				bindVariableCount++;
 
-				if (_currentBindVariables.TryGetValue(statementVariable.Name, out BindVariableConfiguration currentVariable) &&
+				if (_currentBindVariables.TryGetValue(statementVariable.Name, out var currentVariable) &&
 					currentVariable.Nodes.Select(n => n.SourcePosition).SequenceEqual(statementVariable.Nodes.Select(n => n.SourcePosition)))
 				{
 					matchedCount++;
@@ -2150,7 +2150,7 @@ namespace SqlPad
 			{
 				DisableCodeCompletion();
 
-				if (_multiNodeEditor != null && args.Key.In(Key.V, Key.Insert) && isControlPressed && ClipboardManager.TryGetClipboardText(out string clipboardText))
+				if (_multiNodeEditor != null && args.Key.In(Key.V, Key.Insert) && isControlPressed && ClipboardManager.TryGetClipboardText(out var clipboardText))
 				{
 					_multiNodeEditor.Replace(clipboardText);
 				}

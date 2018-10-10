@@ -552,7 +552,7 @@ namespace SqlPad.Oracle.ToolTips
 
 		private void BuildSchemaTooltip(OracleDatabaseModelBase databaseModel)
 		{
-			if (!databaseModel.AllSchemas.TryGetValue(_terminal.Token.Value.ToQuotedIdentifier(), out OracleSchema schema))
+			if (!databaseModel.AllSchemas.TryGetValue(_terminal.Token.Value.ToQuotedIdentifier(), out var schema))
 			{
 				return;
 			}

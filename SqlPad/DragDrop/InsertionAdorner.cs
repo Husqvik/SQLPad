@@ -49,7 +49,7 @@ namespace SqlPad.DragDrop
 		protected override void OnRender(DrawingContext drawingContext)
 		{
 
-			CalculateStartAndEndPoint(out Point startPoint, out Point endPoint);
+			CalculateStartAndEndPoint(out var startPoint, out var endPoint);
 			drawingContext.DrawLine(Pen, startPoint, endPoint);
 
 			if (_isSeparatorHorizontal)

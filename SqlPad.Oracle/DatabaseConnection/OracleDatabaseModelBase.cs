@@ -241,7 +241,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public OracleDatabaseLink GetFirstDatabaseLink(params OracleObjectIdentifier[] identifiers)
 		{
-			DatabaseLinks.TryGetFirstValue(out OracleDatabaseLink databaseLink, identifiers);
+			DatabaseLinks.TryGetFirstValue(out var databaseLink, identifiers);
 
 			if (databaseLink == null)
 			{
@@ -269,7 +269,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 
 		public OracleSchemaObject GetFirstSchemaObject<T>(params OracleObjectIdentifier[] identifiers) where T : OracleSchemaObject
 		{
-			AllObjects.TryGetFirstValue(out OracleSchemaObject schemaObject, identifiers);
+			AllObjects.TryGetFirstValue(out var schemaObject, identifiers);
 			var type = schemaObject.GetTargetSchemaObject() as T;
 			return type == null
 				? null
@@ -314,7 +314,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 				return;
 			}
 
-			if (!SystemParameters.TryGetValue(SystemParameterNameMaxStringSize, out string maxStringSize) || String.Equals(maxStringSize, "STANDARD"))
+			if (!SystemParameters.TryGetValue(SystemParameterNameMaxStringSize, out var maxStringSize) || String.Equals(maxStringSize, "STANDARD"))
 			{
 				_maximumVarcharLength = DefaultMaxLengthVarchar;
 				_maximumNVarcharLength = _maximumRawLength = DefaultMaxLengthNVarchar;

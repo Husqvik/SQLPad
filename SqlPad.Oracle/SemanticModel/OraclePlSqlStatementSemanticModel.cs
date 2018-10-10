@@ -605,7 +605,7 @@ namespace SqlPad.Oracle.SemanticModel
 								program.Types.Add(type);
 
 								var associativeArrayIndexTypeNode = associativeArrayTypeDefinitionNode?[NonTerminals.AssociativeArrayIndexType];
-								if (associativeArrayIndexTypeNode != null && OracleReferenceBuilder.TryCreatePlSqlDataTypeReference(program, associativeArrayIndexTypeNode, out OracleDataTypeReference dataTypeReference))
+								if (associativeArrayIndexTypeNode != null && OracleReferenceBuilder.TryCreatePlSqlDataTypeReference(program, associativeArrayIndexTypeNode, out var dataTypeReference))
 								{
 									type.AssociativeArrayIndexDataTypeReference = dataTypeReference;
 								}
@@ -641,7 +641,7 @@ namespace SqlPad.Oracle.SemanticModel
 						var errorCodeModifier = exceptionInit.ParentNode[Terminals.MathMinus] == null ? 1 : -1;
 						var integerLiteral = exceptionInit.ParentNode[Terminals.IntegerLiteral];
 
-						if (exceptionIdentifier != null && integerLiteral != null && Int32.TryParse(integerLiteral.Token.Value, out int errorCode))
+						if (exceptionIdentifier != null && integerLiteral != null && Int32.TryParse(integerLiteral.Token.Value, out var errorCode))
 						{
 							var exceptionName = exceptionIdentifier.Token.Value.ToQuotedIdentifier();
 							foreach (var exception in program.Exceptions)

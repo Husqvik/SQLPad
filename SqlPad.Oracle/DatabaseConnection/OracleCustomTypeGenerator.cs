@@ -54,7 +54,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 		{
 			lock (Generators)
 			{
-				if (!Generators.TryGetValue(connectionStringName, out OracleCustomTypeGenerator generator))
+				if (!Generators.TryGetValue(connectionStringName, out var generator))
 				{
 					generator = new OracleCustomTypeGenerator(connectionStringName);
 					Generators.Add(connectionStringName, generator);
@@ -230,7 +230,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			{
 				if (collectionType.ElementDataType.FullyQualifiedName.HasOwner)
 				{
-					if (customTypes.TryGetValue(collectionType.ElementDataType.FullyQualifiedName.ToString().Replace("\"", null), out Type targetCustomType))
+					if (customTypes.TryGetValue(collectionType.ElementDataType.FullyQualifiedName.ToString().Replace("\"", null), out var targetCustomType))
 					{
 						targetType = targetCustomType;
 					}

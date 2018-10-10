@@ -76,7 +76,7 @@ namespace SqlPad.Oracle.ModelDataProviders
 					else
 					{
 						var executionStartValue = 0m;
-						if (DataModel.ExecutionStartRecords.TryGetValue(statisticsRecord.Name, out SessionExecutionStatisticsRecord executionStartRecord))
+						if (DataModel.ExecutionStartRecords.TryGetValue(statisticsRecord.Name, out var executionStartRecord))
 						{
 							executionStartValue = executionStartRecord.Value;
 						}

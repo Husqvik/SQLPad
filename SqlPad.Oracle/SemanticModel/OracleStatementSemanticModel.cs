@@ -758,7 +758,7 @@ namespace SqlPad.Oracle.SemanticModel
 			}
 			else
 			{
-				table.Partitions.TryGetValue(partitionName, out OraclePartition partition);
+				table.Partitions.TryGetValue(partitionName, out var partition);
 				objectReference.PartitionReference.Partition = partition;
 			}
 
@@ -1413,7 +1413,7 @@ namespace SqlPad.Oracle.SemanticModel
 					var terminalGroup = new List<StatementGrammarNode>(column.RootNode.Terminals);
 					_redundantTerminals.UnionWith(terminalGroup);
 
-					if (!TryMakeRedundantIfComma(column.RootNode.PrecedingTerminal, out StatementGrammarNode commaTerminal))
+					if (!TryMakeRedundantIfComma(column.RootNode.PrecedingTerminal, out var commaTerminal))
 					{
 						if (TryMakeRedundantIfComma(column.RootNode.FollowingTerminal, out commaTerminal))
 						{
@@ -2214,7 +2214,7 @@ namespace SqlPad.Oracle.SemanticModel
 							throw new NotImplementedException($"Reference '{objectReference.Type}' is not implemented yet. ");
 					}
 
-					_joinTableReferenceNodes.TryGetValue(objectReference.RootNode, out OracleJoinDescription joinDescription);
+					_joinTableReferenceNodes.TryGetValue(objectReference.RootNode, out var joinDescription);
 
 					var exposedColumnDictionary = new Dictionary<string, OracleColumnReference>();
 					foreach (var exposedColumn in exposedColumns)
@@ -2226,7 +2226,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 						exposedColumn.Owner = queryBlock;
 
-						if (String.IsNullOrEmpty(exposedColumn.NormalizedName) || !exposedColumnDictionary.TryGetValue(exposedColumn.NormalizedName, out OracleColumnReference columnReference))
+						if (String.IsNullOrEmpty(exposedColumn.NormalizedName) || !exposedColumnDictionary.TryGetValue(exposedColumn.NormalizedName, out var columnReference))
 						{
 							columnReference = CreateColumnReference(exposedColumn, exposedColumn.Owner, exposedColumn, StatementPlacement.SelectList, asteriskColumn.RootNode.LastTerminalNode, null);
 
@@ -2296,7 +2296,7 @@ namespace SqlPad.Oracle.SemanticModel
 				programsTransferredToTypes.Add(programReference);
 				programReference.Container.TypeReferences.Add(typeReference);
 
-				if (_rowSourceTableCollectionReferences.TryGetValue(programReference, out OracleTableCollectionReference tableCollectionReference))
+				if (_rowSourceTableCollectionReferences.TryGetValue(programReference, out var tableCollectionReference))
 				{
 					tableCollectionReference.RowSourceReference = typeReference;
 				}
@@ -2615,7 +2615,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 			foreach (var rowSourceReference in rowSources)
 			{
-				if (columnReference.Placement == StatementPlacement.Join && _joinPartitionColumnTableReferenceRootNodes.TryGetValue(columnReference.ColumnNode, out OracleDataObjectReference joinPartitionObjectReference) &&
+				if (columnReference.Placement == StatementPlacement.Join && _joinPartitionColumnTableReferenceRootNodes.TryGetValue(columnReference.ColumnNode, out var joinPartitionObjectReference) &&
 	joinPartitionObjectReference != rowSourceReference)
 				{
 					continue;
@@ -2643,7 +2643,7 @@ namespace SqlPad.Oracle.SemanticModel
 					continue;
 				}
 
-				if (rowSourceReference.RootNode != null && _joinTableReferenceNodes.TryGetValue(rowSourceReference.RootNode, out OracleJoinDescription joinDescription) &&
+				if (rowSourceReference.RootNode != null && _joinTableReferenceNodes.TryGetValue(rowSourceReference.RootNode, out var joinDescription) &&
 	joinDescription.Definition == JoinDefinition.Natural && joinDescription.Columns.Contains(columnReference.NormalizedName))
 				{
 					continue;
@@ -2659,7 +2659,7 @@ namespace SqlPad.Oracle.SemanticModel
 			var newColumnReferences = new List<OracleColumn>();
 
 			if (columnReference.RootNode != null &&
-	_oldOuterJoinColumnReferences.TryGetValue(columnReference.RootNode, out StatementGrammarNode oldOuterJoinOperatorNode))
+	_oldOuterJoinColumnReferences.TryGetValue(columnReference.RootNode, out var oldOuterJoinOperatorNode))
 			{
 				columnReference.OldOuterJoinOperatorNode = oldOuterJoinOperatorNode;
 				rowSourceReference.IsOuterJoined = true;
@@ -2748,7 +2748,7 @@ namespace SqlPad.Oracle.SemanticModel
 				return TryResolveSequenceReference(columnReference);
 			}
 
-			if (_rowSourceTableCollectionReferences.TryGetValue(columnReference, out OracleTableCollectionReference tableCollectionReference))
+			if (_rowSourceTableCollectionReferences.TryGetValue(columnReference, out var tableCollectionReference))
 			{
 				tableCollectionReference.RowSourceReference = programReference;
 			}
@@ -2896,7 +2896,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 					queryBlock.JoinDescriptions.Add(joinDescription);
 
-					if (masterTableReferenceNode != null && _rootNodeObjectReference.TryGetValue(masterTableReferenceNode, out OracleDataObjectReference objectReference))
+					if (masterTableReferenceNode != null && _rootNodeObjectReference.TryGetValue(masterTableReferenceNode, out var objectReference))
 					{
 						joinDescription.MasterObjectReference = objectReference;
 						StorePartitionColumnIdentifierTableReferenceRelations(masterPartitionIdentifiers, objectReference);
@@ -3410,7 +3410,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 				foreach (var selectedColumn in selectedColumns)
 				{
-					var sourceObject = GetSourceObject(selectedColumn, out string localColumnName);
+					var sourceObject = GetSourceObject(selectedColumn, out var localColumnName);
 					if (sourceObject == null)
 					{
 						continue;
@@ -3426,8 +3426,8 @@ namespace SqlPad.Oracle.SemanticModel
 							var objectName = referenceConstraint.TargetObject.FullyQualifiedName.ToString();
 							var constraintName = referenceConstraint.FullyQualifiedName.ToString();
 							var keyDataType = selectedColumn.ColumnDescription.DataType.FullyQualifiedName.Name.Trim('"');
-							var peferenceDataSource = new OracleReferenceDataSource(objectName, constraintName, statementText, new[] { columnHeader }, new[] { keyDataType });
-							parentReferenceDataSources.Add(peferenceDataSource);
+							var preferenceDataSource = new OracleReferenceDataSource(objectName, constraintName, statementText, new[] { columnHeader }, new[] { keyDataType });
+							parentReferenceDataSources.Add(preferenceDataSource);
 						}
 
 						if (constraint is OracleUniqueConstraint uniqueConstraint)
@@ -3461,7 +3461,7 @@ namespace SqlPad.Oracle.SemanticModel
 					var dataTypes = new List<string>();
 					foreach (var constraintColumn in remoteReferenceConstraint.Columns)
 					{
-						if (!dataObject.Columns.TryGetValue(constraintColumn, out OracleColumn column) || !column.DataType.IsPrimitive)
+						if (!dataObject.Columns.TryGetValue(constraintColumn, out var column) || !column.DataType.IsPrimitive)
 						{
 							incompatibleDataFound = true;
 							var message = column == null ? $"Column '{constraintColumn}' not found in object '{dataObject.FullyQualifiedName}' metadata. " : $"Column '{dataObject.FullyQualifiedName}.{constraintColumn}' does not have primitive data type. ";
@@ -3489,7 +3489,7 @@ namespace SqlPad.Oracle.SemanticModel
 
 		private static bool SelectColumnMatchesUniqueConstraintColumns(OracleSelectListColumn selectColumn, OracleUniqueConstraint constraint)
 		{
-			var sourceObject = GetSourceObject(selectColumn, out string originalColumnName);
+			var sourceObject = GetSourceObject(selectColumn, out var originalColumnName);
 			return sourceObject == constraint.OwnerObject && constraint.Columns.Any(c => String.Equals(c, originalColumnName));
 		}
 

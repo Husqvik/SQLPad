@@ -61,7 +61,7 @@ namespace SqlPad.Oracle
 				return oracleString;
 			}
 
-			var trimToIndex = GetTrimIndex(oracleString, out bool isQuotedString, out char? quoteInitializer);
+			var trimToIndex = GetTrimIndex(oracleString, out var isQuotedString, out var quoteInitializer);
 			var length = oracleString.Length;
 			var value = oracleString.Substring(trimToIndex);
 			var trimEnd = isQuotedString && length >= trimToIndex

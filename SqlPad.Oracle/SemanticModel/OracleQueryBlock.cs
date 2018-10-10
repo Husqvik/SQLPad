@@ -325,7 +325,7 @@ namespace SqlPad.Oracle.SemanticModel
 		{
 			var expression = orderExpression[NonTerminals.Expression];
 			if (expression == null || expression.TerminalCount != 1 || expression.FirstTerminalNode.Id != OracleGrammarDescription.Terminals.NumberLiteral ||
-				expression.FirstTerminalNode.Token.Value.IndexOf('.') != -1 || !Int32.TryParse(expression.FirstTerminalNode.Token.Value, out int columnIndex))
+				expression.FirstTerminalNode.Token.Value.IndexOf('.') != -1 || !Int32.TryParse(expression.FirstTerminalNode.Token.Value, out var columnIndex))
 			{
 				return OracleOrderByColumnIndexReference.None;
 			}

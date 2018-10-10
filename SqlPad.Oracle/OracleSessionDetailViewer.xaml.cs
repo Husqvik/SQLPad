@@ -293,7 +293,7 @@ namespace SqlPad.Oracle
 				return;
 			}
 
-			if (configurationProperties.TryGetValue(KeyExecutionPlanHeight, out double value))
+			if (configurationProperties.TryGetValue(KeyExecutionPlanHeight, out var value))
 			{
 				_expandedExecutionPlanHeight = value;
 				RowDefinitionExecutionPlan.Height = new GridLength(value);

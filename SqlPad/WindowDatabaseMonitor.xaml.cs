@@ -223,7 +223,7 @@ namespace SqlPad
 			{
 				var currentRecord = currentRecords[i];
 				var key = getKeyFunction(currentRecord);
-				if (newRecordDictionary.TryGetValue(key, out TRecord newRecord))
+				if (newRecordDictionary.TryGetValue(key, out var newRecord))
 				{
 					mergeAction(currentRecord, newRecord);
 					newRecordDictionary.Remove(key);

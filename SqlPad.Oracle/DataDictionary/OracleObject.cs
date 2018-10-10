@@ -42,7 +42,7 @@ namespace SqlPad.Oracle.DataDictionary
 		protected string BuildDocumentation()
 		{
 			if (String.Equals(FullyQualifiedName.NormalizedOwner, OracleObjectIdentifier.SchemaSys) &&
-				OracleHelpProvider.DataDictionaryObjectDocumentation.TryGetValue(FullyQualifiedName, out DocumentationDataDictionaryObject documentation))
+				OracleHelpProvider.DataDictionaryObjectDocumentation.TryGetValue(FullyQualifiedName, out var documentation))
 			{
 				return documentation.Value;
 			}
