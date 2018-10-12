@@ -3215,6 +3215,29 @@ FROM
 		}
 
 		[Test]
+		public void TestApplyReferenceConstraintsThroughAsteriskWithMissingMetadata()
+		{
+			const string query1 = @"SELECT * FROM non_existing_table";
+
+			var statement = (OracleStatement)Parser.Parse(query1).Single();
+			statement.ParseStatus.ShouldBe(ParseStatus.Success);
+
+			var semanticModel = OracleStatementSemanticModelFactory.Build(query1, statement, TestFixture.DatabaseModel);
+
+			var columnHeaders =
+				new[]
+				{
+					new ColumnHeader { Name = "ID" }
+				};
+
+			var childReferenceDataSources = semanticModel.ApplyReferenceConstraints(columnHeaders);
+			childReferenceDataSources.ShouldBeEmpty();
+
+			var referenceDataSources = columnHeaders[0].ParentReferenceDataSources;
+			referenceDataSources.ShouldBeNull();
+		}
+
+		[Test]
 		public void TestMergeUsingAliasedSubquery()
 		{
 			const string query1 =

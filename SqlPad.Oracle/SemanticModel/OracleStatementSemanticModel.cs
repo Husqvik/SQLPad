@@ -3407,6 +3407,9 @@ namespace SqlPad.Oracle.SemanticModel
 			var uniqueConstraints = new HashSet<OracleUniqueConstraint>();
 			for (var i = 0; i < columnHeaders.Count; i++)
 			{
+				if (namedColumns.Length <= i)
+					break;
+
 				var columnHeader = columnHeaders[i];
 				var selectedColumn = namedColumns[i];
 				if (!selectedColumn.IsDirectReference || !selectedColumn.ColumnDescription.DataType.IsPrimitive)

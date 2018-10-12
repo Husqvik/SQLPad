@@ -625,7 +625,7 @@ namespace SqlPad.Oracle.DatabaseConnection
 			}
 
 			var directory = (OracleDirectory)schemaObject;
-			directory.Path =(string)reader["DIRECTORY_PATH"];
+			directory.Path = OracleReaderValueConvert.ToString(reader["DIRECTORY_PATH"]);
 			return directory;
 		}
 
