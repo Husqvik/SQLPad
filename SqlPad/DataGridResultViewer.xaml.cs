@@ -245,10 +245,9 @@ namespace SqlPad
 			_outputViewer.TabControlResult.RemoveTabItemWithoutBindingError(TabItem);
 		}
 
-		private void RefreshTimerProgressBarTickHandler(object sender, EventArgs eventArgs)
-		{
-			RefreshProgressBar();
-		}
+		private void RefreshButtonClickHandler(object sender, RoutedEventArgs e) => RefreshTimerTickHandler(sender, e);
+
+		private void RefreshTimerProgressBarTickHandler(object sender, EventArgs eventArgs) => RefreshProgressBar();
 
 		private void RefreshProgressBar()
 		{

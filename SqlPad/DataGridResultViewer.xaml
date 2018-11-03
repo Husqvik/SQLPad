@@ -76,6 +76,18 @@
 
 		<StackPanel DockPanel.Dock="Top" >
 			<StackPanel Orientation="Horizontal">
+				<Button Content="_Refresh" Margin="2" Click="RefreshButtonClickHandler">
+					<Button.Style>
+						<Style>
+							<Setter Property="Button.Visibility" Value="Visible" />
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding AutoRefreshEnabled}" Value="True">
+									<Setter Property="Button.Visibility" Value="Collapsed" />
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</Button.Style>
+				</Button>
 				<CheckBox Content="_Autorefresh: " IsChecked="{Binding AutoRefreshEnabled}" VerticalAlignment="Center" />
 				<sqlPad:NumericUpDown Value="{Binding AutoRefreshInterval, Converter={StaticResource TimeSpanToIntegerSecondConverter}}" Minimum="1" />
 				<TextBlock Text="seconds" VerticalAlignment="Center" Margin="4,0,0,2" />
