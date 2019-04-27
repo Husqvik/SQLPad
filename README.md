@@ -210,33 +210,36 @@ Configuration
 ##### SqlPad.exe.config
 
 Connection string must be Oracle ADO.NET compliant, see [http://www.oracle.com/technetwork/topics/dotnet/install121024-2704210.html](http://www.oracle.com/technetwork/topics/dotnet/install121024-2704210.html). Managed driver might require additional configuration, see [https://docs.oracle.com/html/E41125_02/featConfig.htm#BABEGGHD](https://docs.oracle.com/html/E41125_02/featConfig.htm#BABEGGHD);
-
-	<connectionStrings>
-		<clear/>
-		<add name="Connection name 1" providerName="Oracle.DataAccess.Client" connectionString="DATA SOURCE=TNS_name;PASSWORD=password1;USER ID=user_name1" />
-		<add name="Connection name 2" providerName="Oracle.DataAccess.Client" connectionString="DATA SOURCE=host:1521/service_name;PASSWORD=password2;USER ID=user_name2" />
-		<!-- other connection strings -->
-	</connectionStrings>
+```xml
+<connectionStrings>
+	<clear/>
+	<add name="Connection name 1" providerName="Oracle.DataAccess.Client" connectionString="DATA SOURCE=TNS_name;PASSWORD=password1;USER ID=user_name1" />
+	<add name="Connection name 2" providerName="Oracle.DataAccess.Client" connectionString="DATA SOURCE=host:1521/service_name;PASSWORD=password2;USER ID=user_name2" />
+	<!-- other connection strings -->
+</connectionStrings>
+```
 
 Each connection string requires an infrastructure factory configuration record:
-
-	<databaseConnectionConfiguration>
-		<infrastructureConfigurations>
-			<infrastructure ConnectionStringName="Connection name 1" InfrastructureFactory="SqlPad.Oracle.OracleInfrastructureFactory, SqlPad.Oracle" />
-			<infrastructure ConnectionStringName="Connection name 2" InfrastructureFactory="SqlPad.Oracle.OracleInfrastructureFactory, SqlPad.Oracle" IsProduction="true" />
-			<!-- other connection configurations -->
-		</infrastructureConfigurations>
-	</databaseConnectionConfiguration>
+```xml
+<databaseConnectionConfiguration>
+	<infrastructureConfigurations>
+		<infrastructure ConnectionStringName="Connection name 1" InfrastructureFactory="SqlPad.Oracle.OracleInfrastructureFactory, SqlPad.Oracle" />
+		<infrastructure ConnectionStringName="Connection name 2" InfrastructureFactory="SqlPad.Oracle.OracleInfrastructureFactory, SqlPad.Oracle" IsProduction="true" />
+		<!-- other connection configurations -->
+	</infrastructureConfigurations>
+</databaseConnectionConfiguration>
+```
 
 `IsProduction` - indicates connection to a production system using red label
 
 ##### Configuration.xml
-
-	<Configuration xmlns="http://husqvik.com/SqlPad/2014/02">
-		<DataModel DataModelRefreshPeriod="60" />
-		<ResultGrid DateFormat="yyyy-MM-dd HH:mm:ss" NullPlaceholder="(null)" FetchRowsBatchSize="500" />
-		<Editor IndentationSize="2" />
-	</Configuration>
+```xml
+<Configuration xmlns="http://husqvik.com/SqlPad/2014/02">
+	<DataModel DataModelRefreshPeriod="60" />
+	<ResultGrid DateFormat="yyyy-MM-dd HH:mm:ss" NullPlaceholder="(null)" FetchRowsBatchSize="500" />
+	<Editor IndentationSize="2" />
+</Configuration>
+```
 
 `DataModelRefreshPeriod` - data dictionary refresh period in minutes; refresh can forced any time using `F5`
 
@@ -249,26 +252,27 @@ Each connection string requires an infrastructure factory configuration record:
 `IndentationSize` - number of spaces for tab indentation (default 4)
 
 ##### OracleConfiguration.xml
-
-	<OracleConfiguration xmlns="http://husqvik.com/SqlPad/2014/08/Oracle">
-		<StartupScript>
-			-- Enter optional global script to execute when database connection is established.
-		</StartupScript>
-		<TKProfPath>c:\Oracle\product\12.1.0\dbhome_1\BIN\tkprof.exe</TKProfPath>
-		<Connections>
-			<Connection ConnectionName="Oracle 12c PDB EZ-Connect" RemoteTraceDirectory="c:\Oracle\diag\rdbms\hq12c\hq12c\trace\">
-				<StartupScript>
-					-- Enter optional script to execute when database connection is established.
-				</StartupScript>
-				<ExecutionPlan>
-					<TargetTable Name="EXPLAIN_PLAN" />
-				</ExecutionPlan>
-			</Connection>
-		</Connections>
-		<Formatter>
-			<FormatOptions Identifier="Lower" Alias="Lower" Keyword="Upper" ReservedWord="Upper" />
-		</Formatter>
-	</OracleConfiguration>
+```xml
+<OracleConfiguration xmlns="http://husqvik.com/SqlPad/2014/08/Oracle">
+	<StartupScript>
+		-- Enter optional global script to execute when database connection is established.
+	</StartupScript>
+	<TKProfPath>c:\Oracle\product\12.1.0\dbhome_1\BIN\tkprof.exe</TKProfPath>
+	<Connections>
+		<Connection ConnectionName="Oracle 12c PDB EZ-Connect" RemoteTraceDirectory="c:\Oracle\diag\rdbms\hq12c\hq12c\trace\">
+			<StartupScript>
+				-- Enter optional script to execute when database connection is established.
+			</StartupScript>
+			<ExecutionPlan>
+				<TargetTable Name="EXPLAIN_PLAN" />
+			</ExecutionPlan>
+		</Connection>
+	</Connections>
+	<Formatter>
+		<FormatOptions Identifier="Lower" Alias="Lower" Keyword="Upper" ReservedWord="Upper" />
+	</Formatter>
+</OracleConfiguration>
+```
 
 `StartupScript` - optional initialization script executed when connection to database is established
 
@@ -277,49 +281,50 @@ Each connection string requires an infrastructure factory configuration record:
 `TKProfPath` - optional path to `TKProf.exe`; enables transient kernel profile output for extended SQL trace (10046) files.
 
 `ExecutionPlan/TargetTable` - table name used for EXPLAIN PLAN function; table is not created automatically and must be created manually using script:
+```sql
+CREATE GLOBAL TEMPORARY TABLE EXPLAIN_PLAN
+(
+	STATEMENT_ID VARCHAR2(30), 
+	PLAN_ID NUMBER, 
+	TIMESTAMP DATE, 
+	REMARKS VARCHAR2(4000), 
+	OPERATION VARCHAR2(30), 
+	OPTIONS VARCHAR2(255), 
+	OBJECT_NODE VARCHAR2(128), 
+	OBJECT_OWNER VARCHAR2(30), 
+	OBJECT_NAME VARCHAR2(30), 
+	OBJECT_ALIAS VARCHAR2(65), 
+	OBJECT_INSTANCE INTEGER, 
+	OBJECT_TYPE VARCHAR2(30), 
+	OPTIMIZER VARCHAR2(255), 
+	SEARCH_COLUMNS NUMBER, 
+	ID INTEGER, 
+	PARENT_ID INTEGER, 
+	DEPTH INTEGER, 
+	POSITION INTEGER, 
+	COST INTEGER, 
+	CARDINALITY INTEGER, 
+	BYTES INTEGER, 
+	OTHER_TAG VARCHAR2(255), 
+	PARTITION_START VARCHAR2(255), 
+	PARTITION_STOP VARCHAR2(255), 
+	PARTITION_ID INTEGER, 
+	OTHER LONG, 
+	DISTRIBUTION VARCHAR2(30), 
+	CPU_COST INTEGER, 
+	IO_COST INTEGER, 
+	TEMP_SPACE INTEGER, 
+	ACCESS_PREDICATES VARCHAR2(4000), 
+	FILTER_PREDICATES VARCHAR2(4000), 
+	PROJECTION VARCHAR2(4000), 
+	TIME INTEGER, 
+	QBLOCK_NAME VARCHAR2(30), 
+	OTHER_XML CLOB
+)
+ON COMMIT PRESERVE ROWS;
 
-	CREATE GLOBAL TEMPORARY TABLE EXPLAIN_PLAN
-	(
-		STATEMENT_ID VARCHAR2(30), 
-		PLAN_ID NUMBER, 
-		TIMESTAMP DATE, 
-		REMARKS VARCHAR2(4000), 
-		OPERATION VARCHAR2(30), 
-		OPTIONS VARCHAR2(255), 
-		OBJECT_NODE VARCHAR2(128), 
-		OBJECT_OWNER VARCHAR2(30), 
-		OBJECT_NAME VARCHAR2(30), 
-		OBJECT_ALIAS VARCHAR2(65), 
-		OBJECT_INSTANCE INTEGER, 
-		OBJECT_TYPE VARCHAR2(30), 
-		OPTIMIZER VARCHAR2(255), 
-		SEARCH_COLUMNS NUMBER, 
-		ID INTEGER, 
-		PARENT_ID INTEGER, 
-		DEPTH INTEGER, 
-		POSITION INTEGER, 
-		COST INTEGER, 
-		CARDINALITY INTEGER, 
-		BYTES INTEGER, 
-		OTHER_TAG VARCHAR2(255), 
-		PARTITION_START VARCHAR2(255), 
-		PARTITION_STOP VARCHAR2(255), 
-		PARTITION_ID INTEGER, 
-		OTHER LONG, 
-		DISTRIBUTION VARCHAR2(30), 
-		CPU_COST INTEGER, 
-		IO_COST INTEGER, 
-		TEMP_SPACE INTEGER, 
-		ACCESS_PREDICATES VARCHAR2(4000), 
-		FILTER_PREDICATES VARCHAR2(4000), 
-		PROJECTION VARCHAR2(4000), 
-		TIME INTEGER, 
-		QBLOCK_NAME VARCHAR2(30), 
-		OTHER_XML CLOB
-	)
-	ON COMMIT PRESERVE ROWS;
-
-	CREATE OR REPLACE PUBLIC SYNONYM EXPLAIN_PLAN FOR EXPLAIN_PLAN;
+CREATE OR REPLACE PUBLIC SYNONYM EXPLAIN_PLAN FOR EXPLAIN_PLAN;
+```
 
 Screenshots
 ------------------
