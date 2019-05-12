@@ -205,15 +205,15 @@ namespace SqlPad
 	{
 		internal ConnectionConfiguration(InfrastructureConfigurationSection infrastructureConfigurationSection)
 		{
-			InfrastructureFactory = (IInfrastructureFactory)Activator.CreateInstance(GetInfrastuctureFactoryType(infrastructureConfigurationSection.InfrastructureFactory));
+			InfrastructureFactory = (IInfrastructureFactory)Activator.CreateInstance(GetInfrastructureFactoryType(infrastructureConfigurationSection.InfrastructureFactory));
 			IsProduction = infrastructureConfigurationSection.IsProduction;
 		}
 
-		public IInfrastructureFactory InfrastructureFactory { get; private set; }
+		public IInfrastructureFactory InfrastructureFactory { get; }
 
-		public bool IsProduction { get; private set; }
+		public bool IsProduction { get; }
 
-		private static Type GetInfrastuctureFactoryType(string typeName)
+		private static Type GetInfrastructureFactoryType(string typeName)
 		{
 			var infrastructureFactoryType = Type.GetType(typeName);
 			if (infrastructureFactoryType == null)
